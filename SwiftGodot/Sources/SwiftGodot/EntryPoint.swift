@@ -10,7 +10,8 @@
 import Foundation
 import GDExtension
 
-var gdeInterface: UnsafePointer<GDExtensionInterface>!
+/// The pointer to the Godot Extension Interface
+var gi: GDExtensionInterface = GDExtensionInterface()
 var library: GDExtensionClassLibraryPtr!
 var token: GDExtensionClassLibraryPtr! {
     return library
@@ -22,6 +23,7 @@ public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExten
     guard l == GDEXTENSION_INITIALIZATION_SCENE else {
         return
     }
+    
 }
 
 // Scene de-init
@@ -45,7 +47,7 @@ public func swift_entry_point(
         guard let interfacePtr else {
             return 0
         }
-        gdeInterface = interfacePtr
+        gi = interfacePtr.pointee
         guard let ptrLibrary else {
             return 0
         }
