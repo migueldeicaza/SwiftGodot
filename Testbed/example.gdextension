@@ -1,0 +1,8 @@
+[configuration]
+
+entry_symbol = "swift_entry_point"
+
+[libraries]
+
+macos.debug = "res://bin/SwiftGodot"
+macos.release = "res://bin/SwiftGodot"
