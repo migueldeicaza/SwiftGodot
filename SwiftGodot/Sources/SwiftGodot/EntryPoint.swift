@@ -19,11 +19,12 @@ var token: GDExtensionClassLibraryPtr! {
 
 // Scene init
 public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
-    print ("extension_deinitialize")
+    print ("extension_initialize")
     guard l == GDEXTENSION_INITIALIZATION_SCENE else {
         return
     }
-    
+    let a = StringName ("Hello")
+    print ("The size of the string is: \(a.length())")
 }
 
 // Scene de-init

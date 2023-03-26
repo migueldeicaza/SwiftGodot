@@ -5,7 +5,10 @@
 //  Created by Miguel de Icaza on 5/20/20.
 //  Copyright © 2020-2023 Miguel de Icaza. MIT Licensed
 //
-
+// TODO:
+//   Implement destructors
+//   I think that for classes, when I create a result value, I should not pass
+//   the address of the class, but the address of the handle.
 import Foundation
 
 // IF we want a single file, or one file per type
@@ -24,7 +27,6 @@ print ("If unspecified, this will default to the built-in versions")
 
 let jsonData = try! Data(contentsOf: URL(fileURLWithPath: projectDir + "/extension_api.json"))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
-var methodBindCount = 0
 
 var result = ""
 var indentStr = ""
@@ -40,34 +42,12 @@ func p (_ str: String) {
     }
 }
 
-func b (_ str: String, block: () -> ()) {
+func b (_ str: String, suffix: String = "", block: () -> ()) {
     p (str + " {")
     indent += 1
     block ()
     indent -= 1
-    p ("}\n")
-}
-
-func getGodotType (_ t: String) -> String {
-    if t == "Error" {
-        return "GError"
-    }
-    switch t {
-    case "int":
-        return "Int"
-    case "float", "real":
-        return "Float"
-    case "Nil":
-        return "Variant"
-    case "void":
-        return ""
-    case "bool":
-        return "Bool"
-    case "String":
-        return "GString"
-    default:
-        return t
-    }
+    p ("}\(suffix)\n")
 }
 
 func generateEnums (values: [JGodotGlobalEnumElement]) {
@@ -134,13 +114,21 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     }
 }
 
-func getArgumentDeclaration (_ argument: JGodotSingleton, eliminate: String) -> String {
+protocol JNameAndType {
+    var name: String { get }
+    var type: String { get }
+}
+
+extension JGodotSingleton: JNameAndType { }
+extension JGodotArgument: JNameAndType {}
+
+func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
     return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument.type))"
 }
 
-func generateArgPrepare (_ args: [JGodotSingleton]) -> String {
+func generateArgPrepare (_ args: [JNameAndType]) -> String {
     var body = ""
     
     if args.count > 0 {
@@ -176,31 +164,50 @@ func generateArgPrepare (_ args: [JGodotSingleton]) -> String {
             //body += "    &\(argref),\n"
             //twiwarnDelete += "    _ = \(argref)\n"
         }
-        body += "]\n"
+        body += "]"
         
     }
     return body
 }
 
-func generateBuiltinCtors (_ ctors: [JGodotConstructor], /*_ gdname: String,*/ typeName: String, typeEnum: String)
+func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeEnum: String, members: [JGodotSingleton]?)
 {
-    var generated = ""
     var ctorCount = 0
     for m in ctors {
-        var mr: String
         
         var args = ""
     
-        let ptrName = "constructor\(ctorCount)"
-        p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(ctorCount))!\n")
-        ctorCount += 1
+        let ptrName = "constructor\(m.index)"
+        p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
+        
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
             args += getArgumentDeclaration(arg, eliminate: "")
         }
         
         b ("public init (\(args))") {
-            p (generateArgPrepare(m.arguments ?? []))
+            // Determine if we have a constructors whose sole job is to initialize the members
+            // of the struct, in that case, just do that, do not call into Godot.
+            if let margs = m.arguments, let members, margs.count == members.count {
+                var constructorMatchesFields = true
+                for x in 0..<margs.count {
+                    // This is so that we can match field `x` with `xAxis` in a few cases
+                    if !(margs [x].name.starts (with: members [x].name) && margs [x].type == members [x].type) {
+                        constructorMatchesFields = false
+                        break
+                    }
+                }
+                if constructorMatchesFields {
+                    for x in 0..<margs.count {
+                        p ("self.\(members [x].name) = \(escapeSwift (snakeToCamel (margs [x].name)))")
+                    }
+                    return
+                }
+            }
+            let argPrepare = generateArgPrepare(m.arguments ?? [])
+            if argPrepare != "" {
+                p (argPrepare)
+            }
             
             let ptrArgs = (m.arguments != nil) ? "&args" : "nil"
             
@@ -208,7 +215,89 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], /*_ gdname: String,*/ t
             // handle, I had a named handle, like "_godot_string"
             let ptr = isStructMap [typeName] ?? false ? "self" : "handle"
             
+            // We need to initialize some variables before we call
+            if let members {
+                for x in members {
+                    p ("self.\(x.name) = \(jsonTypeToSwift (x.type)) ()")
+                }
+                // Another special case: empty constructors in generated structs (those we added fields for)
+                // we just keep the manual initialization and do not call the constructor
+                if m.arguments == nil {
+                    return
+                }
+            }
+            // Call
             p ("\(typeName).\(ptrName) (&\(ptr), \(ptrArgs))")
+        }
+    }
+}
+
+func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: String, _ typeEnum: String)
+{
+    if methods.count > 0 {
+        p ("\n/* Methods */\n")
+    }
+    for m in methods {
+        if m.name == "repeat" {
+            // TODO: Avoid clash for now
+            continue
+        }
+
+        let ret = getGodotType(m.returnType ?? "")
+        
+        // TODO: problem caused by gobject_object being defined as "void", so it is not possible to create storage to that.
+        if ret == "Object" {
+            continue
+        }
+        let retSig = ret == "" ? "" : "-> \(ret)"
+        var args = ""
+    
+        let ptrName = "method_\(m.name)"
+        
+        b ("static var \(ptrName): GDExtensionPtrBuiltInMethod = ", suffix: "()"){
+            p ("let name = StringName (\"\(m.name)\")")
+            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), UnsafeRawPointer (name.handle), \(m.hash))!")
+        }
+        
+        for arg in m.arguments ?? [] {
+            if args != "" { args += ", " }
+            args += getArgumentDeclaration(arg, eliminate: "")
+        }
+        
+        let has_return = m.returnType != nil
+        
+        b ("public func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
+            let resultTypeName = "\(getGodotType (m.returnType ?? ""))"
+            if has_return {
+                p ("var result: \(resultTypeName) = \(resultTypeName)()")
+            }
+            
+            let argPrep = generateArgPrepare(m.arguments ?? [])
+            if argPrep != "" {
+                p (argPrep)
+            }
+            let ptrArgs = (m.arguments?.count ?? 0) > 0 ? "&args" : "nil"
+            let ptrResult: String
+            if has_return {
+                if isStructMap [m.returnType ?? ""] != nil {
+                    ptrResult = "&result"
+                } else {
+                    ptrResult = "&result.handle"
+                }
+            } else {
+                ptrResult = "nil"
+            }
+            if isStructMap [typeName] ?? false {
+                p ("withUnsafePointer (to: self) { ptr in ")
+                p ("    \(typeName).\(ptrName) (UnsafeMutableRawPointer (mutating: ptr), \(ptrArgs), \(ptrResult), \(m.arguments?.count ?? 0))")
+                p ("}")
+            } else {
+                p ("\(typeName).\(ptrName) (&handle, \(ptrArgs), \(ptrResult), \(m.arguments?.count ?? 0))")
+            }
+            if has_return {
+                // let cast = castGodotToSwift (m.returnType, "result")
+                p ("return /* castGodotToSwift \(m.returnType) */ result")
+            }
         }
     }
 }
@@ -226,7 +315,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
         }
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
-        b ("public \(kind) \(typeName) ") {
+        b ("public \(kind) \(typeName)") {
             if bc.name == "String" {
                 b ("public init (_ str: String)") {
                     p ("var vh: UnsafeMutableRawPointer?")
@@ -243,19 +332,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                 }
             }
 
-            generateBuiltinCtors (bc.constructors, typeName: typeName, typeEnum: typeEnum)
-            if let methods = bc.methods {
-                for method in methods {
-                    if method.name == "repeat" {
-                        // TODO: Avoid clash for now
-                        continue
-                    }
-                    var ret = method.returnType == nil ? "" : "-> \(jsonTypeToSwift (method.returnType!))"
-                    b ("func \(method.name) ()\(ret)") {
-                        p ("abort ()")
-                    }
-                }
-            }
+            generateBuiltinCtors (bc.constructors, typeName: typeName, typeEnum: typeEnum, members: bc.members)
+            generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum)
         }
     }
     
@@ -279,7 +357,7 @@ for x in jsonApi.builtinClasses {
     let value = x.members?.count ?? 0 > 0
     isStructMap [String (x.name)] = value
 }
-for x in ["Float", "Int", "float", "int", "Variant"] {
+for x in ["Float", "Int", "float", "int", "Variant", "Int32", "Bool", "bool"] {
     isStructMap [x] = true
 }
 generateBuiltinClasses(values: jsonApi.builtinClasses)

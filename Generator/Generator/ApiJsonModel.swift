@@ -517,7 +517,7 @@ extension JGodotConstructor {
 }
 
 // MARK: - JGodotSingleton
-struct JGodotSingleton: Codable {
+struct JGodotSingleton: Codable, Equatable {
     let name, type: String
 }
 

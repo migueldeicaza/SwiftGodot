@@ -71,3 +71,25 @@ func mapTypeName (_ name: String) -> String {
     }
     return name
 }
+
+func getGodotType (_ t: String) -> String {
+    if t == "Error" {
+        return "GError"
+    }
+    switch t {
+    case "int":
+        return "Int32"
+    case "float", "real":
+        return "Float"
+    case "Nil":
+        return "Variant"
+    case "void":
+        return ""
+    case "bool":
+        return "Bool"
+    case "String":
+        return "GString"
+    default:
+        return t
+    }
+}
