@@ -65,3 +65,9 @@ func isPrimitiveType (name: String) -> Bool {
     return name == "int" || name == "bool" || name == "float" || name == "void" || name.hasPrefix("enum")
 }
 
+func mapTypeName (_ name: String) -> String {
+    if name == "String" {
+        return "GString"
+    }
+    return name
+}

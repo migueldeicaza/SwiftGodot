@@ -52,7 +52,22 @@ func getGodotType (_ t: String) -> String {
     if t == "Error" {
         return "GError"
     }
-    return t
+    switch t {
+    case "int":
+        return "Int"
+    case "float", "real":
+        return "Float"
+    case "Nil":
+        return "Variant"
+    case "void":
+        return ""
+    case "bool":
+        return "Bool"
+    case "String":
+        return "GString"
+    default:
+        return t
+    }
 }
 
 func generateEnums (values: [JGodotGlobalEnumElement]) {
@@ -119,6 +134,87 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     }
 }
 
+func getArgumentDeclaration (_ argument: JGodotSingleton, eliminate: String) -> String {
+    //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
+    let optNeedInOut = ""
+    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument.type))"
+}
+
+func generateArgPrepare (_ args: [JGodotSingleton]) -> String {
+    var body = ""
+    
+    if args.count > 0 {
+        for arg in args {
+            //if !isCoreType (name: arg.type) {
+            if isStructMap [arg.type] ?? false {
+                body += "var copy_\(arg.name) = \(escapeSwift (snakeToCamel (arg.name)))\n"
+            }
+        }
+
+        body += "var args: [UnsafeRawPointer?] = [\n"
+        
+        for arg in args {
+            var argref: String
+            var optstorage: String
+            if !(isStructMap [arg.type] ?? false) { // { ) isCoreType(name: arg.type){
+                argref = escapeSwift (snakeToCamel (arg.name))
+                if isStructMap [arg.type] ?? false {
+                    optstorage = ""
+                } else {
+                    optstorage = ".handle /* \(arg.type) -> \(isStructMap [arg.type]) */" // + builtinTypeToGdName(arg.type)
+                }
+            } else {
+                argref = "copy_\(arg.name)"
+                optstorage = ""
+            }
+            if (isStructMap [arg.type] ?? false) {
+                
+                body += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
+            } else {
+                body += "    UnsafeRawPointer(&\(escapeSwift(argref)).handle),\n"
+            }
+            //body += "    &\(argref),\n"
+            //twiwarnDelete += "    _ = \(argref)\n"
+        }
+        body += "]\n"
+        
+    }
+    return body
+}
+
+func generateBuiltinCtors (_ ctors: [JGodotConstructor], /*_ gdname: String,*/ typeName: String, typeEnum: String)
+{
+    var generated = ""
+    var ctorCount = 0
+    for m in ctors {
+        var mr: String
+        
+        var args = ""
+    
+        let ptrName = "constructor\(ctorCount)"
+        p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(ctorCount))!\n")
+        ctorCount += 1
+        for arg in m.arguments ?? [] {
+            if args != "" { args += ", " }
+            args += getArgumentDeclaration(arg, eliminate: "")
+        }
+        
+        b ("public init (\(args))") {
+            p (generateArgPrepare(m.arguments ?? []))
+            
+            let ptrArgs = (m.arguments != nil) ? "&args" : "nil"
+            
+            // I used to have a nicer model, rather than everything having a
+            // handle, I had a named handle, like "_godot_string"
+            let ptr = isStructMap [typeName] ?? false ? "self" : "handle"
+            
+            p ("\(typeName).\(ptrName) (&\(ptr), \(ptrArgs))")
+        }
+    }
+}
+
+var isStructMap: [String:Bool] = [:]
+
 func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
     func generateBuiltinClass (_ bc: JGodotBuiltinClass) {
         // TODO: isKeyed, hasDestrcturo,
@@ -128,7 +224,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
         } else {
             kind = "class"
         }
-        b ("public \(kind) \(bc.name) ") {
+        let typeName = mapTypeName (bc.name)
+        let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
+        b ("public \(kind) \(typeName) ") {
+            if bc.name == "String" {
+                b ("public init (_ str: String)") {
+                    p ("var vh: UnsafeMutableRawPointer?")
+                    p ("gi.string_new_with_utf8_chars (&vh, str)")
+                    p ("handle = OpaquePointer (vh)")
+                }
+            }
             if kind == "class" {
                 p ("var handle: OpaquePointer?")
             }
@@ -138,6 +243,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                 }
             }
 
+            generateBuiltinCtors (bc.constructors, typeName: typeName, typeEnum: typeEnum)
             if let methods = bc.methods {
                 for method in methods {
                     if method.name == "repeat" {
@@ -166,9 +272,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
 
 print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
 result = "// This file is autogenerated, do not edit\n"
-result += "import Foundation\n\n"
+result += "import Foundation\nimport GDExtension\n\n"
 
 generateEnums(values: jsonApi.globalEnums)
+for x in jsonApi.builtinClasses {
+    let value = x.members?.count ?? 0 > 0
+    isStructMap [String (x.name)] = value
+}
+for x in ["Float", "Int", "float", "int", "Variant"] {
+    isStructMap [x] = true
+}
 generateBuiltinClasses(values: jsonApi.builtinClasses)
 
 try! result.write(toFile: outputDir + "/generated.swift", atomically: true, encoding: .utf8)

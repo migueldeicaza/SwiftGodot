@@ -9,7 +9,7 @@ import Foundation
 import GDExtension
 
 public struct Variant {
-    let vhandle: UnsafeMutableRawPointer?
+    var handle: UnsafeMutableRawPointer?
     
     static var boolTypeCtor: GDExtensionVariantFromTypeConstructorFunc = {
         gi.get_variant_from_type_constructor (GDEXTENSION_VARIANT_TYPE_BOOL)!
@@ -120,33 +120,33 @@ public struct Variant {
     public init () {
         var nh: UnsafeMutableRawPointer?
         gi.variant_new_nil (&nh)
-        vhandle = nh
+        handle = nh
     }
     
     public init (other: Variant) {
         var vh: UnsafeMutableRawPointer?
-        gi.variant_new_copy (&vh, other.vhandle)
-        vhandle = vh
+        gi.variant_new_copy (&vh, other.handle)
+        handle = vh
     }
     
     public init (_ value: Bool) {
         var vh: UnsafeMutableRawPointer?
         var v = GDExtensionBool (value ? 1 : 0)
         Variant.boolTypeCtor (&vh, &v)
-        vhandle = vh
+        handle = vh
     }
     
     public init (_ value: Int) {
         var vh: UnsafeMutableRawPointer?
         var v = GDExtensionInt(value)
         Variant.intTypeCtor (&vh, &v)
-        vhandle = vh
+        handle = vh
     }
     
     public init (_ value: String) {
         var vh: UnsafeMutableRawPointer?
         var v = GDExtensionStringPtr (mutating: value.cString(using: .utf8))
         Variant.stringTypeCtor (&vh, &v)
-        vhandle = vh
+        handle = vh
     }
 }
