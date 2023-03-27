@@ -59,8 +59,3 @@ public func swift_entry_point(
         initialization?.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_CORE
         return 1
 }
-
-public class Object {
-    var handle: OpaquePointer
-    public init (h: OpaquePointer) { handle = h }
-}

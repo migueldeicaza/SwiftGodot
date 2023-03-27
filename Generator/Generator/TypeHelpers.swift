@@ -17,6 +17,14 @@ func jsonTypeToSwift (_ type: String) -> String {
     }
 }
 
+protocol JNameAndType {
+    var name: String { get }
+    var type: String { get }
+}
+
+extension JGodotSingleton: JNameAndType { }
+extension JGodotArgument: JNameAndType {}
+
 
 func isClassType (name: String) -> Bool {
     !(isCoreType(name: name) || isPrimitiveType(name: name))
