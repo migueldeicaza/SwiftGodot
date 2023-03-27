@@ -8,7 +8,7 @@
 import Foundation
 import GDExtension
 
-class GDExample {
+class GDExample: Node {
     var time_passed: Float
 
     init () {
@@ -26,15 +26,7 @@ class GDExample {
 //                internal::_call_builtin_constructor(_method_bindings.constructor_2, &opaque, &from);
 //        }
         
-        let ctor2 = gi.variant_get_ptr_constructor (GDEXTENSION_VARIANT_TYPE_STRING_NAME, 2)!
-        var x: UnsafeMutableRawPointer?
-        let className = GString ("Node2D")
-        var args: [UnsafeRawPointer?] = [
-            UnsafeRawPointer (&x),
-            UnsafeRawPointer (&className.handle)
-        ]
-        let stringNameHandle = ctor2 (UnsafeMutableRawPointer(&x), &args)
-        var class_name = StringName ()
+        let className = StringName ("Node2D")
         
         // Now do set_position
         var y: UnsafeMutableRawPointer?     

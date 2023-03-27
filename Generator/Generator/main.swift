@@ -256,7 +256,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
         
         b ("static var \(ptrName): GDExtensionPtrBuiltInMethod = ", suffix: "()"){
             p ("let name = StringName (\"\(m.name)\")")
-            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), UnsafeRawPointer (name.handle), \(m.hash))!")
+            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.handle, \(m.hash))!")
         }
         
         for arg in m.arguments ?? [] {
@@ -296,7 +296,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
             }
             if has_return {
                 // let cast = castGodotToSwift (m.returnType, "result")
-                p ("return /* castGodotToSwift \(m.returnType) */ result")
+                p ("return result")
             }
         }
     }
