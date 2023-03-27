@@ -8,7 +8,7 @@
 import Foundation
 import GDExtension
 
-class GDExample: Node {
+class GDExample {
     var time_passed: Float
 
     init () {
@@ -29,10 +29,10 @@ class GDExample: Node {
         let className = StringName ("Node2D")
         
         // Now do set_position
-        var y: UnsafeMutableRawPointer?     
-        let value = GString ("set_position")
-        args = [UnsafeRawPointer(&y), UnsafeRawPointer(&value.handle)]
-        let handleSetPosition = ctor2 (UnsafeMutableRawPointer (&y), &args)
+//        var y: UnsafeMutableRawPointer?     
+//        let value = GString ("set_position")
+//        args = [UnsafeRawPointer(&y), UnsafeRawPointer(&value.handle)]
+//        let handleSetPosition = ctor2 (UnsafeMutableRawPointer (&y), &args)
         
         //var method_name = StringName ("set_position")
         
