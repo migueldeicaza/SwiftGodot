@@ -68,7 +68,7 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeE
     }
 }
 
-func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: String, _ typeEnum: String)
+func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: String, _ typeEnum: String, isStruct: Bool)
 {
     if methods.count > 0 {
         p ("\n/* Methods */\n")
@@ -102,7 +102,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
         
         let has_return = m.returnType != nil
         
-        b ("public func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
+        b ("public\(isStruct ? "" : "final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
             let resultTypeName = "\(getGodotType (m.returnType ?? ""))"
             if has_return {
                 p ("var result: \(resultTypeName) = \(resultTypeName)()")
@@ -138,6 +138,8 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
     }
 }
 
+var builtinGodotTypeNames = Set<String>()
+
 func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
     func generateBuiltinClass (_ bc: JGodotBuiltinClass) {
         // TODO: isKeyed, hasDestrcturo,
@@ -147,6 +149,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
         } else {
             kind = "class"
         }
+        builtinGodotTypeNames.insert(bc.name)
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
         b ("public \(kind) \(typeName)") {
@@ -170,7 +173,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                 generateEnums(values: enums)
             }
             generateBuiltinCtors (bc.constructors, typeName: typeName, typeEnum: typeEnum, members: bc.members)
-            generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum)
+            generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
         }
     }
     

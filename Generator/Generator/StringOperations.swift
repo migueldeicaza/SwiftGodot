@@ -57,7 +57,7 @@ extension String {
 func escapeSwift (_ id: String) -> String {
     switch id {
     case "protocol", "func", "static", "inout", "in", "self", "case", "repeat", "default",
-         "import", "init", "continue", "class", "operator", "where", "var", "enum", "nil":
+         "import", "init", "continue", "class", "operator", "where", "var", "enum", "nil", "extension", "internal":
         return "`\(id)`"
     default:
         return id

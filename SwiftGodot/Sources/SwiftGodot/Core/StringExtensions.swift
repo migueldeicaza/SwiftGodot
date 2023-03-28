@@ -6,11 +6,18 @@
 //
 
 import Foundation
+import GDExtension
 
 extension StringName {
     public convenience init (_ string: String) {
         self.init (from: GString(string))
     }
+}
+
+func stringToGodotHandle (_ str: String) -> GDExtensionStringPtr {
+    var ret = GDExtensionStringPtr (bitPattern: 0)
+    gi.string_new_with_utf8_chars (&ret, str)
+    return ret!
 }
 
 extension GString {

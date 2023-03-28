@@ -20,52 +20,165 @@ var tree: [String: JGodotExtensionAPIClass] = [:]
 
 var typeToChildren: [String:[String]] = [:]
 
+func makeDefaultReturn (godotType: String) -> String {
+    switch godotType {
+    case "int":
+        return "return 0"
+    case "float":
+        return "return 0.0"
+    case "bool":
+        return "return false"
+    case "String":
+        return "return GString ()"
+    case let t where t.starts (with: "typedarray::"):
+        return "GodotCollection<\(getGodotType (String (t.dropFirst(12))))>()"
+    case "enum::Error":
+        return "return .ok"
+    case let e where e.starts (with: "enum::"):
+        return "return \(e.dropFirst(6))(rawValue: 0)!"
+    case let other where builtinGodotTypeNames.contains(other):
+        return "return \(godotType) ()"
+    case "void*":
+        return "return nil"
+    default:
+        return "fatalError ()"
+        //return "return \(getGodotType(godotType)) ()"
+    }
+}
+
+func argTypeNeedsCopy (godotType: String) -> Bool {
+    if isStructMap [godotType] != nil {
+        return true
+    }
+    if godotType.starts(with: "enum::") {
+        return true
+    }
+    if godotType.starts(with: "bitfield::") {
+        return true
+    }
+    return false
+}
+
 func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod], _ usedMethods: Set<String>) {
     p ("/* Methods */")
     
     for method in methods {
-        let bindName = "method_\(method.name)"
-        
-        // TODO: these are methods that the user will overwrite
-        guard let methodHash = method.hash else {
-            //print ("Method with no Hash: \(cdef.name).\(method.name)")
+        if method.name == "_shaped_text_get_glyphs" {
+            print ("ere")
+        }
+        if method.isVararg {
+            print ("TODO: No vararg support yet")
             continue
         }
-        b ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
-            p ("let methodName = StringName (\"\(method.name)\")")
-            
-            if method.hash == nil {
-                
-            }
-            /// TODO: make the handle in the generated bindings be an UnsafeRawPointer
-            /// to avoid these casts here
-            p ("return gi.classdb_get_method_bind (UnsafeRawPointer (\(cdef.name).className.handle), UnsafeRawPointer (methodName.handle), \(methodHash))!")
+        if (method.arguments ?? []).contains(where: { $0.type.contains("*")}) {
+            print ("TODO: do not currently have support for C pointer types")
+            continue
         }
+        if method.returnValue?.type.firstIndex(of: "*") != nil {
+            print ("TODO: do not currently support C pointer returns")
+            continue
+        }
+        let bindName = "method_\(method.name)"
 
-        // If this is an internal, and being reference by a property, hide it
         var visibility: String
         var eliminate: String
-        if usedMethods.contains (method.name) {
-            visibility = "private"
-            eliminate = "_ "
+        var finalp: String
+        // Default method name
+        var methodName: String = escapeSwift (snakeToCamel(method.name))
+        
+        let instanceOrStatic = method.isStatic ? " static" : ""
+        if let methodHash = method.hash {
+            b ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
+                p ("let methodName = StringName (\"\(method.name)\")")
+                
+                /// TODO: make the handle in the generated bindings be an UnsafeRawPointer
+                /// to avoid these casts here
+                p ("return gi.classdb_get_method_bind (UnsafeRawPointer (\(cdef.name).className.handle), UnsafeRawPointer (methodName.handle), \(methodHash))!")
+            }
+            
+            // If this is an internal, and being reference by a property, hide it
+            if usedMethods.contains (method.name) {
+                visibility = "private"
+                eliminate = "_ "
+                methodName = method.name
+            } else {
+                visibility = method.isVirtual ? "open" : "public"
+                eliminate = ""
+            }
+            if instanceOrStatic == "" {
+                finalp = "final "
+            } else {
+                finalp = ""
+            }
         } else {
-            visibility = method.isVirtual ? "open" : "public"
+            // virtual overwrittable method
+            finalp = ""
+            visibility = "public"
             eliminate = ""
         }
-
+        
         var args = ""
-        for arg in method.arguments ?? [] {
-            if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: eliminate)
+        var argSetup = ""
+        
+        if let margs = method.arguments {
+            for arg in margs {
+                if args != "" { args += ", " }
+                args += getArgumentDeclaration(arg, eliminate: eliminate)
+                
+                if argTypeNeedsCopy(godotType: arg.type) {
+                    argSetup += "var copy_\(arg.name) = \(escapeSwift (snakeToCamel (arg.name)))\n"
+                }
+            }
+            argSetup += "var args: [UnsafeRawPointer?] = [\n"
+            for arg in margs {
+// When we move from GString to String in the public API
+//                if arg.type == "String" {
+//                    argSetup += "stringToGodotHandle (\(arg.name))\n"
+//                } else
+//                {
+                    var argref: String
+                    var optstorage: String
+                    
+                    if argTypeNeedsCopy(godotType: arg.type) {
+                        argref = "copy_\(arg.name)"
+                        optstorage = ""
+                    } else {
+                        argref = escapeSwift (snakeToCamel (arg.name))
+                        if isStructMap [arg.type] ?? false {
+                            optstorage = ""
+                        } else {
+                            optstorage = ".handle"
+                        }
+                    }
+                    
+                    if argTypeNeedsCopy(godotType: arg.type) {
+                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
+                    } else {
+                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref)).handle), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
+                    }
+//                }
+            }
+            argSetup += "]"
         }
 
+        let godotReturnType = method.returnValue?.type
         let returnType = getGodotType (method.returnValue?.type ?? "")
-    
-        b ("\(visibility) func \(method.name) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
-            p ("fatalError ()")
+        
+        b ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
+            if method.hash == nil {
+                if let godotReturnType {
+                    p (makeDefaultReturn (godotType: godotReturnType))
+                }
+            } else {
+                if argSetup != "" {
+                    p (argSetup)
+                }
+                p ("fatalError ()")
+            }
         }
     }
 }
+
 
 func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotProperty], _ methods: [JGodotClassMethod], _ referencedMethods: inout Set<String>)
 {
@@ -137,7 +250,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
             access = ""
         }
         
-        b ("public var \(escapeSwift (snakeToCamel(property.name))): \(type!)"){
+        b ("final public var \(escapeSwift (snakeToCamel(property.name))): \(type!)"){
             b ("get"){
                 p ("return \(property.getter) (\(access))")
             }

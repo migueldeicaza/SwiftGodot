@@ -94,6 +94,8 @@ func getGodotType (_ t: String) -> String {
         return "Bool"
     case "String":
         return "GString"
+    case "void*":
+        return "OpaquePointer?"
     case "Type":
         return "GType"
     default:
@@ -107,10 +109,10 @@ func getGodotType (_ t: String) -> String {
             return String (t.dropFirst(6))
         }
         if t.starts (with: "typedarray::") {
-            return "[\(getGodotType (String (t.dropFirst(12))))]"
+            return "GodotCollection<\(getGodotType (String (t.dropFirst(12))))>"
         }
         if t.starts (with: "bitfield::") {
-            return "[\(t.dropFirst(10))]"
+            return "\(t.dropFirst(10))"
         }
         return t
     }
