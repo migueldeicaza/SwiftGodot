@@ -38,12 +38,19 @@ func makeDefaultInit (godotType: String) -> String {
         return ".`nil`"
     case let e where e.starts (with: "enum::"):
         return "\(e.dropFirst(6))(rawValue: 0)!"
+    case let e where e.starts (with: "bitfield::"):
+        return "\(getGodotType (godotType)) ()"
+   
     case let other where builtinGodotTypeNames.contains(other):
         return "\(godotType) ()"
     case "void*":
         return "nil"
     default:
-        return "\(getGodotType(godotType)) ()"
+        if isCoreType(name: godotType) {
+            return "\(getGodotType(godotType)) ()"
+        } else {
+            return "\(getGodotType(godotType)) (fast: true)"
+        }
     }
 }
 
@@ -342,12 +349,15 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             b ("public override init (nativeHandle: UnsafeRawPointer)") {
                 p("super.init (nativeHandle: nativeHandle)")
             }
-            b ("public override init (name: StringName)") {
+            b ("internal override init (name: StringName)") {
                 p("super.init (name: name)")
             }
             let defaultInitOverrides = cdef.inherits != nil ? "override " : ""
-            b ("public \(defaultInitOverrides)init ()") {
+            b ("internal \(defaultInitOverrides)init (fast: Bool)") {
                 p ("super.init (name: \(cdef.name).className)")
+            }
+            b ("public \(defaultInitOverrides)init ()") {
+                p ("super.init (name: StringName (String (describing: Swift.type(of: self))))")
             }
             var referencedMethods = Set<String>()
             

@@ -8,14 +8,15 @@
 import Foundation
 import GDExtension
 
-class GDExample {
+class GDExample: Node {
     var time_passed: Float
 
-    init () {
+    override init () {
         time_passed = 0
+        super.init ()
     }
     
-    func _process (delta: Float) {
+    override func _process (delta: Float) {
         time_passed += delta
         
         var newPos = Vector2(x: 10 + (10 * sin(time_passed * 2.0)),
