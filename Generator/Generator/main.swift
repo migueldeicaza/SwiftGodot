@@ -80,7 +80,7 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     }
     
     for enumDef in values {
-        if enumDef.isBitfield {
+        if enumDef.isBitfield ?? false {
             b ("public struct \(getGodotType (enumDef.name)): OptionSet") {
                 p ("public let rawValue: Int")
                 b ("public init (rawValue: Int)") {
@@ -91,7 +91,7 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
                     p ("public static let \(escapeSwift (name)) = \(enumDef.name) (rawValue: \(enumVal.value))")
                 }
             }
-            return
+            continue
         }
         var enumDefName = enumDef.name
         if enumDefName.starts(with: "Variant") {
@@ -100,6 +100,8 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
             enumDefName = String (enumDefName.dropFirst("Variant.".count))
         }
         b ("public enum \(getGodotType (enumDefName)): Int") {
+            var used = Set<Int> ()
+            
             for enumVal in enumDef.values {
                 let enumValName = enumVal.name
                 if enumDefName == "InlineAlignment" {
@@ -109,7 +111,14 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
                     }
                 }
                 let name = dropMatchingPrefix (enumDefName, enumValName)
-                p ("case \(escapeSwift(name)) = \(enumVal.value) // \(enumVal.name)")
+                let prefix: String
+                if used.contains(enumVal.value) {
+                    prefix = "// "
+                } else {
+                    prefix = ""
+                }
+                used.insert(enumVal.value)
+                p ("\(prefix)case \(escapeSwift(name)) = \(enumVal.value) // \(enumVal.name)")
             }
         }
         if enumDef.name.starts (with: "Variant") {
@@ -181,7 +190,6 @@ generateBuiltinClasses(values: jsonApi.builtinClasses)
 try! result.write(toFile: outputDir + "/generated.swift", atomically: true, encoding: .utf8)
 
 result = ""
-generateClasses (values: jsonApi.classes)
-try! result.write(toFile: outputDir + "/generated-classes.swift", atomically: true, encoding: .utf8)
+generateClasses (values: jsonApi.classes, outputDir: outputDir)
 
 print ("Done")

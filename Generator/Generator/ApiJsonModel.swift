@@ -362,7 +362,7 @@ struct JGodotBuiltinClass: Codable {
     let methods: [JGodotBuiltinClassMethod]?
     let members: [JGodotSingleton]?
     let constants: [JGodotBuiltinClassConstant]?
-    let enums: [JGodotBuiltinClassEnum]?
+    let enums: [JGodotGlobalEnumElement]?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -402,7 +402,7 @@ extension JGodotBuiltinClass {
         methods: [JGodotBuiltinClassMethod]?? = nil,
         members: [JGodotSingleton]?? = nil,
         constants: [JGodotBuiltinClassConstant]?? = nil,
-        enums: [JGodotBuiltinClassEnum]?? = nil
+        enums: [JGodotGlobalEnumElement]?? = nil
     ) -> JGodotBuiltinClass {
         return JGodotBuiltinClass(
             name: name ?? self.name,
@@ -558,48 +558,6 @@ extension JGodotSingleton {
     }
 }
 
-// MARK: - JGodotBuiltinClassEnum
-struct JGodotBuiltinClassEnum: Codable {
-    let name: String
-    let values: [JGodotValueElement]
-}
-
-// MARK: JGodotBuiltinClassEnum convenience initializers and mutators
-
-extension JGodotBuiltinClassEnum {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClassEnum.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        values: [JGodotValueElement]? = nil
-    ) -> JGodotBuiltinClassEnum {
-        return JGodotBuiltinClassEnum(
-            name: name ?? self.name,
-            values: values ?? self.values
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
 
 // MARK: - JGodotValueElement
 struct JGodotValueElement: Codable {
@@ -939,7 +897,7 @@ enum JGodotAPIType: String, Codable {
 // MARK: - JGodotGlobalEnumElement
 struct JGodotGlobalEnumElement: Codable {
     let name: String
-    let isBitfield: Bool
+    let isBitfield: Bool?
     let values: [JGodotValueElement]
 
     enum CodingKeys: String, CodingKey {

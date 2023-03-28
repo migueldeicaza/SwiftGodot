@@ -81,9 +81,6 @@ func mapTypeName (_ name: String) -> String {
 }
 
 func getGodotType (_ t: String) -> String {
-    if t == "Error" {
-        return "GError"
-    }
     switch t {
     case "int":
         return "Int32"
@@ -97,7 +94,24 @@ func getGodotType (_ t: String) -> String {
         return "Bool"
     case "String":
         return "GString"
+    case "Type":
+        return "GType"
     default:
+        if t == "Error" {
+            return "GodotError"
+        }
+        if t.starts(with: "enum::Error") {
+            return "GodotError"
+        }
+        if t.starts(with: "enum::") {
+            return String (t.dropFirst(6))
+        }
+        if t.starts (with: "typedarray::") {
+            return "[\(getGodotType (String (t.dropFirst(12))))]"
+        }
+        if t.starts (with: "bitfield::") {
+            return "[\(t.dropFirst(10))]"
+        }
         return t
     }
 }

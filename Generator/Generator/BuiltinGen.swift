@@ -9,7 +9,6 @@ import Foundation
 
 func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeEnum: String, members: [JGodotSingleton]?)
 {
-    var ctorCount = 0
     for m in ctors {
         
         var args = ""
@@ -167,6 +166,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                 }
             }
 
+            if let enums = bc.enums {
+                generateEnums(values: enums)
+            }
             generateBuiltinCtors (bc.constructors, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum)
         }
