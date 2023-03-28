@@ -15,5 +15,6 @@ typedef GDExtensionBool (*DEMO_ENTRY_POINT)(const GDExtensionInterface *p_interf
 
     
 void DEMO_defineEntryPoint (DEMO_ENTRY_POINT a);
+void miguel_test (void **a);
 
 #endif /* GDExtensionSupport_c_h */

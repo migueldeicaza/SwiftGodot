@@ -59,7 +59,7 @@ func makeDefaultReturn (godotType: String) -> String {
 }
 
 func argTypeNeedsCopy (godotType: String) -> Bool {
-    if isStructMap [godotType] != nil {
+    if isStructMap [godotType] ?? false {
         return true
     }
     if godotType.starts(with: "enum::") {

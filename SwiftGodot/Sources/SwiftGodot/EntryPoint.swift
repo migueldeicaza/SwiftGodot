@@ -23,8 +23,21 @@ public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExten
     guard l == GDEXTENSION_INITIALIZATION_SCENE else {
         return
     }
-    let a = StringName ("Hello")
+    
+    var gs = GString("Hello GString")
+    var gd = gs.description
+    print ("1Got: \(gd)")
+    let a = StringName ("2Hello")
+    let ad = a.description
+    print ("1GotSN \(ad)")
+    let x = StringName ("Node")
+    let xd = x.description
+    print ("StirngName for Node: \(xd)")
+    print ("Handle is: \(x.handle)")
     print ("The size of the string is: \(a.length())")
+    let b = a.description
+    print ("Ad I got \(b)")
+    registerExample()
 }
 
 // Scene de-init

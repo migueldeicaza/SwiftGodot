@@ -16,7 +16,7 @@ open class Wrapped {
     }
     
     public init (name: StringName) {
-        if let r = UnsafeRawPointer (gi.classdb_construct_object (UnsafeRawPointer (name.handle))) {
+        if let r = UnsafeRawPointer (gi.classdb_construct_object (UnsafeRawPointer (&name.handle))) {
             handle = r
         } else {
             fatalError("It was not possible to construct a \(name)")

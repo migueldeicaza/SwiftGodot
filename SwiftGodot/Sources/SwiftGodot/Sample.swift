@@ -8,12 +8,63 @@
 import Foundation
 import GDExtension
 
+func registerExample () {
+    var info = GDExtensionClassCreationInfo ()
+    info.create_instance_func = createFunc(_:)
+    info.free_instance_func = freeFunc(_:_:)
+    info.get_virtual_func = getVirtual
+
+    
+    var name = StringName("GDExample")
+    var nodeName = StringName ("Sprite2D")
+    
+    gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.handle), UnsafeRawPointer(&nodeName.handle), &info)
+}
+
+var liveObjects: [UnsafeRawPointer:Wrapped] = [:]
+
+func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    print ("Creating object")
+    let o = GDExample ()
+    liveObjects [o.handle] = o
+    return UnsafeMutableRawPointer (mutating: o.handle)
+}
+
+func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutableRawPointer?) {
+    print ("Destroying object")
+    if let key = objectHandle {
+        let removed = liveObjects.removeValue(forKey: key)
+        if removed == nil {
+            print ("attempt to release object we were not aware of: \(objectHandle)")
+        }
+    }
+}
+
+func getVirtual (_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
+    print ("Get virtual called")
+    return nil
+}
+public class Object: Wrapped {
+    init () {
+        super.init (name: StringName ("Node"))
+                         
+                    }
+
+}
+class Node: Object{
+    override init () {
+        super.init ()
+                         
+                    }
+    func _process (delta: Float) {}
+}
 class GDExample: Node {
     var time_passed: Float
 
     override init () {
         time_passed = 0
         super.init ()
+
     }
     
     override func _process (delta: Float) {

@@ -49,7 +49,7 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeE
             
             // I used to have a nicer model, rather than everything having a
             // handle, I had a named handle, like "_godot_string"
-            let ptr = isStructMap [typeName] ?? false ? "self" : "handle"
+            var ptr = isStructMap [typeName] ?? false ? "self" : "handle"
             
             // We need to initialize some variables before we call
             if let members {
@@ -115,7 +115,8 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
             let ptrArgs = (m.arguments?.count ?? 0) > 0 ? "&args" : "nil"
             let ptrResult: String
             if has_return {
-                if isStructMap [m.returnType ?? ""] != nil {
+                let isStruct = isStructMap [m.returnType ?? ""] ?? false
+                if isStruct {
                     ptrResult = "&result"
                 } else {
                     ptrResult = "&result.handle"

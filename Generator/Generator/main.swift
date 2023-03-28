@@ -190,6 +190,6 @@ generateBuiltinClasses(values: jsonApi.builtinClasses)
 try! result.write(toFile: outputDir + "/generated.swift", atomically: true, encoding: .utf8)
 
 result = ""
-generateClasses (values: jsonApi.classes, outputDir: outputDir)
+//generateClasses (values: jsonApi.classes, outputDir: outputDir)
 
 print ("Done")
