@@ -102,7 +102,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
         
         let has_return = m.returnType != nil
         
-        b ("public\(isStruct ? "" : "final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
+        b ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
             let resultTypeName = "\(getGodotType (m.returnType ?? ""))"
             if has_return {
                 p ("var result: \(resultTypeName) = \(resultTypeName)()")
@@ -123,6 +123,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
             } else {
                 ptrResult = "nil"
             }
+            
             if isStructMap [typeName] ?? false {
                 p ("withUnsafePointer (to: self) { ptr in ")
                 p ("    \(typeName).\(ptrName) (UnsafeMutableRawPointer (mutating: ptr), \(ptrArgs), \(ptrResult), \(m.arguments?.count ?? 0))")

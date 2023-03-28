@@ -20,30 +20,35 @@ var tree: [String: JGodotExtensionAPIClass] = [:]
 
 var typeToChildren: [String:[String]] = [:]
 
-func makeDefaultReturn (godotType: String) -> String {
+func makeDefaultInit (godotType: String) -> String {
     switch godotType {
     case "int":
-        return "return 0"
+        return "0"
     case "float":
-        return "return 0.0"
+        return "0.0"
     case "bool":
-        return "return false"
+        return "false"
     case "String":
-        return "return GString ()"
+        return "GString ()"
     case let t where t.starts (with: "typedarray::"):
         return "GodotCollection<\(getGodotType (String (t.dropFirst(12))))>()"
     case "enum::Error":
-        return "return .ok"
+        return ".ok"
+    case "enum::Variant.Type":
+        return ".`nil`"
     case let e where e.starts (with: "enum::"):
-        return "return \(e.dropFirst(6))(rawValue: 0)!"
+        return "\(e.dropFirst(6))(rawValue: 0)!"
     case let other where builtinGodotTypeNames.contains(other):
-        return "return \(godotType) ()"
+        return "\(godotType) ()"
     case "void*":
-        return "return nil"
+        return "nil"
     default:
-        return "fatalError ()"
-        //return "return \(getGodotType(godotType)) ()"
+        return "\(getGodotType(godotType)) ()"
     }
+}
+
+func makeDefaultReturn (godotType: String) -> String {
+    return "return \(makeDefaultInit(godotType: godotType))"
 }
 
 func argTypeNeedsCopy (godotType: String) -> Bool {
@@ -170,10 +175,34 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                     p (makeDefaultReturn (godotType: godotReturnType))
                 }
             } else {
+                if returnType != "" {
+                    p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                }
+
                 if argSetup != "" {
                     p (argSetup)
                 }
-                p ("fatalError ()")
+                let ptrArgs = (args != "") ? "&args" : "nil"
+                let ptrResult: String
+                if returnType != "" {
+                    if returnType == "VisualShaderNodeParticleAccelerator.Mode" {
+                        print ("here")
+                    }
+                    if argTypeNeedsCopy(godotType: godotReturnType!) {
+                        ptrResult = "&_result"
+                    } else {
+                        ptrResult = "&_result.handle"
+                    }
+                } else {
+                    ptrResult = "nil"
+                }
+
+                let instanceHandle = method.isStatic ? "nil" : "UnsafeMutableRawPointer (mutating: handle)"
+                p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), \(ptrResult))")
+                
+                if returnType != "" {
+                    p ("return _result")
+                }
             }
         }
     }
@@ -304,21 +333,21 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         if let inherits = cdef.inherits {
             typeDecl = "open class \(cdef.name): \(inherits)"
         } else {
-            typeDecl = "open class \(cdef.name)"
+            typeDecl = "open class \(cdef.name): Wrapped"
         }
         
         // class or extension (for Object)
         b (typeDecl) {
             p ("static private var className = StringName (\"\(cdef.name)\")")
-            if cdef.inherits != nil {
-                b ("public override init (nativeHandle: UnsafeRawPointer)") {
-                    p("super.init (nativeHandle: nativeHandle)")
-                }
-            } else {
-                p ("var handle: UnsafeRawPointer")
-                b ("public init (nativeHandle: UnsafeRawPointer)") {
-                    p ("handle = nativeHandle")
-                }
+            b ("public override init (nativeHandle: UnsafeRawPointer)") {
+                p("super.init (nativeHandle: nativeHandle)")
+            }
+            b ("public override init (name: StringName)") {
+                p("super.init (name: name)")
+            }
+            let defaultInitOverrides = cdef.inherits != nil ? "override " : ""
+            b ("public \(defaultInitOverrides)init ()") {
+                p ("super.init (name: \(cdef.name).className)")
             }
             var referencedMethods = Set<String>()
             
@@ -331,7 +360,6 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             if let methods = cdef.methods {
                 generateMethods (cdef: cdef, methods: methods, referencedMethods)
             }
-            
         }
         
     }

@@ -105,7 +105,11 @@ func getGodotType (_ t: String) -> String {
         if t.starts(with: "enum::Error") {
             return "GodotError"
         }
+        if t.starts(with: "enum::Variant.Type") {
+            return "Variant.GType"
+        }
         if t.starts(with: "enum::") {
+            
             return String (t.dropFirst(6))
         }
         if t.starts (with: "typedarray::") {

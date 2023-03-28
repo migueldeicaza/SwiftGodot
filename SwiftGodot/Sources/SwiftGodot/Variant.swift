@@ -11,6 +11,9 @@ import GDExtension
 public struct Variant {
     var handle: UnsafeMutableRawPointer?
     
+    public enum VariantType {
+        
+    }
     static var boolTypeCtor: GDExtensionVariantFromTypeConstructorFunc = {
         gi.get_variant_from_type_constructor (GDEXTENSION_VARIANT_TYPE_BOOL)!
     }()
