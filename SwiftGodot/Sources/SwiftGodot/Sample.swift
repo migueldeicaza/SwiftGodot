@@ -125,7 +125,7 @@ class GDExample: Sprite2D {
         sequence += 1
         print ("GDEXAMPLE: Initializing ID=\(id)")
         time_passed = 0
-        super.init (name: StringName("Sprite2D"))
+        super.init ()
         print ("GDExample initialized")
     }
     
