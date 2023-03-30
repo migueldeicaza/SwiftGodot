@@ -9,6 +9,16 @@ import Foundation
 
 func jsonTypeToSwift (_ type: String) -> String {
     switch type {
+    case "float": return "Double"
+    case "int": return "Int32"
+    case "bool": return "Bool"
+    default:
+        return type
+    }
+}
+
+func BuiltinJsonTypeToSwift (_ type: String) -> String {
+    switch type {
     case "float": return "Float"
     case "int": return "Int32"
     case "bool": return "Bool"
@@ -80,12 +90,16 @@ func mapTypeName (_ name: String) -> String {
     return name
 }
 
-func getGodotType (_ t: String) -> String {
+func getGodotType (_ t: String, builtin: Bool = false) -> String {
     switch t {
     case "int":
         return "Int32"
     case "float", "real":
-        return "Float"
+        if builtin {
+            return "Float"
+        } else {
+            return "Double"
+        }
     case "Nil":
         return "Variant"
     case "void":

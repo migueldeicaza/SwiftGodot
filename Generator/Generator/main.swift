@@ -128,10 +128,10 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     }
 }
 
-func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String) -> String {
+func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, builtin: Bool = false) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
-    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument.type))"
+    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument.type, builtin: builtin))"
 }
 
 func generateArgPrepare (_ args: [JNameAndType]) -> String {
@@ -190,6 +190,6 @@ generateBuiltinClasses(values: jsonApi.builtinClasses)
 try! result.write(toFile: outputDir + "/generated.swift", atomically: true, encoding: .utf8)
 
 result = ""
-//generateClasses (values: jsonApi.classes, outputDir: outputDir)
+generateClasses (values: jsonApi.classes, outputDir: outputDir)
 
 print ("Done")

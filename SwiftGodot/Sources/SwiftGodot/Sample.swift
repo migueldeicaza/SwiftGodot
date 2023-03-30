@@ -13,7 +13,7 @@ func registerExample () {
     info.create_instance_func = createFunc(_:)
     info.free_instance_func = freeFunc(_:_:)
     info.get_virtual_func = getVirtual
-    
+    info.notification_func = notificationFunc
     
     var name = StringName("GDExample")
     var nodeName = StringName ("Sprite2D")
@@ -54,45 +54,68 @@ func registerExample () {
     }
 }
 
+func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
+    print ("SWIFT: Notification \(code)")
+}
+
 func callFunc (_ method_userdata: UnsafeMutableRawPointer?,
                _ instance: UnsafeMutableRawPointer?,
                _ args: UnsafePointer<UnsafeRawPointer?>?,
                _ argc: Int64,
                _ ret: UnsafeMutableRawPointer?,
                _ error: UnsafeMutablePointer<GDExtensionCallError>?) {
-    print ("Function called")
+    print ("SWIFT: Function called, instance: \(instance)")
 }
 func ptrCallFunc (_ method_userdata: UnsafeMutableRawPointer?,
                   _ instance: UnsafeMutableRawPointer?,
                   _ args: UnsafePointer<UnsafeRawPointer?>?,
                   _ ret: UnsafeMutableRawPointer?) {
-    print ("ptrFunction called")
+    print ("SWIFT: ptrFunction called, instance: \(instance)")
 }
 /* Class Methods */
 
 var liveObjects: [UnsafeRawPointer:Wrapped] = [:]
 
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    print ("Creating object")
+    print ("SWIFT: Creating object userData:\(userData)")
     let o = GDExample ()
     liveObjects [o.handle] = o
+    print ("SWIFT: REGISTERING \(o.handle)")
     return UnsafeMutableRawPointer (mutating: o.handle)
 }
 
 func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutableRawPointer?) {
-    print ("Destroying object")
+    print ("SWIFT: Destroying object, userData: \(userData) objectHandle: \(objectHandle)")
     if let key = objectHandle {
-        let removed = liveObjects.removeValue(forKey: key)
+        let original = Unmanaged<Wrapped>.fromOpaque(key).takeRetainedValue()
+        let removed = liveObjects.removeValue(forKey: original.handle)
         if removed == nil {
-            print ("attempt to release object we were not aware of: \(objectHandle)")
+            print ("attempt to release object we were not aware of: \(original) \(key)")
         }
     }
 }
 
 func getVirtual (_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
-    print ("Get virtual called")
+    print ("SWIFT: Get virtual called userData=\(userData)")
+    let n = StringName (fromPtr: name)
+    print ("SWIFT: getVirtual on \(n.description)")
+    if n.description == "_process" {
+        return processProxy
+    }
     return nil
 }
+
+func processProxy (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, r: UnsafeMutableRawPointer?) {
+    guard let instance else {
+        return
+    }
+    let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
+    let first = args![0]!
+    original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
+    
+}
+
+#if BAREBONES
 public class Object: Wrapped {
     init () {
         super.init (name: StringName ("Node"))
@@ -105,29 +128,41 @@ class Node: Object{
     }
     func _process (delta: Float) {}
 }
+#endif
 
-class GDExample: Node {
-    var time_passed: Float
-
+var sequence = 0
+class GDExample: Sprite2D {
+    var time_passed: Double
+    var id: Int
+    
     override init () {
+        id = sequence
+        sequence += 1
+        print ("GDEXAMPLE: Initializing ID=\(id)")
         time_passed = 0
-        super.init ()
-
+        super.init (name: StringName("Sprite2D"))
+        print ("GDExample initialized")
     }
     
-    override func _process (delta: Float) {
-        print ("process called")
+    deinit {
+        print ("GDEXAMPLE: Releasing \(id)")
+    }
+    
+    override func _process (delta: Double) {
+        print ("GDExample._process called ID=\(id)")
         time_passed += delta
         
-        var newPos = Vector2(x: 10 + (10 * sin(time_passed * 2.0)),
-                             y: 10.0 + (10.0 * cos(time_passed * 1.5)))
+        var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
+                             y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
         
         //var class_name = Node2D.get_class_static ()
 //        StringName::StringName(const String &from) {
 //                internal::_call_builtin_constructor(_method_bindings.constructor_2, &opaque, &from);
 //        }
         
-        let className = StringName ("Node2D")
+            //let className = StringName ("Node2D")
+        
+        self.position = newPos
         
         // Now do set_position
 //        var y: UnsafeMutableRawPointer?     

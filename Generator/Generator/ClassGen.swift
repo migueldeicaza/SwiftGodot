@@ -105,7 +105,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 
                 /// TODO: make the handle in the generated bindings be an UnsafeRawPointer
                 /// to avoid these casts here
-                p ("return gi.classdb_get_method_bind (UnsafeRawPointer (\(cdef.name).className.handle), UnsafeRawPointer (methodName.handle), \(methodHash))!")
+                p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(cdef.name).className.handle), UnsafeRawPointer (&methodName.handle), \(methodHash))!")
             }
             
             // If this is an internal, and being reference by a property, hide it
@@ -305,7 +305,9 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
     }
 }
 
-var okList = ["Object", "RefCounted", "Node2D", "Node", "CanvasItem", "ConfigFile"]
+var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object" ]
+               //, "InputEvent", "SceneTree", "Viewport", "Tween", "Texture2D", "Window", "MultiplayerAPI", "MainLoop", "Texture", "Resource", "MultiplayerPeer", "PacketPeer", "PropertyTweener", "CallbackTweener", "IntervalTweener", "Tweener", "MethodTweener", "Image", "PackedScene", "SceneTreeTimer", "SceneState", "World2D", "World3D", "ViewportTexture", "Camera2D", "Camera3D", "Control", "Camera3D", "PhysicsDirectSpaceState2D", "CameraAttributes", "Environment", "PhysicsDirectSpaceState3D", "PhysicsPointQueryParameters2D", "PhysicsShapeQueryParameters2D", "PhysicsShapeQueryParameters3D", "PhysicsRayQueryParameters3D","PhysicsRayQueryParameters2D", "PhysicsRayQueryParameters3D", "PhysicsPointQueryParameters3D", "Node3D", "Theme", "StyleBox", "Font", "Node3DGizmo", "Sky", "Material", "Shader", "TextServer", "Mesh", "MultiMesh"
+
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
     // Assemble all the reference types, we use to test later
     for cdef in values {
@@ -357,13 +359,17 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 p ("super.init (name: \(cdef.name).className)")
             }
             b ("public \(defaultInitOverrides)init ()") {
-                p ("super.init (name: StringName (String (describing: Swift.type(of: self))))")
+                p ("super.init (name: StringName (\"cdef.name\"))")
             }
             var referencedMethods = Set<String>()
             
             if let enums = cdef.enums {
                 generateEnums (values: enums)
             }
+            if !okList.contains (cdef.name) {
+                return
+            }
+            
             if let properties = cdef.properties {
                 generateProperties (cdef: cdef, properties, cdef.methods ?? [], &referencedMethods)
             }

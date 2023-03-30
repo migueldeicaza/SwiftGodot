@@ -19,7 +19,7 @@ var token: GDExtensionClassLibraryPtr! {
 
 // Scene init
 public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
-    print ("extension_initialize")
+    print ("SWIFT: extension_initialize")
     guard l == GDEXTENSION_INITIALIZATION_SCENE else {
         return
     }
@@ -42,7 +42,7 @@ public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExten
 
 // Scene de-init
 public func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
-    print ("extension_deinitialize")
+    print ("SWIFT: extension_deinitialize")
     
     // This is what the sample does
     guard l == GDEXTENSION_INITIALIZATION_SCENE else {
@@ -57,7 +57,7 @@ public func swift_entry_point(
     interfacePtr: UnsafePointer<GDExtensionInterface>?,
     ptrLibrary: GDExtensionClassLibraryPtr?,
     initialization: UnsafeMutablePointer<GDExtensionInitialization>?) -> GDExtensionBool {
-        print ("I am being called!")
+        print ("SWIFT: ENTRY POINT")
         guard let interfacePtr else {
             return 0
         }

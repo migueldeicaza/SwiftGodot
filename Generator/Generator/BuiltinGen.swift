@@ -18,7 +18,7 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeE
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "")
+            args += getArgumentDeclaration(arg, eliminate: "", builtin: true)
         }
         
         b ("public init (\(args))") {
@@ -54,7 +54,7 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeE
             // We need to initialize some variables before we call
             if let members {
                 for x in members {
-                    p ("self.\(x.name) = \(jsonTypeToSwift (x.type)) ()")
+                    p ("self.\(x.name) = \(BuiltinJsonTypeToSwift (x.type)) ()")
                 }
                 // Another special case: empty constructors in generated structs (those we added fields for)
                 // we just keep the manual initialization and do not call the constructor
@@ -79,7 +79,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
             continue
         }
 
-        let ret = getGodotType(m.returnType ?? "")
+        let ret = getGodotType(m.returnType ?? "", builtin: true)
         
         // TODO: problem caused by gobject_object being defined as "void", so it is not possible to create storage to that.
         if ret == "Object" {
@@ -103,7 +103,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
         let has_return = m.returnType != nil
         
         b ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
-            let resultTypeName = "\(getGodotType (m.returnType ?? ""))"
+            let resultTypeName = "\(getGodotType (m.returnType ?? "", builtin: true))"
             if has_return {
                 p ("var result: \(resultTypeName) = \(resultTypeName)()")
             }
@@ -162,12 +162,25 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                     p ("handle = OpaquePointer (vh)")
                 }
             }
+            if bc.name == "StringName" {
+                // TODO: This is a little brittle, because I am
+                // hardcoding the constructor1 here, it should
+                // really produce this when it matches the kind
+                // directly to be the one that takes a StringName
+                // parameter
+                b ("public init (fromPtr: UnsafeRawPointer?)") {
+                    p ("var args: [UnsafeRawPointer?] = [")
+                    p ("    fromPtr,")
+                    p ("]")
+                    p ("StringName.constructor1 (&handle, &args)")
+                }
+            }
             if kind == "class" {
                 p ("var handle: OpaquePointer?")
             }
             if let members = bc.members {
                 for x in members {
-                    p ("var \(x.name): \(jsonTypeToSwift (x.type))")
+                    p ("var \(x.name): \(BuiltinJsonTypeToSwift (x.type))")
                 }
             }
 
