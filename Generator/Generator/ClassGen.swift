@@ -305,7 +305,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
     }
 }
 
-var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object" ]
+var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName" ]
                //, "InputEvent", "SceneTree", "Viewport", "Tween", "Texture2D", "Window", "MultiplayerAPI", "MainLoop", "Texture", "Resource", "MultiplayerPeer", "PacketPeer", "PropertyTweener", "CallbackTweener", "IntervalTweener", "Tweener", "MethodTweener", "Image", "PackedScene", "SceneTreeTimer", "SceneState", "World2D", "World3D", "ViewportTexture", "Camera2D", "Camera3D", "Control", "Camera3D", "PhysicsDirectSpaceState2D", "CameraAttributes", "Environment", "PhysicsDirectSpaceState3D", "PhysicsPointQueryParameters2D", "PhysicsShapeQueryParameters2D", "PhysicsShapeQueryParameters3D", "PhysicsRayQueryParameters3D","PhysicsRayQueryParameters2D", "PhysicsRayQueryParameters3D", "PhysicsPointQueryParameters3D", "Node3D", "Theme", "StyleBox", "Font", "Node3DGizmo", "Sky", "Material", "Shader", "TextServer", "Mesh", "MultiMesh"
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
@@ -359,7 +359,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 p ("super.init (name: \(cdef.name).className)")
             }
             b ("public \(defaultInitOverrides)init ()") {
-                p ("super.init (name: StringName (\"cdef.name\"))")
+                p ("super.init (name: StringName (\"\(cdef.name)\"))")
             }
             var referencedMethods = Set<String>()
             

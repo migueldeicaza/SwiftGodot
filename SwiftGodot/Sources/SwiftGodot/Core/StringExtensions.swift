@@ -8,14 +8,18 @@
 import Foundation
 import GDExtension
 
-extension StringName {
+extension StringName: Equatable {
     public convenience init (_ string: String) {
         self.init (from: GString(string))
     }
     
-    var description: String {
+    public var description: String {
         let buffer = toUtf8Buffer()
         return buffer.getStringFromUtf8().description
+    }
+    
+    public static func == (lhs: StringName, rhs: StringName) -> Bool {
+        lhs.handle == rhs.handle
     }
 }
 
