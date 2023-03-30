@@ -354,11 +354,13 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             b ("internal override init (name: StringName)") {
                 p("super.init (name: name)")
             }
-            let defaultInitOverrides = cdef.inherits != nil ? "override " : ""
-            b ("internal \(defaultInitOverrides)init (fast: Bool)") {
+            
+            let fastInitOverrides = cdef.inherits != nil ? "override " : ""
+            
+            b ("internal \(fastInitOverrides)init (fast: Bool)") {
                 p ("super.init (name: \(cdef.name).className)")
             }
-            b ("public \(defaultInitOverrides)init ()") {
+            b ("public required init ()") {
                 p ("super.init (name: StringName (\"\(cdef.name)\"))")
             }
             var referencedMethods = Set<String>()

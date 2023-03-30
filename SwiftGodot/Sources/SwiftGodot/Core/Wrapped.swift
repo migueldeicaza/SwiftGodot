@@ -23,6 +23,9 @@ open class Wrapped {
         handle = nativeHandle
     }
     
+    public required init () {
+        fatalError("This constructor should not be called")
+    }
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a diffrent name than the subclass
@@ -52,6 +55,70 @@ open class Wrapped {
             fatalError("It was not possible to construct a \(name)")
         }
     }
+}
+
+func register (type name: StringName, parent: StringName, type: AnyObject) {
+    var info = GDExtensionClassCreationInfo ()
+    info.create_instance_func = createFunc(_:)
+    info.free_instance_func = freeFunc(_:_:)
+    info.get_virtual_func = getVirtual
+    info.notification_func = notificationFunc
+    
+    let retained = Unmanaged<AnyObject>.passRetained(type)
+    info.class_userdata = retained.toOpaque()
+    
+    gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.handle), UnsafeRawPointer(&parent.handle), &info)
+}
+
+
+var liveObjects: [UnsafeRawPointer:Wrapped] = [:]
+
+func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    print ("SWIFT: Creating object userData:\(userData)")
+    guard let userData else {
+        print ("Got a nil userData")
+        return nil
+    }
+    let typeAny = Unmanaged<AnyObject>.fromOpaque(userData).takeUnretainedValue()
+    guard let type  = typeAny as? Wrapped.Type else {
+        print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+        return nil
+    }
+    let o = type.init ()
+    liveObjects [o.handle] = o
+    print ("SWIFT: REGISTERING \(o.handle)")
+    return UnsafeMutableRawPointer (mutating: o.handle)
+}
+
+func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutableRawPointer?) {
+    print ("SWIFT: Destroying object, userData: \(userData) objectHandle: \(objectHandle)")
+    if let key = objectHandle {
+        let original = Unmanaged<Wrapped>.fromOpaque(key).takeRetainedValue()
+        let removed = liveObjects.removeValue(forKey: original.handle)
+        if removed == nil {
+            print ("attempt to release object we were not aware of: \(original) \(key)")
+        }
+    }
+}
+
+func getVirtual (_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
+    print ("SWIFT: Get virtual called userData=\(userData)")
+    let n = StringName (fromPtr: name)
+    print ("SWIFT: getVirtual on \(n.description)")
+    if n.description == "_process" {
+        return processProxy
+    }
+    return nil
+}
+
+func processProxy (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, r: UnsafeMutableRawPointer?) {
+    guard let instance else {
+        return
+    }
+    let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
+    let first = args![0]!
+    original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
+    
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
