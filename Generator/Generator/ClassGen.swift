@@ -20,7 +20,7 @@ var tree: [String: JGodotExtensionAPIClass] = [:]
 
 var typeToChildren: [String:[String]] = [:]
 
-func makeDefaultInit (godotType: String) -> String {
+func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
     switch godotType {
     case "int":
         return "0"
@@ -30,9 +30,11 @@ func makeDefaultInit (godotType: String) -> String {
         return "false"
     case "String":
         return "GString ()"
+    case "Array":
+        return "GArray ()"
     case let t where t.starts (with: "typedarray::"):
         let simple = SimpleType(type: String (t.dropFirst(12)))
-        return "GodotCollection<\(getGodotType (simple))>()"
+        return "GodotCollection<\(getGodotType (simple))>(\(initCollection))"
     case "enum::Error":
         return ".ok"
     case "enum::Variant.Type":
@@ -194,7 +196,11 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 }
             } else {
                 if returnType != "" {
-                    p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                    if godotReturnType?.starts(with: "typedarray::") ?? false {
+                        p ("var _result: \(getBuiltinStorage ("Array"))")
+                    } else {
+                        p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                    }
                 }
 
                 if argSetup != "" {
@@ -210,7 +216,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                         ptrResult = "&_result"
                     } else {
                         if godotReturnType!.starts (with: "typedarray::") || (builtinSizes [godotReturnType!] != nil && godotReturnType! != "Object") {
-                            ptrResult = "&_result.content"
+                            ptrResult = "&_result"
                         } else {
                             ptrResult = "&_result.handle"
                         }
@@ -223,7 +229,13 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), \(ptrResult))")
                 
                 if returnType != "" {
-                    p ("return _result")
+                    if godotReturnType?.starts(with: "typedarray::") ?? false {
+                        let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
+                        
+                        p ("return \(defaultInit)")
+                    } else {
+                        p ("return _result")
+                    }
                 }
             }
         }

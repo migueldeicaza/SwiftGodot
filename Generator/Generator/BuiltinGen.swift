@@ -175,6 +175,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                     p ("StringName.constructor1 (&content, &args)")
                 }
             }
+            if bc.name == "Array" {
+                b ("init (content: Int64)") {
+                    p ("self.content = content")
+                }
+            }
             if bc.hasDestructor {
                 b ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
                     p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
@@ -185,20 +190,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                 }
             }
             if kind == "class" {
-                guard let size = builtinSizes [bc.name] else {
-                    fatalError()
-                }
-                let storage: String
-                switch size {
-                case 4, 0:
-                    storage = "Int32 = 0"
-                case 8:
-                    storage = "Int64 = 0"
-                case 16:
-                    storage = "(Int64, Int64) = (0, 0)"
-                default:
-                    fatalError()
-                }
+                let storage = getBuiltinStorage (bc.name)
                 p ("var content: \(storage)")
             }
             if let members = bc.members {

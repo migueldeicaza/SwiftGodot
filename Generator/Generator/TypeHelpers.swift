@@ -94,6 +94,9 @@ func mapTypeName (_ name: String) -> String {
     if name == "String" {
         return "GString"
     }
+    if name == "Array" {
+        return "GArray"
+    }
     return name
 }
 
@@ -178,6 +181,8 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         return "Bool"
     case "String":
         return "GString"
+    case "Array":
+        return "GArray"
     case "void*":
         return "OpaquePointer?"
     case "Type":
@@ -204,5 +209,21 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             return "\(t.type.dropFirst(10))"
         }
         return t.type
+    }
+}
+
+func getBuiltinStorage (_ name: String) -> String {
+    guard let size = builtinSizes [name] else {
+        fatalError()
+    }
+    switch size {
+    case 4, 0:
+        return "Int32 = 0"
+    case 8:
+        return "Int64 = 0"
+    case 16:
+        return "(Int64, Int64) = (0, 0)"
+    default:
+        fatalError()
     }
 }
