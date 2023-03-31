@@ -99,6 +99,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
         var methodName: String = escapeSwift (snakeToCamel(method.name))
         
         let instanceOrStatic = method.isStatic ? " static" : ""
+        var inline = ""
         if let methodHash = method.hash {
             b ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
@@ -110,6 +111,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             
             // If this is an internal, and being reference by a property, hide it
             if usedMethods.contains (method.name) {
+                inline = "@inline(__always)"
                 visibility = "private"
                 eliminate = "_ "
                 methodName = method.name
@@ -176,6 +178,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
         let godotReturnType = method.returnValue?.type
         let returnType = getGodotType (method.returnValue?.type ?? "")
         
+        if inline != "" {
+            p (inline)
+        }
         b ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
             if method.hash == nil {
                 if let godotReturnType {
