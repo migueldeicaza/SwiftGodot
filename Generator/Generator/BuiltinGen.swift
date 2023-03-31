@@ -175,6 +175,15 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                     p ("StringName.constructor1 (&handle, &args)")
                 }
             }
+            if bc.hasDestructor {
+                b ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
+                    p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
+                }
+                
+                b ("deinit"){
+                    p ("\(typeName).destructor (&handle)")
+                }
+            }
             if kind == "class" {
                 p ("var handle: OpaquePointer?")
             }
