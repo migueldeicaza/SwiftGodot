@@ -212,6 +212,36 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 }
             }
         }
+        
+        // Generate the glue for the virtual methods (those that start with an underscore in Godot
+        if method.isVirtual {
+            b ("static func proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, return: UnsafeMutableRawPointer?)") {
+                p ("guard let instance else { return }")
+                p ("guard let args else { return }")
+                p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
+                
+                var argCall = ""
+                var i = 0
+                for arg in method.arguments ?? [] {
+                    if argCall != "" { argCall += ", " }
+                    argCall += "\(arg.name): "
+                    if arg.type == "String" {
+                        argCall += "stringFromGodotString (args [\(i)]!)"
+                    } else if isStructMap [arg.type] ?? false == false {
+                        argCall += "\(arg.type) (nativeHandle: args [\(i)]!)"
+                    } else {
+                        let gt = getGodotType(arg.type)
+                        argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
+                    }
+                    i += 1
+                }
+                p ("swiftObject.\(methodName) (\(argCall))")
+                //let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
+                //let first = args![0]!
+                //original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
+
+            }
+        }
     }
 }
 
@@ -368,10 +398,11 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             if let enums = cdef.enums {
                 generateEnums (values: enums)
             }
+
             if !okList.contains (cdef.name) {
                 return
             }
-            
+
             if let properties = cdef.properties {
                 generateProperties (cdef: cdef, properties, cdef.methods ?? [], &referencedMethods)
             }

@@ -30,6 +30,11 @@ func stringToGodotHandle (_ str: String) -> GDExtensionStringPtr {
     return ret!
 }
 
+func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
+    let n = gi.string_to_utf8_chars (ptr, nil, 0)
+    return withUnsafeTemporaryAllocation (of: UInt8.self, capacity: Int (n)) { ptr in String (bytes: ptr, encoding: .utf8) }
+}
+    
 extension GString {
     public var description: String {
         get {
