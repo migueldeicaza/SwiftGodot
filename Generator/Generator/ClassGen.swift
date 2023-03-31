@@ -31,7 +31,8 @@ func makeDefaultInit (godotType: String) -> String {
     case "String":
         return "GString ()"
     case let t where t.starts (with: "typedarray::"):
-        return "GodotCollection<\(getGodotType (String (t.dropFirst(12))))>()"
+        let simple = SimpleType(type: String (t.dropFirst(12)))
+        return "GodotCollection<\(getGodotType (simple))>()"
     case "enum::Error":
         return ".ok"
     case "enum::Variant.Type":
@@ -39,7 +40,8 @@ func makeDefaultInit (godotType: String) -> String {
     case let e where e.starts (with: "enum::"):
         return "\(e.dropFirst(6))(rawValue: 0)!"
     case let e where e.starts (with: "bitfield::"):
-        return "\(getGodotType (godotType)) ()"
+        let simple = SimpleType (type: godotType, meta: nil)
+        return "\(getGodotType (simple)) ()"
    
     case let other where builtinGodotTypeNames.contains(other):
         return "\(godotType) ()"
@@ -47,9 +49,9 @@ func makeDefaultInit (godotType: String) -> String {
         return "nil"
     default:
         if isCoreType(name: godotType) {
-            return "\(getGodotType(godotType)) ()"
+            return "\(getGodotType(SimpleType (type: godotType))) ()"
         } else {
-            return "\(getGodotType(godotType)) (fast: true)"
+            return "\(getGodotType(SimpleType (type: godotType))) (fast: true)"
         }
     }
 }
@@ -106,7 +108,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 
                 /// TODO: make the handle in the generated bindings be an UnsafeRawPointer
                 /// to avoid these casts here
-                p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(cdef.name).className.handle), UnsafeRawPointer (&methodName.handle), \(methodHash))!")
+                p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(cdef.name).className.content), UnsafeRawPointer (&methodName.content), \(methodHash))!")
             }
             
             // If this is an internal, and being reference by a property, hide it
@@ -161,14 +163,18 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                         if isStructMap [arg.type] ?? false {
                             optstorage = ""
                         } else {
-                            optstorage = ".handle"
+                            if builtinSizes [arg.type] != nil && arg.type != "Object" {
+                                optstorage = ".content"
+                            } else {
+                                optstorage = ".handle"
+                            }
                         }
                     }
                     
                     if argTypeNeedsCopy(godotType: arg.type) {
-                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
+                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)),"
                     } else {
-                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref)).handle), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
+                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)),"
                     }
 //                }
             }
@@ -176,7 +182,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
         }
 
         let godotReturnType = method.returnValue?.type
-        let returnType = getGodotType (method.returnValue?.type ?? "")
+        let returnType = getGodotType (method.returnValue)
         
         if inline != "" {
             p (inline)
@@ -203,7 +209,11 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                     if argTypeNeedsCopy(godotType: godotReturnType!) {
                         ptrResult = "&_result"
                     } else {
-                        ptrResult = "&_result.handle"
+                        if godotReturnType!.starts (with: "typedarray::") || (builtinSizes [godotReturnType!] != nil && godotReturnType! != "Object") {
+                            ptrResult = "&_result.content"
+                        } else {
+                            ptrResult = "&_result.handle"
+                        }
                     }
                 } else {
                     ptrResult = "nil"
@@ -235,7 +245,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                     } else if isStructMap [arg.type] ?? false == false {
                         argCall += "\(arg.type) (nativeHandle: args [\(i)]!)"
                     } else {
-                        let gt = getGodotType(arg.type)
+                        let gt = getGodotType(arg)
                         argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
                     }
                     i += 1
@@ -305,13 +315,13 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
         }
         // Lookup the type from the method, not the property,
         // sometimes the method is a GString, but the property is a StringName
-        type = getGodotType (returnType)
+        type = getGodotType (method.returnValue)
 
         // Ok, we have an indexer, this means we call the property with an int
         // but we need the type from the method
         var access: String
         if let idx = property.index {
-            let type = getGodotType(method.arguments! [0].type)
+            let type = getGodotType(method.arguments! [0])
             if type == "Int32" {
                 access = "\(idx)"
             } else {

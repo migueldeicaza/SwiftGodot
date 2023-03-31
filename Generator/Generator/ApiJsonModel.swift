@@ -519,6 +519,7 @@ extension JGodotConstructor {
 // MARK: - JGodotSingleton
 struct JGodotSingleton: Codable, Equatable {
     let name, type: String
+    let meta: JGodotArgumentMeta?
 }
 
 // MARK: JGodotSingleton convenience initializers and mutators
@@ -545,7 +546,8 @@ extension JGodotSingleton {
     ) -> JGodotSingleton {
         return JGodotSingleton(
             name: name ?? self.name,
-            type: type ?? self.type
+            type: type ?? self.type,
+            meta: nil
         )
     }
 
@@ -668,7 +670,7 @@ extension JGodotBuiltinClassMethod {
 }
 
 // MARK: - JGodotArgument
-struct JGodotArgument: Codable {
+struct JGodotArgument: Codable, TypeWithMeta {
     let name, type: String
     let defaultValue: String?
     let meta: JGodotArgumentMeta?
@@ -721,6 +723,11 @@ extension JGodotArgument {
     }
 }
 
+protocol TypeWithMeta {
+    var type: String {get}
+    var meta: JGodotArgumentMeta? {get}
+
+}
 enum JGodotArgumentMeta: String, Codable {
     case double = "double"
     case float = "float"
@@ -1016,7 +1023,7 @@ extension JGodotClassMethod {
 }
 
 // MARK: - JGodotReturnValue
-struct JGodotReturnValue: Codable {
+struct JGodotReturnValue: Codable, TypeWithMeta {
     let type: String
     let meta: JGodotArgumentMeta?
 }

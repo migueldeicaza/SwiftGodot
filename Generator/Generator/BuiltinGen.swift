@@ -7,18 +7,20 @@
 
 import Foundation
 
-func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeEnum: String, members: [JGodotSingleton]?)
+func generateBuiltinCtors (_ ctors: [JGodotConstructor], godotTypeName: String, typeName: String, typeEnum: String, members: [JGodotSingleton]?)
 {
+    let isStruct = isStructMap [typeName] ?? false
+    
     for m in ctors {
         
         var args = ""
-    
+
         let ptrName = "constructor\(m.index)"
         p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "", builtin: true)
+            args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField)
         }
         
         b ("public init (\(args))") {
@@ -49,12 +51,12 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], typeName: String, typeE
             
             // I used to have a nicer model, rather than everything having a
             // handle, I had a named handle, like "_godot_string"
-            var ptr = isStructMap [typeName] ?? false ? "self" : "handle"
+            let ptr = isStruct ? "self" : "content"
             
             // We need to initialize some variables before we call
             if let members {
                 for x in members {
-                    p ("self.\(x.name) = \(BuiltinJsonTypeToSwift (x.type)) ()")
+                    p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
                 }
                 // Another special case: empty constructors in generated structs (those we added fields for)
                 // we just keep the manual initialization and do not call the constructor
@@ -79,7 +81,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
             continue
         }
 
-        let ret = getGodotType(m.returnType ?? "", builtin: true)
+        let ret = getGodotType(SimpleType (type: m.returnType ?? ""), kind: .builtIn)
         
         // TODO: problem caused by gobject_object being defined as "void", so it is not possible to create storage to that.
         if ret == "Object" {
@@ -92,7 +94,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
         
         b ("static var \(ptrName): GDExtensionPtrBuiltInMethod = ", suffix: "()"){
             p ("let name = StringName (\"\(m.name)\")")
-            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.handle, \(m.hash))!")
+            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.content, \(m.hash))!")
         }
         
         for arg in m.arguments ?? [] {
@@ -103,7 +105,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
         let has_return = m.returnType != nil
         
         b ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
-            let resultTypeName = "\(getGodotType (m.returnType ?? "", builtin: true))"
+            let resultTypeName = "\(getGodotType (SimpleType (type: m.returnType ?? ""), kind: .builtIn))"
             if has_return {
                 p ("var result: \(resultTypeName) = \(resultTypeName)()")
             }
@@ -119,7 +121,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
                 if isStruct {
                     ptrResult = "&result"
                 } else {
-                    ptrResult = "&result.handle"
+                    ptrResult = "&result.content"
                 }
             } else {
                 ptrResult = "nil"
@@ -130,7 +132,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
                 p ("    \(typeName).\(ptrName) (UnsafeMutableRawPointer (mutating: ptr), \(ptrArgs), \(ptrResult), \(m.arguments?.count ?? 0))")
                 p ("}")
             } else {
-                p ("\(typeName).\(ptrName) (&handle, \(ptrArgs), \(ptrResult), \(m.arguments?.count ?? 0))")
+                p ("\(typeName).\(ptrName) (&content, \(ptrArgs), \(ptrResult), \(m.arguments?.count ?? 0))")
             }
             if has_return {
                 // let cast = castGodotToSwift (m.returnType, "result")
@@ -157,9 +159,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
         b ("public \(kind) \(typeName)") {
             if bc.name == "String" {
                 b ("public init (_ str: String)") {
-                    p ("var vh: UnsafeMutableRawPointer?")
-                    p ("gi.string_new_with_utf8_chars (&vh, str)")
-                    p ("handle = OpaquePointer (vh)")
+                    p ("gi.string_new_with_utf8_chars (&content, str)")
                 }
             }
             if bc.name == "StringName" {
@@ -172,7 +172,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                     p ("var args: [UnsafeRawPointer?] = [")
                     p ("    fromPtr,")
                     p ("]")
-                    p ("StringName.constructor1 (&handle, &args)")
+                    p ("StringName.constructor1 (&content, &args)")
                 }
             }
             if bc.hasDestructor {
@@ -181,22 +181,36 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass]) {
                 }
                 
                 b ("deinit"){
-                    p ("\(typeName).destructor (&handle)")
+                    p ("\(typeName).destructor (&content)")
                 }
             }
             if kind == "class" {
-                p ("var handle: OpaquePointer?")
+                guard let size = builtinSizes [bc.name] else {
+                    fatalError()
+                }
+                let storage: String
+                switch size {
+                case 4, 0:
+                    storage = "Int32 = 0"
+                case 8:
+                    storage = "Int64 = 0"
+                case 16:
+                    storage = "(Int64, Int64) = (0, 0)"
+                default:
+                    fatalError()
+                }
+                p ("var content: \(storage)")
             }
             if let members = bc.members {
                 for x in members {
-                    p ("var \(x.name): \(BuiltinJsonTypeToSwift (x.type))")
+                    p ("var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
                 }
             }
 
             if let enums = bc.enums {
                 generateEnums(values: enums)
             }
-            generateBuiltinCtors (bc.constructors, typeName: typeName, typeEnum: typeEnum, members: bc.members)
+            generateBuiltinCtors (bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
         }
     }

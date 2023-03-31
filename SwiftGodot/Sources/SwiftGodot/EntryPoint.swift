@@ -33,10 +33,10 @@ public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExten
     let x = StringName ("Node")
     let xd = x.description
     print ("StirngName for Node: \(xd)")
-    print ("Handle is: \(x.handle)")
+    print ("Cintent is: \(x.content)")
     print ("The size of the string is: \(a.length())")
     let y = StringName ("Node")
-    print ("The two are \(y.handle) and \(x.handle)")
+    print ("The two are \(y.content) and \(x.content)")
     let b = a.description
     print ("Ad I got \(b)")
     registerExample()

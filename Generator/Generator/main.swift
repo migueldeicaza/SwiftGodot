@@ -81,7 +81,7 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     
     for enumDef in values {
         if enumDef.isBitfield ?? false {
-            b ("public struct \(getGodotType (enumDef.name)): OptionSet") {
+            b ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
                 p ("public let rawValue: Int")
                 b ("public init (rawValue: Int)") {
                     p ("self.rawValue = rawValue")
@@ -99,7 +99,7 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
             indent += 1
             enumDefName = String (enumDefName.dropFirst("Variant.".count))
         }
-        b ("public enum \(getGodotType (enumDefName)): Int") {
+        b ("public enum \(getGodotType (SimpleType (type: enumDefName))): Int") {
             var used = Set<Int> ()
             
             for enumVal in enumDef.values {
@@ -128,10 +128,10 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     }
 }
 
-func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, builtin: Bool = false) -> String {
+func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
-    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument.type, builtin: builtin))"
+    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument, kind: kind))"
 }
 
 func generateArgPrepare (_ args: [JNameAndType]) -> String {
@@ -155,7 +155,11 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
                 if isStructMap [arg.type] ?? false {
                     optstorage = ""
                 } else {
-                    optstorage = ".handle"
+                    if builtinSizes [arg.type] != nil && arg.type != "Object" {
+                        optstorage = ".content"
+                    } else {
+                        optstorage = ".handle"
+                    }
                 }
             } else {
                 argref = "copy_\(arg.name)"
@@ -165,7 +169,7 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
                 
                 body += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
             } else {
-                body += "    UnsafeRawPointer(&\(escapeSwift(argref)).handle),\n"
+                body += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)),\n"
             }
         }
         body += "]"
@@ -186,6 +190,16 @@ for x in jsonApi.builtinClasses {
 for x in ["Float", "Int", "float", "int", "Variant", "Int32", "Bool", "bool"] {
     isStructMap [x] = true
 }
+
+var builtinSizes: [String: Int] = [:]
+for cs in jsonApi.builtinClassSizes {
+    if cs.buildConfiguration == "float_64" {
+        for c in cs.sizes {
+            builtinSizes [c.name] = c.size
+        }
+    }
+}
+
 generateBuiltinClasses(values: jsonApi.builtinClasses)
 try! result.write(toFile: outputDir + "/generated.swift", atomically: true, encoding: .utf8)
 

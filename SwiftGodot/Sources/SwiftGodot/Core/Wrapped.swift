@@ -30,7 +30,7 @@ open class Wrapped {
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a diffrent name than the subclass
     internal init (name: StringName) {
-        if let r = UnsafeRawPointer (gi.classdb_construct_object (UnsafeRawPointer (&name.handle))) {
+        if let r = UnsafeRawPointer (gi.classdb_construct_object (UnsafeRawPointer (&name.content))) {
             handle = r
             let retain = Unmanaged.passRetained(self)
             
@@ -47,7 +47,7 @@ open class Wrapped {
             } else {
                 print ("SWIFT: Registering instance with Godot")
                 gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
-                                        UnsafeRawPointer (&thisTypeName.handle), retain.toOpaque())
+                                        UnsafeRawPointer (&thisTypeName.content), retain.toOpaque())
             }
             var callbacks = frameworkType ? Wrapped.frameworkTypeBindingCallback : Wrapped.userTypeBindingCallback
             gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks);
@@ -67,7 +67,7 @@ func register (type name: StringName, parent: StringName, type: AnyObject) {
     let retained = Unmanaged<AnyObject>.passRetained(type)
     info.class_userdata = retained.toOpaque()
     
-    gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.handle), UnsafeRawPointer(&parent.handle), &info)
+    gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.content), UnsafeRawPointer(&parent.content), &info)
 }
 
 

@@ -19,7 +19,7 @@ extension StringName: Equatable {
     }
     
     public static func == (lhs: StringName, rhs: StringName) -> Bool {
-        lhs.handle == rhs.handle
+        lhs.content == rhs.content
     }
 }
 
@@ -38,15 +38,21 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
 extension GString {
     public var description: String {
         get {
-            let len = gi.string_to_utf8_chars (UnsafeRawPointer (&handle), nil, 0)
-            let size = len+1
-            let strPtr = UnsafeMutablePointer<UInt8>.allocate(capacity: Int (size))
-            (strPtr + Int(size)).initialize (to: 0)
-            
-            gi.string_to_utf8_chars (UnsafeRawPointer (&handle), strPtr, len)
-            let str = String (cString: strPtr)
-            strPtr.deallocate()
-            return str ?? ""
+            let len = gi.string_to_utf8_chars (UnsafeRawPointer (&content), nil, 0)
+            return withUnsafeTemporaryAllocation(byteCount: Int(len+1), alignment: 4) { strPtr in
+                gi.string_to_utf8_chars (UnsafeRawPointer (&content), strPtr.baseAddress, len)
+                print ("The string was deposited at \(strPtr.baseAddress)")
+                strPtr [Int (len)] = 0
+                return String (cString: strPtr.assumingMemoryBound(to: UInt8.self).baseAddress!)
+            } ?? ""
         }
+    }
+}
+
+extension String {
+    static func pointer(_ object: AnyObject?) -> String {
+        guard let object = object else { return "nil" }
+        let opaque: UnsafeMutableRawPointer = Unmanaged.passUnretained(object).toOpaque()
+        return String(describing: opaque)
     }
 }

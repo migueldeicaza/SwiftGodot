@@ -7,32 +7,39 @@
 
 import Foundation
 
-func jsonTypeToSwift (_ type: String) -> String {
-    switch type {
-    case "float": return "Double"
-    case "int": return "Int32"
-    case "bool": return "Bool"
-    default:
-        return type
-    }
-}
-
+// This is the configuration float_64, which means
+// 32-bit floats, but 64 bit ints.
 func BuiltinJsonTypeToSwift (_ type: String) -> String {
     switch type {
     case "float": return "Float"
-    case "int": return "Int32"
+    case "int": return "Int64"
     case "bool": return "Bool"
     default:
         return type
     }
 }
 
-protocol JNameAndType {
-    var name: String { get }
-    var type: String { get }
+// We need this separately, because this is used to generate
+// the members, which for some reason use "Int32" and "Float32"
+// regardless of what the sizes are declared for the API.
+func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
+    switch type {
+    case "float": return "Float"
+    case "int":
+        return "Int32"
+    case "bool": return "Bool"
+    default:
+        return type
+    }
 }
 
-extension JGodotSingleton: JNameAndType { }
+protocol JNameAndType: TypeWithMeta {
+    var name: String { get }
+    var type: String { get }
+    var meta: JGodotArgumentMeta? { get }
+}
+
+extension JGodotSingleton: JNameAndType {}
 extension JGodotArgument: JNameAndType {}
 
 
@@ -90,15 +97,78 @@ func mapTypeName (_ name: String) -> String {
     return name
 }
 
-func getGodotType (_ t: String, builtin: Bool = false) -> String {
-    switch t {
+struct SimpleType: TypeWithMeta {
+    var type: String
+    var meta: JGodotArgumentMeta?
+}
+
+// Built-ins if they declare methods/returns use one kind of returns
+// which are different than the hardcoded values for things like
+// Vectord3 or Vector3i which are Float/Int32.   This is a hotmess
+
+enum ArgumentKind {
+    // Uses type, plus "meta" to determine what to use
+    case classes
+    
+    // Uses the hardcoded values for Int32/Float
+    case builtInField
+    
+    // Uses the builtin-size definitions
+    case builtIn
+}
+
+
+func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String {
+    guard let t else {
+        return ""
+    }
+    
+    switch t.type {
     case "int":
-        return "Int32"
+        if let meta = t.meta {
+            switch meta {
+            case .int32:
+                return "Int32"
+            case .uint32:
+                return "UInt32"
+            case .int64:
+                return "Int"
+            case .uint64:
+                return "UInt"
+            case .int16:
+                return "Int16"
+            case .uint16:
+                return "UInt16"
+            case .uint8:
+                return "UInt8"
+            case .int8:
+                return "Int8"
+            default:
+                fatalError()
+            }
+        } else {
+            if kind == .builtInField {
+                return "Int32"
+            } else {
+                return "Int64"
+            }
+        }
     case "float", "real":
-        if builtin {
+        if kind == .builtInField {
             return "Float"
         } else {
-            return "Double"
+            if let meta = t.meta {
+                switch meta {
+                case .double:
+                    return "Double"
+                case .float:
+                    return "Float"
+                default:
+                    fatalError()
+                }
+            } else {
+                return "Double"
+            }
         }
     case "Nil":
         return "Variant"
@@ -113,25 +183,26 @@ func getGodotType (_ t: String, builtin: Bool = false) -> String {
     case "Type":
         return "GType"
     default:
-        if t == "Error" {
+        if t.type == "Error" {
             return "GodotError"
         }
-        if t.starts(with: "enum::Error") {
+        if t.type.starts(with: "enum::Error") {
             return "GodotError"
         }
-        if t.starts(with: "enum::Variant.Type") {
+        if t.type.starts(with: "enum::Variant.Type") {
             return "Variant.GType"
         }
-        if t.starts(with: "enum::") {
+        if t.type.starts(with: "enum::") {
             
-            return String (t.dropFirst(6))
+            return String (t.type.dropFirst(6))
         }
-        if t.starts (with: "typedarray::") {
-            return "GodotCollection<\(getGodotType (String (t.dropFirst(12))))>"
+        if t.type.starts (with: "typedarray::") {
+            let nested = SimpleType(type: String (t.type.dropFirst(12)), meta: nil)
+            return "GodotCollection<\(getGodotType (nested))>"
         }
-        if t.starts (with: "bitfield::") {
-            return "\(t.dropFirst(10))"
+        if t.type.starts (with: "bitfield::") {
+            return "\(t.type.dropFirst(10))"
         }
-        return t
+        return t.type
     }
 }

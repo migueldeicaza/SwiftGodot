@@ -33,16 +33,16 @@ func registerExample () {
         var updateName = StringName ("_update")
         var none = GString ("Swift: no hint provided")
         argInfo [0] = GDExtensionPropertyInfo(type: GDEXTENSION_VARIANT_TYPE_FLOAT,
-                                              name: UnsafeMutableRawPointer (&updateName.handle),
-                                              class_name: UnsafeMutableRawPointer (&name.handle),
+                                              name: UnsafeMutableRawPointer (&updateName.content),
+                                              class_name: UnsafeMutableRawPointer (&name.content),
                                               hint: 34,
-                                              hint_string: UnsafeMutableRawPointer (&none.handle),
+                                              hint_string: UnsafeMutableRawPointer (&none.content),
                                               usage: 6)
         argMeta.withContiguousStorageIfAvailable { argMetaPtr in
             argInfo.withContiguousStorageIfAvailable { argInfoPtr in
                 
                 var minfo = GDExtensionClassMethodInfo ()
-                minfo.name = UnsafeMutableRawPointer (&methodName.handle)
+                minfo.name = UnsafeMutableRawPointer (&methodName.content)
                 minfo.method_userdata = UnsafeMutableRawPointer (bitPattern: 0x123123123)
                 minfo.call_func = callFunc
                 minfo.ptrcall_func = ptrCallFunc
@@ -52,7 +52,7 @@ func registerExample () {
                 minfo.arguments_metadata = UnsafeMutablePointer (mutating: argMetaPtr.baseAddress)
                 minfo.arguments_info = UnsafeMutablePointer (mutating: argInfoPtr.baseAddress)
                 
-                gi.classdb_register_extension_class_method (library, UnsafePointer(&name.handle), &minfo)
+                gi.classdb_register_extension_class_method (library, UnsafePointer(&name.content), &minfo)
             }
         }
     }
