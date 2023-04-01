@@ -8,7 +8,7 @@
 import Foundation
 import GDExtension
 
-extension StringName: Equatable {
+extension StringName {
     public convenience init (_ string: String) {
         self.init (from: GString(string))
     }

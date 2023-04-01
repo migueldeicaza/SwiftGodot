@@ -79,6 +79,7 @@ func ptrCallFunc (_ method_userdata: UnsafeMutableRawPointer?,
 /* Class Methods */
 
 var sequence = 0
+
 class GDExample: Sprite2D {
     var time_passed: Double
     var id: Int

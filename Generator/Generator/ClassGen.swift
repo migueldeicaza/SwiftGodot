@@ -437,7 +437,6 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 generateMethods (cdef: cdef, methods: methods, referencedMethods)
             }
         }
-        
     }
 }
 

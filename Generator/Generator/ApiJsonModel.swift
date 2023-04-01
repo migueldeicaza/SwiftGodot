@@ -743,7 +743,7 @@ enum JGodotArgumentMeta: String, Codable {
 
 // MARK: - JGodotOperator
 struct JGodotOperator: Codable {
-    let name: JGodotOperatorName
+    let name: String
     let rightType: String?
     let returnType: String
 
@@ -773,7 +773,7 @@ extension JGodotOperator {
     }
 
     func with(
-        name: JGodotOperatorName? = nil,
+        name: String? = nil,
         rightType: String?? = nil,
         returnType: String? = nil
     ) -> JGodotOperator {
@@ -793,33 +793,6 @@ extension JGodotOperator {
     }
 }
 
-enum JGodotOperatorName: String, Codable {
-    case ambitious = "*"
-    case and = "and"
-    case braggadocious = ">>"
-    case cunning = "/"
-    case empty = "=="
-    case fluffy = ">"
-    case frisky = "**"
-    case hilarious = "-"
-    case indecent = "+"
-    case indigo = ">="
-    case magenta = "%"
-    case mischievous = "<<"
-    case name = "!="
-    case nameIn = "in"
-    case nameUnary = "unary+"
-    case not = "not"
-    case or = "or"
-    case purple = "<"
-    case sticky = "<="
-    case tentacled = "~"
-    case the1 = "&"
-    case the2 = "|"
-    case the3 = "^"
-    case unary = "unary-"
-    case xor = "xor"
-}
 
 // MARK: - JGodotExtensionAPIClass
 struct JGodotExtensionAPIClass: Codable {

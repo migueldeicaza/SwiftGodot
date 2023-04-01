@@ -227,3 +227,77 @@ func getBuiltinStorage (_ name: String) -> String {
         fatalError()
     }
 }
+
+// Name of the operator from the JSON file
+func infixOperatorMap (_ name: String) -> (String, String)? {
+    print (name)
+    switch (name) {
+    case "==": return ("GDEXTENSION_VARIANT_OP_EQUAL", "==")
+    case "!=": return ("GDEXTENSION_VARIANT_OP_NOT_EQUAL", "!=")
+    case "and": return ("GDEXTENSION_VARIANT_OP_AND", "&&")
+    case "or": return ("GDEXTENSION_VARIANT_OP_AND", "||")
+    case "<": return ("GDEXTENSION_VARIANT_OP_LESS_EQUAL", "<")
+    case "<=": return ("GDEXTENSION_VARIANT_OP_LESS", "<=")
+    case ">": return ("GDEXTENSION_VARIANT_OP_GREATER", ">")
+    case ">=": return ("GDEXTENSION_VARIANT_OP_GREATER_EQUAL", ">=")
+    case "+": return ("GDEXTENSION_VARIANT_OP_ADD", "+")
+    case "-": return ("GDEXTENSION_VARIANT_OP_SUBTRACT", "-")
+    case "*": return ("GDEXTENSION_VARIANT_OP_MULTIPLY", "*")
+    case "/": return ("GDEXTENSION_VARIANT_OP_DIVIDE", "/")
+    case "xor":
+        // TODO, define our own. Swift does not support regular xor,
+        return nil
+    case "in":
+        // TODO, define our own. Swift does not have an 'in'
+        return nil
+    case "%":
+        return ("GDEXTENSION_VARIANT_OP_MODULE", "%")
+    default:
+        fatalError()
+    }
+}
+
+func builtinTypecode (_ name: String) -> String {
+    switch name {
+    case "Nil": return "GDEXTENSION_VARIANT_TYPE_NIL"
+    case "bool": return "GDEXTENSION_VARIANT_TYPE_BOOL"
+    case "int": return "GDEXTENSION_VARIANT_TYPE_INT"
+    case "float": return "GDEXTENSION_VARIANT_TYPE_FLOAT"
+    case "String": return "GDEXTENSION_VARIANT_TYPE_STRING"
+    case "Vector2": return "GDEXTENSION_VARIANT_TYPE_VECTOR2"
+    case "Vector2i": return "GDEXTENSION_VARIANT_TYPE_VECTOR2I"
+    case "Rect2": return "GDEXTENSION_VARIANT_TYPE_RECT2"
+    case "Rect2i": return "GDEXTENSION_VARIANT_TYPE_RECT2I"
+    case "Vector3": return "GDEXTENSION_VARIANT_TYPE_VECTOR3"
+    case "Vector3i": return "GDEXTENSION_VARIANT_TYPE_VECTOR3I"
+    case "Transform2D": return "GDEXTENSION_VARIANT_TYPE_TRANSFORM2D"
+    case "Vector4": return "GDEXTENSION_VARIANT_TYPE_VECTOR4"
+    case "Vector4i": return "GDEXTENSION_VARIANT_TYPE_VECTOR4I"
+    case "Plane": return "GDEXTENSION_VARIANT_TYPE_PLANE"
+    case "Quaternion": return "GDEXTENSION_VARIANT_TYPE_QUATERNION"
+    case "AABB": return "GDEXTENSION_VARIANT_TYPE_AABB"
+    case "Basis": return "GDEXTENSION_VARIANT_TYPE_BASIS"
+    case "Transform3D": return "GDEXTENSION_VARIANT_TYPE_TRANSFORM3D"
+    case "Projection": return "GDEXTENSION_VARIANT_TYPE_PROJECTION"
+    case "Color": return "GDEXTENSION_VARIANT_TYPE_COLOR"
+    case "StringName": return "GDEXTENSION_VARIANT_TYPE_STRING_NAME"
+    case "NodePath": return "GDEXTENSION_VARIANT_TYPE_NODE_PATH"
+    case "RID": return "GDEXTENSION_VARIANT_TYPE_RID"
+    case "Object": return "GDEXTENSION_VARIANT_TYPE_OBJECT"
+    case "Callable": return "GDEXTENSION_VARIANT_TYPE_CALLABLE"
+    case "Signal": return "GDEXTENSION_VARIANT_TYPE_SIGNAL"
+    case "Dictionary": return "GDEXTENSION_VARIANT_TYPE_DICTIONARY"
+    case "Array": return "GDEXTENSION_VARIANT_TYPE_ARRAY"
+    case "PackedByteArray":     return "GDEXTENSION_VARIANT_TYPE_PACKED_BYTE_ARRAY"
+    case "PackedInt32Array":    return "GDEXTENSION_VARIANT_TYPE_PACKED_INT32_ARRAY"
+    case "PackedInt64Array":    return "GDEXTENSION_VARIANT_TYPE_PACKED_INT64_ARRAY"
+    case "PackedFloat32Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT32_ARRAY"
+    case "PackedFloat64Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT64_ARRAY"
+    case "PackedStringArray":   return "GDEXTENSION_VARIANT_TYPE_PACKED_STRING_ARRAY"
+    case "PackedVector2Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY"
+    case "PackedVector3Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY"
+    case "PackedColorArray":    return "GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY"
+    default:
+        fatalError()
+    }
+}
