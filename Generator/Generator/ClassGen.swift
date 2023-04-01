@@ -79,9 +79,6 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
     p ("/* Methods */")
     
     for method in methods {
-        if method.name == "_shaped_text_get_glyphs" {
-            print ("ere")
-        }
         if method.isVararg {
             print ("TODO: No vararg support yet")
             continue
@@ -209,9 +206,6 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 let ptrArgs = (args != "") ? "&args" : "nil"
                 let ptrResult: String
                 if returnType != "" {
-                    if returnType == "VisualShaderNodeParticleAccelerator.Mode" {
-                        print ("here")
-                    }
                     if argTypeNeedsCopy(godotType: godotReturnType!) {
                         ptrResult = "&_result"
                     } else {
@@ -242,7 +236,13 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
         
         // Generate the glue for the virtual methods (those that start with an underscore in Godot
         if method.isVirtual {
-            b ("static func proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, return: UnsafeMutableRawPointer?)") {
+            let virtRet: String?
+            if let ret = method.returnValue {
+                virtRet = getGodotType(ret)
+            } else {
+                virtRet = nil
+            }
+            b ("static func proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
                 p ("guard let instance else { return }")
                 p ("guard let args else { return }")
                 p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
@@ -251,7 +251,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 var i = 0
                 for arg in method.arguments ?? [] {
                     if argCall != "" { argCall += ", " }
-                    argCall += "\(arg.name): "
+                    let argName = escapeSwift (snakeToCamel (arg.name))
+                    argCall += "\(argName): "
                     if arg.type == "String" {
                         argCall += "stringFromGodotString (args [\(i)]!)"
                     } else if isStructMap [arg.type] ?? false == false {
@@ -262,7 +263,15 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                     }
                     i += 1
                 }
-                p ("swiftObject.\(methodName) (\(argCall))")
+                let hasReturn = method.returnValue != nil
+                p ("\(hasReturn ? "let ret = " : "")swiftObject.\(methodName) (\(argCall))")
+                if let ret = method.returnValue {
+                    if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") {
+                        p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
+                    } else {
+                        p ("retPtr!.storeBytes (of: ret.content, as: type (of: ret.content))")
+                    }
+                }
                 //let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
                 //let first = args![0]!
                 //original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
@@ -362,7 +371,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
     }
 }
 
-var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName" ]
+var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material" ]
                //, "InputEvent", "SceneTree", "Viewport", "Tween", "Texture2D", "Window", "MultiplayerAPI", "MainLoop", "Texture", "Resource", "MultiplayerPeer", "PacketPeer", "PropertyTweener", "CallbackTweener", "IntervalTweener", "Tweener", "MethodTweener", "Image", "PackedScene", "SceneTreeTimer", "SceneState", "World2D", "World3D", "ViewportTexture", "Camera2D", "Camera3D", "Control", "Camera3D", "PhysicsDirectSpaceState2D", "CameraAttributes", "Environment", "PhysicsDirectSpaceState3D", "PhysicsPointQueryParameters2D", "PhysicsShapeQueryParameters2D", "PhysicsShapeQueryParameters3D", "PhysicsRayQueryParameters3D","PhysicsRayQueryParameters2D", "PhysicsRayQueryParameters3D", "PhysicsPointQueryParameters3D", "Node3D", "Theme", "StyleBox", "Font", "Node3DGizmo", "Sky", "Material", "Shader", "TextServer", "Mesh", "MultiMesh"
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
@@ -426,15 +435,18 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 generateEnums (values: enums)
             }
 
-            if !okList.contains (cdef.name) {
-                return
-            }
+            var oResult = result
 
             if let properties = cdef.properties {
                 generateProperties (cdef: cdef, properties, cdef.methods ?? [], &referencedMethods)
             }
             if let methods = cdef.methods {
                 generateMethods (cdef: cdef, methods: methods, referencedMethods)
+            }
+            
+            // Remove code that we did not want generated
+            if !okList.contains (cdef.name) {
+                result = oResult
             }
         }
     }

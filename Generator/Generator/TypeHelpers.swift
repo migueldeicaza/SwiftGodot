@@ -230,7 +230,6 @@ func getBuiltinStorage (_ name: String) -> String {
 
 // Name of the operator from the JSON file
 func infixOperatorMap (_ name: String) -> (String, String)? {
-    print (name)
     switch (name) {
     case "==": return ("GDEXTENSION_VARIANT_OP_EQUAL", "==")
     case "!=": return ("GDEXTENSION_VARIANT_OP_NOT_EQUAL", "!=")

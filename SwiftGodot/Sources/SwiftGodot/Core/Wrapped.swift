@@ -112,7 +112,7 @@ func getVirtual (_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstS
 }
 
 func processProxy (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, r: UnsafeMutableRawPointer?) {
-    Node.proxy_process(instance: instance, args: args, return: r)
+    Node.proxy_process(instance: instance, args: args, retPtr: r)
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
