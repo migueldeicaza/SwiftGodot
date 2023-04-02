@@ -519,6 +519,7 @@ extension JGodotConstructor {
 // MARK: - JGodotSingleton
 struct JGodotSingleton: Codable, Equatable {
     let name, type: String
+    let defaultValue: String?
     let meta: JGodotArgumentMeta?
 }
 
@@ -546,7 +547,7 @@ extension JGodotSingleton {
     ) -> JGodotSingleton {
         return JGodotSingleton(
             name: name ?? self.name,
-            type: type ?? self.type,
+            type: type ?? self.type, defaultValue: nil,
             meta: nil
         )
     }

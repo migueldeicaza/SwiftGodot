@@ -1,0 +1,8 @@
+if test x$2 = x; then
+   echo usage is: make-libgodot.framework GODOT_DIR OUTPUT_DIR
+   echo provide the base directory to where your LibGodot was built
+   exit 1
+fi
+DIR=$1
+ODIR=$2
+xcodebuild -create-xcframework -library $DIR/bin/libgodot.macos.editor.x86_64.dylib -headers $DIR/core/libgodot/ -output $ODIR/libgodot.xcframework

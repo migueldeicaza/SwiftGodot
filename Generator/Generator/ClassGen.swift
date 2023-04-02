@@ -79,16 +79,17 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
     p ("/* Methods */")
     
     for method in methods {
+        let loc = "\(cdef.name).\(method.name)"
         if method.isVararg {
-            print ("TODO: No vararg support yet")
+            print ("TODO: No vararg support yet \(loc)")
             continue
         }
         if (method.arguments ?? []).contains(where: { $0.type.contains("*")}) {
-            print ("TODO: do not currently have support for C pointer types")
+            print ("TODO: do not currently have support for C pointer types \(loc)")
             continue
         }
         if method.returnValue?.type.firstIndex(of: "*") != nil {
-            print ("TODO: do not currently support C pointer returns")
+            print ("TODO: do not currently support C pointer returns \(loc)")
             continue
         }
         let bindName = "method_\(method.name)"

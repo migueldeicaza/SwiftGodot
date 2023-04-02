@@ -26,7 +26,21 @@ let package = Package(
             name: "SwiftGodot",
             dependencies: ["GDExtension"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags (["-Xlinker", "-undefined", "-Xlinker", "dynamic_lookup"])]),
+            linkerSettings: [.unsafeFlags (
+                ["-Xlinker", "-undefined",
+                 "-Xlinker", "dynamic_lookup",
+                 
+                 "-Xlinker", "-mark_dead_strippable_dylib",
+                 
+//                 // This one is just to experiment for now
+//                 // Probably need to try the -why_live SYMBOL
+//                 "-Xlinker", "-dead_strip_dylibs",
+//                 "-Xlinker", "-why_live",
+//                 "-Xlinker", "_$s10SwiftGodot013AnimationNodeC0C8PlayModeOMf"
+                ])
+            ]),
+        
+        // Idea: -mark_dead_strippable_dylib
         .testTarget(
             name: "SwiftGodotTests",
             dependencies: ["SwiftGodot"]),

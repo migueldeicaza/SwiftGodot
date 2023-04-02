@@ -36,6 +36,7 @@ func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
 protocol JNameAndType: TypeWithMeta {
     var name: String { get }
     var type: String { get }
+    var defaultValue: String? { get }
     var meta: JGodotArgumentMeta? { get }
 }
 

@@ -5,10 +5,6 @@
 //  Created by Miguel de Icaza on 5/20/20.
 //  Copyright © 2020-2023 Miguel de Icaza. MIT Licensed
 //
-// TODO:
-//   Implement destructors
-//   I think that for classes, when I create a result value, I should not pass
-//   the address of the class, but the address of the handle.
 import Foundation
 
 // IF we want a single file, or one file per type
@@ -131,7 +127,26 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
 func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
-    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument, kind: kind))"
+    
+    var def: String = ""
+    if let dv = argument.defaultValue, dv != "" {
+        // TODO:
+        //  - handle creating initializers from enums
+        //  - empty arrays
+        //  - bitfield defaults
+        //  - Structure with initialized values (Color (1,1,1,1))
+        //  - nil values (needs to both turn the value nullable and handle that in the marshal code
+        if !argument.type.starts(with: "enum::") && !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && !(isStructMap [argument.type] ?? false) && dv != "null" {
+            if argument.type == "String" {
+                def = " = GString (\(dv))"
+            } else if argument.type == "StringName" {
+                def = " = StringName (\"dv\")"
+            } else {
+                def = " = \(dv)"
+            }
+        }
+    }
+    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(def)"
 }
 
 func generateArgPrepare (_ args: [JNameAndType]) -> String {
