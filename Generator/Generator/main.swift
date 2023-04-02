@@ -51,30 +51,30 @@ func b (_ str: String, suffix: String = "", block: () -> ()) {
     p ("}\(suffix)\n")
 }
 
-func generateEnums (values: [JGodotGlobalEnumElement]) {
-    func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
-        let snake = snakeToCamel (enumKey)
-        if enumKey == "VERTICAL" {
-            print()
-        }
-        if snake.lowercased().starts(with: enumName.lowercased()) {
-            if snake.count == enumName.count {
-                return snake
-            }
-            let ret = String (snake [snake.index (snake.startIndex, offsetBy: enumName.count)...])
-            if let f = ret.first {
-                if f.isNumber {
-                    return snake
-                }
-            }
-            if ret == "" {
-                return snake
-            }
-            return ret.first!.lowercased() + ret.dropFirst()
-        }
-        return snake
+func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
+    let snake = snakeToCamel (enumKey)
+    if enumKey == "VERTICAL" {
+        print()
     }
-    
+    if snake.lowercased().starts(with: enumName.lowercased()) {
+        if snake.count == enumName.count {
+            return snake
+        }
+        let ret = String (snake [snake.index (snake.startIndex, offsetBy: enumName.count)...])
+        if let f = ret.first {
+            if f.isNumber {
+                return snake
+            }
+        }
+        if ret == "" {
+            return snake
+        }
+        return ret.first!.lowercased() + ret.dropFirst()
+    }
+    return snake
+}
+
+func generateEnums (values: [JGodotGlobalEnumElement]) {
     for enumDef in values {
         if enumDef.isBitfield ?? false {
             b ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
@@ -124,6 +124,32 @@ func generateEnums (values: [JGodotGlobalEnumElement]) {
     }
 }
 
+func mapEnumValue (enumDef: String, value: String) -> String? {
+    let t = enumDef.dropFirst(6)
+    guard let p = t.firstIndex(of: ".") else {
+        print ("Cant find enum \(enumDef)")
+        return nil
+    }
+    let type = t [t.startIndex..<p]
+    let enumt = t [t.index(p, offsetBy: 1)...]
+    print ("Got \(type) -- \(enumt)")
+    guard let x = classMap [String (type)] else {
+        print ("WARNING: could not find type \(type) for \(enumDef)")
+        return nil
+    }
+    for e in x.enums ?? [] {
+        if e.name == enumt {
+            for evalue in e.values {
+                if "\(evalue.value)" == value {
+                    let name = dropMatchingPrefix (String (e.name), evalue.name)
+                    return ".\(escapeSwift (name))"
+                }
+            }
+        }
+    }
+    return nil
+}
+
 func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
@@ -136,11 +162,15 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
         //  - bitfield defaults
         //  - Structure with initialized values (Color (1,1,1,1))
         //  - nil values (needs to both turn the value nullable and handle that in the marshal code
-        if !argument.type.starts(with: "enum::") && !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && !(isStructMap [argument.type] ?? false) && dv != "null" {
+        if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && dv != "null" {
             if argument.type == "String" {
                 def = " = GString (\(dv))"
             } else if argument.type == "StringName" {
                 def = " = StringName (\"dv\")"
+            } else if argument.type.starts(with: "enum::"){
+                if let ev = mapEnumValue (enumDef: argument.type, value: dv) {
+                    def = " = \(ev)"
+                }
             } else {
                 def = " = \(dv)"
             }
@@ -213,6 +243,11 @@ for cs in jsonApi.builtinClassSizes {
             builtinSizes [c.name] = c.size
         }
     }
+}
+
+var classMap: [String:JGodotExtensionAPIClass] = [:]
+for x in jsonApi.classes {
+    classMap [x.name] = x
 }
 
 generateBuiltinClasses(values: jsonApi.builtinClasses)
