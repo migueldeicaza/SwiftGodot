@@ -142,7 +142,12 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 args += getArgumentDeclaration(arg, eliminate: eliminate)
                 
                 if argTypeNeedsCopy(godotType: arg.type) {
-                    argSetup += "var copy_\(arg.name) = \(escapeSwift (snakeToCamel (arg.name)))\n"
+                    var reference = escapeSwift (snakeToCamel (arg.name))
+                    // Wrap in an Int
+                    if arg.type.starts(with: "enum::") {
+                        reference = "Int64 (\(reference).rawValue)"
+                    }
+                    argSetup += "var copy_\(arg.name) = \(reference)\n"
                 }
             }
             argSetup += "var args: [UnsafeRawPointer?] = [\n"
@@ -154,7 +159,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
 //                {
                     var argref: String
                     var optstorage: String
-                    
+                    var needAddress = "&"
                     if argTypeNeedsCopy(godotType: arg.type) {
                         argref = "copy_\(arg.name)"
                         optstorage = ""
@@ -167,15 +172,13 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                                 optstorage = ".content"
                             } else {
                                 optstorage = ".handle"
+                                // No need to take the address for handles
+                                needAddress = ""
                             }
                         }
                     }
                     
-                    if argTypeNeedsCopy(godotType: arg.type) {
-                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)),"
-                    } else {
-                        argSetup += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)),"
-                    }
+                        argSetup += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
 //                }
             }
             argSetup += "]"

@@ -30,7 +30,9 @@ open class Wrapped {
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a diffrent name than the subclass
     internal init (name: StringName) {
-        if let r = UnsafeRawPointer (gi.classdb_construct_object (UnsafeRawPointer (&name.content))) {
+        let v = gi.classdb_construct_object (UnsafeRawPointer (&name.content))
+                                
+        if let r = UnsafeRawPointer (v) {
             handle = r
             let retain = Unmanaged.passRetained(self)
             
@@ -39,7 +41,7 @@ open class Wrapped {
             let thisTypeName = StringName (String (describing: Swift.type(of: self)))
             let frameworkType = thisTypeName == name
             
-            print ("SWIFT: Wrapped(StringName), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
+            print ("SWIFT: Wrapped(StringName) at \(handle), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
             
             // This I believe should only be set for user subclasses, and not anything else.
             if frameworkType {

@@ -1,0 +1,2 @@
+cd ~/cvs/libgodot;
+scons platform=macos target=editor dev_build=yes library_type=shared_library
