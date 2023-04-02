@@ -17,8 +17,18 @@ var token: GDExtensionClassLibraryPtr! {
     return library
 }
 
+///
+/// This method is used to configure the extension interface for SwiftGodot to
+/// operate.   It is only used when you use SwiftGodot embedded into an
+/// application - as opposed to using SwiftGodot purely as an extension
+///
+public func setExtensionInterface (to: GDExtensionInterface, library lib: GDExtensionClassLibraryPtr?) {
+    gi = to
+    library = lib
+}
+
 // Scene init
-public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
+func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     print ("SWIFT: extension_initialize")
     guard l == GDEXTENSION_INITIALIZATION_SCENE else {
         return
@@ -43,7 +53,7 @@ public func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExten
 }
 
 // Scene de-init
-public func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
+func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     print ("SWIFT: extension_deinitialize")
     
     // This is what the sample does
