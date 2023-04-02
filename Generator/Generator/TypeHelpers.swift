@@ -166,7 +166,9 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
                 case .double:
                     return "Double"
                 case .float:
-                    return "Float"
+                    // Looks like Godot just ignores its own
+                    // metadata of "Float" and uses Double.
+                    return "Double"
                 default:
                     fatalError()
                 }

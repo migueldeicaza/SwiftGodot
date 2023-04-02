@@ -59,7 +59,13 @@ open class Wrapped {
     }
 }
 
+// TODO: make it so that you can register using a generic, so that we can
+// ensure it is a subclass of Wrapper
 public func register (type name: StringName, parent: StringName, type: AnyObject) {
+    guard let wt = type as? Wrapped.Type else {
+        print ("The provided type should be a subclass of SwiftGodot.Wrapped type")
+        return
+    }
     var info = GDExtensionClassCreationInfo ()
     info.create_instance_func = createFunc(_:)
     info.free_instance_func = freeFunc(_:_:)
@@ -72,6 +78,30 @@ public func register (type name: StringName, parent: StringName, type: AnyObject
     gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.content), UnsafeRawPointer(&parent.content), &info)
 }
 
+/// Registers a user-defined subclass of any of the SwiftGodot classes,
+/// those that derive from SwiftGodot.Wrapped/SwiftGodot.Object
+public func register (type: AnyObject) {
+    // Strips the namespace and returns a StringName
+    func stripNamespace (_ fqname: String) -> StringName {
+        if let r = fqname.lastIndex(of: ".") {
+            return StringName (String (fqname [fqname.index(r, offsetBy: 1)...]))
+        }
+        return StringName (fqname)
+    }
+    
+    guard let wt = type as? Wrapped.Type else {
+        print ("The provided type should be a subclass of SwiftGodot.Wrapped type")
+        return
+    }
+    guard let superType = Mirror (reflecting: type).superclassMirror?.subjectType else {
+        print ("You can not register the root class")
+        return
+    }
+    let superStr = String (describing: superType)
+    let typeStr = String (describing: Mirror (reflecting: type).subjectType)
+        
+    register (type: stripNamespace (typeStr), parent: stripNamespace (superStr), type: type)
+}
 
 var liveObjects: [UnsafeRawPointer:Wrapped] = [:]
 
