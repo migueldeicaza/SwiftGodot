@@ -157,12 +157,13 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
     var def: String = ""
     if let dv = argument.defaultValue, dv != "" {
         // TODO:
-        //  - handle creating initializers from enums
+        //  - handle creating initializers from enums (builtint)
         //  - empty arrays
         //  - bitfield defaults
         //  - Structure with initialized values (Color (1,1,1,1))
+        //  - NodePath ("") ctor
         //  - nil values (needs to both turn the value nullable and handle that in the marshal code
-        if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && dv != "null" {
+        if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && argument.type != "NodePath" && dv != "null" {
             if argument.type == "String" {
                 def = " = GString (\(dv))"
             } else if argument.type == "StringName" {
