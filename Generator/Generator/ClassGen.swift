@@ -129,7 +129,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
         } else {
             // virtual overwrittable method
             finalp = ""
-            visibility = "public"
+            visibility = "open"
             eliminate = ""
         }
         

@@ -59,7 +59,7 @@ open class Wrapped {
     }
 }
 
-func register (type name: StringName, parent: StringName, type: AnyObject) {
+public func register (type name: StringName, parent: StringName, type: AnyObject) {
     var info = GDExtensionClassCreationInfo ()
     info.create_instance_func = createFunc(_:)
     info.free_instance_func = freeFunc(_:_:)
