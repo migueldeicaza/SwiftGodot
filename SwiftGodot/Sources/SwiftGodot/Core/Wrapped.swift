@@ -38,7 +38,7 @@ import GDExtension
 open class Wrapped: Equatable, Identifiable {
     var handle: UnsafeRawPointer
     
-    public var id: UnsafeRawPointer { handle }
+    public var id: Int { Int (bitPattern: handle) }
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
         return lhs.handle == rhs.handle
     }

@@ -82,23 +82,23 @@ var sequence = 0
 
 class GDExample: Sprite2D {
     var time_passed: Double
-    var id: Int
+    var count: Int
     
     required init () {
-        id = sequence
+        count = sequence
         sequence += 1
-        print ("GDEXAMPLE: Initializing ID=\(id)")
+        print ("GDEXAMPLE: Initializing ID=\(count)")
         time_passed = 0
         super.init ()
         print ("GDExample initialized")
     }
     
     deinit {
-        print ("GDEXAMPLE: Releasing \(id)")
+        print ("GDEXAMPLE: Releasing \(count)")
     }
     
     override func _process (delta: Double) {
-        print ("GDExample._process called ID=\(id)")
+        print ("GDExample._process called ID=\(count)")
         time_passed += delta
         
         var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
