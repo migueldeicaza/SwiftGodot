@@ -418,7 +418,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         // class or extension (for Object)
         b (typeDecl) {
             p ("static private var className = StringName (\"\(cdef.name)\")")
-            b ("public override init (nativeHandle: UnsafeRawPointer)") {
+            b ("internal override init (nativeHandle: UnsafeRawPointer)") {
                 p("super.init (nativeHandle: nativeHandle)")
             }
             b ("internal override init (name: StringName)") {
