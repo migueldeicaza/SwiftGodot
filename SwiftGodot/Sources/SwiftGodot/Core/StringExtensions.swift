@@ -41,7 +41,6 @@ extension GString {
             let len = gi.string_to_utf8_chars (UnsafeRawPointer (&content), nil, 0)
             return withUnsafeTemporaryAllocation(byteCount: Int(len+1), alignment: 4) { strPtr in
                 gi.string_to_utf8_chars (UnsafeRawPointer (&content), strPtr.baseAddress, len)
-                print ("The string was deposited at \(strPtr.baseAddress)")
                 strPtr [Int (len)] = 0
                 return String (cString: strPtr.assumingMemoryBound(to: UInt8.self).baseAddress!)
             } ?? ""

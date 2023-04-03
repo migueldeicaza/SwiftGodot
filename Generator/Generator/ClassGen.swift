@@ -260,7 +260,11 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                     if arg.type == "String" {
                         argCall += "stringFromGodotString (args [\(i)]!)"
                     } else if isStructMap [arg.type] ?? false == false {
-                        argCall += "\(arg.type) (nativeHandle: args [\(i)]!)"
+                        //
+                        // This idiom guarantees that: if this is a known object, we surface this
+                        // object, but if it is not known, then we create the instance
+                        //
+                        argCall += "lookupLiveObject (handleAddress: args [\(i)]!) as? \(arg.type) ?? \(arg.type) (nativeHandle: args [\(i)]!)"
                     } else {
                         let gt = getGodotType(arg)
                         argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
@@ -408,12 +412,8 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             try! result.write(toFile: outputDir + "/generated-\(cdef.name).swift", atomically: true, encoding: .utf8)
         }
         
-        let typeDecl: String
-        if let inherits = cdef.inherits {
-            typeDecl = "open class \(cdef.name): \(inherits)"
-        } else {
-            typeDecl = "open class \(cdef.name): Wrapped"
-        }
+        let inherits = cdef.inherits ?? "Wrapped"
+        let typeDecl = "open class \(cdef.name): \(inherits)"
         
         // class or extension (for Object)
         b (typeDecl) {
@@ -433,6 +433,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             b ("public required init ()") {
                 p ("super.init (name: StringName (\"\(cdef.name)\"))")
             }
+            
             var referencedMethods = Set<String>()
             
             if let enums = cdef.enums {

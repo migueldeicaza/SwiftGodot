@@ -1,15 +1,47 @@
 //
-//  File.swift
-//  
+//  Wrapped.swift
 //
 //  Created by Miguel de Icaza on 3/28/23.
 //
+// This is the base class for all types that Godot calls "Classes", as
+// opposed to their "Built-ins".   The built-ins are a mix of structs and
+// classes that have all of their payload inlined - and just differ on
+// their moving semantics.
+//
+// The generated Godot classes can be subclassed by the user, and their
+// state is preserved if the object is passed to Godot, and later it is
+// resurfaced to the Swift universe.
+//
+// We recognize the difference between objects that are merely proxies to
+// the Godot API, and act as bridges, but whose entire state resides in
+// the Godot land, and we call those FrameworkTypes vs types that the user
+// has subclassed and might have potentially added state that needs to be
+// preserved.
+//
+// FrameworkTypes are recreated on demand if necessary from their handle
+// as they are only a proxy for the Godot side of the code, there is no
+// harm in creating different copies of it, and destroying them when they
+// are no longer in use.   To support identity, we implement Equatable
+// based on their handles.
+//
+// Subclassed types are those that the user might have created, and could
+// potentially keep state, so we need to keep those objects alive until
+// they are destroyed, and when the framework surfaces objects of this
+// type, we need to find and locate the existing live object, rather than
+// returning a new instance
+//
+// We ensure that all Godot
 
 import Foundation
 import GDExtension
 
-open class Wrapped {
+open class Wrapped: Equatable, Identifiable {
     var handle: UnsafeRawPointer
+    
+    public var id: UnsafeRawPointer { handle }
+    public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
+        return lhs.handle == rhs.handle
+    }
     static var userTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: userTypeBindingCreate,
         free_callback: userTypeBindingFree,
@@ -51,7 +83,15 @@ open class Wrapped {
                 gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
                                         UnsafeRawPointer (&thisTypeName.content), retain.toOpaque())
             }
-            var callbacks = frameworkType ? Wrapped.frameworkTypeBindingCallback : Wrapped.userTypeBindingCallback
+            
+            var callbacks: GDExtensionInstanceBindingCallbacks
+            if frameworkType {
+                callbacks = Wrapped.frameworkTypeBindingCallback
+                liveFrameworkObjects [r] = self
+            } else {
+                callbacks = Wrapped.userTypeBindingCallback
+                liveSubtypedObjects [r] = self
+            }
             gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks);
         } else {
             fatalError("It was not possible to construct a \(name)")
@@ -103,8 +143,25 @@ public func register (type: AnyObject) {
     register (type: stripNamespace (typeStr), parent: stripNamespace (superStr), type: type)
 }
 
-var liveObjects: [UnsafeRawPointer:Wrapped] = [:]
+/// Currently contains all instantiated objects, but might want to separate those
+/// (or find a way of easily telling appart) framework objects from user subtypes
+var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
+var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 
+///
+/// Looks into the liveSubtypedObjects table if we have an object registered for it,
+/// and if we do, we returned that existing instance.
+///
+/// The idioms is that we only need to look up subtyped objects, because those
+/// are the only ones that would keep state
+func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
+    return liveSubtypedObjects [handleAddress]
+}
+
+///
+/// This one is invoked by Godot when an instance of one of our types is created, and we need
+/// to instantiate it.   Notice that this is different that direct instantiation from our API
+///
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
     print ("SWIFT: Creating object userData:\(userData)")
     guard let userData else {
@@ -117,18 +174,29 @@ func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointe
         return nil
     }
     let o = type.init ()
-    liveObjects [o.handle] = o
-    print ("SWIFT: REGISTERING \(o.handle)")
     return UnsafeMutableRawPointer (mutating: o.handle)
 }
 
+//
+// This is invoked to release any Subtyped objects we created
+//
 func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutableRawPointer?) {
-    print ("SWIFT: Destroying object, userData: \(userData) objectHandle: \(objectHandle)")
+//    #if true
+//    // Just needed for debugging
+//    let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
+//    guard let type  = typeAny as? Wrapped.Type else {
+//        print ("SWIFT: FreeFunc wrapped value did not contain a type: \(typeAny)")
+//        return
+//    }
+//    print ("SWIFT: Destroying object, userData: \(typeAny) objectHandle: \(objectHandle)")
+//    #endif
     if let key = objectHandle {
         let original = Unmanaged<Wrapped>.fromOpaque(key).takeRetainedValue()
-        let removed = liveObjects.removeValue(forKey: original.handle)
+        let removed = liveSubtypedObjects.removeValue(forKey: original.handle)
         if removed == nil {
-            print ("attempt to release object we were not aware of: \(original) \(key)")
+            print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
+        } else {
+            print ("SWIFT: Removed object from our live SubType list")
         }
     }
 }
@@ -155,7 +223,10 @@ func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: Unsaf
 
 func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
     // Godot-cpp does nothing for user types
-    //print ("SWIFT: instanceBindingFree")
+    // I do not think this is necessary, since we are handling the release in the
+    // user-binding catch-all (that also covers the Godot-triggers invocations)
+    // freeFunc above.
+    print ("SWIFT: instanceBindingFree token=\(token) instance=\(instance) binding=\(binding)")
 }
 
 func userTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableRawPointer?, _ z: UInt8) -> UInt8{
@@ -164,18 +235,20 @@ func userTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableR
 }
 
 func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    print ("SWIFT: frameworkBindingCreate")
-    
-    // TODO, this needs to create an instance of the most derived type at this point
-    // from the pointer passed in instance
+    print ("SWIFT: TODO frameworkBindingCreate, why is this called?")
     fatalError()
     return nil
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
-    print ("SWIFT: frameworkBindingFree")
-    // TODO: this needs to release the Swift object
-    fatalError()
+    print ("SWIFT: frameworkBindingFree instance=\(instance) binding=\(binding) token=\(token)")
+    if let key = instance  {
+        if let removed = liveFrameworkObjects.removeValue(forKey: key) {
+            print ("SWIFT: Removed from our live Objects with key \(key)")
+        } else {
+            print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(instance)")
+        }
+    }
 
 }
 
