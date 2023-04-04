@@ -1,0 +1,6 @@
+[configuration]
+entry_symbol = "swift_entry_point"
+
+[libraries]
+macos.debug = "res://bin/SimpleExtension"
+macos.release = "res://bin/SimpleExtension"

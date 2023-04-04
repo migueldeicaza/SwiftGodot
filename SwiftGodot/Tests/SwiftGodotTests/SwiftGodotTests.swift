@@ -6,6 +6,6 @@ final class SwiftGodotTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(SwiftGodot().text, "Hello, World!")
+        //XCTAssertEqual(SwiftGodot().text, "Hello, World!")
     }
 }

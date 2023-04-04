@@ -11,6 +11,10 @@ let package = Package(
             name: "SwiftGodot",
             type: .dynamic,
             targets: ["SwiftGodot"]),
+        .library(
+            name: "SimpleExtension",
+            type: .dynamic,
+            targets: ["SimpleExtension"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -30,8 +34,7 @@ let package = Package(
                 ["-Xlinker", "-undefined",
                  "-Xlinker", "dynamic_lookup",
                  
-                 "-Xlinker", "-mark_dead_strippable_dylib",
-                 
+//                 "-Xlinker", "-mark_dead_strippable_dylib",
 //                 // This one is just to experiment for now
 //                 // Probably need to try the -why_live SYMBOL
 //                 "-Xlinker", "-dead_strip_dylibs",
@@ -39,7 +42,13 @@ let package = Package(
 //                 "-Xlinker", "_$s10SwiftGodot013AnimationNodeC0C8PlayModeOMf"
                 ])
             ]),
-        
+        .target(
+            name: "SimpleExtension",
+            dependencies: ["SwiftGodot"],
+            swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
+            linkerSettings: [.unsafeFlags (
+                ["-Xlinker", "-undefined",
+                 "-Xlinker", "dynamic_lookup"])]),
         // Idea: -mark_dead_strippable_dylib
         .testTarget(
             name: "SwiftGodotTests",

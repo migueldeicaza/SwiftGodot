@@ -3,8 +3,6 @@
 //  
 //  Created by Miguel de Icaza on 3/24/23.
 //
-// TODO:
-//   - Support different extension levels in swift_entry_point
 //
 
 import Foundation
@@ -12,10 +10,14 @@ import GDExtension
 
 /// The pointer to the Godot Extension Interface
 var gi: GDExtensionInterface = GDExtensionInterface()
+/// The library pointer we received at startup
 var library: GDExtensionClassLibraryPtr!
 var token: GDExtensionClassLibraryPtr! {
     return library
 }
+
+var extensionInitCallback: ((GDExtension.InitializationLevel)->())?
+var extensionDeInitCallback: ((GDExtension.InitializationLevel)->())?
 
 ///
 /// This method is used to configure the extension interface for SwiftGodot to
@@ -27,60 +29,79 @@ public func setExtensionInterface (to: GDExtensionInterface, library lib: GDExte
     library = lib
 }
 
-// Scene init
+// Extension initialization callback
 func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     print ("SWIFT: extension_initialize")
-    guard l == GDEXTENSION_INITIALIZATION_SCENE else {
-        return
-    }
+    let level = GDExtension.InitializationLevel(rawValue: Int (exactly: l.rawValue)!)!
     
-    var gs = GString("Hello GString")
-    var gd = gs.description
-    print ("1Got: \(gd)")
-    let a = StringName ("2Hello")
-    let ad = a.description
-    print ("1GotSN \(ad)")
-    let x = StringName ("Node")
-    let xd = x.description
-    print ("StirngName for Node: \(xd)")
-    print ("Cintent is: \(x.content)")
-    print ("The size of the string is: \(a.length())")
-    let y = StringName ("Node")
-    print ("The two are \(y.content) and \(x.content)")
-    let b = a.description
-    print ("Ad I got \(b)")
-    registerExample()
+    if let cb = extensionInitCallback {
+        cb (level)
+    }
 }
 
-// Scene de-init
+// Extension deinitialization callback
 func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     print ("SWIFT: extension_deinitialize")
     
-    // This is what the sample does
-    guard l == GDEXTENSION_INITIALIZATION_SCENE else {
-        return
+    let level = GDExtension.InitializationLevel(rawValue: Int (exactly: l.rawValue)!)!
+    if let cb = extensionDeInitCallback {
+        cb (level)
     }
 }
 
-
-// Set the swift.gdextension's entry_symbol to "swift_entry_point
-@_cdecl ("swift_entry_point")
-public func swift_entry_point(
-    interfacePtr: UnsafePointer<GDExtensionInterface>?,
-    ptrLibrary: GDExtensionClassLibraryPtr?,
-    initialization: UnsafeMutablePointer<GDExtensionInitialization>?) -> GDExtensionBool {
-        print ("SWIFT: ENTRY POINT")
-        guard let interfacePtr else {
-            return 0
-        }
-        gi = interfacePtr.pointee
-        guard let ptrLibrary else {
-            return 0
-        }
-        library = ptrLibrary
-        
-        initialization?.pointee.deinitialize = extension_deinitialize
-        initialization?.pointee.initialize = extension_initialize
-        initialization?.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_CORE
-        return 1
+///
+/// For use in extensions created for a Godot project
+///
+/// Call this function from your declared Swift entry point passing the three
+/// pointers that you receive from Godot and passing a method that will
+/// be invoked during the various stages of the initialization.
+///
+/// This routine takes OpaquePointers to help you simplify the declaration of
+/// your Swift entry point, which can look like this:
+///
+/// ```
+/// @cdecl ("swift_entry_point")
+/// public func swift_entry_point (i: OpaquePointer?, l: OpaquePointer?, e: OpaquePointer?) -> UInt8 {
+///     guard let iface, let lib, let ext else {
+///         return 0
+///     }
+///     initializeSwiftModule (iface, lib, ext, initHook: myInit, deInitHook: myDeinit)
+///     return 1
+/// }
+///
+/// func myInit (level: GDExtension.InitializationLevel) {
+///    if level == .scene {
+///       registerType (MySpinningCube.self)
+///    }
+/// }
+///
+/// func myDeInit (level: GDExtension.InitializationLevel) {
+///     if level == .scene {
+///         print ("Deinitialized")
+///     }
+/// }
+/// ```
+/// - Parameters:
+///  - interfacePtr: the first parameter you got on your entry point, it points to the API to communicate with Godot (this is of type GDExtensionInterface>
+///  - libraryPtr: the second parameter you entry point gets, it is of type GDExtensionClassLibraryPtr
+///  - extensionPtr: the third parameter you get, it is of type GDExtensionInitialization and it is filled with our callbacks
+///  - initHook: this method is invoked repeatedly during the various stages of the extension
+///  initialization
+///  - deInitHook: this method is invoked repeatedly when various stages of the extension are wrapped up
+public func initializeSwiftModule (
+    _ interfacePtr: OpaquePointer,
+    _ libraryPtr: OpaquePointer,
+    _ extensionPtr: OpaquePointer,
+    initHook: @escaping (GDExtension.InitializationLevel)->(),
+    deInitHook: @escaping (GDExtension.InitializationLevel)->())
+{
+    gi = UnsafePointer<GDExtensionInterface> (interfacePtr).pointee
+    library = GDExtensionClassLibraryPtr(libraryPtr)
+    
+    let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
+    initialization.pointee.deinitialize = extension_deinitialize
+    initialization.pointee.initialize = extension_initialize
+    initialization.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_CORE
+    extensionInitCallback = initHook
+    extensionDeInitCallback = deInitHook
 }

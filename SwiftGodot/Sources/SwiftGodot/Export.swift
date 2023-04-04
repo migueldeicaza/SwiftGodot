@@ -1,5 +1,4 @@
 //
-//  File 2.swift
 //  
 //
 //  Created by Miguel de Icaza on 3/25/23.
@@ -8,19 +7,7 @@
 import Foundation
 import GDExtension
 
-func registerExample () {
-//    var info = GDExtensionClassCreationInfo ()
-//    info.create_instance_func = createFunc(_:)
-//    info.free_instance_func = freeFunc(_:_:)
-//    info.get_virtual_func = getVirtual
-//    info.notification_func = notificationFunc
-//
-//    info.class_userdata = UnsafeMutableRawPointer(bitPattern: 0xdeadbeef)
-    
-    let name = StringName ("GDExample")
-    let parent = StringName ("Sprite2D")
-    register(type: name, parent: parent, type: GDExample.self)
-
+func additionalRegistations (name: StringName) {
     // I guess this is to surface functions to Godot, but not clear why should
     // having the function would be useful
     if false {
@@ -73,33 +60,3 @@ func ptrCallFunc (_ method_userdata: UnsafeMutableRawPointer?,
     print ("SWIFT: ptrFunction called, instance: \(instance)")
 }
 /* Class Methods */
-
-var sequence = 0
-
-class GDExample: Sprite2D {
-    var time_passed: Double
-    var count: Int
-    
-    required init () {
-        count = sequence
-        sequence += 1
-        print ("GDEXAMPLE: Initializing ID=\(count)")
-        time_passed = 0
-        super.init ()
-        print ("GDExample initialized")
-    }
-    
-    deinit {
-        print ("GDEXAMPLE: Releasing \(count)")
-    }
-    
-    override func _process (delta: Double) {
-        print ("GDExample._process called ID=\(count)")
-        time_passed += delta
-        
-        var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
-                             y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
-        
-        self.position = newPos
-    }
-}
