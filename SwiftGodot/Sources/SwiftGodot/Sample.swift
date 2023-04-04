@@ -58,10 +58,6 @@ func registerExample () {
     }
 }
 
-func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
-    //print ("SWIFT: Notification \(code)")
-}
-
 func callFunc (_ method_userdata: UnsafeMutableRawPointer?,
                _ instance: UnsafeMutableRawPointer?,
                _ args: UnsafePointer<UnsafeRawPointer?>?,

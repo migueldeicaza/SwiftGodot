@@ -75,8 +75,67 @@ func argTypeNeedsCopy (godotType: String) -> Bool {
     return false
 }
 
-func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod], _ usedMethods: Set<String>) {
+func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, method: JGodotClassMethod) {
+    // Generate the glue for the virtual methods (those that start with an underscore in Godot
+    guard method.isVirtual else {
+        print ("ERROR: internally, we passed methods that are not virtual")
+        return
+    }
+    let virtRet: String?
+    if let ret = method.returnValue {
+        virtRet = getGodotType(ret)
+    } else {
+        virtRet = nil
+    }
+    b ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
+        p ("guard let instance else { return }")
+        p ("guard let args else { return }")
+        p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
+        
+        var argCall = ""
+        var i = 0
+        for arg in method.arguments ?? [] {
+            if argCall != "" { argCall += ", " }
+            let argName = escapeSwift (snakeToCamel (arg.name))
+            argCall += "\(argName): "
+            if arg.type == "String" {
+                argCall += "stringFromGodotString (args [\(i)]!)"
+            } else if isStructMap [arg.type] ?? false == false {
+                //
+                // This idiom guarantees that: if this is a known object, we surface this
+                // object, but if it is not known, then we create the instance
+                //
+                argCall += "lookupLiveObject (handleAddress: args [\(i)]!) as? \(arg.type) ?? \(arg.type) (nativeHandle: args [\(i)]!)"
+            } else {
+                let gt = getGodotType(arg)
+                argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
+            }
+            i += 1
+        }
+        let hasReturn = method.returnValue != nil
+        p ("\(hasReturn ? "let ret = " : "")swiftObject.\(methodName) (\(argCall))")
+        if let ret = method.returnValue {
+            if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") {
+                p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
+            } else {
+                p ("retPtr!.storeBytes (of: ret.content, as: type (of: ret.content))")
+            }
+        }
+        //let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
+        //let first = args![0]!
+        //original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
+
+    }
+}
+
+///
+/// Returns a hashtable mapping a godot method name to a Swift Name + its definition
+/// this list is used to generate later the proxies outside the class
+///
+func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod], _ usedMethods: Set<String>) -> [String:(String, JGodotClassMethod)] {
     p ("/* Methods */")
+    
+    var virtuals: [String:(String, JGodotClassMethod)] = [:]
     
     for method in methods {
         let loc = "\(cdef.name).\(method.name)"
@@ -93,7 +152,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             continue
         }
         let bindName = "method_\(method.name)"
-
+        
         var visibility: String
         var eliminate: String
         var finalp: String
@@ -103,6 +162,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
         let instanceOrStatic = method.isStatic ? " static" : ""
         var inline = ""
         if let methodHash = method.hash {
+            assert (!method.isVirtual)
             b ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
                 
@@ -118,7 +178,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 eliminate = "_ "
                 methodName = method.name
             } else {
-                visibility = method.isVirtual ? "open" : "public"
+                visibility = "public"
                 eliminate = ""
             }
             if instanceOrStatic == "" {
@@ -127,10 +187,12 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 finalp = ""
             }
         } else {
+            assert (method.isVirtual)
             // virtual overwrittable method
             finalp = ""
             visibility = "open"
             eliminate = ""
+            virtuals [method.name] = (methodName, method)
         }
         
         var args = ""
@@ -152,38 +214,38 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             }
             argSetup += "var args: [UnsafeRawPointer?] = [\n"
             for arg in margs {
-// When we move from GString to String in the public API
-//                if arg.type == "String" {
-//                    argSetup += "stringToGodotHandle (\(arg.name))\n"
-//                } else
-//                {
-                    var argref: String
-                    var optstorage: String
-                    var needAddress = "&"
-                    if argTypeNeedsCopy(godotType: arg.type) {
-                        argref = "copy_\(arg.name)"
+                // When we move from GString to String in the public API
+                //                if arg.type == "String" {
+                //                    argSetup += "stringToGodotHandle (\(arg.name))\n"
+                //                } else
+                //                {
+                var argref: String
+                var optstorage: String
+                var needAddress = "&"
+                if argTypeNeedsCopy(godotType: arg.type) {
+                    argref = "copy_\(arg.name)"
+                    optstorage = ""
+                } else {
+                    argref = escapeSwift (snakeToCamel (arg.name))
+                    if isStructMap [arg.type] ?? false {
                         optstorage = ""
                     } else {
-                        argref = escapeSwift (snakeToCamel (arg.name))
-                        if isStructMap [arg.type] ?? false {
-                            optstorage = ""
+                        if builtinSizes [arg.type] != nil && arg.type != "Object" {
+                            optstorage = ".content"
                         } else {
-                            if builtinSizes [arg.type] != nil && arg.type != "Object" {
-                                optstorage = ".content"
-                            } else {
-                                optstorage = ".handle"
-                                // No need to take the address for handles
-                                needAddress = ""
-                            }
+                            optstorage = ".handle"
+                            // No need to take the address for handles
+                            needAddress = ""
                         }
                     }
-                    
-                        argSetup += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
-//                }
+                }
+                
+                argSetup += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
+                //                }
             }
             argSetup += "]"
         }
-
+        
         let godotReturnType = method.returnValue?.type
         let returnType = getGodotType (method.returnValue)
         
@@ -203,7 +265,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                         p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
                     }
                 }
-
+                
                 if argSetup != "" {
                     p (argSetup)
                 }
@@ -222,7 +284,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 } else {
                     ptrResult = "nil"
                 }
-
+                
                 let instanceHandle = method.isStatic ? "nil" : "UnsafeMutableRawPointer (mutating: handle)"
                 p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), \(ptrResult))")
                 
@@ -237,56 +299,20 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                 }
             }
         }
-        
-        // Generate the glue for the virtual methods (those that start with an underscore in Godot
-        if method.isVirtual {
-            let virtRet: String?
-            if let ret = method.returnValue {
-                virtRet = getGodotType(ret)
-            } else {
-                virtRet = nil
-            }
-            b ("static func proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
-                p ("guard let instance else { return }")
-                p ("guard let args else { return }")
-                p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
-                
-                var argCall = ""
-                var i = 0
-                for arg in method.arguments ?? [] {
-                    if argCall != "" { argCall += ", " }
-                    let argName = escapeSwift (snakeToCamel (arg.name))
-                    argCall += "\(argName): "
-                    if arg.type == "String" {
-                        argCall += "stringFromGodotString (args [\(i)]!)"
-                    } else if isStructMap [arg.type] ?? false == false {
-                        //
-                        // This idiom guarantees that: if this is a known object, we surface this
-                        // object, but if it is not known, then we create the instance
-                        //
-                        argCall += "lookupLiveObject (handleAddress: args [\(i)]!) as? \(arg.type) ?? \(arg.type) (nativeHandle: args [\(i)]!)"
-                    } else {
-                        let gt = getGodotType(arg)
-                        argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
-                    }
-                    i += 1
+    }
+    if virtuals.count > 0 {
+        b ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
+            b ("switch name.description") {
+                for (name, _) in virtuals {
+                    p ("case \"\(name)\":")
+                    p ("    return _\(cdef.name)_proxy\(name)")
                 }
-                let hasReturn = method.returnValue != nil
-                p ("\(hasReturn ? "let ret = " : "")swiftObject.\(methodName) (\(argCall))")
-                if let ret = method.returnValue {
-                    if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") {
-                        p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
-                    } else {
-                        p ("retPtr!.storeBytes (of: ret.content, as: type (of: ret.content))")
-                    }
-                }
-                //let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
-                //let first = args![0]!
-                //original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
-
+                p ("default:")
+                p ("    return super.getVirtualDispatcher (name: name)")
             }
         }
     }
+    return virtuals
 }
 
 
@@ -415,6 +441,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         let inherits = cdef.inherits ?? "Wrapped"
         let typeDecl = "open class \(cdef.name): \(inherits)"
         
+        var virtuals: [String: (String, JGodotClassMethod)] = [:]
         // class or extension (for Object)
         b (typeDecl) {
             p ("static private var className = StringName (\"\(cdef.name)\")")
@@ -440,13 +467,13 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 generateEnums (values: enums)
             }
 
-            var oResult = result
+            let oResult = result
 
             if let properties = cdef.properties {
                 generateProperties (cdef: cdef, properties, cdef.methods ?? [], &referencedMethods)
             }
             if let methods = cdef.methods {
-                generateMethods (cdef: cdef, methods: methods, referencedMethods)
+                virtuals = generateMethods (cdef: cdef, methods: methods, referencedMethods)
             }
             
             // Remove code that we did not want generated
@@ -454,6 +481,15 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 result = oResult
             }
         }
+        if virtuals.count > 0 {
+            p ("// Support methods for proxies")
+            for (_, (methodName, methodDef)) in virtuals {
+                if okList.contains (cdef.name) {
+                    generateVirtualProxy(cdef: cdef, methodName: methodName, method: methodDef)
+                }
+            }
+        }
+        
     }
 }
 

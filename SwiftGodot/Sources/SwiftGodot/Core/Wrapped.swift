@@ -35,13 +35,49 @@
 import Foundation
 import GDExtension
 
+///
+/// The base class for all class bindings in Godot, you should not have
+/// to instantiate or subclass this class directly - there are better options
+/// in the hierarchy.
+///
+/// Wrapped implements Equatable based on an identity based on the
+/// pointer to the Godot native object and also implements the Identifiable
+/// protocol using this pointer.
+///
+/// Wrapped subclasses come in two forms: straight bindings to the Godot
+/// API which are used to expose capabilities to developers.   These objects, referred
+/// to as Framework types do not have any additional state associated in
+/// Swift, so they can be discarded or recreated as many times as it is needed.
+///
+/// When user subclass Wrapped, they might have state associated with them,
+/// so those objects are preserved and are not thrown away until they are
+/// explicitly relinquished by both Godot and any references you might hold to
+/// them.   These are known as User types.
+///
+/// Any subclass ends up calling the Wrapped(StringName) constructor which
+/// provides the name of the most-derived framework type, and this constructor
+/// determines whether this is a Framework type or a user type.
+///
+/// To register User types with the framework make sure you call the
+/// `register<T:Wrapped> (type: T.Type)` method like this:
+///
+/// `register (type: MySpinningCube.self)`
+///
+/// If you do not call this method, many of the overloads that Godot would
+/// call you back on will not be invoked.
 open class Wrapped: Equatable, Identifiable {
     var handle: UnsafeRawPointer
     
     public var id: Int { Int (bitPattern: handle) }
+    
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
         return lhs.handle == rhs.handle
     }
+    
+    class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
+        return nil
+    }
+    
     static var userTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: userTypeBindingCreate,
         free_callback: userTypeBindingFree,
@@ -51,6 +87,7 @@ open class Wrapped: Equatable, Identifiable {
         free_callback: frameworkTypeBindingFree,
         reference_callback: frameworkTypeBindingReference)
     
+    /// For use by the framework, you should not need to call this.
     public init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
     }
@@ -58,6 +95,7 @@ open class Wrapped: Equatable, Identifiable {
     public required init () {
         fatalError("This constructor should not be called")
     }
+    
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a diffrent name than the subclass
@@ -94,18 +132,26 @@ open class Wrapped: Equatable, Identifiable {
             }
             gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks);
         } else {
-            fatalError("It was not possible to construct a \(name)")
+            fatalError("SWIFT: It was not possible to construct a \(name)")
         }
     }
 }
 
-// TODO: make it so that you can register using a generic, so that we can
-// ensure it is a subclass of Wrapper
-public func register (type name: StringName, parent: StringName, type: AnyObject) {
+func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
     guard let wt = type as? Wrapped.Type else {
         print ("The provided type should be a subclass of SwiftGodot.Wrapped type")
         return
     }
+    
+    func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
+        let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
+        guard let type  = typeAny as? Wrapped.Type else {
+            print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+            return nil
+        }
+        return type.getVirtualDispatcher(name: StringName (fromPtr: name))
+    }
+    
     var info = GDExtensionClassCreationInfo ()
     info.create_instance_func = createFunc(_:)
     info.free_instance_func = freeFunc(_:_:)
@@ -118,9 +164,10 @@ public func register (type name: StringName, parent: StringName, type: AnyObject
     gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.content), UnsafeRawPointer(&parent.content), &info)
 }
 
-/// Registers a user-defined subclass of any of the SwiftGodot classes,
-/// those that derive from SwiftGodot.Wrapped/SwiftGodot.Object
-public func register (type: AnyObject) {
+/// Registers the user-type specified with the Godot system, and allows it to
+/// receive any of the calls from Godot virtual methods (those that are prefixed
+/// with an underscore)
+public func register<T:Wrapped> (type: T.Type) {
     // Strips the namespace and returns a StringName
     func stripNamespace (_ fqname: String) -> StringName {
         if let r = fqname.lastIndex(of: ".") {
@@ -129,17 +176,23 @@ public func register (type: AnyObject) {
         return StringName (fqname)
     }
     
-    guard let wt = type as? Wrapped.Type else {
-        print ("The provided type should be a subclass of SwiftGodot.Wrapped type")
-        return
+    // We need to call this helper function to cast type to AnyObject
+    // otherwise the call to superClassMirror returns nil
+    func getSuperType (type: AnyObject) -> String? {
+        guard let t = Mirror (reflecting: type).superclassMirror?.subjectType else {
+            return nil
+        }
+        return String (describing: t)
     }
-    guard let superType = Mirror (reflecting: type).superclassMirror?.subjectType else {
+    
+    guard let superStr = getSuperType (type: type) else {
         print ("You can not register the root class")
         return
     }
-    let superStr = String (describing: superType)
-    let typeStr = String (describing: Mirror (reflecting: type).subjectType)
-        
+    var typeStr = String (describing: Mirror (reflecting: type).subjectType)
+    if typeStr.hasSuffix(".Type") {
+        typeStr = String (typeStr.dropLast(5))
+    }
     register (type: stripNamespace (typeStr), parent: stripNamespace (superStr), type: type)
 }
 
@@ -201,18 +254,8 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
     }
 }
 
-func getVirtual (_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
-    print ("SWIFT: Get virtual called userData=\(userData)")
-    let n = StringName (fromPtr: name)
-    print ("SWIFT: getVirtual on \(n.description)")
-    if n.description == "_process" {
-        return processProxy
-    }
-    return nil
-}
-
-func processProxy (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, r: UnsafeMutableRawPointer?) {
-    Node.proxy_process(instance: instance, args: args, retPtr: r)
+func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
+    print ("SWIFT: Notification \(code) on \(ptr)")
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
