@@ -405,8 +405,11 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
     }
 }
 
+#if false
 var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window" ]
-               //, "InputEvent", "SceneTree", "Viewport", "Tween", "Texture2D", "Window", "MultiplayerAPI", "MainLoop", "Texture", "Resource", "MultiplayerPeer", "PacketPeer", "PropertyTweener", "CallbackTweener", "IntervalTweener", "Tweener", "MethodTweener", "Image", "PackedScene", "SceneTreeTimer", "SceneState", "World2D", "World3D", "ViewportTexture", "Camera2D", "Camera3D", "Control", "Camera3D", "PhysicsDirectSpaceState2D", "CameraAttributes", "Environment", "PhysicsDirectSpaceState3D", "PhysicsPointQueryParameters2D", "PhysicsShapeQueryParameters2D", "PhysicsShapeQueryParameters3D", "PhysicsRayQueryParameters3D","PhysicsRayQueryParameters2D", "PhysicsRayQueryParameters3D", "PhysicsPointQueryParameters3D", "Node3D", "Theme", "StyleBox", "Font", "Node3DGizmo", "Sky", "Material", "Shader", "TextServer", "Mesh", "MultiMesh"
+#else
+var okList: [String] = []
+#endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
     // Assemble all the reference types, we use to test later
@@ -477,14 +480,14 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             }
             
             // Remove code that we did not want generated
-            if !okList.contains (cdef.name) {
+            if okList.count > 0 && !okList.contains (cdef.name) {
                 result = oResult
             }
         }
         if virtuals.count > 0 {
             p ("// Support methods for proxies")
             for (_, (methodName, methodDef)) in virtuals {
-                if okList.contains (cdef.name) {
+                if okList.count == 0 || okList.contains (cdef.name) {
                     generateVirtualProxy(cdef: cdef, methodName: methodName, method: methodDef)
                 }
             }
