@@ -163,7 +163,9 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
         //  - Structure with initialized values (Color (1,1,1,1))
         //  - NodePath ("") ctor
         //  - nil values (needs to both turn the value nullable and handle that in the marshal code
-        if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && argument.type != "NodePath" && dv != "null" {
+        //  - typedarrays, the default values need to be handled one by one, or a general conversion
+        // system needs to be implemented
+        if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && argument.type != "NodePath" && !argument.type.starts(with: "typedarray::") && !argument.type.starts (with: "Dictionary") && dv != "null" {
             if argument.type == "String" {
                 def = " = GString (\(dv))"
             } else if argument.type == "StringName" {
@@ -250,9 +252,9 @@ var classMap: [String:JGodotExtensionAPIClass] = [:]
 for x in jsonApi.classes {
     classMap [x.name] = x
 }
+try! result.write(toFile: outputDir + "/../generated-builtin/core-defs.swift", atomically: true, encoding: .utf8)
 
-generateBuiltinClasses(values: jsonApi.builtinClasses)
-try! result.write(toFile: outputDir + "/generated.swift", atomically: true, encoding: .utf8)
+generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: outputDir + "/../generated-builtin/")
 
 result = ""
 generateClasses (values: jsonApi.classes, outputDir: outputDir)

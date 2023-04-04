@@ -100,7 +100,7 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             argCall += "\(argName): "
             if arg.type == "String" {
                 argCall += "stringFromGodotString (args [\(i)]!)"
-            } else if isStructMap [arg.type] ?? false == false {
+            } else if isStructMap [arg.type] ?? false == false && builtinSizes [arg.type] == nil {
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
@@ -115,10 +115,14 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
         let hasReturn = method.returnValue != nil
         p ("\(hasReturn ? "let ret = " : "")swiftObject.\(methodName) (\(argCall))")
         if let ret = method.returnValue {
-            if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") {
+            if ret.type == "Material" {
+                print ("here")
+            }
+            if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
             } else {
-                p ("retPtr!.storeBytes (of: ret.content, as: type (of: ret.content))")
+                let target = classMap [ret.type] != nil ? "handle" : "content"
+                p ("retPtr!.storeBytes (of: ret.\(target), as: type (of: ret.\(target)))")
             }
         }
         //let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
@@ -192,6 +196,24 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             finalp = ""
             visibility = "open"
             eliminate = ""
+            var skip = false
+            
+            // TODO: for now, skip virtual methods that take an enum, since I do not convert those yet
+            // nor do I handle creating a
+            // - dictionary in the proxy: WebRTCPeerConnectionExtension._initialize
+            // - strings
+            // - bitfield; _ImageFormatLoaderExtension
+            // - typedarray: CodeEdit
+            for arg in method.arguments ?? [] {
+                if arg.type.starts(with: "enum::") || arg.type == "Dictionary" || arg.type == "String" || arg.type.starts(with: "bitfield::") || arg.type.starts(with: "typedarray::") {
+                    skip = true
+                    break
+                }
+            }
+            if skip {
+                continue
+            }
+                
             virtuals [method.name] = (methodName, method)
         }
         
@@ -230,7 +252,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
                     if isStructMap [arg.type] ?? false {
                         optstorage = ""
                     } else {
-                        if builtinSizes [arg.type] != nil && arg.type != "Object" {
+                        if builtinSizes [arg.type] != nil && arg.type != "Object" || arg.type.starts(with: "typedarray::"){
                             optstorage = ".content"
                         } else {
                             optstorage = ".handle"
@@ -438,7 +460,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
 
         // Save it
         defer {
-            try! result.write(toFile: outputDir + "/generated-\(cdef.name).swift", atomically: true, encoding: .utf8)
+            try! result.write(toFile: outputDir + "/\(cdef.name).swift", atomically: true, encoding: .utf8)
         }
         
         let inherits = cdef.inherits ?? "Wrapped"

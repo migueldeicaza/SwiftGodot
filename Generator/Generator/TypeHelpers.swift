@@ -200,6 +200,12 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         if t.type.starts(with: "enum::Variant.Type") {
             return "Variant.GType"
         }
+        if t.type.starts(with: "enum::VisualShader.Type") {
+            return "VisualShader.GType"
+        }
+        if t.type.starts(with: "enum::IP.Type") {
+            return "IP.GType"
+        }
         if t.type.starts(with: "enum::") {
             
             return String (t.type.dropFirst(6))
