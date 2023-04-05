@@ -236,6 +236,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 synthesizeEquatable = true
             }
         }
+        if bc.name == "String" || bc.name == "StringName" {
+            conformances.append ("ExpressibleByStringLiteral")
+        }
         var proto = ""
         if conformances.count > 0 {
             proto = ": " + conformances.joined(separator: ", ")
@@ -246,6 +249,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             if bc.name == "String" {
                 b ("public init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
+                }
+                p ("// ExpressibleByStringLiteral conformace")
+                b ("public required init (stringLiteral value: String)") {
+                    p ("gi.string_new_with_utf8_chars (&content, value)")
                 }
             }
             if bc.name == "StringName" {
@@ -260,6 +267,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                     p ("]")
                     p ("StringName.constructor1 (&content, &args)")
                 }
+                p ("// ExpressibleByStringLiteral conformace")
+                b ("public required init (stringLiteral value: String)") {
+                    p ("gi.string_new_with_utf8_chars (&content, value)")
+                }
             }
             if bc.hasDestructor {
                 b ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
@@ -272,6 +283,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             }
             if kind == "class" {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
+                p ("// Contains a binary blob where this type information is stored")
                 p ("var content: \(storage)\(initialize)")
                 builtinClassStorage [bc.name] = storage
                 // TODO: This is a little brittle, because I am

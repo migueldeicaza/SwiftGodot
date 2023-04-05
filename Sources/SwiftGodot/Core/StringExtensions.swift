@@ -46,6 +46,7 @@ extension GString {
             } ?? ""
         }
     }
+    
 }
 
 extension String {
