@@ -52,27 +52,36 @@ func isBuiltinClass (_ godotTypeName: String) -> Bool {
 /// enum value, or nil if it can not be found.
 /// Example type: "ArrowDirection", value: "0" would return ".up"
 func mapEnumValue (enumDef: String, value: String) -> String? {
+    func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
+        for evalue in element.values {
+            if "\(evalue.value)" == value {
+                let name = dropMatchingPrefix (String (element.name), evalue.name)
+                return ".\(escapeSwift (name))"
+            }
+        }
+        print ("WARNING: Enum, did not find a matching value in \(enumDef) for \(value)")
+        return nil
+    }
     let t = enumDef.dropFirst(6)
+    if let globalEnumDef = globalEnums [String (t)]  {
+        return findEnumMatch(element: globalEnumDef)
+    }
     guard let p = t.firstIndex(of: ".") else {
-        print ("Cant find enum \(enumDef)")
+        print ("WARNING: Enum, not a global, and not a type: \(enumDef)")
         return nil
     }
     let type = t [t.startIndex..<p]
     let enumt = t [t.index(p, offsetBy: 1)...]
     guard let x = classMap [String (type)] else {
-        print ("WARNING: could not find type \(type) for \(enumDef)")
+        print ("WARNING: Enum, could not find type \(type) for \(enumDef)")
         return nil
     }
     for e in x.enums ?? [] {
         if e.name == enumt {
-            for evalue in e.values {
-                if "\(evalue.value)" == value {
-                    let name = dropMatchingPrefix (String (e.name), evalue.name)
-                    return ".\(escapeSwift (name))"
-                }
-            }
+            return findEnumMatch(element: e)
         }
     }
+    print ("WARNING: Enum. did not find a matching value in \(enumDef) for \(value)")
     return nil
 }
 

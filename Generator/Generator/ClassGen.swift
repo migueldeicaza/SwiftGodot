@@ -4,10 +4,6 @@
 //
 //  Created by Miguel de Icaza on 3/26/23.
 //
-// Need support for:
-//   enum::
-//   typedarray::
-//   bitfield::
 
 import Foundation
 
@@ -344,19 +340,23 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
 //        }
         let loc = "\(cdef.name).\(property.name)"
         guard let method = methods.first(where: { $0.name == property.getter}) else {
-            print ("WARNING \(loc): Could not find matching method for getter")
+            print ("GodotBug: \(loc): property declared \(property.getter), but it does not exist with that name")
             continue
         }
-        guard let setterMethod = methods.first(where: { $0.name == property.setter}) else {
-            print ("WARNING \(loc) Could not find matching method for setter")
-            continue
+        var setterMethod: JGodotClassMethod? = nil
+        if property.setter != nil {
+            setterMethod = methods.first(where: { $0.name == property.setter})
+            if setterMethod == nil {
+                print ("GodotBug \(loc) property declared \(property.setter!) but it does not exist with that name")
+                continue
+            }
         }
 
         if method.arguments?.count ?? 0 > 1 {
             print ("WARNING \(loc) property references a getter method that takes more than one argument")
             continue
         }
-        if setterMethod.arguments?.count ?? 0 > 2 {
+        if setterMethod?.arguments?.count ?? 0 > 2 {
             print ("WARNING \(loc) property references a getter method that takes more than two arguments")
             continue
         }
@@ -393,7 +393,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
             if let setter = property.setter {
                 b ("set") {
                     var value = "newValue"
-                    if type == "StringName" && setterMethod.arguments![0].type == "String" {
+                    if type == "StringName" && setterMethod?.arguments![0].type == "String" {
                         value = "GString (from: newValue)"
                     }
                     p ("\(setter) (\(access)\(access != "" ? ", " : "")\(value))")
@@ -466,7 +466,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             var referencedMethods = Set<String>()
             
             if let enums = cdef.enums {
-                generateEnums (values: enums)
+                generateEnums (values: enums, prefix: nil)
             }
 
             let oResult = result

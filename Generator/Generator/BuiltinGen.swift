@@ -231,14 +231,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
         
         
         var conformances: [String] = []
-        var synthesizeEquatable = false
         if kind == "struct" {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
         } else {
             if bc.operators.contains(where: { op in op.name == "==" && op.rightType == bc.name }) {
                 conformances.append ("Equatable")
-                synthesizeEquatable = true
             }
         }
         if bc.name == "String" || bc.name == "StringName" {
@@ -310,7 +308,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             }
 
             if let enums = bc.enums {
-                generateEnums(values: enums)
+                generateEnums(values: enums, prefix: bc.name + ".")
             }
             generateBuiltinCtors (bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             
