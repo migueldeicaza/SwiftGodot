@@ -12,9 +12,14 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], godotTypeName: String, 
     let isStruct = isStructMap [typeName] ?? false
     
     for m in ctors {
-        
         var args = ""
-
+        var visibility = "public"
+        
+        if godotTypeName.starts(with: "Vector") && m.arguments?.count ?? 0 == 0 {
+            // Do not expose the empty constructors to the world, they are kind of useless
+            // but the generator references them to initialize values
+            visibility = ""
+        }
         let ptrName = "constructor\(m.index)"
         p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
         
@@ -23,7 +28,7 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], godotTypeName: String, 
             args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField)
         }
         
-        b ("public init (\(args))") {
+        b ("\(visibility) init (\(args))") {
             // Determine if we have a constructors whose sole job is to initialize the members
             // of the struct, in that case, just do that, do not call into Godot.
             if let margs = m.arguments, let members, margs.count == members.count {
@@ -308,6 +313,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 generateEnums(values: enums)
             }
             generateBuiltinCtors (bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
+            
             generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
             generateBuiltinOperators (bc.operators, godotTypeName: bc.name, typeName: typeName)
         }

@@ -13,6 +13,7 @@
 		4982B72029CE33DA008D2CCD /* ApiJsonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4982B71F29CE33DA008D2CCD /* ApiJsonModel.swift */; };
 		4982B72229CE355A008D2CCD /* StringOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4982B72129CE355A008D2CCD /* StringOperations.swift */; };
 		49C9403629CF9E2F006CC78F /* TypeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C9403529CF9E2F006CC78F /* TypeHelpers.swift */; };
+		49CF7E2529DDBB6600C7EE35 /* Arguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CF7E2429DDBB6600C7EE35 /* Arguments.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +36,7 @@
 		4982B71F29CE33DA008D2CCD /* ApiJsonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiJsonModel.swift; sourceTree = "<group>"; };
 		4982B72129CE355A008D2CCD /* StringOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringOperations.swift; sourceTree = "<group>"; };
 		49C9403529CF9E2F006CC78F /* TypeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeHelpers.swift; sourceTree = "<group>"; };
+		49CF7E2429DDBB6600C7EE35 /* Arguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Arguments.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 				49C9403529CF9E2F006CC78F /* TypeHelpers.swift */,
 				492B8AEF29D12C440083C150 /* BuiltinGen.swift */,
 				492B8AF129D12CF00083C150 /* ClassGen.swift */,
+				49CF7E2429DDBB6600C7EE35 /* Arguments.swift */,
 			);
 			path = Generator;
 			sourceTree = "<group>";
@@ -138,6 +141,7 @@
 				4982B72029CE33DA008D2CCD /* ApiJsonModel.swift in Sources */,
 				492B8AF229D12CF00083C150 /* ClassGen.swift in Sources */,
 				492B8AF029D12C440083C150 /* BuiltinGen.swift in Sources */,
+				49CF7E2529DDBB6600C7EE35 /* Arguments.swift in Sources */,
 				49C9403629CF9E2F006CC78F /* TypeHelpers.swift in Sources */,
 				4982B71929CE3296008D2CCD /* main.swift in Sources */,
 				4982B72229CE355A008D2CCD /* StringOperations.swift in Sources */,

@@ -100,7 +100,7 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             argCall += "\(argName): "
             if arg.type == "String" {
                 argCall += "GString (content: args [\(i)]!.assumingMemoryBound (to: Int64.self).pointee)"
-            } else if isStructMap [arg.type] ?? false == false && builtinSizes [arg.type] == nil && !(arg.type.starts(with: "enum::") || arg.type.starts(with: "bitfield::")){
+            } else if classMap [arg.type] != nil {
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
@@ -117,9 +117,6 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
         let hasReturn = method.returnValue != nil
         p ("\(hasReturn ? "let ret = " : "")swiftObject.\(methodName) (\(argCall))")
         if let ret = method.returnValue {
-            if ret.type == "Material" {
-                print ("here")
-            }
             if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
             } else {
@@ -127,10 +124,6 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
                 p ("retPtr!.storeBytes (of: ret.\(target), as: type (of: ret.\(target)))")
             }
         }
-        //let original = Unmanaged<GDExample>.fromOpaque(instance).takeUnretainedValue()
-        //let first = args![0]!
-        //original._process(delta: first.assumingMemoryBound(to: Double.self).pointee)
-
     }
 }
 
@@ -172,8 +165,6 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             b ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
                 
-                /// TODO: make the handle in the generated bindings be an UnsafeRawPointer
-                /// to avoid these casts here
                 p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(cdef.name).className.content), UnsafeRawPointer (&methodName.content), \(methodHash))!")
             }
             
@@ -198,27 +189,6 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             finalp = ""
             visibility = "open"
             eliminate = ""
-            var skip = false
-            
-            // TODO: for now, skip virtual methods that take an enum, since I do not convert those yet
-            // nor do I handle creating a
-            // - dictionary in the proxy: WebRTCPeerConnectionExtension._initialize
-            // - typedarray: CodeEdit
-            for arg in method.arguments ?? [] {
-                if arg.type == "String" {
-                    // I added manual code for this despite being a
-                    // TODO: I think I can remove this special case, just validate
-                    continue
-                }
-                // TODO: I believe this is now handled, but need to validate
-                if arg.type.starts(with: "typedarray::") {
-                    skip = true
-                    break
-                }
-            }
-            if skip {
-                continue
-            }
                 
             virtuals [method.name] = (methodName, method)
         }

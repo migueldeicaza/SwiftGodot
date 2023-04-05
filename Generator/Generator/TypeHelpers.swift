@@ -43,9 +43,37 @@ protocol JNameAndType: TypeWithMeta {
 extension JGodotSingleton: JNameAndType {}
 extension JGodotArgument: JNameAndType {}
 
+/// Returns true for the Built-in types that are generated as classes, rather than structures
+func isBuiltinClass (_ godotTypeName: String) -> Bool {
+    builtinClassStorage [godotTypeName] != nil
+}
 
-func isClassType (name: String) -> Bool {
-    !(isCoreType(name: name) || isPrimitiveType(name: name))
+/// Given an enumeration name, and a value associated with it, returns the Swift
+/// enum value, or nil if it can not be found.
+/// Example type: "ArrowDirection", value: "0" would return ".up"
+func mapEnumValue (enumDef: String, value: String) -> String? {
+    let t = enumDef.dropFirst(6)
+    guard let p = t.firstIndex(of: ".") else {
+        print ("Cant find enum \(enumDef)")
+        return nil
+    }
+    let type = t [t.startIndex..<p]
+    let enumt = t [t.index(p, offsetBy: 1)...]
+    guard let x = classMap [String (type)] else {
+        print ("WARNING: could not find type \(type) for \(enumDef)")
+        return nil
+    }
+    for e in x.enums ?? [] {
+        if e.name == enumt {
+            for evalue in e.values {
+                if "\(evalue.value)" == value {
+                    let name = dropMatchingPrefix (String (e.name), evalue.name)
+                    return ".\(escapeSwift (name))"
+                }
+            }
+        }
+    }
+    return nil
 }
 
 var core_types = [
@@ -88,7 +116,7 @@ func isCoreType (name: String) -> Bool {
 }
 
 func isPrimitiveType (name: String) -> Bool {
-    return name == "int" || name == "bool" || name == "float" || name == "void" || name.hasPrefix("enum")
+    return name == "int" || name == "bool" || name == "float" || name == "void" || name.hasPrefix("enum::") || name.hasPrefix("bitfield::")
 }
 
 func mapTypeName (_ name: String) -> String {
@@ -121,7 +149,10 @@ enum ArgumentKind {
     case builtIn
 }
 
-
+/// Given a type definition with its metadata, and the context where the type is being
+/// useds, returns the type for it.
+///
+///
 func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String {
     guard let t else {
         return ""
@@ -221,6 +252,10 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     }
 }
 
+/// Built-ins classes keep their data stored internally in a variable called
+/// "content", given a godotType name of those, this returns a pair
+/// containing the Swift-type that is used to store this, and a suitable initialization
+/// value for it.
 func getBuiltinStorage (_ name: String) -> (String, String) {
     guard let size = builtinSizes [name] else {
         fatalError()
