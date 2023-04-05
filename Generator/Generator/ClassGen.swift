@@ -99,7 +99,7 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             let argName = escapeSwift (snakeToCamel (arg.name))
             argCall += "\(argName): "
             if arg.type == "String" {
-                argCall += "stringFromGodotString (args [\(i)]!)"
+                argCall += "GString (contentValue: args [\(i)]!.assumingMemoryBound (to: Int64.self).pointee)"
             } else if isStructMap [arg.type] ?? false == false && builtinSizes [arg.type] == nil && !(arg.type.starts(with: "enum::") || arg.type.starts(with: "bitfield::")){
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
@@ -201,11 +201,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             // TODO: for now, skip virtual methods that take an enum, since I do not convert those yet
             // nor do I handle creating a
             // - dictionary in the proxy: WebRTCPeerConnectionExtension._initialize
-            // - strings
-            // - bitfield; _ImageFormatLoaderExtension
             // - typedarray: CodeEdit
             for arg in method.arguments ?? [] {
-                if arg.type == "Dictionary" || arg.type == "String" || arg.type.starts(with: "bitfield::") || arg.type.starts(with: "typedarray::") {
+                if arg.type == "Dictionary" || arg.type.starts(with: "typedarray::") {
                     skip = true
                     break
                 }

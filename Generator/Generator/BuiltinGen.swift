@@ -246,6 +246,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 b ("public init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
                 }
+                b ("init (contentValue: Int64)") {
+                    p ("var copy = contentValue")
+                    p ("var args: [UnsafeRawPointer?] = [")
+                    p ("     UnsafeRawPointer(&copy),")
+                    p ("]")
+                    p ("GString.constructor1 (&content, &args)")
+                }
             }
             if bc.name == "StringName" {
                 // TODO: This is a little brittle, because I am
