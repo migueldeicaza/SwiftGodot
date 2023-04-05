@@ -209,6 +209,7 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
 }
 
 var builtinGodotTypeNames = Set<String>()
+var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
     func generateBuiltinClass (_ bc: JGodotBuiltinClass) {
@@ -246,13 +247,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 b ("public init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
                 }
-                b ("init (contentValue: Int64)") {
-                    p ("var copy = contentValue")
-                    p ("var args: [UnsafeRawPointer?] = [")
-                    p ("     UnsafeRawPointer(&copy),")
-                    p ("]")
-                    p ("GString.constructor1 (&content, &args)")
-                }
             }
             if bc.name == "StringName" {
                 // TODO: This is a little brittle, because I am
@@ -267,11 +261,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                     p ("StringName.constructor1 (&content, &args)")
                 }
             }
-            if bc.name == "Array" {
-                b ("init (content: Int64)") {
-                    p ("self.content = content")
-                }
-            }
             if bc.hasDestructor {
                 b ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
                     p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
@@ -282,8 +271,20 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 }
             }
             if kind == "class" {
-                let storage = getBuiltinStorage (bc.name)
-                p ("var content: \(storage)")
+                let (storage, initialize) = getBuiltinStorage (bc.name)
+                p ("var content: \(storage)\(initialize)")
+                builtinClassStorage [bc.name] = storage
+                // TODO: This is a little brittle, because I am
+                // hardcoding the constructor1 here, it should
+                // really produce this when it matches the kind
+                // directly to be the one that takes the same
+                // parameter
+                p ("// Used to construct objects on virtual proxies")
+                b ("init (content: \(storage))") {
+                    p ("var copy = content")
+                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer (&copy)]")
+                    p ("StringName.constructor1 (&self.content, &args)")
+                }
             }
             if let members = bc.members {
                 for x in members {

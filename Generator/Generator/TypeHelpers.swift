@@ -221,17 +221,17 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     }
 }
 
-func getBuiltinStorage (_ name: String) -> String {
+func getBuiltinStorage (_ name: String) -> (String, String) {
     guard let size = builtinSizes [name] else {
         fatalError()
     }
     switch size {
     case 4, 0:
-        return "Int32 = 0"
+        return ("Int32", " = 0")
     case 8:
-        return "Int64 = 0"
+        return ("Int64", " = 0")
     case 16:
-        return "(Int64, Int64) = (0, 0)"
+        return ("(Int64, Int64)", " = (0, 0)")
     default:
         fatalError()
     }

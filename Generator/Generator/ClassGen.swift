@@ -99,13 +99,15 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             let argName = escapeSwift (snakeToCamel (arg.name))
             argCall += "\(argName): "
             if arg.type == "String" {
-                argCall += "GString (contentValue: args [\(i)]!.assumingMemoryBound (to: Int64.self).pointee)"
+                argCall += "GString (content: args [\(i)]!.assumingMemoryBound (to: Int64.self).pointee)"
             } else if isStructMap [arg.type] ?? false == false && builtinSizes [arg.type] == nil && !(arg.type.starts(with: "enum::") || arg.type.starts(with: "bitfield::")){
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
                 argCall += "lookupLiveObject (handleAddress: args [\(i)]!) as? \(arg.type) ?? \(arg.type) (nativeHandle: args [\(i)]!)"
+            } else if let storage = builtinClassStorage [arg.type] {
+                argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
             } else {
                 let gt = getGodotType(arg)
                 argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
@@ -203,7 +205,13 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             // - dictionary in the proxy: WebRTCPeerConnectionExtension._initialize
             // - typedarray: CodeEdit
             for arg in method.arguments ?? [] {
-                if arg.type == "Dictionary" || arg.type.starts(with: "typedarray::") {
+                if arg.type == "String" {
+                    // I added manual code for this despite being a
+                    // TODO: I think I can remove this special case, just validate
+                    continue
+                }
+                // TODO: I believe this is now handled, but need to validate
+                if arg.type.starts(with: "typedarray::") {
                     skip = true
                     break
                 }
@@ -280,7 +288,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             } else {
                 if returnType != "" {
                     if godotReturnType?.starts(with: "typedarray::") ?? false {
-                        p ("var _result: \(getBuiltinStorage ("Array"))")
+                        let (storage, initialize) = getBuiltinStorage ("Array")
+                        p ("var _result: \(storage)\(initialize)")
                     } else {
                         p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
                     }
