@@ -100,7 +100,7 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             argCall += "\(argName): "
             if arg.type == "String" {
                 argCall += "stringFromGodotString (args [\(i)]!)"
-            } else if isStructMap [arg.type] ?? false == false && builtinSizes [arg.type] == nil {
+            } else if isStructMap [arg.type] ?? false == false && builtinSizes [arg.type] == nil && !(arg.type.starts(with: "enum::") || arg.type.starts(with: "bitfield::")){
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
@@ -205,7 +205,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, methods: [JGodotClassMethod
             // - bitfield; _ImageFormatLoaderExtension
             // - typedarray: CodeEdit
             for arg in method.arguments ?? [] {
-                if arg.type.starts(with: "enum::") || arg.type == "Dictionary" || arg.type == "String" || arg.type.starts(with: "bitfield::") || arg.type.starts(with: "typedarray::") {
+                if arg.type == "Dictionary" || arg.type == "String" || arg.type.starts(with: "bitfield::") || arg.type.starts(with: "typedarray::") {
                     skip = true
                     break
                 }

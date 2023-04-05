@@ -37,12 +37,14 @@ var indent = 0 {
     }
 }
 
+// Prints the string, indenting any newlines with the current indentation
 func p (_ str: String) {
     for x in str.split(separator: "\n", omittingEmptySubsequences: false) {
         print ("\(indentStr)\(x)", to: &result)
     }
 }
 
+// Prints a block, automatically indents the code in the closure
 func b (_ str: String, suffix: String = "", block: () -> ()) {
     p (str + " {")
     indent += 1
@@ -132,7 +134,6 @@ func mapEnumValue (enumDef: String, value: String) -> String? {
     }
     let type = t [t.startIndex..<p]
     let enumt = t [t.index(p, offsetBy: 1)...]
-    print ("Got \(type) -- \(enumt)")
     guard let x = classMap [String (type)] else {
         print ("WARNING: could not find type \(type) for \(enumDef)")
         return nil

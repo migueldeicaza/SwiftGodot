@@ -14,7 +14,7 @@ debug your code from Xcode as well as the Godot code.
 
 # Working with this Repository
 
-You should be all set by referencing this as a package from SwiftPM,
+You should be all set by referencing this as a package from SwiftPM 
 but if you want to work on the bindings, you will want to open
 the Generator project which will produce the output on top of this.
 
