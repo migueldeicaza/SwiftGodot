@@ -11,7 +11,7 @@ func gmem_alloc (_ size: Int) -> UnsafeMutableRawPointer? {
     gi.mem_alloc (size)
 }
 
-func gmem_realoc (_ ptr: UnsafeMutableRawPointer?, size: Int) -> UnsafeMutableRawPointer? {
+func gmem_realloc (_ ptr: UnsafeMutableRawPointer?, size: Int) -> UnsafeMutableRawPointer? {
     return gi.mem_realloc (ptr, size)
 }
 

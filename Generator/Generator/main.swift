@@ -132,7 +132,6 @@ func mapEnumValue (enumDef: String, value: String) -> String? {
     }
     let type = t [t.startIndex..<p]
     let enumt = t [t.index(p, offsetBy: 1)...]
-    print ("Got \(type) -- \(enumt)")
     guard let x = classMap [String (type)] else {
         print ("WARNING: could not find type \(type) for \(enumDef)")
         return nil

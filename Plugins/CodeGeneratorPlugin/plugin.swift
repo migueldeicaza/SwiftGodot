@@ -1,5 +1,5 @@
 //
-//  Generator's Plugin definition.swift
+// Generator's Plugin definition.swift
 //  
 //
 //  Created by Miguel de Icaza on 4/4/23.
@@ -8,33 +8,28 @@
 import Foundation
 import PackagePlugin
 
-enum GenErrors: Error {
-    case noExtensionFile
-}
-
 /// Generates the API for the SwiftGodot from the Godot exported Json API
-///
 @main struct SwiftCodeGeneratorPlugin: BuildToolPlugin {
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
         // Configure the commands to write to a "GeneratedSources" directory.
         let genSourcesDir = context.pluginWorkDirectory.appending("GeneratedSources")
 
         // We only generate commands for source targets.
-        guard let target = target as? SourceModuleTarget else { return [] }
         let generator: Path = try context.tool(named: "Generator").path
 
         let api = context.package.directory.appending(["Sources", "SwiftGodot", "extension_api.json"])
         
-        var outputFiles = knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0])}
+        var outputFiles: [Path] = []
+        outputFiles.append (contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0])})
         outputFiles.append (contentsOf: known.map { genSourcesDir.appending(["generated", $0])})
         
         let cmd: Command = Command.buildCommand(
-            displayName: "GENERATING from \(api) to \(genSourcesDir)",
+            displayName: "Generating Swift API ffrom \(api) to \(genSourcesDir)",
             executable: generator,
             arguments: [ api, genSourcesDir ],
+            inputFiles: [api],
             outputFiles: outputFiles)
         
-        print ("trying to run \(generator) with \(api) on \(genSourcesDir)")
         return [cmd]
     }
 }
