@@ -14,12 +14,10 @@ debug your code from Xcode as well as the Godot code.
 
 # Working with this Repository
 
-You should be all set by referencing this as a package from SwiftPM 
-but if you want to work on the bindings, you will want to open
-the Generator project which will produce the output on top of this.
-
-You might need to run this from the command line, or change the
-hardcoded paths if you do so.
+You should be all set by referencing this as a package from SwiftPM
+but if you want to just work on the binding generator, you will want
+to open the Generator project and you can edit the `okList` variable
+to trim the build times.
 
 # Driving Godot From Swift
 
