@@ -12,7 +12,7 @@ var singleFile = true
 
 var args = CommandLine.arguments
 
-let projectDir = args.count > 1 ? args [1] : "/Users/miguel/cvs/godot-master/godot"
+let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/godot-master/godot/extension_api.json"
 var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot/Sources/SwiftGodot"
 
 let outputDir = args.count > 2 ? args [2] : generatorOutput
@@ -21,7 +21,7 @@ print ("Usage is: generator [godot-main-directory [output-directory]]")
 print ("where godot-main-directory contains api.json and builtin-api.json")
 print ("If unspecified, this will default to the built-in versions")
 
-let jsonData = try! Data(contentsOf: URL(fileURLWithPath: projectDir + "/extension_api.json"))
+let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
 // Determines whether a built-in type is defined as a structure, this means:
@@ -252,11 +252,17 @@ var classMap: [String:JGodotExtensionAPIClass] = [:]
 for x in jsonApi.classes {
     classMap [x.name] = x
 }
-try! result.write(toFile: outputDir + "/generated-builtin/core-defs.swift", atomically: true, encoding: .utf8)
+let generatedBuiltinDir = outputDir + "/generated-builtin/"
+let generatedDir = outputDir + "/generated/"
 
-generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: outputDir + "/generated-builtin/")
+try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
+try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
+
+try! result.write(toFile: generatedBuiltinDir + "/core-defs.swift", atomically: true, encoding: .utf8)
+
+generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
 
 result = ""
-generateClasses (values: jsonApi.classes, outputDir: outputDir)
+generateClasses (values: jsonApi.classes, outputDir: generatedDir)
 
 print ("Done")

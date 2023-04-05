@@ -460,7 +460,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
 
         // Save it
         defer {
-            try! result.write(toFile: outputDir + "/\(cdef.name).swift", atomically: true, encoding: .utf8)
+            try! result.write(toFile: outputDir + "\(cdef.name).swift", atomically: true, encoding: .utf8)
         }
         
         let inherits = cdef.inherits ?? "Wrapped"
