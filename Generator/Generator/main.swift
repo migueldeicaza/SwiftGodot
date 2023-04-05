@@ -13,7 +13,7 @@ var singleFile = true
 var args = CommandLine.arguments
 
 let projectDir = args.count > 1 ? args [1] : "/Users/miguel/cvs/godot-master/godot"
-var generatorOutput = "/Users/miguel/cvs/SwiftGodot/SwiftGodot/Sources/SwiftGodot/generated/"
+var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot/Sources/SwiftGodot"
 
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 
@@ -252,9 +252,9 @@ var classMap: [String:JGodotExtensionAPIClass] = [:]
 for x in jsonApi.classes {
     classMap [x.name] = x
 }
-try! result.write(toFile: outputDir + "/../generated-builtin/core-defs.swift", atomically: true, encoding: .utf8)
+try! result.write(toFile: outputDir + "/generated-builtin/core-defs.swift", atomically: true, encoding: .utf8)
 
-generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: outputDir + "/../generated-builtin/")
+generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: outputDir + "/generated-builtin/")
 
 result = ""
 generateClasses (values: jsonApi.classes, outputDir: outputDir)
