@@ -161,7 +161,7 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
         
         if #available(macOS 13.0, *) {
             // Replaces [params X] with `X`
-            var mod = x.replacing  (#/\[param (\w+)\]/#, with: { x in "`\(x.output.1)`" })
+            mod = x.replacing  (#/\[param (\w+)\]/#, with: { x in "`\(x.output.1)`" })
             mod = mod.replacing(#/\[constant (\w+)\]/#, with: { x in lookupConstant (x.output.1) })
         }
         p (String (mod))
