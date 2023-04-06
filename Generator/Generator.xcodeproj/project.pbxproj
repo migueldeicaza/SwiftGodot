@@ -14,6 +14,8 @@
 		4982B72229CE355A008D2CCD /* StringOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4982B72129CE355A008D2CCD /* StringOperations.swift */; };
 		49C9403629CF9E2F006CC78F /* TypeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C9403529CF9E2F006CC78F /* TypeHelpers.swift */; };
 		49CF7E2529DDBB6600C7EE35 /* Arguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CF7E2429DDBB6600C7EE35 /* Arguments.swift */; };
+		49CF7E2929DE12F400C7EE35 /* DocModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CF7E2829DE12F400C7EE35 /* DocModel.swift */; };
+		49CF7E2C29DE13F200C7EE35 /* XMLCoder in Frameworks */ = {isa = PBXBuildFile; productRef = 49CF7E2B29DE13F200C7EE35 /* XMLCoder */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +39,7 @@
 		4982B72129CE355A008D2CCD /* StringOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringOperations.swift; sourceTree = "<group>"; };
 		49C9403529CF9E2F006CC78F /* TypeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeHelpers.swift; sourceTree = "<group>"; };
 		49CF7E2429DDBB6600C7EE35 /* Arguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Arguments.swift; sourceTree = "<group>"; };
+		49CF7E2829DE12F400C7EE35 /* DocModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49CF7E2C29DE13F200C7EE35 /* XMLCoder in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +80,7 @@
 				492B8AEF29D12C440083C150 /* BuiltinGen.swift */,
 				492B8AF129D12CF00083C150 /* ClassGen.swift */,
 				49CF7E2429DDBB6600C7EE35 /* Arguments.swift */,
+				49CF7E2829DE12F400C7EE35 /* DocModel.swift */,
 			);
 			path = Generator;
 			sourceTree = "<group>";
@@ -96,6 +101,9 @@
 			dependencies = (
 			);
 			name = Generator;
+			packageProductDependencies = (
+				49CF7E2B29DE13F200C7EE35 /* XMLCoder */,
+			);
 			productName = Generator;
 			productReference = 4982B71529CE3296008D2CCD /* Generator */;
 			productType = "com.apple.product-type.tool";
@@ -124,6 +132,9 @@
 				Base,
 			);
 			mainGroup = 4982B70C29CE3296008D2CCD;
+			packageReferences = (
+				49CF7E2A29DE13F200C7EE35 /* XCRemoteSwiftPackageReference "XMLCoder" */,
+			);
 			productRefGroup = 4982B71629CE3296008D2CCD /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -138,6 +149,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49CF7E2929DE12F400C7EE35 /* DocModel.swift in Sources */,
 				4982B72029CE33DA008D2CCD /* ApiJsonModel.swift in Sources */,
 				492B8AF229D12CF00083C150 /* ClassGen.swift in Sources */,
 				492B8AF029D12C440083C150 /* BuiltinGen.swift in Sources */,
@@ -308,6 +320,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		49CF7E2A29DE13F200C7EE35 /* XCRemoteSwiftPackageReference "XMLCoder" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CoreOffice/XMLCoder.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		49CF7E2B29DE13F200C7EE35 /* XMLCoder */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49CF7E2A29DE13F200C7EE35 /* XCRemoteSwiftPackageReference "XMLCoder" */;
+			productName = XMLCoder;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4982B70D29CE3296008D2CCD /* Project object */;
 }

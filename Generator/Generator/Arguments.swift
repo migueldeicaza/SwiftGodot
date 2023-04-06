@@ -7,6 +7,10 @@
 
 import Foundation
 
+func godotArgumentToSwift (_ name: String) -> String {
+    return escapeSwift (snakeToCamel (name))
+}
+
 func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
@@ -36,7 +40,7 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
             }
         }
     }
-    return "\(eliminate)\(escapeSwift (snakeToCamel (argument.name))): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(def)"
+    return "\(eliminate)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(def)"
 }
 
 func generateArgPrepare (_ args: [JNameAndType]) -> String {
@@ -46,7 +50,7 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
         for arg in args {
             //if !isCoreType (name: arg.type) {
             if isStructMap [arg.type] ?? false {
-                body += "var copy_\(arg.name) = \(escapeSwift (snakeToCamel (arg.name)))\n"
+                body += "var copy_\(arg.name) = \(godotArgumentToSwift (arg.name))\n"
             }
         }
 
@@ -56,7 +60,7 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
             var argref: String
             var optstorage: String
             if !(isStructMap [arg.type] ?? false) { // { ) isCoreType(name: arg.type){
-                argref = escapeSwift (snakeToCamel (arg.name))
+                argref = godotArgumentToSwift (arg.name)
                 if isStructMap [arg.type] ?? false {
                     optstorage = ""
                 } else {
