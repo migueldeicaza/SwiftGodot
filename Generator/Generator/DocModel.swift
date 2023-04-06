@@ -90,7 +90,7 @@ struct DocMember: Codable {
 }
 
 struct DocConstants: Codable {
-    var constants: [DocConstant]
+    var constant: [DocConstant]
 }
 
 struct DocConstant: Codable {
@@ -121,29 +121,46 @@ func loadClassDoc (base: String, name: String) -> DocClass? {
     }
 }
 
+
 // Attributes to handle:
 // [NAME] is a type reference
 // [b]..[/b] bold
 // [method name] is a method reference, should apply the remapping we do
 // 
-func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
+func doc (_ cdef: JGodotExtensionAPIClass?, _ text: String?) {
     guard let text else { return }
 
-    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
-        return
-    }
+//    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
+//        return
+//    }
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
-        for ed in cdef.enums ?? [] {
-            for vp in ed.values {
-                if vp.name == txt {
-                    let name = dropMatchingPrefix(ed.name, vp.name)
-                    return ".\(escapeSwift (name))"
+        if txt == "ERR_CANT_CREATE" {
+            print()
+        }
+        if let cdef {
+            // TODO: for builtins, we wont have a cdef
+            for ed in cdef.enums ?? [] {
+                for vp in ed.values {
+                    if vp.name == txt {
+                        let name = dropMatchingPrefix(ed.name, vp.name)
+                        return ".\(escapeSwift (name))"
+                    }
                 }
             }
         }
-        print ("Doc: in \(cdef.name) did not find a constant for \(txt)")
-        return ""
+        for ed in jsonApi.globalEnums {
+            for ev in ed.values {
+                if ev.name == txt {
+                    let name = dropMatchingPrefix(ed.name, ev.name)
+                    
+                    return "``\(getGodotType (SimpleType (type: ed.name)))/\(escapeSwift(String (name)))``"
+                }
+            }
+        }
+        //print ("Doc: Could not find constant \(txt) in \(cdef.name)")
+        
+        return "``\(txt)``"
     }
     
     // If this is a Type.Name returns "Type", "Name"
@@ -199,8 +216,10 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
             }
             return "\(type)/\(godotMethodToSwift(member))(\(args))"
         } else {
-            if let method = findMethod(name: member, on: cdef) {
-                args = assembleArgs (method.arguments)
+            if let cdef {
+                if let method = findMethod(name: member, on: cdef) {
+                    args = assembleArgs (method.arguments)
+                }
             }
         }
           
@@ -238,7 +257,7 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
             mod = mod.replacing(#/\[(constant|param) (\w+)\]/#, with: { x in
                 switch x.output.1 {
                 case "param":
-                    return "`\(x.output.2)`"
+                    return "`\(godotArgumentToSwift (String(x.output.2)))`"
                 case "constant":
                     return lookupConstant (x.output.2)
                 default:
@@ -254,6 +273,14 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
                     // Same as method for now?
                     return "``\(convertMember(x.output.2))``"
                 case "enum":
+                    if let cdef {
+                        if let enums = cdef.enums {
+                            // If it is a local enum
+                            if enums.contains(where: { $0.name == x.output.2 }) {
+                                return "``\(cdef.name)/\(x.output.2)``"
+                            }
+                        }
+                    }
                     return "``\(x.output.2)``"
                 default:
                     print ("Doc: Error, unexpected \(x.output.1) tag")
@@ -263,9 +290,12 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
             
             // [FirstLetterIsUpperCase] is a reference to a type
             mod = mod.replacing(#/\[([A-Z]\w+)\]/#, with: { x in
+                let word = x.output.1
                 return "``\(mapTypeNameDoc (String (x.output.1)))``"
             })
             // To avoid the greedy problem, it happens above, but not as much
+            mod = mod.replacing("[b]Note:[/b]", with: "> Note:")
+            mod = mod.replacing("[b]Warning:[/b]", with: "> Warning:")
             mod = mod.replacing("[b]", with: "**")
             mod = mod.replacing("[/b]", with: "**")
             mod = mod.replacing("[code]", with: "`")

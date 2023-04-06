@@ -308,7 +308,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             }
 
             if let enums = bc.enums {
-                generateEnums(values: enums, prefix: bc.name + ".")
+                generateEnums(cdef: nil, values: enums, docClass: nil, prefix: bc.name + ".")
             }
             generateBuiltinCtors (bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             

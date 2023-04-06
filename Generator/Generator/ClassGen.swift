@@ -183,7 +183,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
             assert (method.isVirtual)
             // virtual overwrittable method
             finalp = ""
-            visibility = "open"
+            visibility = "@_documentation(visibility: public)\nopen"
             eliminate = ""
                 
             virtuals [method.name] = (methodName, method)
@@ -318,7 +318,19 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
     return virtuals
 }
 
-
+func generateConstants (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ constants: [JGodotValueElement]) {
+    p ("/* Constants */")
+    let docConstants = docClass?.constants?.constant
+    
+    for constant in constants {
+        for dc in docConstants ?? [] {
+            if dc.name == constant.name {
+                doc (cdef, "\(dc.rest)")
+            }
+        }
+        p ("public static let \(constant.name) = \(constant.value)")
+    }
+}
 func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ properties: [JGodotProperty], _ methods: [JGodotClassMethod], _ referencedMethods: inout Set<String>)
 {
     p ("\n/* Properties */\n")
@@ -483,11 +495,15 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             var referencedMethods = Set<String>()
             
             if let enums = cdef.enums {
-                generateEnums (values: enums, prefix: nil)
+                generateEnums (cdef: cdef, values: enums, docClass: docClass, prefix: nil)
             }
 
             let oResult = result
 
+            if let constants = cdef.constants {
+                generateConstants (cdef: cdef, docClass: docClass, constants)
+            }
+            
             if let properties = cdef.properties {
                 generateProperties (cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods)
             }
