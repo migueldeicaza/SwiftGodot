@@ -152,7 +152,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
         var eliminate: String
         var finalp: String
         // Default method name
-        var methodName: String = escapeSwift (snakeToCamel(method.name))
+        var methodName: String = godotMethodToSwift (method.name)
         
         let instanceOrStatic = method.isStatic ? " static" : ""
         var inline = ""
@@ -454,7 +454,11 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         let typeDecl = "open class \(cdef.name): \(inherits)"
         
         var virtuals: [String: (String, JGodotClassMethod)] = [:]
-        doc (cdef, docClass?.description)
+        doc (cdef, docClass?.brief_description)
+        if docClass?.description ?? "" != "" {
+            doc (cdef, "")      // Add a newline before the fuller description
+            doc (cdef, docClass?.description)
+        }
         // class or extension (for Object)
         b (typeDecl) {
             p ("static private var className = StringName (\"\(cdef.name)\")")

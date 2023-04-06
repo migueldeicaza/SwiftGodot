@@ -91,6 +91,9 @@ func mapEnumValue (enumDef: String, value: String) -> String? {
     return nil
 }
 
+func godotMethodToSwift (_ name: String) -> String {
+    return escapeSwift (snakeToCamel(name))
+}
 var core_types = [
               "String",
               "Vector2",
@@ -359,3 +362,4 @@ func builtinTypecode (_ name: String) -> String {
         fatalError()
     }
 }
+

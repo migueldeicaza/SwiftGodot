@@ -129,6 +129,9 @@ func loadClassDoc (base: String, name: String) -> DocClass? {
 func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
     guard let text else { return }
     
+    // Until it is done
+    return
+    
     func lookupConstant (_ txt: String.SubSequence) -> String {
         for ed in cdef.enums ?? [] {
             for vp in ed.values {
@@ -138,8 +141,25 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
                 }
             }
         }
-        print ("Doc: in \(cdef.name) did not find a constnat for \(txt))")
+        print ("Doc: in \(cdef.name) did not find a constant for \(txt)")
         return ""
+    }
+    
+    func convertMethod (_ txt: String.SubSequence) -> String.SubSequence {
+        if txt.starts(with: "@") {
+            // TODO, examples:
+            // @GlobalScope.remap
+            // @GDScript.load
+
+            return txt
+        }
+        
+        if let dot = txt.firstIndex(of: ".") {
+            let rest = String (txt [text.index(dot, offsetBy: 1)...])
+            return txt [txt.startIndex..<dot] + "." + godotMethodToSwift(rest)
+        }
+        
+        return godotMethodToSwift(String (txt)).dropFirst(0)
     }
     
     let oIndent = indentStr
@@ -159,10 +179,32 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
         
         var mod = x
         
+        if mod.starts(with: "Sets the transition curve (easing)") {
+            print ("a")
+        }
         if #available(macOS 13.0, *) {
             // Replaces [params X] with `X`
             mod = x.replacing  (#/\[param (\w+)\]/#, with: { x in "`\(x.output.1)`" })
             mod = mod.replacing(#/\[constant (\w+)\]/#, with: { x in lookupConstant (x.output.1) })
+            mod = mod.replacing(#/\[method ([\w\.@_]+)\]/#, with: { x in "``\(convertMethod (x.output.1))``" })
+            
+            // [FirstLetterIsUpperCase] is a reference to a type
+            mod = mod.replacing(#/\[([A-Z]\w+)\]/#, with: { x in
+                let suffix = isStructMap [String (x.output.1)] != nil ? "struct" : "class"
+                return "``\(x.output.1)``"
+            })
+            // To avoid the greedy problem, it happens above, but not as much
+            mod = mod.replacing("[b]", with: "**")
+            mod = mod.replacing("[/b]", with: "**")
+            mod = mod.replacing("[code]", with: "`")
+            mod = mod.replacing("[/code]", with: "`")
+            
+            // TODO
+            // [constant XX]
+            // [enum XX]
+            // [member X]
+            // [signal X]
+            
         }
         p (String (mod))
     }
