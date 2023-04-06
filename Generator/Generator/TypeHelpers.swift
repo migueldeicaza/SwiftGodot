@@ -54,6 +54,12 @@ func isBuiltinClass (_ godotTypeName: String) -> Bool {
 func mapEnumValue (enumDef: String, value: String) -> String? {
     func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
         for evalue in element.values {
+            let ename = evalue.name
+            if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
+                continue
+                
+            }
+
             if "\(evalue.value)" == value {
                 let name = dropMatchingPrefix (String (element.name), evalue.name)
                 return ".\(escapeSwift (name))"

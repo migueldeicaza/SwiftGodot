@@ -16,9 +16,6 @@ let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/godot-master/godot
 var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot/DEBUG"
 var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/godot/doc"
 
-let d = loadClassDoc (base: docRoot, name: "Image")
-print (d)
-
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 
 print ("Usage is: generator [godot-main-directory [output-directory]]")
