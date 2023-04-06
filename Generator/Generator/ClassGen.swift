@@ -368,9 +368,6 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
             print ("WARNING \(loc) property references a getter method that takes more than two arguments")
             continue
         }
-        if property.name == "positional_shadow_atlas_quad_0" {
-            print ("a")
-        }
         guard (method.returnValue?.type) != nil else {
             print ("WARNING \(loc) Could not get a return type for method")
             continue
@@ -393,7 +390,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
             access = ""
         }
         
-        b ("final public var \(escapeSwift (snakeToCamel(property.name))): \(type!)"){
+        b ("final public var \(godotPropertyToSwift (property.name)): \(type!)"){
             b ("get"){
                 p ("return \(property.getter) (\(access))")
             }

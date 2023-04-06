@@ -130,7 +130,7 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
     guard let text else { return }
     
     // Until it is done
-    return
+    //return
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
         for ed in cdef.enums ?? [] {
@@ -145,23 +145,41 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
         return ""
     }
     
-    func convertMethod (_ txt: String.SubSequence) -> String.SubSequence {
+    // If this is a Type.Name returns "Type", "Name"
+    // If this is Type it returns (nil, "Name")
+    func typeSplit (txt: String.SubSequence) -> (String?, String) {
+        if let dot = txt.firstIndex(of: ".") {
+            let rest = String (txt [text.index(dot, offsetBy: 1)...])
+            return (String (txt [txt.startIndex..<dot]), rest)
+        }
+        
+        return (nil, String (txt))
+    }
+    
+    func convertMethod (_ txt: String.SubSequence) -> String {
         if txt.starts(with: "@") {
             // TODO, examples:
             // @GlobalScope.remap
             // @GDScript.load
 
-            return txt
+            return String (txt)
         }
         
-        if let dot = txt.firstIndex(of: ".") {
-            let rest = String (txt [text.index(dot, offsetBy: 1)...])
-            return txt [txt.startIndex..<dot] + "." + godotMethodToSwift(rest)
+        let (type, member) = typeSplit(txt: txt)
+        if let type {
+            return "\(type).\(godotMethodToSwift(member))"
         }
-        
-        return godotMethodToSwift(String (txt)).dropFirst(0)
+        return godotMethodToSwift(member)
     }
-    
+
+    func convertMember (_ txt: String.SubSequence) -> String {
+        let (type, member) = typeSplit(txt: txt)
+        if let type {
+            return "\(type).\(godotMethodToSwift(member))"
+        }
+        return godotPropertyToSwift(member)
+    }
+
     let oIndent = indentStr
     indentStr = "\(indentStr)/// "
     
@@ -179,14 +197,33 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
         
         var mod = x
         
-        if mod.starts(with: "Sets the transition curve (easing)") {
-            print ("a")
-        }
         if #available(macOS 13.0, *) {
             // Replaces [params X] with `X`
-            mod = x.replacing  (#/\[param (\w+)\]/#, with: { x in "`\(x.output.1)`" })
-            mod = mod.replacing(#/\[constant (\w+)\]/#, with: { x in lookupConstant (x.output.1) })
-            mod = mod.replacing(#/\[method ([\w\.@_]+)\]/#, with: { x in "``\(convertMethod (x.output.1))``" })
+            mod = mod.replacing(#/\[(constant|param) (\w+)\]/#, with: { x in
+                switch x.output.1 {
+                case "param":
+                    return "`\(x.output.2)`"
+                case "constant":
+                    return lookupConstant (x.output.2)
+                default:
+                    print ("Doc: Error, unexpected \(x.output.1) tag")
+                    return "[\(x.output.1) \(x.output.2)]"
+                }
+            })
+            mod = mod.replacing(#/\[(enum|method|member) ([\w\.@_/]+)\]/#, with: { x in
+                switch x.output.1 {
+                case "method":
+                    return "``\(convertMethod (x.output.2))``"
+                case "member":
+                    // Same as method for now?
+                    return "``\(convertMember(x.output.2))``"
+                case "enum":
+                    return "``\(x.output.2)``"
+                default:
+                    print ("Doc: Error, unexpected \(x.output.1) tag")
+                    return "[\(x.output.1) \(x.output.2)]"
+                }
+            })
             
             // [FirstLetterIsUpperCase] is a reference to a type
             mod = mod.replacing(#/\[([A-Z]\w+)\]/#, with: { x in
@@ -200,8 +237,6 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
             mod = mod.replacing("[/code]", with: "`")
             
             // TODO
-            // [constant XX]
-            // [enum XX]
             // [member X]
             // [signal X]
             
