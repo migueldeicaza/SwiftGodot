@@ -12,6 +12,12 @@ Swift.
 Driving Godot from Swift has the advantage that on MacOS you can
 debug your code from Xcode as well as the Godot code.
 
+You can [browse the API
+documentation](https://migueldeicaza.github.io/SwiftGodot/documentation/swiftgodot/)
+but it can also be edited for local use, if you enable it in the
+Generator.
+
+
 # Working with this Repository
 
 You should be all set by referencing this as a package from SwiftPM
