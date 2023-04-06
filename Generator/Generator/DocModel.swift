@@ -130,7 +130,7 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
     guard let text else { return }
     
     // Until it is done
-    //return
+    return
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
         for ed in cdef.enums ?? [] {
@@ -155,6 +155,17 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
         
         return (nil, String (txt))
     }
+
+    func assembleArgs (_ arguments: [JGodotArgument]?) -> String {
+        var args = ""
+        
+        // Assemble argument names
+        for arg in arguments ?? [] {
+            args.append(godotArgumentToSwift(arg.name))
+            args.append(":")
+        }
+        return args
+    }
     
     func convertMethod (_ txt: String.SubSequence) -> String {
         if txt.starts(with: "@") {
@@ -165,17 +176,41 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
             return String (txt)
         }
         
-        let (type, member) = typeSplit(txt: txt)
-        if let type {
-            return "\(type).\(godotMethodToSwift(member))"
+        func findMethod (name: String, on: JGodotExtensionAPIClass) -> JGodotClassMethod? {
+            on.methods?.first(where: { x in x.name == name })
         }
-        return godotMethodToSwift(member)
+        func findMethod (name: String, on: JGodotBuiltinClass) -> JGodotBuiltinClassMethod? {
+            on.methods?.first(where: { x in x.name == name })
+        }
+        
+        let (type, member) = typeSplit(txt: txt)
+        
+        var args = ""
+        if let type {
+            if let m = classMap [type] {
+                if let method = findMethod (name: member, on: m) {
+                    args = assembleArgs (method.arguments)
+                }
+            } else if let m = builtinMap [type] {
+                if let method = findMethod (name: member, on: m) {
+                    args = assembleArgs(method.arguments)
+                }
+            }
+            return "\(type)/\(godotMethodToSwift(member))(\(args))"
+        } else {
+            if let method = findMethod(name: member, on: cdef) {
+                args = assembleArgs (method.arguments)
+            }
+        }
+          
+        
+        return "\(godotMethodToSwift(member))(\(args))"
     }
 
     func convertMember (_ txt: String.SubSequence) -> String {
         let (type, member) = typeSplit(txt: txt)
         if let type {
-            return "\(type).\(godotMethodToSwift(member))"
+            return "\(type)/\(godotMethodToSwift(member))"
         }
         return godotPropertyToSwift(member)
     }
@@ -227,15 +262,14 @@ func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
             
             // [FirstLetterIsUpperCase] is a reference to a type
             mod = mod.replacing(#/\[([A-Z]\w+)\]/#, with: { x in
-                let suffix = isStructMap [String (x.output.1)] != nil ? "struct" : "class"
-                return "``\(x.output.1)``"
+                return "``\(mapTypeNameDoc (String (x.output.1)))``"
             })
             // To avoid the greedy problem, it happens above, but not as much
             mod = mod.replacing("[b]", with: "**")
             mod = mod.replacing("[/b]", with: "**")
             mod = mod.replacing("[code]", with: "`")
             mod = mod.replacing("[/code]", with: "`")
-            
+            mod = mod.trimmingPrefix(#/\s+/#)
             // TODO
             // [member X]
             // [signal X]

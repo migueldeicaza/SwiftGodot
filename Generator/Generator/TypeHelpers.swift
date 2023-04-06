@@ -151,6 +151,12 @@ func mapTypeName (_ name: String) -> String {
     }
     return name
 }
+func mapTypeNameDoc (_ name: String) -> String {
+    if name == "Type" {
+        return "GType"
+    }
+    return mapTypeName (name)
+}
 
 struct SimpleType: TypeWithMeta {
     var type: String
