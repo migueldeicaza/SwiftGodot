@@ -128,9 +128,10 @@ func loadClassDoc (base: String, name: String) -> DocClass? {
 // 
 func doc (_ cdef: JGodotExtensionAPIClass, _ text: String?) {
     guard let text else { return }
-    
-    // Until it is done
-    return
+
+    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
+        return
+    }
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
         for ed in cdef.enums ?? [] {
