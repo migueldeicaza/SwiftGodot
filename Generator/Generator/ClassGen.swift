@@ -319,7 +319,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
 }
 
 
-func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotProperty], _ methods: [JGodotClassMethod], _ referencedMethods: inout Set<String>)
+func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ properties: [JGodotProperty], _ methods: [JGodotClassMethod], _ referencedMethods: inout Set<String>)
 {
     p ("\n/* Properties */\n")
 
@@ -390,6 +390,11 @@ func generateProperties (cdef: JGodotExtensionAPIClass, _ properties: [JGodotPro
             access = ""
         }
         
+        if let docClass, let members = docClass.members {
+            if let docMember = members.member.first(where: { $0.name == property.name }) {
+                doc (cdef, docMember.value)
+            }
+        }
         b ("final public var \(godotPropertyToSwift (property.name)): \(type!)"){
             b ("get"){
                 p ("return \(property.getter) (\(access))")
@@ -484,7 +489,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             let oResult = result
 
             if let properties = cdef.properties {
-                generateProperties (cdef: cdef, properties, cdef.methods ?? [], &referencedMethods)
+                generateProperties (cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods)
             }
             if let methods = cdef.methods {
                 virtuals = generateMethods (cdef: cdef, docClass: docClass, methods: methods, referencedMethods)
