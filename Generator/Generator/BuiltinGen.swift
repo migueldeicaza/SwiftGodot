@@ -7,7 +7,7 @@
 
 import Foundation
 
-func generateBuiltinCtors (_ ctors: [JGodotConstructor], godotTypeName: String, typeName: String, typeEnum: String, members: [JGodotSingleton]?)
+func generateBuiltinCtors (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, _ ctors: [JGodotConstructor], godotTypeName: String, typeName: String, typeEnum: String, members: [JGodotSingleton]?)
 {
     let isStruct = isStructMap [typeName] ?? false
     
@@ -28,6 +28,25 @@ func generateBuiltinCtors (_ ctors: [JGodotConstructor], godotTypeName: String, 
             args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField)
         }
         
+        // Find the document for this constructor
+        if let docClass, let ctorDocs = docClass.constructors?.constructor {
+            for ctorDoc in ctorDocs {
+                let ctorDocParamCount = ctorDoc.param.count
+                if ctorDocParamCount == (m.arguments?.count ?? -1) {
+                    var fail = false
+                    for i in 0..<ctorDocParamCount {
+                        if ctorDoc.param [i].type != m.arguments! [i].type {
+                            fail = true
+                            break
+                        }
+                    }
+                    if !fail {
+                        doc (bc, ctorDoc.description)
+                        break
+                    }
+                }
+            }
+        }
         b ("\(visibility) init (\(args))") {
             // Determine if we have a constructors whose sole job is to initialize the members
             // of the struct, in that case, just do that, do not call into Godot.
@@ -134,7 +153,9 @@ let skipOperators: [String:[(String,String)]] = [
 ///   - operators: the array of operators
 ///   - godotTypeName: the type for which we are generating operators
 ///   - typeName: the type name above, but in Swift
-func generateBuiltinOperators (_ operators: [JGodotOperator], godotTypeName: String, typeName: String) {
+func generateBuiltinOperators (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, typeName: String) {
+    let operators = bc.operators
+    let godotTypeName = bc.name
     var n = 0
     
     for op in operators {
@@ -160,6 +181,14 @@ func generateBuiltinOperators (_ operators: [JGodotOperator], godotTypeName: Str
             }
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
+            if let docClass, let opDocs = docClass.operators?.operator {
+                for opDoc in opDocs {
+                    if opDoc.name.hasSuffix(op.name) && opDoc.return.first?.type == op.returnType && right == opDoc.param.first?.type {
+                        doc (bc, opDoc.description)
+                        break
+                    }
+                }
+            }
             b ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
                 
                 let args: [JGodotArgument] = [
@@ -174,7 +203,7 @@ func generateBuiltinOperators (_ operators: [JGodotOperator], godotTypeName: Str
     
 
 
-func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: String, _ typeEnum: String, isStruct: Bool)
+func generateBuiltinMethods (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, _ methods: [JGodotBuiltinClassMethod], _ typeName: String, _ typeEnum: String, isStruct: Bool)
 {
     if methods.count > 0 {
         p ("\n/* Methods */\n")
@@ -206,6 +235,12 @@ func generateBuiltinMethods (_ methods: [JGodotBuiltinClassMethod], _ typeName: 
             args += getArgumentDeclaration(arg, eliminate: "")
         }
         
+        if let docClass, let methods = docClass.methods {
+            if let docMethod = methods.method.first(where: { $0.name == m.name }) {
+                doc (bc, docMethod.description)
+                // Sadly, the parameters have no useful documentation
+            }
+        }
         b ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
             
             generateMethodCall (typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, arguments: m.arguments, kind: .methodCall)
@@ -217,7 +252,7 @@ var builtinGodotTypeNames = Set<String>()
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
-    func generateBuiltinClass (_ bc: JGodotBuiltinClass) {
+    func generateBuiltinClass (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?) {
         // TODO: isKeyed, hasDestrcturo,
         var kind: String
         if bc.members != nil {
@@ -247,6 +282,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             proto = ": " + conformances.joined(separator: ", ")
         } else {
             proto = ""
+        }
+        
+        doc (bc, docClass?.brief_description)
+        if docClass?.description ?? "" != "" {
+            doc (bc, "")      // Add a newline before the fuller description
+            doc (bc, docClass?.description)
         }
         b ("public \(kind) \(typeName)\(proto)") {
             if bc.name == "String" {
@@ -308,12 +349,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             }
 
             if let enums = bc.enums {
-                generateEnums(cdef: nil, values: enums, docClass: nil, prefix: bc.name + ".")
+                generateEnums(cdef: bc, values: enums, constantDocs: docClass?.constants?.constant, prefix: bc.name + ".")
             }
-            generateBuiltinCtors (bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
+            generateBuiltinCtors (bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             
-            generateBuiltinMethods(bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
-            generateBuiltinOperators (bc.operators, godotTypeName: bc.name, typeName: typeName)
+            generateBuiltinMethods(bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
+            generateBuiltinOperators (bc, docClass, typeName: typeName)
         }
     }
     
@@ -325,8 +366,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
         default:
             result = "// This file is autogenerated, do not edit\n"
             result += "import Foundation\nimport GDExtension\n\n"
-
-            generateBuiltinClass (bc)
+            let docClass = loadBuiltinDoc(base: docRoot, name: bc.name)
+            generateBuiltinClass (bc, docClass)
             try! result.write(toFile: outputDir + "/\(bc.name).swift", atomically: true, encoding: .utf8)
         }
     }

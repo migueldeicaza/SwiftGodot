@@ -495,7 +495,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             var referencedMethods = Set<String>()
             
             if let enums = cdef.enums {
-                generateEnums (cdef: cdef, values: enums, docClass: docClass, prefix: nil)
+                generateEnums (cdef: cdef, values: enums, constantDocs: docClass?.constants?.constant, prefix: nil)
             }
 
             let oResult = result

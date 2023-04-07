@@ -352,7 +352,7 @@ extension JGodotSize {
 }
 
 // MARK: - JGodotBuiltinClass
-struct JGodotBuiltinClass: Codable {
+struct JGodotBuiltinClass: Codable, JClassInfo {
     let name: String
     let isKeyed: Bool
     let operators: [JGodotOperator]
@@ -796,7 +796,7 @@ extension JGodotOperator {
 
 
 // MARK: - JGodotExtensionAPIClass
-struct JGodotExtensionAPIClass: Codable {
+struct JGodotExtensionAPIClass: Codable, JClassInfo {
     let name: String
     let isRefcounted, isInstantiable: Bool
     let inherits: String?
@@ -816,6 +816,13 @@ struct JGodotExtensionAPIClass: Codable {
         case enums, methods, properties, signals, constants
     }
 }
+
+// Protocol to share features between JGodotExtensionClass and JGodotBuiltinClass
+protocol JClassInfo {
+    var name: String { get }
+    var enums: [JGodotGlobalEnumElement]? { get }
+}
+
 
 // MARK: JGodotExtensionAPIClass convenience initializers and mutators
 
@@ -927,6 +934,9 @@ extension JGodotGlobalEnumElement {
     }
 }
 
+protocol JSharedClassMethod {
+    
+}
 // MARK: - JGodotClassMethod
 struct JGodotClassMethod: Codable {
     let name: String

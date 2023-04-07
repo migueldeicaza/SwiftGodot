@@ -22,6 +22,40 @@ struct DocClass: Codable {
     var constants: DocConstants?
 }
 
+struct DocBuiltinClass: Codable {
+    @Attribute var name: String
+    @Attribute var version: String
+    var brief_description: String
+    var description: String
+    var tutorials: [DocTutorial]
+    var constructors: DocConstructors?
+    var methods: DocMethods?
+    var members: DocMembers?
+    var constants: DocConstants?
+    var operators: DocOperators?
+}
+
+struct DocConstructors: Codable {
+    var constructor: [DocConstructor]
+}
+
+struct DocConstructor: Codable {
+    @Attribute var name: String
+    var `return`: [DocReturn]
+    var description: String
+    var param: [DocParam]
+}
+
+struct DocOperators: Codable {
+    var `operator`: [DocOperator]
+}
+
+struct DocOperator: Codable {
+    @Attribute var name: String
+    var `return`: [DocReturn]
+    var description: String
+    var param: [DocParam]
+}
 struct DocTutorial: Codable {
     var link: [DocLink]
 }
@@ -43,7 +77,7 @@ struct DocMethods: Codable {
 struct DocMethod: Codable {
     @Attribute var name: String
     @Attribute var qualifiers: String?
-    var `return`: DocReturn
+    var `return`: DocReturn?
     var description: String
     var params: [DocParam]
     
@@ -121,13 +155,31 @@ func loadClassDoc (base: String, name: String) -> DocClass? {
     }
 }
 
+func loadBuiltinDoc (base: String, name: String) -> DocBuiltinClass? {
+    guard let d = try? Data(contentsOf: URL (fileURLWithPath: "\(base)/classes/\(name).xml")) else {
+        return nil
+    }
+    let decoder = XMLDecoder()
+    do {
+        let v = try decoder.decode(DocBuiltinClass.self, from: d)
+        return v
+    } catch (let e){
+        print ("Failed to load docs for \(name), details: \(e)")
+        fatalError()
+    }
+}
+
+let rxConstantParam = #/\[(constant|param) (\w+)\]/#
+let rxEnumMethodMember = #/\[(enum|method|member) ([\w\.@_/]+)\]/#
+let rxTypeName = #/\[([A-Z]\w+)\]/#
+let rxEmptyLeading = #/\s+/#
 
 // Attributes to handle:
 // [NAME] is a type reference
 // [b]..[/b] bold
 // [method name] is a method reference, should apply the remapping we do
 // 
-func doc (_ cdef: JGodotExtensionAPIClass?, _ text: String?) {
+func doc (_ cdef: JClassInfo?, _ text: String?) {
     guard let text else { return }
 
 //    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
@@ -216,8 +268,12 @@ func doc (_ cdef: JGodotExtensionAPIClass?, _ text: String?) {
             }
             return "\(type)/\(godotMethodToSwift(member))(\(args))"
         } else {
-            if let cdef {
-                if let method = findMethod(name: member, on: cdef) {
+            if let apiDef = cdef as? JGodotExtensionAPIClass {
+                if let method = findMethod(name: member, on: apiDef) {
+                    args = assembleArgs (method.arguments)
+                }
+            } else if let builtinDef = cdef as? JGodotBuiltinClass {
+                if let method = findMethod(name: member, on: builtinDef) {
                     args = assembleArgs (method.arguments)
                 }
             }
@@ -254,7 +310,7 @@ func doc (_ cdef: JGodotExtensionAPIClass?, _ text: String?) {
         
         if #available(macOS 13.0, *) {
             // Replaces [params X] with `X`
-            mod = mod.replacing(#/\[(constant|param) (\w+)\]/#, with: { x in
+            mod = mod.replacing(rxConstantParam, with: { x in
                 switch x.output.1 {
                 case "param":
                     return "`\(godotArgumentToSwift (String(x.output.2)))`"
@@ -265,7 +321,7 @@ func doc (_ cdef: JGodotExtensionAPIClass?, _ text: String?) {
                     return "[\(x.output.1) \(x.output.2)]"
                 }
             })
-            mod = mod.replacing(#/\[(enum|method|member) ([\w\.@_/]+)\]/#, with: { x in
+            mod = mod.replacing(rxEnumMethodMember, with: { x in
                 switch x.output.1 {
                 case "method":
                     return "``\(convertMethod (x.output.2))``"
@@ -289,18 +345,20 @@ func doc (_ cdef: JGodotExtensionAPIClass?, _ text: String?) {
             })
             
             // [FirstLetterIsUpperCase] is a reference to a type
-            mod = mod.replacing(#/\[([A-Z]\w+)\]/#, with: { x in
+            mod = mod.replacing(rxTypeName, with: { x in
                 let word = x.output.1
                 return "``\(mapTypeNameDoc (String (x.output.1)))``"
             })
             // To avoid the greedy problem, it happens above, but not as much
             mod = mod.replacing("[b]Note:[/b]", with: "> Note:")
+            mod = mod.replacing("[int]", with: "integer")
+            mod = mod.replacing("[float]", with: "float")
             mod = mod.replacing("[b]Warning:[/b]", with: "> Warning:")
             mod = mod.replacing("[b]", with: "**")
             mod = mod.replacing("[/b]", with: "**")
             mod = mod.replacing("[code]", with: "`")
             mod = mod.replacing("[/code]", with: "`")
-            mod = mod.trimmingPrefix(#/\s+/#)
+            mod = mod.trimmingPrefix(rxEmptyLeading)
             // TODO
             // [member X]
             // [signal X]
