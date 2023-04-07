@@ -133,7 +133,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
     for method in methods {
-        let loc = "\(cdef.name).\(method.name)"
+        //let loc = "\(cdef.name).\(method.name)"
         if method.isVararg {
             // print ("TODO: No vararg support yet \(loc)")
             continue

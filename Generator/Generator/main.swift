@@ -56,9 +56,6 @@ func b (_ str: String, suffix: String = "", block: () -> ()) {
 
 func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel (enumKey)
-    if enumKey == "VERTICAL" {
-        print()
-    }
     if snake.lowercased().starts(with: enumName.lowercased()) {
         if snake.count == enumName.count {
             return snake

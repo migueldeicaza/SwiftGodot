@@ -170,7 +170,7 @@ func loadBuiltinDoc (base: String, name: String) -> DocBuiltinClass? {
 }
 
 @available(macOS 13.0, *)
-let rxConstantParam = #/\[(constant|param) (\w+)\]/#
+let rxConstantParam = #/\[(constant|param) ([\w\._@]+)\]/#
 @available(macOS 13.0, *)
 let rxEnumMethodMember = #/\[(enum|method|member) ([\w\.@_/]+)\]/#
 @available(macOS 13.0, *)
@@ -185,15 +185,11 @@ let rxEmptyLeading = #/\s+/#
 // 
 func doc (_ cdef: JClassInfo?, _ text: String?) {
     guard let text else { return }
-
 //    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
 //        return
 //    }
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
-        if txt == "ERR_CANT_CREATE" {
-            print()
-        }
         if let cdef {
             // TODO: for builtins, we wont have a cdef
             for ed in cdef.enums ?? [] {
@@ -300,11 +296,11 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
     
     var inCodeBlock = false
     for x in text.split(separator: "\n", omittingEmptySubsequences: false) {
-        if x.contains ("[codeblocks]") {
+        if x.contains ("[codeblock") {
             inCodeBlock = true
             continue
         }
-        if x.contains ("[/codeblocks]") {
+        if x.contains ("[/codeblock") {
             inCodeBlock = false
             continue
         }

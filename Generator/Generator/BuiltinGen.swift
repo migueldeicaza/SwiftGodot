@@ -313,7 +313,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 }
                 p ("// ExpressibleByStringLiteral conformace")
                 b ("public required init (stringLiteral value: String)") {
-                    p ("gi.string_new_with_utf8_chars (&content, value)")
+                    p ("var from = GString (value)")
+                    p ("var args: [UnsafeRawPointer?] = [")
+                    p ("    UnsafeRawPointer(&from.content),")
+                    p ("]")
+                    p ("StringName.constructor2 (&content, &args)")
                 }
             }
             if bc.hasDestructor {
