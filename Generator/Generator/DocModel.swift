@@ -169,9 +169,13 @@ func loadBuiltinDoc (base: String, name: String) -> DocBuiltinClass? {
     }
 }
 
+@available(macOS 13.0, *)
 let rxConstantParam = #/\[(constant|param) (\w+)\]/#
+@available(macOS 13.0, *)
 let rxEnumMethodMember = #/\[(enum|method|member) ([\w\.@_/]+)\]/#
+@available(macOS 13.0, *)
 let rxTypeName = #/\[([A-Z]\w+)\]/#
+@available(macOS 13.0, *)
 let rxEmptyLeading = #/\s+/#
 
 // Attributes to handle:
@@ -347,7 +351,7 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
             // [FirstLetterIsUpperCase] is a reference to a type
             mod = mod.replacing(rxTypeName, with: { x in
                 let word = x.output.1
-                return "``\(mapTypeNameDoc (String (x.output.1)))``"
+                return "``\(mapTypeNameDoc (String (word)))``"
             })
             // To avoid the greedy problem, it happens above, but not as much
             mod = mod.replacing("[b]Note:[/b]", with: "> Note:")
