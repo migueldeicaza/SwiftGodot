@@ -454,6 +454,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
     
     for cdef in values {
         let docClass = loadClassDoc(base: docRoot, name: cdef.name)
+        let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
         
         // Clear the result
         result = ""
@@ -475,6 +476,12 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         }
         // class or extension (for Object)
         b (typeDecl) {
+            if isSingleton {
+                p ("/// The shared instance of this class")
+                b ("public static var shared: \(cdef.name) =", suffix: "()") {
+                    p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (UnsafeRawPointer (&\(cdef.name).className.content))!)")
+                }
+            }
             p ("static private var className = StringName (\"\(cdef.name)\")")
             b ("internal override init (nativeHandle: UnsafeRawPointer)") {
                 p("super.init (nativeHandle: nativeHandle)")
