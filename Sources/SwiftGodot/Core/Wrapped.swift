@@ -33,7 +33,7 @@
 // We ensure that all Godot
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 ///
 /// The base class for all class bindings in Godot, you should not have

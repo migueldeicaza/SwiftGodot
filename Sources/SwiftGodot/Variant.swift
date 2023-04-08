@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 public struct Variant {
     var handle: UnsafeMutableRawPointer?

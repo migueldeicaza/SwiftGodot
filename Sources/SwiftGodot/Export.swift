@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 func additionalRegistations (name: StringName) {
     // I guess this is to surface functions to Godot, but not clear why should

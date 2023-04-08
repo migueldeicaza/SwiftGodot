@@ -6,12 +6,13 @@
 //
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 public class GodotCollection<T>: GArray {
     override init (content: Int64) {
         super.init (content: content)
     }
+    
     public override init () {
         super.init ()
     }

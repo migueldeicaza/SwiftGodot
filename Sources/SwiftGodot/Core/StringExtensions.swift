@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 extension StringName {
     public convenience init (_ string: String) {
