@@ -16,6 +16,11 @@ let package = Package(
             name: "SimpleExtension",
             type: .dynamic,
             targets: ["SimpleExtension"]),
+        .library(
+            name: "SwiftGodotEditorExtension",
+            type: .dynamic,
+            targets: ["SwiftGodotEditorExtension"]),
+
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -58,6 +63,13 @@ let package = Package(
                  //                 "-Xlinker", "_$s10SwiftGodot013AnimationNodeC0C8PlayModeOMf"
                 ])
             ], plugins: ["CodeGeneratorPlugin"]),
+        .target(
+            name: "SwiftGodotEditorExtension",
+            dependencies: ["SwiftGodot"],
+            swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
+            linkerSettings: [.unsafeFlags (
+                ["-Xlinker", "-undefined",
+                 "-Xlinker", "dynamic_lookup"])]),
         .target(
             name: "SimpleExtension",
             dependencies: ["SwiftGodot"],
