@@ -1,9 +1,9 @@
 # SwiftGodot
 
 SwiftGodot provides Swift language bindings for the Godot 4.0 game
-engine using the new GDExtension system.
+engine using its GDExtension system.
 
-SwiftGodot can be used to either build extension that can be added
+SwiftGodot can be used to either build an extension that can be added
 to an existing Godot project, where your code is providing services
 to the game engine, or it can be used as an API with SwiftGodotKit
 which embeds Godot as an application that is driven directly from
@@ -13,23 +13,23 @@ Driving Godot from Swift has the advantage that on MacOS you can
 debug your code from Xcode as well as the Godot code.
 
 You can [browse the API
-documentation](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/)
-but it can also be edited for local use, if you enable it in the
+documentation](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/),
+and it can also be edited for local use, if you enable it in the
 Generator.
 
 
 # Working with this Repository
 
 You should be all set by referencing this as a package from SwiftPM
-but if you want to just work on the binding generator, you will want
-to open the Generator project and you can edit the `okList` variable
+but if you want to just work on the binding generator, you may want
+to open the Generator project and edit the `okList` variable
 to trim the build times.
 
 # Driving Godot From Swift
 
 To drive Godot from Swift, use the companion [`SwiftGodotKit`](https://github.com/migueldeicaza/SwiftGodotKit) 
-module which embed Godot directly into your application, and
-you get to launch the Godot runtime from your code.
+module which embeds Godot directly into your application, which 
+allows you to to launch the Godot runtime from your code.
 
 
 # Creating an Extension
