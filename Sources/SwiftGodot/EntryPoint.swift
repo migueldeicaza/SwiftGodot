@@ -24,7 +24,7 @@ var extensionDeInitCallback: ((GDExtension.InitializationLevel)->())?
 /// operate.   It is only used when you use SwiftGodot embedded into an
 /// application - as opposed to using SwiftGodot purely as an extension
 ///
-public func setExtensionInterface (to: OpaquePointer?, library lib: OpaquePointer) {
+public func setExtensionInterface (to: OpaquePointer?, library lib: OpaquePointer?) {
 
     guard let pgi = UnsafeMutablePointer<GDExtensionInterface> (to) else {
         print ("Expected a pointer to a GDExtensionInitialization")

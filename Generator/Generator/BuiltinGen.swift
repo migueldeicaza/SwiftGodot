@@ -79,8 +79,18 @@ func generateBuiltinCtors (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass
             
             // We need to initialize some variables before we call
             if let members {
-                for x in members {
-                    p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                if bc.name == "Color" {
+                    p ("self.red = 0")
+                    p ("self.green = 0")
+                    p ("self.blue = 0")
+                    p ("self.alpha = 0")
+                } else if bc.name == "Plane" {
+                    p ("self.plane = Vector3 ()")
+                    p ("self.d = 0")
+                } else {
+                    for x in members {
+                        p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                    }
                 }
                 // Another special case: empty constructors in generated structs (those we added fields for)
                 // we just keep the manual initialization and do not call the constructor
@@ -274,6 +284,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 conformances.append ("Equatable")
             }
         }
+        conformances.append ("GodotVariant")
         if bc.name == "String" || bc.name == "StringName" {
             conformances.append ("ExpressibleByStringLiteral")
         }
@@ -289,6 +300,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             doc (bc, "")      // Add a newline before the fuller description
             doc (bc, docClass?.description)
         }
+        
         b ("public \(kind) \(typeName)\(proto)") {
             if bc.name == "String" {
                 b ("public init (_ str: String)") {
@@ -329,10 +341,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                     p ("\(typeName).destructor (&content)")
                 }
             }
+            
+//            b ("public static var variantType: Variant.GType") {
+//                p (".\(snakeToCamel (bc.name))")
+//            }
+            
+
             if kind == "class" {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
                 p ("// Contains a binary blob where this type information is stored")
-                p ("var content: \(storage)\(initialize)")
+                p ("var content: ContentType\(initialize)")
+                p ("")
+                p ("typealias ContentType = \(storage)")
                 builtinClassStorage [bc.name] = storage
                 // TODO: This is a little brittle, because I am
                 // hardcoding the constructor1 here, it should
@@ -347,8 +367,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 }
             }
             if let members = bc.members {
-                for x in members {
-                    p ("var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
+                if bc.name == "Color" {
+                    p ("public var red: Float")
+                    p ("public var green: Float")
+                    p ("public var blue: Float")
+                    p ("public var alpha: Float")
+                } else if bc.name == "Plane" {
+                    p ("public var plane: Vector3")
+                    p ("public var d: Float")
+                } else {
+                    for x in members {
+                        p ("public var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
+                    }
                 }
             }
 

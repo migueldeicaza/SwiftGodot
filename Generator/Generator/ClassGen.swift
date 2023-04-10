@@ -468,7 +468,18 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         }
         
         let inherits = cdef.inherits ?? "Wrapped"
-        let typeDecl = "open class \(cdef.name): \(inherits)"
+        var conformances: [String] = []
+        if cdef.name == "Object" {
+            conformances.append("GodotVariant")
+        }
+        var proto = ""
+        if conformances.count > 0 {
+            proto = ", " + conformances.joined(separator: ", ")
+        } else {
+            proto = ""
+        }
+
+        let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
         
         var virtuals: [String: (String, JGodotClassMethod)] = [:]
         doc (cdef, docClass?.brief_description)
@@ -492,6 +503,9 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 p("super.init (name: name)")
             }
             
+            if cdef.name == "Object" {
+                p ("public func toVariant () -> Variant { Variant (self) }")
+            } 
             let fastInitOverrides = cdef.inherits != nil ? "override " : ""
             
             b ("internal \(fastInitOverrides)init (fast: Bool)") {
