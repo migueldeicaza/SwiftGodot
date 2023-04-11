@@ -33,7 +33,7 @@ public class GodotCollection<T:GodotVariant>: GArray, Collection {
             let v = super [index]
             switch v.gtype {
             case .object:
-                var handle = UnsafeMutableRawPointer(bitPattern: 0xdeadbeef)
+                var handle = UnsafeMutableRawPointer(bitPattern: 0)
                 v.toType(.object, dest: &handle)
                 if let o = lookupLiveObject(handleAddress: handle!) as? T {
                     return o
