@@ -158,6 +158,49 @@ func mapTypeNameDoc (_ name: String) -> String {
     return mapTypeName (name)
 }
 
+func gtypeFromTypeName (_ name: String) -> String {
+    switch name {
+    case "Nil": return "`nil`"
+    case "Bool": return "bool"
+    case "Int": return "int"
+    case "String": return "string"
+    case "Vector2": return "vector2"
+    case "Vector2i": return "vector2i"
+    case "Rect2": return "rect2"
+    case "Rect2i": return "rect2i"
+    case "Vector3": return "vector3"
+    case "Vector3i": return "vector3i"
+    case "Transform2D": return "transform2d"
+    case "Vector4": return "vector4"
+    case "Vector4i": return "vector4i"
+    case "Plane": return "plane"
+    case "Quaternion": return "quaternion"
+    case "AABB": return "aabb"
+    case "Basis": return "basis"
+    case "Transform3D": return "transform3d"
+    case "Projection": return "projection"
+    case "Color": return "color"
+    case "StringName": return "stringName"
+    case "NodePath": return "nodePath"
+    case "RID": return "rid"
+    case "Object": return "object"
+    case "Callable": return "callable"
+    case "Signal": return "signal"
+    case "Dictionary": return "dictionary"
+    case "Array": return "array"
+    case "PackedByteArray": return "packedByteArray"
+    case "PackedInt32Array": return "packedInt32Array"
+    case "PackedInt64Array": return "packedInt64Array"
+    case "PackedFloat32Array": return "packedFloat32Array"
+    case "PackedFloat64Array": return "packedFloat64Array"
+    case "PackedStringArray": return "packedStringArray"
+    case "PackedVector2Array": return "packedVector2Array"
+    case "PackedVector3Array": return "packedVector3Array"
+    case "PackedColorArray": return "packedColorArray"
+    default:
+        fatalError("Unknonw data type: \(name)")
+    }
+}
 struct SimpleType: TypeWithMeta {
     var type: String
     var meta: JGodotArgumentMeta?

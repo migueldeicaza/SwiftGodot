@@ -428,7 +428,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ p
     }
 }
 
-#if false
+#if true
 var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window" ]
 #else
 var okList: [String] = []
@@ -505,7 +505,16 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
             
             if cdef.name == "Object" {
                 p ("public func toVariant () -> Variant { Variant (self) }")
-            } 
+            }
+            p ("/// Instantiates the object from a variant - it is an error if it happens for user-derived types")
+            p ("/// While users types must implement this constructor, they can safely just call fatalError, it")
+            p ("/// will never be invoked.")
+            b ("public required init? (_ variant: Variant)") {
+                p ("guard variant.gtype == .object else { return nil }")
+                p ("var handle = UnsafeMutableRawPointer(bitPattern: 0)")
+                p ("variant.toType(.object, dest: &handle)")
+                p ("super.init (nativeHandle: handle!)")
+            }
             let fastInitOverrides = cdef.inherits != nil ? "override " : ""
             
             b ("internal \(fastInitOverrides)init (fast: Bool)") {

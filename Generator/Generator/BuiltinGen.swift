@@ -351,7 +351,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
                 p ("// Contains a binary blob where this type information is stored")
                 p ("var content: ContentType\(initialize)")
-                p ("")
+                p ("// Used to initialize empty types")
+                p ("static let zero: ContentType \(initialize)")
+                p ("// Convenience type that matches the build configuration storage needs")
                 p ("typealias ContentType = \(storage)")
                 builtinClassStorage [bc.name] = storage
                 // TODO: This is a little brittle, because I am
@@ -366,6 +368,36 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                     p ("StringName.constructor1 (&self.content, &args)")
                 }
             }
+            
+            p ("/// Creates a new instance from the given variant if it contains a \(typeName)")
+            let gtype = gtypeFromTypeName (bc.name)
+            // Now generate the variant constructor
+            if kind == "class" {
+                b ("public required init? (_ from: Variant)") {
+                    b ("guard from.gtype == .\(gtype) else") {
+                        p ("return nil")
+                    }
+                    p ("var content: \(typeName).ContentType = \(typeName).zero")
+                    p ("from.toType(.\(gtype), dest: &content)")
+                    p ("// Replicate the constructor, because of a lame Swift requirement")
+                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer(&content)]")
+                    p ("\(typeName).constructor1 (&content, &args)")
+                }
+            } else {
+                b ("public init? (_ from: Variant)") {
+                    b ("guard from.gtype == .\(gtype) else") {
+                        p ("return nil")
+                    }
+                    p ("var v = \(bc.name)()")
+                    p ("from.toType(.\(gtype), dest: &v)")
+                    p ("self.init (from: v)")
+                }                
+            }
+            p ("/// Wraps this \(typeName) into a Variant")
+            b ("public func toVariant () -> Variant ") {
+                p ("Variant (self)")
+            }
+            
             if let members = bc.members {
                 if bc.name == "Color" {
                     p ("public var red: Float")

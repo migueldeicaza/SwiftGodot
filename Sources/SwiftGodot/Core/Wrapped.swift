@@ -101,7 +101,7 @@ open class Wrapped: Equatable, Identifiable {
     /// subclasses will have a diffrent name than the subclass
     internal init (name: StringName) {
         let v = gi.classdb_construct_object (UnsafeRawPointer (&name.content))
-                                
+        
         if let r = UnsafeRawPointer (v) {
             handle = r
             let retain = Unmanaged.passRetained(self)
@@ -111,13 +111,13 @@ open class Wrapped: Equatable, Identifiable {
             let thisTypeName = StringName (String (describing: Swift.type(of: self)))
             let frameworkType = thisTypeName == name
             
-            print ("SWIFT: Wrapped(StringName) at \(handle), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
+            //print ("SWIFT: Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
             
             // This I believe should only be set for user subclasses, and not anything else.
             if frameworkType {
-                print ("SWIFT: Skipping object registration, this is a framework type")
+                //print ("SWIFT: Skipping object registration, this is a framework type")
             } else {
-                print ("SWIFT: Registering instance with Godot")
+                //print ("SWIFT: Registering instance with Godot")
                 gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
                                         UnsafeRawPointer (&thisTypeName.content), retain.toOpaque())
             }
@@ -139,7 +139,7 @@ open class Wrapped: Equatable, Identifiable {
 
 func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
     guard let wt = type as? Wrapped.Type else {
-        print ("The provided type should be a subclass of SwiftGodot.Wrapped type")
+        print ("SWIFT: The provided type should be a subclass of SwiftGodot.Wrapped type")
         return
     }
     
@@ -213,6 +213,15 @@ func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
     return liveSubtypedObjects [handleAddress]
 }
 
+///
+/// Looks into the liveSubtypedObjects table if we have an object registered for it,
+/// and if we do, we returned that existing instance.
+///
+/// We are surfacing this, so that when we recreate an object resurfaced in a collection
+/// we do not get the base type, but the most derived one
+func lookupFrameworkObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
+    return liveFrameworkObjects [handleAddress]
+}
 ///
 /// This one is invoked by Godot when an instance of one of our types is created, and we need
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
