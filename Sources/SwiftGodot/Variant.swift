@@ -340,3 +340,4 @@ extension Float: GodotVariant {
 
     public func toVariant () -> Variant { Variant (self) }
 }
+
