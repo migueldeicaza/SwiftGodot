@@ -193,6 +193,8 @@ public func register<T:Wrapped> (type: T.Type) {
     if typeStr.hasSuffix(".Type") {
         typeStr = String (typeStr.dropLast(5))
     }
+    print (stripNamespace(typeStr).description)
+    print (stripNamespace(superStr).description)
     register (type: stripNamespace (typeStr), parent: stripNamespace (superStr), type: type)
 }
 
@@ -255,7 +257,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 }
 
 func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
-    print ("SWIFT: Notification \(code) on \(ptr)")
+    //print ("SWIFT: Notification \(code) on \(ptr)")
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
