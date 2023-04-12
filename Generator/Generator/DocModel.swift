@@ -354,6 +354,8 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
             mod = mod.replacing("[int]", with: "integer")
             mod = mod.replacing("[float]", with: "float")
             mod = mod.replacing("[b]Warning:[/b]", with: "> Warning:")
+            mod = mod.replacing("[i]", with: "_")
+            mod = mod.replacing("[/i]", with: "_")
             mod = mod.replacing("[b]", with: "**")
             mod = mod.replacing("[/b]", with: "**")
             mod = mod.replacing("[code]", with: "`")
