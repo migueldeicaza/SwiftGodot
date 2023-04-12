@@ -178,11 +178,22 @@ let generatedDir = outputDir + "/generated/"
 try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
 try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
 
-try! result.write(toFile: generatedBuiltinDir + "/core-defs.swift", atomically: true, encoding: .utf8)
+let coreDefs = result
+
 
 generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
 
 result = ""
 generateClasses (values: jsonApi.classes, outputDir: generatedDir)
+
+// Now go back and add the generated constructor pointers
+result = coreDefs
+
+p ("var godotFrameworkCtors = [")
+for x in referenceTypes.keys {
+    p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
+}
+p ("]")
+try! result.write(toFile: generatedBuiltinDir + "/core-defs.swift", atomically: true, encoding: .utf8)
 
 print ("Done")

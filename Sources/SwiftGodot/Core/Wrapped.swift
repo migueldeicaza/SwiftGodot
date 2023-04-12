@@ -235,6 +235,13 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T {
     if let a = objectFromHandle(nativeHandle: nativeHandle) {
         return a as! T
     }
+    var _result: GString = GString ()
+    var copy = nativeHandle
+    gi.object_method_bind_ptrcall (Object.method_get_class, UnsafeMutableRawPointer (mutating: copy), nil, &_result.content)
+    if let ctor = godotFrameworkCtors [_result.description] {
+        return ctor.init (nativeHandle: nativeHandle) as! T
+    }
+    print ("Could not find class \(_result.description), fallback to creating a \(T.self)")
     return T.init (nativeHandle: nativeHandle)
 }
 

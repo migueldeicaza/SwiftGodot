@@ -455,7 +455,7 @@ var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object
 var okList: [String] = []
 #endif
 
-func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
+func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
     // Assemble all the reference types, we use to test later
     for cdef in values {
         referenceTypes[cdef.name] = true

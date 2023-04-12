@@ -20,6 +20,7 @@ extension Object: CustomStringConvertible {
         return toString().description
     }
 }
+
 public extension ProjectSettings {
     /// Public because we want to allow the embed API to call this, but dont want to make it
     /// obvious in the constructors
@@ -34,3 +35,5 @@ public extension TextServer {
         
     }
 }
+
+ 
