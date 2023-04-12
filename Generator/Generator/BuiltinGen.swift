@@ -289,7 +289,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             }
         }
         conformances.append ("GodotVariant")
-        if bc.name == "String" || bc.name == "StringName" {
+        if bc.name == "String" || bc.name == "StringName" || bc.name == "NodePath" {
             conformances.append ("ExpressibleByStringLiteral")
         }
         var proto = ""
@@ -313,6 +313,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 p ("// ExpressibleByStringLiteral conformace")
                 b ("public required init (stringLiteral value: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, value)")
+                }
+            }
+            if bc.name == "NodePath"  {
+                p ("// ExpressibleByStringLiteral conformace")
+                b ("public required init (stringLiteral value: String)") {
+                    p ("var from = GString (value)")
+                    p ("var args: [UnsafeRawPointer?] = [")
+                    p ("    UnsafeRawPointer(&from.content),")
+                    p ("]")
+                    p ("NodePath.constructor2 (&content, &args)")
                 }
             }
             if bc.name == "StringName" {
