@@ -29,8 +29,13 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "Array":
         return "GArray ()"
     case let t where t.starts (with: "typedarray::"):
-        let simple = SimpleType(type: String (t.dropFirst(12)))
-        return "GodotCollection<\(getGodotType (simple))>(\(initCollection))"
+        let nestedTypeName = String (t.dropFirst(12))
+        let simple = SimpleType(type: nestedTypeName)
+        if classMap [nestedTypeName] != nil {
+            return "ObjectCollection<\(getGodotType (simple))>(\(initCollection))"
+        } else {
+            return "VariantCollection<\(getGodotType (simple))>(\(initCollection))"
+        }
     case "enum::Error":
         return ".ok"
     case "enum::Variant.Type":
@@ -41,7 +46,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
         let simple = SimpleType (type: godotType, meta: nil)
         return "\(getGodotType (simple)) ()"
    
-    case let other where builtinGodotTypeNames.contains(other):
+    case let other where builtinGodotTypeNames [other] != nil:
         return "\(godotType) ()"
     case "void*":
         return "nil"
@@ -253,6 +258,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 // Sadly, the parameters have no useful documentation
             }
         }
+        if cdef.name == "Object" && methodName == "toString" {
+            print ("aa")
+        }
         // Generate the method entry point
         b ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
             if method.hash == nil {
@@ -260,12 +268,18 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                     p (makeDefaultReturn (godotType: godotReturnType))
                 }
             } else {
+                var frameworkType = false
                 if returnType != "" {
                     if godotReturnType?.starts(with: "typedarray::") ?? false {
                         let (storage, initialize) = getBuiltinStorage ("Array")
                         p ("var _result: \(storage)\(initialize)")
                     } else {
-                        p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                        if let exists = classMap [godotReturnType ?? ""] {
+                            frameworkType = true
+                            p ("var _result = UnsafeRawPointer (bitPattern: 0)")
+                        } else {
+                            p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                        }
                     }
                 }
                 
@@ -278,8 +292,13 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                     if argTypeNeedsCopy(godotType: godotReturnType!) {
                         ptrResult = "&_result"
                     } else {
-                        if godotReturnType!.starts (with: "typedarray::") || (builtinSizes [godotReturnType!] != nil && godotReturnType! != "Object") {
+                        if godotReturnType!.starts (with: "typedarray::") {
                             ptrResult = "&_result"
+                        } else if frameworkType {
+                            ptrResult = "&_result"
+                        } else if builtinSizes [godotReturnType!] != nil {
+                            // a built-in struct or a class
+                            ptrResult = "&_result.content"
                         } else {
                             ptrResult = "&_result.handle"
                         }
@@ -292,7 +311,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), \(ptrResult))")
                 
                 if returnType != "" {
-                    if godotReturnType?.starts(with: "typedarray::") ?? false {
+                    if frameworkType {
+                        p ("return lookupObject (nativeHandle: _result!)")
+                    } else if godotReturnType?.starts(with: "typedarray::") ?? false {
                         let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
                         
                         p ("return \(defaultInit)")
@@ -428,7 +449,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ p
     }
 }
 
-#if true
+#if false
 var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window" ]
 #else
 var okList: [String] = []
@@ -470,7 +491,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
         let inherits = cdef.inherits ?? "Wrapped"
         var conformances: [String] = []
         if cdef.name == "Object" {
-            conformances.append("GodotVariant")
+            conformances.append("GodotObject")
         }
         var proto = ""
         if conformances.count > 0 {
@@ -496,25 +517,13 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String) {
                 }
             }
             p ("static private var className = StringName (\"\(cdef.name)\")")
-            b ("internal override init (nativeHandle: UnsafeRawPointer)") {
+            b ("public required init (nativeHandle: UnsafeRawPointer)") {
                 p("super.init (nativeHandle: nativeHandle)")
             }
             b ("internal override init (name: StringName)") {
                 p("super.init (name: name)")
             }
             
-            if cdef.name == "Object" {
-                p ("public func toVariant () -> Variant { Variant (self) }")
-            }
-            p ("/// Instantiates the object from a variant - it is an error if it happens for user-derived types")
-            p ("/// While users types must implement this constructor, they can safely just call fatalError, it")
-            p ("/// will never be invoked.")
-            b ("public required init? (_ variant: Variant)") {
-                p ("guard variant.gtype == .object else { return nil }")
-                p ("var handle = UnsafeMutableRawPointer(bitPattern: 0)")
-                p ("variant.toType(.object, dest: &handle)")
-                p ("super.init (nativeHandle: handle!)")
-            }
             let fastInitOverrides = cdef.inherits != nil ? "override " : ""
             
             b ("internal \(fastInitOverrides)init (fast: Bool)") {

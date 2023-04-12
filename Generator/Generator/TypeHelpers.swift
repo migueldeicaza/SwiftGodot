@@ -96,7 +96,11 @@ func godotMethodToSwift (_ name: String) -> String {
 }
 
 func godotPropertyToSwift (_ name: String) -> String {
-    return escapeSwift (snakeToCamel(name))
+    let v = escapeSwift (snakeToCamel(name))
+    if v == "description" {
+        return "additionalDescription"
+    }
+    return v
 }
 
 var core_types = [
@@ -314,8 +318,14 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             return String (t.type.dropFirst(6))
         }
         if t.type.starts (with: "typedarray::") {
-            let nested = SimpleType(type: String (t.type.dropFirst(12)), meta: nil)
-            return "GodotCollection<\(getGodotType (nested))>"
+            let nestedTypeName = String (t.type.dropFirst(12))
+            let nested = SimpleType(type: nestedTypeName, meta: nil)
+
+            if classMap [nestedTypeName] != nil {
+                return "ObjectCollection<\(getGodotType (nested))>"
+            } else {
+                return "VariantCollection<\(getGodotType (nested))>"
+            }
         }
         if t.type.starts (with: "bitfield::") {
             return "\(t.type.dropFirst(10))"

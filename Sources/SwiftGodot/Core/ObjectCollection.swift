@@ -2,27 +2,19 @@
 //  File.swift
 //  
 //
-//  Created by Miguel de Icaza on 3/28/23.
+//  Created by Miguel de Icaza on 4/11/23.
 //
 
 import Foundation
 @_implementationOnly import GDExtension
 
 /// Protocol implemented by the built-in classes in Godot to allow to be wrapped in a ``Variant``
-public protocol GodotVariant {
-    func toVariant () -> Variant
-    init? (_ fromVariant: Variant)
+public protocol GodotObject {
+    init (nativeHandle: UnsafeRawPointer)
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class GodotCollection<T:GodotVariant>: GArray, Collection {
-    enum CacheState {
-        case notProbed
-        case isObject
-        case notObject
-    }
-    var cache_isObject: CacheState = .notProbed
-    typealias GodotVariantType = T
+public class ObjectCollection<T:Object>: GArray, Collection {
     override init (content: Int64) {
         super.init (content: content)
     }
@@ -32,7 +24,7 @@ public class GodotCollection<T:GodotVariant>: GArray, Collection {
         var name = StringName()
         var variant = Variant()
 
-        //gi.array_set_typed (&content, GDExtensionVariantType (UInt32(T.variantType.rawValue)), &name.content, &variant.content)
+        gi.array_set_typed (&content, GDExtensionVariantType (UInt32(Variant.GType.object.rawValue)), &name.content, &variant.content)
     }
     
     public required init? (_ variant: Variant) {
@@ -43,23 +35,12 @@ public class GodotCollection<T:GodotVariant>: GArray, Collection {
     public subscript (index: Index) -> Iterator.Element {
         get {
             var v = super [index]
-            if cache_isObject == .notProbed {
-                cache_isObject = v.gtype == .object ? .isObject : .notObject
-            }
-            if cache_isObject == .isObject {
-                var handle = UnsafeMutableRawPointer(bitPattern: 0)
-                v.toType(.object, dest: &handle)
-                if let o = lookupLiveObject(handleAddress: handle!) as? T {
-                    return o
-                }
-                if let o = lookupFrameworkObject(handleAddress: handle!) as? T {
-                    return o
-                }
-            }
-            return T.init (v)!
+            var handle = UnsafeMutableRawPointer(bitPattern: 0)
+            v.toType(.object, dest: &handle)
+            return objectFromHandle (nativeHandle: handle!) as! T
         }
         set {
-            super [index] = newValue.toVariant()
+            super [index] = Variant (newValue)
         }
     }
     

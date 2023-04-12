@@ -88,7 +88,7 @@ open class Wrapped: Equatable, Identifiable {
         reference_callback: frameworkTypeBindingReference)
     
     /// For use by the framework, you should not need to call this.
-    public init (nativeHandle: UnsafeRawPointer) {
+    public required init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
     }
     
@@ -222,6 +222,22 @@ func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
 func lookupFrameworkObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
     return liveFrameworkObjects [handleAddress]
 }
+
+func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
+    if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
+        return o
+    }
+    
+    return nil
+}
+
+func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T {
+    if let a = objectFromHandle(nativeHandle: nativeHandle) {
+        return a as! T
+    }
+    return T.init (nativeHandle: nativeHandle)
+}
+
 ///
 /// This one is invoked by Godot when an instance of one of our types is created, and we need
 /// to instantiate it.   Notice that this is different that direct instantiation from our API

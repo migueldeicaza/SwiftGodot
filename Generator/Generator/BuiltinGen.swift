@@ -258,7 +258,11 @@ func generateBuiltinMethods (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinCla
     }
 }
 
-var builtinGodotTypeNames = Set<String>()
+enum BKind {
+    case isStruct
+    case isClass
+}
+var builtinGodotTypeNames: [String:BKind] = [:]
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
@@ -270,7 +274,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
         } else {
             kind = "class"
         }
-        builtinGodotTypeNames.insert(bc.name)
+        builtinGodotTypeNames [bc.name] = kind == "struct" ? .isStruct : .isClass
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
         
