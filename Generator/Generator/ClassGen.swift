@@ -139,9 +139,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
    
     for method in methods {
         //let loc = "\(cdef.name).\(method.name)"
-        if method.isVararg {
-            // print ("TODO: No vararg support yet \(loc)")
-            continue
+        if method.name == "emit_signal" {
+            print ("x")
         }
         if (method.arguments ?? []).contains(where: { $0.type.contains("*")}) {
             //print ("TODO: do not currently have support for C pointer types \(loc)")
@@ -196,7 +195,17 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
         
         var args = ""
         var argSetup = ""
-        
+        var varArgSetup = ""
+
+        if method.isVararg {
+            varArgSetup += "\nvar varArgCopies: [Variant] = []\n"
+            varArgSetup += "for varg in arguments {\n"
+            varArgSetup += "    let copy = Variant (other: varg)\n"
+            varArgSetup += "    varArgCopies.append (copy)\n"
+            varArgSetup += "    args.append (&copy.content)\n"
+            varArgSetup += "}\n"
+        }
+
         if let margs = method.arguments {
             for arg in margs {
                 if args != "" { args += ", " }
@@ -210,6 +219,10 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                     }
                     argSetup += "var copy_\(arg.name) = \(reference)\n"
                 }
+            }
+            if method.isVararg {
+                if args != "" { args += ", "}
+                args += "_ arguments: Variant..."
             }
             argSetup += "var args: [UnsafeRawPointer?] = [\n"
             for arg in margs {
@@ -238,11 +251,18 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                         }
                     }
                 }
-                
                 argSetup += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
                 //                }
             }
             argSetup += "]"
+            argSetup += varArgSetup
+        } else if method.isVararg {
+            // No regular arguments, check if these are varargs
+            if method.isVararg {
+                args = "_ arguments: Variant..."
+            }
+            argSetup += "var args: [UnsafeRawPointer?] = []\n"
+            argSetup += varArgSetup
         }
         
         let godotReturnType = method.returnValue?.type
@@ -308,7 +328,11 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 }
                 
                 let instanceHandle = method.isStatic ? "nil" : "UnsafeMutableRawPointer (mutating: handle)"
-                p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), \(ptrResult))")
+                if method.isVararg {
+                    p ("gi.object_method_bind_call (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), Int64 (args.count), \(ptrResult), nil)")
+                } else {
+                    p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle), \(ptrArgs), \(ptrResult))")
+                }
                 
                 if returnType != "" {
                     if frameworkType {
