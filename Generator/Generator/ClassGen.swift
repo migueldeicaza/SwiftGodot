@@ -196,9 +196,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
         var args = ""
         var argSetup = ""
         var varArgSetup = ""
-
+        var varArgSetupInit = ""
         if method.isVararg {
-            varArgSetup += "\nvar varArgCopies: [Variant] = []\n"
+            varArgSetupInit = "\nvar varArgCopies: [Variant] = []\n"
             varArgSetup += "for varg in arguments {\n"
             varArgSetup += "    let copy = Variant (other: varg)\n"
             varArgSetup += "    varArgCopies.append (copy)\n"
@@ -211,7 +211,10 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 if args != "" { args += ", " }
                 args += getArgumentDeclaration(arg, eliminate: eliminate)
                 
-                if argTypeNeedsCopy(godotType: arg.type) {
+                if method.isVararg {
+                    var reference = escapeSwift (snakeToCamel (arg.name))
+                    argSetup += "var copy_\(arg.name) = Variant (\(escapeSwift (snakeToCamel (arg.name))))\n"
+                } else if argTypeNeedsCopy(godotType: arg.type) {
                     var reference = escapeSwift (snakeToCamel (arg.name))
                     // Wrap in an Int
                     if arg.type.starts(with: "enum::") {
@@ -234,7 +237,10 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 var argref: String
                 var optstorage: String
                 var needAddress = "&"
-                if argTypeNeedsCopy(godotType: arg.type) {
+                if method.isVararg {
+                    argref = "copy_\(arg.name)"
+                    optstorage = ".content"
+                } else if argTypeNeedsCopy(godotType: arg.type) {
                     argref = "copy_\(arg.name)"
                     optstorage = ""
                 } else {
@@ -255,6 +261,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 //                }
             }
             argSetup += "]"
+            argSetup += varArgSetupInit
             argSetup += varArgSetup
         } else if method.isVararg {
             // No regular arguments, check if these are varargs
@@ -262,6 +269,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 args = "_ arguments: Variant..."
             }
             argSetup += "var args: [UnsafeRawPointer?] = []\n"
+            argSetup += varArgSetupInit
             argSetup += varArgSetup
         }
         
@@ -290,7 +298,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
             } else {
                 var frameworkType = false
                 if returnType != "" {
-                    if godotReturnType?.starts(with: "typedarray::") ?? false {
+                    if method.isVararg {
+                        p ("var _result: Variant.ContentType = Variant.zero")
+                    } else if godotReturnType?.starts(with: "typedarray::") ?? false {
                         let (storage, initialize) = getBuiltinStorage ("Array")
                         p ("var _result: \(storage)\(initialize)")
                     } else {
@@ -335,7 +345,15 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 }
                 
                 if returnType != "" {
-                    if frameworkType {
+                    if method.isVararg {
+                        if returnType == "Variant" {
+                            p ("return Variant (fromContent: _result)")
+                        } else if returnType == "GodotError" {
+                            p ("return GodotError (rawValue: Int (Variant (fromContent: _result))!)!")
+                        } else {
+                            fatalError("Do not support this return type")
+                        }
+                    } else if frameworkType {
                         p ("return lookupObject (nativeHandle: _result!)")
                     } else if godotReturnType?.starts(with: "typedarray::") ?? false {
                         let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
@@ -541,9 +559,11 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
                 }
             }
             p ("static private var className = StringName (\"\(cdef.name)\")")
+            p ("/// Creates a \(cdef.name) that wraps the Godot native object pointed to by the nativeHandle")
             b ("public required init (nativeHandle: UnsafeRawPointer)") {
                 p("super.init (nativeHandle: nativeHandle)")
             }
+            p ("/// Ths initializer is invoked by derived classes as they chain through their most derived type name that our framework produced")
             b ("internal override init (name: StringName)") {
                 p("super.init (name: name)")
             }
@@ -553,6 +573,8 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
             b ("internal \(fastInitOverrides)init (fast: Bool)") {
                 p ("super.init (name: \(cdef.name).className)")
             }
+            p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
+            p ("/// when you create a subclass of this type.")
             b ("public required init ()") {
                 p ("super.init (name: StringName (\"\(cdef.name)\"))")
             }

@@ -61,6 +61,7 @@ public class Variant: Hashable, Equatable {
     
     typealias ContentType = (Int, Int, Int)
     var content: ContentType = (0, 0, 0)
+    static var zero: ContentType = (0, 0, 0)
     
     /// Initializes from the raw contents of another Variant
     init (fromContent: ContentType) {
@@ -110,7 +111,12 @@ public class Variant: Hashable, Equatable {
         var v = GDExtensionInt(value)
         Variant.fromTypeMap [GType.int.rawValue] (&content, &v)
     }
-    
+
+    public init (_ value: Int64) {
+        var v = GDExtensionInt(Int(value))
+        Variant.fromTypeMap [GType.int.rawValue] (&content, &v)
+    }
+
     public init (_ value: String) {
         var vh: UnsafeMutableRawPointer?
         var v = GDExtensionStringPtr (mutating: value.cString(using: .utf8))

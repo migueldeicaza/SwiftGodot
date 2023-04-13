@@ -412,17 +412,32 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 p ("Variant (self)")
             }
             
+            let mdocs = docClass?.members
+            func memberDoc (_ name: String)  {
+                for md in mdocs?.member ?? [] {
+                    if md.name == name {
+                        doc (bc, md.value)
+                    }
+                }
+            }
             if let members = bc.members {
                 if bc.name == "Color" {
+                    memberDoc ("red")
                     p ("public var red: Float")
+                    memberDoc ("green")
                     p ("public var green: Float")
+                    memberDoc ("blue")
                     p ("public var blue: Float")
+                    memberDoc ("alpha")
                     p ("public var alpha: Float")
                 } else if bc.name == "Plane" {
+                    memberDoc ("plane")
                     p ("public var plane: Vector3")
+                    memberDoc ("d")
                     p ("public var d: Float")
                 } else {
                     for x in members {
+                        memberDoc (x.name)
                         p ("public var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
                     }
                 }
