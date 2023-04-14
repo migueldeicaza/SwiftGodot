@@ -379,7 +379,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 b ("init (content: \(storage))") {
                     p ("var copy = content")
                     p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer (&copy)]")
-                    p ("StringName.constructor1 (&self.content, &args)")
+                    p ("\(typeName).constructor1 (&self.content, &args)")
                 }
             }
             
@@ -391,10 +391,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                     b ("guard from.gtype == .\(gtype) else") {
                         p ("return nil")
                     }
-                    p ("var content: \(typeName).ContentType = \(typeName).zero")
-                    p ("from.toType(.\(gtype), dest: &content)")
+                    p ("var localContent: \(typeName).ContentType = \(typeName).zero")
+                    p ("from.toType(.\(gtype), dest: &localContent)")
                     p ("// Replicate the constructor, because of a lame Swift requirement")
-                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer(&content)]")
+                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer(&localContent)]")
                     p ("\(typeName).constructor1 (&content, &args)")
                 }
             } else {

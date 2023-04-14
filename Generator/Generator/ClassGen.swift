@@ -210,17 +210,20 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
             for arg in margs {
                 if args != "" { args += ", " }
                 args += getArgumentDeclaration(arg, eliminate: eliminate)
-                
+                var reference = escapeSwift (snakeToCamel (arg.name))
+
                 if method.isVararg {
-                    var reference = escapeSwift (snakeToCamel (arg.name))
-                    argSetup += "var copy_\(arg.name) = Variant (\(escapeSwift (snakeToCamel (arg.name))))\n"
+                    argSetup += "var copy_\(arg.name) = Variant (\(reference))\n"
                 } else if argTypeNeedsCopy(godotType: arg.type) {
-                    var reference = escapeSwift (snakeToCamel (arg.name))
                     // Wrap in an Int
                     if arg.type.starts(with: "enum::") {
                         reference = "Int64 (\(reference).rawValue)"
                     }
-                    argSetup += "var copy_\(arg.name) = \(reference)\n"
+                    if isSmallInt (arg) {
+                        argSetup += "var copy_\(arg.name): Int = Int (\(reference))\n"
+                    } else {
+                        argSetup += "var copy_\(arg.name) = \(reference)\n"
+                    }
                 }
             }
             if method.isVararg {
@@ -308,7 +311,11 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                             frameworkType = true
                             p ("var _result = UnsafeRawPointer (bitPattern: 0)")
                         } else {
-                            p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                            if godotReturnType!.starts(with: "enum::") {
+                                p ("var _result: Int = 0 // to avoid packed enums on the stack")
+                            } else {
+                                p ("var _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType ?? ""))")
+                            }
                         }
                     }
                 }
@@ -359,6 +366,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                         let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
                         
                         p ("return \(defaultInit)")
+                    } else if godotReturnType!.starts(with: "enum::"){
+                        p ("return \(returnType) (rawValue: _result)!")
                     } else {
                         p ("return _result")
                     }
@@ -492,7 +501,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ p
 }
 
 #if false
-var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window" ]
+var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer" ]
 #else
 var okList: [String] = []
 #endif

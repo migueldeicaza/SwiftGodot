@@ -11,6 +11,19 @@ func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
 }
 
+func isSmallInt (_ arg: JNameAndType) -> Bool {
+    if arg.type != "int" {
+        return false
+    }
+    switch getGodotType(arg, kind: .classes) {
+    case "Int32", "UInt32", "Int16", "UInt16", "Int8", "UInt8":
+        return true
+    default:
+        return false
+    }
+    return false
+}
+
 func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
@@ -59,6 +72,7 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
         for arg in args {
             var argref: String
             var optstorage: String
+            var needAddress = "&"
             if !(isStructMap [arg.type] ?? false) { // { ) isCoreType(name: arg.type){
                 argref = godotArgumentToSwift (arg.name)
                 if isStructMap [arg.type] ?? false {
@@ -67,6 +81,7 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
                     if builtinSizes [arg.type] != nil && arg.type != "Object" {
                         optstorage = ".content"
                     } else {
+                        needAddress = ""
                         optstorage = ".handle"
                     }
                 }
@@ -76,9 +91,9 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
             }
             if (isStructMap [arg.type] ?? false) {
                 
-                body += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
+                body += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
             } else {
-                body += "    UnsafeRawPointer(&\(escapeSwift(argref))\(optstorage)),\n"
+                body += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),\n"
             }
         }
         body += "]"

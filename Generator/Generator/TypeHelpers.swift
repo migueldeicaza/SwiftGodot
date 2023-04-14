@@ -12,7 +12,7 @@ import Foundation
 func BuiltinJsonTypeToSwift (_ type: String) -> String {
     switch type {
     case "float": return "Float"
-    case "int": return "Int64"
+    case "int": return "Int"
     case "bool": return "Bool"
     default:
         return type
