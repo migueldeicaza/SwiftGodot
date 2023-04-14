@@ -18,6 +18,10 @@ and it can also be edited for local use, if you enable it in the
 Generator.
 
 
+
+https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b812-c775c55b8b77.mov
+
+
 # Working with this Repository
 
 You should be all set by referencing this as a package from SwiftPM
