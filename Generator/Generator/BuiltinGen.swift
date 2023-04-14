@@ -7,6 +7,58 @@
 
 import Foundation
 
+/// Given an initializer of the form "Vector (0, 1, 0)" returns a proper Swift "Vector (x: 0, y: 1, z: 0)" value
+///
+func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
+    if let pstart = val.firstIndex(of: "("), let pend = val.lastIndex(of: ")"){
+        var found = false
+        let splitArgs = val [val.index(pstart, offsetBy: 1)..<pend].split(separator: ",")
+        // Find a constructor with that number of arguments
+        for constructor in bc.constructors {
+            
+            if constructor.arguments?.count ?? -1 == splitArgs.count {
+                // Found
+                var prefixedArgs = ""
+                for i in 0..<splitArgs.count {
+                    if prefixedArgs.count != 0 { prefixedArgs += ", "}
+                    var name = constructor.arguments! [i].name
+                    var pval = splitArgs [i]
+
+                    // Some Godot constants leak into the initializers
+                    if pval.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) == "inf" {
+                        pval = "Float.infinity"[...]
+                    }
+
+                    prefixedArgs = prefixedArgs + name + ": " + pval
+                }
+                return String (val [val.startIndex..<pstart]) + " (" + prefixedArgs + ")"
+            }
+        }
+        return nil
+    }
+    return val
+}
+
+func generateBuiltinConstants (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, typeName: String) {
+    guard let constants = bc.constants else { return }
+    let docConstants = docClass?.constants?.constant
+    
+    for constant in constants {
+        // Check if we need to inject parameter names
+        var val = constant.value
+        guard let val = getInitializer (bc, constant.value) else {
+            continue
+        }
+        
+        for dc in docConstants ?? [] {
+            if dc.name == constant.name {
+                doc (bc, "\(dc.rest)")
+            }
+        }
+        p ("public static let \(snakeToCamel (constant.name)) = \(val)")
+    }
+}
+
 func generateBuiltinCtors (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, _ ctors: [JGodotConstructor], godotTypeName: String, typeName: String, typeEnum: String, members: [JGodotSingleton]?)
 {
     let isStruct = isStructMap [typeName] ?? false
@@ -450,6 +502,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             
             generateBuiltinMethods(bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
             generateBuiltinOperators (bc, docClass, typeName: typeName)
+            generateBuiltinConstants (bc, docClass, typeName: typeName)
         }
     }
     

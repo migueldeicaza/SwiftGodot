@@ -139,9 +139,6 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
    
     for method in methods {
         //let loc = "\(cdef.name).\(method.name)"
-        if method.name == "emit_signal" {
-            print ("x")
-        }
         if (method.arguments ?? []).contains(where: { $0.type.contains("*")}) {
             //print ("TODO: do not currently have support for C pointer types \(loc)")
             continue
@@ -289,9 +286,6 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 // Sadly, the parameters have no useful documentation
             }
         }
-        if cdef.name == "Object" && methodName == "toString" {
-            print ("aa")
-        }
         // Generate the method entry point
         b ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
             if method.hash == nil {
@@ -400,7 +394,7 @@ func generateConstants (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ co
                 doc (cdef, "\(dc.rest)")
             }
         }
-        p ("public static let \(constant.name) = \(constant.value)")
+        p ("public static let \(snakeToCamel (constant.name)) = \(constant.value)")
     }
 }
 func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ properties: [JGodotProperty], _ methods: [JGodotClassMethod], _ referencedMethods: inout Set<String>)

@@ -38,7 +38,7 @@ import Foundation
 ///
 /// Modifications to a container will modify all references to it.
 
-public class Variant: Hashable, Equatable {
+public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     static var fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -123,6 +123,12 @@ public class Variant: Hashable, Equatable {
         Variant.fromTypeMap [GType.int.rawValue] (&content, &v)
     }
     
+    public required init(stringLiteral: String) {
+        var vh: UnsafeMutableRawPointer?
+        var v = GDExtensionStringPtr (mutating: stringLiteral.cString(using: .utf8))
+        Variant.fromTypeMap [GType.int.rawValue] (&content, &v)
+    }
+
     public init (_ value: Float) {
         var v = value
         Variant.fromTypeMap [GType.float.rawValue] (&content, &v)

@@ -36,6 +36,20 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
 }
     
 extension GString {
+    /// Returns a Swift string from a GString ptr
+    static func stringFromGStringPtr (ptr: UnsafeMutableRawPointer?) -> String? {
+        guard let ptr else {
+            return nil
+        }
+        var content = GString.zero
+        let len = gi.string_to_utf8_chars (ptr, nil, 0)
+        return withUnsafeTemporaryAllocation(byteCount: Int(len+1), alignment: 4) { strPtr in
+            gi.string_to_utf8_chars (UnsafeRawPointer (&content), strPtr.baseAddress, len)
+            strPtr [Int (len)] = 0
+            return String (cString: strPtr.assumingMemoryBound(to: UInt8.self).baseAddress!)
+        }
+    }
+    
     public var description: String {
         get {
             let len = gi.string_to_utf8_chars (UnsafeRawPointer (&content), nil, 0)
