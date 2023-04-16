@@ -156,6 +156,9 @@ func mapTypeName (_ name: String) -> String {
     return name
 }
 func mapTypeNameDoc (_ name: String) -> String {
+    if name == "String" {
+        return "String"
+    }
     if name == "Type" {
         return "GType"
     }
@@ -225,6 +228,8 @@ enum ArgumentKind {
     case builtIn
 }
 
+var mapStringToSwift = true
+
 /// Given a type definition with its metadata, and the context where the type is being
 /// useds, returns the type for it.
 ///
@@ -290,7 +295,11 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     case "bool":
         return "Bool"
     case "String":
-        return "GString"
+        if mapStringToSwift {
+            return "String" // We are going to use Swift strings
+        } else {
+            return "GString"
+        }
     case "Array":
         return "GArray"
     case "void*":

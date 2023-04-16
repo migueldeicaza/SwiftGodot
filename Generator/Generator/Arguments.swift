@@ -41,7 +41,7 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
         // system needs to be implemented
         if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && argument.type != "NodePath" && !argument.type.starts(with: "typedarray::") && !argument.type.starts (with: "Dictionary") && dv != "null" {
             if argument.type == "String" {
-                def = " = GString (\(dv))"
+                def = " = \(dv)"
             } else if argument.type == "StringName" {
                 def = " = StringName (\"dv\")"
             } else if argument.type.starts(with: "enum::"){
@@ -62,8 +62,12 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
     if args.count > 0 {
         for arg in args {
             //if !isCoreType (name: arg.type) {
+            let reference = godotArgumentToSwift (arg.name)
+            
             if isStructMap [arg.type] ?? false {
-                body += "var copy_\(arg.name) = \(godotArgumentToSwift (arg.name))\n"
+                body += "var copy_\(arg.name) = \(reference)\n"
+            } else if arg.type == "String" && mapStringToSwift {
+                body += "var gstr_\(arg.name) = GString (\(reference))\n"
             }
         }
 
@@ -77,6 +81,9 @@ func generateArgPrepare (_ args: [JNameAndType]) -> String {
                 argref = godotArgumentToSwift (arg.name)
                 if isStructMap [arg.type] ?? false {
                     optstorage = ""
+                } else if arg.type == "String" && mapStringToSwift {
+                    argref = "gstr_\(arg.name)"
+                    optstorage = ".content"
                 } else {
                     if builtinSizes [arg.type] != nil && arg.type != "Object" {
                         optstorage = ".content"

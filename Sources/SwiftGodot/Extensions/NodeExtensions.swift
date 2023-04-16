@@ -28,12 +28,12 @@ public struct BindNode<Value: Node> {
     ) -> Value {
         get {
             if #available(macOS 13.3, *){
-                let name: GString
+                let name: String
                 let fullName = storageKeyPath.debugDescription
                 if let namePos = fullName.lastIndex(of: ".") {
-                    name = GString (String (fullName [fullName.index(namePos, offsetBy: 1)...]))
+                    name = String (fullName [fullName.index(namePos, offsetBy: 1)...])
                 } else {
-                    name = GString (fullName)
+                    name = fullName
                 }
                 let nodePath = NodePath (from: name)
                 

@@ -108,7 +108,7 @@ open class Wrapped: Equatable, Identifiable {
             
             // TODO: what happens if the user subclasses but the name conflicts with the Godot type?
             // say "class Sprite2D: Godot.Sprite2D"
-            let thisTypeName = StringName (String (describing: Swift.type(of: self)))
+            let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: self)))
             let frameworkType = thisTypeName == name
             
             //print ("SWIFT: Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")

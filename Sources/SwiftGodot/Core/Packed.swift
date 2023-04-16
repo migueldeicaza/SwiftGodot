@@ -11,11 +11,11 @@ extension PackedStringArray {
     convenience init (_ values: [String]) {
         self.init ()
         for x in values {
-            append(value: GString (x))
+            append(value: x)
         }
     }
     
-    public subscript (index: Int) -> GString {
+    public subscript (index: Int) -> String {
         get {
             // On the fence, I think that I should just create a GString here, instead of a String
             // TODO: but need the right constructor.

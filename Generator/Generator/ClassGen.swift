@@ -25,7 +25,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "bool":
         return "false"
     case "String":
-        return "GString ()"
+        return "String ()"
     case "Array":
         return "GArray ()"
     case let t where t.starts (with: "typedarray::"):
@@ -100,7 +100,7 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             let argName = escapeSwift (snakeToCamel (arg.name))
             argCall += "\(argName): "
             if arg.type == "String" {
-                argCall += "GString (content: args [\(i)]!.assumingMemoryBound (to: Int64.self).pointee)"
+                argCall += "GString.stringFromGStringPtr (ptr: args [\(i)]!) ?? \"\""
             } else if classMap [arg.type] != nil {
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
@@ -116,7 +116,15 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
             i += 1
         }
         let hasReturn = method.returnValue != nil
-        p ("\(hasReturn ? "let ret = " : "")swiftObject.\(methodName) (\(argCall))")
+        var call = "swiftObject.\(methodName) (\(argCall))"
+        if method.returnValue?.type == "String" {
+            call = "GString (\(call))"
+        }
+        if hasReturn {
+            p ("let ret = \(call)")
+        } else {
+            p ("\(call)")
+        }
         if let ret = method.returnValue {
             if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
@@ -211,6 +219,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
 
                 if method.isVararg {
                     argSetup += "var copy_\(arg.name) = Variant (\(reference))\n"
+                } else if arg.type == "String" {
+                    argSetup += "var gstr_\(arg.name) = GString (\(reference))\n"
                 } else if argTypeNeedsCopy(godotType: arg.type) {
                     // Wrap in an Int
                     if arg.type.starts(with: "enum::") {
@@ -239,6 +249,9 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                 var needAddress = "&"
                 if method.isVararg {
                     argref = "copy_\(arg.name)"
+                    optstorage = ".content"
+                } else if arg.type == "String" {
+                    argref = "gstr_\(arg.name)"
                     optstorage = ".content"
                 } else if argTypeNeedsCopy(godotType: arg.type) {
                     argref = "copy_\(arg.name)"
@@ -300,6 +313,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                     } else if godotReturnType?.starts(with: "typedarray::") ?? false {
                         let (storage, initialize) = getBuiltinStorage ("Array")
                         p ("var _result: \(storage)\(initialize)")
+                    } else if godotReturnType == "String" {
+                        p ("var _result = GString ()")
                     } else {
                         if let exists = classMap [godotReturnType ?? ""] {
                             frameworkType = true
@@ -362,6 +377,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
                         p ("return \(defaultInit)")
                     } else if godotReturnType!.starts(with: "enum::"){
                         p ("return \(returnType) (rawValue: _result)!")
+                    } else if godotReturnType == "String" {
+                        p ("return _result.description")
                     } else {
                         p ("return _result")
                     }
@@ -484,7 +501,7 @@ func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ p
                 b ("set") {
                     var value = "newValue"
                     if type == "StringName" && setterMethod?.arguments![0].type == "String" {
-                        value = "GString (from: newValue)"
+                        value = "String (newValue)"
                     }
                     p ("\(setter) (\(access)\(access != "" ? ", " : "")\(value))")
                 }
