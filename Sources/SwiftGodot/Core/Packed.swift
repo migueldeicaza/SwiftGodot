@@ -14,7 +14,7 @@ extension PackedStringArray {
             append(value: x)
         }
     }
-    
+
     public subscript (index: Int) -> String {
         get {
             // On the fence, I think that I should just create a GString here, instead of a String

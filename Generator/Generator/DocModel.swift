@@ -178,6 +178,21 @@ let rxTypeName = #/\[([A-Z]\w+)\]/#
 @available(macOS 13.0, *)
 let rxEmptyLeading = #/\s+/#
 
+// If the string contains a ".", it will return a pair
+// with the first element containing all the text up until the last dot
+// and the second with the rest.   If it does not contain it,
+// the first value is an empty string
+
+func splitAtLastDot (str: String.SubSequence) -> (String, String) {
+    if let p = str.lastIndex(of: ".") {
+        let first = String (str [str.startIndex..<p])
+        let last = String (str [str.index(p, offsetBy: 1)...])
+        return (String (first), String (last))
+    } else {
+        return ("", String (str))
+    }
+}
+
 // Attributes to handle:
 // [NAME] is a type reference
 // [b]..[/b] bold
@@ -190,24 +205,52 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
 //    }
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
-        if let cdef {
+        if txt == "TextServer.AUTOWRAP_OFF" {
+            print (2)
+        }
+
+        func lookInDef (def: JClassInfo, match: String, local: Bool) -> String? {
             // TODO: for builtins, we wont have a cdef
-            for ed in cdef.enums ?? [] {
+            for ed in def.enums ?? [] {
                 for vp in ed.values {
-                    if vp.name == txt {
+                    if vp.name == match {
                         let name = dropMatchingPrefix(ed.name, vp.name)
-                        return ".\(escapeSwift (name))"
+                        if local {
+                            return ".\(escapeSwift (name))"
+                        } else {
+                            return getGodotType(SimpleType (type: "enum::" + ed.name)) + "/" + escapeSwift (name)
+                        }
                     }
                 }
+            }
+            return nil
+        }
+        
+        if let cdef {
+            if let result = lookInDef(def: cdef, match: String(txt), local: true) {
+                return result
             }
         }
         for ed in jsonApi.globalEnums {
             for ev in ed.values {
                 if ev.name == txt {
-                    let name = dropMatchingPrefix(ed.name, ev.name)
+                    var type = ""
+                    var lookup = ed.name
+                    if let dot = ed.name.lastIndex(of: ".") {
+                        let containerType = String (ed.name [ed.name.startIndex..<dot])
+                        type = getGodotType (SimpleType (type: containerType)) + "."
+                        lookup = String (ed.name [ed.name.index(dot, offsetBy: 1)...])
+                    }
+                    let name = dropMatchingPrefix(lookup, ev.name)
                     
-                    return "``\(getGodotType (SimpleType (type: ed.name)))/\(escapeSwift(String (name)))``"
+                    return "``\(type)\(getGodotType (SimpleType (type: lookup)))/\(escapeSwift(String (name)))``"
                 }
+            }
+        }
+        let (type, name) = splitAtLastDot(str: txt)
+        if type != "", let ldef = classMap [type] {
+            if let r = lookInDef(def: ldef, match: name, local: false) {
+                return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
             }
         }
         //print ("Doc: Could not find constant \(txt) in \(cdef.name)")
@@ -329,6 +372,9 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
                     // Same as method for now?
                     return "``\(convertMember(x.output.2))``"
                 case "enum":
+                    if x.output.2 == "Variant.Type" {
+                        print (2)
+                    }
                     if let cdef {
                         if let enums = cdef.enums {
                             // If it is a local enum
@@ -337,7 +383,8 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
                             }
                         }
                     }
-                    return "``\(x.output.2)``"
+                    return "``\(getGodotType(SimpleType(type: "enum::" + x.output.2)))``"
+                    
                 default:
                     print ("Doc: Error, unexpected \(x.output.1) tag")
                     return "[\(x.output.1) \(x.output.2)]"
