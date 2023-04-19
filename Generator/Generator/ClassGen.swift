@@ -323,7 +323,7 @@ func generateMethods (_ p: Printer,
                     } else if godotReturnType == "String" {
                         p ("var _result = GString ()")
                     } else {
-                        if let exists = classMap [godotReturnType ?? ""] {
+                        if classMap [godotReturnType ?? ""] != nil {
                             frameworkType = true
                             p ("var _result = UnsafeRawPointer (bitPattern: 0)")
                         } else {
@@ -556,11 +556,11 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
     
     let semaphore = DispatchSemaphore(value: 0)
 
-    let t = Task {
+    let _ = Task {
         await withTaskGroup(of: Void.self) { group in
             for cdef in values {
                 group.addTask {
-                    processClass (cdef: cdef)
+                    processClass (cdef: cdef, outputDir: outputDir)
                 }
             }
         }
@@ -569,7 +569,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
     semaphore.wait()
 }
 
-func processClass (cdef: JGodotExtensionAPIClass) {
+func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
     let docClass = loadClassDoc(base: docRoot, name: cdef.name)
     let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
     

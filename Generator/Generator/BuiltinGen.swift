@@ -379,6 +379,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
         if bc.name == "String" || bc.name == "StringName" || bc.name == "NodePath" {
             conformances.append ("ExpressibleByStringLiteral")
         }
+        if bc.name.starts(with: "Packed") {
+            conformances.append ("Collection")
+        }
         var proto = ""
         if conformances.count > 0 {
             proto = ": " + conformances.joined(separator: ", ")
@@ -538,6 +541,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
             generateBuiltinOperators (p, bc, docClass, typeName: typeName)
             generateBuiltinConstants (p, bc, docClass, typeName: typeName)
+            if bc.name.starts(with: "Packed") {
+                p ("public var startIndex: Int") {
+                    p ("0")
+                }
+                p ("public var endIndex: Int") {
+                    p ("Int (size ())")
+                }
+
+                p ("public func index(after i: Int) -> Int") {
+                    p ("i+1")
+                }
+            }
         }
     }
     

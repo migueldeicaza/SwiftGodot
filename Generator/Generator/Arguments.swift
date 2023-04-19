@@ -21,7 +21,6 @@ func isSmallInt (_ arg: JNameAndType) -> Bool {
     default:
         return false
     }
-    return false
 }
 
 func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
