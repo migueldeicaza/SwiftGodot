@@ -198,17 +198,13 @@ func splitAtLastDot (str: String.SubSequence) -> (String, String) {
 // [b]..[/b] bold
 // [method name] is a method reference, should apply the remapping we do
 // 
-func doc (_ cdef: JClassInfo?, _ text: String?) {
+func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
     guard let text else { return }
 //    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
 //        return
 //    }
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
-        if txt == "TextServer.AUTOWRAP_OFF" {
-            print (2)
-        }
-
         func lookInDef (def: JClassInfo, match: String, local: Bool) -> String? {
             // TODO: for builtins, we wont have a cdef
             for ed in def.enums ?? [] {
@@ -334,8 +330,8 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
         return godotPropertyToSwift(member)
     }
 
-    let oIndent = indentStr
-    indentStr = "\(indentStr)/// "
+    let oIndent = p.indentStr
+    p.indentStr = "\(p.indentStr)/// "
     
     var inCodeBlock = false
     for x in text.split(separator: "\n", omittingEmptySubsequences: false) {
@@ -356,7 +352,12 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
             mod = mod.replacing(rxConstantParam, with: { x in
                 switch x.output.1 {
                 case "param":
-                    return "`\(godotArgumentToSwift (String(x.output.2)))`"
+                    let pname = godotArgumentToSwift (String(x.output.2))
+                    if pname.starts(with: "`") {
+                        // Do not escape parameters that are already escaped, Swift wont know
+                        return pname
+                    }
+                    return "``\(pname)``"
                 case "constant":
                     return lookupConstant (x.output.2)
                 default:
@@ -372,9 +373,6 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
                     // Same as method for now?
                     return "``\(convertMember(x.output.2))``"
                 case "enum":
-                    if x.output.2 == "Variant.Type" {
-                        print (2)
-                    }
                     if let cdef {
                         if let enums = cdef.enums {
                             // If it is a local enum
@@ -417,5 +415,5 @@ func doc (_ cdef: JClassInfo?, _ text: String?) {
     }
 
     
-    indentStr = oIndent
+    p.indentStr = oIndent
 }

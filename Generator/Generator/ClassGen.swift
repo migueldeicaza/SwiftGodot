@@ -76,7 +76,10 @@ func argTypeNeedsCopy (godotType: String) -> Bool {
     return false
 }
 
-func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, method: JGodotClassMethod) {
+func generateVirtualProxy (_ p: Printer,
+                           cdef: JGodotExtensionAPIClass,
+                           methodName: String,
+                           method: JGodotClassMethod) {
     // Generate the glue for the virtual methods (those that start with an underscore in Godot
     guard method.isVirtual else {
         print ("ERROR: internally, we passed methods that are not virtual")
@@ -88,7 +91,7 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
     } else {
         virtRet = nil
     }
-    b ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
+    p ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
         p ("guard let instance else { return }")
         p ("guard let args else { return }")
         p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
@@ -140,7 +143,11 @@ func generateVirtualProxy (cdef: JGodotExtensionAPIClass, methodName: String, me
 /// Returns a hashtable mapping a godot method name to a Swift Name + its definition
 /// this list is used to generate later the proxies outside the class
 ///
-func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, methods: [JGodotClassMethod], _ usedMethods: Set<String>) -> [String:(String, JGodotClassMethod)] {
+func generateMethods (_ p: Printer,
+                      cdef: JGodotExtensionAPIClass,
+                      docClass: DocClass?,
+                      methods: [JGodotClassMethod],
+                      _ usedMethods: Set<String>) -> [String:(String, JGodotClassMethod)] {
     p ("/* Methods */")
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
@@ -167,7 +174,7 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
         var inline = ""
         if let methodHash = method.hash {
             assert (!method.isVirtual)
-            b ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
+            p ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
                 
                 p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(cdef.name).className.content), UnsafeRawPointer (&methodName.content), \(methodHash))!")
@@ -295,12 +302,12 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
 
         if let docClass, let methods = docClass.methods {
             if let docMethod = methods.method.first(where: { $0.name == method.name }) {
-                doc (cdef, docMethod.description)
+                doc (p, cdef, docMethod.description)
                 // Sadly, the parameters have no useful documentation
             }
         }
         // Generate the method entry point
-        b ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
+        p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
             if method.hash == nil {
                 if let godotReturnType {
                     p (makeDefaultReturn (godotType: godotReturnType))
@@ -387,8 +394,8 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
         }
     }
     if virtuals.count > 0 {
-        b ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
-            b ("switch name.description") {
+        p ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
+            p ("switch name.description") {
                 for (name, _) in virtuals {
                     p ("case \"\(name)\":")
                     p ("    return _\(cdef.name)_proxy\(name)")
@@ -401,20 +408,28 @@ func generateMethods (cdef: JGodotExtensionAPIClass, docClass: DocClass?, method
     return virtuals
 }
 
-func generateConstants (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ constants: [JGodotValueElement]) {
+func generateConstants (_ p: Printer,
+                        cdef: JGodotExtensionAPIClass,
+                        docClass: DocClass?,
+                        _ constants: [JGodotValueElement]) {
     p ("/* Constants */")
     let docConstants = docClass?.constants?.constant
     
     for constant in constants {
         for dc in docConstants ?? [] {
             if dc.name == constant.name {
-                doc (cdef, "\(dc.rest)")
+                doc (p, cdef, "\(dc.rest)")
             }
         }
         p ("public static let \(snakeToCamel (constant.name)) = \(constant.value)")
     }
 }
-func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ properties: [JGodotProperty], _ methods: [JGodotClassMethod], _ referencedMethods: inout Set<String>)
+func generateProperties (_ p: Printer,
+                         cdef: JGodotExtensionAPIClass,
+                         docClass: DocClass?,
+                         _ properties: [JGodotProperty],
+                         _ methods: [JGodotClassMethod],
+                         _ referencedMethods: inout Set<String>)
 {
     p ("\n/* Properties */\n")
 
@@ -489,16 +504,16 @@ func generateProperties (cdef: JGodotExtensionAPIClass, docClass: DocClass?, _ p
         
         if let docClass, let members = docClass.members {
             if let docMember = members.member.first(where: { $0.name == property.name }) {
-                doc (cdef, docMember.value)
+                doc (p, cdef, docMember.value)
             }
         }
-        b ("final public var \(godotPropertyToSwift (property.name)): \(type!)"){
-            b ("get"){
+        p ("final public var \(godotPropertyToSwift (property.name)): \(type!)"){
+            p ("get"){
                 p ("return \(property.getter) (\(access))")
             }
             referencedMethods.insert (property.getter)
             if let setter = property.setter {
-                b ("set") {
+                p ("set") {
                     var value = "newValue"
                     if type == "StringName" && setterMethod?.arguments![0].type == "String" {
                         value = "String (newValue)"
@@ -518,10 +533,12 @@ var okList: [String] = []
 #endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
+    // TODO: duplicate, we can remove this and use classMap
     // Assemble all the reference types, we use to test later
     for cdef in values {
         referenceTypes[cdef.name] = true
     }
+    // TODO: no longer used, probably can remove
     // Also a convenient hash to go from name to json
     // And track which types must be opened up
     for cdef in values {
@@ -537,104 +554,122 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
         }
     }
     
-    for cdef in values {
-        let docClass = loadClassDoc(base: docRoot, name: cdef.name)
-        let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
-        
-        // Clear the result
-        result = ""
-        p ("// Generated by Swift code generator - do not edit\nimport Foundation\n@_implementationOnly import GDExtension\n")
+    let semaphore = DispatchSemaphore(value: 0)
 
-        // Save it
-        defer {
-            try! result.write(toFile: outputDir + "\(cdef.name).swift", atomically: true, encoding: .utf8)
-        }
-        
-        let inherits = cdef.inherits ?? "Wrapped"
-        var conformances: [String] = []
-        if cdef.name == "Object" {
-            conformances.append("GodotObject")
-        }
-        var proto = ""
-        if conformances.count > 0 {
-            proto = ", " + conformances.joined(separator: ", ")
-        } else {
-            proto = ""
-        }
-
-        let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
-        
-        var virtuals: [String: (String, JGodotClassMethod)] = [:]
-        doc (cdef, docClass?.brief_description)
-        if docClass?.description ?? "" != "" {
-            doc (cdef, "")      // Add a newline before the fuller description
-            doc (cdef, docClass?.description)
-        }
-        // class or extension (for Object)
-        b (typeDecl) {
-            if isSingleton {
-                p ("/// The shared instance of this class")
-                b ("public static var shared: \(cdef.name) =", suffix: "()") {
-                    p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (UnsafeRawPointer (&\(cdef.name).className.content))!)")
-                }
-            }
-            p ("static private var className = StringName (\"\(cdef.name)\")")
-            p ("/// Creates a \(cdef.name) that wraps the Godot native object pointed to by the nativeHandle")
-            b ("public required init (nativeHandle: UnsafeRawPointer)") {
-                p("super.init (nativeHandle: nativeHandle)")
-            }
-            p ("/// Ths initializer is invoked by derived classes as they chain through their most derived type name that our framework produced")
-            b ("internal override init (name: StringName)") {
-                p("super.init (name: name)")
-            }
-            
-            let fastInitOverrides = cdef.inherits != nil ? "override " : ""
-            
-            b ("internal \(fastInitOverrides)init (fast: Bool)") {
-                p ("super.init (name: \(cdef.name).className)")
-            }
-            p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
-            p ("/// when you create a subclass of this type.")
-            b ("public required init ()") {
-                p ("super.init (name: StringName (\"\(cdef.name)\"))")
-            }
-            
-            var referencedMethods = Set<String>()
-            
-            if let enums = cdef.enums {
-                generateEnums (cdef: cdef, values: enums, constantDocs: docClass?.constants?.constant, prefix: nil)
-            }
-
-            let oResult = result
-
-            if let constants = cdef.constants {
-                generateConstants (cdef: cdef, docClass: docClass, constants)
-            }
-            
-            if let properties = cdef.properties {
-                generateProperties (cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods)
-            }
-            if let methods = cdef.methods {
-                virtuals = generateMethods (cdef: cdef, docClass: docClass, methods: methods, referencedMethods)
-            }
-            
-            // Remove code that we did not want generated
-            if okList.count > 0 && !okList.contains (cdef.name) {
-                result = oResult
-            }
-        }
-        if virtuals.count > 0 {
-            p ("// Support methods for proxies")
-            for (_, (methodName, methodDef)) in virtuals {
-                if okList.count == 0 || okList.contains (cdef.name) {
-                    generateVirtualProxy(cdef: cdef, methodName: methodName, method: methodDef)
+    let t = Task {
+        await withTaskGroup(of: Void.self) { group in
+            for cdef in values {
+                group.addTask {
+                    processClass (cdef: cdef)
                 }
             }
         }
+        semaphore.signal()
+    }
+    semaphore.wait()
+}
+
+func processClass (cdef: JGodotExtensionAPIClass) {
+    let docClass = loadClassDoc(base: docRoot, name: cdef.name)
+    let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
+    
+    // Clear the result
+    let p = Printer ()
+    p.preamble()
+    p ("// Generated by Swift code generator - do not edit\nimport Foundation\n@_implementationOnly import GDExtension\n")
+    
+    // Save it
+    defer {
+        p.save(outputDir + "\(cdef.name).swift")
+    }
+    
+    let inherits = cdef.inherits ?? "Wrapped"
+    var conformances: [String] = []
+    if cdef.name == "Object" {
+        conformances.append("GodotObject")
+    }
+    var proto = ""
+    if conformances.count > 0 {
+        proto = ", " + conformances.joined(separator: ", ")
+    } else {
+        proto = ""
+    }
+    
+    let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
+    
+    var virtuals: [String: (String, JGodotClassMethod)] = [:]
+    doc (p, cdef, docClass?.brief_description)
+    if docClass?.description ?? "" != "" {
+        doc (p, cdef, "")      // Add a newline before the fuller description
+        doc (p, cdef, docClass?.description)
+    }
+    // class or extension (for Object)
+    p (typeDecl) {
+        if isSingleton {
+            p ("/// The shared instance of this class")
+            p ("public static var shared: \(cdef.name) =", suffix: "()") {
+                p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (UnsafeRawPointer (&\(cdef.name).className.content))!)")
+            }
+        }
+        p ("static private var className = StringName (\"\(cdef.name)\")")
+        p ("/// Creates a \(cdef.name) that wraps the Godot native object pointed to by the nativeHandle")
+        p ("public required init (nativeHandle: UnsafeRawPointer)") {
+            p("super.init (nativeHandle: nativeHandle)")
+        }
+        p ("/// Ths initializer is invoked by derived classes as they chain through their most derived type name that our framework produced")
+        p ("internal override init (name: StringName)") {
+            p("super.init (name: name)")
+        }
         
+        let fastInitOverrides = cdef.inherits != nil ? "override " : ""
+        
+        p ("internal \(fastInitOverrides)init (fast: Bool)") {
+            p ("super.init (name: \(cdef.name).className)")
+        }
+        p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
+        p ("/// when you create a subclass of this type.")
+        p ("public required init ()") {
+            p ("super.init (name: StringName (\"\(cdef.name)\"))")
+        }
+        
+        var referencedMethods = Set<String>()
+        
+        if let enums = cdef.enums {
+            generateEnums (p, cdef: cdef, values: enums, constantDocs: docClass?.constants?.constant, prefix: nil)
+        }
+        
+        let oResult = p.result
+        
+        if let constants = cdef.constants {
+            generateConstants (p, cdef: cdef, docClass: docClass, constants)
+        }
+        
+        if let properties = cdef.properties {
+            generateProperties (p, cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods)
+        }
+        if let methods = cdef.methods {
+            virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, referencedMethods)
+        }
+        
+        // Remove code that we did not want generated
+        if okList.count > 0 && !okList.contains (cdef.name) {
+            p.result = oResult
+        }
+    }
+    if virtuals.count > 0 {
+        p ("// Support methods for proxies")
+        for (_, (methodName, methodDef)) in virtuals {
+            if okList.count == 0 || okList.contains (cdef.name) {
+                generateVirtualProxy(p, cdef: cdef, methodName: methodName, method: methodDef)
+            }
+        }
     }
 }
 
-class Test {
-    init (_ str: String) {}
+func generateCtorPointers (_ p: Printer) {
+    p ("var godotFrameworkCtors = [")
+    for x in referenceTypes.keys {
+        p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
+    }
+    p ("]")
 }
