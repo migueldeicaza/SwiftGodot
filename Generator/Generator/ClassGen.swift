@@ -183,7 +183,7 @@ func generateMethods (_ p: Printer,
             // If this is an internal, and being reference by a property, hide it
             if usedMethods.contains (method.name) {
                 inline = "@inline(__always)"
-                visibility = "private"
+                visibility = "internal"
                 eliminate = "_ "
                 methodName = method.name
             } else {
@@ -433,6 +433,40 @@ func generateProperties (_ p: Printer,
 {
     p ("\n/* Properties */\n")
 
+    func findMethod (forProperty: JGodotProperty, startAt: JGodotExtensionAPIClass, name: String, resolvedName: inout String, argName: inout String) -> JGodotClassMethod? {
+        if let here = methods.first(where: { $0.name == name}) {
+            return here
+        }
+        var cdef: JGodotExtensionAPIClass? = startAt
+        while true {
+            guard let parentName = cdef?.inherits, parentName != "" else {
+                return nil
+            }
+            cdef = classMap [parentName]
+            guard let cdef else {
+                print ("Warning: Missing type \(parentName)")
+                return nil
+            }
+            if forProperty.name == "spot_range" && cdef.name.contains("Light"){
+                print (3)
+            }
+            if let there = cdef.methods?.first (where: { $0.name == name }) {
+                //print ("Congrats, found a method that was previously missing!")
+                
+                // Now, if the parent class has a property referencing this,
+                // we use the mapped name, otherwise, we use the raw name
+                if cdef.properties?.contains(where: { $0.getter == there.name || $0.setter == there.name }) ?? false {
+                    return there
+                }
+                resolvedName = godotMethodToSwift (there.name)
+                if let aname = there.arguments?.first?.name {
+                    argName = aname + ": "
+                }
+                return there
+            }
+        }
+    }
+    
     for property in properties {
         var type: String?
     
@@ -457,17 +491,23 @@ func generateProperties (_ p: Printer,
 //            continue
 //        }
         let loc = "\(cdef.name).\(property.name)"
-        guard let method = methods.first(where: { $0.name == property.getter}) else {
-            // I filed a bug with Godot for these
-            //print ("GodotBug: \(loc): property declared \(property.getter), but it does not exist with that name")
+        
+        if property.getter == "get_vertices" && cdef.name == "ArrayOccluder3D" {
+            print (1)
+        }
+        var getterName = property.getter
+        var gettterArgName = ""
+        guard let method = findMethod (forProperty: property, startAt: cdef, name: property.getter, resolvedName: &getterName, argName: &gettterArgName) else {
+            print ("GodotBug: \(loc): property declared \(property.getter), but it does not exist with that name")
             continue
         }
+        var setterName = property.setter ?? ""
+        var setterArgName = ""
         var setterMethod: JGodotClassMethod? = nil
-        if property.setter != nil {
-            setterMethod = methods.first(where: { $0.name == property.setter})
+        if let psetter = property.setter {
+            setterMethod = findMethod(forProperty: property, startAt: cdef, name: psetter, resolvedName: &setterName, argName: &setterArgName)
             if setterMethod == nil {
-                // I filed a bug with Godot for these
-                //print ("GodotBug \(loc) property declared \(property.setter!) but it does not exist with that name")
+                print ("GodotBug \(loc) property declared \(property.setter!) but it does not exist with that name")
                 continue
             }
         }
@@ -509,7 +549,7 @@ func generateProperties (_ p: Printer,
         }
         p ("final public var \(godotPropertyToSwift (property.name)): \(type!)"){
             p ("get"){
-                p ("return \(property.getter) (\(access))")
+                p ("return \(getterName) (\(gettterArgName)\(access))")
             }
             referencedMethods.insert (property.getter)
             if let setter = property.setter {
@@ -518,7 +558,7 @@ func generateProperties (_ p: Printer,
                     if type == "StringName" && setterMethod?.arguments![0].type == "String" {
                         value = "String (newValue)"
                     }
-                    p ("\(setter) (\(access)\(access != "" ? ", " : "")\(value))")
+                    p ("\(setterName) (\(access)\(access != "" ? ", " : "")\(setterArgName)\(value))")
                 }
                 referencedMethods.insert (setter)
             }

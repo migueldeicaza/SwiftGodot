@@ -65,13 +65,17 @@ import Foundation
 ///
 /// If you do not call this method, many of the overloads that Godot would
 /// call you back on will not be invoked.
-open class Wrapped: Equatable, Identifiable {
+open class Wrapped: Equatable, Identifiable, Hashable {
     var handle: UnsafeRawPointer
     
     public var id: Int { Int (bitPattern: handle) }
     
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
         return lhs.handle == rhs.handle
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(handle)
     }
     
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
