@@ -280,12 +280,29 @@ func generateBuiltinOperators (_ p: Printer,
                 }
             }
             p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
-                
-                let args: [JGodotArgument] = [
-                    JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
-                    JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
-                ]
-                generateMethodCall(p, typeName: typeName, methodToCall: ptrName, godotReturnType: op.returnType, isStatic: true, arguments: args, kind: .operatorCall)
+                let ptrResult: String
+                if op.returnType == "String" && mapStringToSwift {
+                    p ("var result = GString ()")
+                } else {
+                    p ("var result: \(retType) = \(retType)()")
+                }
+                let isStruct = isStructMap [op.returnType] ?? false
+                if isStruct {
+                    ptrResult = "&result"
+                } else {
+                    ptrResult = "&result.content"
+                }
+                let rhsa = JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
+                let rhs = getArgRef (arg: rhsa)
+                let lhsa = JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil)
+                let lhs = getArgRef (arg: lhsa)
+                p (generateCopies([lhsa, rhsa]))
+                p ("\(typeName).\(ptrName) (\(lhs), \(rhs), \(ptrResult))")
+                if op.returnType == "String" && mapStringToSwift {
+                    p ("return result.description")
+                } else {
+                    p ("return result")
+                }
             }
         }
     }

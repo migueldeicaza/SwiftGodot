@@ -55,52 +55,62 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
     return "\(eliminate)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(def)"
 }
 
+func getArgRef (arg: JNameAndType) -> String {
+    var argref: String
+    var optstorage: String
+    var needAddress = "&"
+    if !(isStructMap [arg.type] ?? false) { // { ) isCoreType(name: arg.type){
+        argref = godotArgumentToSwift (arg.name)
+        if isStructMap [arg.type] ?? false {
+            optstorage = ""
+        } else if arg.type == "String" && mapStringToSwift {
+            argref = "gstr_\(arg.name)"
+            optstorage = ".content"
+        } else {
+            if builtinSizes [arg.type] != nil && arg.type != "Object" {
+                optstorage = ".content"
+            } else {
+                needAddress = ""
+                optstorage = ".handle"
+            }
+        }
+    } else {
+        argref = "copy_\(arg.name)"
+        optstorage = ""
+    }
+    if (isStructMap [arg.type] ?? false) {
+        return "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage))"
+    } else {
+        return "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage))"
+    }
+}
+
+func generateCopies (_ args: [JNameAndType]) -> String {
+    var body = ""
+    
+    for arg in args {
+        //if !isCoreType (name: arg.type) {
+        let reference = godotArgumentToSwift (arg.name)
+        
+        if isStructMap [arg.type] ?? false {
+            body += "var copy_\(arg.name) = \(reference)\n"
+        } else if arg.type == "String" && mapStringToSwift {
+            body += "var gstr_\(arg.name) = GString (\(reference))\n"
+        }
+    }
+    return body
+}
+
 func generateArgPrepare (_ args: [JNameAndType]) -> String {
     var body = ""
     
     if args.count > 0 {
-        for arg in args {
-            //if !isCoreType (name: arg.type) {
-            let reference = godotArgumentToSwift (arg.name)
-            
-            if isStructMap [arg.type] ?? false {
-                body += "var copy_\(arg.name) = \(reference)\n"
-            } else if arg.type == "String" && mapStringToSwift {
-                body += "var gstr_\(arg.name) = GString (\(reference))\n"
-            }
-        }
-
+        body += generateCopies (args)
         body += "var args: [UnsafeRawPointer?] = [\n"
         
         for arg in args {
-            var argref: String
-            var optstorage: String
-            var needAddress = "&"
-            if !(isStructMap [arg.type] ?? false) { // { ) isCoreType(name: arg.type){
-                argref = godotArgumentToSwift (arg.name)
-                if isStructMap [arg.type] ?? false {
-                    optstorage = ""
-                } else if arg.type == "String" && mapStringToSwift {
-                    argref = "gstr_\(arg.name)"
-                    optstorage = ".content"
-                } else {
-                    if builtinSizes [arg.type] != nil && arg.type != "Object" {
-                        optstorage = ".content"
-                    } else {
-                        needAddress = ""
-                        optstorage = ".handle"
-                    }
-                }
-            } else {
-                argref = "copy_\(arg.name)"
-                optstorage = ""
-            }
-            if (isStructMap [arg.type] ?? false) {
-                
-                body += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)), // isCoreType: \(arg.type) \(isCoreType (name: arg.type)) - \(escapeSwift(argref)) argRef:\(argref)\n"
-            } else {
-                body += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),\n"
-            }
+            let ar = getArgRef(arg: arg)
+            body += "    \(ar),\n"
         }
         body += "]"
         
