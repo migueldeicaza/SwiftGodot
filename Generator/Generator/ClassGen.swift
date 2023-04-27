@@ -93,7 +93,9 @@ func generateVirtualProxy (_ p: Printer,
     }
     p ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
         p ("guard let instance else { return }")
-        p ("guard let args else { return }")
+        if let arguments = method.arguments, arguments.count > 0 {
+            p ("guard let args else { return }")
+        }
         p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
         
         var argCall = ""
