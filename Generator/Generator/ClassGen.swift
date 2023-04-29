@@ -99,6 +99,7 @@ func generateVirtualProxy (_ p: Printer,
         p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
         
         var argCall = ""
+        var argPrep = ""
         var i = 0
         for arg in method.arguments ?? [] {
             if argCall != "" { argCall += ", " }
@@ -106,12 +107,17 @@ func generateVirtualProxy (_ p: Printer,
             argCall += "\(argName): "
             if arg.type == "String" {
                 argCall += "GString.stringFromGStringPtr (ptr: args [\(i)]!) ?? \"\""
-            } else if classMap [arg.type] != nil {
+            } else if let cmap = classMap [arg.type] {
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
-                argCall += "lookupLiveObject (handleAddress: args [\(i)]!) as? \(arg.type) ?? \(arg.type) (nativeHandle: args [\(i)]!)"
+                if cmap.isRefcounted {
+                    argPrep += "let resolved_\(i) = gi.ref_get_object (args [\(i)]!)!\n"
+                } else {
+                    argPrep += "let resolved_\(i) = args [\(i)]!\n"
+                }
+                argCall += "lookupLiveObject (handleAddress: resolved_\(i)) as? \(arg.type) ?? \(arg.type) (nativeHandle: resolved_\(i))"
             } else if let storage = builtinClassStorage [arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
             } else {
@@ -121,6 +127,9 @@ func generateVirtualProxy (_ p: Printer,
             i += 1
         }
         let hasReturn = method.returnValue != nil
+        if argPrep != "" {
+            p (argPrep)
+        }
         var call = "swiftObject.\(methodName) (\(argCall))"
         if method.returnValue?.type == "String" {
             call = "GString (\(call))"

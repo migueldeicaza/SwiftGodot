@@ -66,7 +66,10 @@ import Foundation
 /// If you do not call this method, many of the overloads that Godot would
 /// call you back on will not be invoked.
 open class Wrapped: Equatable, Identifiable, Hashable {
-    var handle: UnsafeRawPointer
+    /// Points to the underlying object
+    public let handle: UnsafeRawPointer
+    public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
+    public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     
     public var id: Int { Int (bitPattern: handle) }
     
@@ -316,9 +319,10 @@ func userTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableR
 }
 
 func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    // This is called from object_get_instance_binding
     print ("SWIFT: TODO frameworkBindingCreate, why is this called?")
-    fatalError()
-    return nil
+    //fatalError()
+    return instance
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
