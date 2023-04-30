@@ -150,6 +150,11 @@ func generateVirtualProxy (_ p: Printer,
     }
 }
 
+// Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
+var discardableResultList: [String: Set<String>] = [
+    "Object": ["emit_signal"]
+]
+
 ///
 /// Returns a hashtable mapping a godot method name to a Swift Name + its definition
 /// this list is used to generate later the proxies outside the class
@@ -318,6 +323,9 @@ func generateMethods (_ p: Printer,
             }
         }
         // Generate the method entry point
+        if let discardable = discardableResultList [cdef.name]?.contains(method.name) {
+            p ("@discardableResult")
+        }
         p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
             if method.hash == nil {
                 if let godotReturnType {
