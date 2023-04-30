@@ -9,6 +9,11 @@ import Foundation
 
 func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], constantDocs: [DocConstant]? , prefix: String?) {
     
+    var docEnumToValue: [String:String] = [:]
+    for d in constantDocs ?? [] {
+        docEnumToValue [d.name] = d.rest
+    }
+            
     for enumDef in values {
         if enumDef.isBitfield ?? false {
             p ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
@@ -18,11 +23,8 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 }
                 for enumVal in enumDef.values {
                     let name = dropMatchingPrefix (enumDef.name, enumVal.name)
-                    for d in constantDocs ?? [] {
-                        if d.name == enumVal.name {
-                            doc (p, cdef, d.rest)
-                            break
-                        }
+                    if let ed = docEnumToValue [enumVal.name] {
+                        doc (p, cdef, ed)
                     }
                     p ("public static let \(escapeSwift (name)) = \(enumDef.name) (rawValue: \(enumVal.value))")
                 }
@@ -54,11 +56,8 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     prefix = ""
                 }
                 used.insert(enumVal.value)
-                for d in constantDocs ?? [] {
-                    if d.name == enumValName {
-                        doc (p, cdef, d.rest)
-                        break
-                    }
+                if let ed = docEnumToValue [enumValName] {
+                    doc (p, cdef, ed)
                 }
                 p ("\(prefix)case \(escapeSwift(name)) = \(enumVal.value) // \(enumVal.name)")
             }

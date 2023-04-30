@@ -47,6 +47,11 @@ func generateBuiltinConstants (_ p: Printer,
     guard let constants = bc.constants else { return }
     let docConstants = docClass?.constants?.constant
     
+    var docConstantMap: [String: String] = [:]
+    for dc in docConstants ?? [] {
+        docConstantMap [dc.name] = dc.rest
+    }
+    
     for constant in constants {
         // Check if we need to inject parameter names
         var val = constant.value
@@ -54,10 +59,8 @@ func generateBuiltinConstants (_ p: Printer,
             continue
         }
         
-        for dc in docConstants ?? [] {
-            if dc.name == constant.name {
-                doc (p, bc, "\(dc.rest)")
-            }
+        if let rest = docConstantMap [constant.name] {
+            doc (p, bc, "\(rest)")
         }
         p ("public static let \(snakeToCamel (constant.name)) = \(val)")
     }
