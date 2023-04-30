@@ -8,10 +8,27 @@
 import Foundation
 @_implementationOnly import GDExtension
 
-/// Provides support for register Swift-level methods, signals with the Godot runtime.
+/// Provides support to expose Swift methods and signals to the Godot runtime, making it callable
+/// from its runtime and scripting language.
 ///
 /// You create a ClassInfo object, with the name for your class, and then call the various
-/// register methods.
+/// register methods.   You only need to do once per class, so it is recommended that you
+/// perform this initialization with an idiom like this:
+/// ```
+/// class MyNode: Node {
+///   func initClass() -> Bool {
+///     let classInfo = ClassInfo<SpinningCube>(name: "MyNode")
+///     // register things in classInfo here:
+///     ...
+///     return true
+///   }
+///
+///   required init () {
+///     super.init ()
+///     let _ = initClass ()
+///   }
+///
+/// ```
 public class ClassInfo<T:Object> {
     var name: StringName
     
@@ -55,6 +72,46 @@ public class ClassInfo<T:Object> {
     }
     
     /// Exposes a new method to the Godot world with the specific name
+    ///
+    /// This example shows how to register a method that takes an int parameter:
+    /// ```
+    /// class MyNode: Node {
+    ///   func initClass() -> Bool {
+    ///     let classInfo = ClassInfo<SpinningCube>(name: "MyNode")
+    ///     let printArgs = [
+    ///       PropInfo(
+    ///         propertyType: .string,
+    ///         propertyName: StringName ("numberToCheck"),
+    ///         className: "MyNode",
+    ///         hint: .flags,
+    ///         hintStr: "Number of baddies to check",
+    ///         usage: .propertyUsageDefault)
+    ///     ]
+    ///     classInfo.registerMethod (name: "checkBaddies", flags: .default, returnValue: .nil, arguments: [], function: MyNode.checkBaddies)
+    ///     return true
+    ///   }
+    ///
+    ///   required init () {
+    ///     super.init ()
+    ///     let _ = initClass ()
+    ///   }
+    ///
+    ///   func checkBaddies (args: [Variant]) -> Variant? {
+    ///     // We are getting one integer if called from Godot of type Int
+    ///     // validate in case you called this directly from Swift
+    ///     guard args.count > 0 else {
+    ///       print ("MyNode: Not enough parameters to checkBaddies: \(args.count)")
+    ///       return nil
+    ///     }
+    ///
+    ///     guard let numberToCheck = Int (args [0]) else {
+    ///       print ("MyNode: No string in vararg")
+    ///       return nil
+    ///     }
+    ///     // Use `numberToCheck` here
+    ///   }
+    /// }
+    /// ```
     /// - Parameters;
     ///  - name: Name to surface the method as
     ///  - flags: the flags that describe the method in detail
@@ -98,6 +155,7 @@ public class ClassInfo<T:Object> {
 
 /// PropInfo structures describe arguments to signals, and methods as well as return values from methods.
 ///
+/// The supported types are those that can be wrapped as a Godot Variant type.
 public struct PropInfo {
     /// The type of the property being defined
     public let propertyType: Variant.GType

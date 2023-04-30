@@ -20,7 +20,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     let name = dropMatchingPrefix (enumDef.name, enumVal.name)
                     for d in constantDocs ?? [] {
                         if d.name == enumVal.name {
-                            doc (p, cdef, d.value)
+                            doc (p, cdef, d.rest)
                             break
                         }
                     }
