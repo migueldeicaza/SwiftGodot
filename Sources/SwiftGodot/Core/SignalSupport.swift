@@ -92,9 +92,9 @@ public class SimpleSignal {
     /// - Parameters:
     ///  - callback: the method to invoke when the signal is raised
     ///  - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).
-    /// - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.
+    /// - Returns: an object token that can be used to disconnect the object from the target.
     @discardableResult
-    public func connect (_ callback: @escaping () -> (), flags: UInt32 = 0) -> Result<Object, GodotError> {
+    public func connect (_ callback: @escaping () -> (), flags: UInt32 = 0) -> Object {
         let signalProxy = SignalProxy()
         signalProxy.proxy = { args in
             callback ()
@@ -102,10 +102,10 @@ public class SimpleSignal {
 
         let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
         let r = target.connect(signal: signalName, callable: callable, flags: flags)
-        if r == .ok {
-            return .success(signalProxy)
+        if r != .ok {
+            print ("Warning, error connecting to signal \(signalName.description): \(r)")
         }
-        return .failure(r)
+        return signalProxy
     }
     
     /// Disconnects a signal that was previously connected (the return value from a successful call to Connect

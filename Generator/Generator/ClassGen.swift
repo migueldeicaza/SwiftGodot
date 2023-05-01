@@ -676,7 +676,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             callArgs += "arg_\(argIdx)"
             argIdx += 1
         }
-        p ("public func connect (_ callback: @escaping (\(args)) -> (), flags: UInt32 = 0) -> Swift.Result<Object,GodotError>") {
+        p ("public func connect (_ callback: @escaping (\(args)) -> (), flags: UInt32 = 0) -> Object") {
             p ("let signalProxy = SignalProxy()")
             p ("signalProxy.proxy = ") {
                 p ("args in")
@@ -685,10 +685,8 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             }
             p ("let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)")
             p ("let r = target.connect(signal: signalName, callable: callable, flags: flags)")
-            p ("if r == .ok") {
-                p ("return .success(signalProxy)")
-            }
-            p ("return .failure(r)")
+            p ("if r != .ok { print (\"Warning, error connecting to signal, code: \\(r)\") }")
+            p ("return signalProxy")
         }
     }
 }
@@ -806,16 +804,16 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
                 p ("/// To connect to this signal, reference this property and call the `connect` method with the method you want to invoke")
                 p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
             }
-            if parameterSignals.count > 0 {
-                print ("SIGSTART \(cdef.name) \(parameterSignals.count)")
-                for x in parameterSignals {
-                    var sargs = ""
-                    for y in x.arguments ?? [] {
-                        sargs.append ("\(y.name): \(y.type), ")
-                    }
-                    print ("    SIG: \(x.name) \(sargs)")
-                }
-            }
+//            if parameterSignals.count > 0 {
+//                print ("SIGSTART \(cdef.name) \(parameterSignals.count)")
+//                for x in parameterSignals {
+//                    var sargs = ""
+//                    for y in x.arguments ?? [] {
+//                        sargs.append ("\(y.name): \(y.type), ")
+//                    }
+//                    print ("    SIG: \(x.name) \(sargs)")
+//                }
+//            }
         }
         // Remove code that we did not want generated
         if okList.count > 0 && !okList.contains (cdef.name) {
