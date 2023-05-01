@@ -50,9 +50,24 @@ public class SignalProxy: Object {
 
 extension GodotError: Error {}
 
-/// The simple signal is used to raise signals that take no arguments and return no values
+/// The simple signal is used to raise signals that take no arguments and return no values.
 ///
-/// Subclasses that use this, implement singnals like this:
+/// To connect, you access the connect method, and pass you callback function, like this:
+/// ```
+/// let myClass = MyClass ()
+/// let token = myClass.wakeup.connect {
+///    print ("wakeup triggered")
+/// }
+/// ```
+///
+/// If you want to disconnect, you call:
+/// ```
+/// myClass.wakeup.disconnect (token)
+/// ```
+///
+/// To merely wait for one emission of the signal you can await the ``emitted`` property.
+///
+/// Subclasses that use this, implement signals like this:
 ///
 /// ```
 /// class MyClass: Object {
@@ -61,18 +76,6 @@ extension GodotError: Error {}
 /// }
 /// ```
 ///
-/// And to connect, you do:
-/// ```
-/// let myClass = MyClass ()
-/// let token = myClass.wakeup.connect {
-///    print ("wakeup triggered")
-/// }
-/// ```
-///
-/// Later on, to disconnect:
-/// ```
-/// myClass.wakeup.disconnect (token)
-/// ```
 public class SimpleSignal {
     var target: Object
     var signalName: StringName
@@ -89,27 +92,45 @@ public class SimpleSignal {
     ///
     /// To disconnect, call the disconnect method, with the returned token on success
     ///
+    /// Example:
+    /// ```swift
+    /// node.ready.connect {
+    ///     print ("Node is ready")
+    /// }
+    /// ```
+    ///
     /// - Parameters:
     ///  - callback: the method to invoke when the signal is raised
     ///  - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).
     /// - Returns: an object token that can be used to disconnect the object from the target.
     @discardableResult
-    public func connect (_ callback: @escaping () -> (), flags: UInt32 = 0) -> Object {
+    public func connect (flags: Object.ConnectFlags = [], _ callback: @escaping () -> ()) -> Object {
         let signalProxy = SignalProxy()
         signalProxy.proxy = { args in
             callback ()
         }
 
         let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
-        let r = target.connect(signal: signalName, callable: callable, flags: flags)
+        let r = target.connect(signal: signalName, callable: callable, flags: UInt32 (flags.rawValue))
         if r != .ok {
             print ("Warning, error connecting to signal \(signalName.description): \(r)")
         }
         return signalProxy
     }
     
-    /// Disconnects a signal that was previously connected (the return value from a successful call to Connect
+    /// Disconnects a signal that was previously connected, the return value from calling ``connect``
     public func disconnect (_ token: Object) {
         target.disconnect(signal: signalName, callable: Callable (object: token, method: SignalProxy.proxyName))
+    }
+    
+    /// You can await this property to wait for the signal to be emitted once
+    public var emitted: Void {
+        get async {
+            await withCheckedContinuation { c in
+                connect (flags: .connectOneShot) {
+                    c.resume()
+                }
+            }
+        }
     }
 }

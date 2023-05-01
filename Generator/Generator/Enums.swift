@@ -15,7 +15,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
     }
             
     for enumDef in values {
-        if enumDef.isBitfield ?? false {
+        if (enumDef.isBitfield ?? false) || enumDef.name == "ConnectFlags" {
             p ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
                 p ("public let rawValue: Int")
                 p ("public init (rawValue: Int)") {

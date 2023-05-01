@@ -640,7 +640,7 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
 }
 
 func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) {
-    doc (p, cdef, "Signal support, use the ``connect`` method to connect to the signal on the container object, and ``disconnect`` to drop the connection")
+    doc (p, cdef, "Signal support.\n\nUse the ``connect`` method to connect to the signal on the container object, and ``disconnect`` to drop the connection.\nYou can also await the ``emitted`` property for waiting for a single emission of the signal.")
     
     p ("public class \(name)") {
         p ("var target: Object")
@@ -656,8 +656,13 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
         var argUnwrap = ""
         var callArgs = ""
         var argIdx = 0
+        var lambdaIgnore = ""
         for arg in signal.arguments ?? [] {
-            if args != "" { args += ", "; callArgs += ", " }
+            if args != "" {
+                args += ", "
+                callArgs += ", "
+                lambdaIgnore += ", "
+            }
             args += getArgumentDeclaration(arg, eliminate: "_ ")
             let construct: String
             
@@ -674,9 +679,10 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             }
             argUnwrap += "let arg_\(argIdx) = \(construct)\n"
             callArgs += "arg_\(argIdx)"
+            lambdaIgnore += "_"
             argIdx += 1
         }
-        p ("public func connect (_ callback: @escaping (\(args)) -> (), flags: UInt32 = 0) -> Object") {
+        p ("public func connect (flags: Object.ConnectFlags = [], _ callback: @escaping (\(args)) -> ()) -> Object") {
             p ("let signalProxy = SignalProxy()")
             p ("signalProxy.proxy = ") {
                 p ("args in")
@@ -684,9 +690,24 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 p ("callback (\(callArgs))")
             }
             p ("let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)")
-            p ("let r = target.connect(signal: signalName, callable: callable, flags: flags)")
+            p ("let r = target.connect(signal: signalName, callable: callable, flags: UInt32 (flags.rawValue))")
             p ("if r != .ok { print (\"Warning, error connecting to signal, code: \\(r)\") }")
             p ("return signalProxy")
+        }
+
+        doc (p, cdef, "Disconnects a signal that was previously connected, the return value from calling ``connect``")
+        p ("public func disconnect (_ token: Object)") {
+            p ("target.disconnect(signal: signalName, callable: Callable (object: token, method: SignalProxy.proxyName))")
+        }
+        doc (p, cdef, "You can await this property to wait for the signal to be emitted once")
+        p ("public var emitted: Void "){
+            p ("get async") {
+                p ("await withCheckedContinuation") {
+                    p ("c in")
+                    var args = ""
+                    p ("connect (flags: .connectOneShot) { \(lambdaIgnore) in c.resume () }")
+                }
+            }
         }
     }
 }
@@ -803,6 +824,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
                 }
                 p ("/// To connect to this signal, reference this property and call the `connect` method with the method you want to invoke")
                 p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
+                p ("")
             }
 //            if parameterSignals.count > 0 {
 //                print ("SIGSTART \(cdef.name) \(parameterSignals.count)")
