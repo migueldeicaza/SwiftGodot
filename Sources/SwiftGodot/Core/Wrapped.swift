@@ -105,7 +105,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
-    /// subclasses will have a diffrent name than the subclass
+    /// subclasses will have a diffrent name than the subclass.
+    ///
+    /// When subclassing, you should use the name of te l
     internal init (name: StringName) {
         let v = gi.classdb_construct_object (UnsafeRawPointer (&name.content))
         
@@ -139,7 +141,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             }
             gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks);
         } else {
-            fatalError("SWIFT: It was not possible to construct a \(name)")
+            fatalError("SWIFT: It was not possible to construct a \(name.description)")
         }
     }
 }

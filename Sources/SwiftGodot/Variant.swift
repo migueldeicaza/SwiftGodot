@@ -234,7 +234,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     public init (_ value: Object) {
         Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer (mutating: value.handle))
     }
-    
+
     public init (_ value: Callable) {
         Variant.fromTypeMap [GType.callable.rawValue] (&content, &value.content)
     }
@@ -351,5 +351,17 @@ extension Float: GodotVariant {
     }
 
     public func toVariant () -> Variant { Variant (self) }
+}
+
+extension Double {
+    /// Creates a new instance from the given variant if it contains a float
+    public init? (_ from: Variant) {
+        guard from.gtype == .float else {
+            return nil
+        }
+        var value: Float = 0
+        from.toType(.float, dest: &value)
+        self.init (Double (value))
+    }
 }
 

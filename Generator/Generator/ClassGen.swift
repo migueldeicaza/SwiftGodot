@@ -586,7 +586,7 @@ func generateProperties (_ p: Printer,
 }
 
 #if false
-var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer" ]
+var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer", "AudioStreamPlayer", "PackedScene", "PathFollow2D", "InputEvent", "ClassDB", "AnimatedSprite2D", "Input", "CollisionShape2D", "SpriteFrames", "RigidBody2D" ]
 #else
 var okList: [String] = []
 #endif
@@ -613,6 +613,17 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
         }
     }
     
+    // Collect all the signals
+//    for cdef in values {
+//        if let signals = cdef.signals {
+//            for signal in signals {
+//                if signal.arguments! [0] == signal.arguments! [1] {
+//
+//                }
+//            }
+//        }
+//    }
+    
     let semaphore = DispatchSemaphore(value: 0)
 
     let _ = Task {
@@ -626,6 +637,60 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
         semaphore.signal()
     }
     semaphore.wait()
+}
+
+func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) {
+    doc (p, cdef, "Signal support, use the ``connect`` method to connect to the signal on the container object, and ``disconnect`` to drop the connection")
+    
+    p ("public class \(name)") {
+        p ("var target: Object")
+        p ("var signalName: StringName")
+        p ("init (target: Object, signalName: StringName)") {
+            p ("self.target = target")
+            p ("self.signalName = signalName")
+        }
+        doc (p, cdef, "Connects the signal to the specified callback\n\nTo disconnect, call the disconnect method, with the returned token on success\n - Parameters:\n  - callback: the method to invoke when this signal is raised\n  - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).\n - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.")
+        
+        p ("@discardableResult")
+        var args = ""
+        var argUnwrap = ""
+        var callArgs = ""
+        var argIdx = 0
+        for arg in signal.arguments ?? [] {
+            if args != "" { args += ", "; callArgs += ", " }
+            args += getArgumentDeclaration(arg, eliminate: "_ ")
+            let construct: String
+            
+            if let cmap = classMap [arg.type] {
+                argUnwrap += "var ptr_\(argIdx): UnsafeMutableRawPointer?\n"
+                argUnwrap += "args [\(argIdx)].toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
+                construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(arg.type) (nativeHandle: ptr_\(argIdx)!)"
+            } else if arg.type == "String" {
+                    construct = "\(mapTypeName(arg.type)) (args [\(argIdx)])!.description"
+            } else if arg.type == "Variant" {
+                construct = "args [\(argIdx)]"
+            } else {
+                construct = "\(getGodotType(arg)) (args [\(argIdx)])!"
+            }
+            argUnwrap += "let arg_\(argIdx) = \(construct)\n"
+            callArgs += "arg_\(argIdx)"
+            argIdx += 1
+        }
+        p ("public func connect (_ callback: @escaping (\(args)) -> (), flags: UInt32 = 0) -> Swift.Result<Object,GodotError>") {
+            p ("let signalProxy = SignalProxy()")
+            p ("signalProxy.proxy = ") {
+                p ("args in")
+                p (argUnwrap)
+                p ("callback (\(callArgs))")
+            }
+            p ("let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)")
+            p ("let r = target.connect(signal: signalName, callable: callable, flags: flags)")
+            p ("if r == .ok") {
+                p ("return .success(signalProxy)")
+            }
+            p ("return .failure(r)")
+        }
+    }
 }
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
@@ -710,6 +775,48 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
             virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, referencedMethods)
         }
         
+        if let signals = cdef.signals {
+            p ("/// Signals ")
+            var parameterSignals: [JGodotSignal] = []
+            var sidx = 0
+            
+            for signal in signals {
+//                var sargs = ""
+//                for a in signal.arguments ?? [] {
+//                    sargs.append ("\(a.name): \(a.type), ")
+//                }
+//                sargs.append (" # \(signal.name)")
+//                print ("SIGNAL \(sargs)")
+                let signalProxyType: String
+                if signal.arguments != nil {
+                    parameterSignals.append (signal)
+                    
+                    sidx += 1
+                    signalProxyType = "Signal\(sidx)"
+                    generateSignalType (p, cdef, signal, signalProxyType)
+                } else {
+                    signalProxyType = "SimpleSignal"
+                }
+                let signalName = godotMethodToSwift (signal.name)
+                
+                if let sdoc = docClass?.signals?.signal.first (where: { $0.name == signal.name }) {
+                    doc (p, cdef, sdoc.description)
+                    p ("///")
+                }
+                p ("/// To connect to this signal, reference this property and call the `connect` method with the method you want to invoke")
+                p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
+            }
+            if parameterSignals.count > 0 {
+                print ("SIGSTART \(cdef.name) \(parameterSignals.count)")
+                for x in parameterSignals {
+                    var sargs = ""
+                    for y in x.arguments ?? [] {
+                        sargs.append ("\(y.name): \(y.type), ")
+                    }
+                    print ("    SIG: \(x.name) \(sargs)")
+                }
+            }
+        }
         // Remove code that we did not want generated
         if okList.count > 0 && !okList.contains (cdef.name) {
             p.result = oResult

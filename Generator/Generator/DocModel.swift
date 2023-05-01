@@ -18,7 +18,7 @@ struct DocClass: Codable {
     // TODO: theme_items see HSplitContaienr
     var methods: DocMethods?
     var members: DocMembers?
-//    var signals: [DocSignal]
+    var signals: DocSignals?
     var constants: DocConstants?
 }
 
@@ -90,11 +90,22 @@ struct DocMethod: Codable {
     }
 }
 
+struct DocSignals: Codable {
+    var signal: [DocSignal]
+}
+
+struct DocSignal: Codable {
+    @Attribute var name: String
+    var params: [DocParam]?
+    var description: String
+}
+
 struct DocParam: Codable {
     @Attribute var index: Int
     @Attribute var name: String
     @Attribute var type: String
 }
+
 struct DocReturn: Codable {
     @Attribute var type: String
 }
