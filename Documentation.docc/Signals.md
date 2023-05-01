@@ -187,8 +187,8 @@ is a pair of the object instance and the ``StringName`` of the method to invoke.
 For example:
 
 ```
-   let callable = Callable(object: self, method: StringName ("MyCallback"))
-   object.connect(signal: "some_signal", callable)
+let callable = Callable(object: self, method: StringName ("MyCallback"))
+object.connect(signal: "some_signal", callable)
 ```
 
 This would call a method registered with Godot under the name `MyCallback`

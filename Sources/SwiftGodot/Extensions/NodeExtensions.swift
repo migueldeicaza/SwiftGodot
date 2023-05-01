@@ -27,7 +27,7 @@ public struct BindNode<Value: Node> {
           storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> Value {
         get {
-            if #available(macOS 13.3, *){
+            if #available(macOS 13.3, iOS 16.4, tvOS 16.4, *){
                 let name: String
                 let fullName = storageKeyPath.debugDescription
                 if let namePos = fullName.lastIndex(of: ".") {

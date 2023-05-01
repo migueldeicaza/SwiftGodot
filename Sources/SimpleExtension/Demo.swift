@@ -13,6 +13,12 @@ class SwiftSprite: Sprite2D {
     var time_passed: Double
     var count: Int
     
+    required init (nativeHandle: UnsafeRawPointer) {
+	time_passed = 0
+	count = sequence
+        super.init (nativeHandle: nativeHandle)
+    }
+    
     required init () {
         count = sequence
         sequence += 1
