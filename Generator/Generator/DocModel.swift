@@ -230,6 +230,14 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
                     }
                 }
             }
+            
+            if let cdef = def as? JGodotExtensionAPIClass {
+                for x in cdef.constants ?? [] {
+                    if match == x.name {
+                        return "``\(snakeToCamel (x.name))``"
+                    }
+                }
+            }
             return nil
         }
         
@@ -423,8 +431,7 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             
         }
         p (String (mod))
+        p ("\n")
     }
-
-    
     p.indentStr = oIndent
 }

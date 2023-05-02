@@ -466,9 +466,6 @@ func generateProperties (_ p: Printer,
                 print ("Warning: Missing type \(parentName)")
                 return nil
             }
-            if forProperty.name == "spot_range" && cdef.name.contains("Light"){
-                print (3)
-            }
             if let there = cdef.methods?.first (where: { $0.name == name }) {
                 //print ("Congrats, found a method that was previously missing!")
                 
@@ -639,9 +636,10 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
     semaphore.wait()
 }
 
-func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) {
+func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) -> String {
     doc (p, cdef, "Signal support.\n\nUse the ``connect`` method to connect to the signal on the container object, and ``disconnect`` to drop the connection.\nYou can also await the ``emitted`` property for waiting for a single emission of the signal.")
     
+    var lambdaFull = ""
     p ("public class \(name)") {
         p ("var target: Object")
         p ("var signalName: StringName")
@@ -662,6 +660,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 args += ", "
                 callArgs += ", "
                 lambdaIgnore += ", "
+                lambdaFull += ", "
             }
             args += getArgumentDeclaration(arg, eliminate: "_ ")
             let construct: String
@@ -680,6 +679,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             argUnwrap += "let arg_\(argIdx) = \(construct)\n"
             callArgs += "arg_\(argIdx)"
             lambdaIgnore += "_"
+            lambdaFull += escapeSwift (snakeToCamel (arg.name))
             argIdx += 1
         }
         p ("public func connect (flags: Object.ConnectFlags = [], _ callback: @escaping (\(args)) -> ()) -> Object") {
@@ -709,6 +709,59 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 }
             }
         }
+    }
+    return lambdaFull
+}
+
+func generateSignals (_ p: Printer,
+                      cdef: JGodotExtensionAPIClass,
+                      docClass: DocClass?,
+                      signals: [JGodotSignal]) {
+    p ("// Signals ")
+    var parameterSignals: [JGodotSignal] = []
+    var sidx = 0
+    
+    for signal in signals {
+        let signalProxyType: String
+        let lambdaSig: String
+        if signal.arguments != nil {
+            parameterSignals.append (signal)
+            
+            sidx += 1
+            signalProxyType = "Signal\(sidx)"
+            lambdaSig = " " + generateSignalType (p, cdef, signal, signalProxyType) + " in"
+        } else {
+            signalProxyType = "SimpleSignal"
+            lambdaSig = ""
+        }
+        let signalName = godotMethodToSwift (signal.name)
+        
+        if let sdoc = docClass?.signals?.signal.first (where: { $0.name == signal.name }) {
+            doc (p, cdef, sdoc.description)
+            p ("///")
+        }
+        doc (p, cdef, "To connect to this signal, reference this property and call the\n`connect` method with the method you want to invoke\n")
+        doc (p, cdef, "Example:\n```swift")
+        doc (p, cdef, "obj.\(signalName).connect {\(lambdaSig)")
+        p ("///    print (\"caught signal\")\n/// }")
+        doc (p, cdef, "```")
+        p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
+        p ("")
+    }
+}
+
+func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, signals: [JGodotSignal]?) {
+    guard let signals = signals, signals.count > 0 else {
+        return
+    }
+    if signals.count > 0 {
+        doc (p, cdef, "\nThis object emits the following signals:")
+    } else {
+        doc (p, cdef, "\nThis object emits this signal:")
+    }
+    for signal in signals {
+        let signalName = godotMethodToSwift (signal.name)
+        doc (p, cdef, "- ``\(signalName)``")
     }
 }
 
@@ -746,6 +799,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         doc (p, cdef, "")      // Add a newline before the fuller description
         doc (p, cdef, docClass?.description)
     }
+    generateSignalDocAppendix (p, cdef: cdef, signals: cdef.signals)
     // class or extension (for Object)
     p (typeDecl) {
         if isSingleton {
@@ -795,53 +849,15 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         }
         
         if let signals = cdef.signals {
-            p ("/// Signals ")
-            var parameterSignals: [JGodotSignal] = []
-            var sidx = 0
-            
-            for signal in signals {
-//                var sargs = ""
-//                for a in signal.arguments ?? [] {
-//                    sargs.append ("\(a.name): \(a.type), ")
-//                }
-//                sargs.append (" # \(signal.name)")
-//                print ("SIGNAL \(sargs)")
-                let signalProxyType: String
-                if signal.arguments != nil {
-                    parameterSignals.append (signal)
-                    
-                    sidx += 1
-                    signalProxyType = "Signal\(sidx)"
-                    generateSignalType (p, cdef, signal, signalProxyType)
-                } else {
-                    signalProxyType = "SimpleSignal"
-                }
-                let signalName = godotMethodToSwift (signal.name)
-                
-                if let sdoc = docClass?.signals?.signal.first (where: { $0.name == signal.name }) {
-                    doc (p, cdef, sdoc.description)
-                    p ("///")
-                }
-                p ("/// To connect to this signal, reference this property and call the `connect` method with the method you want to invoke")
-                p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
-                p ("")
-            }
-//            if parameterSignals.count > 0 {
-//                print ("SIGSTART \(cdef.name) \(parameterSignals.count)")
-//                for x in parameterSignals {
-//                    var sargs = ""
-//                    for y in x.arguments ?? [] {
-//                        sargs.append ("\(y.name): \(y.type), ")
-//                    }
-//                    print ("    SIG: \(x.name) \(sargs)")
-//                }
-//            }
+            generateSignals (p, cdef: cdef, docClass: docClass, signals: signals)
         }
+
         // Remove code that we did not want generated
         if okList.count > 0 && !okList.contains (cdef.name) {
             p.result = oResult
         }
     }
+
     if virtuals.count > 0 {
         p ("// Support methods for proxies")
         for (_, (methodName, methodDef)) in virtuals {
