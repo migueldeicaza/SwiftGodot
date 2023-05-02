@@ -377,7 +377,7 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
                         // Do not escape parameters that are already escaped, Swift wont know
                         return pname
                     }
-                    return "``\(pname)``"
+                    return "`\(pname)`"
                 case "constant":
                     return lookupConstant (x.output.2)
                 default:
