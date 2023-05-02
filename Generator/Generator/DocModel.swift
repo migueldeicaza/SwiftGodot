@@ -353,7 +353,8 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
     p.indentStr = "\(p.indentStr)/// "
     
     var inCodeBlock = false
-    for x in text.split(separator: "\n", omittingEmptySubsequences: false) {
+    let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+    for x in lines {
         if x.contains ("[codeblock") {
             inCodeBlock = true
             continue
@@ -430,8 +431,11 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             // [signal X]
             
         }
-        p (String (mod))
-        p ("\n")
+        if lines.count > 1 {
+            p (String (mod)+"\n")
+        } else {
+            p (String (mod))
+        }
     }
     p.indentStr = oIndent
 }

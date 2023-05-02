@@ -637,7 +637,8 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String)  {
 }
 
 func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) -> String {
-    doc (p, cdef, "Signal support.\n\nUse the ``connect`` method to connect to the signal on the container object, and ``disconnect`` to drop the connection.\nYou can also await the ``emitted`` property for waiting for a single emission of the signal.")
+    doc (p, cdef, "Signal support.\n")
+    doc (p, cdef, "Use the ``\(name)/connect`` method to connect to the signal on the container object, and ``\(name)/disconnect`` to drop the connection.\nYou can also await the ``\(name)/emitted`` property for waiting for a single emission of the signal.")
     
     var lambdaFull = ""
     p ("public class \(name)") {
@@ -743,7 +744,7 @@ func generateSignals (_ p: Printer,
         doc (p, cdef, "To connect to this signal, reference this property and call the\n`connect` method with the method you want to invoke\n")
         doc (p, cdef, "Example:\n```swift")
         doc (p, cdef, "obj.\(signalName).connect {\(lambdaSig)")
-        p ("///    print (\"caught signal\")\n/// }")
+        p ("///    print (\"caught signal\")/// }")
         doc (p, cdef, "```")
         p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
         p ("")
