@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 /// The pointer to the Godot Extension Interface
 var gi: GDExtensionInterface = GDExtensionInterface()
@@ -24,9 +24,14 @@ var extensionDeInitCallback: ((GDExtension.InitializationLevel)->())?
 /// operate.   It is only used when you use SwiftGodot embedded into an
 /// application - as opposed to using SwiftGodot purely as an extension
 ///
-public func setExtensionInterface (to: GDExtensionInterface, library lib: GDExtensionClassLibraryPtr?) {
-    gi = to
-    library = lib
+public func setExtensionInterface (to: OpaquePointer?, library lib: OpaquePointer?) {
+
+    guard let pgi = UnsafeMutablePointer<GDExtensionInterface> (to) else {
+        print ("Expected a pointer to a GDExtensionInitialization")
+        return
+    }
+    gi = pgi.pointee
+    library = GDExtensionClassLibraryPtr (lib)
 }
 
 // Extension initialization callback

@@ -7,7 +7,73 @@
 
 import Foundation
 
-func generateBuiltinCtors (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, _ ctors: [JGodotConstructor], godotTypeName: String, typeName: String, typeEnum: String, members: [JGodotSingleton]?)
+/// Given an initializer of the form "Vector (0, 1, 0)" returns a proper Swift "Vector (x: 0, y: 1, z: 0)" value
+///
+func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
+    if let pstart = val.firstIndex(of: "("), let pend = val.lastIndex(of: ")"){
+        var found = false
+        let splitArgs = val [val.index(pstart, offsetBy: 1)..<pend].split(separator: ",")
+        // Find a constructor with that number of arguments
+        for constructor in bc.constructors {
+            
+            if constructor.arguments?.count ?? -1 == splitArgs.count {
+                // Found
+                var prefixedArgs = ""
+                for i in 0..<splitArgs.count {
+                    if prefixedArgs.count != 0 { prefixedArgs += ", "}
+                    var name = constructor.arguments! [i].name
+                    var pval = splitArgs [i]
+
+                    // Some Godot constants leak into the initializers
+                    if pval.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) == "inf" {
+                        pval = "Float.infinity"[...]
+                    }
+
+                    prefixedArgs = prefixedArgs + name + ": " + pval
+                }
+                return String (val [val.startIndex..<pstart]) + " (" + prefixedArgs + ")"
+            }
+        }
+        return nil
+    }
+    return val
+}
+
+func generateBuiltinConstants (_ p: Printer,
+                               _ bc: JGodotBuiltinClass,
+                               _ docClass: DocBuiltinClass?,
+                               typeName: String) {
+        
+    guard let constants = bc.constants else { return }
+    let docConstants = docClass?.constants?.constant
+    
+    var docConstantMap: [String: String] = [:]
+    for dc in docConstants ?? [] {
+        docConstantMap [dc.name] = dc.rest
+    }
+    
+    for constant in constants {
+        // Check if we need to inject parameter names
+        var val = constant.value
+        guard let val = getInitializer (bc, constant.value) else {
+            continue
+        }
+        
+        if let rest = docConstantMap [constant.name] {
+            doc (p, bc, "\(rest)")
+        }
+        p ("public static let \(snakeToCamel (constant.name)) = \(val)")
+    }
+}
+
+func generateBuiltinCtors (_ p: Printer,
+                           _ bc: JGodotBuiltinClass,
+                           _ docClass: DocBuiltinClass?,
+                           _ ctors: [JGodotConstructor],
+                           godotTypeName: String,
+                           typeName: String,
+                           typeEnum: String,
+                           members: [JGodotSingleton]?)
 {
     let isStruct = isStructMap [typeName] ?? false
     
@@ -41,13 +107,13 @@ func generateBuiltinCtors (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass
                         }
                     }
                     if !fail {
-                        doc (bc, ctorDoc.description)
+                        doc (p, bc, ctorDoc.description)
                         break
                     }
                 }
             }
         }
-        b ("\(visibility) init (\(args))") {
+        p ("\(visibility) init (\(args))") {
             // Determine if we have a constructors whose sole job is to initialize the members
             // of the struct, in that case, just do that, do not call into Godot.
             if let margs = m.arguments, let members, margs.count == members.count {
@@ -79,8 +145,18 @@ func generateBuiltinCtors (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass
             
             // We need to initialize some variables before we call
             if let members {
-                for x in members {
-                    p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                if bc.name == "Color" {
+                    p ("self.red = 0")
+                    p ("self.green = 0")
+                    p ("self.blue = 0")
+                    p ("self.alpha = 0")
+                } else if bc.name == "Plane" {
+                    p ("self.plane = Vector3 ()")
+                    p ("self.d = 0")
+                } else {
+                    for x in members {
+                        p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                    }
                 }
                 // Another special case: empty constructors in generated structs (those we added fields for)
                 // we just keep the manual initialization and do not call the constructor
@@ -99,12 +175,22 @@ enum MethodCallKind {
     case operatorCall
 }
 
-func generateMethodCall (typeName: String, methodToCall: String, godotReturnType: String?, isStatic: Bool, arguments: [JNameAndType]?, kind: MethodCallKind) {
+func generateMethodCall (_ p: Printer,
+                         typeName: String,
+                         methodToCall: String,
+                         godotReturnType: String?,
+                         isStatic: Bool,
+                         arguments: [JNameAndType]?,
+                         kind: MethodCallKind) {
     let has_return = godotReturnType != nil
     
     let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
     if has_return {
-        p ("var result: \(resultTypeName) = \(resultTypeName)()")
+        if godotReturnType == "String" && mapStringToSwift {
+            p ("var result = GString ()")
+        } else {
+            p ("var result: \(resultTypeName) = \(resultTypeName)()")
+        }
     }
     
     let argPrep = generateArgPrepare(arguments ?? [])
@@ -140,7 +226,11 @@ func generateMethodCall (typeName: String, methodToCall: String, godotReturnType
     }
     if has_return {
         // let cast = castGodotToSwift (m.returnType, "result")
-        p ("return result")
+        if godotReturnType == "String" && mapStringToSwift {
+            p ("return result.description")
+        } else {
+            p ("return result")
+        }
     }
 }
 
@@ -153,7 +243,10 @@ let skipOperators: [String:[(String,String)]] = [
 ///   - operators: the array of operators
 ///   - godotTypeName: the type for which we are generating operators
 ///   - typeName: the type name above, but in Swift
-func generateBuiltinOperators (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, typeName: String) {
+func generateBuiltinOperators (_ p: Printer,
+                               _ bc: JGodotBuiltinClass,
+                               _ docClass: DocBuiltinClass?,
+                               typeName: String) {
     let operators = bc.operators
     let godotTypeName = bc.name
     var n = 0
@@ -174,7 +267,7 @@ func generateBuiltinOperators (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinC
             guard let (operatorCode, swiftOperator) = infixOperatorMap (op.name) else {
                 continue
             }
-            b ("static var \(ptrName): GDExtensionPtrOperatorEvaluator = ", suffix: "()"){
+            p ("static var \(ptrName): GDExtensionPtrOperatorEvaluator = ", suffix: "()"){
                 let rightTypeCode = builtinTypecode (right)
                 let leftTypeCode = builtinTypecode (godotTypeName)
                 p ("return gi.variant_get_ptr_operator_evaluator (\(operatorCode), \(leftTypeCode), \(rightTypeCode))!")
@@ -184,18 +277,35 @@ func generateBuiltinOperators (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinC
             if let docClass, let opDocs = docClass.operators?.operator {
                 for opDoc in opDocs {
                     if opDoc.name.hasSuffix(op.name) && opDoc.return.first?.type == op.returnType && right == opDoc.param.first?.type {
-                        doc (bc, opDoc.description)
+                        doc (p, bc, opDoc.description)
                         break
                     }
                 }
             }
-            b ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
-                
-                let args: [JGodotArgument] = [
-                    JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
-                    JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
-                ]
-                generateMethodCall(typeName: typeName, methodToCall: ptrName, godotReturnType: op.returnType, isStatic: true, arguments: args, kind: .operatorCall)
+            p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
+                let ptrResult: String
+                if op.returnType == "String" && mapStringToSwift {
+                    p ("var result = GString ()")
+                } else {
+                    p ("var result: \(retType) = \(retType)()")
+                }
+                let isStruct = isStructMap [op.returnType] ?? false
+                if isStruct {
+                    ptrResult = "&result"
+                } else {
+                    ptrResult = "&result.content"
+                }
+                let rhsa = JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
+                let rhs = getArgRef (arg: rhsa)
+                let lhsa = JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil)
+                let lhs = getArgRef (arg: lhsa)
+                p (generateCopies([lhsa, rhsa]))
+                p ("\(typeName).\(ptrName) (\(lhs), \(rhs), \(ptrResult))")
+                if op.returnType == "String" && mapStringToSwift {
+                    p ("return result.description")
+                } else {
+                    p ("return result")
+                }
             }
         }
     }
@@ -203,7 +313,13 @@ func generateBuiltinOperators (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinC
     
 
 
-func generateBuiltinMethods (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?, _ methods: [JGodotBuiltinClassMethod], _ typeName: String, _ typeEnum: String, isStruct: Bool)
+func generateBuiltinMethods (_ p: Printer,
+                             _ bc: JGodotBuiltinClass,
+                             _ docClass: DocBuiltinClass?,
+                             _ methods: [JGodotBuiltinClassMethod],
+                             _ typeName: String,
+                             _ typeEnum: String,
+                             isStruct: Bool)
 {
     if methods.count > 0 {
         p ("\n/* Methods */\n")
@@ -225,7 +341,7 @@ func generateBuiltinMethods (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinCla
     
         let ptrName = "method_\(m.name)"
         
-        b ("static var \(ptrName): GDExtensionPtrBuiltInMethod = ", suffix: "()"){
+        p ("static var \(ptrName): GDExtensionPtrBuiltInMethod = ", suffix: "()"){
             p ("let name = StringName (\"\(m.name)\")")
             p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.content, \(m.hash))!")
         }
@@ -237,22 +353,27 @@ func generateBuiltinMethods (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinCla
         
         if let docClass, let methods = docClass.methods {
             if let docMethod = methods.method.first(where: { $0.name == m.name }) {
-                doc (bc, docMethod.description)
+                doc (p, bc, docMethod.description)
                 // Sadly, the parameters have no useful documentation
             }
         }
-        b ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
+        p ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
             
-            generateMethodCall (typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, arguments: m.arguments, kind: .methodCall)
+            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, arguments: m.arguments, kind: .methodCall)
         }
     }
 }
 
-var builtinGodotTypeNames = Set<String>()
+enum BKind {
+    case isStruct
+    case isClass
+}
+var builtinGodotTypeNames: [String:BKind] = [:]
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
-    func generateBuiltinClass (_ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?) {
+
+    func generateBuiltinClass (p: Printer, _ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?) {
         // TODO: isKeyed, hasDestrcturo,
         var kind: String
         if bc.members != nil {
@@ -260,7 +381,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
         } else {
             kind = "class"
         }
-        builtinGodotTypeNames.insert(bc.name)
+        builtinGodotTypeNames [bc.name] = kind == "struct" ? .isStruct : .isClass
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
         
@@ -274,8 +395,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 conformances.append ("Equatable")
             }
         }
-        if bc.name == "String" || bc.name == "StringName" {
+        conformances.append ("GodotVariant")
+        if bc.name == "String" || bc.name == "StringName" || bc.name == "NodePath" {
             conformances.append ("ExpressibleByStringLiteral")
+        }
+        if bc.name.starts(with: "Packed") {
+            conformances.append ("Collection")
         }
         var proto = ""
         if conformances.count > 0 {
@@ -284,19 +409,30 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             proto = ""
         }
         
-        doc (bc, docClass?.brief_description)
+        doc (p, bc, docClass?.brief_description)
         if docClass?.description ?? "" != "" {
-            doc (bc, "")      // Add a newline before the fuller description
-            doc (bc, docClass?.description)
+            doc (p, bc, "")      // Add a newline before the fuller description
+            doc (p, bc, docClass?.description)
         }
-        b ("public \(kind) \(typeName)\(proto)") {
+        
+        p ("public \(kind) \(typeName)\(proto)") {
             if bc.name == "String" {
-                b ("public init (_ str: String)") {
+                p ("public init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
                 }
                 p ("// ExpressibleByStringLiteral conformace")
-                b ("public required init (stringLiteral value: String)") {
+                p ("public required init (stringLiteral value: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, value)")
+                }
+            }
+            if bc.name == "NodePath"  {
+                p ("// ExpressibleByStringLiteral conformace")
+                p ("public required init (stringLiteral value: String)") {
+                    p ("var from = GString (value)")
+                    p ("var args: [UnsafeRawPointer?] = [")
+                    p ("    UnsafeRawPointer(&from.content),")
+                    p ("]")
+                    p ("NodePath.constructor2 (&content, &args)")
                 }
             }
             if bc.name == "StringName" {
@@ -305,14 +441,14 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 // really produce this when it matches the kind
                 // directly to be the one that takes a StringName
                 // parameter
-                b ("public init (fromPtr: UnsafeRawPointer?)") {
+                p ("public init (fromPtr: UnsafeRawPointer?)") {
                     p ("var args: [UnsafeRawPointer?] = [")
                     p ("    fromPtr,")
                     p ("]")
                     p ("StringName.constructor1 (&content, &args)")
                 }
                 p ("// ExpressibleByStringLiteral conformace")
-                b ("public required init (stringLiteral value: String)") {
+                p ("public required init (stringLiteral value: String)") {
                     p ("var from = GString (value)")
                     p ("var args: [UnsafeRawPointer?] = [")
                     p ("    UnsafeRawPointer(&from.content),")
@@ -321,18 +457,28 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 }
             }
             if bc.hasDestructor {
-                b ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
+                p ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
                     p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
                 }
                 
-                b ("deinit"){
+                p ("deinit"){
                     p ("\(typeName).destructor (&content)")
                 }
             }
+            
+//            p ("public static var variantType: Variant.GType") {
+//                p (".\(snakeToCamel (bc.name))")
+//            }
+            
+
             if kind == "class" {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
                 p ("// Contains a binary blob where this type information is stored")
-                p ("var content: \(storage)\(initialize)")
+                p ("var content: ContentType\(initialize)")
+                p ("// Used to initialize empty types")
+                p ("static let zero: ContentType \(initialize)")
+                p ("// Convenience type that matches the build configuration storage needs")
+                p ("typealias ContentType = \(storage)")
                 builtinClassStorage [bc.name] = storage
                 // TODO: This is a little brittle, because I am
                 // hardcoding the constructor1 here, it should
@@ -340,25 +486,93 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 // directly to be the one that takes the same
                 // parameter
                 p ("// Used to construct objects on virtual proxies")
-                b ("init (content: \(storage))") {
+                p ("init (content: \(storage))") {
                     p ("var copy = content")
                     p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer (&copy)]")
-                    p ("StringName.constructor1 (&self.content, &args)")
+                    p ("\(typeName).constructor1 (&self.content, &args)")
+                }
+            }
+            
+            p ("/// Creates a new instance from the given variant if it contains a \(typeName)")
+            let gtype = gtypeFromTypeName (bc.name)
+            // Now generate the variant constructor
+            if kind == "class" {
+                p ("public required init? (_ from: Variant)") {
+                    p ("guard from.gtype == .\(gtype) else") {
+                        p ("return nil")
+                    }
+                    p ("var localContent: \(typeName).ContentType = \(typeName).zero")
+                    p ("from.toType(.\(gtype), dest: &localContent)")
+                    p ("// Replicate the constructor, because of a lame Swift requirement")
+                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer(&localContent)]")
+                    p ("\(typeName).constructor1 (&content, &args)")
+                }
+            } else {
+                p ("public init? (_ from: Variant)") {
+                    p ("guard from.gtype == .\(gtype) else") {
+                        p ("return nil")
+                    }
+                    p ("var v = \(bc.name)()")
+                    p ("from.toType(.\(gtype), dest: &v)")
+                    p ("self.init (from: v)")
+                }                
+            }
+            p ("/// Wraps this \(typeName) into a Variant")
+            p ("public func toVariant () -> Variant ") {
+                p ("Variant (self)")
+            }
+            
+            let mdocs = docClass?.members
+            func memberDoc (_ name: String)  {
+                for md in mdocs?.member ?? [] {
+                    if md.name == name {
+                        doc (p, bc, md.value)
+                    }
                 }
             }
             if let members = bc.members {
-                for x in members {
-                    p ("var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
+                if bc.name == "Color" {
+                    memberDoc ("red")
+                    p ("public var red: Float")
+                    memberDoc ("green")
+                    p ("public var green: Float")
+                    memberDoc ("blue")
+                    p ("public var blue: Float")
+                    memberDoc ("alpha")
+                    p ("public var alpha: Float")
+                } else if bc.name == "Plane" {
+                    memberDoc ("plane")
+                    p ("public var plane: Vector3")
+                    memberDoc ("d")
+                    p ("public var d: Float")
+                } else {
+                    for x in members {
+                        memberDoc (x.name)
+                        p ("public var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
+                    }
                 }
             }
 
             if let enums = bc.enums {
-                generateEnums(cdef: bc, values: enums, constantDocs: docClass?.constants?.constant, prefix: bc.name + ".")
+                generateEnums(p, cdef: bc, values: enums, constantDocs: docClass?.constants?.constant, prefix: bc.name + ".")
             }
-            generateBuiltinCtors (bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
+            generateBuiltinCtors (p, bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             
-            generateBuiltinMethods(bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
-            generateBuiltinOperators (bc, docClass, typeName: typeName)
+            generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
+            generateBuiltinOperators (p, bc, docClass, typeName: typeName)
+            generateBuiltinConstants (p, bc, docClass, typeName: typeName)
+            if bc.name.starts(with: "Packed") {
+                p ("public var startIndex: Int") {
+                    p ("0")
+                }
+                p ("public var endIndex: Int") {
+                    p ("Int (size ())")
+                }
+
+                p ("public func index(after i: Int) -> Int") {
+                    p ("i+1")
+                }
+            }
         }
     }
     
@@ -368,11 +582,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
         case "int", "float", "bool":
             break
         default:
-            result = "// This file is autogenerated, do not edit\n"
-            result += "import Foundation\nimport GDExtension\n\n"
+            let p = Printer ()
+            p.preamble()
             let docClass = loadBuiltinDoc(base: docRoot, name: bc.name)
-            generateBuiltinClass (bc, docClass)
-            try! result.write(toFile: outputDir + "/\(bc.name).swift", atomically: true, encoding: .utf8)
+            mapStringToSwift = bc.name != "String"
+            generateBuiltinClass (p: p, bc, docClass)
+            mapStringToSwift = true
+            p.save(outputDir + "/\(bc.name).swift")
         }
     }
 }

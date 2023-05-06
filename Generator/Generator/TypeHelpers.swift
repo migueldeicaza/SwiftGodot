@@ -12,7 +12,7 @@ import Foundation
 func BuiltinJsonTypeToSwift (_ type: String) -> String {
     switch type {
     case "float": return "Float"
-    case "int": return "Int64"
+    case "int": return "Int"
     case "bool": return "Bool"
     default:
         return type
@@ -96,7 +96,11 @@ func godotMethodToSwift (_ name: String) -> String {
 }
 
 func godotPropertyToSwift (_ name: String) -> String {
-    return escapeSwift (snakeToCamel(name))
+    let v = escapeSwift (snakeToCamel(name))
+    if v == "description" {
+        return "additionalDescription"
+    }
+    return v
 }
 
 var core_types = [
@@ -152,12 +156,58 @@ func mapTypeName (_ name: String) -> String {
     return name
 }
 func mapTypeNameDoc (_ name: String) -> String {
+    if name == "String" {
+        return "String"
+    }
     if name == "Type" {
         return "GType"
     }
     return mapTypeName (name)
 }
 
+func gtypeFromTypeName (_ name: String) -> String {
+    switch name {
+    case "Nil": return "`nil`"
+    case "Bool": return "bool"
+    case "Int": return "int"
+    case "String": return "string"
+    case "Vector2": return "vector2"
+    case "Vector2i": return "vector2i"
+    case "Rect2": return "rect2"
+    case "Rect2i": return "rect2i"
+    case "Vector3": return "vector3"
+    case "Vector3i": return "vector3i"
+    case "Transform2D": return "transform2d"
+    case "Vector4": return "vector4"
+    case "Vector4i": return "vector4i"
+    case "Plane": return "plane"
+    case "Quaternion": return "quaternion"
+    case "AABB": return "aabb"
+    case "Basis": return "basis"
+    case "Transform3D": return "transform3d"
+    case "Projection": return "projection"
+    case "Color": return "color"
+    case "StringName": return "stringName"
+    case "NodePath": return "nodePath"
+    case "RID": return "rid"
+    case "Object": return "object"
+    case "Callable": return "callable"
+    case "Signal": return "signal"
+    case "Dictionary": return "dictionary"
+    case "Array": return "array"
+    case "PackedByteArray": return "packedByteArray"
+    case "PackedInt32Array": return "packedInt32Array"
+    case "PackedInt64Array": return "packedInt64Array"
+    case "PackedFloat32Array": return "packedFloat32Array"
+    case "PackedFloat64Array": return "packedFloat64Array"
+    case "PackedStringArray": return "packedStringArray"
+    case "PackedVector2Array": return "packedVector2Array"
+    case "PackedVector3Array": return "packedVector3Array"
+    case "PackedColorArray": return "packedColorArray"
+    default:
+        fatalError("Unknonw data type: \(name)")
+    }
+}
 struct SimpleType: TypeWithMeta {
     var type: String
     var meta: JGodotArgumentMeta?
@@ -177,6 +227,8 @@ enum ArgumentKind {
     // Uses the builtin-size definitions
     case builtIn
 }
+
+var mapStringToSwift = true
 
 /// Given a type definition with its metadata, and the context where the type is being
 /// useds, returns the type for it.
@@ -243,7 +295,11 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     case "bool":
         return "Bool"
     case "String":
-        return "GString"
+        if mapStringToSwift {
+            return "String" // We are going to use Swift strings
+        } else {
+            return "GString"
+        }
     case "Array":
         return "GArray"
     case "void*":
@@ -271,8 +327,14 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             return String (t.type.dropFirst(6))
         }
         if t.type.starts (with: "typedarray::") {
-            let nested = SimpleType(type: String (t.type.dropFirst(12)), meta: nil)
-            return "GodotCollection<\(getGodotType (nested))>"
+            let nestedTypeName = String (t.type.dropFirst(12))
+            let nested = SimpleType(type: nestedTypeName, meta: nil)
+
+            if classMap [nestedTypeName] != nil {
+                return "ObjectCollection<\(getGodotType (nested))>"
+            } else {
+                return "VariantCollection<\(getGodotType (nested))>"
+            }
         }
         if t.type.starts (with: "bitfield::") {
             return "\(t.type.dropFirst(10))"

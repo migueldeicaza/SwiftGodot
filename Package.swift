@@ -5,6 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftGodot",
+    platforms: [
+        .macOS(.v10_15),
+        .iOS ("16.0")
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -38,30 +42,18 @@ let package = Package(
             name: "Generator",
             dependencies: ["XMLCoder"],
             path: "Generator",
-            swiftSettings: [.unsafeFlags (["-enable-bare-slash-regex"])]
-            
-            
-                         ),
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
+            swiftSettings: [.unsafeFlags (["-enable-bare-slash-regex"])]),
         .target(
             name: "GDExtension"),
-            //exclude: ["include/README.md"]),
         .target(
             name: "SwiftGodot",
             dependencies: ["GDExtension", "Generator"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags (
-                ["-Xlinker", "-undefined",
-                 "-Xlinker", "dynamic_lookup",
-                 
-                 //                 "-Xlinker", "-mark_dead_strippable_dylib",
-                 //                 // This one is just to experiment for now
-                 //                 // Probably need to try the -why_live SYMBOL
-                 //                 "-Xlinker", "-dead_strip_dylibs",
-                 //                 "-Xlinker", "-why_live",
-                 //                 "-Xlinker", "_$s10SwiftGodot013AnimationNodeC0C8PlayModeOMf"
-                ])
+            linkerSettings: [
+                .unsafeFlags (
+                    ["-Xlinker", "-undefined",
+                     "-Xlinker", "dynamic_lookup",
+                    ])
             ], plugins: ["CodeGeneratorPlugin"]),
         .target(
             name: "SwiftGodotEditorExtension",
@@ -74,9 +66,10 @@ let package = Package(
             name: "SimpleExtension",
             dependencies: ["SwiftGodot"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags (
-                ["-Xlinker", "-undefined",
-                 "-Xlinker", "dynamic_lookup"])]),
+            linkerSettings: [
+                .unsafeFlags (
+                    ["-Xlinker", "-undefined",
+                     "-Xlinker", "dynamic_lookup"])]),
         // Idea: -mark_dead_strippable_dylib
         .testTarget(
             name: "SwiftGodotTests",

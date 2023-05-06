@@ -33,7 +33,7 @@
 // We ensure that all Godot
 
 import Foundation
-import GDExtension
+@_implementationOnly import GDExtension
 
 ///
 /// The base class for all class bindings in Godot, you should not have
@@ -65,13 +65,20 @@ import GDExtension
 ///
 /// If you do not call this method, many of the overloads that Godot would
 /// call you back on will not be invoked.
-open class Wrapped: Equatable, Identifiable {
-    var handle: UnsafeRawPointer
+open class Wrapped: Equatable, Identifiable, Hashable {
+    /// Points to the underlying object
+    public let handle: UnsafeRawPointer
+    public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
+    public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     
     public var id: Int { Int (bitPattern: handle) }
     
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
         return lhs.handle == rhs.handle
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(handle)
     }
     
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
@@ -88,7 +95,7 @@ open class Wrapped: Equatable, Identifiable {
         reference_callback: frameworkTypeBindingReference)
     
     /// For use by the framework, you should not need to call this.
-    public init (nativeHandle: UnsafeRawPointer) {
+    public required init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
     }
     
@@ -98,26 +105,28 @@ open class Wrapped: Equatable, Identifiable {
     
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
-    /// subclasses will have a diffrent name than the subclass
+    /// subclasses will have a diffrent name than the subclass.
+    ///
+    /// When subclassing, you should use the name of te l
     internal init (name: StringName) {
         let v = gi.classdb_construct_object (UnsafeRawPointer (&name.content))
-                                
+        
         if let r = UnsafeRawPointer (v) {
             handle = r
             let retain = Unmanaged.passRetained(self)
             
             // TODO: what happens if the user subclasses but the name conflicts with the Godot type?
             // say "class Sprite2D: Godot.Sprite2D"
-            let thisTypeName = StringName (String (describing: Swift.type(of: self)))
+            let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: self)))
             let frameworkType = thisTypeName == name
             
-            print ("SWIFT: Wrapped(StringName) at \(handle), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
+            //print ("SWIFT: Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
             
             // This I believe should only be set for user subclasses, and not anything else.
             if frameworkType {
-                print ("SWIFT: Skipping object registration, this is a framework type")
+                //print ("SWIFT: Skipping object registration, this is a framework type")
             } else {
-                print ("SWIFT: Registering instance with Godot")
+                //print ("SWIFT: Registering instance with Godot")
                 gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
                                         UnsafeRawPointer (&thisTypeName.content), retain.toOpaque())
             }
@@ -132,14 +141,14 @@ open class Wrapped: Equatable, Identifiable {
             }
             gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks);
         } else {
-            fatalError("SWIFT: It was not possible to construct a \(name)")
+            fatalError("SWIFT: It was not possible to construct a \(name.description)")
         }
     }
 }
 
 func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
     guard let wt = type as? Wrapped.Type else {
-        print ("The provided type should be a subclass of SwiftGodot.Wrapped type")
+        print ("SWIFT: The provided type should be a subclass of SwiftGodot.Wrapped type")
         return
     }
     
@@ -193,6 +202,8 @@ public func register<T:Wrapped> (type: T.Type) {
     if typeStr.hasSuffix(".Type") {
         typeStr = String (typeStr.dropLast(5))
     }
+    print (stripNamespace(typeStr).description)
+    print (stripNamespace(superStr).description)
     register (type: stripNamespace (typeStr), parent: stripNamespace (superStr), type: type)
 }
 
@@ -209,6 +220,38 @@ var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 /// are the only ones that would keep state
 func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
     return liveSubtypedObjects [handleAddress]
+}
+
+///
+/// Looks into the liveSubtypedObjects table if we have an object registered for it,
+/// and if we do, we returned that existing instance.
+///
+/// We are surfacing this, so that when we recreate an object resurfaced in a collection
+/// we do not get the base type, but the most derived one
+func lookupFrameworkObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
+    return liveFrameworkObjects [handleAddress]
+}
+
+func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
+    if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
+        return o
+    }
+    
+    return nil
+}
+
+func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T {
+    if let a = objectFromHandle(nativeHandle: nativeHandle) {
+        return a as! T
+    }
+    var _result: GString = GString ()
+    var copy = nativeHandle
+    gi.object_method_bind_ptrcall (Object.method_get_class, UnsafeMutableRawPointer (mutating: copy), nil, &_result.content)
+    if let ctor = godotFrameworkCtors [_result.description] {
+        return ctor.init (nativeHandle: nativeHandle) as! T
+    }
+    print ("Could not find class \(_result.description), fallback to creating a \(T.self)")
+    return T.init (nativeHandle: nativeHandle)
 }
 
 ///
@@ -255,7 +298,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 }
 
 func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
-    print ("SWIFT: Notification \(code) on \(ptr)")
+    //print ("SWIFT: Notification \(code) on \(ptr)")
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
@@ -278,9 +321,10 @@ func userTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableR
 }
 
 func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    // This is called from object_get_instance_binding
     print ("SWIFT: TODO frameworkBindingCreate, why is this called?")
-    fatalError()
-    return nil
+    //fatalError()
+    return instance
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {

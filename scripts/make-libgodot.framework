@@ -20,5 +20,5 @@ module libgodot {
 }
 EOF
 
-xcodebuild -create-xcframework -library $DIR/bin/libgodot.macos.template_debug.dev.x86_64.san.dylib -headers $tmp -output $ODIR/libgodot.xcframework
+xcodebuild -create-xcframework -library $DIR/bin/libgodot.macos*.dylib -headers $tmp -output $ODIR/libgodot.xcframework
 rm -rf /tmp/dir-$$
