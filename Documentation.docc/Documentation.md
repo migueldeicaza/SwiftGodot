@@ -6,8 +6,7 @@ Framework to write Godot Game Extensions using the Swift Programming Language.
 
 ## Topics
 
-### Nodes
-
+### 
 - ``Node``
   - ``Viewport``
     - ``Window``
@@ -32,6 +31,7 @@ Framework to write Godot Game Extensions using the Swift Programming Language.
   - ``SkeletonIK3D``
   - ``Timer``
   - ``WorldEnvironment``
+
 
 ### <!--@START_MENU_TOKEN@-->Group<!--@END_MENU_TOKEN@-->
 

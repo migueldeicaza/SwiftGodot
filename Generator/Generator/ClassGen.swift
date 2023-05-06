@@ -742,9 +742,10 @@ func generateSignals (_ p: Printer,
             p ("///")
         }
         doc (p, cdef, "To connect to this signal, reference this property and call the\n`connect` method with the method you want to invoke\n")
-        doc (p, cdef, "Example:\n```swift")
+        doc (p, cdef, "Example:")
+        doc (p, cdef, "```swift")
         doc (p, cdef, "obj.\(signalName).connect {\(lambdaSig)")
-        p ("///    print (\"caught signal\")/// }")
+        p ("///    print (\"caught signal\")\n/// }")
         doc (p, cdef, "```")
         p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
         p ("")
