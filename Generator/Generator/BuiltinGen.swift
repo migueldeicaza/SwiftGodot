@@ -362,6 +362,39 @@ func generateBuiltinMethods (_ p: Printer,
             generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, arguments: m.arguments, kind: .methodCall)
         }
     }
+    if bc.isKeyed {
+        p ("static var keyed_setter: GDExtensionPtrKeyedSetter = ", suffix: "()") {
+            p ("return gi.variant_get_ptr_keyed_setter (GDEXTENSION_VARIANT_TYPE_DICTIONARY)!")
+        }
+        p ("static var keyed_getter: GDExtensionPtrKeyedGetter = ", suffix: "()") {
+            p ("return gi.variant_get_ptr_keyed_getter (GDEXTENSION_VARIANT_TYPE_DICTIONARY)!")
+        }
+        p ("static var keyed_checker: GDExtensionPtrKeyedChecker = ", suffix: "()") {
+            p ("return gi.variant_get_ptr_keyed_checker (GDEXTENSION_VARIANT_TYPE_DICTIONARY)!")
+        }
+        p ("public subscript (key: Variant) -> Variant?") {
+            p ("get") {
+                p ("var keyCopy = key")
+                p ("var result = Variant.zero")
+                p ("if Dictionary.keyed_checker (&content, &keyCopy) != 0") {
+                    p ("Dictionary.keyed_getter (&content, &keyCopy, &result)")
+                    p ("return Variant (fromContent: result)")
+                }
+                p ("else") {
+                    p ("return nil")
+                }
+            }
+            p ("set") {
+                p ("var keyCopy = key")
+                p ("if var newCopy = newValue") {
+                    p ("Dictionary.keyed_setter (&content, &keyCopy, &newCopy)")
+                }
+                p ("else") {
+                    p ("Dictionary.keyed_setter (&content, &keyCopy, nil)")
+                }
+            }
+        }
+    }
 }
 
 enum BKind {
@@ -560,6 +593,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
             
             generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
             generateBuiltinOperators (p, bc, docClass, typeName: typeName)
+            if bc.isKeyed {
+                
+            }
             generateBuiltinConstants (p, bc, docClass, typeName: typeName)
             if bc.name.starts(with: "Packed") {
                 p ("public var startIndex: Int") {
