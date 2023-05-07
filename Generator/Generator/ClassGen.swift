@@ -145,6 +145,21 @@ func generateVirtualProxy (_ p: Printer,
             } else {
                 let target = classMap [ret.type] != nil ? "handle" : "content"
                 p ("retPtr!.storeBytes (of: ret.\(target), as: type (of: ret.\(target)))")
+                
+                // Poor man's transfer the ownership: we clear the content
+                // so the destructor has nothing to act on, because we are
+                // returning the reference to the other side.
+                if target == "content" {
+                    let type = getGodotType(SimpleType(type: ret.type))
+                    switch type {
+                    case "String":
+                        p ("ret.content = GString.zero")
+                    case "Array":
+                        p ("ret.content = GArray.zero")
+                    default:
+                        p ("ret.content = \(type).zero")
+                    }
+                }
             }
         }
     }
