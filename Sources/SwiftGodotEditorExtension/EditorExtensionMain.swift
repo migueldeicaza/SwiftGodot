@@ -13,7 +13,7 @@ extension PackedStringArray {
     convenience init (_ values: [String]) {
         self.init ()
         for x in values {
-            append(value: GString (x))
+            append(value: x)
         }
     }
 }
@@ -22,14 +22,18 @@ class SwiftScript: RefCounted {
     public required init () {
         super.init ()
     }
+    
+    required init(nativeHandle: UnsafeRawPointer) {
+        fatalError("init(nativeHandle:) has not been implemented")
+    }
 }
 class SwiftLanguageIntegration: ScriptLanguageExtension {
     func pm (functionName: String = #function) {
         print ("SwiftLanguageIntegration, default: \(functionName)")
     }
     
-    open override func _getName ()-> GString {
-        return GString ("Swift Language Integration")
+    open override func _getName ()-> String {
+        return "Swift Language Integration"
     }
     
     open override func _init () {
@@ -37,11 +41,11 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         // TODO: could define useful things here
     }
     
-    open override func _getType ()-> GString {
+    open override func _getType ()-> String {
         return "SwiftScript"
     }
     
-    open override func _getExtension ()-> GString {
+    open override func _getExtension ()-> String {
         return "swift"
     }
     
@@ -53,7 +57,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return PackedStringArray (["class", "func", "struct", "var"])
     }
     
-    open override func _isControlFlowKeyword (keyword: GString)-> Bool {
+    open override func _isControlFlowKeyword (keyword: String)-> Bool {
         switch keyword.description {
         case "if", "break", "continue", "while", "repeat", "throw", "try",
             "return":
@@ -71,29 +75,29 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return PackedStringArray (["\" \"", "@\" \""])
     }
     
-    open override func _makeTemplate (template: GString, className: GString, baseClassName: GString)-> Script {
+    open override func _makeTemplate (template: String, className: String, baseClassName: String)-> Script {
         let s = Script ()
-        s.sourceCode = GString ("Here we should put the template for \(template.description)")
+        s.sourceCode = "Here we should put the template for \(template.description)"
         return s
     }
     
-    open override func _getBuiltInTemplates (object: StringName)-> GodotCollection<Dictionary> {
+    open override func _getBuiltInTemplates (object: StringName)-> VariantCollection<Dictionary> {
         pm()
-        return GodotCollection<Dictionary>()
+        return VariantCollection<Dictionary>()
     }
     
     open override func _isUsingTemplates ()-> Bool {
         return true
     }
     
-    open override func _validate (script: GString, path: GString, validateFunctions: Bool, validateErrors: Bool, validateWarnings: Bool, validateSafeLines: Bool)-> Dictionary {
+    open override func _validate (script: String, path: String, validateFunctions: Bool, validateErrors: Bool, validateWarnings: Bool, validateSafeLines: Bool)-> Dictionary {
         pm ();
         return Dictionary ()
     }
     
-    open override func _validatePath (path: GString)-> GString {
+    open override func _validatePath (path: String)-> String {
         pm()
-        return GString ()
+        return ""
     }
     
     open override func _createScript ()-> Object {
@@ -120,14 +124,14 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return false
     }
     
-    open override func _findFunction (className: GString, functionName: GString)-> Int32 {
+    open override func _findFunction (className: String, functionName: String)-> Int32 {
         pm()
         return 0
     }
     
-    open override func _makeFunction (className: GString, functionName: GString, functionArgs: PackedStringArray)-> GString {
+    open override func _makeFunction (className: String, functionName: String, functionArgs: PackedStringArray)-> String {
         pm()
-        return GString ()
+        return ""
     }
     
     open override func _openInExternalEditor (script: Script, line: Int32, column: Int32)-> GodotError {
@@ -140,19 +144,19 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return false
     }
     
-    open override func _completeCode (code: GString, path: GString, owner: Object)-> Dictionary {
+    open override func _completeCode (code: String, path: String, owner: Object)-> Dictionary {
         pm()
         return Dictionary ()
     }
     
-    open override func _lookupCode (code: GString, symbol: GString, path: GString, owner: Object)-> Dictionary {
+    open override func _lookupCode (code: String, symbol: String, path: String, owner: Object)-> Dictionary {
         pm()
         return Dictionary ()
     }
     
-    open override func _autoIndentCode (code: GString, fromLine: Int32, toLine: Int32)-> GString {
+    open override func _autoIndentCode (code: String, fromLine: Int32, toLine: Int32)-> String {
         pm()
-        return GString ()
+        return ""
     }
     
     open override func _addGlobalConstant (name: StringName, value: Variant) {
@@ -175,9 +179,9 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         pm()
     }
     
-    open override func _debugGetError ()-> GString {
+    open override func _debugGetError ()-> String {
         pm()
-        return GString ()
+        return ""
     }
     
     open override func _debugGetStackLevelCount ()-> Int32 {
@@ -190,9 +194,9 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return 0
     }
     
-    open override func _debugGetStackLevelFunction (level: Int32)-> GString {
+    open override func _debugGetStackLevelFunction (level: Int32)-> String {
         pm()
-        return GString ()
+        return ""
     }
     
     open override func _debugGetStackLevelLocals (level: Int32, maxSubitems: Int32, maxDepth: Int32)-> Dictionary {
@@ -210,14 +214,14 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return Dictionary ()
     }
     
-    open override func _debugParseStackLevelExpression (level: Int32, expression: GString, maxSubitems: Int32, maxDepth: Int32)-> GString {
+    open override func _debugParseStackLevelExpression (level: Int32, expression: String, maxSubitems: Int32, maxDepth: Int32)-> String {
         pm()
-        return GString ()
+        return ""
     }
     
-    open override func _debugGetCurrentStackInfo ()-> GodotCollection<Dictionary> {
+    open override func _debugGetCurrentStackInfo ()-> VariantCollection<Dictionary> {
         pm()
-        return GodotCollection<Dictionary>()
+        return VariantCollection<Dictionary>()
     }
     
     open override func _reloadAllScripts () {
@@ -233,9 +237,9 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return PackedStringArray ()
     }
     
-    open override func _getPublicFunctions ()-> GodotCollection<Dictionary> {
+    open override func _getPublicFunctions ()-> VariantCollection<Dictionary> {
         pm()
-        return GodotCollection<Dictionary>()
+        return VariantCollection<Dictionary>()
     }
     
     open override func _getPublicConstants ()-> Dictionary {
@@ -243,9 +247,9 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return Dictionary ()
     }
     
-    open override func _getPublicAnnotations ()-> GodotCollection<Dictionary> {
+    open override func _getPublicAnnotations ()-> VariantCollection<Dictionary> {
         pm()
-        return GodotCollection<Dictionary>()
+        return VariantCollection<Dictionary>()
     }
     
     open override func _profilingStart () {
@@ -260,12 +264,12 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         pm()
     }
     
-    open override func _handlesGlobalClassType (type: GString)-> Bool {
+    open override func _handlesGlobalClassType (type: String)-> Bool {
         pm()
         return false
     }
     
-    open override func _getGlobalClassName (path: GString)-> Dictionary {
+    open override func _getGlobalClassName (path: String)-> Dictionary {
         pm()
         return Dictionary ()
     }
