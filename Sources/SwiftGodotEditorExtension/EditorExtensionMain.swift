@@ -28,8 +28,8 @@ class SwiftScript: RefCounted {
     }
 }
 class SwiftLanguageIntegration: ScriptLanguageExtension {
-    func pm (functionName: String = #function) {
-        print ("SwiftLanguageIntegration, default: \(functionName)")
+    func pm (_ data: String = "", functionName: String = #function) {
+        print ("SwiftLanguageIntegration, default: \(functionName) (data)")
     }
     
     open override func _getName ()-> String {
@@ -105,13 +105,13 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _hasNamedClasses ()-> Bool {
-        pm()
-        return false
+        pm("-> true")
+        return true
     }
     
     open override func _supportsBuiltinMode ()-> Bool {
-        pm()
-        return false
+        pm("-> true")
+        return true
     }
     
     open override func _supportsDocumentation ()-> Bool {
@@ -234,7 +234,9 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     
     open override func _getRecognizedExtensions ()-> PackedStringArray {
         pm()
-        return PackedStringArray ()
+        let r = PackedStringArray ()
+        r.append(value: "swift")
+        return r
     }
     
     open override func _getPublicFunctions ()-> VariantCollection<Dictionary> {
@@ -261,11 +263,11 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _frame () {
-        pm()
+        //pm()
     }
     
     open override func _handlesGlobalClassType (type: String)-> Bool {
-        pm()
+        pm("Type=\(type)")
         return false
     }
     
@@ -278,7 +280,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
 func setupScene (level: GDExtension.InitializationLevel) {
     if level == .editor {
         var e: Engine = Engine.shared
-
+        register(type: SwiftLanguageIntegration.self)
         var language = SwiftLanguageIntegration()
         
         e.registerScriptLanguage(language: language)
@@ -294,6 +296,7 @@ public func swift_entry_point(
     guard let interfacePtr, let libraryPtr, let extensionPtr else {
         return 0
     }
+    
     initializeSwiftModule(interfacePtr, libraryPtr, extensionPtr, initHook: setupScene, deInitHook: { x in })
     return 1
 }
