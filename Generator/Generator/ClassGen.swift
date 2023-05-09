@@ -840,10 +840,17 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         p ("internal \(fastInitOverrides)init (fast: Bool)") {
             p ("super.init (name: \(cdef.name).className)")
         }
-        p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
-        p ("/// when you create a subclass of this type.")
-        p ("public required init ()") {
-            p ("super.init (name: StringName (\"\(cdef.name)\"))")
+        if cdef.isInstantiable {
+            p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
+            p ("/// when you create a subclass of this type.")
+            p ("public required init ()") {
+                p ("super.init (name: StringName (\"\(cdef.name)\"))")
+            }
+        } else {
+            p ("/// This class can not be instantiated by user code")
+            p ("public required init ()") {
+                p ("fatalError (\"You cannot subclass or instantiate \(cdef.name) directly\")")
+            }
         }
         
         var referencedMethods = Set<String>()
