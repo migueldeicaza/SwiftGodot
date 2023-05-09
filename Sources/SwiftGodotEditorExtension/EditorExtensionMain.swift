@@ -18,18 +18,166 @@ extension PackedStringArray {
     }
 }
 
-class SwiftScript: RefCounted {
+
+class SwiftScript: ScriptExtension {
     public required init () {
         super.init ()
     }
-    
+
     required init(nativeHandle: UnsafeRawPointer) {
         fatalError("init(nativeHandle:) has not been implemented")
     }
+    
+    func pm (_ data: String = "", functionName: String = #function) {
+        print ("Script: \(functionName) (data)")
+    }
+    
+    public override func _isTool() -> Bool {
+        pm()
+        return true
+    }
+    
+    public override func _isValid() -> Bool {
+        pm()
+        return true
+    }
+    
+    public override func _getMembers() -> VariantCollection<StringName> {
+        pm ()
+        return VariantCollection<StringName>()
+    }
+    
+    public override func _getLanguage() -> ScriptLanguage {
+        pm ()
+        return SwiftLanguageIntegration()
+    }
+    
+    public override func _getConstants() -> Dictionary {
+        pm ()
+        return Dictionary()
+    }
+    
+    public override func _updateExports() {
+        pm ()
+    }
+    
+    public override func _canInstantiate() -> Bool {
+        pm()
+        return true
+    }
+    
+    public override func _getDocumentation() -> VariantCollection<Dictionary> {
+        pm()
+        return VariantCollection<Dictionary>()
+    }
+    
+    public override func _getRpcConfig() -> Variant {
+        pm ()
+        return "Hello".toVariant()
+    }
+    
+    public override func _getBaseScript() -> Script {
+        pm ()
+        return self
+    }
+    
+    public override func _getGlobalName() -> StringName {
+        pm ()
+        return "GlobalName"
+    }
+    
+    public override func _getSourceCode() -> String {
+        pm ()
+        return "print()"
+    }
+    
+    public override func _hasSourceCode() -> Bool {
+        pm ()
+        return true
+    }
+    
+    public override func _hasMethod(method: StringName) -> Bool {
+        pm (method.description)
+        return true
+    }
+    
+    public override func _reload(keepState: Bool) -> GodotError {
+        pm ("\(keepState)")
+        return .ok
+    }
+    
+    public override func _instanceHas(object: Object) -> Bool {
+        pm ()
+        return false
+    }
+    
+    public override func _getInstanceBaseType() -> StringName {
+        pm ()
+        return ""
+    }
+    
+    public override func _getScriptMethodList() -> VariantCollection<Dictionary> {
+        pm ()
+        return VariantCollection<Dictionary>()
+    }
+    
+    public override func _getScriptSignalList() -> VariantCollection<Dictionary> {
+        pm ()
+        return VariantCollection<Dictionary>()
+    }
+    
+    public override func _getScriptPropertyList() -> VariantCollection<Dictionary> {
+        pm ()
+        return VariantCollection<Dictionary>()
+    }
+    
+    public override func _inheritsScript(script: Script) -> Bool {
+        pm ()
+        return false
+    }
+    
+    public override func _isPlaceholderFallbackEnabled() -> Bool {
+        pm ()
+        return false
+    }
+    
+    public override func _setSourceCode(code: String) {
+        pm ()
+    }
+    
+    public override func _getMemberLine(member: StringName) -> Int32 {
+        pm ()
+        return 1
+    }
+    
+    public override func _getMethodInfo(method: StringName) -> Dictionary {
+        return Dictionary()
+    }
+    
+    public override func _hasScriptSignal(signal: StringName) -> Bool {
+        pm ()
+        return false
+    }
+    
+    public override func _editorCanReloadFromFile() -> Bool {
+        pm ()
+        return false
+    }
+    
+    public override func _getPropertyDefaultValue(property: StringName) -> Variant {
+        pm ("For property: \(property)")
+        return false.toVariant()
+    }
+    
+    public override func _hasPropertyDefaultValue(property: StringName) -> Bool {
+        pm ()
+        return false
+    }
 }
+
 class SwiftLanguageIntegration: ScriptLanguageExtension {
     func pm (_ data: String = "", functionName: String = #function) {
-        print ("SwiftLanguageIntegration, default: \(functionName) (data)")
+        print ("Integration: \(functionName) \(data)")
     }
     
     open override func _getName ()-> String {
@@ -42,10 +190,12 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _getType ()-> String {
+        pm()
         return "SwiftScript"
     }
     
     open override func _getExtension ()-> String {
+        pm()
         return "swift"
     }
     
@@ -54,10 +204,12 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _getReservedWords ()-> PackedStringArray {
+        pm()
         return PackedStringArray (["class", "func", "struct", "var"])
     }
     
     open override func _isControlFlowKeyword (keyword: String)-> Bool {
+        pm()
         switch keyword.description {
         case "if", "break", "continue", "while", "repeat", "throw", "try",
             "return":
@@ -68,16 +220,20 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _getCommentDelimiters ()-> PackedStringArray {
+        pm()
         return PackedStringArray (["//", "/*"])
     }
     
     open override func _getStringDelimiters ()-> PackedStringArray {
+        pm()
         return PackedStringArray (["\" \"", "@\" \""])
     }
     
     open override func _makeTemplate (template: String, className: String, baseClassName: String)-> Script {
-        let s = Script ()
-        s.sourceCode = "Here we should put the template for \(template.description)"
+        pm ("template: \(template) className: \(className) baseClassName: \(baseClassName)")
+        let s = SwiftScript ()
+        s.sourceCode = "Here we should put the template for template: \(template) className: \(className), baseClassName: \(baseClassName)"
+        print (s)
         return s
     }
     
@@ -97,6 +253,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     
     open override func _validatePath (path: String)-> String {
         pm()
+        print ("Got path: \(path), returning empty")
         return ""
     }
     
@@ -236,6 +393,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         pm()
         let r = PackedStringArray ()
         r.append(value: "swift")
+        print ("returning array with \(r.count) values")
         return r
     }
     
@@ -281,7 +439,9 @@ func setupScene (level: GDExtension.InitializationLevel) {
     if level == .editor {
         var e: Engine = Engine.shared
         register(type: SwiftLanguageIntegration.self)
+        register(type: SwiftScript.self)
         var language = SwiftLanguageIntegration()
+        let script = SwiftScript()
         
         e.registerScriptLanguage(language: language)
     }
