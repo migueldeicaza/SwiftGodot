@@ -435,13 +435,56 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
 }
 
+class SwiftResourceFormatSaver: ResourceFormatSaver {
+    public required init () {
+        super.init ()
+    }
+
+    required init(nativeHandle: UnsafeRawPointer) {
+        fatalError("init(nativeHandle:) has not been implemented")
+    }
+    
+    func pm (_ data: String = "", functionName: String = #function) {
+        print ("SwiftREsourceSaver: \(functionName) \(data)")
+    }
+    
+    open override func _recognize(resource: Resource) -> Bool {
+        print ("Got \(resource.resourceName) at \(resource.resourcePath)")
+        return true
+    }
+    
+    open override func _setUid(path: String, uid: Int) -> GodotError {
+        pm ()
+        print ("path: \(path) uid=\(uid)")
+        return .ok
+    }
+    
+    open override func _getRecognizedExtensions(resource: Resource) -> PackedStringArray {
+        pm ()
+        return PackedStringArray(["swift"])
+    }
+    
+    open override func _recognizePath(resource: Resource, path: String) -> Bool {
+        pm ("path: \(path) resource: \(resource.resourceName)");
+        return true
+    }
+
+    open override func _save(resource: Resource, path: String, flags: UInt32) -> GodotError {
+        pm ("res=\(resource.resourceName) path: \(path) flags: \(flags)")
+        
+        return .ok
+    }
+}
 func setupScene (level: GDExtension.InitializationLevel) {
     if level == .editor {
         var e: Engine = Engine.shared
         register(type: SwiftLanguageIntegration.self)
         register(type: SwiftScript.self)
+        register(type: SwiftResourceFormatSaver.self)
         var language = SwiftLanguageIntegration()
         let script = SwiftScript()
+        let f = SwiftResourceFormatSaver()
+        ResourceSaver.shared.addResourceFormatSaver(formatSaver: f)
         
         e.registerScriptLanguage(language: language)
     }
