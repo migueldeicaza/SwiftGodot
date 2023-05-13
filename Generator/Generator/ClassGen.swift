@@ -401,7 +401,7 @@ func generateMethods (_ p: Printer,
                     p ("gi.object_method_bind_call (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (args.count), \(ptrResult), nil)")
                 } else {
                     let staticArg = method.isStatic ? ", nil" : ""
-                    p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult)\(staticArg)")
+                    p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult)\(staticArg))")
                 }
                 
                 if returnType != "" {
