@@ -223,7 +223,7 @@ func generateMethods (_ p: Printer,
             }
             if instanceOrStatic == "" {
                 finalp = "final "
-            } else if instanceOrStatic == "static" {
+            } else if instanceOrStatic == " static" {
                 finalp = " "
             } else {
                 finalp = "static "
