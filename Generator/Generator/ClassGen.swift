@@ -400,7 +400,8 @@ func generateMethods (_ p: Printer,
                 if method.isVararg {
                     p ("gi.object_method_bind_call (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (args.count), \(ptrResult), nil)")
                 } else {
-                    p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))")
+                    let staticArg = method.isStatic ? ", nil" : ""
+                    p ("gi.object_method_bind_ptrcall (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult)\(staticArg)")
                 }
                 
                 if returnType != "" {
