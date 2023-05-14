@@ -20,11 +20,15 @@ extension PackedStringArray {
 
 
 class SwiftScript: ScriptExtension {
+    var source: String
+    
     public required init () {
+        source = ""
         super.init ()
     }
 
     required init(nativeHandle: UnsafeRawPointer) {
+        source = ""
         fatalError("init(nativeHandle:) has not been implemented")
     }
     
@@ -88,12 +92,12 @@ class SwiftScript: ScriptExtension {
     
     public override func _getSourceCode() -> String {
         pm ()
-        return "print()"
+        return source
     }
     
     public override func _hasSourceCode() -> Bool {
         pm ()
-        return true
+        return source != ""
     }
     
     public override func _hasMethod(method: StringName) -> Bool {
@@ -143,6 +147,7 @@ class SwiftScript: ScriptExtension {
     
     public override func _setSourceCode(code: String) {
         pm ()
+        source = code
     }
     
     public override func _getMemberLine(member: StringName) -> Int32 {
@@ -471,6 +476,16 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
 
     open override func _save(resource: Resource, path: String, flags: UInt32) -> GodotError {
         pm ("res=\(resource.resourceName) path: \(path) flags: \(flags)")
+        guard let script = resource as? SwiftScript else {
+            print ("_save the resource did not cas to a SwiftScript")
+            return .errFileUnrecognized
+        }
+        let file = FileAccess.open(path: path, flags: .write)
+        file.storeString(string: script.source)
+        let err = file.getError()
+        if err != .ok {
+            return err
+        }
         
         return .ok
     }
