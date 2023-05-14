@@ -394,7 +394,7 @@ func generateMethods (_ p: Printer,
                     ptrResult = "nil"
                 }
                 
-                let instanceHandle = method.isStatic ? "" : "UnsafeMutableRawPointer (mutating: handle), "
+                let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: handle), "
                 if method.isVararg {
                     p ("gi.object_method_bind_call (\(cdef.name).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (args.count), \(ptrResult), nil)")
                 } else {
