@@ -224,7 +224,7 @@ func generateMethods (_ p: Printer,
             if instanceOrStatic == "" {
                 finalp = "final "
             } else {
-                finalp = "static "
+                finalp = ""
             }
         } else {
             assert (method.isVirtual)
