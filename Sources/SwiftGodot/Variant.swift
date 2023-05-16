@@ -97,7 +97,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         hasher.combine(gi.variant_hash (&content))
     }
     
-    public init (other: Variant) {
+    public init (_ other: Variant) {
         var copy = other
         gi.variant_new_copy (&content, &copy.content)
     }
@@ -130,7 +130,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
 
     public init (_ value: Float) {
-        var v = value
+        var v = Double (value)
         Variant.fromTypeMap [GType.float.rawValue] (&content, &v)
     }
     
@@ -294,6 +294,18 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     
     func toType (_ type: GType, dest: UnsafeMutableRawPointer) {
         Variant.toTypeMap [type.rawValue] (dest, &content)
+    }
+    
+    public var description: String {
+        var ret = GDExtensionStringPtr (bitPattern: 0)
+        gi.variant_stringify (&content, &ret)
+        if let ret = OpaquePointer(ret) {
+            let str = stringFromGodotString(UnsafeRawPointer (ret))
+            GString.destructor (UnsafeMutableRawPointer (ret))
+            return str ?? ""
+        } else {
+            return ""
+        }
     }
 }
 

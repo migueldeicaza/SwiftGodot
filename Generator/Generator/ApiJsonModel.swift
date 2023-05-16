@@ -23,7 +23,7 @@ struct JGodotExtensionAPI: Codable {
     let utilityFunctions: [JGodotUtilityFunction]
     let builtinClasses: [JGodotBuiltinClass]
     let classes: [JGodotExtensionAPIClass]
-    let singletons: [JGodotSingleton]
+    let singletons: [JGodotArgument]
     let nativeStructures: [JGodotNativeStructure]
 
     enum CodingKeys: String, CodingKey {
@@ -66,7 +66,7 @@ extension JGodotExtensionAPI {
         utilityFunctions: [JGodotUtilityFunction]? = nil,
         builtinClasses: [JGodotBuiltinClass]? = nil,
         classes: [JGodotExtensionAPIClass]? = nil,
-        singletons: [JGodotSingleton]? = nil,
+        singletons: [JGodotArgument]? = nil,
         nativeStructures: [JGodotNativeStructure]? = nil
     ) -> JGodotExtensionAPI {
         return JGodotExtensionAPI(
@@ -360,7 +360,7 @@ struct JGodotBuiltinClass: Codable, JClassInfo {
     let hasDestructor: Bool
     let indexingReturnType: String?
     let methods: [JGodotBuiltinClassMethod]?
-    let members: [JGodotSingleton]?
+    let members: [JGodotArgument]?
     let constants: [JGodotBuiltinClassConstant]?
     let enums: [JGodotGlobalEnumElement]?
 
@@ -400,7 +400,7 @@ extension JGodotBuiltinClass {
         hasDestructor: Bool? = nil,
         indexingReturnType: String?? = nil,
         methods: [JGodotBuiltinClassMethod]?? = nil,
-        members: [JGodotSingleton]?? = nil,
+        members: [JGodotArgument]?? = nil,
         constants: [JGodotBuiltinClassConstant]?? = nil,
         enums: [JGodotGlobalEnumElement]?? = nil
     ) -> JGodotBuiltinClass {
@@ -476,7 +476,7 @@ extension JGodotBuiltinClassConstant {
 // MARK: - JGodotConstructor
 struct JGodotConstructor: Codable {
     let index: Int
-    let arguments: [JGodotSingleton]?
+    let arguments: [JGodotArgument]?
 }
 
 // MARK: JGodotConstructor convenience initializers and mutators
@@ -499,7 +499,7 @@ extension JGodotConstructor {
 
     func with(
         index: Int? = nil,
-        arguments: [JGodotSingleton]?? = nil
+        arguments: [JGodotArgument]?? = nil
     ) -> JGodotConstructor {
         return JGodotConstructor(
             index: index ?? self.index,
@@ -515,52 +515,6 @@ extension JGodotConstructor {
         return String(data: try self.jsonData(), encoding: encoding)
     }
 }
-
-// MARK: - JGodotSingleton
-struct JGodotSingleton: Codable, Equatable {
-    let name, type: String
-    let defaultValue: String?
-    let meta: JGodotArgumentMeta?
-}
-
-// MARK: JGodotSingleton convenience initializers and mutators
-
-extension JGodotSingleton {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotSingleton.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        type: String? = nil
-    ) -> JGodotSingleton {
-        return JGodotSingleton(
-            name: name ?? self.name,
-            type: type ?? self.type, defaultValue: nil,
-            meta: nil
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
 
 // MARK: - JGodotValueElement
 struct JGodotValueElement: Codable {
@@ -938,7 +892,7 @@ protocol JSharedClassMethod {
     
 }
 // MARK: - JGodotClassMethod
-struct JGodotClassMethod: Codable {
+struct JGodotClassMethod: Codable, MethodDefinition {
     let name: String
     let isConst, isVararg, isStatic, isVirtual: Bool
     let hash: Int?
@@ -956,6 +910,20 @@ struct JGodotClassMethod: Codable {
         case arguments
     }
 }
+
+// Used to unify the class methods and the utility methods
+protocol MethodDefinition {
+    var name: String { get }
+    var isConst: Bool { get }
+    var isVararg: Bool { get }
+    var isStatic: Bool { get }
+    var isVirtual: Bool { get }
+    var hash: Int? { get }
+    var returnValue: JGodotReturnValue? { get }
+    var arguments: [JGodotArgument]? { get }
+}
+
+
 
 // MARK: JGodotClassMethod convenience initializers and mutators
 
@@ -1103,7 +1071,7 @@ extension JGodotProperty {
 // MARK: - JGodotSignal
 struct JGodotSignal: Codable {
     let name: String
-    let arguments: [JGodotSingleton]?
+    let arguments: [JGodotArgument]?
 }
 
 // MARK: JGodotSignal convenience initializers and mutators
@@ -1126,7 +1094,7 @@ extension JGodotSignal {
 
     func with(
         name: String? = nil,
-        arguments: [JGodotSingleton]?? = nil
+        arguments: [JGodotArgument]?? = nil
     ) -> JGodotSignal {
         return JGodotSignal(
             name: name ?? self.name,
@@ -1246,13 +1214,25 @@ extension JGodotNativeStructure {
 }
 
 // MARK: - JGodotUtilityFunction
-struct JGodotUtilityFunction: Codable {
+struct JGodotUtilityFunction: Codable, MethodDefinition {
     let name: String
-    let returnType: JGodotReturnType?
+    let returnType: String?
     let category: JGodotCategory
     let isVararg: Bool
-    let hash: Int
-    let arguments: [JGodotSingleton]?
+    let hash: Int?
+    let arguments: [JGodotArgument]?
+
+    // Conformance to MethodDefinition
+    var isConst: Bool { true }
+    var isStatic: Bool { true }
+    var isVirtual: Bool { false }
+    var returnValue: JGodotReturnValue? {
+        if let returnType {
+            return JGodotReturnValue (type: returnType, meta: nil)
+        } else {
+            return nil
+        }
+    }
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -1283,11 +1263,11 @@ extension JGodotUtilityFunction {
 
     func with(
         name: String? = nil,
-        returnType: JGodotReturnType?? = nil,
+        returnType: String?? = nil,
         category: JGodotCategory? = nil,
         isVararg: Bool? = nil,
         hash: Int? = nil,
-        arguments: [JGodotSingleton]?? = nil
+        arguments: [JGodotArgument]?? = nil
     ) -> JGodotUtilityFunction {
         return JGodotUtilityFunction(
             name: name ?? self.name,
@@ -1312,18 +1292,6 @@ enum JGodotCategory: String, Codable {
     case general = "general"
     case math = "math"
     case random = "random"
-}
-
-enum JGodotReturnType: String, Codable {
-    case bool = "bool"
-    case float = "float"
-    case int = "int"
-    case object = "Object"
-    case packedByteArray = "PackedByteArray"
-    case packedInt64Array = "PackedInt64Array"
-    case rid = "RID"
-    case string = "String"
-    case variant = "Variant"
 }
 
 // MARK: - Helper functions for creating encoders and decoders

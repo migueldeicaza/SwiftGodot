@@ -70,6 +70,7 @@ let knownBuiltin = [
     "Vector4.swift",
     "Vector4i.swift",
     "core-defs.swift",
+    "utility.swift"
 ]
 
 let known = [
