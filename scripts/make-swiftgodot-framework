@@ -21,12 +21,13 @@ case $2 in
 esac
 
 rm -rf $2
-bd=$1//Build/Products/Debug/
-xcodebuild -create-xcframework -framework $bd/PackageFrameworks/SwiftGodot.framework -output $2
+bdMac=$1/Build/Products/Debug/
+bdiOS=$1/Build/Products/Debug-iphoneos/
+xcodebuild -create-xcframework -framework $bdMac/PackageFrameworks/SwiftGodot.framework -framework $bdiOS/PackageFrameworks/SwiftGodot.framework -output $2
 fd=$2//macos-x86_64/SwiftGodot.framework
 (cd $fd; mkdir -p Versions/Current/Headers; ln -sf Versions/Current/Headers .)
 (cd $fd; mkdir -p Versions/Current/Modules; ln -sf Versions/Current/Modules .)
-rsync -a $bd/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
+rsync -a $bdMac/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
 
 cat > $fd/Modules/module.modulemap << EOF
 framework module SwiftGodot {
