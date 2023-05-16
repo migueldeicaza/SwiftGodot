@@ -89,7 +89,7 @@ try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withInterm
 try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
 
 generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
-
+generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
 generateClasses (values: jsonApi.classes, outputDir: generatedDir)
 
 generateCtorPointers (coreDefPrinter)

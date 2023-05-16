@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		49008AAF2A11CC0D00F2B874 /* UtilityGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49008AAE2A11CC0D00F2B874 /* UtilityGen.swift */; };
+		49008AB12A12794100F2B874 /* MethodGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49008AB02A12794100F2B874 /* MethodGen.swift */; };
 		490DA41C29F083460093E32B /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490DA41B29F083460093E32B /* Enums.swift */; };
 		492B8AF029D12C440083C150 /* BuiltinGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492B8AEF29D12C440083C150 /* BuiltinGen.swift */; };
 		492B8AF229D12CF00083C150 /* ClassGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492B8AF129D12CF00083C150 /* ClassGen.swift */; };
@@ -33,6 +35,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		49008AAE2A11CC0D00F2B874 /* UtilityGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityGen.swift; sourceTree = "<group>"; };
+		49008AB02A12794100F2B874 /* MethodGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodGen.swift; sourceTree = "<group>"; };
 		490DA41B29F083460093E32B /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
 		492B8AEF29D12C440083C150 /* BuiltinGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltinGen.swift; sourceTree = "<group>"; };
 		492B8AF129D12CF00083C150 /* ClassGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassGen.swift; sourceTree = "<group>"; };
@@ -87,6 +91,8 @@
 				49CF7E2429DDBB6600C7EE35 /* Arguments.swift */,
 				49CF7E2829DE12F400C7EE35 /* DocModel.swift */,
 				490DA41B29F083460093E32B /* Enums.swift */,
+				49008AAE2A11CC0D00F2B874 /* UtilityGen.swift */,
+				49008AB02A12794100F2B874 /* MethodGen.swift */,
 			);
 			path = Generator;
 			sourceTree = "<group>";
@@ -156,7 +162,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				49CF7E2929DE12F400C7EE35 /* DocModel.swift in Sources */,
+				49008AB12A12794100F2B874 /* MethodGen.swift in Sources */,
 				4982B72029CE33DA008D2CCD /* ApiJsonModel.swift in Sources */,
+				49008AAF2A11CC0D00F2B874 /* UtilityGen.swift in Sources */,
 				490DA41C29F083460093E32B /* Enums.swift in Sources */,
 				492B8AF229D12CF00083C150 /* ClassGen.swift in Sources */,
 				494DF6A629F080C500485C49 /* Printer.swift in Sources */,

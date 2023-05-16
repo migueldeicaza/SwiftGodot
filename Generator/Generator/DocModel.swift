@@ -268,7 +268,6 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
                 return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
             }
         }
-        //print ("Doc: Could not find constant \(txt) in \(cdef.name)")
         
         return "``\(txt)``"
     }

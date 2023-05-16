@@ -73,7 +73,7 @@ func generateBuiltinCtors (_ p: Printer,
                            godotTypeName: String,
                            typeName: String,
                            typeEnum: String,
-                           members: [JGodotSingleton]?)
+                           members: [JGodotArgument]?)
 {
     let isStruct = isStructMap [typeName] ?? false
     
@@ -180,7 +180,7 @@ func generateMethodCall (_ p: Printer,
                          methodToCall: String,
                          godotReturnType: String?,
                          isStatic: Bool,
-                         arguments: [JNameAndType]?,
+                         arguments: [JGodotArgument]?,
                          kind: MethodCallKind) {
     let has_return = godotReturnType != nil
     

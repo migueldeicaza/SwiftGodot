@@ -11,7 +11,7 @@ func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
 }
 
-func isSmallInt (_ arg: JNameAndType) -> Bool {
+func isSmallInt (_ arg: JGodotArgument) -> Bool {
     if arg.type != "int" {
         return false
     }
@@ -23,7 +23,7 @@ func isSmallInt (_ arg: JNameAndType) -> Bool {
     }
 }
 
-func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: ArgumentKind = .classes) -> String {
+func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind: ArgumentKind = .classes) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
     
@@ -55,7 +55,7 @@ func getArgumentDeclaration (_ argument: JNameAndType, eliminate: String, kind: 
     return "\(eliminate)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(def)"
 }
 
-func getArgRef (arg: JNameAndType) -> String {
+func getArgRef (arg: JGodotArgument) -> String {
     var argref: String
     var optstorage: String
     var needAddress = "&"
@@ -85,7 +85,7 @@ func getArgRef (arg: JNameAndType) -> String {
     }
 }
 
-func generateCopies (_ args: [JNameAndType]) -> String {
+func generateCopies (_ args: [JGodotArgument]) -> String {
     var body = ""
     
     for arg in args {
@@ -101,7 +101,7 @@ func generateCopies (_ args: [JNameAndType]) -> String {
     return body
 }
 
-func generateArgPrepare (_ args: [JNameAndType]) -> String {
+func generateArgPrepare (_ args: [JGodotArgument]) -> String {
     var body = ""
     
     if args.count > 0 {

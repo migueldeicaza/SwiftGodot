@@ -102,7 +102,6 @@ public func initializeSwiftModule (
 {
     gi = UnsafePointer<GDExtensionInterface> (interfacePtr).pointee
     library = GDExtensionClassLibraryPtr(libraryPtr)
-    
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize

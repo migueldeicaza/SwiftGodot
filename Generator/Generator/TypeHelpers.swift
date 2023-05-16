@@ -33,16 +33,6 @@ func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
     }
 }
 
-protocol JNameAndType: TypeWithMeta {
-    var name: String { get }
-    var type: String { get }
-    var defaultValue: String? { get }
-    var meta: JGodotArgumentMeta? { get }
-}
-
-extension JGodotSingleton: JNameAndType {}
-extension JGodotArgument: JNameAndType {}
-
 /// Returns true for the Built-in types that are generated as classes, rather than structures
 func isBuiltinClass (_ godotTypeName: String) -> Bool {
     builtinClassStorage [godotTypeName] != nil
