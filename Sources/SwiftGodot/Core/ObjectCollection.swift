@@ -37,7 +37,7 @@ public class ObjectCollection<T:Object>: GArray, Collection {
             var v = super [index]
             var handle = UnsafeMutableRawPointer(bitPattern: 0)
             v.toType(.object, dest: &handle)
-            return objectFromHandle (nativeHandle: handle!) as! T
+            return lookupObject(nativeHandle: handle!)
         }
         set {
             super [index] = Variant (newValue)
