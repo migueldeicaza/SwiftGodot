@@ -44,6 +44,24 @@ extension GD {
         return ResourceLoader().load(path: path, cacheMode: .reuse) as? T
     }
 
+    /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
+    /// - Parameter items: The items to print into the Godot console.
+    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
+    public static func pushError(_ items: Any..., separator: String = " ") {
+        let transformedItems = items.map(String.init(describing:))
+        let finalMessage = transformedItems.joined(separator: separator)
+        GD.pushError(arg1: GString(stringLiteral: finalMessage).toVariant())
+    }
+
+    /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+    /// - Parameter items: The items to print into the Godot console.
+    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
+    public static func pushWarning(_ items: Any..., separator: String = " ") {
+        let transformedItems = items.map(String.init(describing:))
+        let finalMessage = transformedItems.joined(separator: separator)
+        GD.pushWarning(arg1: GString(stringLiteral: finalMessage).toVariant())
+    }
+
     /// Converts one or more arguments of any type to string in the best way possible and prints them to the console.
     /// - Parameter items: The items to print into the Godot console.
     /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
