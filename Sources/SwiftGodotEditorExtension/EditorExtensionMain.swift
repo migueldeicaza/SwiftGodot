@@ -484,9 +484,10 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
         file.storeString(string: script.source)
         let err = file.getError()
         if err != .ok {
+            print ("_save: Got an error from storing the string: \(err)")
             return err
         }
-        
+        file.close()
         return .ok
     }
 }
