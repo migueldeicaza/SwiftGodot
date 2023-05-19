@@ -140,8 +140,10 @@ func generateVirtualProxy (_ p: Printer,
             p ("\(call)")
         }
         if let ret = method.returnValue {
-            if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "enum::") || ret.type.starts(with: "bitfield::"){
+            if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
+            } else if ret.type.starts(with: "enum::") {
+                p ("retPtr!.storeBytes (of: Int32 (ret.rawValue), as: Int32.self)")
             } else {
                 let target = classMap [ret.type] != nil ? "handle" : "content"
                 p ("retPtr!.storeBytes (of: ret.\(target), as: type (of: ret.\(target)))")
