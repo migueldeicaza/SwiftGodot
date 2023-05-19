@@ -292,7 +292,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
         if removed == nil {
             print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
         } else {
-            print ("SWIFT: Removed object from our live SubType list")
+            print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
         }
     }
 }
