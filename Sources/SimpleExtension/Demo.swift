@@ -13,13 +13,40 @@ class SwiftSprite: Sprite2D {
     var time_passed: Double
     var count: Int
     
+    static var initClass: Void = {
+        let classInfo = ClassInfo<SwiftSprite> (name: "SwiftSprite")
+        
+        classInfo.addPropertyGroup(name: "Miguel's Demo", prefix: "demo_")
+        
+        let foodArgs = [
+            PropInfo(propertyType: .string,
+                     propertyName: "Food",
+                     className: StringName ("food"),
+                     hint: .typeString,
+                     hintStr: "Some kind of food",
+                     usage: .propertyUsageDefault)
+        ]
+        classInfo.registerMethod(name: "demo_set_favorite_food", flags: .default, returnValue: nil, arguments: foodArgs, function: SwiftSprite.demoSetFavoriteFood)
+        classInfo.registerMethod(name: "demo_get_favorite_food", flags: .default, returnValue: foodArgs [0], arguments: [], function: SwiftSprite.demoGetFavoriteFood)
+        
+        let foodProp = PropInfo (propertyType: .string,
+                                 propertyName: "demo_favorite_food",
+                                 className: "SwiftSprite",
+                                 hint: .multilineText,
+                                 hintStr: "Name of your favorite food",
+                                 usage: .propertyUsageDefault)
+        classInfo.registerProperty(foodProp, getter: "demo_get_favorite_food", setter: "demo_set_favorite_food")
+    }()
+    
     required init (nativeHandle: UnsafeRawPointer) {
-	time_passed = 0
-	count = sequence
+        SwiftSprite.initClass
+        time_passed = 0
+        count = sequence
         super.init (nativeHandle: nativeHandle)
     }
     
     required init () {
+        SwiftSprite.initClass
         count = sequence
         sequence += 1
         time_passed = 0
@@ -28,6 +55,21 @@ class SwiftSprite: Sprite2D {
     
     deinit {
         print ("SwiftSprite: Releasing \(count)")
+    }
+    
+    var food: String = "none"
+    func demoSetFavoriteFood (args: [Variant]) -> Variant? {
+        guard let arg = args.first else {
+            print ("Method registered taking one argument got none")
+            return nil
+        }
+        food = String (arg) ?? "The variant passed was not a string"
+        print ("The favorite food was set to: \(food)")
+        return nil
+    }
+    
+    func demoGetFavoriteFood (args: [Variant]) -> Variant? {
+        return Variant(stringLiteral: food)
     }
     
     override func _process (delta: Double) {
