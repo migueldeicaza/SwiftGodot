@@ -14,8 +14,6 @@ This document describes what you need to do today.
 
 ## Overview
 
-<!--@START_MENU_TOKEN@-->Text<!--@END_MENU_TOKEN@-->
-
 Creating a subclass of a Godot type involves a few steps:
 
 1. Subclassing an existing Godot type with the usual Swift syntax.
@@ -291,7 +289,3 @@ put all of your properties on a dedicated section:
 ```
 <img width="264" alt="image" src="https://github.com/xibbon/LaTerminalApp/assets/36863/5770926f-5f2b-4905-8499-1e2bb0762a11">
 
-
-### <!--@START_MENU_TOKEN@-->Group<!--@END_MENU_TOKEN@-->
-
-- <!--@START_MENU_TOKEN@-->``Symbol``<!--@END_MENU_TOKEN@-->
