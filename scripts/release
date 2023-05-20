@@ -1,4 +1,4 @@
-if x$1 = x; then
+if test x$1 = x; then
    echo Usage is: relase TAG
    exit 1
 fi
@@ -20,5 +20,5 @@ echo ArchiveData: $archivePath
 
 xcodebuild -scheme SwiftGodot -destination platform=generic/macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath >& $dir/x86_64.log
 xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/arm64.log
-sh scripts/make-swiftgodot-framework /tmp/56515-build/derived/ /tmp/56515-build/SwiftGodot.xcframework
+sh scripts/make-swiftgodot-framework $dir/derived/ ~/sg-builds/SwiftGodot.xcframework
 
