@@ -107,17 +107,16 @@ class Demo: Node3D {
     static burpSignalName = StringName ("burp")
 
     // This idiom is the equivalent of a class constructor for Swift
-    static var initClass: Bool = {
+    static var initClass: Void = {
         let classInfo = ClassInfo<Demo> (name: "Demo")
 
         classInfo.registerSignal (burpSignal)
-        return true
     }()
 
     // Constructor showing how to initialize the class and declare the signal
     required init () {
         super.init ()
-        let _ = Demo.initClass ()
+        let _ = Demo.initClass
     }
 
     // Convenience method to emit the signal

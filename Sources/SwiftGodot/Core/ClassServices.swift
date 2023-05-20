@@ -151,6 +151,40 @@ public class ClassInfo<T:Object> {
         gi.classdb_register_extension_class_method (library, UnsafeRawPointer (&self.name.content), &info)
         argPtr.deallocate()
     }
+    
+    /// Starts a new property group for this class, all the properties declared after calling this method
+    /// will be shown together in the UI under this group.
+    ///
+    public func addPropertyGroup (name: String, prefix: String) {
+        var gname = GString(stringLiteral: name)
+        var gprefix = GString(stringLiteral: prefix)
+        
+        gi.classdb_register_extension_class_property_group (library, UnsafeRawPointer (&self.name.content), UnsafeRawPointer (&gname.content), UnsafeRawPointer(&gprefix.content))
+    }
+    
+    /// Starts a new property sub-group, all the properties declared after calling this method
+    /// will be shown together in the UI under this group.
+    public func addPropertySubgroup (name: String, prefix: String) {
+        var gname = GString(stringLiteral: name)
+        var gprefix = GString(stringLiteral: prefix)
+        
+        gi.classdb_register_extension_class_property_subgroup (library, UnsafeRawPointer (&self.name.content), UnsafeRawPointer (&gname.content), UnsafeRawPointer(&gprefix.content))
+    }
+    
+    /// Registers the property in the class with the information provided in `info`.
+    /// The `getter` and `setter` name corresponds to the names that were used to register the function
+    /// with Godot in `registerMethod`
+    ///
+    /// - Parameters:
+    ///  - info: PropInfo describing the property you wil register
+    ///  - getter: the name of the method you have already registered and will provide the getter functionality
+    ///  - setter: the name of the method you have already registered and will provide the setter functionality
+    public func registerProperty (_ info: PropInfo, getter: StringName, setter: StringName){
+        var pinfo = GDExtensionPropertyInfo ()
+        pinfo = info.makeNativeStruct()
+        
+        gi.classdb_register_extension_class_property (library, UnsafeRawPointer (&self.name.content), &pinfo, UnsafeRawPointer(&setter.content), UnsafeRawPointer (&getter.content))
+    }
 }
 
 /// PropInfo structures describe arguments to signals, and methods as well as return values from methods.
@@ -215,12 +249,14 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
         }
     }
     let bound = finfo.function (target.takeUnretainedValue())
-    print ("Got: \(bound)")
     let ret = bound (args)
-    print ("Got: \(bound)")
     if let returnValue, let ret {
         if ret.gtype != finfo.retType {
-            fatalError ("Your declared function should return the type originally set \(finfo.retType)")
+            print ("Your declared function should return the type originally set \(finfo.retType) and \(ret.gtype)")
+            if let rError = r_error {
+                rError.pointee.error = GDEXTENSION_CALL_ERROR_INVALID_METHOD
+            }
+            return
         }
         let retContent = returnValue.assumingMemoryBound(to: Variant.ContentType.self)
         retContent.pointee = ret.content
