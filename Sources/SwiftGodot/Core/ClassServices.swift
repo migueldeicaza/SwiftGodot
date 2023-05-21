@@ -260,6 +260,13 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
         }
         let retContent = returnValue.assumingMemoryBound(to: Variant.ContentType.self)
         retContent.pointee = ret.content
+        
+        // Since we are giving control to Godot of this variant, we need to make sure that
+        // the destructor does not get invoked here.
+        //
+        // Another instance of the problem fixed here:
+        // 5deb4affbc9cbaa7ca86066cac4a9d87f33e60e6
+        ret.content = Variant.zero
     }
 }
 
