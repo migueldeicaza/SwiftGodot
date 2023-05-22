@@ -298,15 +298,12 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
     
     public var description: String {
-        var ret = GDExtensionStringPtr (bitPattern: 0)
+        var ret = GDExtensionStringPtr (bitPattern: 0xdeaddead)
         gi.variant_stringify (&content, &ret)
-        if let ret = OpaquePointer(ret) {
-            let str = stringFromGodotString(UnsafeRawPointer (ret))
-            GString.destructor (UnsafeMutableRawPointer (ret))
-            return str ?? ""
-        } else {
-            return ""
-        }
+        
+        let str = stringFromGodotString(&ret)
+        GString.destructor (&ret)
+        return str ?? ""
     }
 }
 
