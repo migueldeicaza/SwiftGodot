@@ -49,6 +49,11 @@ public class Printer {
     }
     
     func save (_ file: String) {
+        if let existing = try? String (contentsOfFile: file) {
+            if existing == result {
+                return
+            }
+        }
         try! result.write(toFile: file, atomically: true, encoding: .utf8)
     }
 }
