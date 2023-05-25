@@ -87,11 +87,12 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     var varArgSetup = ""
     var varArgSetupInit = ""
     if method.isVararg {
-        varArgSetupInit = "\nvar varArgCopies: [Variant] = []\n"
-        varArgSetup += "for varg in arguments {\n"
-        varArgSetup += "    let copy = Variant (varg)\n"
-        varArgSetup += "    varArgCopies.append (copy)\n"
-        varArgSetup += "    args.append (&copy.content)\n"
+        varArgSetupInit = "\nlet content = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n" +
+        "defer { content.deallocate () }\n"
+    
+        varArgSetup += "for idx in 0..<arguments.count {\n"
+        varArgSetup += "    content [idx] = arguments [idx].content\n"
+        varArgSetup += "    args.append (content.baseAddress! + idx)\n"
         varArgSetup += "}\n"
     }
 
