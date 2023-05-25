@@ -297,6 +297,20 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         Variant.toTypeMap [type.rawValue] (dest, &content)
     }
     
+    ///
+    /// Attempts to cast the Variant into a GodotObject, this requires that the Variant value be of type `.object`.
+    /// - Returns: nil on error, or the type on success
+    /// 
+    public func asObject<T:GodotObject> () -> T? {
+        guard gtype == .object else {
+            return nil
+        }
+        var value: UnsafeRawPointer = UnsafeRawPointer(bitPattern: 1)!
+        toType(.object, dest: &value)
+        let ret: T? = lookupObject(nativeHandle: value)
+        return ret
+    }
+    
     public var description: String {
         var ret = GDExtensionStringPtr (bitPattern: 0xdeaddead)
         gi.variant_stringify (&content, &ret)
@@ -374,4 +388,3 @@ extension Double {
         self.init (Double (value))
     }
 }
-
