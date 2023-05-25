@@ -91,7 +91,7 @@ func generateBuiltinCtors (_ p: Printer,
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField)
+            args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField, isOptional: false)
         }
         
         // Find the document for this constructor
@@ -348,7 +348,7 @@ func generateBuiltinMethods (_ p: Printer,
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "")
+            args += getArgumentDeclaration(arg, eliminate: "", isOptional: false)
         }
         
         if let docClass, let methods = docClass.methods {

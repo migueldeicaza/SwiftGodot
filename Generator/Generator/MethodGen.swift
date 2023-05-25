@@ -11,6 +11,57 @@ enum MethodGenType {
     case `class`
     case `utility`
 }
+
+// To test the design, will use an external file later
+// determines whether the className/method returns an optional reference type
+func isReturnOptional (className: String, method: String) -> Bool {
+    switch className {
+    case "RenderingServer":
+        switch method {
+        case "get_rendering_device":
+            return false
+        default:
+            return true
+        }
+    default:
+        return true
+    }
+}
+
+// To test the design, will use an external file later
+// determines whether the className/method/argument is an optional reference type
+func isRefParameterOptional (className: String, method: String, arg: String) -> Bool {
+    switch className {
+    case "Node":
+        switch method {
+        case "_input":
+            switch arg {
+            case "event":
+                return false
+            default:
+                return true
+            }
+        default:
+            return true
+        }
+        return true
+    case "Image":
+        switch method {
+        case "blit_rect":
+            switch arg {
+            case "src":
+                return false
+            default:
+                return true
+            }
+        default:
+            return true
+        }
+    default:
+        return true
+    }
+}
+
 /// Generates a method definition
 /// - Parameters:
 ///  - p: Our printer to generate the method
@@ -99,7 +150,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     if let margs = method.arguments {
         for arg in margs {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: eliminate)
+            var isRefOptional = false
+            if classMap [arg.type ?? ""] != nil {
+                isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
+            }
+            args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
             var reference = escapeSwift (snakeToCamel (arg.name))
 
             if method.isVararg {
@@ -132,6 +187,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             var argref: String
             var optstorage: String
             var needAddress = "&"
+            var isRefParameter = false
+            var refParameterIsOptional = false
             if method.isVararg {
                 argref = "copy_\(arg.name)"
                 optstorage = ".content"
@@ -149,14 +206,22 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     if builtinSizes [arg.type] != nil && arg.type != "Object" || arg.type.starts(with: "typedarray::"){
                         optstorage = ".content"
                     } else {
+                        // The next two are unused, because we set isRefParameter,
+                        // but for documentation/clarity purposes
                         optstorage = ".handle"
-                        // No need to take the address for handles
                         needAddress = ""
+                        isRefParameter = true
+                        
+                        refParameterIsOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
                     }
                 }
             }
-            argSetup += "    UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
-            //                }
+            argSetup += "    "
+            if refParameterIsOptional {
+                argSetup += "UnsafeRawPointer(\(escapeSwift(argref))?.handle ?? nil),"
+            } else {
+                argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
+            }
         }
         argSetup += "]"
         argSetup += varArgSetupInit
@@ -172,7 +237,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     }
     
     let godotReturnType = method.returnValue?.type
-    let returnType = getGodotType (method.returnValue)
+    let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
+    let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
+    let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
     
     if inline != "" {
         p (inline)
@@ -204,7 +271,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 } else if godotReturnType == "String" {
                     p ("var _result = GString ()")
                 } else {
-                    if classMap [godotReturnType ?? ""] != nil {
+                    if godotReturnTypeIsReferenceType {
                         frameworkType = true
                         p ("var _result = UnsafeRawPointer (bitPattern: 0)")
                     } else {
@@ -273,7 +340,15 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                         fatalError("Do not support this return type")
                     }
                 } else if frameworkType {
-                    p ("return lookupObject (nativeHandle: _result!)")
+                    //print ("OBJ RETURN: \(className) \(method.name)")
+                    p ("guard let _result else") {
+                        if returnOptional {
+                            p ("return nil")
+                        } else {
+                            p ("fatalError (\"Unexpected nil return from a method that should never return nil\")")
+                        }
+                    }
+                    p ("return lookupObject (nativeHandle: _result)")
                 } else if godotReturnType?.starts(with: "typedarray::") ?? false {
                     let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
                     

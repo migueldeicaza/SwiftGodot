@@ -22,7 +22,7 @@ extension GD {
     /// 
     /// - Parameter path: Path of the `Resource` to load.
     /// - Returns: The loaded `Resource`.
-    public static func load(path: String) -> Resource {
+    public static func load(path: String) -> Resource? {
         return ResourceLoader().load(path: path, cacheMode: .reuse)
     }
 

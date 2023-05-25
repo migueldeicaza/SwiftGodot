@@ -86,7 +86,12 @@ func generateVirtualProxy (_ p: Printer,
         return
     }
     let virtRet: String?
+    var returnOptional = false
     if let ret = method.returnValue {
+        let godotReturnType = ret.type
+        let godotReturnTypeIsReferenceType = classMap [godotReturnType] != nil
+        returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: methodName)
+
         virtRet = getGodotType(ret)
     } else {
         virtRet = nil
@@ -145,8 +150,18 @@ func generateVirtualProxy (_ p: Printer,
             } else if ret.type.starts(with: "enum::") {
                 p ("retPtr!.storeBytes (of: Int32 (ret.rawValue), as: Int32.self)")
             } else {
+                let derefField: String
+                let derefType: String
+                if classMap [ret.type] != nil {
+                    derefField = "handle"
+                    derefType = "UnsafeRawPointer?.self"
+                } else {
+                    derefField = "content"
+                    derefType = "type (of: ret.content)"
+                }
+                
                 let target = classMap [ret.type] != nil ? "handle" : "content"
-                p ("retPtr!.storeBytes (of: ret.\(target), as: type (of: ret.\(target)))")
+                p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType))")
                 
                 // Poor man's transfer the ownership: we clear the content
                 // so the destructor has nothing to act on, because we are
@@ -322,9 +337,15 @@ func generateProperties (_ p: Printer,
             print ("WARNING \(loc) Could not get a return type for method")
             continue
         }
+        let godotReturnType = method.returnValue?.type
+        let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
+
+        let propertyOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: property.getter)
+        
         // Lookup the type from the method, not the property,
         // sometimes the method is a GString, but the property is a StringName
-        type = getGodotType (method.returnValue)
+        type = getGodotType (method.returnValue) + (propertyOptional ? "?" : "")
+        
 
         // Ok, we have an indexer, this means we call the property with an int
         // but we need the type from the method
@@ -445,7 +466,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 lambdaIgnore += ", "
                 lambdaFull += ", "
             }
-            args += getArgumentDeclaration(arg, eliminate: "_ ")
+            args += getArgumentDeclaration(arg, eliminate: "_ ", isOptional: false)
             let construct: String
             
             if let cmap = classMap [arg.type] {
