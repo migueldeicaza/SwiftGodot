@@ -232,7 +232,11 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         Variant.fromTypeMap [GType.rid.rawValue] (&content, &value.content)
     }
     
-    public init (_ value: Object) {
+    public init (_ value: Object?) {
+        guard let value else {
+            Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer(mutating: nil))
+            return
+        }
         Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer (mutating: value.handle))
     }
 
@@ -300,7 +304,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     ///
     /// Attempts to cast the Variant into a GodotObject, this requires that the Variant value be of type `.object`.
     /// - Returns: nil on error, or the type on success
-    /// 
+    ///
     public func asObject<T:GodotObject> () -> T? {
         guard gtype == .object else {
             return nil
