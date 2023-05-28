@@ -18,19 +18,19 @@ if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
        echo expected to have a peer directory SwiftGodotBinary to publish results
        exit 1
     fi
-fi
 
-case $1 in
-   v*)
-	echo Tagging with $1
-	git tag $1
-	tag=$1
-	;;
-   *)
-	echo "version to tag should be vXXX"
-	exit 1
-	;;
-esac
+    case $1 in
+        v*)
+            echo Tagging with $1
+            git tag $1
+            tag=$1
+            ;;
+        *)
+            echo "version to tag should be vXXX"
+            exit 1
+            ;;
+    esac
+fi
 
 outputDir=$HOME/sg-builds
 dir=$outputDir/$$-build
