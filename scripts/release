@@ -42,6 +42,7 @@ echo DerivedData: $derivedData
 echo ArchiveData: $archivePath
 
 xcodebuild -scheme SwiftGodot -destination platform=generic/macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath >& $dir/x86_64.log
+xcodebuild -scheme SwiftGodot -destination platform=generic/macOS,arch=arm64 -derivedDataPath "${derivedData}_arm" -archivePath $archivePath >& $dir/arm64.log
 xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/arm64.log
 sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframework
 
