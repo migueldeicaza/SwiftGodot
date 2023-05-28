@@ -12,9 +12,12 @@ if test ! -e scripts/make-swiftgodot-framework; then
    echo expected this to run from the SwiftGodot directory
    exit 1
 fi
-if test ! -e ../SwiftGodotBinary; then
-   echo expected to have a peer directory SwiftGodotBinary to publish results
-   exit 1
+
+if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
+    if test ! -e ../SwiftGodotBinary; then
+       echo expected to have a peer directory SwiftGodotBinary to publish results
+       exit 1
+    fi
 fi
 
 case $1 in
@@ -46,13 +49,13 @@ xcodebuild -scheme SwiftGodot -destination platform=generic/macOS,arch=arm64 -de
 xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/arm64.log
 sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframework
 
-(cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
-csum=`swift package compute-checksum $outputDir/SwiftGodot.xcframework.zip`
-
 if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
     echo "Skipping deployment stage."
     return
 fi
+
+(cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
+csum=`swift package compute-checksum $outputDir/SwiftGodot.xcframework.zip`
 
 gh release create $tag $outputDir/SwiftGodot.xcframework.zip -R migueldeicaza/SwiftGodot -F $2
 cat > ../SwiftGodotBinary/Package.swift  <<EOF
