@@ -49,7 +49,7 @@ xcodebuild -scheme SwiftGodot -destination platform=generic/macOS,arch=arm64 -de
 xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/arm64.log
 sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframework
 
-if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
+if [ ! -z "$SWIFT_GODOT_NODEPLOY" ]; then
     echo "Skipping deployment stage."
     exit
 fi
