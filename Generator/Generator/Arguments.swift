@@ -61,7 +61,8 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                 if dv == "[]" {
                     def = " = \(getGodotType(argument, kind: kind)) ()"
                 } else {
-                    print ("Generator: \(argumentType) support for default value: \(dv)")
+                    // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
+                    //print ("Generator: \(argumentType) support for default value: \(dv)")
                 }
             } else if argumentType == "Dictionary" {
                 if dv == "{}" {
@@ -99,7 +100,8 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                 if dv == "[]" {
                     def = " = GArray ()"
                 } else {
-                    print ("Generator: no support for arrays with values: \(dv)")
+                    // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
+                    //print ("Generator: no support for arrays with values: \(dv)")
                 }
             }
         }
