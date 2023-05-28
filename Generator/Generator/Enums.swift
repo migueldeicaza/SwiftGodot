@@ -7,15 +7,46 @@
 
 import Foundation
 
+// The name of the form 'bitfield::'
+func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
+    guard name.starts(with: "bitfield::") else {
+        return nil
+    }
+
+    let full = name.dropFirst(10)
+    guard let split = full.firstIndex(of: ".") else {
+        print ("No support for global bitfields for \(name)")
+        return nil
+    }
+    let type = full [full.startIndex..<split]
+    guard let cdef = classMap [String (type)] else {
+        print ("Could not find class \(type) for \(name)")
+        return nil
+    }
+    let enumName = full [full.index(split, offsetBy: 1)...]
+    guard let enums = cdef.enums else {
+        print ("Could not find an enum \(enumName) in \(type)")
+        return nil
+    }
+    for x in enums {
+        if x.name == enumName {
+            return x
+        }
+    }
+    return nil
+}
+
 func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], constantDocs: [DocConstant]? , prefix: String?) {
     
     var docEnumToValue: [String:String] = [:]
     for d in constantDocs ?? [] {
         docEnumToValue [d.name] = d.rest
     }
-            
+    let classPrefix = cdef == nil ? "" : cdef!.name + "."
+    
     for enumDef in values {
-        if (enumDef.isBitfield ?? false) || enumDef.name == "ConnectFlags" {
+        let isBitField = enumDef.isBitfield ?? false
+        if isBitField || enumDef.name == "ConnectFlags" {
             p ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
                 p ("public let rawValue: Int")
                 p ("public init (rawValue: Int)") {
@@ -32,6 +63,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             continue
         }
         var enumDefName = enumDef.name
+        
         if enumDefName.starts(with: "Variant") {
             p ("extension Variant {")
             p.indent += 1

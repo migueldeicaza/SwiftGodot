@@ -29,16 +29,17 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
     
     var def: String = ""
     if let dv = argument.defaultValue, dv != "" {
+        let argumentType = argument.type
+        
         // TODO:
         //  - handle creating initializers from enums (builtint)
         //  - empty arrays
-        //  - bitfield defaults
         //  - Structure with initialized values (Color (1,1,1,1))
         //  - NodePath ("") ctor
         //  - nil values (needs to both turn the value nullable and handle that in the marshal code
         //  - typedarrays, the default values need to be handled one by one, or a general conversion
         // system needs to be implemented
-        if !argument.type.starts(with: "Array") && !argument.type.starts(with: "bitfield::") && (!(isStructMap [argument.type] ?? false) || isPrimitiveType(name: argument.type)) && argument.type != "NodePath" && !argument.type.starts(with: "typedarray::") && !argument.type.starts (with: "Dictionary") && dv != "null" {
+        if !argumentType.starts(with: "Array") && !argumentType.starts(with: "bitfield::") && (!(isStructMap [argumentType] ?? false) || isPrimitiveType(name: argumentType)) && argumentType != "NodePath" && !argumentType.starts(with: "typedarray::") && !argumentType.starts (with: "Dictionary") && dv != "null" {
             if argument.type == "String" {
                 def = " = \(dv)"
             } else if argument.type == "StringName" {
@@ -49,6 +50,57 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                 }
             } else {
                 def = " = \(dv)"
+            }
+        } else {
+            // Here we add the new conversions, will eventually replace everything
+            // above, as the do-not-run conditions are becoming large and difficult
+            // to parse - they were fine to bootstrap, but not for the long term.
+            
+            // Handle empty type arrays
+            if argumentType.starts(with: "typedarray::") {
+                if dv == "[]" {
+                    def = " = \(getGodotType(argument, kind: kind)) ()"
+                } else {
+                    print ("Generator: \(argumentType) support for default value: \(dv)")
+                }
+            } else if argumentType == "Dictionary" {
+                if dv == "{}" {
+                    def = " = SwiftGodot.Dictionary ()"
+                } else {
+                    print ("Generator: \(argumentType) missing support for default value: \(dv)")
+                }
+            } else if argumentType.starts(with: "bitfield::") {
+                if let defIntValue = Int (dv) {
+                    if defIntValue == 0 {
+                        def = " = []"
+                    } else {
+                        // Need to look it up
+                        if let optionType = findEnumDef(name: argumentType) {
+                            var setValues = ""
+                            
+                            for value in optionType.values {
+                                if (defIntValue & value.value) != 0 {
+                                    let name = dropMatchingPrefix(optionType.name, value.name)
+                                    if setValues != "" {
+                                        setValues += ", "
+                                    }
+                                    setValues += ".\(name)"
+                                }
+                            }
+                            def = " = [\(setValues)]"
+                        } else {
+                            print ("Generator: \(argumentType) could not produce default value for \(dv) because I can not find the type")
+                        }
+                    }
+                } else {
+                    print ("Generator: bitfield:: with a non-integer default value")
+                }
+            } else if argumentType == "Array" {
+                if dv == "[]" {
+                    def = " = GArray ()"
+                } else {
+                    print ("Generator: no support for arrays with values: \(dv)")
+                }
             }
         }
     }
