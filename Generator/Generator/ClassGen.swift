@@ -311,7 +311,8 @@ func generateProperties (_ p: Printer,
         var getterName = property.getter
         var gettterArgName = ""
         guard let method = findMethod (forProperty: property, startAt: cdef, name: property.getter, resolvedName: &getterName, argName: &gettterArgName) else {
-            print ("GodotBug: \(loc): property declared \(property.getter), but it does not exist with that name")
+            // Not a bug, but needs to be handled https://github.com/migueldeicaza/SwiftGodot/issues/67
+            //print ("GodotBug: \(loc): property declared \(property.getter), but it does not exist with that name")
             continue
         }
         var setterName = property.setter ?? ""
@@ -320,7 +321,8 @@ func generateProperties (_ p: Printer,
         if let psetter = property.setter {
             setterMethod = findMethod(forProperty: property, startAt: cdef, name: psetter, resolvedName: &setterName, argName: &setterArgName)
             if setterMethod == nil {
-                print ("GodotBug \(loc) property declared \(property.setter!) but it does not exist with that name")
+                // Not a bug, but needs to be handled: https://github.com/migueldeicaza/SwiftGodot/issues/67
+                //print ("GodotBug \(loc) property declared \(property.setter!) but it does not exist with that name")
                 continue
             }
         }
