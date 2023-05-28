@@ -1,7 +1,7 @@
 # SwiftGodot
 
 SwiftGodot provides Swift language bindings for the Godot 4.0 game
-engine using its GDExtension system.
+engine using the new GDExtension system.
 
 SwiftGodot can be used to either build an extension that can be added
 to an existing Godot project, where your code is providing services
@@ -17,9 +17,17 @@ documentation](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swif
 and it can also be edited for local use, if you enable it in the
 Generator.
 
-
-
 https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b812-c775c55b8b77.mov
+
+# Consuming SwiftGodot
+
+There are two ways of consuming SwiftGodot, you can either reference
+this module in SwiftPM by using this address - and it will trigger a
+complete source code build for you, or to quickly iterate on MacOS,
+you can use a convenient binary in the peer
+[https://github.com/migueldeicaza/SwiftGodotBinary](SwiftGodotBinary)
+module.
+
 
 
 # Working with this Repository

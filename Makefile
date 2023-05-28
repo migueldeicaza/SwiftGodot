@@ -15,4 +15,5 @@ push-docs:
 release: build-release build-docs push-docs
 
 build-release:
-	sh scripts/release $(VERSION)
+	sh scripts/release $(VERSION) $(NOTES)
+

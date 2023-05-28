@@ -1,13 +1,36 @@
-if test x$1 = x; then
-   echo Usage is: relase TAG
+if test x$2 = x; then
+   echo Usage is: relase TAG RELEASE_NOTES_FILE
    exit 1
 fi
+
+if test ! -e $2; then
+   echo "Expected a release notes file"
+   exit 1 
+fi
+
 if test ! -e scripts/make-swiftgodot-framework; then
    echo expected this to run from the SwiftGodot directory
    exit 1
 fi
+if test ! -e ../SwiftGodotBinary; then
+   echo expected to have a peer directory SwiftGodotBinary to publish results
+   exit 1
+fi
 
-dir=$HOME/sg-builds/$$-build
+case $1 in
+   v*)
+	echo Tagging with $1
+	git tag $1
+	tag=$1
+	;;
+   *)
+	echo "version to tag should be vXXX"
+	exit 1
+	;;
+esac
+
+outputDir=$HOME/sg-builds
+dir=$outputDir/$$-build
 
 derivedData=$dir/derived
 archivePath=$dir/archive
@@ -20,5 +43,32 @@ echo ArchiveData: $archivePath
 
 xcodebuild -scheme SwiftGodot -destination platform=generic/macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath >& $dir/x86_64.log
 xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/arm64.log
-sh scripts/make-swiftgodot-framework $dir/derived/ ~/sg-builds/SwiftGodot.xcframework
+sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframework
 
+(cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
+csum=`swift package compute-checksum $outputDir/SwiftGodot.xcframework.zip`
+
+gh release create $tag $outputDir/SwiftGodot.xcframework.zip -R migueldeicaza/SwiftGodot -F $2
+cat > ../SwiftGodotBinary/Package.swift  <<EOF
+// swift-tools-version:5.7
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+import PackageDescription
+
+let package = Package(
+    name: "SwiftGodot",
+    products: [
+        .library(
+            name: "SwiftGodot",
+            targets: ["SwiftGodot"])
+    ],
+    targets: [
+        .binaryTarget(
+            name: "SwiftGodot",
+            url: "https://github.com/migueldeicaza/SwiftGodot/releases/download/$tag/SwiftGodot.xcframework.zip",
+            checksum: "$csum")
+    ]
+)
+EOF
+
+(cd ../SwiftGodotBinary; git tag $tag; git commit -m "Update to $tag" -a; git push)
