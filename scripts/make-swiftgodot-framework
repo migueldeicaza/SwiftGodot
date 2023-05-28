@@ -26,7 +26,7 @@ bdMacArm="$(echo "$1" | rev | cut -c2- | rev)_arm/Build/Products/Debug/"
 bdiOS=$1/Build/Products/Debug-iphoneos/
 mkdir universal
 echo $bdMacArm
-cp -rf $bdMac/PackageFrameworks/SwiftGodot.framework universal/
+cp -rf $bdMacArm/PackageFrameworks/SwiftGodot.framework universal/
 lipo -create -output ./universal/SwiftGodot.framework/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/SwiftGodot
 xcodebuild -create-xcframework -framework ./universal/SwiftGodot.framework -framework $bdiOS/PackageFrameworks/SwiftGodot.framework -output $2
 rm -rf ./universal
@@ -34,6 +34,7 @@ fd=$2//macos-arm64_x86_64/SwiftGodot.framework
 (cd $fd; mkdir -p Versions/Current/Headers; ln -sf Versions/Current/Headers .)
 (cd $fd; mkdir -p Versions/Current/Modules; ln -sf Versions/Current/Modules .)
 rsync -a $bdMac/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
+rsync -a $bdMacArm/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
 
 cat > $fd/Modules/module.modulemap << EOF
 framework module SwiftGodot {
