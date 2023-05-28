@@ -25,7 +25,7 @@ There are two ways of consuming SwiftGodot, you can either reference
 this module in SwiftPM by using this address - and it will trigger a
 complete source code build for you, or to quickly iterate on MacOS,
 you can use a convenient binary in the peer
-[https://github.com/migueldeicaza/SwiftGodotBinary](SwiftGodotBinary module).
+https://github.com/migueldeicaza/SwiftGodotBinary
 
 
 
