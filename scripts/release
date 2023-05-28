@@ -51,7 +51,7 @@ sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframe
 
 if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
     echo "Skipping deployment stage."
-    return
+    exit
 fi
 
 (cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
