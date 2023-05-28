@@ -49,6 +49,11 @@ sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframe
 (cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
 csum=`swift package compute-checksum $outputDir/SwiftGodot.xcframework.zip`
 
+if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
+    echo "Skipping deployment stage."
+    return
+fi
+
 gh release create $tag $outputDir/SwiftGodot.xcframework.zip -R migueldeicaza/SwiftGodot -F $2
 cat > ../SwiftGodotBinary/Package.swift  <<EOF
 // swift-tools-version:5.7
