@@ -401,7 +401,7 @@ enum BKind {
     case isStruct
     case isClass
 }
-var builtinGodotTypeNames: [String:BKind] = [:]
+var builtinGodotTypeNames: [String:BKind] = ["Variant": .isClass]
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {

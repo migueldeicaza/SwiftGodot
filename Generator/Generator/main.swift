@@ -18,9 +18,11 @@ var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
 
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 
-print ("Usage is: generator [godot-main-directory [output-directory]]")
-print ("where godot-main-directory contains api.json and builtin-api.json")
-print ("If unspecified, this will default to the built-in versions")
+if args.count < 2 {
+    print ("Usage is: generator [godot-main-directory [output-directory]]")
+    print ("where godot-main-directory contains api.json and builtin-api.json")
+    print ("If unspecified, this will default to the built-in versions")
+}
 
 let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
@@ -95,4 +97,4 @@ generateClasses (values: jsonApi.classes, outputDir: generatedDir)
 generateCtorPointers (coreDefPrinter)
 coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
 
-print ("Done")
+//print ("Done")

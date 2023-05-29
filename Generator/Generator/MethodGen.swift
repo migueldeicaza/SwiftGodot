@@ -290,20 +290,19 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             let ptrArgs = (args != "") ? "&args" : "nil"
             let ptrResult: String
             if returnType != "" {
-                if argTypeNeedsCopy(godotType: godotReturnType!) {
+                if method.isVararg {
                     ptrResult = "&_result"
+                } else if argTypeNeedsCopy(godotType: godotReturnType!) {
+                    var isClass = builtinGodotTypeNames [godotReturnType!] == .isClass
+                    
+                    ptrResult = isClass ? "&_result.content" : "&_result"
                 } else {
                     if godotReturnType!.starts (with: "typedarray::") {
                         ptrResult = "&_result"
                     } else if frameworkType {
                         ptrResult = "&_result"
                     } else if builtinSizes [godotReturnType!] != nil {
-                        // a built-in struct or a class
-                        if method.isVararg {
-                            ptrResult = "&_result"
-                        } else {
-                            ptrResult = "&_result.content"
-                        }
+                        ptrResult = "&_result.content"
                     } else {
                         ptrResult = "&_result.handle"
                     }
