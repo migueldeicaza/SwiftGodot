@@ -16,8 +16,8 @@ var token: GDExtensionClassLibraryPtr! {
     return library
 }
 
-var extensionInitCallback: ((GDExtension.InitializationLevel)->())?
-var extensionDeInitCallback: ((GDExtension.InitializationLevel)->())?
+var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
+var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
 
 ///
 /// This method is used to configure the extension interface for SwiftGodot to
@@ -39,7 +39,7 @@ func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionIni
     print ("SWIFT: extension_initialize")
     let level = GDExtension.InitializationLevel(rawValue: Int (exactly: l.rawValue)!)!
     
-    if let cb = extensionInitCallback {
+    for cb in extensionInitCallbacks {
         cb (level)
     }
 }
@@ -49,7 +49,7 @@ func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionI
     print ("SWIFT: extension_deinitialize")
     
     let level = GDExtension.InitializationLevel(rawValue: Int (exactly: l.rawValue)!)!
-    if let cb = extensionDeInitCallback {
+    for cb in extensionDeInitCallbacks {
         cb (level)
     }
 }
@@ -101,11 +101,12 @@ public func initializeSwiftModule (
     deInitHook: @escaping (GDExtension.InitializationLevel)->())
 {
     gi = UnsafePointer<GDExtensionInterface> (interfacePtr).pointee
+    print ("initializingSwiftModule with library=\(library)")
     library = GDExtensionClassLibraryPtr(libraryPtr)
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
     initialization.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_CORE
-    extensionInitCallback = initHook
-    extensionDeInitCallback = deInitHook
+    extensionInitCallbacks.append(initHook)
+    extensionDeInitCallbacks.append (deInitHook)
 }
