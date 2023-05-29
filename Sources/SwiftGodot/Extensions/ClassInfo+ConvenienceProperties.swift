@@ -37,6 +37,55 @@ extension ClassInfo {
     /// A type alias referencing a registerable int enum.
     public typealias RegisteredIntEnum = CaseIterable & Nameable & RawRepresentable<Int>
 
+    /// Performs an operation on an argument that originates from a setter method.
+    ///
+    /// This can be used inside setter method to set a property in-class with a guaranteed argument value.
+    ///
+    /// ```swift
+    /// func setBubbleCount(args: [Variant]) -> Variant? {
+    ///     withCheckedProperty(named: "bubbles", in: args) { argument in
+    ///         self.bubbles = Int(argument) ?? 0
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Parameter name: The name of the property that is being set.
+    /// - Parameter arguments: The list of arguments that were passed from the setter.
+    /// - Parameter action: A closure that accepts a valid argument.
+    public static func withCheckedProperty(named name: String,
+                                           in arguments: [Variant],
+                                           perform action: (Variant) -> Void) -> Variant? {
+        guard let arg = arguments.first else {
+            GD.pushError("Expected argument for \(name), but got nil instead.")
+            return nil
+        }
+        action(arg)
+        return nil
+    }
+
+    /// Registers a checkbox toggle in the editor.
+    /// - Parameter name: The name of the property that will appear in the editor.
+    /// - Parameter prefix: The prefix to apply to the property name. Defaults to the class's name if not provided.
+    /// - Parameter getter: The getter method the editor will call to get the property.
+    /// - Parameter setter: The setter method the editor will call to set the property.
+    public func registerCheckbox(named name: String,
+                                 prefix: String? = nil,
+                                 getter: @escaping ClassInfoFunction,
+                                 setter: @escaping ClassInfoFunction) {
+        let registeredPrefix = prefix ?? "\(T.self)"
+        let property = PropInfo(propertyType: .bool,
+                                propertyName: StringName("\(registeredPrefix)_\(name)"),
+                                className: StringName("\(T.self)"),
+                                hint: .flags,
+                                hintStr: "",
+                                usage: .propertyUsageDefault)
+        registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
+        registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
+        registerProperty(property,
+                         getter: StringName("\(registeredPrefix)_get_\(name)"),
+                         setter: StringName("\(registeredPrefix)_set_\(name)"))
+    }
+
     /// Registers an enumeration in the editor.
     /// - Parameter name: The name of the property that will appear in the editor.
     /// - Parameter enumType: The enumeration type that will be selected in the editor.
@@ -142,6 +191,52 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .range,
                                 hintStr: GString("\(range.lowerBound),\(range.upperBound),\(stride)"),
+                                usage: .propertyUsageDefault)
+        registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
+        registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
+        registerProperty(property,
+                         getter: StringName("\(registeredPrefix)_get_\(name)"),
+                         setter: StringName("\(registeredPrefix)_set_\(name)"))
+    }
+
+    /// Registers a text field.
+    /// - Parameter name: The name of the property that will appear in the editor.
+    /// - Parameter prefix: The prefix to apply to the property name. Defaults to the class's name if not provided.
+    /// - Parameter getter: The getter method the editor will call to get the property.
+    /// - Parameter setter: The setter method the editor will call to set the property.
+    public func registerTextField(named name: String,
+                                  prefix: String? = nil,
+                                  getter: @escaping ClassInfoFunction,
+                                  setter: @escaping ClassInfoFunction) {
+        let registeredPrefix = prefix ?? "\(T.self)"
+        let property = PropInfo(propertyType: .string,
+                                propertyName: StringName("\(registeredPrefix)_\(name)"),
+                                className: StringName("\(T.self)"),
+                                hint: .typeString,
+                                hintStr: "",
+                                usage: .propertyUsageDefault)
+        registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
+        registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
+        registerProperty(property,
+                         getter: StringName("\(registeredPrefix)_get_\(name)"),
+                         setter: StringName("\(registeredPrefix)_set_\(name)"))
+    }
+
+    /// Registers a multiline text view in the editor.
+    /// - Parameter name: The name of the property that will appear in the editor.
+    /// - Parameter prefix: The prefix to apply to the property name. Defaults to the class's name if not provided.
+    /// - Parameter getter: The getter method the editor will call to get the property.
+    /// - Parameter setter: The setter method the editor will call to set the property.
+    public func regsiterTextView(named name: String,
+                                 prefix: String? = nil,
+                                 getter: @escaping ClassInfoFunction,
+                                 setter: @escaping ClassInfoFunction) {
+        let registeredPrefix = prefix ?? "\(T.self)"
+        let property = PropInfo(propertyType: .string,
+                                propertyName: StringName("\(registeredPrefix)_\(name)"),
+                                className: StringName("\(T.self)"),
+                                hint: .multilineText,
+                                hintStr: "",
                                 usage: .propertyUsageDefault)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
