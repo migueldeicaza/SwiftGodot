@@ -212,7 +212,7 @@ func generateMethods (_ p: Printer,
     if virtuals.count > 0 {
         p ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
             p ("switch name.description") {
-                for (name, _) in virtuals {
+                for name in virtuals.keys.sorted() {
                     p ("case \"\(name)\":")
                     p ("    return _\(cdef.name)_proxy\(name)")
                 }
@@ -305,9 +305,6 @@ func generateProperties (_ p: Printer,
 //        }
         let loc = "\(cdef.name).\(property.name)"
         
-        if property.getter == "get_vertices" && cdef.name == "ArrayOccluder3D" {
-            print (1)
-        }
         var getterName = property.getter
         var gettterArgName = ""
         guard let method = findMethod (forProperty: property, startAt: cdef, name: property.getter, resolvedName: &getterName, argName: &gettterArgName) else {
@@ -674,7 +671,11 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
 
     if virtuals.count > 0 {
         p ("// Support methods for proxies")
-        for (_, (methodName, methodDef)) in virtuals {
+        for k in virtuals.keys.sorted () {
+            guard let (methodName, methodDef) = virtuals [k] else {
+                print ("Internal error: in processClass \(cdef.name)")
+                continue
+            }
             if okList.count == 0 || okList.contains (cdef.name) {
                 generateVirtualProxy(p, cdef: cdef, methodName: methodName, method: methodDef)
             }
@@ -684,7 +685,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
 
 func generateCtorPointers (_ p: Printer) {
     p ("var godotFrameworkCtors = [")
-    for x in referenceTypes.keys {
+    for x in referenceTypes.keys.sorted() {
         p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
     }
     p ("]")
