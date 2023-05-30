@@ -72,9 +72,14 @@ class SwiftSprite: Sprite2D {
         return Variant(stringLiteral: food)
     }
     
+    static func lerp(from: Float, to: Float, weight: Float) -> Float {
+        return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
+        }
+    
     override func _process (delta: Double) {
         time_passed += delta
-        
+    
+        SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
         var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
                              y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
         
