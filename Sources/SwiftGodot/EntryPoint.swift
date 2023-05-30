@@ -101,8 +101,14 @@ public func initializeSwiftModule (
     deInitHook: @escaping (GDExtension.InitializationLevel)->())
 {
     gi = UnsafePointer<GDExtensionInterface> (interfacePtr).pointee
-    print ("initializingSwiftModule with library=\(library)")
-    library = GDExtensionClassLibraryPtr(libraryPtr)
+
+    // For now, we will only initialize the library once, so all of the SwiftGodot
+    // modules are bundled together.   This is not optimal, see this bug 
+    // with a description of what we should be doing:
+    // https://github.com/migueldeicaza/SwiftGodot/issues/72
+    if library == nil {
+        library = GDExtensionClassLibraryPtr(libraryPtr)
+    }
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize

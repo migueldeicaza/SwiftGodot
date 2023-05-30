@@ -31,10 +31,14 @@ lipo -create -output ./universal/SwiftGodot.framework/SwiftGodot $bdMac/PackageF
 xcodebuild -create-xcframework -framework ./universal/SwiftGodot.framework -framework $bdiOS/PackageFrameworks/SwiftGodot.framework -output $2
 rm -rf ./universal
 fd=$2//macos-arm64_x86_64/SwiftGodot.framework
+ifd=$2/ios-arm64/SwiftGodot.framework
 (cd $fd; mkdir -p Versions/Current/Headers; ln -sf Versions/Current/Headers .)
 (cd $fd; mkdir -p Versions/Current/Modules; ln -sf Versions/Current/Modules .)
+(cd $ifd; mkdir -p Versions/Current/Headers; ln -sf Versions/Current/Headers .)
+(cd $ifd; mkdir -p Versions/Current/Modules; ln -sf Versions/Current/Modules .)
 rsync -a $bdMac/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
 rsync -a $bdMacArm/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
+rsync -a $bdiOS/SwiftGodot.swiftmodule $ifd/Versions/Current/Modules/
 
 cat > $fd/Modules/module.modulemap << EOF
 framework module SwiftGodot {
@@ -368,3 +372,6 @@ FOUNDATION_EXPORT const unsigned char SwiftGodotVersionString[];
 
 
 EOF
+
+cp $fd/Modules/module.modulemap $ifd/Modules/module.modulemap
+cp $fd/Headers/SwiftGodot-Swift.h $ifd/Headers/SwiftGodot-Swift.h 
