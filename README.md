@@ -61,23 +61,29 @@ will call.   To get started, the simplest thing to do is to
 create a Swift Library Package that references the Swift Godot 
 package, like this:
 
-```
+```swift
+// swift-tools-version: 5.8
+import PackageDescription
+
 let package = Package(
     name: "MyFirstGame",
     products: [
-        .library (name; "MyFirstGame", type: .dynamic, targets: ["MyFirstGame"]),
+        .library(name: "MyFirstGame", type: .dynamic, targets: ["MyFirstGame"]),
     ],
     dependencies: [
-        .package (url: "https://github.com/migueldeicaza/SwiftGodot")
+        .package(url: "https://github.com/migueldeicaza/SwiftGodot", branch: "main")
     ],
     targets: [
-        .target (
+        .target(
             name: "MyFirstGame",
             dependencies: ["SwiftGodot"],
-            swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags (
+            swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
+            linkerSettings: [.unsafeFlags(
                 ["-Xlinker", "-undefined",
-                 "-Xlinker", "dynamic_lookup")]])            
+                 "-Xlinker", "dynamic_lookup"]
+            )]
+        )
+		            
     ]
 )
 ```
