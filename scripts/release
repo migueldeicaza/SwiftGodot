@@ -32,6 +32,8 @@ if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
     esac
 fi
 
+arch=`uname -m`
+
 outputDir=$HOME/sg-builds
 dir=$outputDir/$$-build
 
@@ -45,7 +47,9 @@ echo DerivedData: $derivedData
 echo ArchiveData: $archivePath
 start=`date`
 xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath >& $dir/x86_64.log
-xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=arm64 -derivedDataPath "${derivedData}_arm" -archivePath $archivePath >& $dir/arm64.log
+if [ arch="arm64" ]; then
+    xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=arm64 -derivedDataPath "${derivedData}_arm" -archivePath $archivePath >& $dir/arm64.log
+fi
 xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/ios_arm64.log
 sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframework
 
