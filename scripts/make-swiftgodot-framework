@@ -20,14 +20,17 @@ case $2 in
       ;;
 esac
 
+arch=`uname -m`
+
 rm -rf $2
 bdMac=$1/Build/Products/Debug/
 bdMacArm="$(echo "$1" | rev | cut -c2- | rev)_arm/Build/Products/Debug/"
 bdiOS=$1/Build/Products/Debug-iphoneos/
 mkdir universal
-echo $bdMacArm
-cp -rf $bdMacArm/PackageFrameworks/SwiftGodot.framework universal/
-lipo -create -output ./universal/SwiftGodot.framework/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/SwiftGodot
+cp -rf $bdMac/PackageFrameworks/SwiftGodot.framework universal/
+if [ arch="arm64" ]; then
+   lipo -create -output ./universal/SwiftGodot.framework/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/SwiftGodot
+fi
 xcodebuild -create-xcframework -framework ./universal/SwiftGodot.framework -framework $bdiOS/PackageFrameworks/SwiftGodot.framework -output $2
 rm -rf ./universal
 fd=$2//macos-arm64_x86_64/SwiftGodot.framework
@@ -37,7 +40,9 @@ ifd=$2/ios-arm64/SwiftGodot.framework
 (cd $ifd; mkdir -p Versions/Current/Headers; ln -sf Versions/Current/Headers .)
 (cd $ifd; mkdir -p Versions/Current/Modules; ln -sf Versions/Current/Modules .)
 rsync -a $bdMac/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
-rsync -a $bdMacArm/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
+if [ arch="arm64" ]; then
+   rsync -a $bdMacArm/SwiftGodot.swiftmodule $fd/Versions/Current/Modules/
+fi
 rsync -a $bdiOS/SwiftGodot.swiftmodule $ifd/Versions/Current/Modules/
 
 cat > $fd/Modules/module.modulemap << EOF
