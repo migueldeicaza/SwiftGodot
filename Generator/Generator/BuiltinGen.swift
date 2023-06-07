@@ -26,7 +26,7 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
 
                     // Some Godot constants leak into the initializers
                     if pval.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) == "inf" {
-                        pval = "Float.infinity"[...]
+                        pval = "Double.infinity"[...]
                     }
 
                     prefixedArgs = prefixedArgs + name + ": " + pval

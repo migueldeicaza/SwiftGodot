@@ -80,8 +80,8 @@ class SwiftSprite: Sprite2D {
         time_passed += delta
     
         SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
-        var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
-                             y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
+        var newPos = Vector2(x: Double (10 + (10 * sin(time_passed * 2.0))),
+                             y: Double (10.0 + (10.0 * cos(time_passed * 1.5))))
         
         self.position = newPos
     }

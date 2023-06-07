@@ -24,7 +24,7 @@ func BuiltinJsonTypeToSwift (_ type: String) -> String {
 // regardless of what the sizes are declared for the API.
 func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
     switch type {
-    case "float": return "Float"
+    case "float": return "Double"
     case "int":
         return "Int32"
     case "bool": return "Bool"
@@ -261,7 +261,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         }
     case "float", "real":
         if kind == .builtInField {
-            return "Float"
+            return "Double"
         } else {
             if let meta = t.meta {
                 switch meta {
