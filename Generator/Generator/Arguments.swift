@@ -30,7 +30,6 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
     var def: String = ""
     if let dv = argument.defaultValue, dv != "" {
         let argumentType = argument.type
-        
         // TODO:
         //  - handle creating initializers from enums (builtint)
         //  - empty arrays
@@ -48,6 +47,8 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                 if let ev = mapEnumValue (enumDef: argument.type, value: dv) {
                     def = " = \(ev)"
                 }
+            } else if argumentType == "Variant" {
+                // Not supported
             } else {
                 def = " = \(dv)"
             }

@@ -22,3 +22,10 @@ paths=["res://example.gdextension"]
 [rendering]
 
 environment/defaults/default_environment="res://default_env.tres"
+
+[shader_globals]
+
+heightmap={
+"type": "sampler2D",
+"value": "res://heightmap.png"
+}
