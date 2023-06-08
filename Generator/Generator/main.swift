@@ -71,7 +71,7 @@ for x in jsonApi.builtinClasses {
     isStructMap [String (x.name)] = value
     builtinMap [x.name] = x
 }
-for x in ["Float", "Int", "float", "int", "Variant", "Int32", "Bool", "bool"] {
+for x in ["Float", "Int", "float", "int", "Int32", "Bool", "bool"] {
     isStructMap [x] = true
 }
 

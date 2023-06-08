@@ -78,7 +78,19 @@ class SwiftSprite: Sprite2D {
     
     override func _process (delta: Double) {
         time_passed += delta
-    
+
+        let imageVariant = ProjectSettings.shared.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
+               GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
+               
+               let dict2: Dictionary? = SwiftGodot.Dictionary(imageVariant)
+               GD.print("dictionary2: \(dict2) \(dict2?["type"]) \(dict2?["value"])")
+               
+       // part b
+               if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
+                   let value = String(result)
+                   GD.print("2 Found this value \(value)")
+               }
+        
         SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
         var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
                              y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
