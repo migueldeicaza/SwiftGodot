@@ -234,7 +234,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     
     public init (_ value: Object?) {
         guard let value else {
-            Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer(mutating: nil))
+            gi.variant_new_nil (UnsafeMutablePointer (&content))
             return
         }
         Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer (mutating: value.handle))
