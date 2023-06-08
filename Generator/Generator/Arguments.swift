@@ -144,9 +144,12 @@ func generateCopies (_ args: [JGodotArgument]) -> String {
     
     for arg in args {
         //if !isCoreType (name: arg.type) {
-        let reference = godotArgumentToSwift (arg.name)
+        var reference = godotArgumentToSwift (arg.name)
         
         if isStructMap [arg.type] ?? false {
+            if arg.type == "float" {
+                reference = "Double (\(reference))"
+            }
             body += "var copy_\(arg.name) = \(reference)\n"
         } else if arg.type == "String" && mapStringToSwift {
             body += "var gstr_\(arg.name) = GString (\(reference))\n"
