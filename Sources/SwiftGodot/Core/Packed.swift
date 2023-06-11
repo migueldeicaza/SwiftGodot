@@ -112,7 +112,7 @@ extension PackedVector2Array {
 extension PackedVector3Array {
     public subscript (index: Int) -> Vector3 {
         get {
-            let ptr = gi.packed_vector2_array_operator_index (&content, Int64(index))
+            let ptr = gi.packed_vector3_array_operator_index (&content, Int64(index))
             return ptr!.assumingMemoryBound(to: Vector3.self).pointee
         }
         set {
