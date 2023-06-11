@@ -88,9 +88,11 @@ let package = Package(
 )
 ```
 
-The above will compile all of SwiftGodot for you - alternatively, if you do not
-need access to the source, you can use the `.binaryTarget` feature of SwiftPM
-and reference an `.xcframework` that I have conveniently published on GitHub.
+The above will compile all of SwiftGodot for you - alternatively, if
+you do not need access to the source, you can use the `.binaryTarget`
+feature of SwiftPM and reference an `.xcframework` that I have
+conveniently published on GitHub at
+https://github.com/migueldeicaza/SwiftGodotBinary
 
 The next step is to create your source file with the magic on it,
 here we declare a spinning cube:
