@@ -30,6 +30,7 @@ mkdir universal
 cp -rf $bdMac/PackageFrameworks/SwiftGodot.framework universal/
 if [ $arch = "arm64" ]; then
    lipo -create -output ./universal/SwiftGodot.framework/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/SwiftGodot
+      lipo -create -output ./universal/SwiftGodot.framework/Versions/A/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/Versions/A/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/Versions/A/SwiftGodot
 fi
 xcodebuild -create-xcframework -framework ./universal/SwiftGodot.framework -framework $bdiOS/PackageFrameworks/SwiftGodot.framework -output $2
 rm -rf ./universal
