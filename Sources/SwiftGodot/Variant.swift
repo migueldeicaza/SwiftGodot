@@ -237,7 +237,8 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
             gi.variant_new_nil (UnsafeMutablePointer (&content))
             return
         }
-        Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer (mutating: value.handle))
+        var copy = value.handle
+        Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer (mutating: &copy))
     }
 
     public init (_ value: Callable) {
