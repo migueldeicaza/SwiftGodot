@@ -374,9 +374,9 @@ extension Float: GodotVariant {
         guard from.gtype == .float else {
             return nil
         }
-        var value: Float = 0
+        var value: Double = 0
         from.toType(.float, dest: &value)
-        self.init (value)
+        self.init (Float (value))
     }
 
     public func toVariant () -> Variant { Variant (self) }
@@ -388,7 +388,7 @@ extension Double {
         guard from.gtype == .float else {
             return nil
         }
-        var value: Float = 0
+        var value: Double = 0
         from.toType(.float, dest: &value)
         self.init (Double (value))
     }
