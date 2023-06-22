@@ -1,0 +1,21 @@
+@Tutorial(time: 30) {
+    @Intro(title: "Your First Extension") {
+        Create your first extension using SwiftGodot.
+        
+        @Image(source: "", alt: "")
+    }
+    
+    @Section(title: "Section 1") {
+        @ContentAndMedia {
+            Text
+        }
+        
+        @Steps {
+            @Step {
+                Do something
+                
+<!--                @Image(source: <#file#>, alt: "<#accessible description#>")-->
+            }
+        }
+    }
+}

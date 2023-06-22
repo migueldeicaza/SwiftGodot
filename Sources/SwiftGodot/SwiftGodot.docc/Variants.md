@@ -1,4 +1,8 @@
-# Godot's Variants
+# Variants
+
+Follow up on the fundamental building block of Godot's data types.
+
+## Overview
 
 You will often find the type ``Variant`` in Godot source code.   Variants are
 Godot's way of passing around certain data types.  They are similar to Swift's

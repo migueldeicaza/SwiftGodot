@@ -1,0 +1,15 @@
+@Tutorials(name: "SwiftGodot Tutorials") {
+    @Intro(title: "Meet SwiftGodot") {
+        SwiftGodot allows developers to take new and existing Swift packages and use them as extensions for the Godot game engine.
+        
+        @Image(source: "SwiftGodot Header", alt: "A MacBook Pro with Xcode and Godot 4 editor.")
+    }
+    
+    @Chapter(name: "SwiftGodot Essentials") {
+        Learn the fundamentals of how SwiftGodot works and create your first extension.
+        
+        @Image(source: "", alt: "")
+        
+        @TutorialReference(tutorial: "doc:Your-First-Extension")
+    }
+}
