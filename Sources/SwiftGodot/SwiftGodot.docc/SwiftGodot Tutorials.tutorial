@@ -6,10 +6,15 @@
     }
     
     @Chapter(name: "SwiftGodot Essentials") {
-        Learn the fundamentals of how SwiftGodot works and create your first extension.
+        Learn the fundamentals of the SwiftGodot package and create an infinite runner game using Swift and Godot.
         
-        @Image(source: "", alt: "")
+        Write node scripts using Swift, integrate dynamic libraries with Godot using GDExtension, and use custom nodes
+        in the editor.
+        
+        @Image(source: "Birdie2",
+               alt: "A pixel art sprite of a person wearing a bird costume similar to the Swift logo.")
         
         @TutorialReference(tutorial: "doc:Your-First-Extension")
+        @TutorialReference(tutorial: "doc:Writing-Multiple-Scripts")
     }
 }
