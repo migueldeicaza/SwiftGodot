@@ -1,0 +1,178 @@
+@Tutorial(time: 15) {
+    @Intro(title: "Writing Multiple Scripts") {
+        This tutorial builds off the Simple Runner game introduced in <doc:Your-First-Extension> and will introduce you
+        to working with multiple scripts and interacting with Godot's existing signals to teleport the player, creating
+        an infinite runner.
+        
+        @Image(source: "RunnerHeader.png",
+               alt: "A screenshot of the Simple Runner game. The player wears a bird costume and runs alongside boxes.")
+    }
+    
+    @Section(title: "Handle vertical movement") {
+        @ContentAndMedia {
+            The player currently only moves along the horizontal axis, but remains in place vertically. Let's adjust the
+            player code to include vertical motion.
+        }
+        
+        @Steps {
+            @Step {
+                In `PlayerController.swift`, find the `movementVector` computed property and update its y value to 
+                include a constant speed of one.
+                
+                @Code(name: "PlayerController.swift",
+                      file: "PlayerController-multiscript-2.swift",
+                      previousFile: "PlayerController-starter-8.swift")
+            }
+            
+            @Step {
+                In the terminal, navigate to the SimpleRunnerDriver package and run `swift build` to build the package.
+                
+                @Image(source: "SwiftBuild.png",
+                       alt: "A terminal window at the SwiftRunnerDriver package, about to run swift build.")
+            }
+            @Step {
+                Open the `.build/{arch}/debug` directory in the Finder using the `open` command, replacing `arch` with
+                your Mac's architecture folder.
+                
+                @Image(source: "OpenSwiftBuild.png",
+                       alt: "A terminal window at the SwiftRunnerDriver package, about to run open.")
+            }
+            @Step {
+                Copy the `libSimpleRunnerDriver.dylib` file into the `bin` directory of the SimpleRunner Godot project.
+                
+                @Image(source: "DylibCopy.png",
+                       alt: "Two Finder windows that show the dynamic library files being copied to the game's files.")
+            }
+            @Step {
+                Open the project in the Godot editor and open the `main.tscn` scene file.
+                
+                @Image(source: "GodotMainEditor", alt: "The Godot editor open with the main SimpleRunnerProject.")
+            }
+            @Step {
+                Run the project by pressing the Play button in the toolbar. The player should now be moving down the
+                screen, past the edges of the level.
+                
+                @Image(source: "SimpleRunner-vertical.gif",
+                       alt: "The SimpleRunner project running, with the player moving down the screen.")
+            }
+        }
+    }
+
+    @Section(title: "Teleport the player") {
+        @ContentAndMedia {
+            Now that the player can run down the screen, let's allow the player to teleport to the top of the level when
+            they reach the bottom.
+            
+            To do so, you will create a new node class that represents the main level logic and detect when the player
+            has reached the bottom and teleport them to the top.
+        }
+
+        @Steps {
+            @Step {
+                Create a new Swift file called **MainLevel** in the SimpleRunnerDriver package and import the SwiftGodot
+                library.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-init.swift", reset: true)
+            }
+            @Step {
+                Write a new `MainLevel` class that inherits from `Node2D` and add its required initializers.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-2.swift")
+            }
+            @Step {
+                Add the `player`, `spawnpoint`, and `teleportArea` properties to `MainLevel.`
+                
+                Note that these properties are marked optional, as they may not exist in the scene tree.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-3.swift") {
+                    @Image(source: "Godot-MainLevel-SceneTree",
+                           alt: "A screenshot of the scene tree for the main level in Godot.")
+                }
+            }
+            @Step {
+                In the `_ready()` method, assign the newly created node properties by using `getNodeOrNull(path:)`
+                method.
+                
+                Note that the path matches the names as seen in the scene tree. As these nodes are direct children of
+                the main level node, extra pathing is not required.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-4.swift") {
+                    @Image(source: "Godot-MainLevel-SceneTree",
+                           alt: "A screenshot of the scene tree for the main level in Godot.")
+                }
+            }
+            @Step {
+                Create a new `teleportPlayerToTop()` method and add a guard statement to check that the player and spawn
+                point exist.
+                
+                `GD.pushWarning(_:)` allows us to send warning messages to Godot's console.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-5.swift")
+            }
+            @Step {
+                Set the player's position so that their horizontal coordinate is kept, but the vertical coordinate is
+                that of the spawn point.
+                
+                This will effectively teleport the player to the top of the map, preserving where the player was on the
+                horizontal axis.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-6.swift")
+            }
+            @Step {
+                In `_ready()`, connect the teleport area's `bodyEntered` signal method to check if the player has
+                entered the area and teleport them when necessary.
+                
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-7.swift")
+            }
+            @Step {
+                Register the class type in `SimpleRunnerDriver.swift` to expose it to Godot.
+                
+                @Code(name: "SimpleRunnerDriver.swift",
+                      file: "SimpleRunnerDriver-multiscript-2.swift",
+                      previousFile: "SimpleRunnerDriver-starter-4.swift")
+            }
+        }
+    }
+    @Section(title: "Using the new main level node") {
+        @ContentAndMedia {
+            Now that the main level code has been added, let's replace the current main level node with its new instance
+            provided by your extension.
+        }
+        
+        @Steps {
+            @Step {
+                Rebuild the extension and copy over `libSimpleRunnerDriver.dylib` as before.
+                
+                @Image(source: "SwiftBuild.png",
+                       alt: "A terminal window at the SwiftRunnerDriver package, about to run swift build.")
+            }
+            @Step {
+                Open the project in the Godot editor and open the `main.tscn` scene file.
+                
+                @Image(source: "GodotMainEditor", alt: "The Godot editor open with the main SimpleRunnerProject.")
+            }
+            @Step {
+                Right click on the Main Level node and select **Change Type**.
+                
+                @Image(source: "Godot-MainLevel-ChangeType",
+                       alt: "The Godot editor with the context menu for Main Level open, highlighting Change Type.")
+            }
+            @Step {
+                Search for "MainLevel" and set the node's type to the new MainLevel node you created.
+                
+                If the node doesn't appear in the search results, retry the steps for registering the class, rebuilding
+                the extension, and re-opening Godot.
+                
+                @Image(source: "Godot-ChangeType-MainLevel",
+                       alt: "The Godot editor with the context menu for Main Level open, highlighting Change Type.")
+            }
+            @Step {
+                Run the project by pressing the Play button in the toolbar. The player should now be moving down the
+                screen, teleporting to the top of the screen once the player reaches the bottom. 🎉
+                
+                @Image(source: "SimpleRunner-teleport.gif",
+                       alt: "The SimpleRunner project running, with the player moving down the screen and teleporting.")
+            }
+        }
+    }
+}

@@ -1,0 +1,2 @@
+[configuration]
+entry_symbol = "swift_entry_point"

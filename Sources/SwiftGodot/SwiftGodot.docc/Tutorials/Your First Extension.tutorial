@@ -1,0 +1,255 @@
+@Tutorial(time: 30, projectFiles: "SimpleRunner-Starter.zip") {
+    @Intro(title: "Your First Extension") {
+        This tutorial will guide you through making your first Godot extension to create a player character. You'll
+        start by building off the Simple Runner game project and create a player character to move the character along
+        the horizontal axis.
+        
+        @Image(source: "RunnerHeader.png",
+               alt: "A screenshot of the Simple Runner game. The player wears a bird costume and runs alongside boxes.")
+    }
+    
+    @Section(title: "Create a Swift package") {
+        @ContentAndMedia {
+            Your extension for Godot lives as a Swift package alongside your Godot project. While Godot currently
+            doesn't support editing Swift packages in its editor, you can use Xcode to do most of the heavy lifting.
+        }
+        
+        @Steps {
+            @Step {
+                Open Xcode and select **File > New > Package...** to create a new Swift package.
+                
+                @Image(source: "NewPackage.png",
+                       alt: "A screenshot of Xcode's menu bar showing the path to File > New > Package...")
+            }
+            @Step {
+                In the template chooser, select **Library** and save the project near your game's project files as 
+                **SimpleRunnerDriver**.
+                
+                @Image(source: "LibraryPackageTemplate.png",
+                       alt: "A screenshot of Xcode's template chooser with Library selected.")
+            }
+            @Step {
+                In Package.swift, add the SwiftGodot binary dependency to your package.
+                
+                @Code(name: "Package.swift",
+                      file: "Package-starter-2.swift",
+                      previousFile: "Package-starter-init.swift")
+            }
+            @Step {
+                Set the type of the SimpleRunnerDriver library to dynamic and set the minimum platform target to macOS 13.
+                
+                @Code(name: "Package.swift", file: "Package-starter-3.swift")
+            }
+            @Step {
+                Update the SimpleRunnerDriver target to add in the appropriate Swift compiler and linker settings. These
+                flags are needed to allow dynamic lookup with the Godot engine.
+                
+                @Code(name: "Package.swift", file: "Package-starter-4.swift")
+            }
+            @Step {
+                In SimpleRunnerDriver.swift, import the SwiftGodot library and write a function `swift_entry_point` that
+                will initialize the extension.
+                
+                @Code(name: "SimpleRunnerDriver.swift",
+                      file: "SimpleRunnerDriver-starter-2.swift",
+                      previousFile: "SimpleRunnerDriver-starter-init.swift")
+            }
+            @Step {
+                Write a `setupExtension` method that will handle registering our game script classes, and replace the
+                initHook parameter in `initializeSwiftModule` with our new function.
+                
+                @Code(name: "SimpleRunnerDriver.swift", file: "SimpleRunnerDriver-starter-3.swift")
+            }
+        }
+    }
+        
+    @Section(title: "Create a player character") {
+        @ContentAndMedia {
+            Now that our package is set up, we can create a player controller to move the player around in.
+        }
+        
+        @Steps {
+            @Step {
+                Create a new Swift file called **PlayerController** in the SimpleRunnerDriver package and import the 
+                SwiftGodot library.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-init.swift", reset: true)
+            }
+            @Step {
+                Write a new `PlayerController` class that inherits from `CharacterBody2D` and add its required
+                initializers.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-2.swift")
+            }
+            @Step {
+                Add the `acceleration`, `friction`, and `speed` properties to the player controller.
+                
+                These will be used to calculate the final velocity of the player.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-3.swift")
+            }
+            @Step {
+                Create a `movementVector` computed property that creates a new vector and sets its X coordinate to the
+                difference between the `move_right` and `move_left` actions. Return the normalized vector in the block.
+                
+                This vector will be used to determine the direction that the player is moving in along the X axis. For
+                now, we will assume that the player does _not_ move on the vertical axis.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-4.swift")
+            }
+            @Step {
+                Add the `_physicsProcess` method to the player controller class and return from the function if the
+                engine reports that we're in the editor.
+                
+                This check is needed here to ensure that keypresses are registered only when running in-game, as the
+                extension runs at the engine level.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-5.swift")
+            }
+            @Step {
+                Check if the movement vector is a non-zero value (i.e., the player is actively pressing a key), and 
+                calculate the velocity at which the player moves. If your `acceleration`, `friction`, and/or `speed`
+                values are integers, be sure to explicitly define their types as floats/doubles.
+                
+                The `limitLength` method is used to clamp the velocity down to the maximum `speed` value so that the
+                player doesn't build up a lot of speed.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-6.swift")
+            }
+            @Step {
+                Add an else case that will have the player's velocity moving towards zero, applying any `friction` as
+                necessary.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-7.swift")
+            }
+            @Step {
+                Finally, call `moveAndSlide` to move the player, sliding along any edges the player collides with, and
+                call the parent's `physicsProcess(delta:)` method.
+                
+                @Code(name: "PlayerController.swift", file: "PlayerController-starter-8.swift")
+            }
+            @Step {
+                In the `setupExtension(at:)` function located at SimpleRunnerDriver.swift, register the
+                `PlayerController` class type.
+                
+                This registration call exposed the class type to Godot as a valid node that can be used in the engine.
+                
+                @Code(name: "SimpleRunnerDriver.swift",
+                      file: "SimpleRunnerDriver-starter-4.swift",
+                      previousFile: "SimpleRunnerDriver-starter-3.swift")
+            }
+        }
+    }
+        
+    @Section(title: "Set up the extension") {
+        @ContentAndMedia {
+            Before our Swift package can be built and used, the extension must be created and registered with Godot. To
+            do this, you will create a `gdextension` file that tells Godot where to look for the dynamic libraries.
+        }
+            
+        @Steps {
+            @Step {
+                Create a new `bin` folder in the SimpleRunner Godot project with an empty file 
+                `SimpleRunnerDriver.gdextension`.
+                
+                @Image(source: "NewExtensionFile.png",
+                       alt: "A Finder window showing the SimpleRunner project containing a new bin folder.")
+            }
+            @Step {
+                In SimpleRunnerDriver.gdextension, create a configuration section with an `entry_point` key that points
+                to `"swift_entry_point"`.
+                
+                @Code(name: "SimpleRunnerDriver.gdextension",
+                      file: "SimpleRunnerDriver-starter-2.txt",
+                      previousFile: "SimpleRunnerDriver-starter-init.txt")
+            }
+            @Step {
+                Create a `libraries` section and set the path of `macos.debug` to
+                `res://bin/libSimpleRunnerDriver.dylib`.
+                
+                The name of the file corresponds to the built version of the dynamic library.
+                
+                @Code(name: "SimpleRunnerDriver.gdextension", file: "SimpleRunnerDriver-starter-3.txt")
+            }
+            @Step {
+                In the terminal, navigate to the SimpleRunnerDriver package and run `swift build` to build the package.
+                
+                This will build both SwiftGodot and the SimpleRunnerDriver packages, creating the dynamic library files
+                we need for Godot.
+                
+                @Image(source: "SwiftBuild.png",
+                       alt: "A terminal window at the SwiftRunnerDriver package, about to run swift build.")
+            }
+            @Step {
+                Open the `.build/{arch}/debug` directory in the Finder using the `open` command, replacing `arch` with
+                your Mac's architecture folder.
+                
+                @Image(source: "OpenSwiftBuild.png",
+                       alt: "A terminal window at the SwiftRunnerDriver package, about to run open.")
+            }
+            @Step {
+                Copy the `libSimpleRunnerDriver.dylib` and `libSwiftGodot.dylib` files into the `bin` directory of the
+                SimpleRunner Godot project.
+                
+                @Image(source: "DylibCopy.png",
+                       alt: "Two Finder windows that show the dynamic library files being copied to the game's files.")
+            }
+        }
+    }
+    
+    @Section(title: "Use the new player controller") {
+        @ContentAndMedia {
+            Now that the extension is set up and you have a built dynamic library, you will be able to set the player
+            up in the Godot editor and enable the extension.
+        }
+        
+        @Steps {
+            @Step {
+                Open the SimpleRunner project in the Godot editor. When the project opens, you should see a dialog that
+                appears, asking to reloag Godot for extensions to take effect.
+                
+                @Image(source: "GodotExtensionPrompt", alt: "The Godot editor open with a dialog in the center.")
+            }
+            
+            @Step {
+                Press Restart to restart the Godot editor and enable the extension.
+                
+                @Image(source: "GodotMainEditor", alt: "The Godot editor open with the main SimpleRunnerProject.")
+            }
+            
+            @Step {
+                In the FileSystem tab, navigate to the objects directory and open the `player.tscn` file, which contains
+                the player scene.
+                
+                @Image(source: "Godot-Filesystem-starter-2",
+                       alt: "The FileSystem tab in the Godot editor, with the player.tscn file selected in the tree.")
+            }
+            
+            @Step {
+                In the Scene tab, right click on the `CharacterBody2D` node and select **Change Type**.
+                
+                @Image(source: "Godot-Scene-starter-3",
+                       alt: "The Scene tab in the Godot editor showing the tree of nodes for the player.")
+            }
+            
+            @Step {
+                Search for the PlayerController node and click **Change** to apply the changes and save the scene once
+                the change is made.
+                
+                If the PlayerController doesn't appear in this list, revisit the other sections of this tutorial. You
+                may have misconfigured a setting or didn't build the library.
+                
+                @Image(source: "Godot-NodePicker-starter-4",
+                       alt: "The node picker window in Godot, with the PlayerController node class selected.")
+            }
+            
+            @Step {
+                Run the project by pressing the Play button in the toolbar and press either the A/D or left/right arrow
+                keys. Congrats; the player moves! 🎉
+                
+                @Image(source: "SimpleRunner-complete.gif",
+                       alt: "The SimpleRunner project running, with the player moving back and forth.")
+            }
+        }
+    }
+}
