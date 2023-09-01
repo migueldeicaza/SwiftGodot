@@ -108,14 +108,14 @@ func setupScene (level: GDExtension.InitializationLevel) {
 // Set the swift.gdextension's entry_symbol to "swift_entry_point
 @_cdecl ("swift_entry_point")
 public func swift_entry_point(
-    interfacePtr: OpaquePointer?,
+    godotGetProcAddr: OpaquePointer?,
     libraryPtr: OpaquePointer?,
     extensionPtr: OpaquePointer?) -> UInt8
 {
     print ("SwiftSprite: Starting up")
-    guard let interfacePtr, let libraryPtr, let extensionPtr else {
+    guard let godotGetProcAddr, let libraryPtr, let extensionPtr else {
         return 0
     }
-    initializeSwiftModule(interfacePtr, libraryPtr, extensionPtr, initHook: setupScene, deInitHook: { x in })
+    initializeSwiftModule(godotGetProcAddr, libraryPtr, extensionPtr, initHook: setupScene, deInitHook: { x in })
     return 1
 }

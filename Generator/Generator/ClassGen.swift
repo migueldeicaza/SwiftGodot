@@ -468,7 +468,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             args += getArgumentDeclaration(arg, eliminate: "_ ", isOptional: false)
             let construct: String
             
-            if let cmap = classMap [arg.type] {
+            if let _ = classMap [arg.type] {
                 argUnwrap += "var ptr_\(argIdx): UnsafeMutableRawPointer?\n"
                 argUnwrap += "args [\(argIdx)].toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
                 construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(arg.type) (nativeHandle: ptr_\(argIdx)!)"
@@ -507,7 +507,6 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             p ("get async") {
                 p ("await withCheckedContinuation") {
                     p ("c in")
-                    var args = ""
                     p ("connect (flags: .connectOneShot) { \(lambdaIgnore) in c.resume () }")
                 }
             }

@@ -11,7 +11,6 @@ import Foundation
 ///
 func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
     if let pstart = val.firstIndex(of: "("), let pend = val.lastIndex(of: ")"){
-        var found = false
         let splitArgs = val [val.index(pstart, offsetBy: 1)..<pend].split(separator: ",")
         // Find a constructor with that number of arguments
         for constructor in bc.constructors {
@@ -21,7 +20,7 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
                 var prefixedArgs = ""
                 for i in 0..<splitArgs.count {
                     if prefixedArgs.count != 0 { prefixedArgs += ", "}
-                    var name = constructor.arguments! [i].name
+                    let name = constructor.arguments! [i].name
                     var pval = splitArgs [i]
 
                     // Some Godot constants leak into the initializers
@@ -54,7 +53,6 @@ func generateBuiltinConstants (_ p: Printer,
     
     for constant in constants {
         // Check if we need to inject parameter names
-        var val = constant.value
         guard let val = getInitializer (bc, constant.value) else {
             continue
         }

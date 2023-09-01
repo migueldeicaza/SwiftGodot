@@ -42,7 +42,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
     for d in constantDocs ?? [] {
         docEnumToValue [d.name] = d.rest
     }
-    let classPrefix = cdef == nil ? "" : cdef!.name + "."
+    //let classPrefix = cdef == nil ? "" : cdef!.name + "."
     
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
