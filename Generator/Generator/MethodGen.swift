@@ -44,7 +44,6 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
         default:
             return true
         }
-        return true
     case "Image":
         switch method {
         case "blit_rect":
@@ -151,7 +150,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         for arg in margs {
             if args != "" { args += ", " }
             var isRefOptional = false
-            if classMap [arg.type ?? ""] != nil {
+            if classMap [arg.type] != nil {
                 isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
             }
             args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
@@ -293,7 +292,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 if method.isVararg {
                     ptrResult = "&_result"
                 } else if argTypeNeedsCopy(godotType: godotReturnType!) {
-                    var isClass = builtinGodotTypeNames [godotReturnType!] == .isClass
+                    let isClass = builtinGodotTypeNames [godotReturnType!] == .isClass
                     
                     ptrResult = isClass ? "&_result.content" : "&_result"
                 } else {

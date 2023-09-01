@@ -12,7 +12,7 @@ echo '#define LIBRARY_ENABLED' > $tmp/libgodot.h
 #echo '#define LIBRARY_ENABLED' > $tmp/libgodot_callable.h
 cp $DIR/core/extension/gdextension_interface.h $tmp/gdextension_interface.h
 sed -e 's#core/extension/gdextension#gdextension#' -e 's/bool/int/' < $DIR/core/libgodot/libgodot.h >> $tmp/libgodot.h
-cat $DIR/core/libgodot/libgodot_callable.h >> $tmp/libgodot_callable.h
+#cat $DIR/core/libgodot/libgodot_callable.h >> $tmp/libgodot_callable.h
 cat > $tmp/module.modulemap << EOF
 module libgodot {
     header "libgodot.h"
