@@ -217,9 +217,15 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             }
             argSetup += "    "
             if refParameterIsOptional {
-                argSetup += "UnsafeRawPointer(\(escapeSwift(argref))?.handle ?? nil),"
+                argSetup += "\(escapeSwift (argref)) ==  nil ? nil : UnsafeRawPointer (withUnsafePointer(to: \(escapeSwift (argref))!.handle) { p in p }),"
+                //argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))?.handle ?? nil),"
             } else {
-                argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
+                // With Godot 4.1 we need to pass the address of the handle
+                if optstorage == ".handle" {
+                    argSetup += "UnsafeRawPointer (withUnsafePointer(to: \(escapeSwift (argref)).handle) { p in p }),"
+                } else {
+                    argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
+                }
             }
         }
         argSetup += "]"

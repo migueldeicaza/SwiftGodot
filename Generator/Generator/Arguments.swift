@@ -125,7 +125,7 @@ func getArgRef (arg: JGodotArgument) -> String {
             if builtinSizes [arg.type] != nil && arg.type != "Object" {
                 optstorage = ".content"
             } else {
-                needAddress = ""
+                needAddress = "&"
                 optstorage = ".handle"
             }
         }
