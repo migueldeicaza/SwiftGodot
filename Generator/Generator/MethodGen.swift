@@ -44,7 +44,6 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
         default:
             return true
         }
-        return true
     case "Image":
         switch method {
         case "blit_rect":
@@ -151,7 +150,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         for arg in margs {
             if args != "" { args += ", " }
             var isRefOptional = false
-            if classMap [arg.type ?? ""] != nil {
+            if classMap [arg.type] != nil {
                 isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
             }
             args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
@@ -187,7 +186,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             var argref: String
             var optstorage: String
             var needAddress = "&"
-            var isRefParameter = false
+            //var isRefParameter = false
             var refParameterIsOptional = false
             if method.isVararg {
                 argref = "copy_\(arg.name)"
@@ -210,7 +209,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                         // but for documentation/clarity purposes
                         optstorage = ".handle"
                         needAddress = ""
-                        isRefParameter = true
+                        //isRefParameter = true
                         
                         refParameterIsOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
                     }
@@ -218,9 +217,15 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             }
             argSetup += "    "
             if refParameterIsOptional {
-                argSetup += "UnsafeRawPointer(\(escapeSwift(argref))?.handle ?? nil),"
+                argSetup += "\(escapeSwift (argref)) ==  nil ? nil : UnsafeRawPointer (withUnsafePointer(to: \(escapeSwift (argref))!.handle) { p in p }),"
+                //argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))?.handle ?? nil),"
             } else {
-                argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
+                // With Godot 4.1 we need to pass the address of the handle
+                if optstorage == ".handle" {
+                    argSetup += "UnsafeRawPointer (withUnsafePointer(to: \(escapeSwift (argref)).handle) { p in p }),"
+                } else {
+                    argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
+                }
             }
         }
         argSetup += "]"
@@ -293,7 +298,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 if method.isVararg {
                     ptrResult = "&_result"
                 } else if argTypeNeedsCopy(godotType: godotReturnType!) {
-                    var isClass = builtinGodotTypeNames [godotReturnType!] == .isClass
+                    let isClass = builtinGodotTypeNames [godotReturnType!] == .isClass
                     
                     ptrResult = isClass ? "&_result.content" : "&_result"
                 } else {

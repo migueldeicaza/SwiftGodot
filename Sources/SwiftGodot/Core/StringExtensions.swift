@@ -35,10 +35,11 @@ func stringToGodotHandle (_ str: String) -> GDExtensionStringPtr {
 
 func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
     let n = gi.string_to_utf8_chars (ptr, nil, 0)
-    return withUnsafeTemporaryAllocation (byteCount: Int(n+1), alignment: 4) { strPtr in
+
+    return withUnsafeTemporaryAllocation (of: CChar.self, capacity: Int(n+1)) { strPtr in
         gi.string_to_utf8_chars (ptr, strPtr.baseAddress, n)
         strPtr [Int (n)] = 0
-        return String (cString: strPtr.assumingMemoryBound(to: UInt8.self).baseAddress!)
+        return String (cString: strPtr.baseAddress!)
     }
 }
     
@@ -50,10 +51,10 @@ extension GString {
         }
         var content = GString.zero
         let len = gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), nil, 0)
-        return withUnsafeTemporaryAllocation(byteCount: Int(len+1), alignment: 4) { strPtr in
+        return withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(len+1)) { strPtr in
             gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), strPtr.baseAddress, len)
             strPtr [Int (len)] = 0
-            return String (cString: strPtr.assumingMemoryBound(to: UInt8.self).baseAddress!)
+            return String (cString: strPtr.baseAddress!)
         }
     }
     
@@ -61,10 +62,10 @@ extension GString {
     public var description: String {
         get {
             let len = gi.string_to_utf8_chars (UnsafeRawPointer (&content), nil, 0)
-            return withUnsafeTemporaryAllocation(byteCount: Int(len+1), alignment: 4) { strPtr in
+            return withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(len+1)) { strPtr in
                 gi.string_to_utf8_chars (UnsafeRawPointer (&content), strPtr.baseAddress, len)
                 strPtr [Int (len)] = 0
-                return String (cString: strPtr.assumingMemoryBound(to: UInt8.self).baseAddress!)
+                return String (cString: strPtr.baseAddress!)
             } ?? ""
         }
     }
