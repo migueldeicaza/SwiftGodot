@@ -67,7 +67,7 @@ import Foundation
 /// call you back on will not be invoked.
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Points to the underlying object
-    public let handle: UnsafeRawPointer
+    public var handle: UnsafeRawPointer
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     
