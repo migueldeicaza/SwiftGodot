@@ -186,7 +186,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             var argref: String
             var optstorage: String
             var needAddress = "&"
-            var isRefParameter = false
+            //var isRefParameter = false
             var refParameterIsOptional = false
             if method.isVararg {
                 argref = "copy_\(arg.name)"
@@ -209,7 +209,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                         // but for documentation/clarity purposes
                         optstorage = ".handle"
                         needAddress = ""
-                        isRefParameter = true
+                        //isRefParameter = true
                         
                         refParameterIsOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
                     }
