@@ -13,7 +13,7 @@ In SwiftGodot, there is a convenient interface to connect to a signal, as well
 as a low-level framework to manually connect to signals and a mechanism to 
 define your own signals.
 
-Objects that emit signals typically do so by using the ``Object/emitSignal``
+Objects that emit signals typically do so by using the ``Object/emitSignal(signal:_:)``
 function which takes as a parameter the ``StringName`` of the signal as well
 as an optional list of additional arguments.   And users can connect to those
 signals and direct a method to be invoked when they are raised.
@@ -65,7 +65,7 @@ One common idiom in Godot code is to wait for a signal to be raised before
 continuing execution.   For example, you might want to wait for a timeout
 or an action.
 
-In those cases, you can await the ``emitted`` property of the generated
+In those cases, you can await the `emitted` property of the generated
 signal, like this:
 
 ```
@@ -130,7 +130,7 @@ We start by declaring the ``StringName`` for the signal that we are
 declaring, in this case `burp`.  Since signals are registered for classes,
 we use an idiom to initialize the class once.   This will use ``ClassInfo`` 
 to declare our signal, and we register it there.   Since this is a signal
-that takes no arguments, merely calling ``ClassInfo/registerSignal`` is enough.
+that takes no arguments, merely calling ``ClassInfo/registerSignal(name:arguments:)`` is enough.
 
 The method `emitBurp` shows what you need to do to emit the signal from
 your code.
@@ -199,7 +199,7 @@ if you need to connect to objects that are not included in the binding
 or you want to implement additional semantics, you can always use the
 low-level API for connecting signals.
 
-To connect a signal directly, you use the ``Object/connect``
+To connect a signal directly, you use the ``Object/connect(signal:callable:flags:)``
 method.   The first parameter is the ``StringName`` describing the signal
 and the second one is refenrece to the method to invoke.  The ``Callable``
 is a pair of the object instance and the ``StringName`` of the method to invoke.
