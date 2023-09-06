@@ -17,4 +17,15 @@
         @TutorialReference(tutorial: "doc:Your-First-Extension")
         @TutorialReference(tutorial: "doc:Writing-Multiple-Scripts")
     }
+
+    @Chapter(name: "Embedding Godot in Swift") {
+        If rather than embedding Swift into Godot, you want to embed Godot into 
+        your Swift application or you prefer to prototype your code with
+        a code-first approach, you can use the companion SwiftGodotKit.
+
+        @Image(source: "Birdie2",
+               alt: "A pixel art sprite of a person wearing a bird costume similar to the Swift logo.")
+        
+        @TutorialReference(tutorial: "doc:Using-Swift-Godot-Kit")
+    }
 }

@@ -38,7 +38,7 @@ public class ClassInfo<T:Object> {
     }
     
     /// Registers a signal on this type with the specified name and with the specified arguments.  To trigger
-    /// the signal, you need to invoke ``Object/emitSignal(signal:)`` with the matching arguments that
+    /// the signal, you need to invoke ``Object/emitSignal(signal:_:)`` with the matching arguments that
     /// you registered here.
     ///
     /// Users of your signal can then connect to the signal using the ``Object/connect(signal:callable:flags:)``

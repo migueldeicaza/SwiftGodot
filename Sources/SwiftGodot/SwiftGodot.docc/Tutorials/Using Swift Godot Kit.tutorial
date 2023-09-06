@@ -1,0 +1,47 @@
+@Tutorial(time: 5) {
+    @Intro(title: "Using SwiftGodotKit") {
+        SwiftGodotKit lets you drive Godot entirely from Swift, and treat Godot as just another Swift framework you can call into.
+    }
+        
+    @Section(title: "SwiftGodotKit from Xcode") {
+        @Steps {
+            @Step {
+                In Xcode, create a new project.   In our example, we are going to create a new MacOS project and make this a command line tool.   You can use other options, but this shows the most minimal project you can create.
+                
+                @Image(source: "SwiftGodotKit-Xcode-1-MacOS-NewProject.png",
+                       alt: "Xcode New MacOS Project dialog showing a Command Line Tool")
+            }
+            @Step {
+                You will now Add a dependency on the `SwiftGodotKit` library.
+            }
+            
+            @Step {
+                To do this, after you create your project, select your project from the navigator, and go to "Package Dependencies".  There click the "+" button and when the package selector comes up, enter the URL for the SwiftGodotKit package: https://github.com/migueldeicaza/SwiftGodotKit
+                
+                @Image(source: "SwiftGodotKit-Xcode-2-AddPackage.png",
+                       alt: "Adding the package to the project")
+            }
+            
+            @Step {
+                The SwiftGodotKit package comes with various samples, you only need the SwiftGodotKit package to be added to your project, so you can safely set all the Package Products to "None" in the "Add to Target" column
+                
+                @Image(source: "SwiftGodotKit-Xcode-3-AddTarget.png",
+                       alt: "Dialog showing which package products are available from SwiftGodotKit")
+            }
+            
+            @Step {
+                Since this contains a native library that has not been signed, go to your "Signing & Capabilities"  tab for your target, and in the "Hardened Runtime" which is checked-in by default, enable the "Disable Library Validation".   Alternatively, you can remove the "Hardened Runtime".
+                
+                @Image(source: "SwiftGodotKit-Xcode-4-HardenedRuntime.png",
+                       alt: "Two Finder windows that show the dynamic library files being copied to the game's files.")
+            }
+            
+            @Step {
+                You can now enter a sample SwiftGodot project.   This needs to import both the  `SwiftGodotKit` API which provides one entry point: the `runGodot` method, and the `SwiftGodot` API, that contains the bulk of the code.
+                
+                @Code(name: "SwiftGodotKit-Main.swift",
+                      file: "SwiftGodotKit-Main.swift")
+            }
+        }
+    }
+}

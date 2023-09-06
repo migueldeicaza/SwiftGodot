@@ -118,7 +118,7 @@ public class SimpleSignal {
         return signalProxy
     }
     
-    /// Disconnects a signal that was previously connected, the return value from calling ``connect``
+    /// Disconnects a signal that was previously connected, the return value from calling ``connect(flags:_:)``
     public func disconnect (_ token: Object) {
         target.disconnect(signal: signalName, callable: Callable (object: token, method: SignalProxy.proxyName))
     }
