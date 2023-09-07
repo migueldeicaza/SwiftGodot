@@ -30,7 +30,7 @@ public extension ProjectSettings {
 }
 
 public extension TextServer {
-    /// **Warning:** This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their ``CanvasItem.visible`` property.  ``SwiftGodot``
+    /// **Warning:** This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their ``CanvasItem/visible`` property.  ``SwiftGodot``
     func demo () {
         
     }

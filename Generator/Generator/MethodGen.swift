@@ -61,6 +61,7 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
     }
 }
 
+
 /// Generates a method definition
 /// - Parameters:
 ///  - p: Our printer to generate the method

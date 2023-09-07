@@ -32,7 +32,7 @@ import Foundation
 /// - Can be used for dictionaries, arrays, parsers, etc.
 ///
 /// > Note: Containers (``GArray`` and ``Dictionary``): Both are implemented using variants.
-/// A ``Dictionary`` can match any datatype used as key to any other datatype. An ``GArray`
+/// A ``Dictionary`` can match any datatype used as key to any other datatype.  An ``GArray``
 /// just holds an array of Variants.  A ``Variant`` can also hold a ``Dictionary`` and an ``Array``
 /// inside.
 ///
