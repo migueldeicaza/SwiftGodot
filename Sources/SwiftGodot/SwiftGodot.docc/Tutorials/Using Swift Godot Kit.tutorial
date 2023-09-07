@@ -1,9 +1,16 @@
 @Tutorial(time: 5) {
     @Intro(title: "Using SwiftGodotKit") {
         SwiftGodotKit lets you drive Godot entirely from Swift, and treat Godot as just another Swift framework you can call into.
-    }
         
+        @Image(source: "RunnerHeader.png",
+               alt: "A screenshot of the Simple Runner game. The player wears a bird costume and runs alongside boxes.")
+    }
+   
     @Section(title: "SwiftGodotKit from Xcode") {
+        @ContentAndMedia {
+            Using Godot as a library using SwiftGodotKit
+        }
+
         @Steps {
             @Step {
                 In Xcode, create a new project.   In our example, we are going to create a new MacOS project and make this a command line tool.   You can use other options, but this shows the most minimal project you can create.
@@ -44,4 +51,5 @@
             }
         }
     }
+        
 }
