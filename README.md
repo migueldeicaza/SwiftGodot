@@ -27,7 +27,7 @@ complete source code build for you, or to quickly iterate on MacOS,
 you can use a convenient binary in the peer
 https://github.com/migueldeicaza/SwiftGodotBinary
 
-
+Currently this requires Swift 5.9 or Xcode 15.
 
 # Working with this Repository
 
