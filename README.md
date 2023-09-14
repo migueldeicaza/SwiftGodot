@@ -1,6 +1,6 @@
 # SwiftGodot
 
-SwiftGodot provides Swift language bindings for the Godot 4.0 game
+SwiftGodot provides Swift language bindings for the Godot 4.1 game
 engine using the new GDExtension system.
 
 SwiftGodot can be used to either build an extension that can be added
