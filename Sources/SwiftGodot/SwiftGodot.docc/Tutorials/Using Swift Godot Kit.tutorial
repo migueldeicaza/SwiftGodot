@@ -8,7 +8,9 @@
    
     @Section(title: "SwiftGodotKit from Xcode") {
         @ContentAndMedia {
-            Using Godot as a library using SwiftGodotKit
+
+            SwiftGodot provides the API bridge between the Swift world and the Godot API.   This API can be used to implement new capabilities in both Godot extensions, or to drive Godot entirely from Swift.   This tutorial covers how to drive Godot entirely from Swift, rather than how to extend Godot with Swift or implementing functionality for Godot in Swift. 
+	    
         }
 
         @Steps {
