@@ -162,7 +162,7 @@ func loadClassDoc (base: String, name: String) -> DocClass? {
         return v
     } catch (let e){
         print ("Failed to load docs for \(name), details: \(e)")
-        fatalError()
+        return nil
     }
 }
 
