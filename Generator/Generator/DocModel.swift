@@ -176,7 +176,7 @@ func loadBuiltinDoc (base: String, name: String) -> DocBuiltinClass? {
         return v
     } catch (let e){
         print ("Failed to load docs for \(name), details: \(e)")
-        fatalError()
+        return nil
     }
 }
 
