@@ -11,7 +11,7 @@ import XMLCoder
 struct DocClass: Codable {
     @Attribute var name: String
     @Attribute var inherits: String?
-    @Attribute var version: String
+    @Attribute var version: String?
     var brief_description: String
     var description: String
     var tutorials: [DocTutorial]
@@ -24,7 +24,7 @@ struct DocClass: Codable {
 
 struct DocBuiltinClass: Codable {
     @Attribute var name: String
-    @Attribute var version: String
+    @Attribute var version: String?
     var brief_description: String
     var description: String
     var tutorials: [DocTutorial]
