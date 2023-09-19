@@ -13,6 +13,20 @@ import Foundation
 
 import Foundation
 
+struct AugmentedAPI: Codable {
+    let classes: [AugmentedAPIClass]
+}
+
+struct AugmentedAPIClass: Codable {
+    let name: String
+    let methods: [AugmentedAPIMethod]
+}
+
+struct AugmentedAPIMethod: Codable {
+    let name: String
+    let discardable: Bool? 
+}
+
 // MARK: - JGodotExtensionAPI
 struct JGodotExtensionAPI: Codable {
     let header: JGodotHeader
@@ -359,7 +373,7 @@ struct JGodotBuiltinClass: Codable, JClassInfo {
     let constructors: [JGodotConstructor]
     let hasDestructor: Bool
     let indexingReturnType: String?
-    let methods: [JGodotBuiltinClassMethod]?
+    var methods: [JGodotBuiltinClassMethod]?
     let members: [JGodotArgument]?
     let constants: [JGodotBuiltinClassConstant]?
     let enums: [JGodotGlobalEnumElement]?
@@ -566,7 +580,8 @@ struct JGodotBuiltinClassMethod: Codable {
     let isVararg, isConst, isStatic: Bool
     let hash: Int
     let arguments: [JGodotArgument]?
-
+    var discardable: Bool?
+    
     enum CodingKeys: String, CodingKey {
         case name
         case returnType = "return_type"
@@ -756,7 +771,7 @@ struct JGodotExtensionAPIClass: Codable, JClassInfo {
     let inherits: String?
     let apiType: JGodotAPIType
     let enums: [JGodotGlobalEnumElement]?
-    let methods: [JGodotClassMethod]?
+    var methods: [JGodotClassMethod]?
     let properties: [JGodotProperty]?
     let signals: [JGodotSignal]?
     let constants: [JGodotValueElement]?
@@ -898,7 +913,8 @@ struct JGodotClassMethod: Codable, MethodDefinition {
     let hash: Int?
     let returnValue: JGodotReturnValue?
     let arguments: [JGodotArgument]?
-
+    var discardable: Bool?
+    
     enum CodingKeys: String, CodingKey {
         case name
         case isConst = "is_const"
@@ -921,6 +937,7 @@ protocol MethodDefinition {
     var hash: Int? { get }
     var returnValue: JGodotReturnValue? { get }
     var arguments: [JGodotArgument]? { get }
+    var discardable: Bool? { get }
 }
 
 
@@ -1233,7 +1250,8 @@ struct JGodotUtilityFunction: Codable, MethodDefinition {
             return nil
         }
     }
-
+    var discardable: Bool?
+    
     enum CodingKeys: String, CodingKey {
         case name
         case returnType = "return_type"

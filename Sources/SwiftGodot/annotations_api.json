@@ -1,0 +1,103 @@
+{
+    "classes": [
+        {
+            "name": "GArray",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedByteArray",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedInt32Array",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedInt64Array",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedFloat32Array",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedFloat64Array",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedStringArray",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedVector2Array",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedVector3Array",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "PackedColorArray",
+            "methods": [
+                {
+                    "name": "append",
+                    "discardable": true
+                }
+            ]
+        },
+        {
+            "name": "Object",
+            "methods": [
+                {
+                    "name": "emit_signal",
+                    "discardable": true
+                }
+            ]
+        }
+    ]
+}

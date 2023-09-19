@@ -15,11 +15,11 @@ var args = CommandLine.arguments
 let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/godot-master/extension_api.json"
 var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot-DEBUG"
 var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
-
+var augmentedFile = args.count > 4 ? args [4] : "/Users/miguel/cvs/SwiftGodot/Sources/SwiftGodot/annotations_api.json"
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 
 if args.count < 2 {
-    print ("Usage is: generator path-to-extension-api output-directory doc-directory")
+    print ("Usage is: generator path-to-extension-api output-directory doc-directory augmented-api")
     print ("- path-to-extensiona-ppi is the full path to extension_api.json from Godot")
     print ("- output-directory is where the files will be placed")
     print ("- doc-directory is the Godot documentation resides (godot/doc)")
@@ -27,7 +27,12 @@ if args.count < 2 {
 }
 
 let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFile))
-let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
+let augmented: Data?
+var jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
+var classMap: [String:JGodotExtensionAPIClass] = [:]
+for cls in jsonApi.classes {
+    classMap [cls.name] = cls
+}
 
 // Determines whether a built-in type is defined as a structure, this means:
 // that it has fields and does not have a "handle" pointer to the native object
@@ -60,10 +65,6 @@ coreDefPrinter.preamble()
 
 print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
 let globalDocs = loadClassDoc(base: docRoot, name:  "@GlobalScope")
-var classMap: [String:JGodotExtensionAPIClass] = [:]
-for x in jsonApi.classes {
-    classMap [x.name] = x
-}
 
 var builtinMap: [String: JGodotBuiltinClass] = [:]
 generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, constantDocs: globalDocs?.constants?.constant, prefix: "")
@@ -85,6 +86,45 @@ for cs in jsonApi.builtinClassSizes {
         }
     }
 }
+
+// Import our augmentations
+// Currently just does discardable
+let decoded = try! JSONDecoder().decode(AugmentedAPI.self, from: try! Data(contentsOf: URL (fileURLWithPath: augmentedFile)))
+for cls in decoded.classes {
+    // Does it apply to a class?
+    if var existing = classMap [cls.name] {
+        for method in cls.methods {
+            let mname = method.name
+            guard var existingMethods = existing.methods else { continue }
+            if let idx = existingMethods.firstIndex(where: { $0.name == mname }) {
+                var v = existingMethods [idx]
+                v.discardable = method.discardable
+                
+                existingMethods [idx] = v
+                existing.methods = existingMethods
+            }
+            classMap [cls.name] = existing
+        }
+    }
+    
+    // Or the godot builtin?
+    if var existing = builtinMap [cls.name] {
+        for method in cls.methods {
+            let mname = method.name
+            guard var existingMethods = existing.methods else { continue }
+            if let idx = existingMethods.firstIndex(where: { $0.name == mname }) {
+                var v = existingMethods [idx]
+                v.discardable = method.discardable
+                
+                existingMethods [idx] = v
+                existing.methods = existingMethods
+            }
+            builtinMap [cls.name] = existing
+        }
+    }
+
+}
+
 
 let generatedBuiltinDir = outputDir + "/generated-builtin/"
 let generatedDir = outputDir + "/generated/"
