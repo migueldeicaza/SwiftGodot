@@ -184,7 +184,17 @@ func generateVirtualProxy (_ p: Printer,
 
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
 var discardableResultList: [String: Set<String>] = [
-    "Object": ["emit_signal"]
+    "Object": ["emit_signal"],
+    "GArray": ["append"],
+    "PackedByteArray": ["append"],
+    "PackedColorArray": ["append"],
+    "PackedFloat32Array": ["append"],
+    "PackedFloat64Array": ["append"],
+    "PackedInt32Array": ["append"],
+    "PackedInt64Array": ["append"],
+    "PackedStringArray": ["append"],
+    "PackedVector2Array": ["append"],
+    "PackedVector3Array": ["append"]
 ]
 
 func generateMethod (_ p: Printer, method: MethodDefinition) {
