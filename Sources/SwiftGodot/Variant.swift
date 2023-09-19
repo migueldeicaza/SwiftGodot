@@ -69,7 +69,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
     
     deinit {
-        gi.variant_destroy (&content)
+        //gi.variant_destroy (&content)
     }
     
     /// Creates a nil variant
