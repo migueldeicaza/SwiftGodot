@@ -19,9 +19,11 @@ var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 
 if args.count < 2 {
-    print ("Usage is: generator [godot-main-directory [output-directory]]")
-    print ("where godot-main-directory contains api.json and builtin-api.json")
-    print ("If unspecified, this will default to the built-in versions")
+    print ("Usage is: generator path-to-extension-api output-directory doc-directory")
+    print ("- path-to-extensiona-ppi is the full path to extension_api.json from Godot")
+    print ("- output-directory is where the files will be placed")
+    print ("- doc-directory is the Godot documentation resides (godot/doc)")
+    print ("Running with Miguel's testing defaults")
 }
 
 let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFile))

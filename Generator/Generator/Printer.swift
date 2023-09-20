@@ -35,7 +35,11 @@ public class Printer {
     func b (_ str: String, suffix: String = "", block: () -> ()) {
         p (str + " {")
         indent += 1
+        let saved = indent
         block ()
+        if indent != saved {
+            print ("Indentation out of sync, the nested block messed with indentation")
+        }
         indent -= 1
         p ("}\(suffix)\n")
     }

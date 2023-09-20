@@ -61,7 +61,6 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
     }
 }
 
-
 /// Generates a method definition
 /// - Parameters:
 ///  - p: Our printer to generate the method
@@ -88,7 +87,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     var finalp: String
     // Default method name
     var methodName: String = godotMethodToSwift (method.name)
-    
     let instanceOrStatic = method.isStatic ? " static" : ""
     var inline = ""
     if let methodHash = method.hash {
@@ -143,9 +141,15 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     
         varArgSetup += "for idx in 0..<arguments.count {\n"
         varArgSetup += "    content [idx] = arguments [idx].content\n"
-        varArgSetup += "    args.append (content.baseAddress! + idx)\n"
+        varArgSetup += "    _args.append (content.baseAddress! + idx)\n"
         varArgSetup += "}\n"
     }
+    let godotReturnType = method.returnValue?.type
+    let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
+    let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
+    let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
+    
+    var withUnsafeCallNestLevel = 0
 
     if let margs = method.arguments {
         for arg in margs {
@@ -177,7 +181,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if args != "" { args += ", "}
             args += "_ arguments: Variant..."
         }
-        argSetup += "var args: [UnsafeRawPointer?] = [\n"
+        argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         for arg in margs {
             // When we move from GString to String in the public API
             //                if arg.type == "String" {
@@ -216,20 +220,19 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     }
                 }
             }
-            argSetup += "    "
-            if refParameterIsOptional {
-                argSetup += "\(escapeSwift (argref)) ==  nil ? nil : UnsafeRawPointer (withUnsafePointer(to: \(escapeSwift (argref))!.handle) { p in p }),"
-                //argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))?.handle ?? nil),"
+            // With Godot 4.1 we need to pass the address of the handle
+            if refParameterIsOptional || optstorage == ".handle" {
+                let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
+                let ea = escapeSwift(argref)
+                let retFromWith = returnType != "" ? "return " : ""
+                let deref = refParameterIsOptional ? "?" : ""
+                argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ea)\(deref).handle) { p\(withUnsafeCallNestLevel) in\n\(prefix)_args.append (\(ea) == nil ? nil : p\(withUnsafeCallNestLevel))\n"
+                withUnsafeCallNestLevel += 1
             } else {
-                // With Godot 4.1 we need to pass the address of the handle
-                if optstorage == ".handle" {
-                    argSetup += "UnsafeRawPointer (withUnsafePointer(to: \(escapeSwift (argref)).handle) { p in p }),"
-                } else {
-                    argSetup += "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)),"
-                }
+                let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
+                argSetup += "\(prefix)_args.append (UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)))\n"
             }
         }
-        argSetup += "]"
         argSetup += varArgSetupInit
         argSetup += varArgSetup
     } else if method.isVararg {
@@ -237,15 +240,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         if method.isVararg {
             args = "_ arguments: Variant..."
         }
-        argSetup += "var args: [UnsafeRawPointer?] = []\n"
+        argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         argSetup += varArgSetupInit
         argSetup += varArgSetup
     }
-    
-    let godotReturnType = method.returnValue?.type
-    let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
-    let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
-    let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
     
     if inline != "" {
         p (inline)
@@ -262,6 +260,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         p ("@discardableResult")
     }
     p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
+        // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls
+        
         if method.hash == nil {
             if let godotReturnType {
                 p (makeDefaultReturn (godotType: godotReturnType))
@@ -293,7 +293,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if argSetup != "" {
                 p (argSetup)
             }
-            let ptrArgs = (args != "") ? "&args" : "nil"
+            if withUnsafeCallNestLevel > 0 {
+                p.indent += withUnsafeCallNestLevel
+            }
+            
+            let ptrArgs = (args != "") ? "&_args" : "nil"
             let ptrResult: String
             if returnType != "" {
                 if method.isVararg {
@@ -321,13 +325,13 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             case .class:
                 let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: handle), "
                 if method.isVararg {
-                    p ("gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (args.count), \(ptrResult), nil)")
+                    p ("gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)")
                 } else {
                     p ("gi.object_method_bind_ptrcall (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))")
                 }
             case .utility:
                 if method.isVararg {
-                    p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (args.count))")
+                    p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))")
                 } else {
                     p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))")
                 }
@@ -365,6 +369,13 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 } else {
                     p ("return _result")
                 }
+            }
+            
+            // Unwrap the nested calls to 'withUnsafePointer'
+            while withUnsafeCallNestLevel > 0 {
+                withUnsafeCallNestLevel -= 1
+                p.indent -= 1
+                p ("}")
             }
         }
     }
