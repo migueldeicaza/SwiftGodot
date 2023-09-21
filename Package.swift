@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwiftGodot",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v13),
         .iOS ("16.0")
     ],
     products: [

@@ -8,7 +8,7 @@
 import Foundation
 @_implementationOnly import GDExtension
 
-extension StringName {
+extension StringName: CustomStringConvertible {
     /// Creates a StringName from a Swift String
     public convenience init (_ from: String) {
         self.init (from: from)
@@ -43,7 +43,7 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
     }
 }
     
-extension GString {
+extension GString: CustomStringConvertible {
     /// Returns a Swift string from a pointer to a native Godot string
     static func stringFromGStringPtr (ptr: UnsafeRawPointer?) -> String? {
         guard let ptr else {

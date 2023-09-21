@@ -118,9 +118,9 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
 
     public init (_ value: String) {
-        var vh: UnsafeMutableRawPointer?
-        var v = GDExtensionStringPtr (mutating: value.cString(using: .utf8))
-        Variant.fromTypeMap [GType.string.rawValue] (&content, &v)
+        var gstring = GString (stringLiteral: value)
+        
+        Variant.fromTypeMap [GType.string.rawValue] (&content, &gstring.content)
     }
     
     public required init(stringLiteral: String) {

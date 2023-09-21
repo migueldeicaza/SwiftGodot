@@ -294,6 +294,8 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         return "GArray"
     case "void*":
         return "OpaquePointer?"
+    case "const Glyph*":
+        return "OpaquePointer?"
     case "Type":
         return "GType"
     default:

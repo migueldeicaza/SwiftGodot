@@ -498,7 +498,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String) {
                 }
                 
                 p ("deinit"){
-                    p ("\(typeName).destructor (&content)")
+                    p ("if content != \(typeName).zero") {
+                        p ("\(typeName).destructor (&content)")
+                    }
                 }
             }
             

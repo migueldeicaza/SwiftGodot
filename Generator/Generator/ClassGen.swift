@@ -48,7 +48,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
    
     case let other where builtinGodotTypeNames [other] != nil:
         return "\(godotType) ()"
-    case "void*":
+    case "void*", "const Glyph*":
         return "nil"
     default:
         if isCoreType(name: godotType) {
@@ -149,6 +149,8 @@ func generateVirtualProxy (_ p: Printer,
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
             } else if ret.type.starts(with: "enum::") {
                 p ("retPtr!.storeBytes (of: Int32 (ret.rawValue), as: Int32.self)")
+            } else if ret.type.contains("*") {
+                p ("retPtr!.storeBytes (of: ret, as: OpaquePointer?.self)")
             } else {
                 let derefField: String
                 let derefType: String
@@ -629,6 +631,9 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         p ("/// Ths initializer is invoked by derived classes as they chain through their most derived type name that our framework produced")
         p ("internal override init (name: StringName)") {
             p("super.init (name: name)")
+            if (cdef.name == "RefCounted") {
+                p ("reference ()")
+            }
         }
         
         let fastInitOverrides = cdef.inherits != nil ? "override " : ""
