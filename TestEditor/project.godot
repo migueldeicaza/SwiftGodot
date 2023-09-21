@@ -12,5 +12,9 @@ config_version=5
 
 config/name="Sample"
 run/main_scene="res://node_2d.tscn"
-config/features=PackedStringArray("4.0", "Forward Plus")
+config/features=PackedStringArray("4.1", "Forward Plus")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/a/plugin.cfg")
