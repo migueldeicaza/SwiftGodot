@@ -37,8 +37,8 @@ class SwiftScript: ScriptExtension {
     }
     
     public override func _isTool() -> Bool {
-        pm()
-        return true
+        //pm()
+        return false
     }
     
     public override func _isValid() -> Bool {
@@ -80,9 +80,10 @@ class SwiftScript: ScriptExtension {
         return "Hello".toVariant()
     }
     
-    public override func _getBaseScript() -> Script {
+    public override func _getBaseScript() -> Script? {
         pm ()
-        return self
+        
+        return nil
     }
     
     public override func _getGlobalName() -> StringName {
@@ -110,7 +111,7 @@ class SwiftScript: ScriptExtension {
         return .ok
     }
     
-    public override func _instanceHas(object: Object) -> Bool {
+    public override func _instanceHas(object: Object?) -> Bool {
         pm ()
         return false
     }
@@ -135,7 +136,7 @@ class SwiftScript: ScriptExtension {
         return VariantCollection<Dictionary>()
     }
     
-    public override func _inheritsScript(script: Script) -> Bool {
+    public override func _inheritsScript(script: Script?) -> Bool {
         pm ()
         return false
     }
@@ -170,17 +171,25 @@ class SwiftScript: ScriptExtension {
     }
     
     public override func _getPropertyDefaultValue(property: StringName) -> Variant {
-        pm ("For property: \(property)")
+        pm ("For property: \(property.description)")
         return false.toVariant()
     }
     
     public override func _hasPropertyDefaultValue(property: StringName) -> Bool {
-        pm ()
+        pm (" property is: \(property.description) -> false")
         return false
     }
 }
 
 class SwiftLanguageIntegration: ScriptLanguageExtension {
+    required public init () {
+        super.init ()
+    }
+    
+    required public init (nativeHandle: UnsafeRawPointer) {
+        fatalError("Not needed")
+    }
+    
     func pm (_ data: String = "", functionName: String = #function) {
         print ("Integration: \(functionName) \(data)")
     }
@@ -195,12 +204,12 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _getType ()-> String {
-        pm()
+        //pm()
         return "SwiftScript"
     }
     
     open override func _getExtension ()-> String {
-        pm()
+        //pm()
         return "swift"
     }
     
@@ -236,15 +245,80 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     
     open override func _makeTemplate (template: String, className: String, baseClassName: String)-> Script {
         pm ("template: \(template) className: \(className) baseClassName: \(baseClassName)")
-        let s = SwiftScript ()
-        s.sourceCode = "Here we should put the template for template: \(template) className: \(className), baseClassName: \(baseClassName)"
-        print (s)
+        var s = SwiftScript ()
+        s.sourceCode = template
+            .replacing("_CLASS_", with: className)
+            .replacing("_BASE_", with: baseClassName)
         return s
     }
     
+    struct SwiftScriptTemplate {
+        let inherit: String
+        let name: String
+        let description: String
+        let id: String
+        let origin: Int
+        let content: String
+        
+        func toDictionary () -> Dictionary {
+            var dict = Dictionary()
+            
+            dict [Variant ("inherit")] = Variant (inherit)
+            dict [Variant ("name")] = Variant (name)
+            dict [Variant ("description")] = Variant (description)
+            dict [Variant ("content")] = Variant (content)
+            
+            // TODO what to fill here?
+            dict [Variant ("id")] = Variant (id)
+            dict [Variant ("origin")] = Variant ("\(origin)")
+            return dict
+        }
+    }
+    var templates: [String: SwiftScriptTemplate] = [
+        "Object": SwiftScriptTemplate(
+            inherit: "Object",
+            name: "Empty",
+            description: "Empty template suitable for all subclasses",
+            id: "object", origin: 0,
+            content: 
+"""
+import SwiftGodot
+
+class _CLASS_: _BASE_ {
+    required init(nativeHandle: UnsafeRawPointer) { fatalError ("Not necessary") }
+    public required init () {
+        super.init ()
+    }
+}
+
+"""),
+        "Node": SwiftScriptTemplate(inherit: "Node", name: "Default", description: "Base template for Node with default Godot cycle methods", id: "node", origin: 0, content:
+"""
+using SwiftGodot
+
+public class _CLASS_: _BASE_ {
+    // Called when the node enters the scene tree for the first time.
+    public override func _ready() {
+    }
+
+    // Called every frame. 'delta' is the elapsed time since the previous frame.
+    public override func _process(delta: Double) {
+    }
+}
+
+""")
+    ]
+    
     open override func _getBuiltInTemplates (object: StringName)-> VariantCollection<Dictionary> {
-        pm()
-        return VariantCollection<Dictionary>()
+        var collection = VariantCollection<Dictionary> ()
+
+        if let template = templates [object.description] {
+            collection.append (value: Variant (template.toDictionary()))
+        } else {
+            print (">> Got a request for an object we do not know of: \(object.description)")
+        }
+        
+        return collection
     }
     
     open override func _isUsingTemplates ()-> Bool {
@@ -253,12 +327,27 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     
     open override func _validate (script: String, path: String, validateFunctions: Bool, validateErrors: Bool, validateWarnings: Bool, validateSafeLines: Bool)-> Dictionary {
         pm ();
-        return Dictionary ()
+        // The return needs to push the following values:
+        // - "valid" if valid, nothing if not
+        // - "functions": array of strings listing functions
+        // - "errors": array of dictionary containing ("line" (Int), "column" (Int), "message" (String)
+        // - "warnings": array of dictionary containtng:
+        //         Int ("end_line"));
+        //         Int ("leftmost_column"));
+        //         Int ("rightmost_column"));
+        //         Int ("code"));
+        //         String ("string_code"));
+        //         String ("message"));
+        // - "safelines"
+        
+        var ret = Dictionary ()
+        ret [Variant ("valid")] = Variant (true)
+        return ret
     }
     
     open override func _validatePath (path: String)-> String {
         pm()
-        print ("Got path: \(path), returning empty")
+        print ("_validatePath: \(path), returning that we are ok with it")
         return ""
     }
     
@@ -277,8 +366,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _supportsDocumentation ()-> Bool {
-        pm()
-        return false
+        return true
     }
     
     open override func _canInheritFromFile ()-> Bool {
@@ -296,7 +384,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return ""
     }
     
-    open override func _openInExternalEditor (script: Script, line: Int32, column: Int32)-> GodotError {
+    open override func _openInExternalEditor (script: Script?, line: Int32, column: Int32)-> GodotError {
         pm()
         return .ok
     }
@@ -306,12 +394,17 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return false
     }
     
-    open override func _completeCode (code: String, path: String, owner: Object)-> Dictionary {
+    open func _instanceCreate (forObject: Object?)-> OpaquePointer? {
+        pm ("The object is: \(forObject)")
+        return nil
+    }
+    
+    open override func _completeCode (code: String, path: String, owner: Object?)-> Dictionary {
         pm()
         return Dictionary ()
     }
     
-    open override func _lookupCode (code: String, symbol: String, path: String, owner: Object)-> Dictionary {
+    open override func _lookupCode (code: String, symbol: String, path: String, owner: Object?)-> Dictionary {
         pm()
         return Dictionary ()
     }
@@ -390,15 +483,12 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         pm()
     }
     
-    open override func _reloadToolScript (script: Script, softReload: Bool) {
+    open override func _reloadToolScript (script: Script?, softReload: Bool) {
         pm()
     }
     
     open override func _getRecognizedExtensions ()-> PackedStringArray {
-        pm()
-        let r = PackedStringArray ()
-        r.append(value: "swift")
-        print ("returning array with \(r.count) values")
+        let r = PackedStringArray (["swift"])
         return r
     }
     
@@ -430,13 +520,94 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _handlesGlobalClassType (type: String)-> Bool {
-        pm("Type=\(type)")
+        pm("Type=\(type) returning false")
         return false
     }
     
     open override func _getGlobalClassName (path: String)-> Dictionary {
         pm()
         return Dictionary ()
+    }
+}
+
+class SwiftResourceFormatLoader: ResourceFormatLoader {
+    public required init () {
+        super.init ()
+    }
+
+    required init(nativeHandle: UnsafeRawPointer) {
+        fatalError("init(nativeHandle:) has not been implemented")
+    }
+    
+    func pm (_ data: String = "", functionName: String = #function) {
+        print ("SwiftResourceSaver: \(functionName) \(data)")
+    }
+    
+    open override func _exists(path: String) -> Bool {
+        pm ("Exists for \(path))")
+        return true
+    }
+    
+    open override func _getRecognizedExtensions() -> PackedStringArray {
+        return PackedStringArray(["swift"])
+    }
+    
+    open override func _handlesType(type: StringName) -> Bool {
+        pm ("ResourceFormatLoader: \(type.description)")
+        return type == "SwiftScript"
+    }
+    
+    open override func _getClassesUsed(path: String) -> PackedStringArray {
+        pm ("Returnging empty for \(path)")
+        return PackedStringArray()
+    }
+    
+    open override func _getResourceUid(path: String) -> Int {
+        pm ("Returning 1 for \(path)")
+        return 1
+    }
+    
+    open override func _getResourceType(path: String) -> String {
+        if path.hasSuffix(".swift") {
+            return "SwiftScript"
+        }
+        pm("Returning empty for \(path)")
+        return ""
+    }
+    
+    open override func _recognizePath(path: String, type: StringName) -> Bool {
+        if path.hasSuffix(".swift") {
+            return true
+        }
+        pm ("Returning false for path=\(path) type=\(type)")
+        return false
+    }
+    
+    open override func _getResourceScriptClass(path: String) -> String {
+        pm ("Returning empty for \(path)")
+        return ""
+    }
+    
+    open override func _renameDependencies(path: String, renames: Dictionary) -> GodotError {
+        pm ("Request to rename \(path)")
+        return .ok
+    }
+    
+    open override func _getDependencies(path: String, addTypes: Bool) -> PackedStringArray {
+        pm ("Returning empty path=\(path) addTypes=\(addTypes)")
+        return PackedStringArray()
+    }
+    
+    open override func _load(path: String, originalPath: String, useSubThreads: Bool, cacheMode: Int32) -> Variant {
+        pm ("Request to load path=\(path) originalPath=\(originalPath) useSubthreads=\(useSubThreads) cacheMode=\(cacheMode) -> RETURNING 1")
+        let script = SwiftScript()
+        var rootPath = ProjectSettings.shared.globalizePath(path: path)
+        guard let contents = try? String (contentsOfFile: rootPath) else {
+            return Variant (Int (GodotError.errCantOpen.rawValue))
+        }
+        script.resourcePath = path
+        script.sourceCode = contents
+        return Variant (script)
     }
 }
 
@@ -450,11 +621,11 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
     }
     
     func pm (_ data: String = "", functionName: String = #function) {
-        print ("SwiftREsourceSaver: \(functionName) \(data)")
+        print ("SwiftResourceSaver: \(functionName) \(data)")
     }
     
-    open override func _recognize(resource: Resource) -> Bool {
-        print ("Got \(resource.resourceName) at \(resource.resourcePath)")
+    open override func _recognize(resource: Resource?) -> Bool {
+        print ("_recognize method on Resource \(resource?.resourceName) at \(resource?.resourcePath)")
         return true
     }
     
@@ -464,23 +635,30 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
         return .ok
     }
     
-    open override func _getRecognizedExtensions(resource: Resource) -> PackedStringArray {
-        pm ()
+    open override func _getRecognizedExtensions(resource: Resource?) -> PackedStringArray {
+        if let resource {
+            print ("  -> resourceName=\(resource.resourceName)")
+            print ("  -> resourcePath=\(resource.resourcePath)")
+        }
         return PackedStringArray(["swift"])
     }
     
-    open override func _recognizePath(resource: Resource, path: String) -> Bool {
-        pm ("path: \(path) resource: \(resource.resourceName)");
+    open override func _recognizePath(resource: Resource?, path: String) -> Bool {
+        pm ("path: \(path) resource: \(resource?.resourceName)");
         return true
     }
 
-    open override func _save(resource: Resource, path: String, flags: UInt32) -> GodotError {
-        pm ("res=\(resource.resourceName) path: \(path) flags: \(flags)")
+    open override func _save(resource: Resource?, path: String, flags: UInt32) -> GodotError {
+        var rootPath = ProjectSettings.shared.globalizePath(path: "res://")
+        
+        pm ("res=\(resource?.resourceName) path: \(path) flags: \(flags)")
         guard let script = resource as? SwiftScript else {
-            print ("_save the resource did not cas to a SwiftScript")
+            print ("_save the resource did not cast to a SwiftScript")
             return .errFileUnrecognized
         }
-        let file = FileAccess.open(path: path, flags: .write)
+        guard let file = FileAccess.open(path: path, flags: .write) else {
+            return .errCantOpen
+        }
         file.storeString(string: script.source)
         let err = file.getError()
         if err != .ok {
@@ -497,10 +675,13 @@ func setupScene (level: GDExtension.InitializationLevel) {
         register(type: SwiftLanguageIntegration.self)
         register(type: SwiftScript.self)
         register(type: SwiftResourceFormatSaver.self)
+        register(type: SwiftResourceFormatLoader.self)
         var language = SwiftLanguageIntegration()
         let script = SwiftScript()
         let f = SwiftResourceFormatSaver()
         ResourceSaver.shared.addResourceFormatSaver(formatSaver: f)
+        let l = SwiftResourceFormatLoader ()
+        ResourceLoader.shared.addResourceFormatLoader(formatLoader: l, atFront: false)
         
         e.registerScriptLanguage(language: language)
     }
@@ -515,7 +696,6 @@ public func swift_entry_point(
     guard let interfacePtr, let libraryPtr, let extensionPtr else {
         return 0
     }
-    
     initializeSwiftModule(interfacePtr, libraryPtr, extensionPtr, initHook: setupScene, deInitHook: { x in })
     return 1
 }
