@@ -82,6 +82,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
     
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
+        print ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
         return nil
     }
     

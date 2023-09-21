@@ -76,10 +76,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         //print ("TODO: do not currently have support for C pointer types \(loc)")
         return nil
     }
-    if method.returnValue?.type.firstIndex(of: "*") != nil {
-        //print ("TODO: do not currently support C pointer returns \(loc)")
-        return nil
-    }
+//    if method.returnValue?.type.firstIndex(of: "*") != nil {
+//        //print ("TODO: do not currently support C pointer returns \(loc)")
+//        return nil
+//    }
     let bindName = "method_\(method.name)"
     
     var visibility: String
