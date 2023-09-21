@@ -8,7 +8,6 @@
 import Foundation
 import SwiftGodot
 
-
 extension PackedStringArray {
     convenience init (_ values: [String]) {
         self.init ()
@@ -33,7 +32,7 @@ class SwiftScript: ScriptExtension {
     }
     
     func pm (_ data: String = "", functionName: String = #function) {
-        print ("Script: \(functionName) (data)")
+        print ("Script: \(functionName) \(data)")
     }
     
     public override func _isTool() -> Bool {
@@ -52,8 +51,7 @@ class SwiftScript: ScriptExtension {
     }
     
     public override func _getLanguage() -> ScriptLanguage {
-        pm ()
-        return SwiftLanguageIntegration()
+        return SwiftLanguageIntegration.shared
     }
     
     public override func _getConstants() -> Dictionary {
@@ -66,7 +64,6 @@ class SwiftScript: ScriptExtension {
     }
     
     public override func _canInstantiate() -> Bool {
-        pm()
         return true
     }
     
@@ -80,6 +77,7 @@ class SwiftScript: ScriptExtension {
         return "Hello".toVariant()
     }
     
+    /// Must return the script that provides the base class for this script.
     public override func _getBaseScript() -> Script? {
         pm ()
         
@@ -117,7 +115,21 @@ class SwiftScript: ScriptExtension {
     }
     
     public override func _getInstanceBaseType() -> StringName {
-        pm ()
+        guard let regex = try? Regex ("class [A-Za-z_][A-Za-z0-9_]*\\s*:\\s*([A-Za-z_][A-Za-z0-9_]*)") else {
+            pm ("Failed to compile poor man's swift parser regex")
+            return ""
+        }
+        for line in source.split(separator: "\n") {
+            let res = line.matches(of: regex)
+            if res.count == 0 || res [0].count != 2 {
+                continue
+            }
+            if let base = res [0][1].substring {
+                pm ("Returning: \(base)")
+                return StringName (String (base))
+            }
+        }
+        pm ("Did not find a base type")
         return ""
     }
     
@@ -182,6 +194,8 @@ class SwiftScript: ScriptExtension {
 }
 
 class SwiftLanguageIntegration: ScriptLanguageExtension {
+    static var shared = SwiftLanguageIntegration()
+    
     required public init () {
         super.init ()
     }
@@ -223,7 +237,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
     }
     
     open override func _isControlFlowKeyword (keyword: String)-> Bool {
-        pm()
+        pm(keyword)
         switch keyword.description {
         case "if", "break", "continue", "while", "repeat", "throw", "try",
             "return":
@@ -345,6 +359,9 @@ public class _CLASS_: _BASE_ {
         return ret
     }
     
+    // The goal of this method is to say if a path is acceptable to our plugin
+    // it is called from the "Create Script" dialog box, every time the user
+    // edits the file path
     open override func _validatePath (path: String)-> String {
         pm()
         print ("_validatePath: \(path), returning that we are ok with it")
@@ -352,6 +369,7 @@ public class _CLASS_: _BASE_ {
     }
     
     open override func _createScript ()-> Object {
+        pm ()
         return SwiftScript ()
     }
     
@@ -524,8 +542,12 @@ public class _CLASS_: _BASE_ {
         return false
     }
     
+    /// Contents:
+    /// - "name": String
+    /// - "base_type": String
+    /// - "icon_path": String
     open override func _getGlobalClassName (path: String)-> Dictionary {
-        pm()
+        pm("For path: \(path), returning empty dictionary")
         return Dictionary ()
     }
 }
@@ -553,8 +575,9 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
     }
     
     open override func _handlesType(type: StringName) -> Bool {
-        pm ("ResourceFormatLoader: \(type.description)")
-        return type == "SwiftScript"
+        let ret = type.description == "Script"
+        pm ("ResourceFormatLoader: \(type.description) => \(ret)")
+        return ret
     }
     
     open override func _getClassesUsed(path: String) -> PackedStringArray {
@@ -600,11 +623,11 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
     
     open override func _load(path: String, originalPath: String, useSubThreads: Bool, cacheMode: Int32) -> Variant {
         pm ("Request to load path=\(path) originalPath=\(originalPath) useSubthreads=\(useSubThreads) cacheMode=\(cacheMode) -> RETURNING 1")
-        let script = SwiftScript()
         var rootPath = ProjectSettings.shared.globalizePath(path: path)
         guard let contents = try? String (contentsOfFile: rootPath) else {
             return Variant (Int (GodotError.errCantOpen.rawValue))
         }
+        let script = SwiftScript()
         script.resourcePath = path
         script.sourceCode = contents
         return Variant (script)
@@ -625,8 +648,12 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
     }
     
     open override func _recognize(resource: Resource?) -> Bool {
-        print ("_recognize method on Resource \(resource?.resourceName) at \(resource?.resourcePath)")
-        return true
+        if resource is SwiftScript {
+            return true
+        } else {
+            print ("_recognize, can not handle this: method on Resource \(resource?.resourceName) at \(resource?.resourcePath)")
+            return false
+        }
     }
     
     open override func _setUid(path: String, uid: Int) -> GodotError {
