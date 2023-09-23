@@ -135,7 +135,7 @@ class SwiftEditorPlugin: EditorPlugin {
 import PackageDescription
 
 let package = Package(
-    name: "SwiftGodot",
+    name: "@EXT_NAME@",
     platforms: [
         .macOS(.v13),
         .iOS ("16.0")
