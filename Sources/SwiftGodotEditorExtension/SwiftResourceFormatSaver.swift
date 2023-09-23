@@ -52,7 +52,7 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
     //
     // path is: res://FILE
     open override func _save(resource: Resource?, path: String, flags: UInt32) -> GodotError {
-        var rootPath = ProjectSettings.shared.globalizePath(path: "res://")
+        var rootPath = ProjectSettings.shared.globalizePath("res://")
         let swiftSourceDir = "\(rootPath)/Sources/\(extensionName)"
 
         func ensureDirectory () -> Bool {
@@ -77,7 +77,7 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
         guard let file = FileAccess.open(path: actualPath, flags: .write) else {
             return .errCantOpen
         }
-        file.storeString(string: script.source)
+        file.storeString(script.source)
         let err = file.getError()
         if err != .ok {
             print ("_save: Got an error from storing the string: \(err)")

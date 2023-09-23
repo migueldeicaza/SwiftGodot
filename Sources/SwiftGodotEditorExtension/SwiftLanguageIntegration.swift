@@ -59,7 +59,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return PackedStringArray (SwiftLanguageIntegration.reservedSwiftWords)
     }
     
-    open override func _isControlFlowKeyword (keyword: String)-> Bool {
+    open override func _isControlFlowKeyword (_ keyword: String)-> Bool {
         switch keyword.description {
         case "if", "break", "continue", "do", "else", "guard", "repeat", "while", "repeat", "throw", "try",
             "return", "defer", "fallthrough", "for":
@@ -77,7 +77,7 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         return PackedStringArray (["\" \"", "@\" \""])
     }
     
-    open override func _makeTemplate (template: String, className: String, baseClassName: String)-> Script {
+    open override func _makeTemplate (_ template: String, className: String, baseClassName: String)-> Script {
         pm ("template: \(template) className: \(className) baseClassName: \(baseClassName)")
         var s = SwiftScript ()
         s.sourceCode = template
@@ -182,7 +182,7 @@ public class _CLASS_: _BASE_ {
     // The goal of this method is to say if a path is acceptable to our plugin
     // it is called from the "Create Script" dialog box, every time the user
     // edits the file path
-    open override func _validatePath (path: String)-> String {
+    open override func _validatePath (_ path: String)-> String {
         pm()
         print ("_validatePath: \(path), returning that we are ok with it")
         return ""
@@ -237,17 +237,17 @@ public class _CLASS_: _BASE_ {
         return nil
     }
     
-    open override func _completeCode (code: String, path: String, owner: Object?)-> Dictionary {
+    open override func _completeCode (_ code: String, path: String, owner: Object?)-> Dictionary {
         pm()
         return Dictionary ()
     }
     
-    open override func _lookupCode (code: String, symbol: String, path: String, owner: Object?)-> Dictionary {
+    open override func _lookupCode (_ code: String, symbol: String, path: String, owner: Object?)-> Dictionary {
         pm()
         return Dictionary ()
     }
     
-    open override func _autoIndentCode (code: String, fromLine: Int32, toLine: Int32)-> String {
+    open override func _autoIndentCode (_ code: String, fromLine: Int32, toLine: Int32)-> String {
         pm()
         return ""
     }
@@ -321,7 +321,7 @@ public class _CLASS_: _BASE_ {
         pm()
     }
     
-    open override func _reloadToolScript (script: Script?, softReload: Bool) {
+    open override func _reloadToolScript (_ script: Script?, softReload: Bool) {
         pm()
     }
     
@@ -357,7 +357,7 @@ public class _CLASS_: _BASE_ {
         //pm()
     }
     
-    open override func _handlesGlobalClassType (type: String)-> Bool {
+    open override func _handlesGlobalClassType (_ type: String)-> Bool {
         pm("Type=\(type) returning false")
         return false
     }

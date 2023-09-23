@@ -89,7 +89,7 @@ class SwiftScript: ScriptExtension {
         return source != ""
     }
     
-    public override func _hasMethod(method: StringName) -> Bool {
+    public override func _hasMethod(_ method: StringName) -> Bool {
         pm (method.description)
         return true
     }
@@ -138,7 +138,7 @@ class SwiftScript: ScriptExtension {
         return VariantCollection<Dictionary>()
     }
     
-    public override func _inheritsScript(script: Script?) -> Bool {
+    public override func _inheritsScript(_ script: Script?) -> Bool {
         pm ()
         return false
     }
@@ -148,7 +148,7 @@ class SwiftScript: ScriptExtension {
         return false
     }
     
-    public override func _setSourceCode(code: String) {
+    public override func _setSourceCode(_ code: String) {
         pm ()
         source = code
     }
@@ -162,7 +162,7 @@ class SwiftScript: ScriptExtension {
         return Dictionary()
     }
     
-    public override func _hasScriptSignal(signal: StringName) -> Bool {
+    public override func _hasScriptSignal(_ signal: StringName) -> Bool {
         pm ()
         return false
     }

@@ -30,7 +30,7 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
         return PackedStringArray(["swift"])
     }
     
-    open override func _handlesType(type: StringName) -> Bool {
+    open override func _handlesType(_ type: StringName) -> Bool {
         let ret = type.description == "Script"
         //pm ("ResourceFormatLoader: \(type.description) => \(ret)")
         return ret
@@ -54,7 +54,7 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
         return ""
     }
     
-    open override func _recognizePath(path: String, type: StringName) -> Bool {
+    open override func _recognizePath(_ path: String, type: StringName) -> Bool {
         if path.hasSuffix(".swift") {
             return true
         }
@@ -79,7 +79,7 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
     
     open override func _load(path: String, originalPath: String, useSubThreads: Bool, cacheMode: Int32) -> Variant {
         pm ("Request to load path=\(path) originalPath=\(originalPath) useSubthreads=\(useSubThreads) cacheMode=\(cacheMode) -> RETURNING 1")
-        var rootPath = ProjectSettings.shared.globalizePath(path: path)
+        var rootPath = ProjectSettings.shared.globalizePath(path)
         guard let contents = try? String (contentsOfFile: rootPath) else {
             return Variant (Int (GodotError.errCantOpen.rawValue))
         }

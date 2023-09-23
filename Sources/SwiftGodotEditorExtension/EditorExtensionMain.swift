@@ -27,11 +27,11 @@ func setupScene (level: GDExtension.InitializationLevel) {
         register(type: SwiftEditorPlugin.self)
         
         let f = SwiftResourceFormatSaver()
-        ResourceSaver.shared.addResourceFormatSaver(formatSaver: f)
+        ResourceSaver.shared.addResourceFormatSaver(f)
         let l = SwiftResourceFormatLoader ()
-        ResourceLoader.shared.addResourceFormatLoader(formatLoader: l, atFront: false)
+        ResourceLoader.shared.addResourceFormatLoader(l, atFront: false)
         
-        e.registerScriptLanguage(language: SwiftLanguageIntegration.shared)
+        e.registerScriptLanguage(SwiftLanguageIntegration.shared)
         
         if Engine.shared.isEditorHint() {
             SwiftEditorPlugin.registerPlugin ()

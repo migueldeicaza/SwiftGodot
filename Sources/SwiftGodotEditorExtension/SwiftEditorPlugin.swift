@@ -42,7 +42,7 @@ class SwiftEditorPlugin: EditorPlugin {
     var _projectBaseDir: String?
     lazy var projectBaseDir: String = {
         if let dir = _projectBaseDir { return dir }
-        return ProjectSettings.shared.globalizePath(path: "res://")
+        return ProjectSettings.shared.globalizePath("res://")
     } ()
     
     lazy var packageSwiftFile: String = {
@@ -124,7 +124,7 @@ class SwiftEditorPlugin: EditorPlugin {
         self.confirmCreateDialog = confirmCreateDialog
         
         var exportPlugin = EditorExportPlugin()
-        addExportPlugin(plugin: exportPlugin)
+        addExportPlugin(exportPlugin)
     }
     
     public override func _disablePlugin() {
