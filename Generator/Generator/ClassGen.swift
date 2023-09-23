@@ -109,7 +109,12 @@ func generateVirtualProxy (_ p: Printer,
         for arg in method.arguments ?? [] {
             if argCall != "" { argCall += ", " }
             let argName = escapeSwift (snakeToCamel (arg.name))
-            argCall += "\(argName): "
+            
+            // Drop the first argument name for methods whose name already include the argument
+            // name, like 'setMultiplayerPeer (peer: ..)' becomes 'setMultiplayerPeer (_ peer: ...)'
+            if i > 0 || !method.name.hasSuffix("_\(arg.name)") {
+                argCall += "\(argName): "
+            }
             if arg.type == "String" {
                 argCall += "GString.stringFromGStringPtr (ptr: args [\(i)]!) ?? \"\""
             } else if let cmap = classMap [arg.type] {
@@ -285,7 +290,10 @@ func generateProperties (_ p: Printer,
                 }
                 resolvedName = godotMethodToSwift (there.name)
                 if let aname = there.arguments?.first?.name {
-                    argName = aname + ": "
+                    // Now check thta this argument does not need to be dropped
+                    if !there.name.hasSuffix("_\(aname)") {
+                        argName = aname + ": "
+                    }
                 }
                 return there
             }
