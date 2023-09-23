@@ -14,7 +14,7 @@ You can create Variants from the following structures and types:
 
 * Swift's Bool, Int, Int64, Strings and Floats
 * Godot's GString, Vector, Rect, Transform, Plane, Quaternion, AABB, Basis,
-  Projection, NodePaths, RIDs, Callable, Dictionary, Array and PackedArrays. 
+  Projection, NodePaths, RIDs, Callable, GDictionary, Array and PackedArrays. 
 * Godot's objects
 
 You wrap your data type by calling one of the ``Variant`` constructors, and then

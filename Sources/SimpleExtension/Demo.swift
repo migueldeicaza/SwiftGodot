@@ -82,7 +82,7 @@ class SwiftSprite: Sprite2D {
         let imageVariant = ProjectSettings.shared.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
                GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
                
-               let dict2: Dictionary? = SwiftGodot.Dictionary(imageVariant)
+               let dict2: GDictionary? = GDictionary(imageVariant)
                GD.print("dictionary2: \(dict2) \(dict2?["type"]) \(dict2?["value"])")
                
        // part b
