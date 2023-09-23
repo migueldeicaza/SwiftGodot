@@ -283,13 +283,19 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
         return (nil, String (txt))
     }
 
-    func assembleArgs (_ arguments: [JGodotArgument]?) -> String {
+    func assembleArgs (_ optMethod: JGodotClassMethod?, _ arguments: [JGodotArgument]?) -> String {
         var args = ""
         
         // Assemble argument names
+        var i = 0
         for arg in arguments ?? [] {
-            args.append(godotArgumentToSwift(arg.name))
+            if optMethod != nil && i == 0 && optMethod!.name.hasSuffix(arg.name) {
+                args.append ("_")
+            } else {
+                args.append(godotArgumentToSwift(arg.name))
+            }
             args.append(":")
+            i += 1
         }
         return args
     }
@@ -316,22 +322,22 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
         if let type {
             if let m = classMap [type] {
                 if let method = findMethod (name: member, on: m) {
-                    args = assembleArgs (method.arguments)
+                    args = assembleArgs (method, method.arguments)
                 }
             } else if let m = builtinMap [type] {
                 if let method = findMethod (name: member, on: m) {
-                    args = assembleArgs(method.arguments)
+                    args = assembleArgs(nil, method.arguments)
                 }
             }
             return "\(type)/\(godotMethodToSwift(member))(\(args))"
         } else {
             if let apiDef = cdef as? JGodotExtensionAPIClass {
                 if let method = findMethod(name: member, on: apiDef) {
-                    args = assembleArgs (method.arguments)
+                    args = assembleArgs (method, method.arguments)
                 }
             } else if let builtinDef = cdef as? JGodotBuiltinClass {
                 if let method = findMethod(name: member, on: builtinDef) {
-                    args = assembleArgs (method.arguments)
+                    args = assembleArgs (nil, method.arguments)
                 }
             }
         }

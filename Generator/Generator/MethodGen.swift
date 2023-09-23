@@ -83,7 +83,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     let bindName = "method_\(method.name)"
     
     var visibility: String
-    var eliminate: String
+    var allEliminate: String
     var finalp: String
     // Default method name
     var methodName: String = godotMethodToSwift (method.name)
@@ -110,11 +110,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         if usedMethods.contains (method.name) {
             inline = "@inline(__always)"
             visibility = "internal"
-            eliminate = "_ "
+            allEliminate = "_ "
             methodName = method.name
         } else {
             visibility = "public"
-            eliminate = ""
+            allEliminate = ""
         }
         if instanceOrStatic == "" {
             finalp = "final "
@@ -126,7 +126,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // virtual overwrittable method
         finalp = ""
         visibility = "@_documentation(visibility: public)\nopen"
-        eliminate = ""
+        allEliminate = ""
             
         registerVirtualMethodName = methodName
     }
@@ -150,14 +150,29 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
     
     var withUnsafeCallNestLevel = 0
-
+    var eliminate: String = allEliminate
     if let margs = method.arguments {
+        var firstArg: String? = nil
         for arg in margs {
             if args != "" { args += ", " }
             var isRefOptional = false
             if classMap [arg.type] != nil {
                 isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
             }
+            
+            // if the first argument name matches the last part of the method name, we want
+            // to skip giving it a name.   For example:
+            // addPattern (pattern: xx) becomes addPattern (_ pattern: xx)
+            if firstArg == nil {
+                if method.name.hasSuffix("_\(arg.name)") {
+                    eliminate = "_ "
+                } else {
+                    eliminate = allEliminate
+                }
+            } else {
+                eliminate = allEliminate
+            }
+            firstArg = arg.name
             args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
             var reference = escapeSwift (snakeToCamel (arg.name))
 
