@@ -641,7 +641,8 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         p ("internal \(fastInitOverrides)init (fast: Bool)") {
             p ("super.init (name: \(cdef.name).className)")
         }
-        if cdef.isInstantiable {
+        
+        if cdef.isInstantiable || true {
             p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
             p ("/// when you create a subclass of this type.")
             p ("public required init ()") {
@@ -650,7 +651,14 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         } else {
             p ("/// This class can not be instantiated by user code")
             p ("public required init ()") {
-                p ("fatalError (\"You cannot subclass or instantiate \(cdef.name) directly\")")
+                // is_instantiable means "Users should not instantiate this", but I was incorrect
+                // assuming it meant they could not subclass, and let the engine deal with it.
+                // With the 'public required init' requirement, I am not sure how to surface
+                // this.  Perhaps throw the error, and provide an altnerative constructor chain?
+                p ("public required init ()") {
+                    p ("super.init (name: StringName (\"\(cdef.name)\"))")
+                }
+                //p ("fatalError (\"You cannot subclass or instantiate \(cdef.name) directly\")")
             }
         }
         
