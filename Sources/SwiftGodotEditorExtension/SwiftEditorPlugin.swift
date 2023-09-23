@@ -61,6 +61,10 @@ class SwiftEditorPlugin: EditorPlugin {
     }
     
     public override func _build() -> Bool {
+        pm ("Starting build \(getpid())")
+        defer {
+            pm ("Completed build \(getpid())")
+        }
         do {
             try ensurePackageSwift()
         } catch {
@@ -68,7 +72,8 @@ class SwiftEditorPlugin: EditorPlugin {
             return false
         }
         do {
-            try Process.run(URL (filePath: "/usr/bin/swift"), arguments: ["build", "--package-path", projectBaseDir])
+            let p = try Process.run(URL (filePath: "/usr/bin/swift"), arguments: ["build", "--package-path", projectBaseDir])
+            p.waitUntilExit()
         } catch {
             pm ("Failed to run swift build: \(error)")
             return false
@@ -84,7 +89,8 @@ class SwiftEditorPlugin: EditorPlugin {
             return
         }
         do {
-            try Process.run(URL (filePath: "/usr/bin/swift"), arguments: ["package", "clean", "--package-path", projectBaseDir])
+            let p = try Process.run(URL (filePath: "/usr/bin/swift"), arguments: ["package", "clean", "--package-path", projectBaseDir])
+            p.waitUntilExit()
         } catch {
             pm ("Failed to run swift build: \(error)")
         }

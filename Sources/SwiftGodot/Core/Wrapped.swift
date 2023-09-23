@@ -260,7 +260,6 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T {
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
 ///
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    print ("SWIFT: Creating object userData:\(userData)")
     guard let userData else {
         print ("Got a nil userData")
         return nil
@@ -271,6 +270,7 @@ func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointe
         return nil
     }
     let o = type.init ()
+    print ("SWIFT: Creating object userData:\(userData) of \(type)")
     return UnsafeMutableRawPointer (mutating: o.handle)
 }
 

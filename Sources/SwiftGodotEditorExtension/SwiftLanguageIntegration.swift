@@ -128,7 +128,7 @@ class _CLASS_: _BASE_ {
 """),
         "Node": SwiftScriptTemplate(inherit: "Node", name: "Default", description: "Base template for Node with default Godot cycle methods", id: "node", origin: 0, content:
 """
-using SwiftGodot
+import SwiftGodot
 
 public class _CLASS_: _BASE_ {
     // Called when the node enters the scene tree for the first time.

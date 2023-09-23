@@ -33,7 +33,9 @@ func setupScene (level: GDExtension.InitializationLevel) {
         
         e.registerScriptLanguage(language: SwiftLanguageIntegration.shared)
         
-        SwiftEditorPlugin.registerPlugin ()
+        if Engine.shared.isEditorHint() {
+            SwiftEditorPlugin.registerPlugin ()
+        }
     }
 }
 @_cdecl ("swift_godot_editor_exension_main")

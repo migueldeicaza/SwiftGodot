@@ -174,7 +174,12 @@ class SwiftScript: ScriptExtension {
     
     public override func _getPropertyDefaultValue(property: StringName) -> Variant {
         pm ("For property: \(property.description)")
-        return false.toVariant()
+        switch property.description {
+        case "script":
+            return Variant (self)
+        default:
+            return false.toVariant()
+        }
     }
     
     public override func _hasPropertyDefaultValue(property: StringName) -> Bool {

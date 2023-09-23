@@ -49,7 +49,8 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
         return true
     }
 
-    
+    //
+    // path is: res://FILE
     open override func _save(resource: Resource?, path: String, flags: UInt32) -> GodotError {
         var rootPath = ProjectSettings.shared.globalizePath(path: "res://")
         let swiftSourceDir = "\(rootPath)/Sources/\(extensionName)"
@@ -71,8 +72,7 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
             print ("_save the resource did not cast to a SwiftScript")
             return .errFileUnrecognized
         }
-        path.dropFirst(5)
-        var actualPath = path.starts(with: "Sources/\(extensionName)/") ? path : "Sources/\(extensionName)/\(path.dropFirst(6))"
+        var actualPath = path.starts(with: "res://Sources/\(extensionName)/") || path == "res://Package.swift" ? path : "res://Sources/\(extensionName)/\(path.dropFirst(6))"
         print ("Going to save to [\(actualPath)]")
         guard let file = FileAccess.open(path: actualPath, flags: .write) else {
             return .errCantOpen
