@@ -4,7 +4,6 @@
 //  Created by Miguel de Icaza on 3/25/23.
 //
 
-import Foundation
 @_implementationOnly import GDExtension
 
 func additionalRegistations (name: StringName) {

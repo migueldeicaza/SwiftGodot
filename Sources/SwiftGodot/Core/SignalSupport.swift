@@ -5,8 +5,6 @@
 //  Created by Miguel de Icaza on 4/30/23.
 //
 
-import Foundation
-
 /// This is a convenience object used as a helper for signals, all it does is
 /// register a method with godot called `proxy` that will invoke
 /// the callback defined in the public `proxy` variable here.

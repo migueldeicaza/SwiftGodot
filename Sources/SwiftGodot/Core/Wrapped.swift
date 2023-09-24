@@ -32,7 +32,6 @@
 //
 // We ensure that all Godot
 
-import Foundation
 @_implementationOnly import GDExtension
 
 ///
