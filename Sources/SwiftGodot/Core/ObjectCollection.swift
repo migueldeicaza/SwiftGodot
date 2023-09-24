@@ -24,7 +24,7 @@ public class ObjectCollection<T:Object>: GArray, Collection {
         var name = StringName()
         var variant = Variant()
 
-        gi.array_set_typed (&content, GDExtensionVariantType (UInt32(Variant.GType.object.rawValue)), &name.content, &variant.content)
+        gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
     }
     
     public required init? (_ variant: Variant) {

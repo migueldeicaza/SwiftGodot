@@ -25,7 +25,7 @@ public class VariantCollection<T:GodotVariant>: GArray, Collection {
         var name = StringName()
         var variant = Variant()
 
-        //gi.array_set_typed (&content, GDExtensionVariantType (UInt32(T.variantType.rawValue)), &name.content, &variant.content)
+        //gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(T.variantType.rawValue)), &name.content, &variant.content)
     }
     
     public required init? (_ variant: Variant) {

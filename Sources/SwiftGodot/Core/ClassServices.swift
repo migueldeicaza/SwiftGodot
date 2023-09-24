@@ -214,7 +214,7 @@ public struct PropInfo {
     }
     func makeNativeStruct () -> GDExtensionPropertyInfo {
         GDExtensionPropertyInfo(
-            type: GDExtensionVariantType(UInt32 (propertyType.rawValue)),
+            type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
             name: &propertyName.content,
             class_name: &className.content,
             hint: UInt32 (hint.rawValue),
