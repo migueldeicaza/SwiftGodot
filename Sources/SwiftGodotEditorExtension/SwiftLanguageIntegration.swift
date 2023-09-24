@@ -94,17 +94,17 @@ class SwiftLanguageIntegration: ScriptLanguageExtension {
         let origin: Int
         let content: String
         
-        func toDictionary () -> Dictionary {
-            var dict = Dictionary()
+        func toDictionary () -> GDictionary {
+            var dict = GDictionary()
             
-            dict [Variant ("inherit")] = Variant (inherit)
-            dict [Variant ("name")] = Variant (name)
-            dict [Variant ("description")] = Variant (description)
-            dict [Variant ("content")] = Variant (content)
+            dict ["inherit"] = Variant (inherit)
+            dict ["name"] = Variant (name)
+            dict ["description"] = Variant (description)
+            dict ["content"] = Variant (content)
             
             // TODO what to fill here?
-            dict [Variant ("id")] = Variant (id)
-            dict [Variant ("origin")] = Variant ("\(origin)")
+            dict ["id"] = Variant (id)
+            dict ["origin"] = Variant ("\(origin)")
             return dict
         }
     }
@@ -143,8 +143,8 @@ public class _CLASS_: _BASE_ {
 """)
     ]
     
-    open override func _getBuiltInTemplates (object: StringName)-> VariantCollection<Dictionary> {
-        var collection = VariantCollection<Dictionary> ()
+    open override func _getBuiltInTemplates (object: StringName)-> VariantCollection<GDictionary> {
+        var collection = VariantCollection<GDictionary> ()
 
         if let template = templates [object.description] {
             collection.append (value: Variant (template.toDictionary()))
@@ -159,7 +159,7 @@ public class _CLASS_: _BASE_ {
         return true
     }
     
-    open override func _validate (script: String, path: String, validateFunctions: Bool, validateErrors: Bool, validateWarnings: Bool, validateSafeLines: Bool)-> Dictionary {
+    open override func _validate (script: String, path: String, validateFunctions: Bool, validateErrors: Bool, validateWarnings: Bool, validateSafeLines: Bool)-> GDictionary {
         pm ();
         // The return needs to push the following values:
         // - "valid" if valid, nothing if not
@@ -174,8 +174,8 @@ public class _CLASS_: _BASE_ {
         //         String ("message"));
         // - "safelines"
         
-        var ret = Dictionary ()
-        ret [Variant ("valid")] = Variant (true)
+        var ret = GDictionary ()
+        ret ["valid"] = Variant (true)
         return ret
     }
     
@@ -237,14 +237,14 @@ public class _CLASS_: _BASE_ {
         return nil
     }
     
-    open override func _completeCode (_ code: String, path: String, owner: Object?)-> Dictionary {
+    open override func _completeCode (_ code: String, path: String, owner: Object?)-> GDictionary {
         pm()
-        return Dictionary ()
+        return GDictionary ()
     }
     
-    open override func _lookupCode (_ code: String, symbol: String, path: String, owner: Object?)-> Dictionary {
+    open override func _lookupCode (_ code: String, symbol: String, path: String, owner: Object?)-> GDictionary {
         pm()
-        return Dictionary ()
+        return GDictionary ()
     }
     
     open override func _autoIndentCode (_ code: String, fromLine: Int32, toLine: Int32)-> String {
@@ -292,19 +292,19 @@ public class _CLASS_: _BASE_ {
         return ""
     }
     
-    open override func _debugGetStackLevelLocals (level: Int32, maxSubitems: Int32, maxDepth: Int32)-> Dictionary {
+    open override func _debugGetStackLevelLocals (level: Int32, maxSubitems: Int32, maxDepth: Int32)-> GDictionary {
         pm()
-        return Dictionary ()
+        return GDictionary ()
     }
     
-    open override func _debugGetStackLevelMembers (level: Int32, maxSubitems: Int32, maxDepth: Int32)-> Dictionary {
+    open override func _debugGetStackLevelMembers (level: Int32, maxSubitems: Int32, maxDepth: Int32)-> GDictionary {
         pm()
-        return Dictionary ()
+        return GDictionary ()
     }
     
-    open override func _debugGetGlobals (maxSubitems: Int32, maxDepth: Int32)-> Dictionary {
+    open override func _debugGetGlobals (maxSubitems: Int32, maxDepth: Int32)-> GDictionary {
         pm()
-        return Dictionary ()
+        return GDictionary ()
     }
     
     open override func _debugParseStackLevelExpression (level: Int32, expression: String, maxSubitems: Int32, maxDepth: Int32)-> String {
@@ -312,9 +312,9 @@ public class _CLASS_: _BASE_ {
         return ""
     }
     
-    open override func _debugGetCurrentStackInfo ()-> VariantCollection<Dictionary> {
+    open override func _debugGetCurrentStackInfo ()-> VariantCollection<GDictionary> {
         pm()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
     open override func _reloadAllScripts () {
@@ -330,19 +330,19 @@ public class _CLASS_: _BASE_ {
         return r
     }
     
-    open override func _getPublicFunctions ()-> VariantCollection<Dictionary> {
+    open override func _getPublicFunctions ()-> VariantCollection<GDictionary> {
         pm()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
-    open override func _getPublicConstants ()-> Dictionary {
+    open override func _getPublicConstants ()-> GDictionary {
         pm()
-        return Dictionary ()
+        return GDictionary ()
     }
     
-    open override func _getPublicAnnotations ()-> VariantCollection<Dictionary> {
+    open override func _getPublicAnnotations ()-> VariantCollection<GDictionary> {
         pm()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
     open override func _profilingStart () {
@@ -366,9 +366,9 @@ public class _CLASS_: _BASE_ {
     /// - "name": String
     /// - "base_type": String
     /// - "icon_path": String
-    open override func _getGlobalClassName (path: String)-> Dictionary {
+    open override func _getGlobalClassName (path: String)-> GDictionary {
         pm("For path: \(path), returning empty dictionary")
-        return Dictionary ()
+        return GDictionary ()
     }
 }
 

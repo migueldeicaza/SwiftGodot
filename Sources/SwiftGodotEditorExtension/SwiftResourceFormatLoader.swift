@@ -67,7 +67,7 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
         return ""
     }
     
-    open override func _renameDependencies(path: String, renames: Dictionary) -> GodotError {
+    open override func _renameDependencies(path: String, renames: GDictionary) -> GodotError {
         pm ("Request to rename \(path)")
         return .ok
     }

@@ -44,9 +44,9 @@ class SwiftScript: ScriptExtension {
         return SwiftLanguageIntegration.shared
     }
     
-    public override func _getConstants() -> Dictionary {
+    public override func _getConstants() -> GDictionary {
         pm ()
-        return Dictionary()
+        return GDictionary()
     }
     
     public override func _updateExports() {
@@ -57,9 +57,9 @@ class SwiftScript: ScriptExtension {
         return true
     }
     
-    public override func _getDocumentation() -> VariantCollection<Dictionary> {
+    public override func _getDocumentation() -> VariantCollection<GDictionary> {
         pm()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
     public override func _getRpcConfig() -> Variant {
@@ -123,19 +123,19 @@ class SwiftScript: ScriptExtension {
         return ""
     }
     
-    public override func _getScriptMethodList() -> VariantCollection<Dictionary> {
+    public override func _getScriptMethodList() -> VariantCollection<GDictionary> {
         pm ()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
-    public override func _getScriptSignalList() -> VariantCollection<Dictionary> {
+    public override func _getScriptSignalList() -> VariantCollection<GDictionary> {
         pm ()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
-    public override func _getScriptPropertyList() -> VariantCollection<Dictionary> {
+    public override func _getScriptPropertyList() -> VariantCollection<GDictionary> {
         pm ()
-        return VariantCollection<Dictionary>()
+        return VariantCollection<GDictionary>()
     }
     
     public override func _inheritsScript(_ script: Script?) -> Bool {
@@ -158,8 +158,8 @@ class SwiftScript: ScriptExtension {
         return 1
     }
     
-    public override func _getMethodInfo(method: StringName) -> Dictionary {
-        return Dictionary()
+    public override func _getMethodInfo(method: StringName) -> GDictionary {
+        return GDictionary()
     }
     
     public override func _hasScriptSignal(_ signal: StringName) -> Bool {
