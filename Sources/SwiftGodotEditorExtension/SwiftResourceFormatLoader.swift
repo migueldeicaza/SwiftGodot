@@ -78,14 +78,23 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
     }
     
     open override func _load(path: String, originalPath: String, useSubThreads: Bool, cacheMode: Int32) -> Variant {
-        pm ("Request to load path=\(path) originalPath=\(originalPath) useSubthreads=\(useSubThreads) cacheMode=\(cacheMode) -> RETURNING 1")
-        var rootPath = ProjectSettings.shared.globalizePath(path)
+        pm ("Request to load path=\(path) originalPath=\(originalPath) useSubthreads=\(useSubThreads) cacheMode=\(cacheMode)")
+        var rootPath: String
+        
+        if path.hasSuffix("res://Sources/\(extensionName)/") {
+            rootPath = ProjectSettings.shared.globalizePath(path)
+        } else {
+            rootPath = ProjectSettings.shared.globalizePath("res://Sources/\(extensionName)/\(path.dropFirst (6))")
+        }
+        pm ("RESOLVED PATH: \(rootPath)")
         guard let contents = try? String (contentsOfFile: rootPath) else {
+            pm ("_LOAD: Failed to load the contents of \(rootPath)")
             return Variant (Int (GodotError.errCantOpen.rawValue))
         }
         let script = SwiftScript()
         script.resourcePath = path
         script.sourceCode = contents
+        pm ("_LOAD: RETURNING SCRIPT")
         return Variant (script)
     }
 }
