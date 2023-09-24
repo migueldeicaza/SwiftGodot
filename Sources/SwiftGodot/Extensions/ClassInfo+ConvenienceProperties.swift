@@ -5,7 +5,6 @@
 //  Created by Marquis Kurt on 5/29/23.
 //
 
-import Foundation
 import UniformTypeIdentifiers
 
 public protocol Nameable {

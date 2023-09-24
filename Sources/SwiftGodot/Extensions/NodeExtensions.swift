@@ -5,8 +5,6 @@
 //  Created by Miguel de Icaza on 4/12/23.
 //
 
-import Foundation
-
 /// Use the BindNode property wrapper in any subclass of Node to retrieve the node from the
 /// current container that matches the name of the property.
 ///

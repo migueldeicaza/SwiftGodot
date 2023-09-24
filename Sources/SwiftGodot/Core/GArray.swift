@@ -5,7 +5,6 @@
 //  Created by Miguel de Icaza on 4/8/23.
 //
 
-import Foundation
 @_implementationOnly import GDExtension
 
 public enum ArrayError {
