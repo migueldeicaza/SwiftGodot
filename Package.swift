@@ -47,7 +47,7 @@ let package = Package(
             name: "GDExtension"),
         .target(
             name: "SwiftGodot",
-            dependencies: ["GDExtension", "Generator"],
+            dependencies: ["GDExtension"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
             linkerSettings: [
                 .unsafeFlags (

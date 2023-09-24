@@ -5,7 +5,6 @@
 //  Created by Miguel de Icaza on 4/11/23.
 //
 
-import Foundation
 @_implementationOnly import GDExtension
 
 /// Protocol implemented by the built-in classes in Godot to allow to be wrapped in a ``Variant``

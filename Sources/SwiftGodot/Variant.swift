@@ -5,7 +5,6 @@
 //  Created by Miguel de Icaza on 3/24/23.
 //
 
-import Foundation
 @_implementationOnly import GDExtension
 
 /// Variant objects box various Godot Objects, you create them with one of the

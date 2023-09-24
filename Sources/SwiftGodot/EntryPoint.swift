@@ -4,7 +4,7 @@
 //  Created by Miguel de Icaza on 3/24/23.
 //
 //
-import Foundation
+
 @_implementationOnly import GDExtension
 
 /// The pointer to the Godot Extension Interface
