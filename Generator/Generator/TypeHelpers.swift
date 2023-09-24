@@ -143,6 +143,9 @@ func mapTypeName (_ name: String) -> String {
     if name == "Array" {
         return "GArray"
     }
+    if name == "Dictionary" {
+        return "GDictionary"
+    }
     return name
 }
 func mapTypeNameDoc (_ name: String) -> String {
@@ -151,6 +154,9 @@ func mapTypeNameDoc (_ name: String) -> String {
     }
     if name == "Type" {
         return "GType"
+    }
+    if name == "Dictionary" {
+        return "GDictionary"
     }
     return mapTypeName (name)
 }
@@ -290,6 +296,8 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         } else {
             return "GString"
         }
+    case "Dictionary":
+        return "GDictionary"
     case "Array":
         return "GArray"
     case "void*":

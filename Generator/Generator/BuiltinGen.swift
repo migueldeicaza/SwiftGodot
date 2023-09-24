@@ -379,8 +379,8 @@ func generateBuiltinMethods (_ p: Printer,
             p ("get") {
                 p ("var keyCopy = key")
                 p ("var result = Variant.zero")
-                p ("if Dictionary.keyed_checker (&content, &keyCopy.content) != 0") {
-                    p ("Dictionary.keyed_getter (&content, &keyCopy.content, &result)")
+                p ("if GDictionary.keyed_checker (&content, &keyCopy.content) != 0") {
+                    p ("GDictionary.keyed_getter (&content, &keyCopy.content, &result)")
                     p ("return Variant (fromContent: result)")
                 }
                 p ("else") {
@@ -390,10 +390,10 @@ func generateBuiltinMethods (_ p: Printer,
             p ("set") {
                 p ("var keyCopy = key")
                 p ("if var newCopy = newValue") {
-                    p ("Dictionary.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
+                    p ("GDictionary.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
                 }
                 p ("else") {
-                    p ("Dictionary.keyed_setter (&content, &keyCopy.content, nil)")
+                    p ("GDictionary.keyed_setter (&content, &keyCopy.content, nil)")
                 }
             }
         }

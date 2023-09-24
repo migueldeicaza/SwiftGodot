@@ -67,7 +67,7 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                 }
             } else if argumentType == "Dictionary" {
                 if dv == "{}" {
-                    def = " = SwiftGodot.Dictionary ()"
+                    def = " = GDictionary ()"
                 } else {
                     print ("Generator: \(argumentType) missing support for default value: \(dv)")
                 }

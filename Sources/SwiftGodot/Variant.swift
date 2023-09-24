@@ -249,7 +249,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         Variant.fromTypeMap [GType.signal.rawValue] (&content, &value.content)
     }
     
-    public init (_ value: Dictionary) {
+    public init (_ value: GDictionary) {
         Variant.fromTypeMap [GType.dictionary.rawValue] (&content, &value.content)
     }
     

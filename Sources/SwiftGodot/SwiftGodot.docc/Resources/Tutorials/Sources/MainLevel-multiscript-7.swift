@@ -27,7 +27,7 @@ class MainLevel: Node2D {
         self.spawnpoint = getNodeOrNull(path: "Spawnpoint") as? Node2D
 
         teleportArea?.bodyEntered.connect { [self] enteredBody in
-            if enteredBody.isClass(class: "\(PlayerController.self)") {
+            if enteredBody.isClass("\(PlayerController.self)") {
                 teleportPlayerToTop()
             }
         }
