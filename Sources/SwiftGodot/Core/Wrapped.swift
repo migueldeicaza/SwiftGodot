@@ -167,7 +167,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.get_virtual_func = getVirtual
     info.notification_func = notificationFunc
     
-    let retained = Unmanaged<AnyObject>.passRetained(type)
+    let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
     
     gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.content), UnsafeRawPointer(&parent.content), &info)
@@ -194,7 +194,7 @@ public func register<T:Wrapped> (type: T.Type) {
         return String (describing: t)
     }
     
-    guard let superStr = getSuperType (type: type) else {
+    guard let superStr = getSuperType (type: type as AnyObject) else {
         print ("You can not register the root class")
         return
     }
