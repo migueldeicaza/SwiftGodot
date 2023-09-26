@@ -1,8 +1,12 @@
 //
 //  GodotMacro.swift
 //
-//
 //  Created by Miguel de Icaza on 9/25/23.
+//
+// TODO:
+//   - Make it so that if a class has an init() that we do not generate ours,
+//     so users can initialize their defaults.   But how do we deal with the
+//     requirement to call classInit?
 //
 
 import Foundation
@@ -30,16 +34,20 @@ class GodotMacroProcessor {
         let propType = godotTypeToProp (typeName: parameterTypeName)
         
         let name = "prop_\(propertyDeclarations.count)"
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)_\(parameterTypeName)\", className: className, hint: .none, hintStr: \"\", usage: .propertyUsageDefault)\n")
+        
+        // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
+        // and instead share all the Ints, all the Floats and so on.
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\(parameterTypeName)\", className: className, hint: .none, hintStr: \"\", usage: .propertyUsageDefault)\n")
         propertyDeclarations [key] = name
         return name
     }
 
-    func process (funcDecl: FunctionDeclSyntax) throws {
+    // Processes a function
+    func processFunction (_ funcDecl: FunctionDeclSyntax) throws {
         guard hasCallableAttribute(funcDecl.attributes) else {
             return
         }
-        var funcName = funcDecl.name.text
+        let funcName = funcDecl.name.text
         var funcArgs = ""
         var retProp: String? = nil
         if let (retType, _) = getIdentifier (funcDecl.signature.returnClause?.type) {
@@ -50,8 +58,7 @@ class GodotMacroProcessor {
             guard let ptype = getTypeName(parameter) else {
                 throw MacroError.typeName (parameter)
             }
-            let first = parameter.firstName.text
-            let propInfo = lookupProp (parameterTypeName: ptype, parameterName: first)
+            let propInfo = lookupProp (parameterTypeName: ptype, parameterName: "")
             if funcArgs == "" {
                 funcArgs = "\tlet \(funcName)Args = [\n"
             }
@@ -64,178 +71,40 @@ class GodotMacroProcessor {
         ctor.append ("\tclassInfo.registerMethod(name: \"funcName\", flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
     }
     
-    var ctor: String = ""
-    var genMethods: [String] = []
-    
-    func processType () throws -> String {
-        ctor =
-    """
-    static func _initClass () {
-        let className = StringName("\(className)")
-        let classInfo = ClassInfo<\(className)> (name: className)\n
-    """
-        for member in classDecl.members.members.enumerated() {
-            let decl = member.element.decl
-            if let funcDecl = decl.as(FunctionDeclSyntax.self) {
-                let s = try process (funcDecl: funcDecl)
-            } 
-//            else if let varDecl = decl.as (VariableDeclSyntax.self) {
-//                try process (varDecl: varDecl)
-//            }
+    func processVariable (_ varDecl: VariableDeclSyntax) throws {
+        guard hasExportAttribute(varDecl.attributes) else {
+            return
         }
-        ctor.append("}")
-        return ctor
-    }
-
-}
-
-enum GodotMacroDiagnostic: String, DiagnosticMessage {
-    case requiresClass
-    case requiresFunction
-    
-    var severity: DiagnosticSeverity {
-        switch self {
-        case .requiresClass: .error
-        case .requiresFunction: .error
+        guard let last = varDecl.bindings.last else {
+            throw GodotMacroError.noVariablesFound
         }
-    }
-
-    var message: String {
-        switch self {
-        case .requiresClass:
-            "@Godot attribute can only be applied to a class"
-        case .requiresFunction:
-            "@Callable attribute can only be applied to functions"
+        guard var type = last.typeAnnotation?.type else {
+            throw GodotMacroError.noTypeFound(varDecl)
         }
-    }
-    
-    var diagnosticID: MessageID {
-        MessageID(domain: "SwiftGodotMacros", id: rawValue)
-    }
-}
-
-///
-/// The Godot macro is applied to a class and it generates the boilerplate
-/// `init(nativeHandle:)` and `init()` constructors along with the
-/// static class initializer for any exported properties and methods.
-///
-public struct GodotMacro: MemberMacro {
-    
-    public static func expansion(of node: AttributeSyntax,
-                                 providingMembersOf declaration: some DeclGroupSyntax,
-                                 in context: some MacroExpansionContext) throws -> [DeclSyntax] {
+        if let optSyntax = type.as (OptionalTypeSyntax.self) {
+            type = optSyntax.wrappedType
+        }
+        guard let typeName = type.as (IdentifierTypeSyntax.self)?.name.text else {
+            throw GodotMacroError.unsupportedType(varDecl)
+        }
+        let exportAttr = varDecl.attributes.first?.as(AttributeSyntax.self)
+        let lel = exportAttr?.arguments?.as(LabeledExprListSyntax.self)
+        let f = lel?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
         
-        guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
-            let classError = Diagnostic(node: declaration.root, message: GodotMacroDiagnostic.requiresClass)
-            context.diagnose(classError)
-            return []
-        }
+        let s = lel?.dropFirst().first
         
-        let processor = GodotMacroProcessor(classDecl: classDecl)
-        let classInit = try processor.processType ()
-        
-        let initRawHandleSyntax = try InitializerDeclSyntax("required init(nativeHandle _: UnsafeRawPointer)") {
-            StmtSyntax("fatalError(\"init(nativeHandle:) has not been implemented\")")
-        }
-        let initSyntax = try InitializerDeclSyntax("required init()") {
-            StmtSyntax("\(classDecl.name)._initClass ()\nsuper.init ()")
-        }
-        
-        return [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
+        for singleVar in varDecl.bindings {
+            guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
+                throw GodotMacroError.expectedIdentifier(singleVar)
+            }
+            let varName = ips.identifier.text
+            let setterName = "_mproxy_set_\(varName)"
+            let getterName = "_mproxy_get_\(varName)"
 
-    }
-}
-
-@main
-struct godotMacrosPlugin: CompilerPlugin {
-    let providingMacros: [Macro.Type] = [
-        GodotMacro.self,
-        GodotCallable.self,
-        GodotExport.self
-    ]
-}
-
-#if notyet
-
-func makeGetAccessor (varName: String, isOptional: Bool) -> String {
-    let name = "_pProxy_get\(varName)"
-    if isOptional {
-        genMethods.append (
-"""
-func \(name) (args: [Variant]) -> Variant? {
-    guard let result = \(varName) else { return nil }
-    return Variant (result)
-}
-""")
-    } else {
-        genMethods.append (
-"""
-func \(name) (args: [Variant]) -> Variant? {
-    return Variant (\(varName))
-}
-""")
-    }
-    return name
-}
-func makeSetAccessor (varName: String, typeName: String, isOptional: Bool) -> String {
-    let name = "_pProxy_set_\(varName)"
-    if isOptional {
-        genMethods.append (
-"""
-func \(name) (args: [Variant]) -> Variant? {
-    if let v = args [0] {
-        \(varName) = \(typeName)(v)
-    } else {
-        \(varName) = nil
-    }
-    return nil
-}
-""")
-    } else {
-        genMethods.append (
-"""
-func \(name) (args: [Variant]) -> Variant? {
-    \(varName) = \(typeName)(args [0]!)
-    return nil
-}
-""")
-    }
-    return name
-}
-
-func process (varDecl: VariableDeclSyntax) throws {
-    guard hasExportAttribute(varDecl.attributes) else {
-        return
-    }
-    var variableNames: [String] = []
-    let last: PatternBindingListSyntax.Element?
-    guard let last = varDecl.bindings.last else {
-        throw MacroError.noVariablesFound (varDecl)
-    }
-    guard var type = last.typeAnnotation?.type else {
-        throw MacroError.noTypeFound (varDecl)
-    }
-    var isOptional: Bool = false
-    if let optSyntax = type.as (OptionalTypeSyntax.self) {
-        type = optSyntax.wrappedType
-        isOptional = true
-    }
-    guard let typeName = type.as (IdentifierTypeSyntax.self)?.name.text else {
-        throw MacroError.unsupportedType(varDecl)
-    }
-    
-    for singleVar in varDecl.bindings {
-        guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
-            fatalError()
-        }
-        let varName = ips.identifier.text
-        variableNames.append (varName)
-        var getterName: String = ""
-        var setterName: String = ""
-        if let accessors = last.accessorBlock {
-            if accessors.as (CodeBlockSyntax.self) != nil {
-                throw MacroError.propertyGetSet
-            } else {
+            if let accessors = last.accessorBlock {
+                if accessors.as (CodeBlockSyntax.self) != nil {
+                    throw MacroError.propertyGetSet
+                }
                 if let block = accessors.as (AccessorBlockSyntax.self) {
                     var hasSet = false
                     var hasGet = false
@@ -266,19 +135,99 @@ func process (varDecl: VariableDeclSyntax) throws {
                     if hasSet == false || hasGet == false {
                         throw MacroError.propertyGetSet
                     }
-                    setterName = makeSetAccessor(varName: varName, typeName: typeName, isOptional: isOptional)
-                    getterName = makeGetAccessor(varName: varName, isOptional: isOptional)
                 }
             }
-        } else {
-            getterName = makeGetAccessor(varName: varName, isOptional: isOptional)
-            setterName = makeSetAccessor(varName: varName, typeName: typeName, isOptional: isOptional)
+            let propType = godotTypeToProp (typeName: typeName)
+            let pinfo = "_p\(varName)"
+            ctor.append (
+    """
+    let \(pinfo) = PropInfo (
+        propertyType: \(propType),
+        propertyName: "\(varName)",
+        className: className,
+        hint: .\(f?.description ?? "none"),
+        hintStr: \(s?.description ?? "\"\""),
+        usage: .propertyUsageDefault)
+    
+    """)
+            
+            ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(getterName))\n")
+            ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(setterName))\n")
+            ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")")
         }
-        let pinfo = lookupProp(parameterTypeName: typeName, parameterName: varName)
-        ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(getterName))\n")
-        ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(getterName))\n")
-        ctor.append("\tclassInfo.registerProperty (pinfo, getter: \"\(getterName)\", setter: \"\(setterName)\")")
+    }
+    
+    var ctor: String = ""
+    var genMethods: [String] = []
+    
+    func processType () throws -> String {
+        ctor =
+    """
+    static func _initClass () {
+        let className = StringName("\(className)")
+        let classInfo = ClassInfo<\(className)> (name: className)\n
+    """
+        for member in classDecl.memberBlock.members.enumerated() {
+            let decl = member.element.decl
+            if let funcDecl = decl.as(FunctionDeclSyntax.self) {
+                try processFunction (funcDecl)
+            }
+            else if let varDecl = decl.as (VariableDeclSyntax.self) {
+                try processVariable (varDecl)
+            }
+        }
+        ctor.append("}")
+        return ctor
+    }
+
+}
+
+///
+/// The Godot macro is applied to a class and it generates the boilerplate
+/// `init(nativeHandle:)` and `init()` constructors along with the
+/// static class initializer for any exported properties and methods.
+///
+public struct GodotMacro: MemberMacro {
+    
+    public static func expansion(of node: AttributeSyntax,
+                                 providingMembersOf declaration: some DeclGroupSyntax,
+                                 in context: some MacroExpansionContext) throws -> [DeclSyntax] {
+        
+        guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
+            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresClass)
+            context.diagnose(classError)
+            return []
+        }
+        
+        let processor = GodotMacroProcessor(classDecl: classDecl)
+        do {
+            let classInit = try processor.processType ()
+            let initRawHandleSyntax = try InitializerDeclSyntax("required init(nativeHandle _: UnsafeRawPointer)") {
+                StmtSyntax("\n\tfatalError(\"init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated\")")
+            }
+            let initSyntax = try InitializerDeclSyntax("required init()") {
+                StmtSyntax("\n\t\(classDecl.name)._initClass ()\n\tsuper.init ()")
+            }
+            
+            return [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
+        } catch {
+            let diagnostic: Diagnostic
+            if let detail = error as? GodotMacroError {
+                diagnostic = Diagnostic(node: declaration.root, message: detail)
+            } else {
+                diagnostic = Diagnostic(node: declaration.root, message: GodotMacroError.unknownError(error))
+            }
+            context.diagnose(diagnostic)
+            return []
+        }
     }
 }
 
-#endif
+@main
+struct godotMacrosPlugin: CompilerPlugin {
+    let providingMacros: [Macro.Type] = [
+        GodotMacro.self,
+        GodotCallable.self,
+        GodotExport.self
+    ]
+}

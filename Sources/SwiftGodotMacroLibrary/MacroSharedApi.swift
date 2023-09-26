@@ -27,6 +27,45 @@ func getIdentifier (_ x: TypeSyntax?) -> (String, Bool)? {
     return nil
 }
 
+enum GodotMacroError: Error, DiagnosticMessage {
+    case requiresClass
+    case requiresVar
+    case requiresFunction
+    case noVariablesFound
+    case noTypeFound(VariableDeclSyntax)
+    case unsupportedType(VariableDeclSyntax)
+    case expectedIdentifier(PatternBindingListSyntax.Element)
+    case unknownError(Error)
+    
+    var severity: DiagnosticSeverity {
+        return .error
+    }
+
+    var message: String {
+        switch self {
+        case .requiresClass:
+            "@Godot attribute can only be applied to a class"
+        case .requiresVar:
+            "@Export attribute can only be applied to variables"
+        case .requiresFunction:
+            "@Callable attribute can only be applied to functions"
+        case .noVariablesFound:
+            "@Export no variables found"
+        case .noTypeFound(let v):
+            "@Export no type was found \(v)"
+        case .unsupportedType (let v):
+            "@Export the type \(v) is not supported"
+        case .expectedIdentifier(let e):
+            "@Export expected an identifier, instead got \(e)"
+        case .unknownError(let e):
+            "Unknown nested error processing this directive: \(e)"
+        }
+    }
+    
+    var diagnosticID: MessageID {
+        MessageID(domain: "SwiftGodotMacros", id: message)
+    }
+}
 
 enum MacroError: Error {
     case typeName(FunctionParameterSyntax)

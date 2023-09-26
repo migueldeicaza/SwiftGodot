@@ -63,7 +63,7 @@ public struct GodotCallable: PeerMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
         guard let funcDecl = declaration.as(FunctionDeclSyntax.self) else {
-            let classError = Diagnostic(node: declaration.root, message: GodotMacroDiagnostic.requiresFunction)
+            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresFunction)
             context.diagnose(classError)
             return []
         }
