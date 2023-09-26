@@ -98,9 +98,9 @@ The next step is to create your source file with the magic on it,
 here we declare a spinning cube:
 
 ```
+@Godot
 class SpinningCube: Node3D {
-    required init () {
-        super.init ()
+    public override func _ready () {
         let meshRender = MeshInstance3D()
         meshRender.mesh = BoxMesh()
         addChild(node: meshRender)
