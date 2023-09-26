@@ -8,6 +8,7 @@
 import Foundation
 import SwiftGodot
 
+@Godot
 class PlayerController: CharacterBody2D {
     var acceleration = 100
     var friction = 100
@@ -18,12 +19,5 @@ class PlayerController: CharacterBody2D {
         movement.x = Float(
             Input.shared.getActionStrength(action: "move_right") - Input.shared.getActionStrength(action: "move_left"))
         return movement.normalized()
-    }
-
-    required init() {
-        super.init()
-    }
-    required init(nativeHandle: UnsafeRawPointer) {
-        fatalError("init(nativeHandle:) not supported")
     }
 }
