@@ -104,7 +104,12 @@ let package = Package(
                     ["-Xlinker", "-undefined",
                      "-Xlinker", "dynamic_lookup"])]),
         // Idea: -mark_dead_strippable_dylib
-        
+        .testTarget(name: "SwiftGodotMacroTests",
+                    dependencies: [
+                        "SwiftGodotMacroLibrary",
+                        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+                    ])
+
         // Test suite for SwiftGodot
 //        .testTarget(
 //            name: "SwiftGodotTests",
