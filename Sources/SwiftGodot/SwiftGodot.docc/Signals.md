@@ -69,7 +69,7 @@ In those cases, you can await the `emitted` property of the generated
 signal, like this:
 
 ```
-func waitTimer (scene: SceneTree) {
+func waitTimer (scene: SceneTree) async {
     // Creates the timer
     let timer = scene.createTimer (timeSec: 3)
 
