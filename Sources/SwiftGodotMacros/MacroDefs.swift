@@ -35,7 +35,7 @@ public macro initSwiftExtension<T: Wrapped>(cdecl: String,
 /// ```swift
 /// func makeSprite() -> Sprite2D {
 ///     let sprite = Sprite2D()
-///     sprite.texture = #texture2DLiteratl("res://assets/playersprite.png")
+///     sprite.texture = #texture2DLiteral("res://assets/playersprite.png")
 /// }
 /// ```
 @freestanding(expression)
