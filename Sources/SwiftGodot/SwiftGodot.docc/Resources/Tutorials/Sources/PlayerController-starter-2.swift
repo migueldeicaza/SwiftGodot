@@ -8,11 +8,6 @@
 import Foundation
 import SwiftGodot
 
+@Godot
 class PlayerController: CharacterBody2D {
-    required init() {
-        super.init()
-    }
-    required init(nativeHandle: UnsafeRawPointer) {
-        fatalError("init(nativeHandle:) not supported")
-    }
 }

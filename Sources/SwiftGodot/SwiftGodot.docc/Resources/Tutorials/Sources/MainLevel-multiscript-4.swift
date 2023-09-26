@@ -8,18 +8,11 @@
 import Foundation
 import SwiftGodot
 
+@Godot
 class MainLevel: Node2D {
     var player: PlayerController?
     var spawnpoint: Node2D?
     var teleportArea: Area2D?
-
-    required init() {
-        super.init()
-    }
-
-    required init(nativeHandle: UnsafeRawPointer) {
-        fatalError("init(nativeHandle:) not implemented")
-    }
 
     override func _ready() {
         self.player = getNodeOrNull(path: "CharacterBody2D") as? PlayerController
