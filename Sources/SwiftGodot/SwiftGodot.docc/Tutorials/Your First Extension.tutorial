@@ -47,18 +47,13 @@
                 @Code(name: "Package.swift", file: "Package-starter-4.swift")
             }
             @Step {
-                In SimpleRunnerDriver.swift, import the SwiftGodot library and write a function `swift_entry_point` that
-                will initialize the extension.
+                In SimpleRunnerDriver.swift, import the SwiftGodot and SwiftGodotMacros libraries and call the
+                `initSwiftExtension` macro to create an entry point. For now, we can pass an empty array for the nodes
+                to be registered.
                 
                 @Code(name: "SimpleRunnerDriver.swift",
                       file: "SimpleRunnerDriver-starter-2.swift",
                       previousFile: "SimpleRunnerDriver-starter-init.swift")
-            }
-            @Step {
-                Write a `setupExtension` method that will handle registering our game script classes, and replace the
-                initHook parameter in `initializeSwiftModule` with our new function.
-                
-                @Code(name: "SimpleRunnerDriver.swift", file: "SimpleRunnerDriver-starter-3.swift")
             }
         }
     }
@@ -129,14 +124,14 @@
                 @Code(name: "PlayerController.swift", file: "PlayerController-starter-8.swift")
             }
             @Step {
-                In the `setupExtension(at:)` function located at SimpleRunnerDriver.swift, register the
-                `PlayerController` class type.
+                In, SimpleRunnerDriver.swift, register the `PlayerController` class type by adding this to the array
+                in `initSwiftExtension`.
                 
                 This registration call exposed the class type to Godot as a valid node that can be used in the engine.
                 
                 @Code(name: "SimpleRunnerDriver.swift",
-                      file: "SimpleRunnerDriver-starter-4.swift",
-                      previousFile: "SimpleRunnerDriver-starter-3.swift")
+                      file: "SimpleRunnerDriver-starter-3.swift",
+                      previousFile: "SimpleRunnerDriver-starter-2.swift")
             }
         }
     }
