@@ -228,6 +228,11 @@ struct godotMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         GodotMacro.self,
         GodotCallable.self,
-        GodotExport.self
+        GodotExport.self,
+        InitSwiftExtensionMacro.self,
+        NativeHandleDiscardingMacro.self,
+        PickerNameProviderMacro.self,
+        SceneTreeMacro.self,
+        Texture2DLiteralMacro.self
     ]
 }
