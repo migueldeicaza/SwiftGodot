@@ -75,7 +75,7 @@
                 @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-init.swift", reset: true)
             }
             @Step {
-                Write a new `MainLevel` class that inherits from `Node2D` and add its required initializers.
+                Write a new `MainLevel` class that inherits from `Node2D` and has the `@Godot` attribute
                 
                 @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-2.swift")
             }
