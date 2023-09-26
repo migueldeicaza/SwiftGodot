@@ -32,7 +32,7 @@ func additionalRegistations (name: StringName) {
                 minfo.method_userdata = UnsafeMutableRawPointer (bitPattern: 0x123123123)
                 minfo.call_func = callFunc
                 minfo.ptrcall_func = ptrCallFunc
-                minfo.method_flags = (GDEXTENSION_METHOD_FLAG_VIRTUAL).rawValue
+                minfo.method_flags = UInt32((GDEXTENSION_METHOD_FLAG_VIRTUAL).rawValue)
                 minfo.has_return_value = 0
                 minfo.argument_count = 1
                 minfo.arguments_metadata = UnsafeMutablePointer (mutating: argMetaPtr.baseAddress)
