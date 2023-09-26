@@ -15,6 +15,6 @@ public macro Godot() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "G
 @attached(peer, names: prefixed(_mproxy_))
 public macro Callable() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
 
-@attached(accessor)
-public macro Export() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
+@attached(peer, names: prefixed(_mproxy_get_), prefixed(_mproxy_set_), arbitrary)
+public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
 
