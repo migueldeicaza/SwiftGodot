@@ -44,6 +44,7 @@ public struct Texture2DLiteralMacro: ExpressionMacro {
         return """
         {
             guard let texture: Texture2D = GD.load(path: \(argument)) else {
+                GD.pushError("Texture could not be loaded.", \(raw: location.file), \(raw: location.line))
                 preconditionFailure(
                     "Texture could not be loaded.",
                     file: \(raw: location.file),
