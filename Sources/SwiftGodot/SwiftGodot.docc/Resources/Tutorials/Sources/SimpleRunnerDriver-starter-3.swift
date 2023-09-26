@@ -2,21 +2,6 @@
 // https://docs.swift.org/swift-book
 
 import SwiftGodot
+import SwiftGodotMacros
 
-func setupExtension(at level: GDExtension.InitializationLevel) {
-    if level == .scene {
-
-    }
-}
-
-@_cdecl("swift_entry_point")
-public func swift_entry_point(interfacePtr: OpaquePointer?,
-                              libraryPtr: OpaquePointer?,
-                              extensionPtr: OpaquePointer?) -> UInt8 {
-    guard let interfacePtr, let libraryPtr, let extensionPtr else {
-        print("Not all pointers are available.")
-        return 0
-    }
-    initializeSwiftModule(interfacePtr, libraryPtr, extensionPtr, initHook: setupExtension, deInitHook: { _ in })
-    return 1
-}
+#initSwiftExtension(cdecl: "swift_entry_point", types: [PlayerController.self])

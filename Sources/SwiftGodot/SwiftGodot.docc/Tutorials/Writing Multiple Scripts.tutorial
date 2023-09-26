@@ -70,7 +70,7 @@
         @Steps {
             @Step {
                 Create a new Swift file called **MainLevel** in the SimpleRunnerDriver package and import the SwiftGodot
-                library.
+                and SwiftGodotMacros libraries.
                 
                 @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-init.swift", reset: true)
             }
@@ -80,23 +80,12 @@
                 @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-2.swift")
             }
             @Step {
-                Add the `player`, `spawnpoint`, and `teleportArea` properties to `MainLevel.`
+                Add the `player`, `spawnpoint`, and `teleportArea` properties to `MainLevel`, using the `@SceneTree`
+                macro to list their names in the scene tree.
                 
                 Note that these properties are marked optional, as they may not exist in the scene tree.
                 
                 @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-3.swift") {
-                    @Image(source: "Godot-MainLevel-SceneTree",
-                           alt: "A screenshot of the scene tree for the main level in Godot.")
-                }
-            }
-            @Step {
-                In the `_ready()` method, assign the newly created node properties by using `getNodeOrNull(path:)`
-                method.
-                
-                Note that the path matches the names as seen in the scene tree. As these nodes are direct children of
-                the main level node, extra pathing is not required.
-                
-                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-4.swift") {
                     @Image(source: "Godot-MainLevel-SceneTree",
                            alt: "A screenshot of the scene tree for the main level in Godot.")
                 }
@@ -107,7 +96,7 @@
                 
                 `GD.pushWarning(_:)` allows us to send warning messages to Godot's console.
                 
-                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-5.swift")
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-4.swift")
             }
             @Step {
                 Set the player's position so that their horizontal coordinate is kept, but the vertical coordinate is
@@ -116,20 +105,20 @@
                 This will effectively teleport the player to the top of the map, preserving where the player was on the
                 horizontal axis.
                 
-                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-6.swift")
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-5.swift")
             }
             @Step {
-                In `_ready()`, connect the teleport area's `bodyEntered` signal method to check if the player has
-                entered the area and teleport them when necessary.
+                In the `_ready()` method, connect the teleport area's `bodyEntered` signal method to check if the player
+                has entered the area and teleport them when necessary.
                 
-                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-7.swift")
+                @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-6.swift")
             }
             @Step {
                 Register the class type in `SimpleRunnerDriver.swift` to expose it to Godot.
                 
                 @Code(name: "SimpleRunnerDriver.swift",
                       file: "SimpleRunnerDriver-multiscript-2.swift",
-                      previousFile: "SimpleRunnerDriver-starter-4.swift")
+                      previousFile: "SimpleRunnerDriver-starter-3.swift")
             }
         }
     }

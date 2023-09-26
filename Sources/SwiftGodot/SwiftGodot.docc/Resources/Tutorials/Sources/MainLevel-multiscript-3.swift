@@ -7,11 +7,12 @@
 
 import Foundation
 import SwiftGodot
+import SwiftGodotMacros
 
 @Godot
 class MainLevel: Node2D {
-    var player: PlayerController?
-    var spawnpoint: Node2D?
-    var teleportArea: Area2D?
+    @SceneTree(path: "CharacterBody2D") var player: PlayerController?
+    @SceneTree(path: "Spawnpoint") var spawnpoint: Node2D?
+    @SceneTree(path: "Telepoint") var teleportArea: Area2D?
 
 }
