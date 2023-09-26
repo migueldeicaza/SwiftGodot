@@ -5,11 +5,8 @@
 //  Created by Marquis Kurt on 5/29/23.
 //
 
+#if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
-
-public protocol Nameable {
-    var name: String { get }
-}
 
 @available(macOS 11.0, *)
 extension UTType {
@@ -27,6 +24,11 @@ extension UTType {
 
     /// The file type that corresponds to a Godot tileset resource.
     public static var godotTilesetResource = UTType(filenameExtension: "tres")
+}
+#endif
+
+public protocol Nameable {
+    var name: String { get }
 }
 
 extension ClassInfo {
@@ -148,6 +150,7 @@ extension ClassInfo {
     /// - Parameter prefix: The prefix to apply to the property name. Defaults to the class's name if not provided.
     /// - Parameter getter: The getter method the editor will call to get the property.
     /// - Parameter setter: The setter method the editor will call to set the property.
+    #if canImport(UniformTypeIdentifiers)
     @available(macOS 11.0, *)
     public func registerFilePicker(named name: String,
                                    allowedTypes: [UTType],
@@ -170,6 +173,7 @@ extension ClassInfo {
                          getter: StringName("\(registeredPrefix)_get_\(name)"),
                          setter: StringName("\(registeredPrefix)_set_\(name)"))
     }
+    #endif
 
     /// Registers a number field in the number that can be adjusted in a range.
     /// - Parameter string: The name of the property that will appear in the editor.
