@@ -42,7 +42,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
         for vtype in 0..<Variant.GType.max.rawValue {
-            let v = UInt32 (vtype == 0 ? 1 : vtype)
+            let v = GDExtensionVariantType.RawValue (vtype == 0 ? 1 : vtype)
             map.append (gi.get_variant_from_type_constructor (GDExtensionVariantType (v))!)
         }
         return map
@@ -52,7 +52,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         var map: [GDExtensionTypeFromVariantConstructorFunc] = []
         
         for vtype in 0..<Variant.GType.max.rawValue {
-            let v = UInt32 (vtype == 0 ? 1 : vtype)
+            let v = GDExtensionVariantType.RawValue (vtype == 0 ? 1 : vtype)
             map.append (gi.get_variant_to_type_constructor (GDExtensionVariantType (v))!)
         }
         return map
