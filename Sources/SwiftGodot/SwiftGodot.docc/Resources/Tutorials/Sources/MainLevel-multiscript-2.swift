@@ -8,12 +8,6 @@
 import Foundation
 import SwiftGodot
 
+@Godot
 class MainLevel: Node2D {
-    required init() {
-        super.init()
-    }
-
-    required init(nativeHandle: UnsafeRawPointer) {
-        fatalError("init(nativeHandle:) not implemented")
-    }
 }

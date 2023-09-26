@@ -8,15 +8,10 @@
 import Foundation
 import SwiftGodot
 
+@Godot
 class PlayerController: CharacterBody2D {
     var acceleration = 100
     var friction = 100
     var speed = 200
 
-    required init() {
-        super.init()
-    }
-    required init(nativeHandle: UnsafeRawPointer) {
-        fatalError("init(nativeHandle:) not supported")
-    }
 }
