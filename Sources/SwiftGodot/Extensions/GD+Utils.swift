@@ -21,7 +21,7 @@ extension GD {
     /// - Parameter path: Path of the `Resource` to load.
     /// - Returns: The loaded `Resource`.
     public static func load(path: String) -> Resource? {
-        return ResourceLoader().load(path: path, cacheMode: .reuse)
+        return ResourceLoader.load(path: path, cacheMode: .reuse)
     }
 
     /// Loads a resource from the filesystem located at `path`.
@@ -39,7 +39,7 @@ extension GD {
     /// - Parameter path: Path of the `Resource` to load.
     /// - Returns: The loaded `Resource`.
     public static func load<T>(path: String) -> T? {
-        return ResourceLoader().load(path: path, cacheMode: .reuse) as? T
+        return ResourceLoader.load(path: path, cacheMode: .reuse) as? T
     }
 
     /// Pushes an error message to Godot's built-in debugger and to the OS terminal.

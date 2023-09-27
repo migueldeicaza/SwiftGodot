@@ -51,7 +51,7 @@ class SwiftSprite: Sprite2D {
     override func _process (delta: Double) {
         time_passed += delta
         
-        let imageVariant = ProjectSettings.shared.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
+        let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
@@ -146,7 +146,7 @@ class SwiftSprite2: Sprite2D {
     override func _process (delta: Double) {
         time_passed += delta
         
-        let imageVariant = ProjectSettings.shared.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
+        let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
