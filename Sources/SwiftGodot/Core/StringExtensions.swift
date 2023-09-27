@@ -13,6 +13,11 @@ extension StringName: CustomStringConvertible {
         self.init (from: from)
     }
     
+    /// Creates a StringName from a Swift String.Substring
+    public convenience init (_ from: String.SubSequence) {
+        self.init (from: String (from))
+    }
+    
     /// Returns a Swift string from the StringName
     public var description: String {
         let buffer = toUtf8Buffer()
@@ -25,7 +30,6 @@ extension StringName: CustomStringConvertible {
     }
 }
 
-// TODO make sure we release
 func stringToGodotHandle (_ str: String) -> GDExtensionStringPtr {
     var ret = GDExtensionStringPtr (bitPattern: 0)
     gi.string_new_with_utf8_chars (&ret, str)
