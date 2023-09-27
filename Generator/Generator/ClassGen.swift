@@ -218,13 +218,13 @@ func generateMethods (_ p: Printer,
                       docClass: DocClass?,
                       methods: [JGodotClassMethod],
                       usedMethods: Set<String>,
-                      isSingleton: Bool) -> [String:(String, JGodotClassMethod)] {
+                      asSingleton: Bool) -> [String:(String, JGodotClassMethod)] {
     p ("/* Methods */")
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
     for method in methods {
-        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, docClass: docClass, usedMethods: usedMethods, kind: .class, isSingleton: isSingleton) {
+        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, docClass: docClass, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
             virtuals [method.name] = (virtualMethodName, method)
         }
     }
@@ -266,7 +266,7 @@ func generateProperties (_ p: Printer,
                          _ properties: [JGodotProperty],
                          _ methods: [JGodotClassMethod],
                          _ referencedMethods: inout Set<String>,
-                         isSingleton: Bool)
+                         asSingleton: Bool)
 {
     p ("\n/* Properties */\n")
 
@@ -389,7 +389,7 @@ func generateProperties (_ p: Printer,
                 doc (p, cdef, docMember.value)
             }
         }
-        p ("\(isSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name)): \(type!)"){
+        p ("\(asSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name)): \(type!)"){
             p ("get"){
                 p ("return \(getterName) (\(gettterArgName)\(access))")
             }
@@ -594,7 +594,10 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
     let docClass = loadClassDoc(base: docRoot, name: cdef.name)
+    
+    // Determine if it is a singleton, but exclude EditorInterface
     let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
+    let asSingleton = isSingleton && cdef.name != "EditorInterface"
     
     // Clear the result
     let p = Printer ()
@@ -679,10 +682,10 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         }
         
         if let properties = cdef.properties {
-            generateProperties (p, cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods, isSingleton: isSingleton)
+            generateProperties (p, cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods, asSingleton: asSingleton)
         }
         if let methods = cdef.methods {
-            virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, usedMethods: referencedMethods, isSingleton: isSingleton)
+            virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, usedMethods: referencedMethods, asSingleton: asSingleton)
         }
         
         if let signals = cdef.signals {
