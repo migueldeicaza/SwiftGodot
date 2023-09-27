@@ -143,6 +143,14 @@ public func swift_entry_point(
 }
 ```
 
+Alternatively, you can use the `#initSwiftExtension` macro:
+
+```
+import SwiftGodotMacros
+
+#initSwiftExtension(name: "swift_entry_point", types: [SpinningCube.self])
+```
+
 ## Bundling Your Extension
 
 To make your extension available to Godot, you will need to 
