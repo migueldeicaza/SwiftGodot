@@ -181,13 +181,13 @@ func loadBuiltinDoc (base: String, name: String) -> DocBuiltinClass? {
 }
 
 @available(macOS 13.0, *)
-let rxConstantParam = #/\[(constant|param) ([\w\._@]+)\]/#
+let rxConstantParam: Regex<(Substring,Substring,Substring)> = try! Regex ("\\[(constant|param) ([\\w\\._@]+)\\]")
 @available(macOS 13.0, *)
-let rxEnumMethodMember = #/\[(enum|method|member) ([\w\.@_/]+)\]/#
+let rxEnumMethodMember: Regex<(Substring,Substring,Substring)> = try! Regex ("\\[(enum|method|member) ([\\w\\.@_/]+)\\]")
 @available(macOS 13.0, *)
-let rxTypeName = #/\[([A-Z]\w+)\]/#
+let rxTypeName: Regex<(Substring, Substring)> = try! Regex ("\\[([A-Z]\\w+)\\]")
 @available(macOS 13.0, *)
-let rxEmptyLeading = #/\s+/#
+let rxEmptyLeading: Regex<Substring> = try! Regex ("\\s+")
 
 // If the string contains a ".", it will return a pair
 // with the first element containing all the text up until the last dot
