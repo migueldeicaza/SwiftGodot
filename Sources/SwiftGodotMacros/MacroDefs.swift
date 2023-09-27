@@ -8,6 +8,42 @@
 import Foundation
 import SwiftGodot
 
+/// Creates the definition for a Swift class to be surfaced to Godot.
+///
+/// This macro creates the required constructors that the SwiftGodot framework requires (the `init`, and the
+/// `init(nativeHandle:)`) , ensures that both of those initialize the class if required, and registers
+/// any `@Export` and `@Callable` methods for the class effectively surfacing properties and
+/// methods to godot
+///
+@attached(member,
+          names: named (init(nativeHandle:)), named (init()), named(_initClass), arbitrary)
+public macro Godot() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
+
+/// Exposes the function to the Godot runtime
+///
+/// When this attribute is applied to a function, the function is exposed to the Godot engine, and it
+/// can be called by scripts in other languages.
+///
+/// The parameters to the function must be parameters that can be wrapped in a ``Variant`` structure
+@attached(peer, names: prefixed(_mproxy_))
+public macro Callable() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
+
+/// Exposes a property or variable to the Godot runtime
+///
+/// When this attribute is applied to a variable or a computer property in a class, the values can be surfaced to the
+/// Godot editor and can participate in Godot's serialization process.
+///
+/// The attribute can only be applied to properties and variables that can be stored in a Variant.
+///
+/// - Parameter hint: this is of type ``PropertyHint`` and can be used to tell the Godot editor the
+/// kind of user interface experience to provide for this.  For example, a string can be a plain string, or a
+/// multi-line property box, or it can represent a file.   This hint drives the experience in the editor
+/// - Parameter hintStr: some of the hint types can use an additional configuration option as a string
+/// and this is used for this.  For example the `.file` option can have a mask to select files, for example `"*.png"`
+///
+@attached(peer, names: prefixed(_mproxy_get_), prefixed(_mproxy_set_), arbitrary)
+public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
+
 // MARK: - Freestanding Macros
 
 /// A macro used to write an entrypoint for a Godot extension.
@@ -63,7 +99,7 @@ public macro texture2DLiteral(_ path: String) -> Texture2D = #externalMacro(modu
 public macro PickerNameProvider() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "PickerNameProviderMacro")
 
 
-/// A macro that automatically implements `init(nativeHandle:)` for nodes.
+/// Low-level: A macro that automatically implements `init(nativeHandle:)` for nodes.
 ///
 /// Use this for a class that has a required initializer with an `UnsafeRawPointer`.
 ///
@@ -91,14 +127,3 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 @attached(accessor)
 public macro SceneTree(path: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
-// TODO: Add doc comments for these macros
-
-@attached(member,
-          names: named (init(nativeHandle:)), named (init()), named(_initClass), arbitrary)
-public macro Godot() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
-
-@attached(peer, names: prefixed(_mproxy_))
-public macro Callable() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
-
-@attached(peer, names: prefixed(_mproxy_get_), prefixed(_mproxy_set_), arbitrary)
-public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
