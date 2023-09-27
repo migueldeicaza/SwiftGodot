@@ -165,7 +165,7 @@ class GodotMacroProcessor {
     """
     static func _initClass () {
         let className = StringName("\(className)")
-        let classInfo = ClassInfo<\(className)> (name: className)\n
+        let _ = ClassInfo<\(className)> (name: className)\n
     """
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
