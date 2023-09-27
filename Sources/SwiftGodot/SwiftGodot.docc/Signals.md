@@ -43,7 +43,7 @@ If you want to stop receiving notifications, you can disconnect from the
 object, to do so, you must keep around the token returned by the connect
 method, like this:
 
-```
+```swift
 class Demo: Node {
     var readyToken: Object
 
@@ -68,7 +68,7 @@ or an action.
 In those cases, you can await the `emitted` property of the generated
 signal, like this:
 
-```
+```swift
 func waitTimer (scene: SceneTree) async {
     // Creates the timer
     let timer = scene.createTimer (timeSec: 3)
@@ -77,6 +77,19 @@ func waitTimer (scene: SceneTree) async {
     await timer.timeout.emitted
 
     print ("Done waiting!")
+}
+```
+
+If you do not have an async function, you can await your signal with
+the following idiom:
+
+```swift
+func waitSomething (scene: SceneTree) {
+    // Creates a task, but executes on the main actor
+    Task { @MainActor in
+        await timer.timeout.emitted
+        print ("happy on the main thread")
+    }    
 }
 ```
 
