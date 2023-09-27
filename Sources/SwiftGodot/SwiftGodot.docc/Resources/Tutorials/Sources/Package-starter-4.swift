@@ -22,7 +22,10 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "SimpleRunnerDriver",
-            dependencies: ["SwiftGodot"],
+            dependencies: [
+                "SwiftGodot",
+                .product(name: "SwiftGodotMacros", package: "SwiftGodot")
+            ],
             swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
             linkerSettings: [.unsafeFlags(
                 ["-Xlinker", "-undefined",
