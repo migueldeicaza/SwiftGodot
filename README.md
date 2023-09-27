@@ -76,7 +76,7 @@ let package = Package(
     targets: [
         .target(
             name: "MyFirstGame",
-            dependencies: ["SwiftGodot"],
+            dependencies: ["SwiftGodot", .product (name: "SwiftGodotMacros", package: "SwiftGodot")],
             swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
             linkerSettings: [.unsafeFlags(
                 ["-Xlinker", "-undefined",
@@ -98,6 +98,9 @@ The next step is to create your source file with the magic on it,
 here we declare a spinning cube:
 
 ```
+import SwiftGodot
+import SwiftGodotMacros
+
 @Godot
 class SpinningCube: Node3D {
     public override func _ready () {
