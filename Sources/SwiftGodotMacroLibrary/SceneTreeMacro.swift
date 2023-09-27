@@ -53,7 +53,7 @@ public struct SceneTreeMacro: AccessorMacro {
     public static func expansion(of node: AttributeSyntax,
                                  providingAccessorsOf declaration: some DeclSyntaxProtocol,
                                  in context: some MacroExpansionContext) throws -> [AccessorDeclSyntax] {
-        guard let argument = node.argument?.as(TupleExprElementListSyntax.self)?.first?.expression else {
+        guard let argument = node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression else {
             let missingArgErr = Diagnostic(node: node.root, message: ProviderDiagnostic.missingPathArgument)
             context.diagnose(missingArgErr)
             return [

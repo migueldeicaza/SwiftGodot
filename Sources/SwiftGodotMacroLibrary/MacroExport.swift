@@ -98,8 +98,6 @@ public struct GodotExport: PeerMacro {
                 throw GodotMacroError.expectedIdentifier(singleVar)
             }
             let varName = ips.identifier.text
-            let setterName = "_mproxy_set_\(varName)"
-            let getterName = "_mproxy_get_\(varName)"
             
             if let accessors = last.accessorBlock {
                 if accessors.as (CodeBlockSyntax.self) != nil {
