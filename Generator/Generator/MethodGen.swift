@@ -68,7 +68,7 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
 ///  - className: the name of the class where this is being generated
 ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
-func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, docClass: DocClass?, usedMethods: Set<String>, kind: MethodGenType) -> String? {
+func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, docClass: DocClass?, usedMethods: Set<String>, kind: MethodGenType, isSingleton: Bool) -> String? {
     var registerVirtualMethodName: String? = nil
     
     //let loc = "\(cdef.name).\(method.name)"
@@ -87,7 +87,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     var finalp: String
     // Default method name
     var methodName: String = godotMethodToSwift (method.name)
-    let instanceOrStatic = method.isStatic ? " static" : ""
+    let instanceOrStatic = method.isStatic || isSingleton ? " static" : ""
     var inline = ""
     if let methodHash = method.hash {
         assert (!method.isVirtual)
@@ -338,7 +338,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             
             switch kind {
             case .class:
-                let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: handle), "
+                let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(isSingleton ? "shared." : "")handle), "
                 if method.isVararg {
                     p ("gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)")
                 } else {

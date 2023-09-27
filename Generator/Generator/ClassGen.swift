@@ -217,13 +217,14 @@ func generateMethods (_ p: Printer,
                       cdef: JGodotExtensionAPIClass,
                       docClass: DocClass?,
                       methods: [JGodotClassMethod],
-                      usedMethods: Set<String>) -> [String:(String, JGodotClassMethod)] {
+                      usedMethods: Set<String>,
+                      isSingleton: Bool) -> [String:(String, JGodotClassMethod)] {
     p ("/* Methods */")
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
     for method in methods {
-        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, docClass: docClass, usedMethods: usedMethods, kind: .class) {
+        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, docClass: docClass, usedMethods: usedMethods, kind: .class, isSingleton: isSingleton) {
             virtuals [method.name] = (virtualMethodName, method)
         }
     }
@@ -264,7 +265,8 @@ func generateProperties (_ p: Printer,
                          docClass: DocClass?,
                          _ properties: [JGodotProperty],
                          _ methods: [JGodotClassMethod],
-                         _ referencedMethods: inout Set<String>)
+                         _ referencedMethods: inout Set<String>,
+                         isSingleton: Bool)
 {
     p ("\n/* Properties */\n")
 
@@ -387,7 +389,7 @@ func generateProperties (_ p: Printer,
                 doc (p, cdef, docMember.value)
             }
         }
-        p ("final public var \(godotPropertyToSwift (property.name)): \(type!)"){
+        p ("\(isSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name)): \(type!)"){
             p ("get"){
                 p ("return \(getterName) (\(gettterArgName)\(access))")
             }
@@ -629,7 +631,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
     p (typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p ("public static var shared: \(cdef.name) =", suffix: "()") {
+            p ("static var shared: \(cdef.name) =", suffix: "()") {
                 p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (UnsafeRawPointer (&\(cdef.name).className.content))!)")
             }
         }
@@ -685,10 +687,10 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String) {
         }
         
         if let properties = cdef.properties {
-            generateProperties (p, cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods)
+            generateProperties (p, cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods, isSingleton: isSingleton)
         }
         if let methods = cdef.methods {
-            virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, usedMethods: referencedMethods)
+            virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, usedMethods: referencedMethods, isSingleton: isSingleton)
         }
         
         if let signals = cdef.signals {

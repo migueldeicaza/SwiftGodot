@@ -21,7 +21,7 @@ func generateUtility(values: [JGodotUtilityFunction], outputDir: String) {
         for method in values {
             // We ignore the request for virtual methods, should not happen for these
             
-            _ = methodGen (p, method: method, className: "Godot", cdef: nil, docClass: docClass, usedMethods: emptyUsedMethods, kind: .utility)
+            _ = methodGen (p, method: method, className: "Godot", cdef: nil, docClass: docClass, usedMethods: emptyUsedMethods, kind: .utility, isSingleton: false)
             
         }
     }
