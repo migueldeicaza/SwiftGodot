@@ -7,17 +7,19 @@
 
 import Foundation
 import SwiftGodot
+import SwiftGodotMacros
 
 @Godot
 class MainLevel: Node2D {
-    var player: PlayerController?
-    var spawnpoint: Node2D?
-    var teleportArea: Area2D?
+    @SceneTree(path: "CharacterBody2D") var player: PlayerController?
+    @SceneTree(path: "Spawnpoint") var spawnpoint: Node2D?
+    @SceneTree(path: "Telepoint") var teleportArea: Area2D?
 
-    override func _ready() {
-        self.player = getNodeOrNull(path: "CharacterBody2D") as? PlayerController
-        self.teleportArea = getNodeOrNull(path: "Telepoint") as? Area2D
-        self.spawnpoint = getNodeOrNull(path: "Spawnpoint") as? Node2D
-        super._ready()
+    private func teleportPlayerToTop() {
+        guard let player, let spawnpoint else {
+            GD.pushWarning("Player or spawnpoint is missing.")
+            return
+        }
+        
     }
 }
