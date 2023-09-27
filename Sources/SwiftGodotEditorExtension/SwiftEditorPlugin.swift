@@ -42,7 +42,7 @@ class SwiftEditorPlugin: EditorPlugin {
     var _projectBaseDir: String?
     lazy var projectBaseDir: String = {
         if let dir = _projectBaseDir { return dir }
-        return ProjectSettings.shared.globalizePath("res://")
+        return ProjectSettings.globalizePath("res://")
     } ()
     
     lazy var packageSwiftFile: String = {
@@ -109,6 +109,7 @@ class SwiftEditorPlugin: EditorPlugin {
         }
         
         editorInterface = self.getEditorInterface()
+        
         editorBaseControl = editorInterface?.getBaseControl()
         editorSettings = editorInterface?.getEditorSettings()
         

@@ -9,6 +9,9 @@ import Foundation
 import SwiftGodot
 
 class SwiftResourceFormatLoader: ResourceFormatLoader {
+    var uids: [String:Int] = [:]
+    var next = 0
+    
     public required init () {
         super.init ()
     }
@@ -42,8 +45,12 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
     }
     
     open override func _getResourceUid(path: String) -> Int {
-        pm ("Returning 1 for \(path)")
-        return 1
+        if let v = uids [path] {
+            return v
+        }
+        next += 1
+        uids [path] = next
+        return next
     }
     
     open override func _getResourceType(path: String) -> String {
@@ -81,10 +88,10 @@ class SwiftResourceFormatLoader: ResourceFormatLoader {
         pm ("Request to load path=\(path) originalPath=\(originalPath) useSubthreads=\(useSubThreads) cacheMode=\(cacheMode)")
         var rootPath: String
         
-        if path.hasSuffix("res://Sources/\(extensionName)/") {
-            rootPath = ProjectSettings.shared.globalizePath(path)
+        if path.hasPrefix("res://Sources/\(extensionName)/") || path == "res://Package.swift" {
+            rootPath = ProjectSettings.globalizePath(path)
         } else {
-            rootPath = ProjectSettings.shared.globalizePath("res://Sources/\(extensionName)/\(path.dropFirst (6))")
+            rootPath = ProjectSettings.globalizePath("res://Sources/\(extensionName)/\(path.dropFirst (6))")
         }
         pm ("RESOLVED PATH: \(rootPath)")
         guard let contents = try? String (contentsOfFile: rootPath) else {

@@ -52,7 +52,7 @@ class SwiftResourceFormatSaver: ResourceFormatSaver {
     //
     // path is: res://FILE
     open override func _save(resource: Resource?, path: String, flags: UInt32) -> GodotError {
-        var rootPath = ProjectSettings.shared.globalizePath("res://")
+        var rootPath = ProjectSettings.globalizePath("res://")
         let swiftSourceDir = "\(rootPath)/Sources/\(extensionName)"
 
         func ensureDirectory () -> Bool {

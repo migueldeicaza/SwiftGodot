@@ -19,7 +19,6 @@ extension PackedStringArray {
 
 func setupScene (level: GDExtension.InitializationLevel) {
     if level == .editor {
-        var e: Engine = Engine.shared
         register(type: SwiftLanguageIntegration.self)
         register(type: SwiftScript.self)
         register(type: SwiftResourceFormatSaver.self)
@@ -27,13 +26,13 @@ func setupScene (level: GDExtension.InitializationLevel) {
         register(type: SwiftEditorPlugin.self)
         
         let f = SwiftResourceFormatSaver()
-        ResourceSaver.shared.addResourceFormatSaver(f)
+        ResourceSaver.addResourceFormatSaver(f)
         let l = SwiftResourceFormatLoader ()
-        ResourceLoader.shared.addResourceFormatLoader(l, atFront: false)
+        ResourceLoader.addResourceFormatLoader(l, atFront: false)
         
-        e.registerScriptLanguage(SwiftLanguageIntegration.shared)
+        Engine.registerScriptLanguage(SwiftLanguageIntegration.shared)
         
-        if Engine.shared.isEditorHint() {
+        if Engine.isEditorHint() {
             SwiftEditorPlugin.registerPlugin ()
         }
     }
