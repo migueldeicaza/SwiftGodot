@@ -73,7 +73,9 @@ public struct SceneTreeMacro: AccessorMacro {
             return []
         }
 
-        guard let optional = nodeType.as(OptionalTypeSyntax.self) else {
+        let unwrappedType = nodeType.as(OptionalTypeSyntax.self)?.wrappedType ?? nodeType.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType
+        
+        guard let unwrappedType else {
             let newOptional = OptionalTypeSyntax(wrappedType: nodeType)
             let addOptionalFix = FixIt(message: MarkOptionalMessage(),
                                        changes: [.replace(oldNode: Syntax(nodeType), newNode: Syntax(newOptional))])
@@ -90,7 +92,7 @@ public struct SceneTreeMacro: AccessorMacro {
 
         return [
             """
-            get { getNodeOrNull(path: NodePath(stringLiteral: \(argument))) as? \(optional.wrappedType) }
+            get { getNodeOrNull(path: NodePath(stringLiteral: \(argument))) as? \(unwrappedType) }
             """
         ]
     }
