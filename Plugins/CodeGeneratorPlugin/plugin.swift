@@ -19,14 +19,22 @@ import PackagePlugin
 
         let api = context.package.directory.appending(["Sources", "SwiftGodot", "extension_api.json"])
         
+        var arguments: [CustomStringConvertible] = [ api, genSourcesDir ]
         var outputFiles: [Path] = []
+        #if os(Windows)
+        // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well
+        outputFiles.append(genSourcesDir.appending(subpath: "Generated.swift"))
+        arguments.append(context.package.directory.appending(subpath: "doc"))
+        arguments.append("--singlefile")
+        #else
         outputFiles.append (contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0])})
         outputFiles.append (contentsOf: known.map { genSourcesDir.appending(["generated", $0])})
+        #endif
         
         let cmd: Command = Command.buildCommand(
             displayName: "Generating Swift API ffrom \(api) to \(genSourcesDir)",
             executable: generator,
-            arguments: [ api, genSourcesDir ],
+            arguments: arguments,
             inputFiles: [api],
             outputFiles: outputFiles)
         

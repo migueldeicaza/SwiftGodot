@@ -7,9 +7,6 @@
 //
 import Foundation
 
-// IF we want a single file, or one file per type
-var singleFile = true
-
 var args = CommandLine.arguments
 
 let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/godot-master/extension_api.json"
@@ -17,6 +14,9 @@ var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot-
 var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
 
 let outputDir = args.count > 2 ? args [2] : generatorOutput
+
+// IF we want a single file, or one file per type
+var singleFile = args.contains("--singlefile")
 
 if args.count < 2 {
     print ("Usage is: generator path-to-extension-api output-directory doc-directory")
@@ -55,7 +55,8 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 
-var coreDefPrinter = Printer()
+let sharedPrinter: Printer? = singleFile ? Printer() : nil
+var coreDefPrinter = sharedPrinter ?? Printer()
 coreDefPrinter.preamble()
 
 print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
@@ -89,14 +90,22 @@ for cs in jsonApi.builtinClassSizes {
 let generatedBuiltinDir = outputDir + "/generated-builtin/"
 let generatedDir = outputDir + "/generated/"
 
-try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
-try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
+if singleFile {
+    try! FileManager.default.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
+} else {
+    try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
+    try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
+}
 
-generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
-generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
-generateClasses (values: jsonApi.classes, outputDir: generatedDir)
+generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir, sharedPrinter: sharedPrinter)
+generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir, sharedPrinter: sharedPrinter)
+generateClasses (values: jsonApi.classes, outputDir: generatedDir, sharedPrinter: sharedPrinter)
 
 generateCtorPointers (coreDefPrinter)
-coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
+if let sharedPrinter {
+    sharedPrinter.save(outputDir + "/generated.swift")
+} else {
+    coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
+}
 
 //print ("Done")
