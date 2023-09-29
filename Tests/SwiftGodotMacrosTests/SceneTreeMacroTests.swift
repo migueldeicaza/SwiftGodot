@@ -35,6 +35,27 @@ final class SceneTreeMacroTests: XCTestCase {
             macros: testMacros
         )
     }
+    
+    func testMacroExpansionWithImplicitlyUnwrappedOptional() {
+        assertMacroExpansion(
+            """
+            class MyNode: Node {
+                @SceneTree(path: "Entities/CharacterBody2D")
+                var character: CharacterBody2D!
+            }
+            """,
+            expandedSource: """
+            class MyNode: Node {
+                var character: CharacterBody2D! {
+                    get {
+                        getNodeOrNull(path: NodePath(stringLiteral: "Entities/CharacterBody2D")) as? CharacterBody2D
+                    }
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
 
     func testMacroMissingPathDiagnostic() {
         assertMacroExpansion(
@@ -88,4 +109,6 @@ final class SceneTreeMacroTests: XCTestCase {
             macros: testMacros
         )
     }
+    
+    
 }
