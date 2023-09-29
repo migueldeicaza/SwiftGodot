@@ -7,11 +7,11 @@
 
 import Foundation
 
-func generateUtility(values: [JGodotUtilityFunction], outputDir: String, sharedPrinter: Printer?) {
-    let p = sharedPrinter ?? Printer ()
+func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async {
+    let p = await PrinterFactory.shared.initPrinter()
     p.preamble()
     defer {
-        if sharedPrinter == nil {
+        if let outputDir {
             p.save (outputDir + "utility.swift")
         }
     }

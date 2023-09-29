@@ -55,10 +55,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 
-let sharedPrinter: Printer? = singleFile ? Printer() : nil
-var coreDefPrinter = sharedPrinter ?? Printer()
-coreDefPrinter.preamble()
-
 print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
 let globalDocs = loadClassDoc(base: docRoot, name:  "@GlobalScope")
 var classMap: [String:JGodotExtensionAPIClass] = [:]
@@ -67,7 +63,6 @@ for x in jsonApi.classes {
 }
 
 var builtinMap: [String: JGodotBuiltinClass] = [:]
-generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, constantDocs: globalDocs?.constants?.constant, prefix: "")
 
 for x in jsonApi.builtinClasses {
     let value = x.members?.count ?? 0 > 0
@@ -87,25 +82,34 @@ for cs in jsonApi.builtinClassSizes {
     }
 }
 
-let generatedBuiltinDir = outputDir + "/generated-builtin/"
-let generatedDir = outputDir + "/generated/"
+let generatedBuiltinDir: String? = singleFile ? nil : (outputDir + "/generated-builtin/")
+let generatedDir: String? = singleFile ? nil : (outputDir + "/generated/")
 
 if singleFile {
     try! FileManager.default.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
-} else {
+} else if let generatedBuiltinDir, let generatedDir {
     try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
     try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
 }
 
-generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir, sharedPrinter: sharedPrinter)
-generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir, sharedPrinter: sharedPrinter)
-generateClasses (values: jsonApi.classes, outputDir: generatedDir, sharedPrinter: sharedPrinter)
-
-generateCtorPointers (coreDefPrinter)
-if let sharedPrinter {
-    sharedPrinter.save(outputDir + "/generated.swift")
-} else {
-    coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
+let semaphore = DispatchSemaphore(value: 0)
+let _ = Task {
+    let coreDefPrinter = await PrinterFactory.shared.initPrinter()
+    coreDefPrinter.preamble()
+    generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, constantDocs: globalDocs?.constants?.constant, prefix: "")
+    await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
+    await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
+    await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
+    generateCtorPointers (coreDefPrinter)
+    if let generatedBuiltinDir {
+        coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
+    }
+    
+    if singleFile {
+        await PrinterFactory.shared.save(outputDir + "/generated.swift")
+    }
+    semaphore.signal()
 }
+semaphore.wait()
 
 //print ("Done")

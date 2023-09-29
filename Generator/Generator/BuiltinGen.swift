@@ -407,7 +407,7 @@ enum BKind {
 var builtinGodotTypeNames: [String:BKind] = ["Variant": .isClass]
 var builtinClassStorage: [String:String] = [:]
 
-func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String, sharedPrinter: Printer?) {
+func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) async {
 
     func generateBuiltinClass (p: Printer, _ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?) {
         // TODO: isKeyed, hasDestrcturo,
@@ -623,13 +623,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String, sh
         case "int", "float", "bool":
             break
         default:
-            let p: Printer = sharedPrinter ?? Printer ()
+            let p: Printer = await PrinterFactory.shared.initPrinter()
             p.preamble()
             let docClass = loadBuiltinDoc(base: docRoot, name: bc.name)
             mapStringToSwift = bc.name != "String"
             generateBuiltinClass (p: p, bc, docClass)
             mapStringToSwift = true
-            if sharedPrinter == nil {
+            if let outputDir {
                 p.save(outputDir + "/\(bc.name).swift")
             }
         }
