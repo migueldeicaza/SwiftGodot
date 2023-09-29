@@ -115,7 +115,7 @@ final class MacroGodotTests: XCTestCase {
                 static func _initClass () {
                     let className = StringName("Castro")
                     let classInfo = ClassInfo<Castro> (name: className)
-                	classInfo.registerMethod(name: "deleteEpisode", flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
+                	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
                 }
             }
             """,
