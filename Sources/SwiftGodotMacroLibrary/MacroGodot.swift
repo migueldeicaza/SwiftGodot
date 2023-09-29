@@ -68,7 +68,7 @@ class GodotMacroProcessor {
             funcArgs.append ("\t]\n")
         }
         ctor.append (funcArgs)
-        ctor.append ("\tclassInfo.registerMethod(name: \"funcName\", flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
+        ctor.append ("\tclassInfo.registerMethod(name: \"\(funcName)\", flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
     }
     
     func processVariable (_ varDecl: VariableDeclSyntax) throws {
