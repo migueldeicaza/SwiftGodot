@@ -89,7 +89,7 @@ var gameDirectory: String?
 String as a path to a file, custom filter provided as hint.
 
 ```swift
-@Export (.file, "*.txt"")
+@Export (.file, "*.txt")
 var GameFile: String?
 ```
 
@@ -157,6 +157,7 @@ Display a visual representation of the `ease()` function when editing.
 ```swift
 @Export(.expEasing)
 public transitionSpeed: Float = 0
+```
 
 ### Colors
 
