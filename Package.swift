@@ -18,6 +18,7 @@ let package = Package(
             targets: ["SwiftGodot"]),
         .library(
             name: "SwiftGodotMacros",
+            type: .dynamic,
             targets: ["SwiftGodotMacros"]),
         .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
         .library(
