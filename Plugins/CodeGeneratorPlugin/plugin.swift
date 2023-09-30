@@ -26,17 +26,21 @@ import PackagePlugin
         outputFiles.append(genSourcesDir.appending(subpath: "Generated.swift"))
         arguments.append(context.package.directory.appending(subpath: "doc"))
         arguments.append("--singlefile")
+        let cmd: Command = Command.prebuildCommand(
+            displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
+            executable: generator,
+            arguments: arguments,
+            outputFilesDirectory: genSourcesDir)
         #else
         outputFiles.append (contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0])})
         outputFiles.append (contentsOf: known.map { genSourcesDir.appending(["generated", $0])})
-        #endif
-        
         let cmd: Command = Command.buildCommand(
-            displayName: "Generating Swift API ffrom \(api) to \(genSourcesDir)",
+            displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
             executable: generator,
             arguments: arguments,
             inputFiles: [api],
             outputFiles: outputFiles)
+        #endif
         
         return [cmd]
     }

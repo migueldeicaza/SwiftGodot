@@ -59,7 +59,7 @@ class Printer {
                 return
             }
         }
-        try! result.write(toFile: file, atomically: true, encoding: .utf8)
+        try! result.write(toFile: file, atomically: false, encoding: .utf8)
     }
 }
 
@@ -81,6 +81,6 @@ actor PrinterFactory {
                 return
             }
         }
-        try! result.write(toFile: file, atomically: true, encoding: .utf8)
+        try! result.write(toFile: file, atomically: false, encoding: .utf8)
     }
 }
