@@ -163,7 +163,7 @@ class GodotMacroProcessor {
     func processType () throws -> String {
         ctor =
     """
-    static func _initClass () {
+    static var _initClass: Void = {
         let className = StringName("\(className)")
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
@@ -176,7 +176,7 @@ class GodotMacroProcessor {
                 try processVariable (varDecl)
             }
         }
-        ctor.append("}")
+        ctor.append("} ()")
         return ctor
     }
 
@@ -206,7 +206,7 @@ public struct GodotMacro: MemberMacro {
                 StmtSyntax("\n\tfatalError(\"init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated\")")
             }
             let initSyntax = try InitializerDeclSyntax("required init()") {
-                StmtSyntax("\n\t\(classDecl.name)._initClass ()\n\tsuper.init ()")
+                StmtSyntax("\n\t\(classDecl.name)._initClass\n\tsuper.init ()")
             }
             
             return [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
