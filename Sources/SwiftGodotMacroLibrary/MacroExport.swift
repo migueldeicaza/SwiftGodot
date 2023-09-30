@@ -64,7 +64,7 @@ public struct GodotExport: PeerMacro {
         \(varName) = \(typeName)(args [0])!
     """
             }
-            return "func \(name) (args: [Variant]) -> Variant? {\n\t/*\(body)*/\n\treturn nil\n}"
+            return "func \(name) (args: [Variant]) -> Variant? {\n\treturn nil\n}"
         }
         return "func \(name) (args: [Variant]) -> Variant? {\n\t\(body)\n\treturn nil\n}"
     }
