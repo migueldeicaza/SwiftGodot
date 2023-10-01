@@ -79,7 +79,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .flags,
                                 hintStr: "",
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerProperty(property,
@@ -104,7 +104,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .enum,
                                 hintStr: GString(Enum.allCases.map(\.name).joined(separator: ",")),
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerProperty(property,
@@ -136,7 +136,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .file,
                                 hintStr: GString(fileExtensions),
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerProperty(property,
@@ -166,7 +166,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .file,
                                 hintStr: GString(fileExtensions),
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerProperty(property,
@@ -194,7 +194,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .range,
                                 hintStr: GString("\(range.lowerBound),\(range.upperBound),\(stride)"),
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerProperty(property,
@@ -217,7 +217,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .typeString,
                                 hintStr: "",
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerProperty(property,
@@ -240,7 +240,7 @@ extension ClassInfo {
                                 className: StringName("\(T.self)"),
                                 hint: .multilineText,
                                 hintStr: "",
-                                usage: .propertyUsageDefault)
+                                usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
         registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
         registerProperty(property,
@@ -250,7 +250,7 @@ extension ClassInfo {
 
     private func registerGetter(prefix: String, name: String, property: PropInfo, getter: @escaping ClassInfoFunction) {
         registerMethod(name: StringName("\(prefix)_get_\(name)"),
-                       flags: .default,
+                       flags: .flagsDefault,
                        returnValue: property,
                        arguments: [],
                        function: getter)
@@ -258,7 +258,7 @@ extension ClassInfo {
 
     private func registerSetter(prefix: String, name: String, property: PropInfo, setter: @escaping ClassInfoFunction) {
         registerMethod(name: StringName("\(prefix)_set_\(name)"),
-                       flags: .default,
+                       flags: .flagsDefault,
                        returnValue: nil,
                        arguments: [property],
                        function: setter)

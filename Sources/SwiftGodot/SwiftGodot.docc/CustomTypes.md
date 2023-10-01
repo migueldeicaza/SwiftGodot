@@ -189,7 +189,7 @@ let textArgument =  PropInfo(
     className: "SwiftSprite",
     hint: .typeString,
     hintStr: "", 
-    usage: .propertyUsageDefault)
+    usage: .default)
 ```
 
 In this case, we are declaring a property of the Godot type string, and we call

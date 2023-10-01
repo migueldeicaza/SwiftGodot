@@ -184,7 +184,7 @@ static var initClass: Bool = {
             className: "Demo",
             hint: .flags,
             hintStr: "Text",
-            usage: .propertyUsageDefault)
+            usage: .default)
     ]
     classInfo.registerSignal (name: Demo.printerSignal, arguments: printArgs)
     return true

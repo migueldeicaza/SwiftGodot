@@ -63,3 +63,56 @@ func escapeSwift (_ id: String) -> String {
         return id
     }
 }
+
+extension [String] {
+    func commonPrefix() -> String? {
+        guard count > 1 else { return nil }
+        let alphabeticallySorted = sorted()
+        
+        guard let first = alphabeticallySorted.first,
+              let last = alphabeticallySorted.last else {
+            return nil
+        }
+        let prefix = first.commonPrefix(with: last)
+        return prefix != "" ? prefix : nil
+    }
+}
+
+extension [JGodotValueElement] {
+    func commonPrefix() -> String {
+        map(\.name).commonPrefix()?.dropAfterLastUnderscore() ?? ""
+    }
+}
+
+extension String {
+    func dropPrefix(_ prefix: String) -> String {
+        guard hasPrefix(prefix) else { return self }
+        guard prefix != self else { return self }
+        return String(dropFirst(prefix.count))
+    }
+    
+    func dropAfterLastUnderscore() -> String? {
+        if let range = range(of: "_", options: .backwards) {
+            return String(prefix(upTo: range.upperBound))
+        } else {
+            return nil
+        }
+    }
+    
+    func validSwiftName() -> String {
+        if isValidSwiftName() { return self }
+        
+        return "_\(self)"
+    }
+    
+    func isValidSwiftName() -> Bool {
+        let pattern = #"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#
+        
+        do {
+            let regex = try Regex(pattern)
+            return self.wholeMatch(of: regex) != nil
+        } catch {
+            fatalError("Invalid regex pattern: \(error)")
+        }
+    }
+}

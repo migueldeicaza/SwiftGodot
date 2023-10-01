@@ -37,7 +37,7 @@ class GodotMacroProcessor {
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\(parameterTypeName)\", className: className, hint: .none, hintStr: \"\", usage: .propertyUsageDefault)\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\(parameterTypeName)\", className: className, hint: .none, hintStr: \"\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -68,7 +68,7 @@ class GodotMacroProcessor {
             funcArgs.append ("\t]\n")
         }
         ctor.append (funcArgs)
-        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
+        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .flagsDefault, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
     }
     
     func processVariable (_ varDecl: VariableDeclSyntax) throws {
@@ -147,12 +147,12 @@ class GodotMacroProcessor {
         className: className,
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"\""),
-        usage: .propertyUsageDefault)
+        usage: .default)
     
     """)
             
-            ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(getterName))\n")
-            ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(setterName))\n")
+            ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .flagsDefault, returnValue: \(pinfo), arguments: [], function: \(className).\(getterName))\n")
+            ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .flagsDefault, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(setterName))\n")
             ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")")
         }
     }

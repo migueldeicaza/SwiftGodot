@@ -89,17 +89,17 @@ class SwiftSprite2: Sprite2D {
                      className: StringName ("food"),
                      hint: .typeString,
                      hintStr: "Some kind of food",
-                     usage: .propertyUsageDefault)
+                     usage: .default)
         ]
-        classInfo.registerMethod(name: "demo_set_favorite_food", flags: .default, returnValue: nil, arguments: foodArgs, function: SwiftSprite2.demoSetFavoriteFood)
-        classInfo.registerMethod(name: "demo_get_favorite_food", flags: .default, returnValue: foodArgs [0], arguments: [], function: SwiftSprite2.demoGetFavoriteFood)
+        classInfo.registerMethod(name: "demo_set_favorite_food", flags: .flagsDefault, returnValue: nil, arguments: foodArgs, function: SwiftSprite2.demoSetFavoriteFood)
+        classInfo.registerMethod(name: "demo_get_favorite_food", flags: .flagsDefault, returnValue: foodArgs [0], arguments: [], function: SwiftSprite2.demoGetFavoriteFood)
         
         let foodProp = PropInfo (propertyType: .string,
                                  propertyName: "demo_favorite_food",
                                  className: "SwiftSprite",
                                  hint: .multilineText,
                                  hintStr: "Name of your favorite food",
-                                 usage: .propertyUsageDefault)
+                                 usage: .default)
         classInfo.registerProperty(foodProp, getter: "demo_get_favorite_food", setter: "demo_set_favorite_food")
     }()
     
