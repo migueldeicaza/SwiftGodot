@@ -115,7 +115,7 @@ final class MacroGodotTests: XCTestCase {
                 static func _initClass () {
                     let className = StringName("Castro")
                     let classInfo = ClassInfo<Castro> (name: className)
-                	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
+                	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .flagsDefault, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
                 }
             }
             """,
@@ -161,9 +161,9 @@ final class MacroGodotTests: XCTestCase {
                         className: className,
                         hint: .none,
                         hintStr: "",
-                        usage: .propertyUsageDefault)
-                	classInfo.registerMethod (name: "_mproxy_get_goodName", flags: .default, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
-                	classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .default, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
+                        usage: .default)
+                	classInfo.registerMethod (name: "_mproxy_get_goodName", flags: .flagsDefault, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
+                	classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .flagsDefault, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
                 	classInfo.registerProperty (_pgoodName, getter: "_mproxy_get_goodName", setter: "_mproxy_set_goodName")
                 }
             }

@@ -78,11 +78,12 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                     } else {
                         // Need to look it up
                         if let optionType = findEnumDef(name: argumentType) {
+                            let prefix = optionType.values.commonPrefix()
                             var setValues = ""
                             
                             for value in optionType.values {
                                 if (defIntValue & value.value) != 0 {
-                                    let name = dropMatchingPrefix(optionType.name, value.name)
+                                    let name = snakeToCamel(value.name.dropPrefix(prefix)).validSwiftName()
                                     if setValues != "" {
                                         setValues += ", "
                                     }

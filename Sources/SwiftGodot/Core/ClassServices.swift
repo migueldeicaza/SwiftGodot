@@ -84,7 +84,7 @@ public class ClassInfo<T:Object> {
     ///         className: "MyNode",
     ///         hint: .flags,
     ///         hintStr: "Number of baddies to check",
-    ///         usage: .propertyUsageDefault)
+    ///         usage: .default)
     ///     ]
     ///     classInfo.registerMethod (name: "checkBaddies", flags: .default, returnValue: .nil, arguments: [], function: MyNode.checkBaddies)
     ///     return true
