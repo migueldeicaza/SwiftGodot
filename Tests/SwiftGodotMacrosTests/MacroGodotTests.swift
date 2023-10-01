@@ -69,14 +69,14 @@ final class MacroGodotTests: XCTestCase {
                 }
 
                 required init() {
-                	Hi._initClass ()
+                	Hi._initClass
                 	super.init ()
                 }
 
-                static func _initClass () {
+                static var _initClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
-                }
+                } ()
             }
             """,
 			macros: testMacros
@@ -108,15 +108,15 @@ final class MacroGodotTests: XCTestCase {
                 }
 
                 required init() {
-                	Castro._initClass ()
+                	Castro._initClass
                 	super.init ()
                 }
 
-                static func _initClass () {
+                static var _initClass: Void = {
                     let className = StringName("Castro")
                     let classInfo = ClassInfo<Castro> (name: className)
                 	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .flagsDefault, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
-                }
+                } ()
             }
             """,
 			macros: testMacros
@@ -148,11 +148,11 @@ final class MacroGodotTests: XCTestCase {
                 }
             
                 required init() {
-                	Hi._initClass ()
+                	Hi._initClass
                 	super.init ()
                 }
             
-                static func _initClass () {
+                static var _initClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
                     let _pgoodName = PropInfo (
@@ -165,7 +165,7 @@ final class MacroGodotTests: XCTestCase {
                 	classInfo.registerMethod (name: "_mproxy_get_goodName", flags: .flagsDefault, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
                 	classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .flagsDefault, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
                 	classInfo.registerProperty (_pgoodName, getter: "_mproxy_get_goodName", setter: "_mproxy_set_goodName")
-                }
+                } ()
             }
             """,
 			macros: testMacros
