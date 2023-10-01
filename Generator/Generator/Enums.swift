@@ -46,6 +46,10 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
     
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
+        
+        var enumDefName = enumDef.name
+        let enumCasePrefix = enumDef.values.map(\.name).commonPrefix()?.dropAfterLastUnderscore() ?? ""
+        
         if isBitField || enumDef.name == "ConnectFlags" {
             p ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
                 p ("public let rawValue: Int")
@@ -53,7 +57,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     p ("self.rawValue = rawValue")
                 }
                 for enumVal in enumDef.values {
-                    let name = dropMatchingPrefix (enumDef.name, enumVal.name)
+                    let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix)).validSwiftName()
                     if let ed = docEnumToValue [enumVal.name] {
                         doc (p, cdef, ed)
                     }
@@ -62,7 +66,6 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             }
             continue
         }
-        var enumDefName = enumDef.name
         
         if enumDefName.starts(with: "Variant") {
             p ("extension Variant {")
@@ -76,11 +79,11 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 let enumValName = enumVal.name
                 if enumDefName == "InlineAlignment" {
                     if enumValName == "INLINE_ALIGNMENT_TOP_TO" || enumValName == "INLINE_ALIGNMENT_TO_TOP" ||
-                    enumValName == "INLINE_ALIGNMENT_IMAGE_MASK" || enumValName == "INLINE_ALIGNMENT_TEXT_MASK" {
+                        enumValName == "INLINE_ALIGNMENT_IMAGE_MASK" || enumValName == "INLINE_ALIGNMENT_TEXT_MASK" {
                         continue
                     }
                 }
-                let name = dropMatchingPrefix (enumDefName, enumValName)
+                let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix)).validSwiftName()
                 let prefix: String
                 if used.contains(enumVal.value) {
                     prefix = "// "
@@ -100,6 +103,53 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
         }
         if let prefix {
             globalEnums [prefix + enumDef.name] = enumDef
+        }
+    }
+}
+
+private extension [String] {
+    func commonPrefix() -> String? {
+        guard count > 1 else { return nil }
+        let alphabeticallySorted = sorted()
+        
+        guard let first = alphabeticallySorted.first,
+              let last = alphabeticallySorted.last else {
+            return nil
+        }
+        let prefix = first.commonPrefix(with: last)
+        return prefix != "" ? prefix : nil
+    }
+}
+
+private extension String {
+    func dropPrefix(_ prefix: String) -> String {
+        guard hasPrefix(prefix) else { return self }
+        guard prefix != self else { return self }
+        return String(dropFirst(prefix.count))
+    }
+    
+    func dropAfterLastUnderscore() -> String? {
+        if let range = range(of: "_", options: .backwards) {
+            return String(prefix(upTo: range.upperBound))
+        } else {
+            return nil
+        }
+    }
+    
+    func validSwiftName() -> String {
+        if isValidSwiftName() { return self }
+        
+        return "_\(self)"
+    }
+    
+    func isValidSwiftName() -> Bool {
+        let pattern = #"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#
+        
+        do {
+            let regex = try Regex(pattern)
+            return self.wholeMatch(of: regex) != nil
+        } catch {
+            fatalError("Invalid regex pattern: \(error)")
         }
     }
 }
