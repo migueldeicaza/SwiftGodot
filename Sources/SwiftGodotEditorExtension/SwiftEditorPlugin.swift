@@ -56,7 +56,7 @@ class SwiftEditorPlugin: EditorPlugin {
     
     /// The filename where we generate the Swift dynamic library type initialization
     lazy var typeRegistrationFile: String = {
-        projectBaseDir + "Sources/\(extensionName)/Startup.swift"
+        projectBaseDir + "Sources/\(extensionName)/_Startup.swift"
     }()
     
     /// Points to the directory where the Swift source files are stored
@@ -86,7 +86,7 @@ class SwiftEditorPlugin: EditorPlugin {
         
         
         for file in files {
-            print ("BUILD CONSIDERING: \(file)")
+            guard file != "_Startup.swift" else { continue }
             guard file.hasSuffix(".swift") else { continue }
             let basename = String (file.dropLast (6))
             if typeList != "" {
@@ -98,6 +98,7 @@ class SwiftEditorPlugin: EditorPlugin {
 
         let typeInit =
     """
+    import SwiftGodot
     import SwiftGodotMacros
         
     #initSwiftExtension (cdecl: "\(extensionEntryPoint)", types: [\(typeList)])
@@ -146,10 +147,14 @@ class SwiftEditorPlugin: EditorPlugin {
         // TODO: for Apple platforms, I should lipo the binaries into a single one
         for platform in ["x86_64-apple-macosx", "arm64-apple-macosx"] {
             for kind in ["debug", "release"] {
-                for library in ["SwiftGodot", "SwiftExtension"] {
+                for library in ["SwiftGodot", "SwiftExtension", "SwiftGodotMacros"] {
                     // TODO: add support for Windows and Linux (dll and .so) but will need to
                     for ext in ["dylib"] {
-                        try? FileManager.default.copyItem(atPath: "\(projectBaseDir)/.build/\(platform)/\(kind)/lib\(library).\(ext)", toPath: "\(projectBaseDir)/bin/")
+                        let file = "lib\(library).\(ext)"
+                        let source = "\(projectBaseDir)/.build/\(platform)/\(kind)/\(file)"
+                        let target = "\(projectBaseDir)/bin/\(file)"
+                        print ("Copying \(source) to \(target)")
+                        try? FileManager.default.copyItem(atPath: source, toPath: target)
                     }
                 }
             }
@@ -235,7 +240,7 @@ let package = Package(
     targets: [
         .target(
             name: "@EXT_NAME@",
-            dependencies: ["SwiftGodot"],
+            dependencies: ["SwiftGodot", .product (name: "SwiftGodotMacros", package: "SwiftGodot")],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
             linkerSettings: [.unsafeFlags (
                 ["-Xlinker", "-undefined",
