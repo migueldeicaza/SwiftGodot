@@ -4,6 +4,14 @@
 import PackageDescription
 import CompilerPluginSupport
 
+var linkerSettings: [LinkerSetting] = []
+#if os(macOS)
+linkerSettings.append(.unsafeFlags([
+    "-Xlinker", "-undefined",
+    "-Xlinker", "dynamic_lookup",
+]))
+#endif
+
 let package = Package(
     name: "SwiftGodot",
     platforms: [
@@ -61,12 +69,8 @@ let package = Package(
             name: "SwiftGodot",
             dependencies: ["GDExtension"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
-            linkerSettings: [
-                .unsafeFlags (
-                    ["-Xlinker", "-undefined",
-                     "-Xlinker", "dynamic_lookup",
-                    ])
-            ], plugins: ["CodeGeneratorPlugin"]),
+            linkerSettings: linkerSettings,
+            plugins: ["CodeGeneratorPlugin"]),
         
         // These are macros that can be used by third parties to simplify their
         // SwiftGodot development experience, these are used at compile time by
@@ -88,10 +92,7 @@ let package = Package(
             name: "SimpleExtension",
             dependencies: ["SwiftGodotMacros"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
-            linkerSettings: [
-                .unsafeFlags (
-                    ["-Xlinker", "-undefined",
-                     "-Xlinker", "dynamic_lookup"])]),
+            linkerSettings: linkerSettings),
         // Idea: -mark_dead_strippable_dylib
         .testTarget(name: "SwiftGodotMacroTests",
                     dependencies: [
