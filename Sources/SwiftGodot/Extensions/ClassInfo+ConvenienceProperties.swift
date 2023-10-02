@@ -250,7 +250,7 @@ extension ClassInfo {
 
     private func registerGetter(prefix: String, name: String, property: PropInfo, getter: @escaping ClassInfoFunction) {
         registerMethod(name: StringName("\(prefix)_get_\(name)"),
-                       flags: .flagsDefault,
+                       flags: .default,
                        returnValue: property,
                        arguments: [],
                        function: getter)
@@ -258,7 +258,7 @@ extension ClassInfo {
 
     private func registerSetter(prefix: String, name: String, property: PropInfo, setter: @escaping ClassInfoFunction) {
         registerMethod(name: StringName("\(prefix)_set_\(name)"),
-                       flags: .flagsDefault,
+                       flags: .default,
                        returnValue: nil,
                        arguments: [property],
                        function: setter)
