@@ -24,7 +24,7 @@ public class SignalProxy: Object {
         
         let s = ClassInfo<SignalProxy>(name: "SignalProxy")
         
-        s.registerMethod(name: SignalProxy.proxyName, flags: .flagsDefault, returnValue: nil, arguments: [], function: SignalProxy.proxyFunc)
+        s.registerMethod(name: SignalProxy.proxyName, flags: .default, returnValue: nil, arguments: [], function: SignalProxy.proxyFunc)
         return true
     } ()
     

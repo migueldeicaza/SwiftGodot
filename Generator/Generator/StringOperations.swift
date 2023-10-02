@@ -88,7 +88,18 @@ extension String {
     func dropPrefix(_ prefix: String) -> String {
         guard hasPrefix(prefix) else { return self }
         guard prefix != self else { return self }
-		let suffix = String(dropFirst(prefix.count))
+		let prefixSize: Int
+		// special-case for https://github.com/migueldeicaza/SwiftGodot/issues/23
+		if prefix == "METHOD_", contains("METHOD_FLAG") {
+			if self == "METHOD_FLAGS_DEFAULT" {
+				prefixSize = "METHOD_FLAGS_".count
+			} else {
+				prefixSize = "METHOD_FLAG_".count
+			}
+		} else {
+			prefixSize = prefix.count
+		}
+		let suffix = String(dropFirst(prefixSize))
 		return suffix.isValidSwiftName() ? suffix : self
     }
     
