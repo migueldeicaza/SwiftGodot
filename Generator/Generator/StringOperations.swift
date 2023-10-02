@@ -23,7 +23,7 @@ extension String {
         return self.processCamalCaseRegex(pattern: acronymPattern)?
             .processCamalCaseRegex(pattern: normalPattern)?.lowercased() ?? self.lowercased()
     }
-              
+    
     fileprivate func processCamalCaseRegex(pattern: String) -> String? {
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
         let range = NSRange(location: 0, length: count)
@@ -57,7 +57,7 @@ extension String {
 func escapeSwift (_ id: String) -> String {
     switch id {
     case "protocol", "func", "static", "inout", "in", "self", "case", "repeat", "default",
-         "import", "init", "continue", "class", "operator", "where", "var", "enum", "nil", "extension", "internal":
+        "import", "init", "continue", "class", "operator", "where", "var", "enum", "nil", "extension", "internal":
         return "`\(id)`"
     default:
         return id
@@ -88,19 +88,19 @@ extension String {
     func dropPrefix(_ prefix: String) -> String {
         guard hasPrefix(prefix) else { return self }
         guard prefix != self else { return self }
-		let prefixSize: Int
-		// special-case for https://github.com/migueldeicaza/SwiftGodot/issues/23
-		if prefix == "METHOD_", contains("METHOD_FLAG") {
-			if self == "METHOD_FLAGS_DEFAULT" {
-				prefixSize = "METHOD_FLAGS_".count
-			} else {
-				prefixSize = "METHOD_FLAG_".count
-			}
-		} else {
-			prefixSize = prefix.count
-		}
-		let suffix = String(dropFirst(prefixSize))
-		return suffix.isValidSwiftName() ? suffix : self
+        let prefixSize: Int
+        // special-case for https://github.com/migueldeicaza/SwiftGodot/issues/23
+        if prefix == "METHOD_", contains("METHOD_FLAG") {
+            if self == "METHOD_FLAGS_DEFAULT" {
+                prefixSize = "METHOD_FLAGS_".count
+            } else {
+                prefixSize = "METHOD_FLAG_".count
+            }
+        } else {
+            prefixSize = prefix.count
+        }
+        let suffix = String(dropFirst(prefixSize))
+        return suffix.isValidSwiftName() ? suffix : self
     }
     
     func dropAfterLastUnderscore() -> String? {
@@ -110,7 +110,7 @@ extension String {
             return nil
         }
     }
-	
+    
     func isValidSwiftName() -> Bool {
         let pattern = #"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#
         
