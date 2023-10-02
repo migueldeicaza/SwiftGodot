@@ -7,11 +7,13 @@
 
 import Foundation
 
-func generateUtility(values: [JGodotUtilityFunction], outputDir: String) {
-    let p = Printer ()
+func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async {
+    let p = await PrinterFactory.shared.initPrinter()
     p.preamble()
     defer {
-        p.save (outputDir + "utility.swift")
+        if let outputDir {
+            p.save (outputDir + "utility.swift")
+        }
     }
     
     let docClass = loadClassDoc(base: docRoot, name: "@GlobalScope")

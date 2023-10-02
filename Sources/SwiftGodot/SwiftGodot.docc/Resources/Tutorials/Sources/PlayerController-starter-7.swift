@@ -17,12 +17,12 @@ class PlayerController: CharacterBody2D {
     var movementVector: Vector2 {
         var movement = Vector2.zero
         movement.x = Float(
-            Input.shared.getActionStrength(action: "move_right") - Input.shared.getActionStrength(action: "move_left"))
+            Input.getActionStrength(action: "move_right") - Input.getActionStrength(action: "move_left"))
         return movement.normalized()
     }
 
     override func _physicsProcess(delta: Double) {
-        if Engine.shared.isEditorHint() { return }
+        if Engine.isEditorHint() { return }
         if movementVector != .zero {
             let acceleratedVector = Vector2(x: acceleration, y: acceleration)
             let acceleratedMovement = movementVector * acceleratedVector

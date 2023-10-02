@@ -60,9 +60,9 @@ public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #e
 /// - Parameter cdecl: The name of the entrypoint exposed to C.
 /// - Parameter types: The node types that should be registered with Godot.
 @freestanding(declaration, names: named(enterExtension), named(setupExtension))
-public macro initSwiftExtension<T: Wrapped>(cdecl: String,
-                                            types: [T.Type]) = #externalMacro(module: "SwiftGodotMacroLibrary",
-                                                                              type: "InitSwiftExtensionMacro")
+public macro initSwiftExtension(cdecl: String,
+                                types: [Wrapped.Type]) = #externalMacro(module: "SwiftGodotMacroLibrary",
+                                                                        type: "InitSwiftExtensionMacro")
 
 /// A macro that instantiates a `Texture2D` from a specified resource path. If the texture cannot be created, a
 /// `preconditionFailure` will be thrown.

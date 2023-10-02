@@ -1,9 +1,7 @@
 [configuration]
-
-entry_symbol = "swift_godot_editor_exension_main"
+entry_symbol = "created_swift_entry"
 compatibility_minimum = 4.2
 
 [libraries]
-
-macos.debug = "res://bin/SwiftGodotEditorExtension"
-macos.release = "res://bin/SwiftGodotEditorExtension"
+macos.debug = "res://bin/libSwiftExtension.dylib"
+macos.release = "res://bin/libSwiftExtension.dylib"

@@ -17,7 +17,7 @@ class PlayerController: CharacterBody2D {
     var movementVector: Vector2 {
         var movement = Vector2.zero
         movement.x = Float(
-            Input.shared.getActionStrength(action: "move_right") - Input.shared.getActionStrength(action: "move_left"))
+            Input.getActionStrength(action: "move_right") - Input.getActionStrength(action: "move_left"))
         return movement.normalized()
     }
 }
