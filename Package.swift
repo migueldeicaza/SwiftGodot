@@ -89,7 +89,6 @@ let package = Package(
             dependencies: ["SwiftGodotMacroLibrary", .target(name: "SwiftGodot")]),
         
         // This contains sample code showing how to use the SwiftGodot API
-<<<<<<< HEAD
         .target(
             name: "SwiftGodotEditorExtension",
             dependencies: ["SwiftGodot"],
@@ -97,8 +96,6 @@ let package = Package(
             linkerSettings: [.unsafeFlags (
                 ["-Xlinker", "-undefined",
                  "-Xlinker", "dynamic_lookup"])]),
-=======
->>>>>>> main
         .target(
             name: "SimpleExtension",
             dependencies: ["SwiftGodotMacros"],
