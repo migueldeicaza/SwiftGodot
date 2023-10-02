@@ -57,7 +57,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     p ("self.rawValue = rawValue")
                 }
                 for enumVal in enumDef.values {
-                    let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix)).validSwiftName()
+                    let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
                     if let ed = docEnumToValue [enumVal.name] {
                         doc (p, cdef, ed)
                     }
@@ -83,7 +83,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                         continue
                     }
                 }
-                let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix)).validSwiftName()
+                let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
                 let prefix: String
                 if used.contains(enumVal.value) {
                     prefix = "// "
