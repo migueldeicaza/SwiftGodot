@@ -11,7 +11,7 @@ import SwiftGodot
 
 let extensionName = "SwiftExtension"
 let extensionEntryPoint = "created_swift_entry"
-let gdExtensionName = "swiftsupport"
+let gdExtensionName = "swiftextension"
 
 class SwiftEditorPlugin: EditorPlugin {
     static var shared: SwiftEditorPlugin = {
@@ -42,23 +42,33 @@ class SwiftEditorPlugin: EditorPlugin {
     }
     
     var _projectBaseDir: String?
+    
+    /// The full path to the project directory
     lazy var projectBaseDir: String = {
         if let dir = _projectBaseDir { return dir }
         return ProjectSettings.globalizePath("res://")
     } ()
     
+    /// The path of the generated Package.swift file
     lazy var packageSwiftFile: String = {
         projectBaseDir + "/Package.swift"
     } ()
     
+    /// The filename where we generate the Swift dynamic library type initialization
     lazy var typeRegistrationFile: String = {
         projectBaseDir + "Sources/\(extensionName)/Startup.swift"
+    }()
+    
+    /// Points to the directory where the Swift source files are stored
+    lazy var swiftSourcesDir: String = {
+        projectBaseDir + "Sources/\(extensionName)/"
     }()
     
     lazy var packageContents: String = {
         packageTemplate.replacing("@EXT_NAME@", with: extensionName)
     }()
     
+    /// Points to the generated `.gdextension` file for the swift extension that contains all of our Swift types
     lazy var gdExtensionFile: String = {
         "\(projectBaseDir)/\(gdExtensionName).gdextension"
     }()
@@ -71,13 +81,12 @@ class SwiftEditorPlugin: EditorPlugin {
     }
     
     func ensureTypeRegistration () throws {
-        let files = try FileManager.default.contentsOfDirectory(atPath: projectBaseDir)
+        let files = try FileManager.default.contentsOfDirectory(atPath: swiftSourcesDir)
         var typeList = ""
         
         
         for file in files {
             print ("BUILD CONSIDERING: \(file)")
-            guard file != "Package.swift" else { continue }
             guard file.hasSuffix(".swift") else { continue }
             let basename = String (file.dropLast (6))
             if typeList != "" {
