@@ -83,7 +83,7 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                             
                             for value in optionType.values {
                                 if (defIntValue & value.value) != 0 {
-                                    let name = snakeToCamel(value.name.dropPrefix(prefix)).validSwiftName()
+                                    let name = snakeToCamel(value.name.dropPrefix(prefix))
                                     if setValues != "" {
                                         setValues += ", "
                                     }

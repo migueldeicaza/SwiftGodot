@@ -88,7 +88,8 @@ extension String {
     func dropPrefix(_ prefix: String) -> String {
         guard hasPrefix(prefix) else { return self }
         guard prefix != self else { return self }
-        return String(dropFirst(prefix.count))
+		let suffix = String(dropFirst(prefix.count))
+		return suffix.isValidSwiftName() ? suffix : self
     }
     
     func dropAfterLastUnderscore() -> String? {
@@ -98,13 +99,7 @@ extension String {
             return nil
         }
     }
-    
-    func validSwiftName() -> String {
-        if isValidSwiftName() { return self }
-        
-        return "_\(self)"
-    }
-    
+	
     func isValidSwiftName() -> Bool {
         let pattern = #"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#
         

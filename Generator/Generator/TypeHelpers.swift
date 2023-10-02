@@ -52,7 +52,7 @@ func mapEnumValue (enumDef: String, value: String) -> String? {
             }
 
             if "\(evalue.value)" == value {
-                let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix)).validSwiftName()
+                let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix))
                 return ".\(escapeSwift (name))"
             }
         }
