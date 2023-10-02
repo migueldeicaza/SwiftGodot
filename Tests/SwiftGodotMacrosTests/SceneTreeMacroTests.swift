@@ -109,6 +109,4 @@ final class SceneTreeMacroTests: XCTestCase {
             macros: testMacros
         )
     }
-    
-    
 }
