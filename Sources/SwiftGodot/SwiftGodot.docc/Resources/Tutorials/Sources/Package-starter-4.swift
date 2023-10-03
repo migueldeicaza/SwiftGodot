@@ -24,7 +24,6 @@ let package = Package(
             name: "SimpleRunnerDriver",
             dependencies: [
                 "SwiftGodot",
-                .product(name: "SwiftGodotMacros", package: "SwiftGodot")
             ],
             swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
             linkerSettings: [.unsafeFlags(

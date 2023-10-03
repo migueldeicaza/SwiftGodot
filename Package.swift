@@ -24,10 +24,6 @@ let package = Package(
             name: "SwiftGodot",
             type: .dynamic,
             targets: ["SwiftGodot"]),
-        .library(
-            name: "SwiftGodotMacros",
-            type: .dynamic,
-            targets: ["SwiftGodotMacros"]),
         .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
         .library(
             name: "SimpleExtension",
@@ -70,7 +66,7 @@ let package = Package(
             dependencies: ["GDExtension"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
             linkerSettings: linkerSettings,
-            plugins: ["CodeGeneratorPlugin"]),
+            plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]),
         
         // These are macros that can be used by third parties to simplify their
         // SwiftGodot development experience, these are used at compile time by
@@ -81,22 +77,18 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
                ]),
-        
-        // This contains the macro API contract that is referenced by applications
-        .target (
-            name: "SwiftGodotMacros",
-            dependencies: ["SwiftGodotMacroLibrary", .target(name: "SwiftGodot")]),
-        
+                
         // This contains sample code showing how to use the SwiftGodot API
         .target(
             name: "SimpleExtension",
-            dependencies: ["SwiftGodotMacros"],
+            dependencies: ["SwiftGodot"],
             swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
             linkerSettings: linkerSettings),
         // Idea: -mark_dead_strippable_dylib
         .testTarget(name: "SwiftGodotMacroTests",
                     dependencies: [
                         "SwiftGodotMacroLibrary",
+                        "SwiftGodot",
                         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
                     ])
 

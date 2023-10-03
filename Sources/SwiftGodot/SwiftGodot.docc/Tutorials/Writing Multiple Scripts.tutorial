@@ -70,7 +70,7 @@
         @Steps {
             @Step {
                 Create a new Swift file called **MainLevel** in the SimpleRunnerDriver package and import the SwiftGodot
-                and SwiftGodotMacros libraries.
+                library.
                 
                 @Code(name: "MainLevel.swift", file: "MainLevel-multiscript-init.swift", reset: true)
             }

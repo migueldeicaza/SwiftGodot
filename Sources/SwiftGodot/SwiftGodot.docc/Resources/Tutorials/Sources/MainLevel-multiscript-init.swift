@@ -7,4 +7,3 @@
 
 import Foundation
 import SwiftGodot
-import SwiftGodotMacros

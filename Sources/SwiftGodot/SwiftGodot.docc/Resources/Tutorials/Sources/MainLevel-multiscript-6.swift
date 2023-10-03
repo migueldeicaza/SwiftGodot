@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftGodot
-import SwiftGodotMacros
 
 @Godot
 class MainLevel: Node2D {

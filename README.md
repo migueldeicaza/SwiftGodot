@@ -76,7 +76,7 @@ let package = Package(
     targets: [
         .target(
             name: "MyFirstGame",
-            dependencies: ["SwiftGodot", .product (name: "SwiftGodotMacros", package: "SwiftGodot")],
+            dependencies: ["SwiftGodot"],
             swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
             linkerSettings: [.unsafeFlags(
                 ["-Xlinker", "-undefined",
@@ -99,7 +99,6 @@ here we declare a spinning cube:
 
 ```
 import SwiftGodot
-import SwiftGodotMacros
 
 @Godot
 class SpinningCube: Node3D {
@@ -146,7 +145,7 @@ public func swift_entry_point(
 Alternatively, you can use the `#initSwiftExtension` macro:
 
 ```
-import SwiftGodotMacros
+import SwiftGodot
 
 #initSwiftExtension(name: "swift_entry_point", types: [SpinningCube.self])
 ```

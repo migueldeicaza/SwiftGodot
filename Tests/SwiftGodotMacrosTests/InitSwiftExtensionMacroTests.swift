@@ -8,6 +8,7 @@
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
+import SwiftGodot
 import SwiftGodotMacroLibrary
 
 final class InitSwiftExtensionMacroTests: XCTestCase {

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftGodot
 
 /// Creates the definition for a Swift class to be surfaced to Godot.
 ///
