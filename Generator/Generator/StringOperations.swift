@@ -86,8 +86,7 @@ extension [JGodotValueElement] {
 
 extension String {
     func dropPrefix(_ prefix: String) -> String {
-        guard hasPrefix(prefix) else { return self }
-        guard prefix != self else { return self }
+        guard hasPrefix(prefix), prefix != self else { return self }
         let prefixSize: Int
         // special-case for https://github.com/migueldeicaza/SwiftGodot/issues/23
         if prefix == "METHOD_", contains("METHOD_FLAG") {
@@ -106,9 +105,7 @@ extension String {
     func dropAfterLastUnderscore() -> String? {
         if let range = range(of: "_", options: .backwards) {
             return String(prefix(upTo: range.upperBound))
-        } else {
-            return nil
-        }
+        return nil
     }
     
     func isValidSwiftName() -> Bool {
