@@ -11,6 +11,15 @@ import SwiftGodotMacros
 var sequence = 0
 
 @Godot
+class Rigid: RigidBody2D {
+    override func _integrateForces(state: PhysicsDirectBodyState2D?) {
+        guard let xform = state?.transform else {
+            return
+        }
+    }
+}
+
+@Godot
 class SwiftSprite: Sprite2D {
     var time_passed: Double = 0
     var count: Int = 0
@@ -48,9 +57,14 @@ class SwiftSprite: Sprite2D {
         return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
     }
     
+    var x: Rigid?
+    
     override func _process (delta: Double) {
         time_passed += delta
-        
+    
+        if x == nil {
+            self.x = Rigid()
+        }
         let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
@@ -142,7 +156,8 @@ class SwiftSprite2: Sprite2D {
     static func lerp(from: Float, to: Float, weight: Float) -> Float {
         return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
     }
-    
+
+
     override func _process (delta: Double) {
         time_passed += delta
         
@@ -170,6 +185,7 @@ func setupScene (level: GDExtension.InitializationLevel) {
     if level == .scene {
         register(type: SwiftSprite.self)
         register(type: SwiftSprite2.self)
+        register(type: Rigid.self)
     }
 }
 
