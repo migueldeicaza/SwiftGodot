@@ -35,14 +35,14 @@ final class MacroGodotTests: XCTestCase {
                 }
 
                 required init() {
-                	Hi._initClass ()
+                	Hi._initClass
                 	super.init ()
                 }
 
-                static func _initClass () {
+                static var _initClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
-                }
+                } ()
             }
             """,
             macros: testMacros
