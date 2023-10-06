@@ -6,7 +6,6 @@
 
 import Foundation
 import SwiftGodot
-import SwiftGodotMacros
 
 var sequence = 0
 

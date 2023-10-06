@@ -2,7 +2,6 @@
 // https://docs.swift.org/swift-book
 
 import SwiftGodot
-import SwiftGodotMacros
 
 let allNodes: [Wrapped.Type] = [PlayerController.self, MainLevel.self]
 

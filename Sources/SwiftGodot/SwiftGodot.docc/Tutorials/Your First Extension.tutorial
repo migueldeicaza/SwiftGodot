@@ -47,7 +47,7 @@
                 @Code(name: "Package.swift", file: "Package-starter-4.swift")
             }
             @Step {
-                In SimpleRunnerDriver.swift, import the SwiftGodot and SwiftGodotMacros libraries and call the
+                In SimpleRunnerDriver.swift, import the SwiftGodot library and call the
                 `initSwiftExtension` macro to create an entry point. For now, we can pass an empty array for the nodes
                 to be registered.
                 

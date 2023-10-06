@@ -22,4 +22,4 @@ check-args:
 	@if test x$(VERSION)$(NOTES) = x; then echo You need to provide both VERSION=XX NOTES=FILENAME arguments to this makefile target; exit 1; fi
 
 sync:
-	@if test ../SwiftGodotBinary; then rsync -a Sources/SwiftGodotMacros Sources/SwiftGodotMacroLibrary ../SwiftGodotBinary/Sources; else echo "missing directory ../SwiftGodotBinary"; fi
+	@if test ../SwiftGodotBinary; then rsync -a Sources/SwiftGodotMacroLibrary ../SwiftGodotBinary/Sources; else echo "missing directory ../SwiftGodotBinary"; fi

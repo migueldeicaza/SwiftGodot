@@ -5,8 +5,7 @@
 //  Created by Miguel de Icaza on 9/25/23.
 //
 
-import Foundation
-import SwiftGodot
+#if !os(Windows)
 
 /// Creates the definition for a Swift class to be surfaced to Godot.
 ///
@@ -127,3 +126,4 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 @attached(accessor)
 public macro SceneTree(path: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
+#endif

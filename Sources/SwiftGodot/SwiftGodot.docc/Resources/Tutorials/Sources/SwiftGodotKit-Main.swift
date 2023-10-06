@@ -8,7 +8,6 @@
 import Foundation
 import SwiftGodotKit
 import SwiftGodot
-import SwiftGodotMacros
 
 
 func loadScene (scene: SceneTree) {
