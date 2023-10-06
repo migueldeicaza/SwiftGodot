@@ -177,34 +177,14 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
 /// receive any of the calls from Godot virtual methods (those that are prefixed
 /// with an underscore)
 public func register<T:Wrapped> (type: T.Type) {
-    // Strips the namespace and returns a StringName
-    func stripNamespace (_ fqname: String) -> StringName {
-        if let r = fqname.lastIndex(of: ".") {
-            return StringName (String (fqname [fqname.index(r, offsetBy: 1)...]))
-        }
-        return StringName (fqname)
-    }
-    
-    // We need to call this helper function to cast type to AnyObject
-    // otherwise the call to superClassMirror returns nil
-    func getSuperType (type: AnyObject) -> String? {
-        guard let t = Mirror (reflecting: type).superclassMirror?.subjectType else {
-            return nil
-        }
-        return String (describing: t)
-    }
-    
-    guard let superStr = getSuperType (type: type as AnyObject) else {
+    guard let superType = Swift._getSuperclass (type) else {
         print ("You can not register the root class")
         return
     }
-    var typeStr = String (describing: Mirror (reflecting: type).subjectType)
-    if typeStr.hasSuffix(".Type") {
-        typeStr = String (typeStr.dropLast(5))
-    }
-    print (stripNamespace(typeStr).description)
-    print (stripNamespace(superStr).description)
-    register (type: stripNamespace (typeStr), parent: stripNamespace (superStr), type: type)
+    let typeStr = String (describing: type)
+    let superStr = String(describing: superType)
+    print("Registering \(typeStr) : \(superStr)")
+    register (type: StringName (typeStr), parent: StringName (superStr), type: type)
 }
 
 /// Currently contains all instantiated objects, but might want to separate those
