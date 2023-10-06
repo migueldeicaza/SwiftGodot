@@ -243,16 +243,17 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
             }
             // With Godot 4.1 we need to pass the address of the handle
+            let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
+            let retFromWith = returnType != "" ? "return " : ""
+
             if refParameterIsOptional || optstorage == ".handle" {
-                let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
                 let ea = escapeSwift(argref)
-                let retFromWith = returnType != "" ? "return " : ""
                 let deref = refParameterIsOptional ? "?" : ""
                 argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ea)\(deref).handle) { p\(withUnsafeCallNestLevel) in\n\(prefix)_args.append (\(ea) == nil ? nil : p\(withUnsafeCallNestLevel))\n"
                 withUnsafeCallNestLevel += 1
             } else {
-                let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
-                argSetup += "\(prefix)_args.append (UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage)))\n"
+                argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(needAddress)\(escapeSwift(argref))\(optstorage)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    _args.append (p\(withUnsafeCallNestLevel))\n"
+                withUnsafeCallNestLevel += 1
             }
         }
         argSetup += varArgSetupInit
