@@ -125,7 +125,7 @@ public class SimpleSignal {
     public var emitted: Void {
         get async {
             await withCheckedContinuation { c in
-                connect (flags: .connectOneShot) {
+                connect (flags: .oneShot) {
                     c.resume()
                 }
             }

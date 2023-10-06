@@ -46,6 +46,10 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
     
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
+        
+        var enumDefName = enumDef.name
+        let enumCasePrefix = enumDef.values.commonPrefix()
+        
         if isBitField || enumDef.name == "ConnectFlags" {
             p ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
                 p ("public let rawValue: Int")
@@ -53,7 +57,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     p ("self.rawValue = rawValue")
                 }
                 for enumVal in enumDef.values {
-                    let name = dropMatchingPrefix (enumDef.name, enumVal.name)
+                    let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
                     if let ed = docEnumToValue [enumVal.name] {
                         doc (p, cdef, ed)
                     }
@@ -62,7 +66,6 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             }
             continue
         }
-        var enumDefName = enumDef.name
         
         if enumDefName.starts(with: "Variant") {
             p ("extension Variant {")
@@ -76,11 +79,11 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 let enumValName = enumVal.name
                 if enumDefName == "InlineAlignment" {
                     if enumValName == "INLINE_ALIGNMENT_TOP_TO" || enumValName == "INLINE_ALIGNMENT_TO_TOP" ||
-                    enumValName == "INLINE_ALIGNMENT_IMAGE_MASK" || enumValName == "INLINE_ALIGNMENT_TEXT_MASK" {
+                        enumValName == "INLINE_ALIGNMENT_IMAGE_MASK" || enumValName == "INLINE_ALIGNMENT_TEXT_MASK" {
                         continue
                     }
                 }
-                let name = dropMatchingPrefix (enumDefName, enumValName)
+                let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
                 let prefix: String
                 if used.contains(enumVal.value) {
                     prefix = "// "
@@ -103,3 +106,4 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
         }
     }
 }
+

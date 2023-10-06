@@ -525,7 +525,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             p ("get async") {
                 p ("await withCheckedContinuation") {
                     p ("c in")
-                    p ("connect (flags: .connectOneShot) { \(lambdaIgnore) in c.resume () }")
+                    p ("connect (flags: .oneShot) { \(lambdaIgnore) in c.resume () }")
                 }
             }
         }

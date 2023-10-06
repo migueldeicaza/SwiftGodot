@@ -43,6 +43,7 @@ func isBuiltinClass (_ godotTypeName: String) -> Bool {
 /// Example type: "ArrowDirection", value: "0" would return ".up"
 func mapEnumValue (enumDef: String, value: String) -> String? {
     func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
+        let enumCasePrefix = element.values.commonPrefix()
         for evalue in element.values {
             let ename = evalue.name
             if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
@@ -51,7 +52,7 @@ func mapEnumValue (enumDef: String, value: String) -> String? {
             }
 
             if "\(evalue.value)" == value {
-                let name = dropMatchingPrefix (String (element.name), evalue.name)
+                let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix))
                 return ".\(escapeSwift (name))"
             }
         }
