@@ -293,7 +293,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     let (storage, initialize) = getBuiltinStorage ("Array")
                     p ("var _result: \(storage)\(initialize)")
                 } else if godotReturnType == "String" {
-                    p ("var _result = GString ()")
+                    p ("let _result = GString ()")
                 } else {
                     if godotReturnTypeIsReferenceType {
                         frameworkType = true

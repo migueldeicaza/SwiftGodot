@@ -206,7 +206,7 @@ public struct GodotMacro: MemberMacro {
                 StmtSyntax("\n\tfatalError(\"init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated\")")
             }
             let initSyntax = try InitializerDeclSyntax("required init()") {
-                StmtSyntax("\n\t\(classDecl.name)._initClass\n\tsuper.init ()")
+                StmtSyntax("\n\t_ = \(classDecl.name)._initClass\n\tsuper.init ()")
             }
             
             return [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]

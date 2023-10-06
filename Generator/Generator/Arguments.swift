@@ -154,7 +154,7 @@ func generateCopies (_ args: [JGodotArgument]) -> String {
             }
             body += "var copy_\(arg.name) = \(reference)\n"
         } else if arg.type == "String" && mapStringToSwift {
-            body += "var gstr_\(arg.name) = GString (\(reference))\n"
+            body += "let gstr_\(arg.name) = GString (\(reference))\n"
         }
     }
     return body
