@@ -135,9 +135,9 @@ func getArgRef (arg: JGodotArgument) -> String {
         optstorage = ""
     }
     if (isStructMap [arg.type] ?? false) {
-        return "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage))"
+        return "\(needAddress)\(escapeSwift(argref))\(optstorage)"
     } else {
-        return "UnsafeRawPointer(\(needAddress)\(escapeSwift(argref))\(optstorage))"
+        return "\(needAddress)\(escapeSwift(argref))\(optstorage)"
     }
 }
 
@@ -160,19 +160,23 @@ func generateCopies (_ args: [JGodotArgument]) -> String {
     return body
 }
 
-func generateArgPrepare (_ args: [JGodotArgument]) -> String {
+func generateArgPrepare (_ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
     var body = ""
+    var withUnsafeCallNestLevel = 0
+    let retFromWith = methodHasReturn ? "return " : ""
     
     if args.count > 0 {
         body += generateCopies (args)
-        body += "var args: [UnsafeRawPointer?] = [\n"
-        
+        body += "var args: [UnsafeRawPointer?] = []\n"
+
+
         for arg in args {
+            let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
             let ar = getArgRef(arg: arg)
-            body += "    \(ar),\n"
+            body += "\(prefix)"
+            body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)args.append (p\(withUnsafeCallNestLevel))\n"
+            withUnsafeCallNestLevel += 1
         }
-        body += "]"
-        
     }
-    return body
+    return (body, withUnsafeCallNestLevel)
 }

@@ -130,11 +130,6 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            let argPrepare = generateArgPrepare(m.arguments ?? [])
-            if argPrepare != "" {
-                p (argPrepare)
-            }
-            
             let ptrArgs = (m.arguments != nil) ? "&args" : "nil"
             
             // I used to have a nicer model, rather than everything having a
@@ -162,8 +157,23 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
+            var (argPrepare, nestLevel) = generateArgPrepare(m.arguments ?? [], methodHasReturn: false)
+            if argPrepare != "" {
+                p (argPrepare)
+                if nestLevel > 0 {
+                    p.indent += nestLevel
+                }
+            }
+            
             // Call
             p ("\(typeName).\(ptrName) (&\(ptr), \(ptrArgs))")
+            
+            // Unwrap the nested calls to 'withUnsafePointer'
+            while nestLevel > 0 {
+                nestLevel -= 1
+                p.indent -= 1
+                p ("}")
+            }
         }
     }
 }
@@ -191,9 +201,12 @@ func generateMethodCall (_ p: Printer,
         }
     }
     
-    let argPrep = generateArgPrepare(arguments ?? [])
+    var (argPrep, nestLevel) = generateArgPrepare(arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
     if argPrep != "" {
         p (argPrep)
+        if nestLevel > 0 {
+            p.indent += nestLevel
+        }
     }
     let ptrArgs = (arguments?.count ?? 0) > 0 ? "&args" : "nil"
     let ptrResult: String
@@ -229,6 +242,12 @@ func generateMethodCall (_ p: Printer,
         } else {
             p ("return result")
         }
+    }
+    // Unwrap the nested calls to 'withUnsafePointer'
+    while nestLevel > 0 {
+        nestLevel -= 1
+        p.indent -= 1
+        p ("}")
     }
 }
 
@@ -356,7 +375,7 @@ func generateBuiltinMethods (_ p: Printer,
             }
         }
         // Generate the method entry point
-        if discardableResultList [bc.name]?.contains(m.name) ?? false  {
+        if discardableResultList [bc.name]?.contains(m.name) ?? false && m.returnType != "" {
             p ("@discardableResult")
         }
 
