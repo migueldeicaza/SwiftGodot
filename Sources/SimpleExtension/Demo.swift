@@ -15,6 +15,7 @@ class Rigid: RigidBody2D {
         guard let xform = state?.transform else {
             return
         }
+        print (xform)
     }
 }
 

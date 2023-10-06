@@ -197,7 +197,11 @@ func generateMethodCall (_ p: Printer,
         if godotReturnType == "String" && mapStringToSwift {
             p ("var result = GString ()")
         } else {
-            p ("var result: \(resultTypeName) = \(resultTypeName)()")
+            var declType = "var"
+            if builtinGodotTypeNames [godotReturnType ?? ""] == .isClass {
+                declType = "let"
+            }
+            p ("\(declType) result: \(resultTypeName) = \(resultTypeName)()")
         }
     }
     
@@ -302,9 +306,13 @@ func generateBuiltinOperators (_ p: Printer,
             p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
                 let ptrResult: String
                 if op.returnType == "String" && mapStringToSwift {
-                    p ("var result = GString ()")
+                    p ("let result = GString ()")
                 } else {
-                    p ("var result: \(retType) = \(retType)()")
+                    var declType: String = "var"
+                    if builtinGodotTypeNames [retType] == .isClass {
+                        declType = "let"
+                    }
+                    p ("\(declType) result: \(retType) = \(retType)()")
                 }
                 let isStruct = isStructMap [op.returnType] ?? false
                 if isStruct {
@@ -545,8 +553,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("// Used to construct objects on virtual proxies")
                 p ("init (content: \(storage))") {
                     p ("var copy = content")
-                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer (&copy)]")
-                    p ("\(typeName).constructor1 (&self.content, &args)")
+                    p ("var args: [UnsafeRawPointer?] = []")
+                    p ("withUnsafePointer (to: &copy)", arg: " ptr in") {
+                        p ("args.append (ptr)")
+                        p ("\(typeName).constructor1 (&self.content, &args)")
+                    }
                 }
             }
             
@@ -561,8 +572,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     p ("var localContent: \(typeName).ContentType = \(typeName).zero")
                     p ("from.toType(.\(gtype), dest: &localContent)")
                     p ("// Replicate the constructor, because of a lame Swift requirement")
-                    p ("var args: [UnsafeRawPointer?] = [UnsafeRawPointer(&localContent)]")
-                    p ("\(typeName).constructor1 (&content, &args)")
+                    p ("var args: [UnsafeRawPointer?] = []")
+                    p ("withUnsafePointer (to: &localContent)", arg: " ptr in") {
+                        p ("args.append (ptr)")
+                        p ("\(typeName).constructor1 (&content, &args)")
+                    }
                 }
             } else {
                 p ("public init? (_ from: Variant)") {

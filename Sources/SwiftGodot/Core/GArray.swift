@@ -11,7 +11,7 @@ public enum ArrayError {
     case outOfRange
 }
 public extension GArray {
-    public subscript (index: Int) -> Variant {
+    subscript (index: Int) -> Variant {
         get {
             guard let ret = gi.array_operator_index (&content, Int64 (index)) else {
                 return Variant()

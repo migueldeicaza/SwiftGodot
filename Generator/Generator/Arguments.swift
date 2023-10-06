@@ -173,8 +173,7 @@ func generateArgPrepare (_ args: [JGodotArgument], methodHasReturn: Bool) -> (St
         for arg in args {
             let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
             let ar = getArgRef(arg: arg)
-            body += "\(prefix)"
-            body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)args.append (p\(withUnsafeCallNestLevel))\n"
+            body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    args.append (p\(withUnsafeCallNestLevel))\n"
             withUnsafeCallNestLevel += 1
         }
     }
