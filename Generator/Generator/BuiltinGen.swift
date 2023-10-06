@@ -309,7 +309,7 @@ func generateBuiltinOperators (_ p: Printer,
                     p ("let result = GString ()")
                 } else {
                     var declType: String = "var"
-                    if builtinGodotTypeNames [retType] == .isClass {
+                    if builtinGodotTypeNames [op.returnType] == .isClass {
                         declType = "let"
                     }
                     p ("\(declType) result: \(retType) = \(retType)()")
@@ -438,19 +438,14 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 
     func generateBuiltinClass (p: Printer, _ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?) {
         // TODO: isKeyed, hasDestrcturo,
-        var kind: String
-        if bc.members != nil {
-            kind = "struct"
-        } else {
-            kind = "class"
-        }
-        builtinGodotTypeNames [bc.name] = kind == "struct" ? .isStruct : .isClass
+        let kind: BKind = builtinGodotTypeNames[bc.name]!
+        
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
         
         
         var conformances: [String] = []
-        if kind == "struct" {
+        if kind == .isStruct {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
         } else {
@@ -478,7 +473,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             doc (p, bc, docClass?.description)
         }
         
-        p ("public \(kind) \(typeName)\(proto)") {
+        p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
             if bc.name == "String" {
                 p ("public init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
@@ -536,7 +531,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 //            }
             
 
-            if kind == "class" {
+            if kind == .isClass {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
                 p ("// Contains a binary blob where this type information is stored")
                 p ("var content: ContentType\(initialize)")
@@ -564,7 +559,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p ("/// Creates a new instance from the given variant if it contains a \(typeName)")
             let gtype = gtypeFromTypeName (bc.name)
             // Now generate the variant constructor
-            if kind == "class" {
+            if kind == .isClass {
                 p ("public required init? (_ from: Variant)") {
                     p ("guard from.gtype == .\(gtype) else") {
                         p ("return nil")
@@ -629,7 +624,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
             generateBuiltinCtors (p, bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
             
-            generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == "struct")
+            generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
             generateBuiltinOperators (p, bc, docClass, typeName: typeName)
             if bc.isKeyed {
                 
@@ -647,6 +642,17 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     p ("i+1")
                 }
             }
+        }
+    }
+    
+    // First map structs and classes from the builtins
+    for bc in values {
+        switch bc.name {
+            // We do not generate code for a few types, we will bridge those instead
+        case "int", "float", "bool":
+            break
+        default:
+            builtinGodotTypeNames [bc.name] = bc.members != nil ? .isStruct : .isClass
         }
     }
     
