@@ -125,9 +125,9 @@ func generateVirtualProxy (_ p: Printer,
                 // object, but if it is not known, then we create the instance
                 //
                 if cmap.isRefcounted {
-                    argPrep += "let resolved_\(i) = gi.ref_get_object (args [\(i)]!)!\n"
+                    argPrep += "let resolved_\(i) = gi.ref_get_object (args [\(i)]!.load (as: UnsafeRawPointer.self))!\n"
                 } else {
-                    argPrep += "let resolved_\(i) = args [\(i)]!\n"
+                    argPrep += "let resolved_\(i) = args [\(i)]!.load (as: UnsafeRawPointer.self)\n"
                 }
                 argCall += "lookupLiveObject (handleAddress: resolved_\(i)) as? \(arg.type) ?? \(arg.type) (nativeHandle: resolved_\(i))"
             } else if let storage = builtinClassStorage [arg.type] {

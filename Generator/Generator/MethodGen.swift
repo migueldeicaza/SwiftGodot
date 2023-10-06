@@ -90,16 +90,17 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     let instanceOrStatic = method.isStatic || asSingleton ? " static" : ""
     var inline = ""
     if let methodHash = method.hash {
+        let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
         assert (!method.isVirtual)
         switch kind {
         case .class:
-            p ("static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
+            p ("\(staticVarVisibility)static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
                 
                 p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(className).className.content), UnsafeRawPointer (&methodName.content), \(methodHash))!")
             }
         case .utility:
-            p ("static var \(bindName): GDExtensionPtrUtilityFunction =", suffix: "()") {
+            p ("\(staticVarVisibility)static var \(bindName): GDExtensionPtrUtilityFunction =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
                 
                 p ("return gi.variant_get_ptr_utility_function (UnsafeRawPointer (&methodName.content), \(methodHash))!")
@@ -109,7 +110,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // If this is an internal, and being reference by a property, hide it
         if usedMethods.contains (method.name) {
             inline = "@inline(__always)"
-            visibility = "internal"
+            // Try to hide as much as possible, but we know that Godot child nodes will want to use these
+            // (DirectionalLight3D and Light3D) rely on this.
+            visibility = method.name == "get_param" || method.name == "set_param" ? "internal" : "fileprivate"
             allEliminate = "_ "
             methodName = method.name
         } else {
