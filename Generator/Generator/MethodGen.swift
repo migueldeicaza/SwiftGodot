@@ -110,7 +110,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // If this is an internal, and being reference by a property, hide it
         if usedMethods.contains (method.name) {
             inline = "@inline(__always)"
-            visibility = "internal"
+            // Try to hide as much as possible, but we know that Godot child nodes will want to use these
+            // (DirectionalLight3D and Light3D) rely on this.
+            visibility = method.name == "get_param" || method.name == "set_param" ? "internal" : "fileprivate"
             allEliminate = "_ "
             methodName = method.name
         } else {
