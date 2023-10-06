@@ -21,7 +21,7 @@ var products: [Product] = [
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
 
-// Macros aren't supported on Windows yet
+// Macros aren't supported on Windows yet and this sample uses them
 #if !os(Windows)
 products.append(
     .library(
@@ -36,16 +36,15 @@ var targets: [Target] = [
     .executableTarget(
         name: "Generator",
         dependencies: ["XMLCoder"],
-        path: "Generator",
-        swiftSettings: [.unsafeFlags (["-enable-bare-slash-regex"])]),
+        path: "Generator"),
     
     // This is a build-time plugin that invokes the generator and produces
     // the bindings that are compiled into SwiftGodot
-    .plugin(
-        name: "CodeGeneratorPlugin",
-        capability: .buildTool(),
-        dependencies: ["Generator"]
-    ),
+        .plugin(
+            name: "CodeGeneratorPlugin",
+            capability: .buildTool(),
+            dependencies: ["Generator"]
+        ),
     
     // This allows the Swift code to call into the Godot bridge API (GDExtension)
     .target(
@@ -79,7 +78,7 @@ targets.append(contentsOf: [
                     "SwiftGodot",
                     .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
                 ])
-    ])
+])
 swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 #endif
 
@@ -103,7 +102,6 @@ let package = Package(
     products: products,
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/CoreOffice/XMLCoder", from: "0.15.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
