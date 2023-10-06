@@ -96,8 +96,12 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         case .class:
             p ("\(staticVarVisibility)static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
-                
-                p ("return gi.classdb_get_method_bind (UnsafeRawPointer (&\(className).className.content), UnsafeRawPointer (&methodName.content), \(methodHash))!")
+            
+                p ("return withUnsafePointer (to: &\(className).className.content)", arg: " classPtr in") {
+                    p ("withUnsafePointer (to: &methodName.content)", arg: " mnamePtr in") {
+                        p ("gi.classdb_get_method_bind (classPtr, mnamePtr, \(methodHash))!")
+                    }
+                }
             }
         case .utility:
             p ("\(staticVarVisibility)static var \(bindName): GDExtensionPtrUtilityFunction =", suffix: "()") {

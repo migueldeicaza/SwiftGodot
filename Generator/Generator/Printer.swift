@@ -33,8 +33,8 @@ class Printer {
     }
 
     // Prints a block, automatically indents the code in the closure
-    func b (_ str: String, suffix: String = "", block: () -> ()) {
-        p (str + " {")
+    func b (_ str: String, arg: String? = nil, suffix: String = "", block: () -> ()) {
+        p (str + " {" + (arg ?? ""))
         indent += 1
         let saved = indent
         block ()
@@ -49,8 +49,8 @@ class Printer {
         p (str)
     }
     
-    func callAsFunction(_ str: String, suffix: String = "", block: () -> ()) {
-        b (str, suffix: suffix, block: block)
+    func callAsFunction(_ str: String, arg: String? = nil, suffix: String = "", block: () -> ()) {
+        b (str, arg: arg, suffix: suffix, block: block)
     }
     
     func save (_ file: String) {
