@@ -487,10 +487,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("// ExpressibleByStringLiteral conformace")
                 p ("public required init (stringLiteral value: String)") {
                     p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = [")
-                    p ("    UnsafeRawPointer(&from.content),")
-                    p ("]")
-                    p ("NodePath.constructor2 (&content, &args)")
+                    p ("var args: [UnsafeRawPointer?] = []")
+                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in") {
+                        p ("args.append (ptr)")
+                        p ("NodePath.constructor2 (&content, &args)")
+                    }
                 }
             }
             if bc.name == "StringName" {
@@ -508,10 +509,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("// ExpressibleByStringLiteral conformace")
                 p ("public required init (stringLiteral value: String)") {
                     p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = [")
-                    p ("    UnsafeRawPointer(&from.content),")
-                    p ("]")
-                    p ("StringName.constructor2 (&content, &args)")
+                    p ("var args: [UnsafeRawPointer?] = []")
+                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){
+                        p ("args.append (ptr)")
+                        p ("StringName.constructor2 (&content, &args)")
+                    }
                 }
             }
             if bc.hasDestructor {

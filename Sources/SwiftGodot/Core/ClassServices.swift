@@ -53,7 +53,7 @@ public class ClassInfo<T:Object> {
             propPtr [i] = prop.makeNativeStruct()
             i += 1
         }
-        gi.classdb_register_extension_class_signal (library, UnsafeRawPointer (&self.name.content), UnsafeRawPointer(&name.content), propPtr, GDExtensionInt(propInfo.count))
+        gi.classdb_register_extension_class_signal (library, &self.name.content, &name.content, propPtr, GDExtensionInt(propInfo.count))
         propPtr.deallocate()
     }
     
@@ -126,28 +126,34 @@ public class ClassInfo<T:Object> {
             argMeta [i] = GDExtensionClassMethodArgumentMetadata(GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE.rawValue)
             i += 1
         }
-        var returnMeta = GDExtensionClassMethodArgumentMetadata(GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE.rawValue)
+        let returnMeta = GDExtensionClassMethodArgumentMetadata(GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE.rawValue)
         var retInfo = GDExtensionPropertyInfo ()
         if let returnValue {
             retInfo = returnValue.makeNativeStruct()
         }
         let functionInfo = Unmanaged.passRetained(FunctionInfo (function, retType: returnValue?.propertyType))
         
-        var info = GDExtensionClassMethodInfo (
-            name: &name.content,
-            method_userdata: functionInfo.toOpaque(),
-            call_func: bind_call,
-            ptrcall_func: nil, //ClassInfo.bind_call_ptr,
-            method_flags: UInt32 (flags.rawValue),
-            has_return_value: GDExtensionBool (returnValue != nil ? 1 : 0),
-            return_value_info: &retInfo,
-            return_value_metadata: returnMeta,
-            argument_count: UInt32(arguments.count),
-            arguments_info: argPtr,
-            arguments_metadata: argMeta, // <#T##GDExtensionClassMethodArgumentMetadata#>
-            default_argument_count: 0,
-            default_arguments: nil) // <#T##GDExtensionVariantPtr#>)
-        gi.classdb_register_extension_class_method (library, UnsafeRawPointer (&self.name.content), &info)
+        withUnsafeMutablePointer(to: &name.content) { namePtr in
+            withUnsafeMutablePointer(to: &retInfo) { retInfoPtr in
+            var info = GDExtensionClassMethodInfo (
+                name: namePtr,
+                method_userdata: functionInfo.toOpaque(),
+                call_func: bind_call,
+                ptrcall_func: nil, //ClassInfo.bind_call_ptr,
+                method_flags: UInt32 (flags.rawValue),
+                has_return_value: GDExtensionBool (returnValue != nil ? 1 : 0),
+                return_value_info: retInfoPtr,
+                return_value_metadata: returnMeta,
+                argument_count: UInt32(arguments.count),
+                arguments_info: argPtr,
+                arguments_metadata: argMeta, // GDExtensionClassMethodArgumentMetadata
+                default_argument_count: 0,
+                default_arguments: nil) // GDExtensionVariantPtr)
+                withUnsafePointer(to: &self.name.content) { namePtr in
+                    gi.classdb_register_extension_class_method (library, namePtr, &info)
+                }
+            }
+        }
         argPtr.deallocate()
     }
     
@@ -155,19 +161,19 @@ public class ClassInfo<T:Object> {
     /// will be shown together in the UI under this group.
     ///
     public func addPropertyGroup (name: String, prefix: String) {
-        var gname = GString(stringLiteral: name)
-        var gprefix = GString(stringLiteral: prefix)
+        let gname = GString(stringLiteral: name)
+        let gprefix = GString(stringLiteral: prefix)
         
-        gi.classdb_register_extension_class_property_group (library, UnsafeRawPointer (&self.name.content), UnsafeRawPointer (&gname.content), UnsafeRawPointer(&gprefix.content))
+        gi.classdb_register_extension_class_property_group (library, &self.name.content, &gname.content, &gprefix.content)
     }
     
     /// Starts a new property sub-group, all the properties declared after calling this method
     /// will be shown together in the UI under this group.
     public func addPropertySubgroup (name: String, prefix: String) {
-        var gname = GString(stringLiteral: name)
-        var gprefix = GString(stringLiteral: prefix)
+        let gname = GString(stringLiteral: name)
+        let gprefix = GString(stringLiteral: prefix)
         
-        gi.classdb_register_extension_class_property_subgroup (library, UnsafeRawPointer (&self.name.content), UnsafeRawPointer (&gname.content), UnsafeRawPointer(&gprefix.content))
+        gi.classdb_register_extension_class_property_subgroup (library, &self.name.content, &gname.content, &gprefix.content)
     }
     
     /// Registers the property in the class with the information provided in `info`.
@@ -182,7 +188,7 @@ public class ClassInfo<T:Object> {
         var pinfo = GDExtensionPropertyInfo ()
         pinfo = info.makeNativeStruct()
         
-        gi.classdb_register_extension_class_property (library, UnsafeRawPointer (&self.name.content), &pinfo, UnsafeRawPointer(&setter.content), UnsafeRawPointer (&getter.content))
+        gi.classdb_register_extension_class_property (library, &self.name.content, &pinfo, &setter.content, &getter.content)
     }
 }
 
@@ -212,13 +218,19 @@ public struct PropInfo {
         self.usage = usage
     }
     func makeNativeStruct () -> GDExtensionPropertyInfo {
-        GDExtensionPropertyInfo(
-            type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
-            name: &propertyName.content,
-            class_name: &className.content,
-            hint: UInt32 (hint.rawValue),
-            hint_string: &hintStr.content,
-            usage: UInt32 (usage.rawValue))
+        withUnsafeMutablePointer(to: &propertyName.content) { propertyNamePtr in
+            withUnsafeMutablePointer(to: &className.content) { classNamePtr in
+                withUnsafeMutablePointer(to: &hintStr.content) { hintStrPtr in
+                    GDExtensionPropertyInfo(
+                        type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
+                        name: propertyNamePtr,
+                        class_name: classNamePtr,
+                        hint: UInt32 (hint.rawValue),
+                        hint_string: hintStrPtr,
+                        usage: UInt32 (usage.rawValue))
+                }
+            }
+        }
     }
 }
 

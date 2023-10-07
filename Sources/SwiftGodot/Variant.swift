@@ -86,10 +86,9 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
 
     public static func == (lhs: Variant, rhs: Variant) -> Bool {
         var valid = GDExtensionBool (0)
-        var ret = Variant (false)
+        let ret = Variant (false)
         
-        // TODO: I think that this ret is wrong, and might need to be &ret.content
-        gi.variant_evaluate (GDEXTENSION_VARIANT_OP_EQUAL, &lhs.content, &rhs.content, &ret, &valid)
+        gi.variant_evaluate (GDEXTENSION_VARIANT_OP_EQUAL, &lhs.content, &rhs.content, &ret.content, &valid)
         return Bool (ret) ?? false
     }
     
