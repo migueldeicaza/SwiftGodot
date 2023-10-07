@@ -36,7 +36,8 @@ var targets: [Target] = [
     .executableTarget(
         name: "Generator",
         dependencies: ["XMLCoder"],
-        path: "Generator"),
+        path: "Generator",
+        exclude: ["README.md"]),
     
     // This is a build-time plugin that invokes the generator and produces
     // the bindings that are compiled into SwiftGodot
@@ -69,6 +70,7 @@ targets.append(contentsOf: [
     .target(
         name: "SimpleExtension",
         dependencies: ["SwiftGodot"],
+        exclude: ["SwiftSprite.gdextension", "README.md"],
         linkerSettings: linkerSettings),
     // Idea: -mark_dead_strippable_dylib
     .testTarget(name: "SwiftGodotMacroTests",
@@ -88,6 +90,7 @@ targets.append(
     .target(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
+        exclude: ["extension_api.json"],
         linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins))
 
