@@ -9,7 +9,6 @@ import Foundation
 import SwiftGodotKit
 import SwiftGodot
 
-
 func loadScene (scene: SceneTree) {
     let rootNode = Node3D()
     let camera = Camera3D ()

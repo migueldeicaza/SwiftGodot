@@ -185,7 +185,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             var reference = escapeSwift (snakeToCamel (arg.name))
 
             if method.isVararg {
-                argSetup += "var copy_\(arg.name) = Variant (\(reference))\n"
+                argSetup += "let copy_\(arg.name) = Variant (\(reference))\n"
             } else if arg.type == "String" {
                 argSetup += "let gstr_\(arg.name) = GString (\(reference))\n"
             } else if argTypeNeedsCopy(godotType: arg.type) {
@@ -250,7 +250,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if refParameterIsOptional || optstorage == ".handle" {
                 let ea = escapeSwift(argref)
                 let deref = refParameterIsOptional ? "?" : ""
-                argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ea)\(deref).handle) { p\(withUnsafeCallNestLevel) in\n\(prefix)_args.append (\(ea) == nil ? nil : p\(withUnsafeCallNestLevel))\n"
+                let accessPar = refParameterIsOptional ? "\(ea) == nil ? nil : p\(withUnsafeCallNestLevel)" : "p\(withUnsafeCallNestLevel)"
+                argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ea)\(deref).handle) { p\(withUnsafeCallNestLevel) in\n\(prefix)_args.append (\(accessPar))\n"
                 withUnsafeCallNestLevel += 1
             } else {
                 argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(needAddress)\(escapeSwift(argref))\(optstorage)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    _args.append (p\(withUnsafeCallNestLevel))\n"
@@ -280,8 +281,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         }
     }
     // Generate the method entry point
-    if (discardableResultList [className]?.contains(method.name)) != nil {
-        p ("@discardableResult")
+    if let classDiscardables = discardableResultList [className] {
+        if classDiscardables.contains(method.name) == true {
+            p ("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
+        }
     }
     p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
         // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls

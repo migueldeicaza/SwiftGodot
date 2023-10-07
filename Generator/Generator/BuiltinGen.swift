@@ -195,7 +195,7 @@ func generateMethodCall (_ p: Printer,
     let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
     if has_return {
         if godotReturnType == "String" && mapStringToSwift {
-            p ("var result = GString ()")
+            p ("let result = GString ()")
         } else {
             var declType = "var"
             if builtinGodotTypeNames [godotReturnType ?? ""] == .isClass {
@@ -384,7 +384,7 @@ func generateBuiltinMethods (_ p: Printer,
         }
         // Generate the method entry point
         if discardableResultList [bc.name]?.contains(m.name) ?? false && m.returnType != "" {
-            p ("@discardableResult")
+            p ("@discardableResult /* 1: \(m.name) */ ")
         }
 
         p ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
@@ -404,7 +404,7 @@ func generateBuiltinMethods (_ p: Printer,
         }
         p ("public subscript (key: Variant) -> Variant?") {
             p ("get") {
-                p ("var keyCopy = key")
+                p ("let keyCopy = key")
                 p ("var result = Variant.zero")
                 p ("if GDictionary.keyed_checker (&content, &keyCopy.content) != 0") {
                     p ("GDictionary.keyed_getter (&content, &keyCopy.content, &result)")
@@ -415,8 +415,8 @@ func generateBuiltinMethods (_ p: Printer,
                 }
             }
             p ("set") {
-                p ("var keyCopy = key")
-                p ("if var newCopy = newValue") {
+                p ("let keyCopy = key")
+                p ("if let newCopy = newValue") {
                     p ("GDictionary.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
                 }
                 p ("else") {
@@ -486,7 +486,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if bc.name == "NodePath"  {
                 p ("// ExpressibleByStringLiteral conformace")
                 p ("public required init (stringLiteral value: String)") {
-                    p ("var from = GString (value)")
+                    p ("let from = GString (value)")
                     p ("var args: [UnsafeRawPointer?] = [")
                     p ("    UnsafeRawPointer(&from.content),")
                     p ("]")
@@ -507,7 +507,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 p ("// ExpressibleByStringLiteral conformace")
                 p ("public required init (stringLiteral value: String)") {
-                    p ("var from = GString (value)")
+                    p ("let from = GString (value)")
                     p ("var args: [UnsafeRawPointer?] = [")
                     p ("    UnsafeRawPointer(&from.content),")
                     p ("]")

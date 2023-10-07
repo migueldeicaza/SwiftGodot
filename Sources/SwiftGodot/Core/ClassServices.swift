@@ -251,7 +251,7 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
     let ret = bound (args)
     if let returnValue, let ret {
         if ret.gtype != finfo.retType {
-            print ("Your declared function should return the type originally set \(finfo.retType) and \(ret.gtype)")
+            print ("Your declared function should return the type originally set \(String(describing: finfo.retType)) and \(ret.gtype)")
             if let rError = r_error {
                 rError.pointee.error = GDEXTENSION_CALL_ERROR_INVALID_METHOD
             }

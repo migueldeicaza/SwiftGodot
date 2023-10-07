@@ -73,21 +73,22 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     
     /// Creates a nil variant
     public init (_ value: Nil) {
-        var nh: UnsafeMutableRawPointer?
-        
-        gi.variant_new_nil (UnsafeMutablePointer (&content))
+        withUnsafeMutablePointer(to: &content) { ptr in
+            gi.variant_new_nil (ptr)
+        }
     }
     
     public init () {
-        var nh: UnsafeMutableRawPointer?
-        
-        gi.variant_new_nil (UnsafeMutablePointer (&content))
+        withUnsafeMutablePointer(to: &content) { ptr in
+            gi.variant_new_nil (ptr)
+        }
     }
 
     public static func == (lhs: Variant, rhs: Variant) -> Bool {
         var valid = GDExtensionBool (0)
         var ret = Variant (false)
         
+        // TODO: I think that this ret is wrong, and might need to be &ret.content
         gi.variant_evaluate (GDEXTENSION_VARIANT_OP_EQUAL, &lhs.content, &rhs.content, &ret, &valid)
         return Bool (ret) ?? false
     }
@@ -97,7 +98,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
     
     public init (_ other: Variant) {
-        var copy = other
+        let copy = other
         gi.variant_new_copy (&content, &copy.content)
     }
     
@@ -117,14 +118,13 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
 
     public init (_ value: String) {
-        var gstring = GString (stringLiteral: value)
+        let gstring = GString (stringLiteral: value)
         
         Variant.fromTypeMap [GType.string.rawValue] (&content, &gstring.content)
     }
     
     public required init(stringLiteral: String) {
-        var vh: UnsafeMutableRawPointer?
-        var gstring = GString (stringLiteral: stringLiteral)
+        let gstring = GString (stringLiteral: stringLiteral)
         
         Variant.fromTypeMap [GType.string.rawValue] (&content, &gstring.content)
     }
@@ -140,8 +140,9 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     }
 
     public init (_ value: GString) {
-        var v = GDExtensionStringPtr (&value.content)
-        Variant.fromTypeMap [GType.string.rawValue] (&content, v)
+        withUnsafeMutablePointer(to: &value.content) { ptr in
+            Variant.fromTypeMap [GType.string.rawValue] (&content, ptr)
+        }
     }
     
     public init (_ value: Vector2) {
@@ -238,11 +239,17 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
     
     public init (_ value: Object?) {
         guard let value else {
-            gi.variant_new_nil (UnsafeMutablePointer (&content))
+            withUnsafeMutablePointer(to: &content) { ptr in
+                gi.variant_new_nil (ptr)
+            }
             return
         }
         var copy = value.handle
-        Variant.fromTypeMap [GType.object.rawValue] (&content, UnsafeMutableRawPointer (mutating: &copy))
+        withUnsafeMutablePointer(to: &content) { selfPtr in
+            withUnsafeMutablePointer(to: &copy) { handlePtr in
+                Variant.fromTypeMap [GType.object.rawValue] (selfPtr, handlePtr)
+            }
+        }
     }
 
     public init (_ value: Callable) {

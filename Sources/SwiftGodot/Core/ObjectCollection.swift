@@ -20,8 +20,8 @@ public class ObjectCollection<T:Object>: GArray, Collection {
     
     public override init () {
         super.init ()
-        var name = StringName()
-        var variant = Variant()
+        let name = StringName()
+        let variant = Variant()
 
         gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
     }
@@ -33,7 +33,7 @@ public class ObjectCollection<T:Object>: GArray, Collection {
     // If I make this optional, I am told I need to implement an internal _read method
     public subscript (index: Index) -> Iterator.Element {
         get {
-            var v = super [index]
+            let v = super [index]
             var handle = UnsafeMutableRawPointer(bitPattern: 0)
             v.toType(.object, dest: &handle)
             return lookupObject(nativeHandle: handle!)

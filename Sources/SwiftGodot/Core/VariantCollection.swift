@@ -21,8 +21,9 @@ public class VariantCollection<T:GodotVariant>: GArray, Collection {
     
     public override init () {
         super.init ()
-        var name = StringName()
-        var variant = Variant()
+        
+//        let name = StringName()
+//        let variant = Variant()
 
         //gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(T.variantType.rawValue)), &name.content, &variant.content)
     }
@@ -34,7 +35,7 @@ public class VariantCollection<T:GodotVariant>: GArray, Collection {
     // If I make this optional, I am told I need to implement an internal _read method
     public subscript (index: Index) -> Iterator.Element {
         get {
-            var v = super [index]
+            let v = super [index]
             return T.init (v)!
         }
         set {

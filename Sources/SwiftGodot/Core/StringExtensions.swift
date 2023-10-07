@@ -40,7 +40,8 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
     let n = gi.string_to_utf8_chars (ptr, nil, 0)
 
     return withUnsafeTemporaryAllocation (of: CChar.self, capacity: Int(n+1)) { strPtr in
-        gi.string_to_utf8_chars (ptr, strPtr.baseAddress, n)
+        // The returned size is in chars, not bytes, so not very useful for us
+        _ = gi.string_to_utf8_chars (ptr, strPtr.baseAddress, n)
         strPtr [Int (n)] = 0
         return String (cString: strPtr.baseAddress!)
     }
@@ -52,10 +53,10 @@ extension GString: CustomStringConvertible {
         guard let ptr else {
             return nil
         }
-        var content = GString.zero
         let len = gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), nil, 0)
         return withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(len+1)) { strPtr in
-            gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), strPtr.baseAddress, len)
+            // Return is in characters, not bytes, not very useful
+            _ = gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), strPtr.baseAddress, len)
             strPtr [Int (len)] = 0
             return String (cString: strPtr.baseAddress!)
         }
@@ -64,12 +65,14 @@ extension GString: CustomStringConvertible {
     /// Returns a Swift string from this GString.
     public var description: String {
         get {
-            let len = gi.string_to_utf8_chars (UnsafeRawPointer (&content), nil, 0)
-            return withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(len+1)) { strPtr in
-                gi.string_to_utf8_chars (UnsafeRawPointer (&content), strPtr.baseAddress, len)
-                strPtr [Int (len)] = 0
-                return String (cString: strPtr.baseAddress!)
-            } ?? ""
+            return withUnsafeBytes(of: &content) { ptr in
+                let len = gi.string_to_utf8_chars (ptr.baseAddress, nil, 0)
+                return withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(len+1)) { strPtr in
+                    _ = gi.string_to_utf8_chars (ptr.baseAddress, strPtr.baseAddress, len)
+                    strPtr [Int (len)] = 0
+                    return String (cString: strPtr.baseAddress!)
+                } ?? ""
+            }
         }
     }
     

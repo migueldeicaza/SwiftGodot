@@ -109,7 +109,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     ///
     /// When subclassing, you should use the name of te l
     internal init (name: StringName) {
-        let v = gi.classdb_construct_object (UnsafeRawPointer (&name.content))
+        let v = gi.classdb_construct_object (&name.content)
         
         if let r = UnsafeRawPointer (v) {
             handle = r
@@ -127,8 +127,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                 //print ("SWIFT: Skipping object registration, this is a framework type")
             } else {
                 //print ("SWIFT: Registering instance with Godot")
-                gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
-                                        UnsafeRawPointer (&thisTypeName.content), retain.toOpaque())
+                withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
+                    gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
+                                            ptr, retain.toOpaque())
+                }
             }
             
             var callbacks: GDExtensionInstanceBindingCallbacks
@@ -145,13 +147,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
     }
 }
+    
 
 func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
-    guard let wt = type as? Wrapped.Type else {
-        print ("SWIFT: The provided type should be a subclass of SwiftGodot.Wrapped type")
-        return
-    }
-    
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
         guard let type  = typeAny as? Wrapped.Type else {
@@ -170,7 +168,11 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
     
-    gi.classdb_register_extension_class (library, UnsafeRawPointer (&name.content), UnsafeRawPointer(&parent.content), &info)
+    withUnsafePointer(to: &name.content) { namePtr in
+        withUnsafePointer(to: &parent.content) { parentPtr in
+            gi.classdb_register_extension_class (library, namePtr, parentPtr, &info)
+        }
+    }
 }
 
 /// Registers the user-type specified with the Godot system, and allows it to
@@ -224,8 +226,8 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T {
     if let a = objectFromHandle(nativeHandle: nativeHandle) {
         return a as! T
     }
-    var _result: GString = GString ()
-    var copy = nativeHandle
+    let _result: GString = GString ()
+    let copy = nativeHandle
     gi.object_method_bind_ptrcall (Object.method_get_class, UnsafeMutableRawPointer (mutating: copy), nil, &_result.content)
     if let ctor = godotFrameworkCtors [_result.description] {
         return ctor.init (nativeHandle: nativeHandle) as! T
@@ -239,7 +241,7 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T {
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
 ///
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    print ("SWIFT: Creating object userData:\(userData)")
+    print ("SWIFT: Creating object userData:\(String(describing: userData))")
     guard let userData else {
         print ("Got a nil userData")
         return nil
@@ -292,7 +294,7 @@ func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeM
     // I do not think this is necessary, since we are handling the release in the
     // user-binding catch-all (that also covers the Godot-triggers invocations)
     // freeFunc above.
-    print ("SWIFT: instanceBindingFree token=\(token) instance=\(instance) binding=\(binding)")
+    print ("SWIFT: instanceBindingFree token=\(String(describing: token)) instance=\(String(describing: instance)) binding=\(String(describing: binding))")
 }
 
 func userTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableRawPointer?, _ z: UInt8) -> UInt8{
@@ -308,12 +310,12 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
-    print ("SWIFT: frameworkBindingFree instance=\(instance) binding=\(binding) token=\(token)")
+    print ("SWIFT: frameworkBindingFree instance=\(String(describing: instance)) binding=\(String(describing: binding)) token=\(String(describing: token))")
     if let key = instance  {
         if let removed = liveFrameworkObjects.removeValue(forKey: key) {
-            print ("SWIFT: Removed from our live Objects with key \(key)")
+            print ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
         } else {
-            print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(instance)")
+            print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
         }
     }
 

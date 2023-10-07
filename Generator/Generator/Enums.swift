@@ -57,6 +57,11 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     p ("self.rawValue = rawValue")
                 }
                 for enumVal in enumDef.values {
+                    // These can be replaced with the empty set, and we avoid a warning
+                    if enumVal.value == 0 {
+                        continue
+                    }
+
                     let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
                     if let ed = docEnumToValue [enumVal.name] {
                         doc (p, cdef, ed)

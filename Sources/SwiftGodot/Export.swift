@@ -51,12 +51,12 @@ func callFunc (_ method_userdata: UnsafeMutableRawPointer?,
                _ argc: Int64,
                _ ret: UnsafeMutableRawPointer?,
                _ error: UnsafeMutablePointer<GDExtensionCallError>?) {
-    print ("SWIFT: Function called, instance: \(instance)")
+    print ("SWIFT: Function called, instance: \(String(describing: instance))")
 }
 func ptrCallFunc (_ method_userdata: UnsafeMutableRawPointer?,
                   _ instance: UnsafeMutableRawPointer?,
                   _ args: UnsafePointer<UnsafeRawPointer?>?,
                   _ ret: UnsafeMutableRawPointer?) {
-    print ("SWIFT: ptrFunction called, instance: \(instance)")
+    print ("SWIFT: ptrFunction called, instance: \(String(describing: instance))")
 }
 /* Class Methods */

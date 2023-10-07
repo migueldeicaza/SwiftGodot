@@ -69,7 +69,6 @@ targets.append(contentsOf: [
     .target(
         name: "SimpleExtension",
         dependencies: ["SwiftGodot"],
-        swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
         linkerSettings: linkerSettings),
     // Idea: -mark_dead_strippable_dylib
     .testTarget(name: "SwiftGodotMacroTests",
@@ -89,7 +88,6 @@ targets.append(
     .target(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
-        swiftSettings: [.unsafeFlags (["-suppress-warnings"])],
         linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins))
 

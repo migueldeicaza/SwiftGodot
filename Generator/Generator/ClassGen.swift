@@ -400,7 +400,11 @@ func generateProperties (_ p: Printer,
                     if type == "StringName" && setterMethod?.arguments![0].type == "String" {
                         value = "String (newValue)"
                     }
-                    p ("\(setterName) (\(access)\(access != "" ? ", " : "")\(setterArgName)\(value))")
+                    var ignore = ""
+                    if setterMethod?.returnValue != nil {
+                        ignore = "_ = "
+                    }
+                    p ("\(ignore)\(setterName) (\(access)\(access != "" ? ", " : "")\(setterArgName)\(value))")
                 }
                 referencedMethods.insert (setter)
             }
@@ -470,7 +474,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
         }
         doc (p, cdef, "Connects the signal to the specified callback\n\nTo disconnect, call the disconnect method, with the returned token on success\n - Parameters:\n  - callback: the method to invoke when this signal is raised\n  - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).\n - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.")
         
-        p ("@discardableResult")
+        p ("@discardableResult /* \(name) */")
         var args = ""
         var argUnwrap = ""
         var callArgs = ""
@@ -645,7 +649,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         p ("internal override init (name: StringName)") {
             p("super.init (name: name)")
             if (cdef.name == "RefCounted") {
-                p ("reference ()")
+                p ("_ = reference ()")
             }
         }
         
