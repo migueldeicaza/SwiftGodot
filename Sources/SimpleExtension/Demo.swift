@@ -41,8 +41,9 @@ class SwiftSprite: Sprite2D {
     
     @Callable 
     func returnNullable () -> String? {
-        var x: Variant = Variant (1)
+        let x: Variant = Variant (1)
         if let y: Resource = x.asObject () {
+            print ("Y is = \(y)")
         }
         return nil
     }
@@ -69,16 +70,17 @@ class SwiftSprite: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-        GD.print("dictionary2: \(dict2) \(dict2?["type"]) \(dict2?["value"])")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"] ?? "no type") \(dict2?["value"] ?? "no value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
-            let value = String(result)
+            let value = String(result) ?? "No Result"
             GD.print("2 Found this value \(value)")
         }
         
-        SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
-        var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
+        let lerp = SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
+        print ("Lerp result from 0.1 to 10 weight:1 => \(lerp)")
+        let newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
                              y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
         
         self.position = newPos
@@ -118,14 +120,14 @@ class SwiftSprite2: Sprite2D {
     }()
     
     required init (nativeHandle: UnsafeRawPointer) {
-        SwiftSprite2.initClass
+        _ = SwiftSprite2.initClass
         time_passed = 0
         count = sequence
         super.init (nativeHandle: nativeHandle)
     }
     
     required init () {
-        SwiftSprite2.initClass
+        _ = SwiftSprite2.initClass
         count = sequence
         sequence += 1
         time_passed = 0
@@ -165,16 +167,16 @@ class SwiftSprite2: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-        GD.print("dictionary2: \(dict2) \(dict2?["type"]) \(dict2?["value"])")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"] ?? "no value for type") \(dict2?["value"] ?? "no value for value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
             let value = String(result)
-            GD.print("2 Found this value \(value)")
+            GD.print("2 Found this value \(value ?? "no value found")")
         }
         
-        SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
-        var newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
+        _ = SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
+        let newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
                              y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
         
         self.position = newPos
