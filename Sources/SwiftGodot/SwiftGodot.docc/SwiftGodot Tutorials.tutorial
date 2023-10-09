@@ -20,7 +20,7 @@
 
     @Chapter(name: "Embedding Godot in Swift") {
         If rather than embedding Swift into Godot, you want to embed Godot into 
-        your Swift application or you prefer to prototype your code with
+        your Swift application or, if you prefer to prototype your code with
         a code-first approach, you can use the companion SwiftGodotKit.
 
         @Image(source: "Birdie2",
