@@ -203,7 +203,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         packed_int32_array_operator_index: load ("packed_int32_array_operator_index"),
         packed_int64_array_operator_index: load ("packed_int64_array_operator_index"),
         packed_vector2_array_operator_index: load ("packed_vector2_array_operator_index"),
-        packed_vector3_array_operator_index: load ("packed_vector2_array_operator_index")
+        packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index")
     )
 }
 
