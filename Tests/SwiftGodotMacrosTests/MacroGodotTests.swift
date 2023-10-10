@@ -35,7 +35,7 @@ final class MacroGodotTests: XCTestCase {
                 }
 
                 required init() {
-                	Hi._initClass
+                	_ = Hi._initClass
                 	super.init ()
                 }
 
@@ -69,7 +69,7 @@ final class MacroGodotTests: XCTestCase {
                 }
 
                 required init() {
-                	Hi._initClass
+                	_ = Hi._initClass
                 	super.init ()
                 }
 
@@ -108,7 +108,7 @@ final class MacroGodotTests: XCTestCase {
                 }
 
                 required init() {
-                	Castro._initClass
+                	_ = Castro._initClass
                 	super.init ()
                 }
 
@@ -148,7 +148,7 @@ final class MacroGodotTests: XCTestCase {
                 }
             
                 required init() {
-                	Hi._initClass
+                	_ = Hi._initClass
                 	super.init ()
                 }
             
