@@ -644,9 +644,6 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         p ("/// Ths initializer is invoked by derived classes as they chain through their most derived type name that our framework produced")
         p ("internal override init (name: StringName)") {
             p("super.init (name: name)")
-            if (cdef.name == "RefCounted") {
-                p ("_ = reference ()")
-            }
         }
         
         let fastInitOverrides = cdef.inherits != nil ? "override " : ""
