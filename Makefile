@@ -16,7 +16,7 @@ push-docs:
 release: check-args build-release build-docs push-docs
 
 build-release: check-args
-	sh scripts/release $(VERSION) $(NOTES)
+	sh -x scripts/release $(VERSION) $(NOTES) `git rev-parse HEAD`
 
 check-args:
 	@if test x$(VERSION)$(NOTES) = x; then echo You need to provide both VERSION=XX NOTES=FILENAME arguments to this makefile target; exit 1; fi

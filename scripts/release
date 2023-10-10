@@ -1,8 +1,8 @@
-if test x$2 = x; then
-   echo Usage is: relase TAG RELEASE_NOTES_FILE
+if test x$3 = x; then
+   echo Usage is: relase TAG RELEASE_NOTES_FILE COMMIT
    exit 1
 fi
-
+commit=$3
 if test ! -e $2; then
    echo "Expected a release notes file"
    exit 1 
@@ -45,8 +45,12 @@ mkdir -p $archivePath
 echo Building on $dir
 echo DerivedData: $derivedData
 echo ArchiveData: $archivePath
+echo Commit: $3
 start=`date`
-xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath >& $dir/x86_64.log
+
+ssh macpro.local "mkdir -p $derivedData && mkdir -p $archivePath"
+ssh macpro.local "cd cvs/SwiftGodot && git reset --hard $commit && xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath" >& $dir/x86_64.log
+rsync -a macpro.local:$dir/derived/ $dir/derived
 if [ $arch = "arm64" ]; then
     xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=arm64 -derivedDataPath "${derivedData}_arm" -archivePath $archivePath >& $dir/arm64.log
 fi
