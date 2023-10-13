@@ -21,13 +21,12 @@ if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
 
     case $1 in
         v*)
+	    echo We are no longer using vXXX for releases, instead we are using 0.xx.yy
+	    exit 1;
+        *)
             echo Tagging with $1
             git tag $1
             tag=$1
-            ;;
-        *)
-            echo "version to tag should be vXXX"
-            exit 1
             ;;
     esac
 fi
