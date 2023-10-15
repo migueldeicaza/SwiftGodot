@@ -4,14 +4,6 @@
 import CompilerPluginSupport
 import PackageDescription
 
-var linkerSettings: [LinkerSetting] = []
-#if os(macOS)
-    linkerSettings.append(.unsafeFlags([
-        "-Xlinker", "-undefined",
-        "-Xlinker", "dynamic_lookup",
-    ]))
-#endif
-
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
     .library(
@@ -73,8 +65,7 @@ var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
         .target(
             name: "SimpleExtension",
             dependencies: ["SwiftGodot"],
-            exclude: ["SwiftSprite.gdextension", "README.md"],
-            linkerSettings: linkerSettings
+            exclude: ["SwiftSprite.gdextension", "README.md"]
         ),
         // Idea: -mark_dead_strippable_dylib
         .testTarget(name: "SwiftGodotMacroTests",
@@ -95,7 +86,6 @@ targets.append(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
         exclude: ["extension_api.json"],
-        linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins
     )
 )
