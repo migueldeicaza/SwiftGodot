@@ -24,12 +24,7 @@ let package = Package(
             name: "SimpleRunnerDriver",
             dependencies: [
                 "SwiftGodot",
-            ],
-            swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags(
-                ["-Xlinker", "-undefined",
-                 "-Xlinker", "dynamic_lookup"]
-            )]
+            ]
         ),
         .testTarget(
             name: "SimpleRunnerDriverTests",
