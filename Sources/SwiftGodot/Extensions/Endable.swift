@@ -5,8 +5,6 @@
 //  Created by Mikhail Tishin on 15.10.2023.
 //
 
-import Foundation
-
 public protocol Endable {
     
     associatedtype VectorType: AdditiveArithmetic
