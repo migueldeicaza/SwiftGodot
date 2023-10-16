@@ -138,18 +138,8 @@ func generateBuiltinCtors (_ p: Printer,
             
             // We need to initialize some variables before we call
             if let members {
-                if bc.name == "Color" {
-                    p ("self.red = 0")
-                    p ("self.green = 0")
-                    p ("self.blue = 0")
-                    p ("self.alpha = 0")
-                } else if bc.name == "Plane" {
-                    p ("self.plane = Vector3 ()")
-                    p ("self.d = 0")
-                } else {
-                    for x in members {
-                        p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
-                    }
+                for x in members {
+                    p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
                 }
                 // Another special case: empty constructors in generated structs (those we added fields for)
                 // we just keep the manual initialization and do not call the constructor
@@ -598,33 +588,25 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
-            if let members = bc.members {
-                if bc.name == "Color" {
-                    memberDoc ("red")
-                    p ("public var red: Float")
-                    memberDoc ("green")
-                    p ("public var green: Float")
-                    memberDoc ("blue")
-                    p ("public var blue: Float")
-                    memberDoc ("alpha")
-                    p ("public var alpha: Float")
-                } else if bc.name == "Plane" {
-                    memberDoc ("plane")
-                    p ("public var plane: Vector3")
-                    memberDoc ("d")
-                    p ("public var d: Float")
-                } else {
-                    for x in members {
-                        memberDoc (x.name)
-                        p ("public var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
-                    }
+            let storedMembers: [JGodotArgument]?
+            if kind == .isStruct, let memberOffsets = builtinMemberOffsets [bc.name] {
+                storedMembers = memberOffsets.compactMap({ m in
+                    return bc.members?.first(where: { $0.name == m.member })
+                })                
+            } else {
+                storedMembers = bc.members
+            }
+            if let members = storedMembers {
+                for x in members {
+                    memberDoc (x.name)
+                    p ("public var \(x.name): \(MemberBuiltinJsonTypeToSwift (x.type))")
                 }
             }
 
             if let enums = bc.enums {
                 generateEnums(p, cdef: bc, values: enums, constantDocs: docClass?.constants?.constant, prefix: bc.name + ".")
             }
-            generateBuiltinCtors (p, bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: bc.members)
+            generateBuiltinCtors (p, bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: storedMembers)
             
             generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
             generateBuiltinOperators (p, bc, docClass, typeName: typeName)

@@ -85,11 +85,20 @@ for x in ["Float", "Int", "float", "int", "Int32", "Bool", "bool"] {
     isStructMap [x] = true
 }
 
+let buildConfiguration: String = "float_64"
 var builtinSizes: [String: Int] = [:]
 for cs in jsonApi.builtinClassSizes {
-    if cs.buildConfiguration == "float_64" {
+    if cs.buildConfiguration == buildConfiguration {
         for c in cs.sizes {
             builtinSizes [c.name] = c.size
+        }
+    }
+}
+var builtinMemberOffsets: [String: [JGodotMember]] = [:]
+for mo in jsonApi.builtinClassMemberOffsets {
+    if mo.buildConfiguration == buildConfiguration {
+        for c in mo.classes {
+            builtinMemberOffsets [c.name.rawValue] = c.members
         }
     }
 }
