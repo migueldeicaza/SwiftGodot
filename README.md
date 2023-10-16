@@ -97,7 +97,7 @@ https://github.com/migueldeicaza/SwiftGodotBinary
 The next step is to create your source file with the magic on it,
 here we declare a spinning cube:
 
-```
+```swift
 import SwiftGodot
 
 @Godot
@@ -117,7 +117,7 @@ class SpinningCube: Node3D {
 Additionally, you need to write some glue code for your 
 project to be loadable by Godot, you can do it like this:
 
-```
+```swift
 /// We register our new type when we are told that the scene is being loaded
 func setupScene (level: GDExtension.InitializationLevel) {
     if level == .scene {
@@ -144,7 +144,7 @@ public func swift_entry_point(
 
 Alternatively, you can use the `#initSwiftExtension` macro:
 
-```
+```swift
 import SwiftGodot
 
 #initSwiftExtension(name: "swift_entry_point", types: [SpinningCube.self])
@@ -160,7 +160,7 @@ along with the entry point you declared above.
 You would create something like this in a file called
 `MyFirstGame.gdextension`:
 
-```
+```yml
 [configuration]
 entry_symbol = "swift_entry_point"
 
