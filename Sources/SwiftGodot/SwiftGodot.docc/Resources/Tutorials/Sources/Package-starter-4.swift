@@ -25,11 +25,7 @@ let package = Package(
             dependencies: [
                 "SwiftGodot",
             ],
-            swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags(
-                ["-Xlinker", "-undefined",
-                 "-Xlinker", "dynamic_lookup"]
-            )]
+            swiftSettings: [.unsafeFlags(["-suppress-warnings"])]
         ),
         .testTarget(
             name: "SimpleRunnerDriverTests",
