@@ -83,6 +83,7 @@ struct GodotInterface {
     
     let object_set_instance: GDExtensionInterfaceObjectSetInstance
     let object_set_instance_binding: GDExtensionInterfaceObjectSetInstanceBinding
+    let object_get_class_name: GDExtensionInterfaceObjectGetClassName
     
     let object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
     
@@ -169,6 +170,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         
         object_set_instance: load ("object_set_instance"),
         object_set_instance_binding: load ("object_set_instance_binding"),
+        object_get_class_name: load ("object_get_class_name"),
         object_method_bind_ptrcall: load ("object_method_bind_ptrcall"),
         global_get_singleton: load ("global_get_singleton"),
         ref_get_object: load ("ref_get_object"),

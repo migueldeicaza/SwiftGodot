@@ -125,7 +125,16 @@ func generateVirtualProxy (_ p: Printer,
                 // object, but if it is not known, then we create the instance
                 //
                 argPrep += "let resolved_\(i) = args [\(i)]!.load (as: UnsafeRawPointer.self)\n"
-                argCall += "lookupLiveObject (handleAddress: resolved_\(i)) as? \(arg.type) ?? \(arg.type) (nativeHandle: resolved_\(i))"
+                let handleResolver: String
+                if hasSubclasses.contains(cdef.name) {
+                    // If the type we are bubbling up has subclasses, we want to create the most
+                    // derived type if possible, so we perform the longer lookup
+                    handleResolver = "lookupObject (nativeHandle: resolved_\(i))"
+                } else {
+                    // There are no subclasses, so we can create the object right away
+                    handleResolver = "\(arg.type) (nativeHandle: resolved_\(i))"
+                }
+                argCall += "lookupLiveObject (handleAddress: resolved_\(i)) as? \(arg.type) ?? \(handleResolver)"
             } else if let storage = builtinClassStorage [arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
             } else {
