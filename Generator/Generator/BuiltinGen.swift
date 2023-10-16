@@ -637,8 +637,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {
+                let retType: String
                 memberDoc("end")
-                p ("public var end: \(bc.name)") {
+                switch bc.name {
+                case "Rect2": retType = "Vector2"
+                case "Rect2i": retType = "Vector2i"
+                case "AABB": retType = "Vector3"
+                default:
+                    fatalError("Should never happen")
+                }
+                p ("public var end: \(retType)") {
                     p ("set") {
                         p ("size = newValue - position")
                     }
