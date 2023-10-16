@@ -639,7 +639,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     p (typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p ("static var shared: \(cdef.name) =", suffix: "()") {
+            p ("public static var shared: \(cdef.name) =", suffix: "()") {
                 p ("withUnsafePointer (to: &\(cdef.name).className.content)", arg: " ptr in") {
                     p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (ptr)!)")
                 }
