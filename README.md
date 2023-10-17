@@ -147,7 +147,7 @@ Alternatively, you can use the `#initSwiftExtension` macro:
 ```swift
 import SwiftGodot
 
-#initSwiftExtension(name: "swift_entry_point", types: [SpinningCube.self])
+#initSwiftExtension(cdecl: "swift_entry_point", types: [SpinningCube.self])
 ```
 
 ## Bundling Your Extension
