@@ -103,13 +103,15 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         fatalError("This constructor should not be called")
     }
 
-    /// Returns the Godot's class name as a `StringName`
+    /// Returns the Godot's class name as a `StringName`, returns the empty string on error
     public var godotClassName: StringName {
         var sc: StringName.ContentType = StringName.zero
         
-        gi.object_get_class_name (handle, library, &sc)
-        let sn = StringName(content: sc)
-        return sn
+        if gi.object_get_class_name (handle, library, &sc) != 0 {
+            let sn = StringName(content: sc)
+            return sn
+        }
+        return ""
     }
     
     /// The constructor chain that uses StringName is internal, and is triggered
