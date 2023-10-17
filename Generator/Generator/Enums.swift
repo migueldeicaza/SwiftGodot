@@ -51,7 +51,9 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
         let enumCasePrefix = enumDef.values.commonPrefix()
         
         if isBitField || enumDef.name == "ConnectFlags" {
-            p ("public struct \(getGodotType (SimpleType (type: enumDef.name))): OptionSet") {
+            let optionTypeName = getGodotType (SimpleType (type: enumDef.name))
+            var optionNames: [String] = []
+            p ("public struct \(optionTypeName): OptionSet, CustomStringConvertible") {
                 p ("public let rawValue: Int")
                 p ("public init (rawValue: Int)") {
                     p ("self.rawValue = rawValue")
@@ -66,7 +68,18 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     if let ed = docEnumToValue [enumVal.name] {
                         doc (p, cdef, ed)
                     }
-                    p ("public static let \(escapeSwift (name)) = \(enumDef.name) (rawValue: \(enumVal.value))")
+                    let optionName = escapeSwift (name)
+                    optionNames.append(optionName)
+                    p ("public static let \(optionName) = \(enumDef.name) (rawValue: \(enumVal.value))")
+                }
+                
+                p ("public var description: String") {
+                    p ("var result = \"\"")
+                    for on in optionNames {
+                        p ("if self.contains (.\(on)) { result += \"\(on), \" }")
+                    }
+                    p ("if result.hasSuffix (\", \") { result.removeLast (2) }")
+                    p ("return result")
                 }
             }
             continue
