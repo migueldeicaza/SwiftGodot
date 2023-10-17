@@ -137,3 +137,23 @@ From your root project directory, all you should have to do now is clean and bui
 ### The GitHub Action
 
 If handing off your build process to GitHub Actions is more your thing, here is a starting point for a `build.yml` file. You will need to make use of [Build Artifacts](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts) to download your projects __.dll__ file; that though is beyond the scope of this document.
+
+```yml
+name: Swift Builds
+on: [push]
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-5.9-release
+          tag: 5.9-RELEASE
+      - uses: actions/checkout@v4
+      - name: Get Swift version
+        run: swift --version
+      - name: Run Swift build
+        run: swift package clean && swift build
+```
