@@ -83,7 +83,7 @@ targets.append(contentsOf: [
 swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 #endif
 
-targets.append(
+targets.append(contentsOf: [
     // This is the binding itself, it is made up of our generated code for the
     // Godot API, supporting infrastructure and extensions to the API to provide
     // a better Swift experience
@@ -92,7 +92,12 @@ targets.append(
         dependencies: ["GDExtension"],
         exclude: ["extension_api.json"],
         //linkerSettings: linkerSettings,
-        plugins: swiftGodotPlugins))
+        plugins: swiftGodotPlugins),
+    
+    // General purpose tests
+    .testTarget(name: "SwiftGodotTests",
+        dependencies: ["SwiftGodot"])
+])
 
 let package = Package(
     name: "SwiftGodot",
