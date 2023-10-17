@@ -4,52 +4,7 @@ The build process for the Windows platform differs a bit from macOS or Linux.
 One of the largest contributors to that is the Swift build chain on Windows does not support macros [apple/swift#68272](https://github.com/apple/swift/issues/68272) at this time.
 Many core concepts are the same between the other platforms and Windows, and those will be highlighted here.
 
-This document assumes that you already have the Swift 5.9 build chain installed on your system - A sample GitHub Action for building on Windows will be provided if not.
-
-## The Swift package
-
-Your first deviation from building for macOS is the `Package.swift` file. The `-Xlinker` flag used for __dynamic_lookup__ is not supported on Windows. To work around that, and still maintain ability to build on non-Windows platforms, we create an empty `[LinkerSetting]` array, only populate if building on macOS. The modified file should now look similar to the following:
-
-```swift
-// swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
-import PackageDescription
-
-var linkerSettings: [LinkerSetting] = []
-#if os(macOS)
-linkerSettings.append(
-	.unsafeFlags([
-		"-Xlinker", "-undefined",
-		"-Xlinker", "dynamic_lookup"	
-	])
-)
-#endif
-
-let package = Package(
-    name: "SwiftGodotCrossBuild",
-    platforms: [
-        .macOS(.v13)
-    ],
-    products: [
-        .library(
-            name: "SwiftGodotCrossBuild",
-			type: .dynamic,
-            targets: ["SwiftGodotCrossBuild"]),
-    ],
-    dependencies: [
-        .package(url: "https://github.com/migueldeicaza/SwiftGodot", branch: "main"),
-    ],
-    targets: [
-        .target(
-            name: "SwiftGodotCrossBuild",
-            dependencies: ["SwiftGodot"],
-            swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
-            linkerSettings: linkerSettings
-        )
-    ]
-)
-```
+This document assumes that you already have the Swift 5.9 build chain installed on your system - A sample GitHub Action for building on Windows will be provided if not. You will follow along through this guide in creating the simple spinning cube example, and by the end should have a __.dll__ you can use in Godot!
 
 ## Macros - The lack thereof
 
