@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
+public class Variant: Hashable, Equatable, ExpressibleByStringLiteral, CustomDebugStringConvertible {
     static var fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -333,6 +333,10 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral {
         let str = stringFromGodotString(&ret)
         GString.destructor (&ret)
         return str ?? ""
+    }
+    
+    public var debugDescription: String {
+        "\(gtype) [\(description)]"
     }
 }
 
