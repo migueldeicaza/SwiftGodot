@@ -6,7 +6,6 @@
 //
 
 import Foundation
-@exported import ExtensionApi
 
 extension URL {
     

@@ -35,11 +35,9 @@ var targets: [Target] = [
     .target(
         name: "ExtensionApi",
         exclude: ["ExtensionApiJson.swift", "extension_api.json"]),
-    // This contains GDExtension's JSON API data models
-    // and a resource bundle with extension_api.json
+    // This contains a resource bundle with extension_api.json
     .target(
         name: "ExtensionApiJson",
-        dependencies: ["ExtensionApi"],
         path: "Sources/ExtensionApi",
         sources: ["ExtensionApiJson.swift"],
         resources: [.process("extension_api.json")]),
@@ -110,8 +108,13 @@ targets.append(contentsOf: [
         plugins: swiftGodotPlugins),
     
     // General purpose tests
-    .testTarget(name: "SwiftGodotTests",
-        dependencies: ["SwiftGodot"])
+    .testTarget(
+        name: "SwiftGodotTests",
+        dependencies: [
+            "SwiftGodot",
+            "ExtensionApi",
+            "ExtensionApiJson",
+        ])
 ])
 
 let package = Package(
