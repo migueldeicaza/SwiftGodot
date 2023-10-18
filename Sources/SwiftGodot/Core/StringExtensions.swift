@@ -79,6 +79,8 @@ extension GString: CustomStringConvertible {
 }
 
 extension String: GodotVariant {
+    public static var gType: Variant.GType { .string }
+    
     static func pointer(_ object: AnyObject?) -> String {
         guard let object = object else { return "nil" }
         let opaque: UnsafeMutableRawPointer = Unmanaged.passUnretained(object).toOpaque()

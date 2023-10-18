@@ -349,6 +349,8 @@ extension Int: GodotVariant {
         var value = 0
         from.toType(.int, dest: &value)
         self.init (value)
+    public static var gType: Variant.GType { .int }
+    
     }
     
     public func toVariant () -> Variant { Variant (self) }
@@ -363,12 +365,16 @@ extension Int64: GodotVariant {
         var value = 0
         from.toType(.int, dest: &value)
         self.init (value)
+    public static var gType: Variant.GType { .int }
+    
     }
     
     public func toVariant () -> Variant { Variant (Int (self)) }
 }
 
 extension Bool: GodotVariant {
+    public static var gType: Variant.GType { .bool }
+    
     /// Creates a new instance from the given variant if it contains a boolean
     public init? (_ from: Variant) {
         guard from.gtype == .bool else {
@@ -383,6 +389,8 @@ extension Bool: GodotVariant {
 }
 
 extension Float: GodotVariant {
+    public static var gType: Variant.GType { .float }
+    
     /// Creates a new instance from the given variant if it contains a float
     public init? (_ from: Variant) {
         guard from.gtype == .float else {
@@ -396,7 +404,9 @@ extension Float: GodotVariant {
     public func toVariant () -> Variant { Variant (self) }
 }
 
-extension Double {
+extension Double: GodotVariant {
+    public static var gType: Variant.GType { .float }
+    
     /// Creates a new instance from the given variant if it contains a float
     public init? (_ from: Variant) {
         guard from.gtype == .float else {
@@ -406,4 +416,6 @@ extension Double {
         from.toType(.float, dest: &value)
         self.init (Double (value))
     }
+    
+    public func toVariant() -> Variant { .init(Float(self)) }
 }

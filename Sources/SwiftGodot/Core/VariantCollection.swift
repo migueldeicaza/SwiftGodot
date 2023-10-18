@@ -11,6 +11,7 @@
 public protocol GodotVariant {
     func toVariant () -> Variant
     init? (_ fromVariant: Variant)
+    static var gType: Variant.GType { get }
 }
 
 /// This represents a typed array of one of the built-in types from Godot

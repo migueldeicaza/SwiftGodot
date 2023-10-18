@@ -554,9 +554,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
+            let gtype = gtypeFromTypeName (bc.name)
+            
+            p("public static var gType: Variant.GType { .\(gtype) }")
             
             p ("/// Creates a new instance from the given variant if it contains a \(typeName)")
-            let gtype = gtypeFromTypeName (bc.name)
             // Now generate the variant constructor
             if kind == .isClass {
                 p ("public required init? (_ from: Variant)") {
