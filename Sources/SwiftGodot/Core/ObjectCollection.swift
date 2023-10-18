@@ -18,25 +18,33 @@ public class ObjectCollection<T:Object>: Collection {
     
     init (content: Int64) {
         array = GArray (content: content)
+        initType()
     }
     
-    init () {
-        array = GArray ()
+    func initType () {
         let name = StringName()
         let variant = Variant()
 
         gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
     }
     
+    init () {
+        array = GArray ()
+        initType()
+    }
+    
+    /// Creates a new instance from the given variant if it contains a GArray
     public init? (_ variant: Variant) {
         if let array = GArray (variant) {
             self.array = array
+            initType()
         } else {
             return nil
         }
     }
     
     // If I make this optional, I am told I need to implement an internal _read method
+    /// Accesses the element at the specified position.
     public subscript (index: Index) -> T {
         get {
             let v = array [index]
@@ -53,11 +61,12 @@ public class ObjectCollection<T:Object>: Collection {
     public typealias Index = Int
     public typealias Element = T
     
-    // The upper and lower bounds of the collection, used in iterations
+    /// The position of the first element in a nonempty collection.
     public var startIndex: Index { 0 }
+    /// The collection’s “past the end” position—that is, the position one greater than the last valid subscript argument.
     public var endIndex: Index { Int (array.size()) }
     
-    // Method that returns the next index when iterating
+    /// Returns the position immediately after the given index.
     public func index(after i: Index) -> Index {
         return i+1
     }

@@ -10,8 +10,21 @@
 public enum ArrayError {
     case outOfRange
 }
-public extension GArray {
-    subscript (index: Int) -> Variant {
+extension GArray: Collection {
+    public func index(after i: Int) -> Int {
+        return i+1
+    }
+    
+    public var startIndex: Int {
+        return 0
+    }
+    
+    /// The collection’s “past the end” position—that is, the position one greater than the last valid subscript argument.
+    public var endIndex: Int {
+        return Int (size())
+    }
+    
+    public subscript (index: Int) -> Variant {
         get {
             guard let ret = gi.array_operator_index (&content, Int64 (index)) else {
                 return Variant()
