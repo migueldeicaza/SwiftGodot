@@ -14,32 +14,40 @@ public protocol GodotVariant {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<T:GodotVariant>: GArray, Collection {
-    override init (content: Int64) {
-        super.init (content: content)
+public class VariantCollection<T:GodotVariant>: Collection {
+    var array: GArray
+    
+    init (content: Int64) {
+        array = GArray (content: content)
     }
     
-    public override init () {
-        super.init ()
+    public init () {
+        array = GArray ()
         
 //        let name = StringName()
 //        let variant = Variant()
+        // Looks like this is not useful for Variants, godot says:
+        // ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
 
         //gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(T.variantType.rawValue)), &name.content, &variant.content)
     }
     
-    public required init? (_ variant: Variant) {
-        super.init (variant)
+    public init? (_ variant: Variant) {
+        if let array = GArray (variant) {
+            self.array = array
+        } else {
+            return nil
+        }
     }
     
     // If I make this optional, I am told I need to implement an internal _read method
-    public subscript (index: Index) -> Iterator.Element {
+    public subscript (index: Index) -> T {
         get {
-            let v = super [index]
+            let v = array [index]
             return T.init (v)!
         }
         set {
-            super [index] = newValue.toVariant()
+            array [index] = newValue.toVariant()
         }
     }
     
@@ -49,7 +57,7 @@ public class VariantCollection<T:GodotVariant>: GArray, Collection {
     
     // The upper and lower bounds of the collection, used in iterations
     public var startIndex: Index { 0 }
-    public var endIndex: Index { Int (size()) }
+    public var endIndex: Index { Int (array.size()) }
     
     // Method that returns the next index when iterating
     public func index(after i: Index) -> Index {

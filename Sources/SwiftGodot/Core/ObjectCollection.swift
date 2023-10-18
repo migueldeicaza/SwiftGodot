@@ -13,33 +13,39 @@ public protocol GodotObject {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class ObjectCollection<T:Object>: GArray, Collection {
-    override init (content: Int64) {
-        super.init (content: content)
+public class ObjectCollection<T:Object>: Collection {
+    var array: GArray
+    
+    init (content: Int64) {
+        array = GArray (content: content)
     }
     
-    public override init () {
-        super.init ()
+    init () {
+        array = GArray ()
         let name = StringName()
         let variant = Variant()
 
-        gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
+        gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
     }
     
-    public required init? (_ variant: Variant) {
-        super.init (variant)
+    public init? (_ variant: Variant) {
+        if let array = GArray (variant) {
+            self.array = array
+        } else {
+            return nil
+        }
     }
     
     // If I make this optional, I am told I need to implement an internal _read method
-    public subscript (index: Index) -> Iterator.Element {
+    public subscript (index: Index) -> T {
         get {
-            let v = super [index]
+            let v = array [index]
             var handle = UnsafeMutableRawPointer(bitPattern: 0)
             v.toType(.object, dest: &handle)
             return lookupObject(nativeHandle: handle!)
         }
         set {
-            super [index] = Variant (newValue)
+            array [index] = Variant (newValue)
         }
     }
     
@@ -49,7 +55,7 @@ public class ObjectCollection<T:Object>: GArray, Collection {
     
     // The upper and lower bounds of the collection, used in iterations
     public var startIndex: Index { 0 }
-    public var endIndex: Index { Int (size()) }
+    public var endIndex: Index { Int (array.size()) }
     
     // Method that returns the next index when iterating
     public func index(after i: Index) -> Index {
