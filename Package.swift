@@ -18,6 +18,12 @@ var products: [Product] = [
         name: "SwiftGodot",
         type: .dynamic,
         targets: ["SwiftGodot"]),
+    .library(
+        name: "ExtensionApi",
+        targets: [
+            "ExtensionApi",
+            "ExtensionApiJson"
+        ]),
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
 
