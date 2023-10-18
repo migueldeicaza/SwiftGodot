@@ -89,7 +89,7 @@ targets.append(contentsOf: [
         exclude: ["SwiftSprite.gdextension", "README.md"]),
         //linkerSettings: linkerSettings),
     // Idea: -mark_dead_strippable_dylib
-    .testTarget(name: "SwiftGodotMacroTests",
+    .testTarget(name: "SwiftGodotMacrosTests",
                 dependencies: [
                     "SwiftGodotMacroLibrary",
                     "SwiftGodot",
