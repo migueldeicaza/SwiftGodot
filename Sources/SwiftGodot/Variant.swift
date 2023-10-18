@@ -341,6 +341,8 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral, CustomDeb
 }
 
 extension Int: GodotVariant {
+    public static var gType: Variant.GType { .int }
+    
     /// Creates a new instance from the given variant if it contains an integer
     public init? (_ from: Variant) {
         guard from.gtype == .int else {
@@ -349,14 +351,14 @@ extension Int: GodotVariant {
         var value = 0
         from.toType(.int, dest: &value)
         self.init (value)
-    public static var gType: Variant.GType { .int }
-    
     }
-    
+        
     public func toVariant () -> Variant { Variant (self) }
 }
 
 extension Int64: GodotVariant {
+   public static var gType: Variant.GType { .int }
+    
     /// Creates a new instance from the given variant if it contains an integer
     public init? (_ from: Variant) {
         guard from.gtype == .int else {
@@ -365,10 +367,8 @@ extension Int64: GodotVariant {
         var value = 0
         from.toType(.int, dest: &value)
         self.init (value)
-    public static var gType: Variant.GType { .int }
-    
     }
-    
+     
     public func toVariant () -> Variant { Variant (Int (self)) }
 }
 
