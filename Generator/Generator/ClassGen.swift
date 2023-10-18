@@ -166,7 +166,10 @@ func generateVirtualProxy (_ p: Printer,
             } else {
                 let derefField: String
                 let derefType: String
-                if classMap [ret.type] != nil {
+                if ret.type.starts(with: "typedarray::") {
+                    derefField = "array.content"
+                    derefType = "type (of: ret.array.content)"
+                } else if classMap [ret.type] != nil {
                     derefField = "handle"
                     derefType = "UnsafeRawPointer?.self"
                 } else {
@@ -174,8 +177,13 @@ func generateVirtualProxy (_ p: Printer,
                     derefType = "type (of: ret.content)"
                 }
                 
-                let target = classMap [ret.type] != nil ? "handle" : "content"
-                p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType))")
+                let target: String
+                if ret.type.starts (with: "typedarray::") {
+                    target = "array.content"
+                } else {
+                    target = classMap [ret.type] != nil ? "handle" : "content"
+                }
+                p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType)) // \(ret.type)")
                 
                 // Poor man's transfer the ownership: we clear the content
                 // so the destructor has nothing to act on, because we are
