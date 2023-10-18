@@ -200,8 +200,8 @@ public struct PropInfo {
     public let propertyType: Variant.GType
     /// The name for the property
     public let propertyName: StringName
-    /// The class name where this is defined
-    public let className: StringName
+    /// The class name of the object if `propertyType` == `.object`
+    public let className: StringName?
     /// Property Hint for this property
     public let hint: PropertyHint
     /// Human-readable hint
@@ -209,7 +209,7 @@ public struct PropInfo {
     /// Describes how the property can be used.
     public let usage: PropertyUsageFlags
     
-    public init(propertyType: Variant.GType, propertyName: StringName, className: StringName, hint: PropertyHint, hintStr: GString, usage: PropertyUsageFlags) {
+    public init(propertyType: Variant.GType, propertyName: StringName, className: StringName?, hint: PropertyHint, hintStr: GString, usage: PropertyUsageFlags) {
         self.propertyType = propertyType
         self.propertyName = propertyName
         self.className = className
@@ -219,15 +219,27 @@ public struct PropInfo {
     }
     func makeNativeStruct () -> GDExtensionPropertyInfo {
         withUnsafeMutablePointer(to: &propertyName.content) { propertyNamePtr in
-            withUnsafeMutablePointer(to: &className.content) { classNamePtr in
-                withUnsafeMutablePointer(to: &hintStr.content) { hintStrPtr in
+            withUnsafeMutablePointer(to: &hintStr.content) { hintStrPtr in
+                if let className {
+                    withUnsafeMutablePointer(to: &className.content) { classNamePtr in
+                        GDExtensionPropertyInfo(
+                            type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
+                            name: propertyNamePtr,
+                            class_name: classNamePtr,
+                            hint: UInt32 (hint.rawValue),
+                            hint_string: hintStrPtr,
+                            usage: UInt32 (usage.rawValue)
+                        )
+                    }
+                } else {
                     GDExtensionPropertyInfo(
                         type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
                         name: propertyNamePtr,
-                        class_name: classNamePtr,
+                        class_name: nil,
                         hint: UInt32 (hint.rawValue),
                         hint_string: hintStrPtr,
-                        usage: UInt32 (usage.rawValue))
+                        usage: UInt32 (usage.rawValue)
+                    )
                 }
             }
         }
