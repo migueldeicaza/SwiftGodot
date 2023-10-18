@@ -31,11 +31,27 @@ products.append(
 #endif
 
 var targets: [Target] = [
+    // This contains GDExtension's JSON API data models
+    .target(
+        name: "ExtensionApi",
+        exclude: ["ExtensionApiJson.swift", "extension_api.json"]),
+    // This contains GDExtension's JSON API data models
+    // and a resource bundle with extension_api.json
+    .target(
+        name: "ExtensionApiJson",
+        dependencies: ["ExtensionApi"],
+        path: "Sources/ExtensionApi",
+        sources: ["ExtensionApiJson.swift"],
+        resources: [.process("extension_api.json")]),
+    
     // The generator takes Godot's JSON-based API description as input and
     // produces Swift API bindings that can be used to call into Godot.
     .executableTarget(
         name: "Generator",
-        dependencies: ["XMLCoder"],
+        dependencies: [
+            "XMLCoder",
+            "ExtensionApi",
+        ],
         path: "Generator",
         exclude: ["README.md"]),
     
@@ -90,7 +106,6 @@ targets.append(contentsOf: [
     .target(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
-        exclude: ["extension_api.json"],
         //linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins),
     

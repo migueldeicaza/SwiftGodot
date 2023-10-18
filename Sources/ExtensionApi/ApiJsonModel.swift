@@ -1,30 +1,22 @@
-//
-//  ApiJsonModel.swift
-//  Generator
-//
-//  Created by Miguel de Icaza on 3/24/23.
-//
-
-import Foundation
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
 // To parse the JSON, add this file to your project and do:
 //
-//   let jGodotExtensionAPI = try JGodotExtensionAPI(json)
+//   let jGodotExtensionAPI = try? JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
 import Foundation
 
 // MARK: - JGodotExtensionAPI
-struct JGodotExtensionAPI: Codable {
-    let header: JGodotHeader
-    let builtinClassSizes: [JGodotBuiltinClassSize]
-    let builtinClassMemberOffsets: [JGodotBuiltinClassMemberOffset]
-    let globalConstants: [JSONAny]
-    let globalEnums: [JGodotGlobalEnumElement]
-    let utilityFunctions: [JGodotUtilityFunction]
-    let builtinClasses: [JGodotBuiltinClass]
-    let classes: [JGodotExtensionAPIClass]
-    let singletons: [JGodotArgument]
-    let nativeStructures: [JGodotNativeStructure]
+public struct JGodotExtensionAPI: Codable {
+    public let header: JGodotHeader
+    public let builtinClassSizes: [JGodotBuiltinClassSize]
+    public let builtinClassMemberOffsets: [JGodotBuiltinClassMemberOffset]
+    public let globalConstants: [JSONAny]
+    public let globalEnums: [JGodotGlobalEnumElement]
+    public let utilityFunctions: [JGodotUtilityFunction]
+    public let builtinClasses: [JGodotBuiltinClass]
+    public let classes: [JGodotExtensionAPIClass]
+    public let singletons: [JGodotArgument]
+    public let nativeStructures: [JGodotNativeStructure]
 
     enum CodingKeys: String, CodingKey {
         case header
@@ -37,199 +29,62 @@ struct JGodotExtensionAPI: Codable {
         case classes, singletons
         case nativeStructures = "native_structures"
     }
-}
 
-// MARK: JGodotExtensionAPI convenience initializers and mutators
-
-extension JGodotExtensionAPI {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotExtensionAPI.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        header: JGodotHeader? = nil,
-        builtinClassSizes: [JGodotBuiltinClassSize]? = nil,
-        builtinClassMemberOffsets: [JGodotBuiltinClassMemberOffset]? = nil,
-        globalConstants: [JSONAny]? = nil,
-        globalEnums: [JGodotGlobalEnumElement]? = nil,
-        utilityFunctions: [JGodotUtilityFunction]? = nil,
-        builtinClasses: [JGodotBuiltinClass]? = nil,
-        classes: [JGodotExtensionAPIClass]? = nil,
-        singletons: [JGodotArgument]? = nil,
-        nativeStructures: [JGodotNativeStructure]? = nil
-    ) -> JGodotExtensionAPI {
-        return JGodotExtensionAPI(
-            header: header ?? self.header,
-            builtinClassSizes: builtinClassSizes ?? self.builtinClassSizes,
-            builtinClassMemberOffsets: builtinClassMemberOffsets ?? self.builtinClassMemberOffsets,
-            globalConstants: globalConstants ?? self.globalConstants,
-            globalEnums: globalEnums ?? self.globalEnums,
-            utilityFunctions: utilityFunctions ?? self.utilityFunctions,
-            builtinClasses: builtinClasses ?? self.builtinClasses,
-            classes: classes ?? self.classes,
-            singletons: singletons ?? self.singletons,
-            nativeStructures: nativeStructures ?? self.nativeStructures
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(header: JGodotHeader, builtinClassSizes: [JGodotBuiltinClassSize], builtinClassMemberOffsets: [JGodotBuiltinClassMemberOffset], globalConstants: [JSONAny], globalEnums: [JGodotGlobalEnumElement], utilityFunctions: [JGodotUtilityFunction], builtinClasses: [JGodotBuiltinClass], classes: [JGodotExtensionAPIClass], singletons: [JGodotArgument], nativeStructures: [JGodotNativeStructure]) {
+        self.header = header
+        self.builtinClassSizes = builtinClassSizes
+        self.builtinClassMemberOffsets = builtinClassMemberOffsets
+        self.globalConstants = globalConstants
+        self.globalEnums = globalEnums
+        self.utilityFunctions = utilityFunctions
+        self.builtinClasses = builtinClasses
+        self.classes = classes
+        self.singletons = singletons
+        self.nativeStructures = nativeStructures
     }
 }
 
 // MARK: - JGodotBuiltinClassMemberOffset
-struct JGodotBuiltinClassMemberOffset: Codable {
-    let buildConfiguration: String
-    let classes: [JGodotBuiltinClassMemberOffsetClass]
+public struct JGodotBuiltinClassMemberOffset: Codable {
+    public let buildConfiguration: String
+    public let classes: [JGodotBuiltinClassMemberOffsetClass]
 
     enum CodingKeys: String, CodingKey {
         case buildConfiguration = "build_configuration"
         case classes
     }
-}
 
-// MARK: JGodotBuiltinClassMemberOffset convenience initializers and mutators
-
-extension JGodotBuiltinClassMemberOffset {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClassMemberOffset.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        buildConfiguration: String? = nil,
-        classes: [JGodotBuiltinClassMemberOffsetClass]? = nil
-    ) -> JGodotBuiltinClassMemberOffset {
-        return JGodotBuiltinClassMemberOffset(
-            buildConfiguration: buildConfiguration ?? self.buildConfiguration,
-            classes: classes ?? self.classes
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(buildConfiguration: String, classes: [JGodotBuiltinClassMemberOffsetClass]) {
+        self.buildConfiguration = buildConfiguration
+        self.classes = classes
     }
 }
 
 // MARK: - JGodotBuiltinClassMemberOffsetClass
-struct JGodotBuiltinClassMemberOffsetClass: Codable {
-    let name: JGodotTypeEnum
-    let members: [JGodotMember]
-}
+public struct JGodotBuiltinClassMemberOffsetClass: Codable {
+    public let name: JGodotTypeEnum
+    public let members: [JGodotMember]
 
-// MARK: JGodotBuiltinClassMemberOffsetClass convenience initializers and mutators
-
-extension JGodotBuiltinClassMemberOffsetClass {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClassMemberOffsetClass.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: JGodotTypeEnum? = nil,
-        members: [JGodotMember]? = nil
-    ) -> JGodotBuiltinClassMemberOffsetClass {
-        return JGodotBuiltinClassMemberOffsetClass(
-            name: name ?? self.name,
-            members: members ?? self.members
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: JGodotTypeEnum, members: [JGodotMember]) {
+        self.name = name
+        self.members = members
     }
 }
 
 // MARK: - JGodotMember
-struct JGodotMember: Codable {
-    let member: String
-    let offset: Int
-    let meta: JGodotMemberMeta
-}
+public struct JGodotMember: Codable {
+    public let member: String
+    public let offset: Int
+    public let meta: JGodotMemberMeta
 
-// MARK: JGodotMember convenience initializers and mutators
-
-extension JGodotMember {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotMember.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        member: String? = nil,
-        offset: Int? = nil,
-        meta: JGodotMemberMeta? = nil
-    ) -> JGodotMember {
-        return JGodotMember(
-            member: member ?? self.member,
-            offset: offset ?? self.offset,
-            meta: meta ?? self.meta
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(member: String, offset: Int, meta: JGodotMemberMeta) {
+        self.member = member
+        self.offset = offset
+        self.meta = meta
     }
 }
 
-enum JGodotMemberMeta: String, Codable {
+public enum JGodotMemberMeta: String, Codable {
     case basis = "Basis"
     case double = "double"
     case float = "float"
@@ -240,7 +95,7 @@ enum JGodotMemberMeta: String, Codable {
     case vector4 = "Vector4"
 }
 
-enum JGodotTypeEnum: String, Codable {
+public enum JGodotTypeEnum: String, Codable {
     case aabb = "AABB"
     case basis = "Basis"
     case color = "Color"
@@ -261,108 +116,44 @@ enum JGodotTypeEnum: String, Codable {
 }
 
 // MARK: - JGodotBuiltinClassSize
-struct JGodotBuiltinClassSize: Codable {
-    let buildConfiguration: String
-    let sizes: [JGodotSize]
+public struct JGodotBuiltinClassSize: Codable {
+    public let buildConfiguration: String
+    public let sizes: [JGodotSize]
 
     enum CodingKeys: String, CodingKey {
         case buildConfiguration = "build_configuration"
         case sizes
     }
-}
 
-// MARK: JGodotBuiltinClassSize convenience initializers and mutators
-
-extension JGodotBuiltinClassSize {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClassSize.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        buildConfiguration: String? = nil,
-        sizes: [JGodotSize]? = nil
-    ) -> JGodotBuiltinClassSize {
-        return JGodotBuiltinClassSize(
-            buildConfiguration: buildConfiguration ?? self.buildConfiguration,
-            sizes: sizes ?? self.sizes
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(buildConfiguration: String, sizes: [JGodotSize]) {
+        self.buildConfiguration = buildConfiguration
+        self.sizes = sizes
     }
 }
 
 // MARK: - JGodotSize
-struct JGodotSize: Codable {
-    let name: String
-    let size: Int
-}
+public struct JGodotSize: Codable {
+    public let name: String
+    public let size: Int
 
-// MARK: JGodotSize convenience initializers and mutators
-
-extension JGodotSize {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotSize.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        size: Int? = nil
-    ) -> JGodotSize {
-        return JGodotSize(
-            name: name ?? self.name,
-            size: size ?? self.size
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, size: Int) {
+        self.name = name
+        self.size = size
     }
 }
 
 // MARK: - JGodotBuiltinClass
-struct JGodotBuiltinClass: Codable, JClassInfo {
-    let name: String
-    let isKeyed: Bool
-    let operators: [JGodotOperator]
-    let constructors: [JGodotConstructor]
-    let hasDestructor: Bool
-    let indexingReturnType: String?
-    let methods: [JGodotBuiltinClassMethod]?
-    let members: [JGodotArgument]?
-    let constants: [JGodotBuiltinClassConstant]?
-    let enums: [JGodotGlobalEnumElement]?
+public struct JGodotBuiltinClass: Codable {
+    public let name: String
+    public let isKeyed: Bool
+    public let operators: [JGodotOperator]
+    public let constructors: [JGodotConstructor]
+    public let hasDestructor: Bool
+    public let indexingReturnType: String?
+    public let methods: [JGodotBuiltinClassMethod]?
+    public let members: [JGodotArgument]?
+    public let constants: [JGodotBuiltinClassConstant]?
+    public let enums: [JGodotGlobalEnumElement]?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -372,200 +163,74 @@ struct JGodotBuiltinClass: Codable, JClassInfo {
         case indexingReturnType = "indexing_return_type"
         case methods, members, constants, enums
     }
-}
 
-// MARK: JGodotBuiltinClass convenience initializers and mutators
-
-extension JGodotBuiltinClass {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClass.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        isKeyed: Bool? = nil,
-        operators: [JGodotOperator]? = nil,
-        constructors: [JGodotConstructor]? = nil,
-        hasDestructor: Bool? = nil,
-        indexingReturnType: String?? = nil,
-        methods: [JGodotBuiltinClassMethod]?? = nil,
-        members: [JGodotArgument]?? = nil,
-        constants: [JGodotBuiltinClassConstant]?? = nil,
-        enums: [JGodotGlobalEnumElement]?? = nil
-    ) -> JGodotBuiltinClass {
-        return JGodotBuiltinClass(
-            name: name ?? self.name,
-            isKeyed: isKeyed ?? self.isKeyed,
-            operators: operators ?? self.operators,
-            constructors: constructors ?? self.constructors,
-            hasDestructor: hasDestructor ?? self.hasDestructor,
-            indexingReturnType: indexingReturnType ?? self.indexingReturnType,
-            methods: methods ?? self.methods,
-            members: members ?? self.members,
-            constants: constants ?? self.constants,
-            enums: enums ?? self.enums
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, isKeyed: Bool, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotArgument]?, constants: [JGodotBuiltinClassConstant]?, enums: [JGodotGlobalEnumElement]?) {
+        self.name = name
+        self.isKeyed = isKeyed
+        self.operators = operators
+        self.constructors = constructors
+        self.hasDestructor = hasDestructor
+        self.indexingReturnType = indexingReturnType
+        self.methods = methods
+        self.members = members
+        self.constants = constants
+        self.enums = enums
     }
 }
 
 // MARK: - JGodotBuiltinClassConstant
-struct JGodotBuiltinClassConstant: Codable {
-    let name: String
-    let type: JGodotTypeEnum
-    let value: String
-}
+public struct JGodotBuiltinClassConstant: Codable {
+    public let name: String
+    public let type: JGodotTypeEnum
+    public let value: String
 
-// MARK: JGodotBuiltinClassConstant convenience initializers and mutators
-
-extension JGodotBuiltinClassConstant {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClassConstant.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        type: JGodotTypeEnum? = nil,
-        value: String? = nil
-    ) -> JGodotBuiltinClassConstant {
-        return JGodotBuiltinClassConstant(
-            name: name ?? self.name,
-            type: type ?? self.type,
-            value: value ?? self.value
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, type: JGodotTypeEnum, value: String) {
+        self.name = name
+        self.type = type
+        self.value = value
     }
 }
 
 // MARK: - JGodotConstructor
-struct JGodotConstructor: Codable {
-    let index: Int
-    let arguments: [JGodotArgument]?
+public struct JGodotConstructor: Codable {
+    public let index: Int
+    public let arguments: [JGodotArgument]?
+
+    public init(index: Int, arguments: [JGodotArgument]?) {
+        self.index = index
+        self.arguments = arguments
+    }
 }
 
-// MARK: JGodotConstructor convenience initializers and mutators
+// MARK: - JGodotBuiltinClassEnum
+public struct JGodotBuiltinClassEnum: Codable {
+    public let name: String
+    public let values: [JGodotValueElement]
 
-extension JGodotConstructor {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotConstructor.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        index: Int? = nil,
-        arguments: [JGodotArgument]?? = nil
-    ) -> JGodotConstructor {
-        return JGodotConstructor(
-            index: index ?? self.index,
-            arguments: arguments ?? self.arguments
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, values: [JGodotValueElement]) {
+        self.name = name
+        self.values = values
     }
 }
 
 // MARK: - JGodotValueElement
-struct JGodotValueElement: Codable {
-    let name: String
-    let value: Int
-}
+public struct JGodotValueElement: Codable {
+    public let name: String
+    public let value: Int
 
-// MARK: JGodotValueElement convenience initializers and mutators
-
-extension JGodotValueElement {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotValueElement.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        value: Int? = nil
-    ) -> JGodotValueElement {
-        return JGodotValueElement(
-            name: name ?? self.name,
-            value: value ?? self.value
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, value: Int) {
+        self.name = name
+        self.value = value
     }
 }
 
 // MARK: - JGodotBuiltinClassMethod
-struct JGodotBuiltinClassMethod: Codable {
-    let name: String
-    let returnType: String?
-    let isVararg, isConst, isStatic: Bool
-    let hash: Int
-    let arguments: [JGodotArgument]?
+public struct JGodotBuiltinClassMethod: Codable {
+    public let name: String
+    public let returnType: String?
+    public let isVararg, isConst, isStatic: Bool
+    public let hash: Int
+    public let arguments: [JGodotArgument]?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -575,115 +240,39 @@ struct JGodotBuiltinClassMethod: Codable {
         case isStatic = "is_static"
         case hash, arguments
     }
-}
 
-// MARK: JGodotBuiltinClassMethod convenience initializers and mutators
-
-extension JGodotBuiltinClassMethod {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotBuiltinClassMethod.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        returnType: String?? = nil,
-        isVararg: Bool? = nil,
-        isConst: Bool? = nil,
-        isStatic: Bool? = nil,
-        hash: Int? = nil,
-        arguments: [JGodotArgument]?? = nil
-    ) -> JGodotBuiltinClassMethod {
-        return JGodotBuiltinClassMethod(
-            name: name ?? self.name,
-            returnType: returnType ?? self.returnType,
-            isVararg: isVararg ?? self.isVararg,
-            isConst: isConst ?? self.isConst,
-            isStatic: isStatic ?? self.isStatic,
-            hash: hash ?? self.hash,
-            arguments: arguments ?? self.arguments
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, returnType: String?, isVararg: Bool, isConst: Bool, isStatic: Bool, hash: Int, arguments: [JGodotArgument]?) {
+        self.name = name
+        self.returnType = returnType
+        self.isVararg = isVararg
+        self.isConst = isConst
+        self.isStatic = isStatic
+        self.hash = hash
+        self.arguments = arguments
     }
 }
 
 // MARK: - JGodotArgument
-struct JGodotArgument: Codable, TypeWithMeta {
-    let name, type: String
-    let defaultValue: String?
-    let meta: JGodotArgumentMeta?
+public struct JGodotArgument: Codable {
+    public let name, type: String
+    public let defaultValue: String?
+    public let meta: JGodotArgumentMeta?
 
     enum CodingKeys: String, CodingKey {
         case name, type
         case defaultValue = "default_value"
         case meta
     }
-}
 
-// MARK: JGodotArgument convenience initializers and mutators
-
-extension JGodotArgument {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotArgument.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        type: String? = nil,
-        defaultValue: String?? = nil,
-        meta: JGodotArgumentMeta?? = nil
-    ) -> JGodotArgument {
-        return JGodotArgument(
-            name: name ?? self.name,
-            type: type ?? self.type,
-            defaultValue: defaultValue ?? self.defaultValue,
-            meta: meta ?? self.meta
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, type: String, defaultValue: String?, meta: JGodotArgumentMeta?) {
+        self.name = name
+        self.type = type
+        self.defaultValue = defaultValue
+        self.meta = meta
     }
 }
 
-protocol TypeWithMeta {
-    var type: String {get}
-    var meta: JGodotArgumentMeta? {get}
-
-}
-enum JGodotArgumentMeta: String, Codable {
+public enum JGodotArgumentMeta: String, Codable {
     case double = "double"
     case float = "float"
     case int16 = "int16"
@@ -697,69 +286,35 @@ enum JGodotArgumentMeta: String, Codable {
 }
 
 // MARK: - JGodotOperator
-struct JGodotOperator: Codable {
-    let name: String
-    let rightType: String?
-    let returnType: String
+public struct JGodotOperator: Codable {
+    public let name: String
+    public let rightType: String?
+    public let returnType: String
 
     enum CodingKeys: String, CodingKey {
         case name
         case rightType = "right_type"
         case returnType = "return_type"
     }
-}
 
-// MARK: JGodotOperator convenience initializers and mutators
-
-extension JGodotOperator {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotOperator.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        rightType: String?? = nil,
-        returnType: String? = nil
-    ) -> JGodotOperator {
-        return JGodotOperator(
-            name: name ?? self.name,
-            rightType: rightType ?? self.rightType,
-            returnType: returnType ?? self.returnType
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, rightType: String?, returnType: String) {
+        self.name = name
+        self.rightType = rightType
+        self.returnType = returnType
     }
 }
-
 
 // MARK: - JGodotExtensionAPIClass
-struct JGodotExtensionAPIClass: Codable, JClassInfo {
-    let name: String
-    let isRefcounted, isInstantiable: Bool
-    let inherits: String?
-    let apiType: JGodotAPIType
-    let enums: [JGodotGlobalEnumElement]?
-    let methods: [JGodotClassMethod]?
-    let properties: [JGodotProperty]?
-    let signals: [JGodotSignal]?
-    let constants: [JGodotValueElement]?
+public struct JGodotExtensionAPIClass: Codable {
+    public let name: String
+    public let isRefcounted, isInstantiable: Bool
+    public let inherits: String?
+    public let apiType: JGodotAPIType
+    public let enums: [JGodotGlobalEnumElement]?
+    public let methods: [JGodotClassMethod]?
+    public let properties: [JGodotProperty]?
+    public let signals: [JGodotSignal]?
+    public let constants: [JGodotValueElement]?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -769,135 +324,52 @@ struct JGodotExtensionAPIClass: Codable, JClassInfo {
         case apiType = "api_type"
         case enums, methods, properties, signals, constants
     }
-}
 
-// Protocol to share features between JGodotExtensionClass and JGodotBuiltinClass
-protocol JClassInfo {
-    var name: String { get }
-    var enums: [JGodotGlobalEnumElement]? { get }
-}
-
-
-// MARK: JGodotExtensionAPIClass convenience initializers and mutators
-
-extension JGodotExtensionAPIClass {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotExtensionAPIClass.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        isRefcounted: Bool? = nil,
-        isInstantiable: Bool? = nil,
-        inherits: String?? = nil,
-        apiType: JGodotAPIType? = nil,
-        enums: [JGodotGlobalEnumElement]?? = nil,
-        methods: [JGodotClassMethod]?? = nil,
-        properties: [JGodotProperty]?? = nil,
-        signals: [JGodotSignal]?? = nil,
-        constants: [JGodotValueElement]?? = nil
-    ) -> JGodotExtensionAPIClass {
-        return JGodotExtensionAPIClass(
-            name: name ?? self.name,
-            isRefcounted: isRefcounted ?? self.isRefcounted,
-            isInstantiable: isInstantiable ?? self.isInstantiable,
-            inherits: inherits ?? self.inherits,
-            apiType: apiType ?? self.apiType,
-            enums: enums ?? self.enums,
-            methods: methods ?? self.methods,
-            properties: properties ?? self.properties,
-            signals: signals ?? self.signals,
-            constants: constants ?? self.constants
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, isRefcounted: Bool, isInstantiable: Bool, inherits: String?, apiType: JGodotAPIType, enums: [JGodotGlobalEnumElement]?, methods: [JGodotClassMethod]?, properties: [JGodotProperty]?, signals: [JGodotSignal]?, constants: [JGodotValueElement]?) {
+        self.name = name
+        self.isRefcounted = isRefcounted
+        self.isInstantiable = isInstantiable
+        self.inherits = inherits
+        self.apiType = apiType
+        self.enums = enums
+        self.methods = methods
+        self.properties = properties
+        self.signals = signals
+        self.constants = constants
     }
 }
 
-enum JGodotAPIType: String, Codable {
+public enum JGodotAPIType: String, Codable {
     case core = "core"
     case editor = "editor"
 }
 
 // MARK: - JGodotGlobalEnumElement
-struct JGodotGlobalEnumElement: Codable {
-    let name: String
-    let isBitfield: Bool?
-    let values: [JGodotValueElement]
+public struct JGodotGlobalEnumElement: Codable {
+    public let name: String
+    public let isBitfield: Bool?
+    public let values: [JGodotValueElement]
 
     enum CodingKeys: String, CodingKey {
         case name
         case isBitfield = "is_bitfield"
         case values
     }
-}
 
-// MARK: JGodotGlobalEnumElement convenience initializers and mutators
-
-extension JGodotGlobalEnumElement {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotGlobalEnumElement.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        isBitfield: Bool? = nil,
-        values: [JGodotValueElement]? = nil
-    ) -> JGodotGlobalEnumElement {
-        return JGodotGlobalEnumElement(
-            name: name ?? self.name,
-            isBitfield: isBitfield ?? self.isBitfield,
-            values: values ?? self.values
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, isBitfield: Bool, values: [JGodotValueElement]) {
+        self.name = name
+        self.isBitfield = isBitfield
+        self.values = values
     }
 }
 
-protocol JSharedClassMethod {
-    
-}
 // MARK: - JGodotClassMethod
-struct JGodotClassMethod: Codable, MethodDefinition {
-    let name: String
-    let isConst, isVararg, isStatic, isVirtual: Bool
-    let hash: Int?
-    let returnValue: JGodotReturnValue?
-    let arguments: [JGodotArgument]?
+public struct JGodotClassMethod: Codable {
+    public let name: String
+    public let isConst, isVararg, isStatic, isVirtual: Bool
+    public let hash: Int?
+    public let returnValue: JGodotReturnValue?
+    public let arguments: [JGodotArgument]?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -909,212 +381,61 @@ struct JGodotClassMethod: Codable, MethodDefinition {
         case returnValue = "return_value"
         case arguments
     }
-}
 
-// Used to unify the class methods and the utility methods
-protocol MethodDefinition {
-    var name: String { get }
-    var isConst: Bool { get }
-    var isVararg: Bool { get }
-    var isStatic: Bool { get }
-    var isVirtual: Bool { get }
-    var hash: Int? { get }
-    var returnValue: JGodotReturnValue? { get }
-    var arguments: [JGodotArgument]? { get }
-}
-
-
-
-// MARK: JGodotClassMethod convenience initializers and mutators
-
-extension JGodotClassMethod {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotClassMethod.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        isConst: Bool? = nil,
-        isVararg: Bool? = nil,
-        isStatic: Bool? = nil,
-        isVirtual: Bool? = nil,
-        hash: Int?? = nil,
-        returnValue: JGodotReturnValue?? = nil,
-        arguments: [JGodotArgument]?? = nil
-    ) -> JGodotClassMethod {
-        return JGodotClassMethod(
-            name: name ?? self.name,
-            isConst: isConst ?? self.isConst,
-            isVararg: isVararg ?? self.isVararg,
-            isStatic: isStatic ?? self.isStatic,
-            isVirtual: isVirtual ?? self.isVirtual,
-            hash: hash ?? self.hash,
-            returnValue: returnValue ?? self.returnValue,
-            arguments: arguments ?? self.arguments
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, isConst: Bool, isVararg: Bool, isStatic: Bool, isVirtual: Bool, hash: Int?, returnValue: JGodotReturnValue?, arguments: [JGodotArgument]?) {
+        self.name = name
+        self.isConst = isConst
+        self.isVararg = isVararg
+        self.isStatic = isStatic
+        self.isVirtual = isVirtual
+        self.hash = hash
+        self.returnValue = returnValue
+        self.arguments = arguments
     }
 }
 
 // MARK: - JGodotReturnValue
-struct JGodotReturnValue: Codable, TypeWithMeta {
-    let type: String
-    let meta: JGodotArgumentMeta?
-}
+public struct JGodotReturnValue: Codable {
+    public let type: String
+    public let meta: JGodotArgumentMeta?
 
-// MARK: JGodotReturnValue convenience initializers and mutators
-
-extension JGodotReturnValue {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotReturnValue.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        type: String? = nil,
-        meta: JGodotArgumentMeta?? = nil
-    ) -> JGodotReturnValue {
-        return JGodotReturnValue(
-            type: type ?? self.type,
-            meta: meta ?? self.meta
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(type: String, meta: JGodotArgumentMeta?) {
+        self.type = type
+        self.meta = meta
     }
 }
 
 // MARK: - JGodotProperty
-struct JGodotProperty: Codable {
-    let type, name: String
-    let setter: String?
-    let getter: String
-    let index: Int?
-}
+public struct JGodotProperty: Codable {
+    public let type, name: String
+    public let setter: String?
+    public let getter: String
+    public let index: Int?
 
-// MARK: JGodotProperty convenience initializers and mutators
-
-extension JGodotProperty {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotProperty.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        type: String? = nil,
-        name: String? = nil,
-        setter: String?? = nil,
-        getter: String? = nil,
-        index: Int?? = nil
-    ) -> JGodotProperty {
-        return JGodotProperty(
-            type: type ?? self.type,
-            name: name ?? self.name,
-            setter: setter ?? self.setter,
-            getter: getter ?? self.getter,
-            index: index ?? self.index
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(type: String, name: String, setter: String?, getter: String, index: Int?) {
+        self.type = type
+        self.name = name
+        self.setter = setter
+        self.getter = getter
+        self.index = index
     }
 }
 
 // MARK: - JGodotSignal
-struct JGodotSignal: Codable {
-    let name: String
-    let arguments: [JGodotArgument]?
-}
+public struct JGodotSignal: Codable {
+    public let name: String
+    public let arguments: [JGodotArgument]?
 
-// MARK: JGodotSignal convenience initializers and mutators
-
-extension JGodotSignal {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotSignal.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        arguments: [JGodotArgument]?? = nil
-    ) -> JGodotSignal {
-        return JGodotSignal(
-            name: name ?? self.name,
-            arguments: arguments ?? self.arguments
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, arguments: [JGodotArgument]?) {
+        self.name = name
+        self.arguments = arguments
     }
 }
 
 // MARK: - JGodotHeader
-struct JGodotHeader: Codable {
-    let versionMajor, versionMinor, versionPatch: Int
-    let versionStatus, versionBuild, versionFullName: String
+public struct JGodotHeader: Codable {
+    public let versionMajor, versionMinor, versionPatch: Int
+    public let versionStatus, versionBuild, versionFullName: String
 
     enum CodingKeys: String, CodingKey {
         case versionMajor = "version_major"
@@ -1124,115 +445,35 @@ struct JGodotHeader: Codable {
         case versionBuild = "version_build"
         case versionFullName = "version_full_name"
     }
-}
 
-// MARK: JGodotHeader convenience initializers and mutators
-
-extension JGodotHeader {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotHeader.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        versionMajor: Int? = nil,
-        versionMinor: Int? = nil,
-        versionPatch: Int? = nil,
-        versionStatus: String? = nil,
-        versionBuild: String? = nil,
-        versionFullName: String? = nil
-    ) -> JGodotHeader {
-        return JGodotHeader(
-            versionMajor: versionMajor ?? self.versionMajor,
-            versionMinor: versionMinor ?? self.versionMinor,
-            versionPatch: versionPatch ?? self.versionPatch,
-            versionStatus: versionStatus ?? self.versionStatus,
-            versionBuild: versionBuild ?? self.versionBuild,
-            versionFullName: versionFullName ?? self.versionFullName
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(versionMajor: Int, versionMinor: Int, versionPatch: Int, versionStatus: String, versionBuild: String, versionFullName: String) {
+        self.versionMajor = versionMajor
+        self.versionMinor = versionMinor
+        self.versionPatch = versionPatch
+        self.versionStatus = versionStatus
+        self.versionBuild = versionBuild
+        self.versionFullName = versionFullName
     }
 }
 
 // MARK: - JGodotNativeStructure
-struct JGodotNativeStructure: Codable {
-    let name, format: String
-}
+public struct JGodotNativeStructure: Codable {
+    public let name, format: String
 
-// MARK: JGodotNativeStructure convenience initializers and mutators
-
-extension JGodotNativeStructure {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotNativeStructure.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        format: String? = nil
-    ) -> JGodotNativeStructure {
-        return JGodotNativeStructure(
-            name: name ?? self.name,
-            format: format ?? self.format
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, format: String) {
+        self.name = name
+        self.format = format
     }
 }
 
 // MARK: - JGodotUtilityFunction
-struct JGodotUtilityFunction: Codable, MethodDefinition {
-    let name: String
-    let returnType: String?
-    let category: JGodotCategory
-    let isVararg: Bool
-    let hash: Int?
-    let arguments: [JGodotArgument]?
-
-    // Conformance to MethodDefinition
-    var isConst: Bool { true }
-    var isStatic: Bool { true }
-    var isVirtual: Bool { false }
-    var returnValue: JGodotReturnValue? {
-        if let returnType {
-            return JGodotReturnValue (type: returnType, meta: nil)
-        } else {
-            return nil
-        }
-    }
+public struct JGodotUtilityFunction: Codable {
+    public let name: String
+    public let returnType: String?
+    public let category: JGodotCategory
+    public let isVararg: Bool
+    public let hash: Int
+    public let arguments: [JGodotArgument]?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -1241,86 +482,32 @@ struct JGodotUtilityFunction: Codable, MethodDefinition {
         case isVararg = "is_vararg"
         case hash, arguments
     }
-}
 
-// MARK: JGodotUtilityFunction convenience initializers and mutators
-
-extension JGodotUtilityFunction {
-    init(data: Data) throws {
-        self = try newJSONDecoder().decode(JGodotUtilityFunction.self, from: data)
-    }
-
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-
-    func with(
-        name: String? = nil,
-        returnType: String?? = nil,
-        category: JGodotCategory? = nil,
-        isVararg: Bool? = nil,
-        hash: Int? = nil,
-        arguments: [JGodotArgument]?? = nil
-    ) -> JGodotUtilityFunction {
-        return JGodotUtilityFunction(
-            name: name ?? self.name,
-            returnType: returnType ?? self.returnType,
-            category: category ?? self.category,
-            isVararg: isVararg ?? self.isVararg,
-            hash: hash ?? self.hash,
-            arguments: arguments ?? self.arguments
-        )
-    }
-
-    func jsonData() throws -> Data {
-        return try newJSONEncoder().encode(self)
-    }
-
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
+    public init(name: String, returnType: String?, category: JGodotCategory, isVararg: Bool, hash: Int, arguments: [JGodotArgument]?) {
+        self.name = name
+        self.returnType = returnType
+        self.category = category
+        self.isVararg = isVararg
+        self.hash = hash
+        self.arguments = arguments
     }
 }
 
-enum JGodotCategory: String, Codable {
+public enum JGodotCategory: String, Codable {
     case general = "general"
     case math = "math"
     case random = "random"
 }
 
-// MARK: - Helper functions for creating encoders and decoders
-
-func newJSONDecoder() -> JSONDecoder {
-    let decoder = JSONDecoder()
-    if #available(iOS 10.0, OSX 10.12, tvOS 10.0, watchOS 3.0, *) {
-        decoder.dateDecodingStrategy = .iso8601
-    }
-    return decoder
-}
-
-func newJSONEncoder() -> JSONEncoder {
-    let encoder = JSONEncoder()
-    if #available(iOS 10.0, OSX 10.12, tvOS 10.0, watchOS 3.0, *) {
-        encoder.dateEncodingStrategy = .iso8601
-    }
-    return encoder
-}
-
 // MARK: - Encode/decode helpers
 
-class JSONNull: Codable, Hashable {
+public class JSONNull: Codable, Hashable {
 
     public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
         return true
     }
 
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(0)
     }
 
@@ -1359,9 +546,9 @@ class JSONCodingKey: CodingKey {
     }
 }
 
-class JSONAny: Codable {
+public class JSONAny: Codable {
 
-    let value: Any
+    public let value: Any
 
     static func decodingError(forCodingPath codingPath: [CodingKey]) -> DecodingError {
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: "Cannot decode JSONAny")

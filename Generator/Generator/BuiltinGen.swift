@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 
 /// Given an initializer of the form "Vector (0, 1, 0)" returns a proper Swift "Vector (x: 0, y: 1, z: 0)" value
 ///

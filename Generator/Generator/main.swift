@@ -6,6 +6,7 @@
 //  Copyright © 2020-2023 Miguel de Icaza. MIT Licensed
 //
 import Foundation
+import ExtensionApi
 
 var args = CommandLine.arguments
 

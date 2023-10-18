@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 
 // This is the configuration float_64, which means
 // 32-bit floats, but 64 bit ints.

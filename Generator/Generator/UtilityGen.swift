@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 
 func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async {
     let p = await PrinterFactory.shared.initPrinter()

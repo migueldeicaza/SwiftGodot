@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 
 func snakeToCamel(_ s: String) -> String {
     let parts = s.split(separator: "_")
