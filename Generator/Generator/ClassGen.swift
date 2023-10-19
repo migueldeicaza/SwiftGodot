@@ -509,11 +509,13 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 argUnwrap += "args [\(argIdx)].toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
                 construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(arg.type) (nativeHandle: ptr_\(argIdx)!)"
             } else if arg.type == "String" {
-                    construct = "\(mapTypeName(arg.type)) (args [\(argIdx)])!.description"
+                    construct = "\(mapTypeName(arg.type)).unwrap (variant: args [\(argIdx)])!.description"
             } else if arg.type == "Variant" {
                 construct = "args [\(argIdx)]"
-            } else {
+            } else if arg.type == "typedarray::StringName" {
                 construct = "\(getGodotType(arg)) (args [\(argIdx)])!"
+            } else {
+                construct = "\(getGodotType(arg)).unwrap (variant: args [\(argIdx)])!"
             }
             argUnwrap += "let arg_\(argIdx) = \(construct)\n"
             callArgs += "arg_\(argIdx)"

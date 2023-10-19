@@ -35,7 +35,7 @@ public class ObjectCollection<T:Object>: Collection {
     
     /// Creates a new instance from the given variant if it contains a GArray
     public init? (_ variant: Variant) {
-        if let array = GArray (variant) {
+        if let array = GArray.unwrap(variant: variant) {
             self.array = array
             initType()
         } else {

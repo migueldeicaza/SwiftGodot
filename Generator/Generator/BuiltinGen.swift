@@ -561,28 +561,19 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p ("/// Creates a new instance from the given variant if it contains a \(typeName)")
             // Now generate the variant constructor
             if kind == .isClass {
-                p ("public required init? (_ from: Variant)") {
-                    p ("guard from.gtype == .\(gtype) else") {
-                        p ("return nil")
-                    }
+                p("public static func unwrap(variant: Variant) -> \(typeName)?") {
+                    p("guard variant.gtype == .\(gtype) else { return nil }")
                     p ("var localContent: \(typeName).ContentType = \(typeName).zero")
-                    p ("from.toType(.\(gtype), dest: &localContent)")
-                    p ("// Replicate the constructor, because of a lame Swift requirement")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &localContent)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("\(typeName).constructor1 (&content, &args)")
-                    }
+                    p ("variant.toType(.\(gtype), dest: &localContent)")
+                    p ("return \(typeName)(content: localContent)")
                 }
             } else {
-                p ("public init? (_ from: Variant)") {
-                    p ("guard from.gtype == .\(gtype) else") {
-                        p ("return nil")
-                    }
-                    p ("var v = \(bc.name)()")
-                    p ("from.toType(.\(gtype), dest: &v)")
-                    p ("self.init (from: v)")
-                }                
+                p("public static func unwrap(variant: Variant) -> Self?") {
+                    p("guard variant.gtype == .\(gtype) else { return nil }")
+                    p("var value = \(bc.name)()")
+                    p("variant.toType(.\(gtype), dest: &value)")
+                    p("return value")
+                }
             }
             p ("/// Wraps this \(typeName) into a Variant")
             p ("public func toVariant () -> Variant ") {

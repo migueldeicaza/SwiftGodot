@@ -89,7 +89,7 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral, CustomDeb
         let ret = Variant (false)
         
         gi.variant_evaluate (GDEXTENSION_VARIANT_OP_EQUAL, &lhs.content, &rhs.content, &ret.content, &valid)
-        return Bool (ret) ?? false
+        return Bool.unwrap(variant: ret) ?? false
     }
     
     public func hash(into hasher: inout Hasher) {
@@ -343,78 +343,67 @@ public class Variant: Hashable, Equatable, ExpressibleByStringLiteral, CustomDeb
 extension Int: GodotVariant {
     public static var gType: Variant.GType { .int }
     
-    /// Creates a new instance from the given variant if it contains an integer
-    public init? (_ from: Variant) {
-        guard from.gtype == .int else {
-            return nil
-        }
-        var value = 0
-        from.toType(.int, dest: &value)
-        self.init (value)
+    public static func unwrap(variant: Variant) -> Self? {
+        guard variant.gtype == gType else { return nil }
+        var value: Self = .init()
+        variant.toType(gType, dest: &value)
+        return value
     }
-        
-    public func toVariant () -> Variant { Variant (self) }
+    
+    public func toVariant () -> Variant { .init(self) }
 }
 
 extension Int64: GodotVariant {
-   public static var gType: Variant.GType { .int }
+    public static var gType: Variant.GType { .int }
     
-    /// Creates a new instance from the given variant if it contains an integer
-    public init? (_ from: Variant) {
-        guard from.gtype == .int else {
-            return nil
-        }
-        var value = 0
-        from.toType(.int, dest: &value)
-        self.init (value)
+    public static func unwrap(variant: Variant) -> Self? {
+        guard variant.gtype == gType else { return nil }
+        var value: Self = .init()
+        variant.toType(gType, dest: &value)
+        return value
     }
-     
-    public func toVariant () -> Variant { Variant (Int (self)) }
+    
+    public func toVariant () -> Variant { .init(Int(self)) }
 }
 
 extension Bool: GodotVariant {
     public static var gType: Variant.GType { .bool }
     
     /// Creates a new instance from the given variant if it contains a boolean
-    public init? (_ from: Variant) {
-        guard from.gtype == .bool else {
-            return nil
-        }
-        var v = GDExtensionBool (0)
-        from.toType(.bool, dest: &v)
-        self.init (v == 0 ? false : true)
+    public static func unwrap(variant: Variant) -> Self? {
+        guard variant.gtype == gType else { return nil }
+        var value = GDExtensionBool (0)
+        variant.toType(gType, dest: &value)
+        return value != 0
     }
     
-    public func toVariant () -> Variant { Variant (self) }
+    public func toVariant () -> Variant { .init(self) }
 }
 
 extension Float: GodotVariant {
     public static var gType: Variant.GType { .float }
     
     /// Creates a new instance from the given variant if it contains a float
-    public init? (_ from: Variant) {
-        guard from.gtype == .float else {
-            return nil
-        }
-        var value: Double = 0
-        from.toType(.float, dest: &value)
-        self.init (Float (value))
+    public static func unwrap(variant: Variant) -> Self? {
+        guard variant.gtype == gType else { return nil }
+        var value: Double = .init()
+        variant.toType(gType, dest: &value)
+        return Float(value)
     }
 
-    public func toVariant () -> Variant { Variant (self) }
+    public func toVariant () -> Variant { .init(self) }
 }
 
 extension Double: GodotVariant {
     public static var gType: Variant.GType { .float }
     
     /// Creates a new instance from the given variant if it contains a float
-    public init? (_ from: Variant) {
-        guard from.gtype == .float else {
-            return nil
-        }
-        var value: Double = 0
-        from.toType(.float, dest: &value)
-        self.init (Double (value))
+    /// /// Creates a new instance from the given variant if it contains a float
+    public static func unwrap(variant: Variant) -> Self? {
+        guard variant.gtype == gType else { return nil }
+        var value: Double = .init()
+        variant.toType(gType, dest: &value)
+        return value
     }
     
     public func toVariant() -> Variant { .init(Float(self)) }

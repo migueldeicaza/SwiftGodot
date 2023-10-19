@@ -94,15 +94,13 @@ extension String: GodotVariant {
     public init (_ n: StringName) {
         self = n.description
     }
-    
-    public init? (_ fromVariant: Variant) {
-        guard fromVariant.gtype == .string else {
-            return nil
-        }
+
+    public static func unwrap(variant: Variant) -> String? {
+        guard variant.gtype == .string else { return nil }
         var content = GString.zero
         
-        fromVariant.toType(.string, dest: &content)
+        variant.toType(.string, dest: &content)
         let g = GString(content: content)
-        self = g.description
+        return g.description
     }
 }

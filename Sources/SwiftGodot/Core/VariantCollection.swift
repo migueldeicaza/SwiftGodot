@@ -9,13 +9,14 @@
 
 /// Protocol implemented by the built-in classes in Godot to allow to be wrapped in a ``Variant``
 public protocol GodotVariant {
+    associatedtype WrappedType
     func toVariant () -> Variant
-    init? (_ fromVariant: Variant)
+    static func unwrap(variant: Variant) -> WrappedType?
     static var gType: Variant.GType { get }
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<T:GodotVariant>: Collection {
+public class VariantCollection<T:GodotVariant>: Collection where T.WrappedType == T {
     var array: GArray
     
     init (content: Int64) {
@@ -35,7 +36,7 @@ public class VariantCollection<T:GodotVariant>: Collection {
     
     /// Creates a new instance from the given variant if it contains a GArray
     public init? (_ variant: Variant) {
-        if let array = GArray (variant) {
+        if let array = GArray.unwrap(variant: variant) {
             self.array = array
         } else {
             return nil
@@ -43,14 +44,14 @@ public class VariantCollection<T:GodotVariant>: Collection {
     }
     
     func toStrong (_ v: Variant) -> T {
-        return T.init (v)!
+        return T.unwrap(variant: v)!
     }
     
     /// Accesses the element at the specified position.
     public subscript (index: Index) -> T {
         get {
             let v = array [index]
-            return T.init (v)!
+            return T.unwrap(variant: v)!
         }
         set {
             array [index] = newValue.toVariant()

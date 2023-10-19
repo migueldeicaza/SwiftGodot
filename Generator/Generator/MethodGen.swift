@@ -383,9 +383,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     if returnType == "Variant" {
                         p ("return Variant (fromContent: _result)")
                     } else if returnType == "GodotError" {
-                        p ("return GodotError (rawValue: Int (Variant (fromContent: _result))!)!")
+                        p ("return GodotError (rawValue: Int.unwrap (variant: Variant (fromContent: _result))!)!")
                     } else if returnType == "String" {
-                        p ("return GString (Variant (fromContent: _result))?.description ?? \"\"")
+                        p ("return GString.unwrap (variant: Variant (fromContent: _result))?.description ?? \"\"")
                     } else {
                         fatalError("Do not support this return type")
                     }
