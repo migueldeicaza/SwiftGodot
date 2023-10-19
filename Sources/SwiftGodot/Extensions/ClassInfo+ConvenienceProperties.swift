@@ -215,7 +215,7 @@ extension ClassInfo {
         let property = PropInfo(propertyType: .string,
                                 propertyName: StringName("\(registeredPrefix)_\(name)"),
                                 className: StringName("\(T.self)"),
-                                hint: .typeString,
+                                hint: .none,
                                 hintStr: "",
                                 usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
@@ -230,7 +230,7 @@ extension ClassInfo {
     /// - Parameter prefix: The prefix to apply to the property name. Defaults to the class's name if not provided.
     /// - Parameter getter: The getter method the editor will call to get the property.
     /// - Parameter setter: The setter method the editor will call to set the property.
-    public func regsiterTextView(named name: String,
+    public func registerTextView(named name: String,
                                  prefix: String? = nil,
                                  getter: @escaping ClassInfoFunction,
                                  setter: @escaping ClassInfoFunction) {
@@ -239,6 +239,29 @@ extension ClassInfo {
                                 propertyName: StringName("\(registeredPrefix)_\(name)"),
                                 className: StringName("\(T.self)"),
                                 hint: .multilineText,
+                                hintStr: "",
+                                usage: .default)
+        registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
+        registerGetter(prefix: registeredPrefix, name: name, property: property, getter: getter)
+        registerProperty(property,
+                         getter: StringName("\(registeredPrefix)_get_\(name)"),
+                         setter: StringName("\(registeredPrefix)_set_\(name)"))
+    }
+
+    /// Registers a node path picker in the editor.
+    /// - Parameter name: The name of the property that will appear in the editor.
+    /// - Parameter prefix: The prefix to apply to the property name. Defaults to the class's name if not provided.
+    /// - Parameter getter: The getter method the editor will call to get the property.
+    /// - Paramater setter: The setter method the editor will call to set the property.
+    public func registerNodePath(named name: String,
+                                 prefix: String? = nil,
+                                 getter: @escaping ClassInfoFunction,
+                                 setter: @escaping ClassInfoFunction) {
+        let registeredPrefix = prefix ?? "\(T.self)"
+        let property = PropInfo(propertyType: .nodePath,
+                                propertyName: StringName("\(registeredPrefix)_\(name)"),
+                                className: StringName("\(T.self)"),
+                                hint: .nodePathValidTypes,
                                 hintStr: "",
                                 usage: .default)
         registerSetter(prefix: registeredPrefix, name: name, property: property, setter: setter)
