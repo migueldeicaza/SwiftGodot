@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 import XMLCoder
 
 struct DocClass: Codable {

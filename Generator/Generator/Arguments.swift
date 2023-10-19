@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 
 func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))

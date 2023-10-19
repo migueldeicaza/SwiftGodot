@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ExtensionApi
 
 enum MethodGenType {
     case `class`
@@ -89,7 +90,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     var methodName: String = godotMethodToSwift (method.name)
     let instanceOrStatic = method.isStatic || asSingleton ? " static" : ""
     var inline = ""
-    if let methodHash = method.hash {
+    if let methodHash = method.optionalHash {
         let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
         assert (!method.isVirtual)
         switch kind {
@@ -291,7 +292,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
         // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls
         
-        if method.hash == nil {
+        if method.optionalHash == nil {
             if let godotReturnType {
                 p (makeDefaultReturn (godotType: godotReturnType))
             }

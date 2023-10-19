@@ -17,7 +17,7 @@ import PackagePlugin
         // We only generate commands for source targets.
         let generator: Path = try context.tool(named: "Generator").path
 
-        let api = context.package.directory.appending(["Sources", "SwiftGodot", "extension_api.json"])
+        let api = context.package.directory.appending(["Sources", "ExtensionApi", "extension_api.json"])
         
         var arguments: [CustomStringConvertible] = [ api, genSourcesDir ]
         var outputFiles: [Path] = []

@@ -18,6 +18,12 @@ var products: [Product] = [
         name: "SwiftGodot",
         type: .dynamic,
         targets: ["SwiftGodot"]),
+    .library(
+        name: "ExtensionApi",
+        targets: [
+            "ExtensionApi",
+            "ExtensionApiJson"
+        ]),
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
 
@@ -31,11 +37,25 @@ products.append(
 #endif
 
 var targets: [Target] = [
+    // This contains GDExtension's JSON API data models
+    .target(
+        name: "ExtensionApi",
+        exclude: ["ExtensionApiJson.swift", "extension_api.json"]),
+    // This contains a resource bundle with extension_api.json
+    .target(
+        name: "ExtensionApiJson",
+        path: "Sources/ExtensionApi",
+        sources: ["ExtensionApiJson.swift"],
+        resources: [.process("extension_api.json")]),
+    
     // The generator takes Godot's JSON-based API description as input and
     // produces Swift API bindings that can be used to call into Godot.
     .executableTarget(
         name: "Generator",
-        dependencies: ["XMLCoder"],
+        dependencies: [
+            "XMLCoder",
+            "ExtensionApi",
+        ],
         path: "Generator",
         exclude: ["README.md"]),
     
@@ -73,7 +93,7 @@ targets.append(contentsOf: [
         exclude: ["SwiftSprite.gdextension", "README.md"]),
         //linkerSettings: linkerSettings),
     // Idea: -mark_dead_strippable_dylib
-    .testTarget(name: "SwiftGodotMacroTests",
+    .testTarget(name: "SwiftGodotMacrosTests",
                 dependencies: [
                     "SwiftGodotMacroLibrary",
                     "SwiftGodot",
@@ -83,16 +103,25 @@ targets.append(contentsOf: [
 swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 #endif
 
-targets.append(
+targets.append(contentsOf: [
     // This is the binding itself, it is made up of our generated code for the
     // Godot API, supporting infrastructure and extensions to the API to provide
     // a better Swift experience
     .target(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
-        exclude: ["extension_api.json"],
         //linkerSettings: linkerSettings,
-        plugins: swiftGodotPlugins))
+        plugins: swiftGodotPlugins),
+    
+    // General purpose tests
+    .testTarget(
+        name: "SwiftGodotTests",
+        dependencies: [
+            "SwiftGodot",
+            "ExtensionApi",
+            "ExtensionApiJson",
+        ])
+])
 
 let package = Package(
     name: "SwiftGodot",
