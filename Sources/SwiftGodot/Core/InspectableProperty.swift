@@ -13,13 +13,13 @@ public struct InspectableProperty<T> {
     public typealias RegisteredPropertyFunction = (T) -> ([Variant]) -> Variant?
 
     /// The host object the property derives from.
-    public var hostObject: T.Type
+    public let hostObject: T.Type
 
     /// The getter function that gets the property.
-    public var getter: RegisteredPropertyFunction
+    public let getter: RegisteredPropertyFunction
 
     /// The setter function that sets the property.
-    public var setter: RegisteredPropertyFunction
+    public let setter: RegisteredPropertyFunction
 
     /// Creates an inspectable property suitable for registration.
     public init(_ hostObject: T.Type,
