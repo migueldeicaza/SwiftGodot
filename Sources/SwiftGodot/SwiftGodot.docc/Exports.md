@@ -60,10 +60,24 @@ Resources and nodes can be exported.
 
 ```
 @Export
-public var resource: Resource { get { } set { } }
+public var resource: Resource { 
+    get { 
+        return myInternalResource
+    } 
+    set { 
+        print ("Setting my resource")
+    } 
+}
 
 @Export
-public var node: Node { get { } set { } }
+public var node: Node { 
+    get { 
+        return myInternalNode
+    } 
+    set { 
+        print ("Setting the node")
+    } 
+}
 ```
 
 ### Customizing the Exported Value
