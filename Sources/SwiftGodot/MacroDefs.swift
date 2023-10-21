@@ -15,7 +15,7 @@
 /// methods to godot
 ///
 @attached(member,
-          names: named (init(nativeHandle:)), named (init()), named(_initClass), arbitrary)
+          names: named (init(nativeHandle:)), named (init()), named(_initClass))
 public macro Godot() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
 
 /// Exposes the function to the Godot runtime
