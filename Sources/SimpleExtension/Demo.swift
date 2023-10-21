@@ -23,7 +23,10 @@ class Rigid: RigidBody2D {
 class SwiftSprite: Sprite2D {
     var time_passed: Double = 0
     var count: Int = 0
-
+    
+    #signal("picked_up_item", arguments: ["kind": String.self, "isGroovy": Bool.self])
+    #signal("scored")
+    
     @Callable
     public func computeGodot (x: String, y: Int) -> Double {
         return 1.0
@@ -55,7 +58,7 @@ class SwiftSprite: Sprite2D {
     @Export var food: String = "none"
 
     static func lerp(from: Float, to: Float, weight: Float) -> Float {
-        return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
+        return Float.unwrap(variant: GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
     }
     
     var x: Rigid?
@@ -69,12 +72,12 @@ class SwiftSprite: Sprite2D {
         let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
-        let dict2: GDictionary? = GDictionary(imageVariant)
+        let dict2: GDictionary? = GDictionary.unwrap(variant: imageVariant)
         GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"] ?? "no type") \(dict2?["value"] ?? "no value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
-            let value = String(result) ?? "No Result"
+            let value = String.unwrap(variant: result) ?? "No Result"
             GD.print("2 Found this value \(value)")
         }
         
@@ -146,7 +149,7 @@ class SwiftSprite2: Sprite2D {
             print ("Method registered taking one argument got none")
             return nil
         }
-        food = String (arg) ?? "The variant passed was not a string"
+        food = String.unwrap (variant: arg) ?? "The variant passed was not a string"
         print ("The favorite food was set to: \(food)")
         return nil
     }
@@ -156,7 +159,7 @@ class SwiftSprite2: Sprite2D {
     }
     
     static func lerp(from: Float, to: Float, weight: Float) -> Float {
-        return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
+        return Float.unwrap(variant: GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
     }
 
 
@@ -166,12 +169,12 @@ class SwiftSprite2: Sprite2D {
         let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
-        let dict2: GDictionary? = GDictionary(imageVariant)
+        let dict2: GDictionary? = GDictionary.unwrap(variant: imageVariant)
         GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"] ?? "no value for type") \(dict2?["value"] ?? "no value for value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
-            let value = String(result)
+            let value = String.unwrap(variant: result)
             GD.print("2 Found this value \(value ?? "no value found")")
         }
         
@@ -205,3 +208,4 @@ public func swift_entry_point(
     initializeSwiftModule(godotGetProcAddr, libraryPtr, extensionPtr, initHook: setupScene, deInitHook: { x in })
     return 1
 }
+

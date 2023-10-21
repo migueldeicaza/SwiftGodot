@@ -126,4 +126,19 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 @attached(accessor)
 public macro SceneTree(path: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
+
+//public struct SignalArgument<Argument: GodotVariant> {
+//    let name: String
+//    public init(_ name: String) {
+//        self.name = name
+//    }
+//}
+//
+//@freestanding(declaration, names: arbitrary)
+//public macro signal<each T>(_ signalName: String, _ types: repeat SignalArgument<each T>) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
+//
+
+@freestanding(declaration, names: arbitrary)
+public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type> = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
+
 #endif
