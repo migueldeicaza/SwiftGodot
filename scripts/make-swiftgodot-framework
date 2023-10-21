@@ -27,7 +27,7 @@ bdMac=$1/Build/Products/Debug/
 bdMacArm="$(echo "$1" | rev | cut -c2- | rev)_arm/Build/Products/Debug/"
 bdiOS=$1/Build/Products/Debug-iphoneos/
 mkdir universal
-cp -rf $bdMac/PackageFrameworks/SwiftGodot.framework universal/
+cp -af $bdMac/PackageFrameworks/SwiftGodot.framework universal/
 if [ $arch = "arm64" ]; then
    lipo -create -output ./universal/SwiftGodot.framework/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/SwiftGodot
       lipo -create -output ./universal/SwiftGodot.framework/Versions/A/SwiftGodot $bdMac/PackageFrameworks/SwiftGodot.framework/Versions/A/SwiftGodot $bdMacArm/PackageFrameworks/SwiftGodot.framework/Versions/A/SwiftGodot

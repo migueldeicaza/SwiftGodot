@@ -231,8 +231,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 if isStructMap [arg.type] ?? false {
                     optstorage = ""
                 } else {
-                    if builtinSizes [arg.type] != nil && arg.type != "Object" || arg.type.starts(with: "typedarray::"){
+                    if builtinSizes [arg.type] != nil && arg.type != "Object" {
                         optstorage = ".content"
+                    } else if arg.type.starts(with: "typedarray::") {
+                        optstorage = ".array.content"
                     } else {
                         // The next two are unused, because we set isRefParameter,
                         // but for documentation/clarity purposes
