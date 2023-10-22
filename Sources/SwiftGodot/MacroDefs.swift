@@ -60,7 +60,7 @@ public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #e
 /// - Parameter types: The node types that should be registered with Godot.
 @freestanding(declaration, names: named(enterExtension), named(setupExtension))
 public macro initSwiftExtension(cdecl: String,
-                                types: [Wrapped.Type]) = #externalMacro(module: "SwiftGodotMacroLibrary",
+                                types: [Wrapped.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")
 
 /// A macro that instantiates a `Texture2D` from a specified resource path. If the texture cannot be created, a
