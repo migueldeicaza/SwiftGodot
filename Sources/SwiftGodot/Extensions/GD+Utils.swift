@@ -84,6 +84,6 @@ extension GD {
     public static func printErr(_ items: Any..., separator: String = " ") {
         let transformedItems = items.map(String.init(describing:))
         let finalMessage = transformedItems.joined(separator: separator)
-        GD.printErr(GString(stringLiteral: finalMessage).toVariant())
+        GD.printerr(arg1: GString(stringLiteral: finalMessage).toVariant())
     }
 }
