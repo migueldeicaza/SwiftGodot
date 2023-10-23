@@ -19,9 +19,13 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         guard let cDecl = node.argumentList.first?.expression else {
             fatalError("compiler bug: the macro does not have any arguments")
         }
-        guard let types = node.argumentList.last?.expression else {
-            fatalError("compiler bug: the macro does not have any arguments")
-        }
+		
+		let types: ExprSyntax
+		if node.argumentList.count >= 2 {
+			types = node.argumentList.last!.expression
+		} else {
+			types = "[]"
+		}
 
         let initModule: DeclSyntax = """
         @_cdecl(\(raw: cDecl.description)) public func enterExtension(interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
@@ -37,7 +41,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
 
         let setupModule: DeclSyntax = """
         func setupExtension(level: GDExtension.InitializationLevel) {
-            let types = \(types)
+            let types: [Wrapped.Type] = \(types)
             switch level {
             case .scene:
                 types.forEach(register)
