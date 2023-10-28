@@ -22,6 +22,8 @@ extension Callable: ContentTypeStoring {}
 extension Signal: ContentTypeStoring {}
 extension GDictionary: ContentTypeStoring {}
 extension GArray: ContentTypeStoring {}
+extension GString: ContentTypeStoring {}
+extension Nil: ContentTypeStoring {}
 extension PackedByteArray: ContentTypeStoring {}
 extension PackedInt32Array: ContentTypeStoring {}
 extension PackedInt64Array: ContentTypeStoring {}
