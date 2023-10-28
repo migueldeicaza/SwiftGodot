@@ -35,8 +35,8 @@ class SwiftSprite: Sprite2D {
     }
     
     @Callable
-    public func computerSimple (_ x: Int, _ y: Int) -> Float {
-        return Float (x + y)
+    public func computerSimple (_ x: Int, _ y: Int) -> Double {
+        return Double (x + y)
     }
     
     @Callable 
@@ -152,7 +152,7 @@ class SwiftSprite2: Sprite2D {
     }
     
     func demoGetFavoriteFood (args: [Variant]) -> Variant? {
-        return Variant(stringLiteral: food)
+        return Variant(food)
     }
     
     static func lerp(from: Float, to: Float, weight: Float) -> Float {
@@ -171,7 +171,6 @@ class SwiftSprite2: Sprite2D {
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
-            let value = String(result)
             GD.print("2 Found this value \(value ?? "no value found")")
         }
         

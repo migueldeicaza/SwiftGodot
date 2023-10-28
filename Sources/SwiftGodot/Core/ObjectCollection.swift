@@ -13,7 +13,7 @@ public protocol GodotObject {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class ObjectCollection<T:Object>: Collection {
+public class ObjectCollection<Element: Object>: Collection {
     var array: GArray
     
     init (content: Int64) {
@@ -44,7 +44,7 @@ public class ObjectCollection<T:Object>: Collection {
     }
     
     /// Converts a Variant to the strongly typed value T
-    func toStrong (_ v: Variant) -> T {
+    func toStrong (_ v: Variant) -> Element {
         var handle = UnsafeMutableRawPointer(bitPattern: 0)
         v.toType(.object, dest: &handle)
         return lookupObject(nativeHandle: handle!)
@@ -52,7 +52,7 @@ public class ObjectCollection<T:Object>: Collection {
     
     // If I make this optional, I am told I need to implement an internal _read method
     /// Accesses the element at the specified position.
-    public subscript (index: Index) -> T {
+    public subscript (index: Index) -> Element {
         get {
             toStrong (array [index])
         }
@@ -63,7 +63,6 @@ public class ObjectCollection<T:Object>: Collection {
     
     // Required nested types, that tell Swift what our collection contains
     public typealias Index = Int
-    public typealias Element = T
     
     /// The position of the first element in a nonempty collection.
     public var startIndex: Index { 0 }
@@ -99,7 +98,7 @@ public class ObjectCollection<T:Object>: Collection {
     }
     
     /// Appends an element at the end of the array. See also ``pushFront(value:)``.
-    public final func pushBack (value: T) {
+    public final func pushBack (value: Element) {
         array.pushBack(value: Variant (value))
     }
     
@@ -107,12 +106,12 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: On large arrays, this method is much slower than ``pushBack(value:)`` as it will reindex all the array's elements every time it's called. The larger the array, the slower ``pushFront(value:)`` will be.
     ///
-    public final func pushFront (value: T) {
+    public final func pushFront (value: Element) {
         array.pushFront (value: Variant (value))
     }
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
-    public final func append (value: T) {
+    public final func append (value: Element) {
         array.append (value: Variant (value))
     }
     
@@ -130,7 +129,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
     ///
-    public final func insert (position: Int64, value: T)-> Int64 {
+    public final func insert (position: Int64, value: Element)-> Int64 {
         array.insert (position: position, value: Variant (value))
     }
     
@@ -154,7 +153,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: Do not erase entries while iterating over the array.
     ///
-    public final func erase (value: T) {
+    public final func erase (value: Element) {
         array.erase (value: Variant (value))
     }
     
@@ -162,7 +161,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: Calling this function is not the same as writing `array[0]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func front ()-> T {
+    public final func front ()-> Element {
         toStrong (array.front ())
     }
     
@@ -170,29 +169,29 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: Calling this function is not the same as writing `array[-1]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func back ()-> T {
+    public final func back ()-> Element {
         toStrong (array.back ())
     }
     
     /// Returns a random value from the target array. Prints an error and returns `null` if the array is empty.
     ///
-    public final func pickRandom ()-> T {
+    public final func pickRandom ()-> Element {
         toStrong (array.pickRandom())
     }
 
     
     /// Searches the array for a value and returns its index or `-1` if not found. Optionally, the initial search index can be passed.
-    public final func find (what: T, from: Int64 = 0)-> Int64 {
+    public final func find (what: Element, from: Int64 = 0)-> Int64 {
         array.find (what: Variant (what), from: from)
     }
     
     /// Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
-    public final func rfind (what: T, from: Int64 = -1)-> Int64 {
+    public final func rfind (what: Element, from: Int64 = -1)-> Int64 {
         array.rfind (what: Variant (what), from: from)
     }
     
     /// Returns the number of times an element is in the array.
-    public final func count (value: T)-> Int64 {
+    public final func count (value: Element)-> Int64 {
         array.count (value: Variant (value))
     }
     
@@ -200,12 +199,12 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: This is equivalent to using the `in` operator as follows:
     ///
-    public final func has (value: T)-> Bool {
+    public final func has (value: Element)-> Bool {
         array.has (value: Variant (value))
     }
     
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
-    public final func popBack ()-> T {
+    public final func popBack ()-> Element {
         toStrong (array.popBack())
     }
     
@@ -213,7 +212,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: On large arrays, this method is much slower than ``popBack()`` as it will reindex all the array's elements every time it's called. The larger the array, the slower ``popFront()`` will be.
     ///
-    public final func popFront ()-> T {
+    public final func popFront ()-> Element {
         toStrong (array.popFront())
     }
     
@@ -221,7 +220,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     ///
-    public final func popAt (position: Int64)-> T {
+    public final func popAt (position: Int64)-> Element {
         toStrong (array.popAt (position: position))
     }
     
@@ -256,7 +255,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: Calling ``bsearch(value:before:)`` on an unsorted array results in unexpected behavior.
     ///
-    public final func bsearch (value: T, before: Bool = true)-> Int64 {
+    public final func bsearch (value: Element, before: Bool = true)-> Int64 {
         array.bsearch(value: Variant (value), before: before)
     }
     
@@ -264,7 +263,7 @@ public class ObjectCollection<T:Object>: Collection {
     ///
     /// > Note: Calling ``bsearchCustom(value:`func`:before:)`` on an unsorted array results in unexpected behavior.
     ///
-    public final func bsearchCustom (value: T, `func`: Callable, before: Bool = true)-> Int64 {
+    public final func bsearchCustom (value: Element, `func`: Callable, before: Bool = true)-> Int64 {
         array.bsearchCustom(value: Variant(value), func: `func`, before: before)
     }
     

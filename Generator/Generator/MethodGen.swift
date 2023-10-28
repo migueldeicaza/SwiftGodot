@@ -186,7 +186,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             var reference = escapeSwift (snakeToCamel (arg.name))
 
             if method.isVararg {
-                argSetup += "let copy_\(arg.name) = Variant (\(reference))\n"
+                if isRefOptional {
+                    argSetup += "let copy_\(arg.name) = \(reference) == nil ? Variant() : Variant (\(reference)!)\n"
+                } else {
+                    argSetup += "let copy_\(arg.name) = Variant (\(reference))\n"
+                }
             } else if arg.type == "String" {
                 argSetup += "let gstr_\(arg.name) = GString (\(reference))\n"
             } else if argTypeNeedsCopy(godotType: arg.type) {
