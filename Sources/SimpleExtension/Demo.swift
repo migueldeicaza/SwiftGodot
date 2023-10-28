@@ -54,8 +54,8 @@ class SwiftSprite: Sprite2D {
     @Export var demo: String = "demo"
     @Export var food: String = "none"
 
-    static func lerp(from: Float, to: Float, weight: Float) -> Float {
-        return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
+    static func lerp(from: Double, to: Double, weight: Double) -> Double {
+        return Double(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
     }
     
     var x: Rigid?
@@ -70,7 +70,7 @@ class SwiftSprite: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"] ?? "no type") \(dict2?["value"] ?? "no value")")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
@@ -155,8 +155,8 @@ class SwiftSprite2: Sprite2D {
         return Variant(food)
     }
     
-    static func lerp(from: Float, to: Float, weight: Float) -> Float {
-        return Float(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
+    static func lerp(from: Double, to: Double, weight: Double) -> Double {
+        return Double(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
     }
 
 
@@ -167,10 +167,11 @@ class SwiftSprite2: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"] ?? "no value for type") \(dict2?["value"] ?? "no value for value")")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no value for type") \(dict2?["value"]?.description ?? "no value for value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
+            let value = String(result)
             GD.print("2 Found this value \(value ?? "no value found")")
         }
         
