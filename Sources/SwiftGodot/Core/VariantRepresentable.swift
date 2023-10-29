@@ -5,16 +5,21 @@
 //  Created by Padraig O Cinneide on 2023-10-22.
 //
 
-/// Types that Variant can hold directly 1:1 with no conversion
-/// Don't conform types that aren't directly representable — instead
-/// use VariantConvertible to map to and from VariantRepresentable types.
-public protocol VariantRepresentable {
-    /// The godot storage type
-    static var godotType: Variant.GType { get }
-    
+/// Something that can be wrapped in a Variant, either directly through `VariantRepresentable`
+/// or by converting to a `VariantRepresentable` using `VariantConvertible`
+public protocol VariantStorable {
     /// Creates an instance using a variant
     init?(_ variant: Variant)
     
+    /// The godot storage type
+    static var godotType: Variant.GType { get }
+}
+
+
+/// Types that Variant can hold directly 1:1 with no conversion
+/// Don't conform types that aren't directly representable — instead
+/// use VariantConvertible to map to and from VariantRepresentable types.
+public protocol VariantRepresentable: VariantStorable {
     /// Initializes a new instance
     init()
 }

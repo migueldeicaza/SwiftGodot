@@ -10,18 +10,20 @@
 /// Types that can be converted into types that can be wrapped in a Variant
 /// Example: A string can't be stored in a variant, but a GString can, so String can be
 /// VariantConvertible into a GString, which can be VariantRepresentable
-public protocol VariantConvertible {
+public protocol VariantConvertible: VariantStorable {
+    static var representableType: VariantRepresentable.Type { get }
     func toVariantRepresentable() -> VariantRepresentable
-    init?(_ variant: Variant)
 }
 
-extension Variant {
-    public convenience init(_ value: some VariantConvertible) {
-        self.init(value.toVariantRepresentable())
+extension VariantConvertible {
+    public static var godotType: Variant.GType {
+        representableType.godotType
     }
 }
 
 extension String: VariantConvertible {
+    public static var representableType: VariantRepresentable.Type { GString.self }
+    
     public func toVariantRepresentable() -> VariantRepresentable {
         GString(stringLiteral: self)
     }
@@ -33,6 +35,8 @@ extension String: VariantConvertible {
 }
 
 extension Bool: VariantConvertible {
+    public static var representableType: VariantRepresentable.Type { GDExtensionBool.self }
+    
     public func toVariantRepresentable() -> VariantRepresentable {
         GDExtensionBool(self ? 1 : 0)
     }

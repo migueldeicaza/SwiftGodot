@@ -115,6 +115,16 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         }
     }
     
+    public convenience init(_ value: some VariantStorable) {
+        if let convertible = type(of: value).self as? VariantConvertible {
+            self.init(convertible.toVariantRepresentable())
+        } else if let representable = type(of: value).self as? VariantRepresentable {
+            self.init(representable)
+        } else {
+            fatalError("Unreachable — all VariantStorable conform to either VariantConvertible or VariantRepresentable")
+        }
+    }
+    
     public init (_ value: some VariantRepresentable) {
         let godotType = type(of: value).godotType
         
