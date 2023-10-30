@@ -37,8 +37,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
         if classMap [nestedTypeName] != nil {
             return "ObjectCollection<\(getGodotType (simple))>(\(initCollection))"
         } else {
-            let type = getGodotType (simple)
-            return "VariantCollection<\(type == "String" ? "GString" : type)>(\(initCollection))"
+            return "VariantCollection<\(getGodotType (simple))>(\(initCollection))"
         }
     case "enum::Error":
         return ".ok"

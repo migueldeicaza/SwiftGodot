@@ -17,9 +17,7 @@ public protocol VariantRepresentable: VariantStorable {
 }
 
 extension VariantRepresentable {
-    public func toVariantRepresentable() -> Self {
-        self
-    }
+    public func toVariantRepresentable() -> Self { self }
 }
 
 /// Default Initializers

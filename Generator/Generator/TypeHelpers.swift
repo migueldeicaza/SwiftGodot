@@ -335,8 +335,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             if classMap [nestedTypeName] != nil {
                 return "ObjectCollection<\(getGodotType (nested))>"
             } else {
-                let type = getGodotType (nested)
-                return "VariantCollection<\(type == "String" ? "GString" : type)>"
+                return "VariantCollection<\(getGodotType (nested))>"
             }
         }
         if t.type.starts (with: "bitfield::") {

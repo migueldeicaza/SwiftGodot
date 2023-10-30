@@ -8,7 +8,7 @@
 @_implementationOnly import GDExtension
 
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<Element: VariantRepresentable>: Collection {
+public class VariantCollection<Element: VariantStorable>: Collection {
     var array: GArray
     
     init (content: Int64) {
@@ -152,7 +152,7 @@ public class VariantCollection<Element: VariantRepresentable>: Collection {
     ///
     /// > Note: Calling this function is not the same as writing `array[0]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func front ()-> some VariantRepresentable {
+    public final func front ()-> Element {
         toStrong (array.front ())
     }
     
