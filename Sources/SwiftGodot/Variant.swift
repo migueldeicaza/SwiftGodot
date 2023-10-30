@@ -102,7 +102,18 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             }
         }
     }
-    public init<T: VariantRepresentable>(_ value: T) where T: ContentTypeStoring {
+    
+    convenience public init(_ value: some VariantStorable) {
+        self.init(representable: value.toVariantRepresentable())
+    }
+    
+    convenience public init<T: VariantStorable>(
+        _ value: T
+    ) where T.Representable: ContentTypeStoring & VariantRepresentable {
+        self.init(representable: value.toVariantRepresentable())
+    }
+    
+    private init<T: VariantRepresentable>(representable value: T) where T: ContentTypeStoring {
         let godotType = T.godotType
         
         var mutableValue: T.ContentType
@@ -115,18 +126,8 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         }
     }
     
-    public convenience init(_ value: some VariantStorable) {
-        if let convertible = type(of: value).self as? VariantConvertible {
-            self.init(convertible.toVariantRepresentable())
-        } else if let representable = type(of: value).self as? VariantRepresentable {
-            self.init(representable)
-        } else {
-            fatalError("Unreachable — all VariantStorable conform to either VariantConvertible or VariantRepresentable")
-        }
-    }
-    
-    public init (_ value: some VariantRepresentable) {
-        let godotType = type(of: value).godotType
+    private init<T: VariantRepresentable>(representable value: T) {
+        let godotType = T.godotType
         
         var mutableValue: Any
         
@@ -142,7 +143,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             }
         }
     }
-
+    
     public var gtype: GType {
         var copy = content
         return GType (rawValue: Int (gi.variant_get_type (&copy).rawValue)) ?? .nil
