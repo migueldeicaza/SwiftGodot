@@ -59,3 +59,123 @@ extension Vector3: IntScalable & DoubleScalable {}
 extension Vector4: IntScalable & DoubleScalable {}
 extension Quaternion: IntScalable & DoubleScalable {}
 extension Color: IntScalable & DoubleScalable {}
+
+public extension Vector2i {
+    static func += (left: inout Self, right: Self) {
+        left = left + right
+    }
+
+    static func -= (left: inout Self, right: Self) {
+        left = left - right
+    }
+
+    static func *= (left: inout Self, right: Self) {
+        left = left * right
+    }
+
+    static func /= (left: inout Self, right: Self) {
+        left = left / right
+    }
+
+    static func %= (left: inout Self, right: Self) {
+        left = left % right
+    }
+}
+
+public extension Vector2 {
+    static func += (left: inout Self, right: Self) {
+        left = left + right
+    }
+
+    static func -= (left: inout Self, right: Self) {
+        left = left - right
+    }
+
+    static func *= (left: inout Self, right: Self) {
+        left = left * right
+    }
+
+    static func /= (left: inout Self, right: Self) {
+        left = left / right
+    }
+}
+
+public extension Vector3i {
+    static func += (left: inout Self, right: Self) {
+        left = left + right
+    }
+
+    static func -= (left: inout Self, right: Self) {
+        left = left - right
+    }
+
+    static func *= (left: inout Self, right: Self) {
+        left = left * right
+    }
+
+    static func /= (left: inout Self, right: Self) {
+        left = left / right
+    }
+
+    static func %= (left: inout Self, right: Self) {
+        left = left % right
+    }
+}
+
+public extension Vector3 {
+    static func += (left: inout Self, right: Self) {
+        left = left + right
+    }
+
+    static func -= (left: inout Self, right: Self) {
+        left = left - right
+    }
+
+    static func *= (left: inout Self, right: Self) {
+        left = left * right
+    }
+
+    static func /= (left: inout Self, right: Self) {
+        left = left / right
+    }
+}
+
+public extension Vector4i {
+    static func += (left: inout Self, right: Self) {
+        left = left + right
+    }
+
+    static func -= (left: inout Self, right: Self) {
+        left = left - right
+    }
+
+    static func *= (left: inout Self, right: Self) {
+        left = left * right
+    }
+
+    static func /= (left: inout Self, right: Self) {
+        left = left / right
+    }
+
+    static func %= (left: inout Self, right: Self) {
+        left = left % right
+    }
+}
+
+public extension Vector4 {
+    static func += (left: inout Self, right: Self) {
+        left = left + right
+    }
+
+    static func -= (left: inout Self, right: Self) {
+        left = left - right
+    }
+
+    static func *= (left: inout Self, right: Self) {
+        left = left * right
+    }
+
+    static func /= (left: inout Self, right: Self) {
+        left = left / right
+    }
+}
