@@ -120,7 +120,16 @@ targets.append(contentsOf: [
             "SwiftGodot",
             "ExtensionApi",
             "ExtensionApiJson",
-        ])
+            "libgodot",
+            "GDExtension"
+        ]
+    ),
+    
+    .binaryTarget(
+        name: "libgodot",
+        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v1.0.1/libgodot.xcframework.zip",
+        checksum: "bb6ec0946311a71f1eba7ad393c0adf7b8f34a2389d8234ff500b2764b0c6ba5"
+    ),
 ])
 
 let package = Package(
@@ -131,7 +140,6 @@ let package = Package(
     ],
     products: products,
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/CoreOffice/XMLCoder", from: "0.15.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
