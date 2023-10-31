@@ -7,8 +7,15 @@
 
 @_implementationOnly import GDExtension
  
-/// Something that can be wrapped in a Variant, either directly through `VariantRepresentable`
-/// or by converting to a `VariantRepresentable`. 
+
+/// Types that conform to VariantStorable can be stored in a Variant and can be extracted
+/// back out of a Variant.
+///
+/// As a convenience, SwiftGodot provides conformances for some native Swift types like
+/// String, Bool, Int, Float below, but you can also add your own conformances.
+///
+/// Every VariantStorable must be able to convert to an underlying `VariantRepresentable`
+/// type which is one that can be stored natively in a `Variant`.
 public protocol VariantStorable {
     associatedtype Representable: VariantRepresentable
     
@@ -48,5 +55,16 @@ extension Int: VariantStorable {
     public init?(_ variant: Variant) {
         guard let int = GDExtensionInt(variant) else { return nil }
         self = Int(int)
+    }
+}
+
+extension Float: VariantStorable {
+    public func toVariantRepresentable() -> Double {
+        Double(self)
+    }
+    
+    public init?(_ variant: Variant) {
+        guard let value = Double(variant) else { return nil }
+        self = Float(value)
     }
 }

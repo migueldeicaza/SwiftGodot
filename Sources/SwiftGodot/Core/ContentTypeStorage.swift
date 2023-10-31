@@ -7,6 +7,10 @@
 
 import Foundation
 
+/// Some of Godot's build-in classes use ContentType for storage.
+/// This needs to be public because it affects their initialization, but
+/// SwiftGodot users should never need to conform their types
+/// to`ContentTypeStoring`.
 public protocol ContentTypeStoring: AnyObject {
     associatedtype ContentType
     var content: ContentType { get }

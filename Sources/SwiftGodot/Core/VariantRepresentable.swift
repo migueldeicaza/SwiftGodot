@@ -5,9 +5,13 @@
 //  Created by Padraig O Cinneide on 2023-10-22.
 //
 
-/// Types that Variant can hold directly 1:1 with no conversion
-/// Don't conform types that aren't directly representable — instead
-/// use VariantStorable to map to and from VariantRepresentable types.
+
+/// Types that conform to VariantRepresentable can be stored directly in `Variant`
+/// with no conversion. For example: `GString`, `Rect`, `Plane`. They each map to
+/// a specific Variant.GType value.
+///
+/// If you want to make an additional type work with Variants that does not have a direct
+/// GType, you should instead conform that type to `VariantStorable`.
 public protocol VariantRepresentable: VariantStorable {
     /// The raw godot storage type
     static var godotType: Variant.GType { get }
