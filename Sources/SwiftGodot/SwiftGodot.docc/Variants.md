@@ -10,12 +10,14 @@ Godot's way of passing around certain data types.  They are similar to Swift's
 that derive from ``GodotObject``). 
 
 ## Creating Variant values
-You can create Variants from the following structures and types:
+You can create Variants from types that conform to the VariantStorable protocol. 
+This includes the following types:
 
-* Swift's Bool, Int, Int64, Strings and Floats
-* Godot's GString, Vector, Rect, Transform, Plane, Quaternion, AABB, Basis,
-  Projection, NodePaths, RIDs, Callable, GDictionary, Array and PackedArrays. 
-* Godot's objects
+* Godot's native types: GString, Vector, Rect, Transform, Plane, Quaternion, AABB, 
+  Basis, Projection, Int64, NodePaths, RIDs, Callable, GDictionary, Array and PackedArrays. 
+* Swift types that SwiftGodot adds convenience conformances for: Bool, Int, String and Float
+* Godot's objects: e.g. Node, Area2D
+* Other types that you can manually conform to VariantStorable.
 
 You wrap your data type by calling one of the ``Variant`` constructors, and then
 you can pass this variant to Godot functions that expect a ``Variant``.
@@ -36,7 +38,8 @@ print (trueVariant.description)
 ## Extracting values from Variants
 
 If you know the kind of return that a variant will return, you can invoke the
-failing initializer for that specific type for most structures.
+failing initializer for that specific type for most structures. Every VariantStorable
+will have an `init(_ variant: Variant)` implementation.
 
 For example, this is how you could get a Vector2 from a variant:
 
@@ -50,25 +53,24 @@ func distance (variant: Variant) -> Float? {
 ```
 
 Notice that this might return `nil`, which would be the case if the variant
-contains a different type than the one you were expecting.   You can check the
+contains a different type than the one you were expecting. You can check the
 type of the variant by accessing the `.gtype` property of the variant.
 
 ## Extracting Godot-derived objects from Variants
 
-Godot-derived objects are slightly different.   If you know you have a
+Godot-derived objects are slightly different. If you know you have a
 ``GodotObject`` stored in the variant, you can call the ``Variant/asObject()``
 instead.  This is a generic method, so you would invoke it like this:
 
 ```swift
-
 func getNode (variant: Variant) -> Node? {
     guard let node = variant.asObject<Node> ()) else {
-	return nil
+	  return nil
     }
     return node
 }
 ```
 
 The reason to have a method rather than a constructor is that this method will
-make sure that only one instance of your objects is surfaced to Swift.
+make sure that only one instance of your objects is surfaced to Swift. 
 
