@@ -42,6 +42,7 @@ class GodotMacroProcessor {
         return name
     }
     
+    
     func classInitSignals(_ declSyntax: MacroExpansionDeclSyntax) throws {
         guard declSyntax.macroName.tokenKind == .identifier("signal") else {
             return
