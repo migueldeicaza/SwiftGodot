@@ -72,7 +72,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
     
     /// Creates a nil variant
-    convenience init (_ value: Nil) {
+    public convenience init (_ value: Nil) {
         self.init()
     }
     
