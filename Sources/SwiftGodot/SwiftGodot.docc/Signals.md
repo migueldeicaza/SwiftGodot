@@ -102,10 +102,6 @@ Godot Scripting language.
 Signals belong to your class, so you need to declare those once per class,
 and then every instance of your class can emit them.
 
-This process is currently a little bit more elaborate than consuming them,
-but I am hoping that with the upcoming reflection support in Swift, or
-with Swift Macros, I can simplify this process.
-
 Signals can have zero or more parameters, and you will need to declare
 the parameters that your signal consumes, any potential return values (these
 are quite unusual, but the API supports it), and the name of your signal.
@@ -116,96 +112,88 @@ The following example shows how to declare a a signal named `burp` that
 is emitted by your code:
 
 ```
+@Godot
 class Demo: Node3D {
-    static burpSignalName = StringName ("burp")
-
-    // This idiom is the equivalent of a class constructor for Swift
-    static var initClass: Void = {
-        let classInfo = ClassInfo<Demo> (name: "Demo")
-
-        classInfo.registerSignal (burpSignal)
-    }()
-
-    // Constructor showing how to initialize the class and declare the signal
-    required init () {
-        super.init ()
-        let _ = Demo.initClass
-    }
+    #signal("burp")
 
     // Convenience method to emit the signal
     public func emitBurp () {
-        let result = emitSignal (signal: burpSignalName)
+        emit(Demo.burp)
     }
 }
 ```
 
-We start by declaring the ``StringName`` for the signal that we are
-declaring, in this case `burp`.  Since signals are registered for classes,
-we use an idiom to initialize the class once.   This will use ``ClassInfo`` 
-to declare our signal, and we register it there.   Since this is a signal
-that takes no arguments, merely calling ``ClassInfo/registerSignal(name:arguments:)`` is enough.
+The free-standing macro `#signal` declares a signal named burp.   This macro
+will turn signals using the snake-case naming convention into camel-case
+names accessible in Swift.
 
-The method `emitBurp` shows what you need to do to emit the signal from
-your code.
-
-The `result` variable contains a status code that you can inspect.  If there
-is a mistake in your declaration, or how you emitted the signal, the
-result will describe the reason.
+So for example if you were to declare a signal called 'lives_changed' it
+would be exposed to Godot as 'lives_changed', and to your Swift code as
+'livesChanged'.
 
 ### Signals with parameters
 
-Signals that include parameters require a little bit more of work, both
-to declare them and to emit them.
+Signals can carry additional information when they are emitted, and
+you can pass any type that can be encoded as a Godot Variant to them
+(this includes Swift core types like integers, doubles, strings, but
+also Godot objects and the Godot core types;   See the documentation
+for ``Variant`` for more information).
 
-Signals can only carry parameters that can be represented by the Godot
-``Variant`` type.   While it can not represent all possible Swift objects,
-it can pass all the Godot objects and some core types like integers, floats
-and strings around.
+To use signals with parameters, you need to declare the parameter
+types using the `arguments:` parameter, specifying the Swift type
+of each parameter.
 
-To register a signal with parameters, you create an array of ``PropInfo``
-elements, one for each parameters of your function.   This information
-contains information that is not only used at runtime, but can be shown
-to the user in the Godot editor.
 
-The following example shows how to register a signal that passes a 
-string argument:
+In the following example we create a signal exposed to godot called
+`lives_changed` that takes an integer value, and it is surfaced to Swift as 
+the signal 'livesChanged'.
 
-```
-static let printerSignal = StringName ("printer")
+The example below also shows how to emit the signal with the additional
+integer payload:
 
-// This idiom is the equivalent of a class constructor for Swift
-static var initClass: Bool = {
-    let classInfo = ClassInfo<Demo> (name: "Demo")
+```swift
+@Godot 
+class Player: Node2D {
+    #signal("lives_changed", argument: ["new_lives_count": Int.self])
 
-    let printArgs = [
-        PropInfo(
-            propertyType: .string,
-            propertyName: StringName ("text"),
-            className: "Demo",
-            hint: .flags,
-            hintStr: "Text",
-            usage: .default)
-    ]
-    classInfo.registerSignal (name: Demo.printerSignal, arguments: printArgs)
-    return true
+    func startGame() {
+       emit(Player.livesChanged, 5)
+    }
 }
 ```
 
-See the documentation for ``PropInfo`` for more information on the
-meaning of the parameters.
+## Connecting Everything Together
 
-Emitting this signal is also a little bit different.   Unlike our previous
-example, it is necessary to wrap every argument into a ``Variant`` instance.
+This example shows how you can create a signal and connect to it:
 
-This is how we would emit that:
+```swift
+@Godot 
+class Player: Node2D {
+    #signal("game_started")
+    #signal("lives_changed", argument: ["new_lives_count": Int.self])
 
-```
-func emitPrint (text: String) {
-    let result = emitSignal(signal: SpinningCube.printerSignal, Variant (text))
+    func startGame() {
+       emit(Player.gameStarted)
+       emit(Player.livesChanged, 5)
+    }
+}
+
+class Level: Area2D {
+    func _ready() { 
+       player.connect(Player.gameStarted, to: self, method: "game_started")
+    }
+    @Callable func game_started() { 
+       GD.print("got game started signal!")
+    }
 }
 ```
 
-## Using the low-level Signal framework
+## Low-Level Signal API
+
+This section is here for explanation purposes, but you should not need
+to use this in your Godot code with Swift.
+
+### Using the low-level Signal framework
 
 While SwiftGodot provides a convenient way of connecting to objects,
 if you need to connect to objects that are not included in the binding
@@ -244,4 +232,3 @@ func setup () {
         function: Demo.mySwiftCallback)
 }
 ```
-
