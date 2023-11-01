@@ -198,3 +198,7 @@ extension PackedColorArray: VariantRepresentable {
 extension Object: VariantRepresentable {
     public static var godotType: Variant.GType { .object }
 }
+
+extension Nil: VariantRepresentable {
+    public static var godotType: Variant.GType { .nil }
+}
