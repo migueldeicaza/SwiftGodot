@@ -7,8 +7,11 @@
 
 
 /// Types that conform to VariantRepresentable can be stored directly in `Variant`
-/// with no conversion. For example: `GString`, `Rect`, `Plane`. They each map to
-/// a specific Variant.GType value.
+/// with no conversion.  These include all of the Variant types from Godot (for
+/// example `GString`, `Rect`, `Plane`), Godot objects (those that subclass
+/// SwiftGodot.Object) as well as the built-in Swift types UInt8, Int64 and Double.
+/// 
+/// They each map to a specific Variant.GType value.
 ///
 /// If you want to make an additional type work with Variants that does not have a direct
 /// GType, you should instead conform that type to `VariantStorable`.
