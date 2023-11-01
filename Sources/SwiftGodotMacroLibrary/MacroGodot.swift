@@ -41,7 +41,27 @@ class GodotMacroProcessor {
         propertyDeclarations [key] = name
         return name
     }
-
+    
+    
+    func classInitSignals(_ declSyntax: MacroExpansionDeclSyntax) throws {
+        guard declSyntax.macroName.tokenKind == .identifier("signal") else {
+            return
+        }
+        
+        guard let firstArg = declSyntax.arguments.first else {
+            return
+        }
+        
+        guard let signalName = firstArg.expression.signalName() else {
+            return
+        }
+        
+        ctor.append("classInfo.registerSignal(")
+        ctor.append("name: \(className).\(signalName.swiftName).name,")
+        ctor.append("arguments: \(className).\(signalName.swiftName).arguments")
+        ctor.append(")")
+    }
+    
     // Processes a function
     func processFunction (_ funcDecl: FunctionDeclSyntax) throws {
         guard hasCallableAttribute(funcDecl.attributes) else {
@@ -169,11 +189,13 @@ class GodotMacroProcessor {
     """
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
-            if let funcDecl = decl.as(FunctionDeclSyntax.self) {
+            // MacroExpansionDeclSyntax
+            if let funcDecl = FunctionDeclSyntax(decl) {
                 try processFunction (funcDecl)
-            }
-            else if let varDecl = decl.as (VariableDeclSyntax.self) {
+            } else if let varDecl = VariableDeclSyntax(decl) {
                 try processVariable (varDecl)
+            } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
+                try classInitSignals(macroDecl)
             }
         }
         ctor.append("} ()")
@@ -233,6 +255,7 @@ struct godotMacrosPlugin: CompilerPlugin {
         NativeHandleDiscardingMacro.self,
         PickerNameProviderMacro.self,
         SceneTreeMacro.self,
-        Texture2DLiteralMacro.self
+        Texture2DLiteralMacro.self,
+        SignalMacro.self
     ]
 }

@@ -32,6 +32,11 @@ extension VariantRepresentable {
     public init?(_ variant: Variant) {
         guard Self.godotType == variant.gtype else { return nil }
         
+        guard variant.gtype != .object else {
+            GD.print("Attempted to initialize a new `\(Self.self)` with \(variant.description) but it is not possible to initialize a GodotObject in a Swift initializer. Instead, use `\(Self.self).makeOrUnwrap(variant)`.")
+            return nil
+        }
+        
         self.init()
         
         withUnsafeMutablePointer(to: &self) { ptr in

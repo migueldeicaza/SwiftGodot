@@ -25,6 +25,22 @@ public protocol VariantStorable {
     func toVariantRepresentable() -> Representable
 }
 
+extension VariantStorable {
+    /// Unwraps an object from a variant. This is useful when you want one method to call that
+    /// will return the unwrapped Variant, regardless of whether it is a GodotObject or not.
+    public static func makeOrUnwrap(_ variant: Variant) -> Self? {
+        guard variant.gtype != .object else {
+            return nil
+        }
+        return Self(variant)
+    }
+
+    /// Unwraps an object from a variant.
+    public static func makeOrUnwrap(_ variant: Variant) -> Self? where Self: GodotObject {
+        return variant.asObject()
+    }
+}
+
 extension String: VariantStorable {
     public func toVariantRepresentable() -> GString {
         GString(stringLiteral: self)
