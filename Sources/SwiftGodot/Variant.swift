@@ -71,11 +71,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         //gi.variant_destroy (&content)
     }
     
-    /// Creates a nil variant
-    convenience init (_ value: Nil) {
-        self.init()
-    }
-    
     public init () {
         withUnsafeMutablePointer(to: &content) { ptr in
             gi.variant_new_nil (ptr)
