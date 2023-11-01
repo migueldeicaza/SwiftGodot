@@ -18,7 +18,8 @@ final class MacroGodotTests: XCTestCase {
     let testMacros: [String: Macro.Type] = [
         "Godot": GodotMacro.self,
 		"Callable": GodotCallable.self,
-		"Export": GodotExport.self
+		"Export": GodotExport.self,
+        "signal": SignalMacro.self
     ]
     
     func testGodotMacro() {
@@ -82,6 +83,47 @@ final class MacroGodotTests: XCTestCase {
 			macros: testMacros
 		)
 	}
+    func testGodotMacroStaticSignal() {
+        // Note when editing: Xcode loves to change all indentation to be consistent as either tabs or spaces, but the macro expansion produces a mix.
+        // I had to set Settings->Text Editing->Tab Key to "Inserts a Tab Character" in order to resolve this.
+        assertMacroExpansion(
+            """
+            @Godot class Hi: Node {
+                #signal("picked_up_item", arguments: ["kind": String.self])
+                #signal("scored")
+                #signal("different_init", arguments: [:])
+                #signal("different_init2", arguments: .init())
+            }
+            """,
+            expandedSource: """
+            class Hi: Node {
+                static let pickedUpItem = SignalWith1Argument<String>("picked_up_item", argument1Name: "kind")
+                static let scored = SignalWithNoArguments("scored")
+                static let differentInit = SignalWithNoArguments("different_init")
+                static let differentInit2 = SignalWithNoArguments("different_init2")
+
+                required init(nativeHandle _: UnsafeRawPointer) {
+                	fatalError("init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated")
+                }
+
+                required init() {
+                	_ = Hi._initClass
+                	super.init ()
+                }
+
+                static var _initClass: Void = {
+                    let className = StringName("Hi")
+                    let classInfo = ClassInfo<Hi> (name: className)
+                    classInfo.registerSignal(name: Hi.pickedUpItem.name, arguments: Hi.pickedUpItem.arguments)
+                    classInfo.registerSignal(name: Hi.scored.name, arguments: Hi.scored.arguments)
+                    classInfo.registerSignal(name: Hi.differentInit.name, arguments: Hi.differentInit.arguments)
+                    classInfo.registerSignal(name: Hi.differentInit2.name, arguments: Hi.differentInit2.arguments)
+                } ()
+            }
+            """,
+            macros: testMacros
+        )
+    }
 	
 	func testGodotMacroWithCallableFunc() {
 		// Note when editing: Xcode loves to change all indentation to be consistent as either tabs or spaces, but the macro expansion produces a mix.

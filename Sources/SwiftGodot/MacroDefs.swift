@@ -126,4 +126,28 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 @attached(accessor)
 public macro SceneTree(path: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
+/// Defines a Godot signal on a class.
+///
+/// The `@Godot` macro will register any #signal defined signals so that they can be used in the editor.
+///
+/// Usage:
+/// ```swift
+/// @Godot class MyNode: Node2D {
+///     #signal("game_started")
+///     #signal("lives_changed", argument: ["new_lives_count", Int.self])
+///
+///     func startGame() {
+///        emit(MyNode.gameStarted)
+///        emit(MyNode.livesChanged, 5)
+///     }
+/// }
+/// ```
+///
+/// - Parameter signalName: The name of the signal as registered to Godot.
+/// - Parameter arguments: If the signal has arguments, they should be defined here as a dictionary of argument name to type. For
+/// example, ["name" : String.self] declares that the signal takes one argument of string type. The argument name is provided to the godot
+/// editor. Argument types are enforced on the `emit(signal:_argument)` method. Argument types must conform to GodotVariant.
+@freestanding(declaration, names: arbitrary)
+public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type> = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
+
 #endif

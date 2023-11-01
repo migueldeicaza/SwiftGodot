@@ -23,7 +23,11 @@ class Rigid: RigidBody2D {
 class SwiftSprite: Sprite2D {
     var time_passed: Double = 0
     var count: Int = 0
-
+    
+    #signal("picked_up_item", arguments: ["kind": String.self, "isGroovy": Bool.self, "count": Int.self])
+    #signal("scored")
+    #signal("lives_changed", arguments: ["count": Int.self])
+    
     @Callable
     public func computeGodot (x: String, y: Int) -> Double {
         return 1.0
