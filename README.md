@@ -76,15 +76,7 @@ let package = Package(
     targets: [
         .target(
             name: "MyFirstGame",
-            dependencies: ["SwiftGodot"],
-            swiftSettings: [.unsafeFlags(["-suppress-warnings"])],
-            linkerSettings: [.unsafeFlags(
-                ["-Xlinker", "-undefined",
-                 "-Xlinker", "dynamic_lookup"]
-            )]
-        )
-		            
-    ]
+            dependencies: ["SwiftGodot"])]
 )
 ```
 
