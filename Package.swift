@@ -130,13 +130,11 @@ targets.append(contentsOf: [
             "GDExtension"
         ]),
     
-    // General purpose tests
+    // General purpose runtime dependant tests
     .testTarget(
         name: "SwiftGodotTests",
         dependencies: [
             "SwiftGodotTestability",
-            "ExtensionApi",
-            "ExtensionApiJson",
         ]
     ),
 ])
@@ -151,6 +149,16 @@ targets.append(contentsOf: [
         dependencies: ["GDExtension"],
         //linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins),
+    
+    // General purpose cross-platform tests
+    .testTarget(
+        name: "SwiftGodotUniversalTests",
+        dependencies: [
+            "SwiftGodot",
+            "ExtensionApi",
+            "ExtensionApiJson",
+        ]
+    ),
 ])
 
 let package = Package(
