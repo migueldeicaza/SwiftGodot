@@ -47,7 +47,7 @@ public class ObjectCollection<Element: Object>: Collection {
     func toStrong (_ v: Variant) -> Element {
         var handle = UnsafeMutableRawPointer(bitPattern: 0)
         v.toType(.object, dest: &handle)
-        return lookupObject(nativeHandle: handle!)
+        return lookupObject(nativeHandle: handle!)!
     }
     
     // If I make this optional, I am told I need to implement an internal _read method
