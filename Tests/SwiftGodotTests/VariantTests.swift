@@ -8,15 +8,12 @@
 import SwiftGodot
 import XCTest
 
-@MainActor
 final class VariantTests: GodotTestCase {
     func testVariant() {
-        runInGodot {
-            let testString = "Hi"
-            let variant = Variant(testString)
-            let unwrapped = String(variant)
-            
-            XCTAssertEqual(unwrapped, testString)
-        }
+        let testString = "Hi"
+        let variant = Variant(testString)
+        let unwrapped = String(variant)
+        
+        XCTAssertEqual(unwrapped, testString)
     }
 }
