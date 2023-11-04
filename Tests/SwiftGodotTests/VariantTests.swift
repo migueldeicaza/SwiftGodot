@@ -8,7 +8,7 @@
 import SwiftGodot
 import XCTest
 
-final class VariantTests: GodotTestCase {
+final class VariantTests: GodotTestCase, Initializable {
     func testVariant() {
         let testString = "Hi"
         let variant = Variant(testString)

@@ -11,12 +11,14 @@ import libgodot
 @MainActor
 final class GodotRuntime {
     
+    static var isInitialized: Bool = false
     static var isRunning: Bool = false
     
     static var scene: SceneTree?
     
     static func run (completion: @escaping () -> Void) {
         guard !isRunning else { return }
+        isInitialized = true
         isRunning = true
         runGodot (loadScene: { scene in
             self.scene = scene
