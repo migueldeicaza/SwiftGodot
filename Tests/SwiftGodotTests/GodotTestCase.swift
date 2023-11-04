@@ -34,8 +34,14 @@ class GodotTestCase: XCTestCase {
         } else {
             guard !GodotRuntime.isInitialized else { return }
             GodotRuntime.run {
-                for test in Self.testCases {
-                    XCTestSuite.default.perform (XCTestRun (test: test))
+                if Self.testCases.isEmpty {
+                    // Executing individual test method
+                    super.run()
+                } else {
+                    // Executing entire test set
+                    for test in Self.testCases {
+                        XCTestSuite.default.perform (XCTestRun (test: test))
+                    }
                 }
                 GodotRuntime.stop ()
             }
