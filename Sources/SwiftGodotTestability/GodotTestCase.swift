@@ -19,10 +19,10 @@ open class GodotTestCase: XCTestCase {
     
     override open class var defaultTestSuite: XCTestSuite {
         if let initializable = self as? Initializable.Type {
-            testCases.append(initializable.init())
+            testCases.append (initializable.init())
         } else {
             if self != GodotTestCase.self {
-                fatalError("\(self) is not Initializable. All GodotTestCase subclasses must conform to Initializable protocol")
+                fatalError ("\(self) is not Initializable. All GodotTestCase subclasses must conform to Initializable protocol")
             }
         }
         return super.defaultTestSuite
@@ -30,19 +30,16 @@ open class GodotTestCase: XCTestCase {
     
     override open func run () {
         if GodotRuntime.isRunning {
-            super.run()
+            super.run ()
         } else {
             guard !GodotRuntime.isInitialized else { return }
             GodotRuntime.run {
-                if Self.testCases.isEmpty {
-                    // Executing individual test method
-                    super.run()
-                } else {
-                    // Executing entire test set
-                    for test in Self.testCases {
-                        XCTestSuite.default.perform (XCTestRun (test: test))
-                    }
+                for test in Self.testCases {
+                    XCTestSuite.default.perform (XCTestRun (test: test))
                 }
+                // Run initial test method separately as it gets ignored by the batch execution
+                super.run ()
+                
                 GodotRuntime.stop ()
             }
         }
