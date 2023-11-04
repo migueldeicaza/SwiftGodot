@@ -8,16 +8,16 @@
 import XCTest
 import SwiftGodot
 
-protocol Initializable: XCTestCase {
+public protocol Initializable: XCTestCase {
     init()
 }
 
 @MainActor
-class GodotTestCase: XCTestCase {
+open class GodotTestCase: XCTestCase {
     
     private static var testCases: [XCTestCase] = []
     
-    override class var defaultTestSuite: XCTestSuite {
+    override open class var defaultTestSuite: XCTestSuite {
         if let initializable = self as? Initializable.Type {
             testCases.append(initializable.init())
         } else {
@@ -28,7 +28,7 @@ class GodotTestCase: XCTestCase {
         return super.defaultTestSuite
     }
     
-    override func run () {
+    override open func run () {
         if GodotRuntime.isRunning {
             super.run()
         } else {

@@ -5,8 +5,9 @@
 //  Created by Padraig O Cinneide on 2023-10-31.
 //
 
-import SwiftGodot
 import XCTest
+import SwiftGodotTestability
+@testable import SwiftGodot
 
 final class VariantTests: GodotTestCase, Initializable {
     func testVariant() {

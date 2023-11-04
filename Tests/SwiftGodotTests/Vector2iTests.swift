@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import SwiftGodotTestability
 @testable import SwiftGodot
 
 final class Vector2iTests: GodotTestCase, Initializable {

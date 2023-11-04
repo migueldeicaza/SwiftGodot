@@ -24,6 +24,9 @@ var products: [Product] = [
             "ExtensionApi",
             "ExtensionApiJson"
         ]),
+    .library(
+        name: "SwiftGodotTestability",
+        targets: ["SwiftGodotTestability"]),
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
 
@@ -113,15 +116,22 @@ targets.append(contentsOf: [
         //linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins),
     
+    .target(
+        name: "SwiftGodotTestability",
+        dependencies: [
+            "SwiftGodot",
+            "libgodot",
+            "GDExtension"
+        ]
+    ),
+    
     // General purpose tests
     .testTarget(
         name: "SwiftGodotTests",
         dependencies: [
-            "SwiftGodot",
+            "SwiftGodotTestability",
             "ExtensionApi",
             "ExtensionApiJson",
-            "libgodot",
-            "GDExtension"
         ]
     ),
     
