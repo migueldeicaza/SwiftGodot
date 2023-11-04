@@ -24,9 +24,6 @@ var products: [Product] = [
             "ExtensionApi",
             "ExtensionApiJson"
         ]),
-    .library(
-        name: "SwiftGodotTestability",
-        targets: ["SwiftGodotTestability"]),
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
 
@@ -37,6 +34,14 @@ products.append(
         name: "SimpleExtension",
         type: .dynamic,
         targets: ["SimpleExtension"]))
+#endif
+
+// libgodot is only available for macOS and testability runtime depends on it
+#if os(macOS)
+products.append(
+    .library(
+        name: "SwiftGodotTestability",
+        targets: ["SwiftGodotTestability"]))
 #endif
 
 var targets: [Target] = [
@@ -106,24 +111,17 @@ targets.append(contentsOf: [
 swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 #endif
 
+// libgodot is only available for macOS
+#if os(macOS)
 targets.append(contentsOf: [
-    // This is the binding itself, it is made up of our generated code for the
-    // Godot API, supporting infrastructure and extensions to the API to provide
-    // a better Swift experience
-    .target(
-        name: "SwiftGodot",
-        dependencies: ["GDExtension"],
-        //linkerSettings: linkerSettings,
-        plugins: swiftGodotPlugins),
-    
+    // Base functionality for Godot runtime dependant tests
     .target(
         name: "SwiftGodotTestability",
         dependencies: [
             "SwiftGodot",
             "libgodot",
             "GDExtension"
-        ]
-    ),
+        ]),
     
     // General purpose tests
     .testTarget(
@@ -134,6 +132,18 @@ targets.append(contentsOf: [
             "ExtensionApiJson",
         ]
     ),
+])
+#endif
+
+targets.append(contentsOf: [
+    // This is the binding itself, it is made up of our generated code for the
+    // Godot API, supporting infrastructure and extensions to the API to provide
+    // a better Swift experience
+    .target(
+        name: "SwiftGodot",
+        dependencies: ["GDExtension"],
+        //linkerSettings: linkerSettings,
+        plugins: swiftGodotPlugins),
     
     .binaryTarget(
         name: "libgodot",
