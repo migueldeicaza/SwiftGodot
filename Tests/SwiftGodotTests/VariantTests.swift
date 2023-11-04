@@ -9,7 +9,7 @@ import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class VariantTests: GodotTestCase, Initializable {
+final class VariantTests: GodotTestCase {
     func testVariant() {
         let testString = "Hi"
         let variant = Variant(testString)

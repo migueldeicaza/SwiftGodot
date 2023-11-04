@@ -9,7 +9,7 @@ import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class Vector2iTests: GodotTestCase, Initializable {
+final class Vector2iTests: GodotTestCase {
     
     func testOperatorPlus () {
         var value: Vector2i

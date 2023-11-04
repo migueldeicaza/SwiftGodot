@@ -8,24 +8,15 @@
 import XCTest
 import SwiftGodot
 
-public protocol Initializable: XCTestCase {
-    init()
-}
-
 @MainActor
 open class GodotTestCase: XCTestCase {
     
-    private static var testCases: [XCTestCase] = []
+    private static var testSuites: [XCTestSuite] = []
     
     override open class var defaultTestSuite: XCTestSuite {
-        if let initializable = self as? Initializable.Type {
-            testCases.append (initializable.init())
-        } else {
-            if self != GodotTestCase.self {
-                fatalError ("\(self) is not Initializable. All GodotTestCase subclasses must conform to Initializable protocol")
-            }
-        }
-        return super.defaultTestSuite
+        let testSuite = super.defaultTestSuite
+        testSuites.append(testSuite)
+        return testSuite
     }
     
     override open func run () {
@@ -34,11 +25,15 @@ open class GodotTestCase: XCTestCase {
         } else {
             guard !GodotRuntime.isInitialized else { return }
             GodotRuntime.run {
-                for test in Self.testCases {
-                    XCTestSuite.default.perform (XCTestRun (test: test))
+                if !Self.testSuites.isEmpty {
+                    // Executing all test suites from the context
+                    for testSuite in Self.testSuites {
+                        testSuite.perform (XCTestSuiteRun (test: testSuite))
+                    }
+                } else {
+                    // Executing single test method
+                    super.run ()
                 }
-                // Run initial test method separately as it gets ignored by the batch execution
-                super.run ()
                 
                 GodotRuntime.stop ()
             }
