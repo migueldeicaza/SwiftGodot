@@ -9,12 +9,12 @@ import libgodot
 @testable import SwiftGodot
 
 @MainActor
-final class GodotRuntime {
+public final class GodotRuntime {
     
     static var isInitialized: Bool = false
     static var isRunning: Bool = false
     
-    static var scene: SceneTree?
+    public static var scene: SceneTree?
     
     static func run (completion: @escaping () -> Void) {
         guard !isRunning else { return }
