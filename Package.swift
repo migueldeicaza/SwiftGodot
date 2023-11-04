@@ -114,6 +114,13 @@ swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 // libgodot is only available for macOS
 #if os(macOS)
 targets.append(contentsOf: [
+    // Godot runtime as a library
+    .binaryTarget(
+        name: "libgodot",
+        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v1.0.1/libgodot.xcframework.zip",
+        checksum: "bb6ec0946311a71f1eba7ad393c0adf7b8f34a2389d8234ff500b2764b0c6ba5"
+    ),
+    
     // Base functionality for Godot runtime dependant tests
     .target(
         name: "SwiftGodotTestability",
@@ -144,12 +151,6 @@ targets.append(contentsOf: [
         dependencies: ["GDExtension"],
         //linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins),
-    
-    .binaryTarget(
-        name: "libgodot",
-        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v1.0.1/libgodot.xcframework.zip",
-        checksum: "bb6ec0946311a71f1eba7ad393c0adf7b8f34a2389d8234ff500b2764b0c6ba5"
-    ),
 ])
 
 let package = Package(
