@@ -56,7 +56,6 @@ public struct GodotExport: PeerMacro {
         } else {
             \(varName) = nil
         }
-    }
     """
             } else {
                 body =
