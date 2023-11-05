@@ -178,7 +178,7 @@ final class MacroGodotTests: XCTestCase {
             	var goodName: String = "Supertop"
             
             	func _mproxy_set_goodName (args: [Variant]) -> Variant? {
-            		goodName = String(args [0])!
+            		goodName = String (args [0])!
             		return nil
             	}
             
