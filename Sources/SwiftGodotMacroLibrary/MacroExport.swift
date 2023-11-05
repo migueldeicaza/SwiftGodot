@@ -43,29 +43,24 @@ public struct GodotExport: PeerMacro {
             let optBody = isOptional ? " else { \(varName) = nil }" : ""
             body =
     """
-        if let res: \(typeName) = args [0].asObject () {
-            \(varName) = res
-        }\(optBody)
+    	if let res: \(typeName) = args [0].asObject () {
+    		\(varName) = res
+    	}\(optBody)
     """
         } else {
             if isOptional {
                 body =
     """
-        if let v = args [0] {
-            \(varName) = \(typeName)(v)
-        } else {
-            \(varName) = nil
-        }
-    }
+    	\(varName) = \(typeName) (args [0])
     """
             } else {
                 body =
     """
-        \(varName) = \(typeName)(args [0])!
+    	\(varName) = \(typeName) (args [0])!
     """
             }
         }
-        return "func \(name) (args: [Variant]) -> Variant? {\n\t\(body)\n\treturn nil\n}"
+        return "func \(name) (args: [Variant]) -> Variant? {\n\(body)\n\treturn nil\n}"
     }
 
     
