@@ -51,11 +51,7 @@ public struct GodotExport: PeerMacro {
             if isOptional {
                 body =
     """
-        if let v = args [0] {
-            \(varName) = \(typeName)(v)
-        } else {
-            \(varName) = nil
-        }
+        \(varName) = \(typeName)(args [0])
     """
             } else {
                 body =
