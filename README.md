@@ -9,6 +9,8 @@ to the game engine, or it can be used as an API with SwiftGodotKit
 which embeds Godot as an application that is driven directly from
 Swift.
 
+Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-26brq65x2-t8SLjm_Z6a7FJH17CmHevA)
+
 Driving Godot from Swift has the advantage that on MacOS you can
 debug your code from Xcode as well as the Godot code.
 
