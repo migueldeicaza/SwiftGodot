@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 9/25/23.
 //
 
-#if !os(Windows)
+#if !(os(Windows) && swift(<5.9.1))
 
 /// Creates the definition for a Swift class to be surfaced to Godot.
 ///

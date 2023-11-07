@@ -27,8 +27,8 @@ var products: [Product] = [
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
 
-// Macros aren't supported on Windows yet and this sample uses them
-#if !os(Windows)
+// Macros aren't supported on Windows before 5.9.1 and this sample uses them
+#if !(os(Windows) && swift(<5.9.1))
 products.append(
     .library(
         name: "SimpleExtension",
@@ -74,8 +74,8 @@ var targets: [Target] = [
 
 var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
 
-// Macros aren't supported on Windows yet
-#if !os(Windows)
+// Macros aren't supported on Windows before 5.9.1
+#if !(os(Windows) && swift(<5.9.1))
 targets.append(contentsOf: [
     // These are macros that can be used by third parties to simplify their
     // SwiftGodot development experience, these are used at compile time by
