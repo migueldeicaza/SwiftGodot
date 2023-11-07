@@ -11,7 +11,7 @@ build-docs:
 	GENERATE_DOCS=1 swift package --allow-writing-to-directory $(ODOCS) generate-documentation --target SwiftGodot --disable-indexing --transform-for-static-hosting --hosting-base-path /SwiftGodotDocs --emit-digest --output-path $(ODOCS) >& build-docs.log
 
 push-docs:
-	(cd ../SwiftGodotDocs; mv docs tmp; git reset --hard 8b5f69a631f42a37176a040aeb5cfa1620249ff1; mv tmp docs; git add docs/*; git commit -m "Import Docs"; git push -f; git prune)
+	(cd ../SwiftGodotDocs; mv docs tmp; git reset --hard 8b5f69a631f42a37176a040aeb5cfa1620249ff1; mv tmp docs; touch .nojekyll docs/.nojekyll; git add docs/* .nojekyll docs/.nojekyll; git commit -m "Import Docs"; git push -f; git prune)
 
 release: check-args build-release build-docs push-docs
 
