@@ -36,6 +36,14 @@ products.append(
         targets: ["SimpleExtension"]))
 #endif
 
+// libgodot is only available for macOS and testability runtime depends on it
+#if os(macOS)
+products.append(
+    .library(
+        name: "SwiftGodotTestability",
+        targets: ["SwiftGodotTestability"]))
+#endif
+
 var targets: [Target] = [
     // This contains GDExtension's JSON API data models
     .target(
@@ -103,6 +111,35 @@ targets.append(contentsOf: [
 swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 #endif
 
+// libgodot is only available for macOS
+#if os(macOS)
+targets.append(contentsOf: [
+    // Godot runtime as a library
+    .binaryTarget(
+        name: "libgodot",
+        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v1.0.1/libgodot.xcframework.zip",
+        checksum: "bb6ec0946311a71f1eba7ad393c0adf7b8f34a2389d8234ff500b2764b0c6ba5"
+    ),
+    
+    // Base functionality for Godot runtime dependant tests
+    .target(
+        name: "SwiftGodotTestability",
+        dependencies: [
+            "SwiftGodot",
+            "libgodot",
+            "GDExtension"
+        ]),
+    
+    // General purpose runtime dependant tests
+    .testTarget(
+        name: "SwiftGodotTests",
+        dependencies: [
+            "SwiftGodotTestability",
+        ]
+    ),
+])
+#endif
+
 targets.append(contentsOf: [
     // This is the binding itself, it is made up of our generated code for the
     // Godot API, supporting infrastructure and extensions to the API to provide
@@ -113,14 +150,15 @@ targets.append(contentsOf: [
         //linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins),
     
-    // General purpose tests
+    // General purpose cross-platform tests
     .testTarget(
-        name: "SwiftGodotTests",
+        name: "SwiftGodotUniversalTests",
         dependencies: [
             "SwiftGodot",
             "ExtensionApi",
             "ExtensionApiJson",
-        ])
+        ]
+    ),
 ])
 
 let package = Package(
@@ -131,7 +169,6 @@ let package = Package(
     ],
     products: products,
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/CoreOffice/XMLCoder", from: "0.15.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
