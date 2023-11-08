@@ -9,8 +9,6 @@ to the game engine, or it can be used as an API with SwiftGodotKit
 which embeds Godot as an application that is driven directly from
 Swift.
 
-Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-26brq65x2-t8SLjm_Z6a7FJH17CmHevA)
-
 Driving Godot from Swift has the advantage that on MacOS you can
 debug your code from Xcode as well as the Godot code.
 
@@ -20,6 +18,12 @@ and it can also be edited for local use, if you enable it in the
 Generator.
 
 https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b812-c775c55b8b77.mov
+
+# Why SwiftGodot?
+
+* No game stutters caused by GC, unlike C#.
+
+* Learn more: [Swift Godot: Fixing the Multi-million dollar mistake](https://www.youtube.com/watch?v=tzt36EGKEZo)
 
 # Consuming SwiftGodot
 
@@ -199,3 +203,7 @@ and then finding it in the hierarchy.
 
 In our example above, it would appear under Node3D, as it
 is a Node3D subclass.
+
+## Community
+
+Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-26brq65x2-t8SLjm_Z6a7FJH17CmHevA)
