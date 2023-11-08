@@ -130,7 +130,7 @@ func generateVirtualProxy (_ p: Printer,
                 if hasSubclasses.contains(cdef.name) {
                     // If the type we are bubbling up has subclasses, we want to create the most
                     // derived type if possible, so we perform the longer lookup
-                    handleResolver = "lookupObject (nativeHandle: resolved_\(i))"
+                    handleResolver = "lookupObject (nativeHandle: resolved_\(i))!"
                 } else {
                     // There are no subclasses, so we can create the object right away
                     handleResolver = "\(arg.type) (nativeHandle: resolved_\(i))"

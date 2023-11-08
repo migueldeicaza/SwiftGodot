@@ -403,7 +403,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                             p ("fatalError (\"Unexpected nil return from a method that should never return nil\")")
                         }
                     }
-                    p ("return lookupObject (nativeHandle: _result)")
+                    p ("return lookupObject (nativeHandle: _result)!")
                 } else if godotReturnType?.starts(with: "typedarray::") ?? false {
                     let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
                     
