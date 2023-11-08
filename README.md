@@ -161,6 +161,7 @@ You would create something like this in a file called
 ```yml
 [configuration]
 entry_symbol = "swift_entry_point"
+compatibility_minimum = 4.1
 
 [libraries]
 macos.debug = "res://bin/MyFirstGame"
