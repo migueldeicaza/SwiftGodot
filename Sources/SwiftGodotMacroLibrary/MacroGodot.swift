@@ -204,6 +204,27 @@ class GodotMacroProcessor {
 
 }
 
+extension String {
+    func camelCaseToSnakeCase() -> String {
+        let acronymPattern = "([A-Z]+)([A-Z][a-z]|[0-9])"
+        let normalPattern = "([a-z0-9])([A-Z])"
+        return processCamalCaseRegex(pattern: acronymPattern)?
+            .processCamalCaseRegex(pattern: normalPattern)?.lowercased() ?? lowercased()
+    }
+
+    fileprivate func processCamalCaseRegex(pattern: String) -> String? {
+        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+        let range = NSRange(location: 0, length: count)
+        return regex?.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "$1_$2")
+    }
+}
+
+func camelToSnake(_ s: String) -> String {
+    s.camelCaseToSnakeCase()
+        .replacingOccurrences(of: "2_D", with: "2D").replacingOccurrences(of: "3_D", with: "3D")
+        .replacingOccurrences(of: "2_d", with: "2d").replacingOccurrences(of: "3_d", with: "3d")
+}
+
 ///
 /// The Godot macro is applied to a class and it generates the boilerplate
 /// `init(nativeHandle:)` and `init()` constructors along with the
@@ -230,8 +251,28 @@ public struct GodotMacro: MemberMacro {
             let initSyntax = try InitializerDeclSyntax("required init()") {
                 StmtSyntax("\n\t_ = \(classDecl.name)._initClass\n\tsuper.init ()")
             }
-            
-            return [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
+            var decls = [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
+
+            // Now look for overrides of Godot functions
+            let functions = classDecl.memberBlock.members
+                        .compactMap { $0.decl.as(FunctionDeclSyntax.self) }
+                        .filter { $0.name.text.starts(with: "_") }
+                        .filter { $0.modifiers.contains(where: { $0.name.text == "override" }) == true }
+            if functions.count > 0 {
+                let stringNames = functions.map { function in
+                    let functionName = function.name.text
+                    let stringName = "StringName(\"\(camelToSnake (functionName))\")" // TODO: convert to Godot naming convention
+                    return stringName
+                }
+                
+                var implementedOverridesDecl = "override class func implementedOverrides() -> [StringName] {\nsuper.implementedOverrides() + [\n"
+                for name in stringNames {
+                    implementedOverridesDecl.append("\t\(name),\n")
+                }
+                implementedOverridesDecl.append("]\n}")
+                decls.append (DeclSyntax(extendedGraphemeClusterLiteral: implementedOverridesDecl))
+            }
+            return decls
         } catch {
             let diagnostic: Diagnostic
             if let detail = error as? GodotMacroError {

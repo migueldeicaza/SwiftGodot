@@ -80,6 +80,27 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         hasher.combine(handle)
     }
     
+    /// This method returns the list of StringNames for methods that the class overwrites, and
+    /// is necessary to ensure that Godot knows which methods have been overwritten, and which
+    /// ones Godot will provide a default behavior for.
+    ///
+    /// This is necessary because the Godot overwrite method does not surface a "base" behavior
+    /// that can be called into.  Instead Godot relies on the "Is the method implemented or not"
+    /// to make this determination.
+    ///
+    /// If you are not using the `@Godot` macro, you should overwrite this function and return
+    /// the StringNames for the functions you override, like in this example, where we indicate
+    /// that we override the Godot `_has_point` method:
+    ///
+    /// ```
+    /// open override func implementedOverrides() -> [StringName] {
+    ///     return super.implementedOverrides + [StringName ("_has_point")]
+    /// }
+    /// ```
+    open class func implementedOverrides() -> [StringName] {
+        []
+    }
+
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
         print ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
         return nil
