@@ -677,6 +677,11 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             p ("public required init ()") {
                 p ("super.init (name: StringName (\"\(cdef.name)\"))")
             }
+            p ("/// Modifying initializer. Passes itself to the closure after initialization")
+            p ("public convenience init (modifier: (Self) -> Void") {
+                p ("self.init ()")
+                p ("modifier (self)")
+            }
         } else {
             p ("/// This class can not be instantiated by user code")
             p ("public required init ()") {

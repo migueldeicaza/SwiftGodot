@@ -251,7 +251,11 @@ public struct GodotMacro: MemberMacro {
             let initSyntax = try InitializerDeclSyntax("required init()") {
                 StmtSyntax("\n\t_ = \(classDecl.name)._initClass\n\tsuper.init ()")
             }
-            var decls = [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
+            let modInitSyntax = try InitializerDeclSyntax("convenience init(modifier: (Self) -> Void)") {
+                StmtSyntax("\n\tself.init()")
+                StmtSyntax("\n\tmodifier(self)")
+            }
+            var decls = [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax (modInitSyntax), DeclSyntax(stringLiteral: classInit)]
 
             // Now look for overrides of Godot functions
             let functions = classDecl.memberBlock.members
