@@ -678,7 +678,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
                 p ("super.init (name: StringName (\"\(cdef.name)\"))")
             }
             p ("/// Modifying initializer. Passes itself to the closure after initialization")
-            p ("public convenience init (modifier: (Self) -> Void") {
+            p ("public convenience init (modifier: (\(cdef.name)) -> Void)") {
                 p ("self.init ()")
                 p ("modifier (self)")
             }
