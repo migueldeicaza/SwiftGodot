@@ -50,7 +50,7 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
             format = nil
         }
         if let format {
-            return String (format: format, arguments: splitArgs.map ({ $0.trimmingCharacters(in: CharacterSet.whitespaces) }))
+            return String (format: format, arguments: splitArgs.map (String.init))
         }
         return nil
     }
