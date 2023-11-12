@@ -124,17 +124,17 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     private init<T: VariantRepresentable>(representable value: T) {
         let godotType = T.godotType
         
-        var mutableValue: Any
-        
-        if let object = value as? Object {
-            mutableValue = object.handle
-        } else {
-            mutableValue = value
-        }
-        
         withUnsafeMutablePointer(to: &content) { selfPtr in
-            withUnsafeMutablePointer(to: &mutableValue) { ptr in
-                Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
+            if let object = value as? Object {
+                var mutableValue = object.handle
+                withUnsafeMutablePointer(to: &mutableValue) { ptr in
+                    Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
+                }
+            } else {
+                var mutableValue = value
+                withUnsafeMutablePointer(to: &mutableValue) { ptr in
+                    Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
+                }
             }
         }
     }
