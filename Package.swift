@@ -116,7 +116,7 @@ swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 targets.append(contentsOf: [
     // Godot runtime as a library
     .binaryTarget(
-        name: "libgodot",
+        name: "libgodot_tests",
         url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v1.0.1/libgodot.xcframework.zip",
         checksum: "bb6ec0946311a71f1eba7ad393c0adf7b8f34a2389d8234ff500b2764b0c6ba5"
     ),
@@ -126,7 +126,7 @@ targets.append(contentsOf: [
         name: "SwiftGodotTestability",
         dependencies: [
             "SwiftGodot",
-            "libgodot",
+            "libgodot_tests",
             "GDExtension"
         ]),
     
