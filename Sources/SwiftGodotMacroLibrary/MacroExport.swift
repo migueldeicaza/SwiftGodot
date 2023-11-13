@@ -43,9 +43,12 @@ public struct GodotExport: PeerMacro {
             let optBody = isOptional ? " else { \(varName) = nil }" : ""
             body =
     """
+    	let oldRef = \(varName) as? RefCounted
     	if let res: \(typeName) = args [0].asObject () {
+    		(res as? RefCounted)?.reference()
     		\(varName) = res
     	}\(optBody)
+    	oldRef?.unreference()
     """
         } else {
             if isOptional {
