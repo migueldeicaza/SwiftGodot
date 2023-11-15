@@ -183,7 +183,7 @@ class GodotMacroProcessor {
     func processType () throws -> String {
         ctor =
     """
-    static var _initClass: Void = {
+    private static var _initializeClass: Void = {
         let className = StringName("\(className)")
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
@@ -245,13 +245,17 @@ public struct GodotMacro: MemberMacro {
         let processor = GodotMacroProcessor(classDecl: classDecl)
         do {
             let classInit = try processor.processType ()
-            let initRawHandleSyntax = try InitializerDeclSyntax("required init(nativeHandle _: UnsafeRawPointer)") {
-                StmtSyntax("\n\tfatalError(\"init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated\")")
+            
+            let classInitProperty = DeclSyntax(
+            """
+            override open class var classInitializer: Void {
+                let _ = super.classInitializer
+                return _initializeClass
             }
-            let initSyntax = try InitializerDeclSyntax("required init()") {
-                StmtSyntax("\n\t_ = \(classDecl.name)._initClass\n\tsuper.init ()")
-            }
-            var decls = [DeclSyntax (initRawHandleSyntax), DeclSyntax (initSyntax), DeclSyntax(stringLiteral: classInit)]
+            """
+            )
+            
+            var decls = [classInitProperty, DeclSyntax(stringLiteral: classInit)]
 
             // Now look for overrides of Godot functions
             let functions = classDecl.memberBlock.members
@@ -265,7 +269,7 @@ public struct GodotMacro: MemberMacro {
                     return stringName
                 }
                 
-                var implementedOverridesDecl = "override class func implementedOverrides() -> [StringName] {\nsuper.implementedOverrides() + [\n"
+                var implementedOverridesDecl = "override open class func implementedOverrides() -> [StringName] {\nsuper.implementedOverrides() + [\n"
                 for name in stringNames {
                     implementedOverridesDecl.append("\t\(name),\n")
                 }

@@ -676,6 +676,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             p ("/// when you create a subclass of this type.")
             p ("public required init ()") {
                 p ("super.init (name: StringName (\"\(cdef.name)\"))")
+                p ("let _ = Self.classInitializer")
             }
         } else {
             p ("/// This class can not be instantiated by user code")
@@ -710,6 +711,10 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         // Remove code that we did not want generated
         if okList.count > 0 && !okList.contains (cdef.name) {
             p.result = oResult
+        }
+        
+        if cdef.name == "Object" {
+            p ("open class var classInitializer: Void { () }")
         }
     }
 
