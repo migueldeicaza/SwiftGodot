@@ -45,6 +45,38 @@ final class MacroGodotTests: XCTestCase {
             macros: testMacros
         )
     }
+    
+    func testGodotVirtualMethodsMacro() {
+        assertMacroExpansion(
+            """
+            @Godot class Hi: Control {
+                override func _hasPoint(_ point: Vector2) -> Bool { false }
+            }
+            """,
+            expandedSource: """
+            class Hi: Control {
+                override func _hasPoint(_ point: Vector2) -> Bool { false }
+            
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
+            
+                private static var _initializeClass: Void = {
+                    let className = StringName("Hi")
+                    let classInfo = ClassInfo<Hi> (name: className)
+                } ()
+            
+                override open class func implementedOverrides() -> [StringName] {
+                    super.implementedOverrides() + [
+                    	StringName("_has_point"),
+                    ]
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
 	
 	func testGodotMacroWithNonCallableFunc() {
 		// Note when editing: Xcode loves to change all indentation to be consistent as either tabs or spaces, but the macro expansion produces a mix.
