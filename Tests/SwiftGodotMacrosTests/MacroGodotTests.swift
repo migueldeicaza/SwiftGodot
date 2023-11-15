@@ -31,7 +31,7 @@ final class MacroGodotTests: XCTestCase {
             expandedSource: """
             class Hi: Node {
             
-                override class var classInitializer: Void {
+                override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
@@ -61,7 +61,7 @@ final class MacroGodotTests: XCTestCase {
             	func hi() {
             	}
             
-                override class var classInitializer: Void {
+                override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
@@ -94,7 +94,7 @@ final class MacroGodotTests: XCTestCase {
                 static let differentInit = SignalWithNoArguments("different_init")
                 static let differentInit2 = SignalWithNoArguments("different_init2")
 
-                override class var classInitializer: Void {
+                override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
@@ -133,7 +133,7 @@ final class MacroGodotTests: XCTestCase {
             		return nil
             	}
             
-                override class var classInitializer: Void {
+                override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
@@ -170,7 +170,7 @@ final class MacroGodotTests: XCTestCase {
             	    return Variant (goodName)
             	}
             
-                override class var classInitializer: Void {
+                override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }

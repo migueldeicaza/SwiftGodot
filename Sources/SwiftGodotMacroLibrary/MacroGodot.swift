@@ -248,7 +248,7 @@ public struct GodotMacro: MemberMacro {
             
             let classInitProperty = DeclSyntax(
             """
-            override class var classInitializer: Void {
+            override open class var classInitializer: Void {
                 let _ = super.classInitializer
                 return _initializeClass
             }
