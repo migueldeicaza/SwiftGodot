@@ -30,20 +30,48 @@ final class MacroGodotTests: XCTestCase {
             """,
             expandedSource: """
             class Hi: Node {
-
-                required init(nativeHandle _: UnsafeRawPointer) {
-                	fatalError("init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated")
+            
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
                 }
-
-                required init() {
-                	_ = Hi._initClass
-                	super.init ()
-                }
-
-                static var _initClass: Void = {
+            
+                private static var _initializeClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    func testGodotVirtualMethodsMacro() {
+        assertMacroExpansion(
+            """
+            @Godot class Hi: Control {
+                override func _hasPoint(_ point: Vector2) -> Bool { false }
+            }
+            """,
+            expandedSource: """
+            class Hi: Control {
+                override func _hasPoint(_ point: Vector2) -> Bool { false }
+            
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
+            
+                private static var _initializeClass: Void = {
+                    let className = StringName("Hi")
+                    let classInfo = ClassInfo<Hi> (name: className)
+                } ()
+            
+                override open class func implementedOverrides() -> [StringName] {
+                    super.implementedOverrides() + [
+                    	StringName("_has_point"),
+                    ]
+                }
             }
             """,
             macros: testMacros
@@ -65,16 +93,12 @@ final class MacroGodotTests: XCTestCase {
             	func hi() {
             	}
             
-                required init(nativeHandle _: UnsafeRawPointer) {
-                	fatalError("init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated")
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
                 }
-
-                required init() {
-                	_ = Hi._initClass
-                	super.init ()
-                }
-
-                static var _initClass: Void = {
+            
+                private static var _initializeClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
@@ -102,16 +126,12 @@ final class MacroGodotTests: XCTestCase {
                 static let differentInit = SignalWithNoArguments("different_init")
                 static let differentInit2 = SignalWithNoArguments("different_init2")
 
-                required init(nativeHandle _: UnsafeRawPointer) {
-                	fatalError("init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated")
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
                 }
-
-                required init() {
-                	_ = Hi._initClass
-                	super.init ()
-                }
-
-                static var _initClass: Void = {
+            
+                private static var _initializeClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
                     classInfo.registerSignal(name: Hi.pickedUpItem.name, arguments: Hi.pickedUpItem.arguments)
@@ -145,16 +165,12 @@ final class MacroGodotTests: XCTestCase {
             		return nil
             	}
             
-                required init(nativeHandle _: UnsafeRawPointer) {
-                	fatalError("init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated")
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
                 }
-
-                required init() {
-                	_ = Castro._initClass
-                	super.init ()
-                }
-
-                static var _initClass: Void = {
+            
+                private static var _initializeClass: Void = {
                     let className = StringName("Castro")
                     let classInfo = ClassInfo<Castro> (name: className)
                 	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
@@ -186,16 +202,12 @@ final class MacroGodotTests: XCTestCase {
             	    return Variant (goodName)
             	}
             
-                required init(nativeHandle _: UnsafeRawPointer) {
-                	fatalError("init(nativeHandle:) called, it is a sign that something is wrong, as these objects should not be re-hydrated")
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
                 }
             
-                required init() {
-                	_ = Hi._initClass
-                	super.init ()
-                }
-            
-                static var _initClass: Void = {
+                private static var _initializeClass: Void = {
                     let className = StringName("Hi")
                     let classInfo = ClassInfo<Hi> (name: className)
                     let _pgoodName = PropInfo (

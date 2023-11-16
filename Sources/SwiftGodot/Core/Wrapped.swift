@@ -350,7 +350,9 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
             print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
         }
     }
-
+    if let binding {
+        Unmanaged<Wrapped>.fromOpaque(binding).release()
+    }
 }
 
 func frameworkTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableRawPointer?, _ z: UInt8) -> UInt8 {
