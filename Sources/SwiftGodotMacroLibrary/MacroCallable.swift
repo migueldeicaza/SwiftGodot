@@ -40,7 +40,13 @@ public struct GodotCallable: PeerMacro {
             if first != "_" {
                 genMethod.append ("\(first): ")
             }
-            genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
+            
+            if ptype == "Variant" {
+                genMethod.append ("args [\(argc)]")
+            } else {
+                genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
+            }
+            
             argc += 1
         }
         
