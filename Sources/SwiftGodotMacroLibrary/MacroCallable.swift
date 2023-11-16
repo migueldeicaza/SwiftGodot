@@ -26,7 +26,7 @@ public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
         let funcName = funcDecl.name.text
 
-        var genMethod = "\(funcDecl.isOverriding ? "override" : "") func _mproxy_\(funcName) (args: [Variant]) -> Variant? {\n"
+        var genMethod = "\(funcDecl.isOverriding ? "override " : "")func _mproxy_\(funcName) (args: [Variant]) -> Variant? {\n"
         var retProp: String? = nil
         var retOptional: Bool = false
         

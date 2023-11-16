@@ -223,7 +223,47 @@ final class MacroGodotTests: XCTestCase {
                 } ()
             }
             """,
-			macros: testMacros
-		)
-	}
+            macros: testMacros
+        )
+    }
+    
+    func testCallableGodotMacro() {
+        assertMacroExpansion(
+			"""
+			@Callable
+			func someCallable() -> Void {
+			}
+			""",
+			expandedSource:
+            """
+            func someCallable() -> Void {
+            }
+            
+            func _mproxy_someCallable (args: [Variant]) -> Variant? {
+            	let result = someCallable ()
+            	return Variant (result)
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    func testOverridenCallableGodotMacro() {
+        assertMacroExpansion(
+			"""
+			@Callable
+			override func someCallable() -> Void {}
+			""",
+			expandedSource:
+            """
+            override func someCallable() -> Void {}
+            
+            override func _mproxy_someCallable (args: [Variant]) -> Variant? {
+            	let result = someCallable ()
+            	return Variant (result)
+            }
+            """,
+            macros: testMacros
+        )
+    }
 }
