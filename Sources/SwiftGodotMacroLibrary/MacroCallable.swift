@@ -12,10 +12,21 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+private extension FunctionDeclSyntax {
+    var isOverriding: Bool {
+        modifiers
+            .as(DeclModifierListSyntax.self)?
+            .tokens(viewMode: .sourceAccurate)
+            .filter({ $0.text == "override" })
+            .count == 1
+    }
+}
+
 public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
         let funcName = funcDecl.name.text
-        var genMethod = "func _mproxy_\(funcName) (args: [Variant]) -> Variant? {\n"
+
+        var genMethod = "\(funcDecl.isOverriding ? "override" : "") func _mproxy_\(funcName) (args: [Variant]) -> Variant? {\n"
         var retProp: String? = nil
         var retOptional: Bool = false
         
