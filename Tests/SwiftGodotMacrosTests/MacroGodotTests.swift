@@ -149,21 +149,33 @@ final class MacroGodotTests: XCTestCase {
 		// Note when editing: Xcode loves to change all indentation to be consistent as either tabs or spaces, but the macro expansion produces a mix.
 		// I had to set Settings->Text Editing->Tab Key to "Inserts a Tab Character" in order to resolve this.
 		assertMacroExpansion(
-			"""
-			@Godot class Castro: Node {
-				@Callable func deleteEpisode() {
-				}
-			}
-			""",
+            """
+            @Godot class Castro: Node {
+                @Callable func deleteEpisode() {}
+                @Callable func subscribe(podcast: Podcast) {}
+                @Callable func removeSilences(from: Variant) {}
+            }
+            """,
             expandedSource: """
             class Castro: Node {
-            	func deleteEpisode() {
-            	}
+                func deleteEpisode() {}
             
-            	func _mproxy_deleteEpisode (args: [Variant]) -> Variant? {
-            		deleteEpisode ()
-            		return nil
-            	}
+                func _mproxy_deleteEpisode (args: [Variant]) -> Variant? {
+                	deleteEpisode ()
+                	return nil
+                }
+                func subscribe(podcast: Podcast) {}
+            
+                func _mproxy_subscribe (args: [Variant]) -> Variant? {
+                	subscribe (podcast: Podcast.makeOrUnwrap (args [0])!)
+                	return nil
+                }
+                func removeSilences(from: Variant) {}
+            
+                func _mproxy_removeSilences (args: [Variant]) -> Variant? {
+                	removeSilences (from: args [0])
+                	return nil
+                }
             
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
@@ -174,6 +186,16 @@ final class MacroGodotTests: XCTestCase {
                     let className = StringName("Castro")
                     let classInfo = ClassInfo<Castro> (name: className)
                 	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
+                    let prop_0 = PropInfo (propertyType: .object, propertyName: "Podcast", className: className, hint: .none, hintStr: "", usage: .default)
+                	let subscribeArgs = [
+                		prop_0,
+                	]
+                	classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
+                    let prop_1 = PropInfo (propertyType: .object, propertyName: "Variant", className: className, hint: .none, hintStr: "", usage: .default)
+                	let removeSilencesArgs = [
+                		prop_1,
+                	]
+                	classInfo.registerMethod(name: StringName("removeSilences"), flags: .default, returnValue: nil, arguments: removeSilencesArgs, function: Castro._mproxy_removeSilences)
                 } ()
             }
             """,
