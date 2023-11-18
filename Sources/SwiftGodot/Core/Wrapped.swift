@@ -115,14 +115,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         free_callback: frameworkTypeBindingFree,
         reference_callback: frameworkTypeBindingReference)
     
-    /// For use by the framework, you should not need to call this.
-    public required init (nativeHandle: UnsafeRawPointer) {
-        handle = nativeHandle
-    }
-    
-    public required init () {
-        fatalError("This constructor should not be called")
-    }
 
     /// Returns the Godot's class name as a `StringName`, returns the empty string on error
     public var godotClassName: StringName {
@@ -135,51 +127,65 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return ""
     }
     
+    /// For use by the framework, you should not need to call this.
+    public required init (nativeHandle: UnsafeRawPointer) {
+        handle = nativeHandle
+    }
+    
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
-    /// subclasses will have a diffrent name than the subclass.
-    ///
-    /// When subclassing, you should use the name of te l
-    internal init (name: StringName) {
-        let v = gi.classdb_construct_object (&name.content)
-        
-        if let r = UnsafeRawPointer (v) {
-            handle = r
-            let retain = Unmanaged.passRetained(self)
-            
-            // TODO: what happens if the user subclasses but the name conflicts with the Godot type?
-            // say "class Sprite2D: Godot.Sprite2D"
-            let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: self)))
-            let frameworkType = thisTypeName == name
-            
-            //print ("SWIFT: Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
-            
-            // This I believe should only be set for user subclasses, and not anything else.
-            if frameworkType {
-                //print ("SWIFT: Skipping object registration, this is a framework type")
-            } else {
-                //print ("SWIFT: Registering instance with Godot")
-                withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
-                    gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
-                                            ptr, retain.toOpaque())
-                }
-            }
-            
-            var callbacks: GDExtensionInstanceBindingCallbacks
-            if frameworkType {
-                callbacks = Wrapped.frameworkTypeBindingCallback
-                liveFrameworkObjects [r] = self
-            } else {
-                callbacks = Wrapped.userTypeBindingCallback
-                liveSubtypedObjects [r] = self
-            }
-            gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks);
-        } else {
-            fatalError("SWIFT: It was not possible to construct a \(name.description)")
+    /// subclasses will have a different name than the subclass.
+    public required init () {
+        guard let godotObject = gi.classdb_construct_object (&Self.godotClassName.content) else {
+            fatalError("SWIFT: It was not possible to construct a \(Self.godotClassName.description)")
         }
+        
+        handle = UnsafeRawPointer(godotObject)
+        bindGodotInstance(instance: self)
+        let _ = Self.classInitializer
     }
+    
+    open class var godotClassName: StringName {
+        fatalError("Subclasses of Wrapped must override godotClassName")
+    }
+    
+    open class var classInitializer: Void { () }
 }
     
+func bindGodotInstance(instance: some Wrapped) {
+    let handle = instance.handle
+    let name = instance.self.godotClassName
+    let retain = Unmanaged.passRetained(instance)
+    
+    // TODO: what happens if the user subclasses but the name conflicts with the Godot type?
+    // say "class Sprite2D: Godot.Sprite2D"
+    let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: instance)))
+    let frameworkType = thisTypeName == name
+    
+    //print ("SWIFT: Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
+    
+    // This I believe should only be set for user subclasses, and not anything else.
+    if frameworkType {
+        //print ("SWIFT: Skipping object registration, this is a framework type")
+    } else {
+        //print ("SWIFT: Registering instance with Godot")
+        withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
+            gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
+                                    ptr, retain.toOpaque())
+        }
+    }
+    
+    var callbacks: GDExtensionInstanceBindingCallbacks
+    if frameworkType {
+        callbacks = Wrapped.frameworkTypeBindingCallback
+        liveFrameworkObjects [handle] = instance
+    } else {
+        callbacks = Wrapped.userTypeBindingCallback
+        liveSubtypedObjects [handle] = instance
+    }
+    
+    gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks)
+}
 
 func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
