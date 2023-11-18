@@ -181,14 +181,10 @@ func loadBuiltinDoc (base: String, name: String) -> DocBuiltinClass? {
     }
 }
 
-@available(macOS 13.0, *)
-let rxConstantParam: Regex<(Substring,Substring,Substring)> = try! Regex ("\\[(constant|param) ([\\w\\._@]+)\\]")
-@available(macOS 13.0, *)
-let rxEnumMethodMember: Regex<(Substring,Substring,Substring)> = try! Regex ("\\[(enum|method|member) ([\\w\\.@_/]+)\\]")
-@available(macOS 13.0, *)
-let rxTypeName: Regex<(Substring, Substring)> = try! Regex ("\\[([A-Z]\\w+)\\]")
-@available(macOS 13.0, *)
-let rxEmptyLeading: Regex<Substring> = try! Regex ("\\s+")
+let rxConstantParam = try! NSRegularExpression(pattern: "\\[(constant|param) ([\\w\\._@]+)\\]")
+let rxEnumMethodMember = try! NSRegularExpression(pattern: "\\[(enum|method|member) ([\\w\\.@_/]+)\\]")
+let rxTypeName = try! NSRegularExpression(pattern: "\\[([A-Z]\\w+)\\]")
+let rxEmptyLeading = try! NSRegularExpression(pattern: "\\s+")
 
 // If the string contains a ".", it will return a pair
 // with the first element containing all the text up until the last dot
@@ -358,6 +354,20 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
     let oIndent = p.indentStr
     p.indentStr = "\(p.indentStr)/// "
     
+    // Helper function to perform regex replacement
+    func performRegexReplacement(regex: NSRegularExpression, in string: Substring, using transform: (NSTextCheckingResult) -> String) -> Substring {
+        let range = NSRange(string.startIndex..<string.endIndex, in: string)
+        let matches = regex.matches(in: String(string), range: range)
+        
+        var modifiedString = string
+        for match in matches.reversed() { // Process in reverse to not mess up indices
+            let matchedString = String(string[Range(match.range, in: string)!])
+            let replacement = transform(match)
+            modifiedString.replaceSubrange(Range(match.range, in: modifiedString)!, with: replacement)
+        }
+        return modifiedString
+    }
+    
     var inCodeBlock = false
     let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
     for x in lines {
@@ -373,70 +383,87 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
         
         var mod = x
         
-        if #available(macOS 13.0, *) {
-            // Replaces [params X] with `X`
-            mod = mod.replacing(rxConstantParam, with: { x in
-                switch x.output.1 {
-                case "param":
-                    let pname = godotArgumentToSwift (String(x.output.2))
-                    if pname.starts(with: "`") {
-                        // Do not escape parameters that are already escaped, Swift wont know
-                        return pname
-                    }
-                    return "`\(pname)`"
-                case "constant":
-                    return lookupConstant (x.output.2)
-                default:
-                    print ("Doc: Error, unexpected \(x.output.1) tag")
-                    return "[\(x.output.1) \(x.output.2)]"
+        // Replaces [params X] with `X`
+        mod = performRegexReplacement(regex: rxConstantParam, in: mod) { match in
+            guard let rangeType = Range(match.range(at: 1), in: mod),
+                  let rangeValue = Range(match.range(at: 2), in: mod) else { return "" }
+            
+            let type = String(mod[rangeType])
+            let value = mod[rangeValue]
+            
+            switch type {
+            case "param":
+                let pname = godotArgumentToSwift (String(value))
+                if pname.starts(with: "`") {
+                    // Do not escape parameters that are already escaped, Swift wont know
+                    return pname
                 }
-            })
-            mod = mod.replacing(rxEnumMethodMember, with: { x in
-                switch x.output.1 {
-                case "method":
-                    return "``\(convertMethod (x.output.2))``"
-                case "member":
-                    // Same as method for now?
-                    return "``\(convertMember(x.output.2))``"
-                case "enum":
-                    if let cdef {
-                        if let enums = cdef.enums {
-                            // If it is a local enum
-                            if enums.contains(where: { $0.name == x.output.2 }) {
-                                return "``\(cdef.name)/\(x.output.2)``"
-                            }
+                return "`\(pname)`"
+            case "constant":
+                return lookupConstant(value)
+            default:
+                print("Doc: Error, unexpected \(type) tag")
+                return "[\(type) \(value)]"
+            }
+        }
+        mod = performRegexReplacement(regex: rxEnumMethodMember, in: mod) { match in
+            guard let rangeType = Range(match.range(at: 1), in: mod),
+                  let rangeValue = Range(match.range(at: 2), in: mod) else { return "" }
+            
+            let type = String(mod[rangeType])
+            let value = mod[rangeValue]
+            
+            switch type {
+            case "method":
+                return "``\(convertMethod (value))``"
+            case "member":
+                // Same as method for now?
+                return "``\(convertMember(value))``"
+            case "enum":
+                if let cdef {
+                    if let enums = cdef.enums {
+                        // If it is a local enum
+                        if enums.contains(where: { $0.name == value }) {
+                            return "``\(cdef.name)/\(value)``"
                         }
                     }
-                    return "``\(getGodotType(SimpleType(type: "enum::" + x.output.2)))``"
-                    
-                default:
-                    print ("Doc: Error, unexpected \(x.output.1) tag")
-                    return "[\(x.output.1) \(x.output.2)]"
                 }
-            })
-            
-            // [FirstLetterIsUpperCase] is a reference to a type
-            mod = mod.replacing(rxTypeName, with: { x in
-                let word = x.output.1
-                return "``\(mapTypeNameDoc (String (word)))``"
-            })
-            // To avoid the greedy problem, it happens above, but not as much
-            mod = mod.replacing("[b]Note:[/b]", with: "> Note:")
-            mod = mod.replacing("[int]", with: "integer")
-            mod = mod.replacing("[float]", with: "float")
-            mod = mod.replacing("[b]Warning:[/b]", with: "> Warning:")
-            mod = mod.replacing("[i]", with: "_")
-            mod = mod.replacing("[/i]", with: "_")
-            mod = mod.replacing("[b]", with: "**")
-            mod = mod.replacing("[/b]", with: "**")
-            mod = mod.replacing("[code]", with: "`")
-            mod = mod.replacing("[/code]", with: "`")
-            mod = mod.trimmingPrefix(rxEmptyLeading)
-            // TODO
-            // [member X]
-            // [signal X]
-            
+                return "``\(getGodotType(SimpleType(type: "enum::" + value)))``"
+                
+            default:
+                print("Doc: Error, unexpected \(type) tag")
+                return "[\(type) \(value)]"
+            }
         }
+        
+        // [FirstLetterIsUpperCase] is a reference to a type
+        mod = performRegexReplacement(regex: rxTypeName, in: mod) { match in
+            guard let rangeWord = Range(match.range(at: 1), in: mod) else { return "" }
+            let word = mod[rangeWord]
+            return "``\(mapTypeNameDoc (String (word)))``"
+        }
+        
+        // To avoid the greedy problem, it happens above, but not as much
+        mod = Substring(mod.replacingOccurrences(of: "[b]Note:[/b]", with: "> Note:"))
+        mod = Substring(mod.replacingOccurrences(of: "[int]", with: "integer"))
+        mod = Substring(mod.replacingOccurrences(of: "[float]", with: "float"))
+        
+        mod = Substring(mod.replacingOccurrences(of: "[b]Warning:[/b]", with: "> Warning:"))
+        mod = Substring(mod.replacingOccurrences(of: "[i]", with: "_"))
+        mod = Substring(mod.replacingOccurrences(of: "[/i]", with: "_"))
+        mod = Substring(mod.replacingOccurrences(of: "[b]", with: "**"))
+        mod = Substring(mod.replacingOccurrences(of: "[/b]", with: "**"))
+        mod = Substring(mod.replacingOccurrences(of: "[code]", with: "`"))
+        mod = Substring(mod.replacingOccurrences(of: "[/code]", with: "`"))
+        
+        let range = NSRange(mod.startIndex..<mod.endIndex, in: mod)
+        if let match = rxEmptyLeading.firstMatch(in: String(mod), range: range), match.range.location == 0 {
+            mod.removeSubrange(mod.startIndex..<Range(match.range, in: mod)!.upperBound)
+        }
+        // TODO
+        // [member X]
+        // [signal X]
+        
         if lines.count > 1 {
             p (String (mod)+"\n")
         } else {

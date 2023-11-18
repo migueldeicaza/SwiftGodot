@@ -114,8 +114,14 @@ extension String {
         let pattern = #"\b[a-zA-Z_][a-zA-Z0-9_]*\b"#
 
         do {
-            let regex = try Regex(pattern)
-            return wholeMatch(of: regex) != nil
+            let regex = try NSRegularExpression(pattern: pattern)
+            let range = NSRange(self.startIndex..<self.endIndex, in: self)
+            
+            if let match = regex.firstMatch(in: self, range: range) {
+                return match.range == range
+            } else {
+                return false
+            }
         } catch {
             fatalError("Invalid regex pattern: \(error)")
         }
