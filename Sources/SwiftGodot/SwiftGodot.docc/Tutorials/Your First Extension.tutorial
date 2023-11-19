@@ -65,7 +65,7 @@
         
         @Steps {
             @Step {
-                Create a new Swift file called **PlayerController** in the SimpleRunnerDriver package and import the 
+                Create a new Swift file called **PlayerController.swift** in the `Sources/SimpleRunnerDriver` directory and import the 
                 SwiftGodot library.
                 
                 @Code(name: "PlayerController.swift", file: "PlayerController-starter-init.swift", reset: true)
