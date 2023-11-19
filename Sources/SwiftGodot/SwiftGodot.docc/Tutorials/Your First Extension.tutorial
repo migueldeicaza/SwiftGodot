@@ -162,7 +162,7 @@
             }
             @Step {
                 Create a `libraries` section and set the path of `macos.debug` to
-                `res://bin/libSimpleRunnerDriver.dylib`.
+                `res://bin/libSimpleRunnerDriver.dylib`. And a `dependencies` section that will be used to copy the library into the application when exporting the project.
                 
                 The name of the file corresponds to the built version of the dynamic library.
                 

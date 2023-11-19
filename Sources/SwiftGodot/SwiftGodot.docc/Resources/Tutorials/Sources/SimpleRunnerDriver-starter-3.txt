@@ -4,3 +4,6 @@ compatibility_minimum = 4.1
 
 [libraries]
 macos.debug = "res://bin/libSimpleRunnerDriver.dylib"
+
+[dependencies]
+macos.debug = {"res://bin/libSwiftGodot.dylib" : ""}
