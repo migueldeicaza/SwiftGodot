@@ -144,6 +144,8 @@
             
         @Steps {
             @Step {
+                Download the provided Example project **SimpleRunner-Starter.zip** at the top of the page.
+
                 Create a new `bin` folder in the SimpleRunner Godot project with an empty file 
                 `SimpleRunnerDriver.gdextension`.
                 
