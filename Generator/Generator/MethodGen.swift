@@ -98,7 +98,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             p ("\(staticVarVisibility)static var \(bindName): GDExtensionMethodBindPtr =", suffix: "()") {
                 p ("let methodName = StringName (\"\(method.name)\")")
             
-                p ("return withUnsafePointer (to: &\(className).className.content)", arg: " classPtr in") {
+                p ("return withUnsafePointer (to: &\(className).godotClassName.content)", arg: " classPtr in") {
                     p ("withUnsafePointer (to: &methodName.content)", arg: " mnamePtr in") {
                         p ("gi.classdb_get_method_bind (classPtr, mnamePtr, \(methodHash))!")
                     }

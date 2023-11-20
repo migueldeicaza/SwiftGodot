@@ -54,11 +54,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "void*", "const Glyph*":
         return "nil"
     default:
-        if isCoreType(name: godotType) {
-            return "\(getGodotType(SimpleType (type: godotType))) ()"
-        } else {
-            return "\(getGodotType(SimpleType (type: godotType))) (fast: true)"
-        }
+        return "\(getGodotType(SimpleType (type: godotType))) ()"
     }
 }
 
@@ -651,39 +647,12 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         if isSingleton {
             p ("/// The shared instance of this class")
             p ("public static var shared: \(cdef.name) =", suffix: "()") {
-                p ("withUnsafePointer (to: &\(cdef.name).className.content)", arg: " ptr in") {
+                p ("withUnsafePointer (to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
                     p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (ptr)!)")
                 }
             }
         }
-        p ("static private var className = StringName (\"\(cdef.name)\")")
-        p ("/// Creates a \(cdef.name) that wraps the Godot native object pointed to by the nativeHandle")
-        p ("public required init (nativeHandle: UnsafeRawPointer)") {
-            p("super.init (nativeHandle: nativeHandle)")
-        }
-        p ("/// Ths initializer is invoked by derived classes as they chain through their most derived type name that our framework produced")
-        p ("internal override init (name: StringName)") {
-            p("super.init (name: name)")
-        }
-        
-        let fastInitOverrides = cdef.inherits != nil ? "override " : ""
-        
-        p ("internal \(fastInitOverrides)init (fast: Bool)") {
-            p ("super.init (name: \(cdef.name).className)")
-        }
-        if cdef.isInstantiable {
-            p ("/// Initializes a new instance of the type \(cdef.name), call this constructor")
-            p ("/// when you create a subclass of this type.")
-            p ("public required init ()") {
-                p ("super.init (name: StringName (\"\(cdef.name)\"))")
-                p ("let _ = Self.classInitializer")
-            }
-        } else {
-            p ("/// This class can not be instantiated by user code")
-            p ("public required init ()") {
-                p ("fatalError (\"You cannot subclass or instantiate \(cdef.name) directly\")")
-            }
-        }
+        p ("override open class var godotClassName: StringName { \"\(cdef.name)\" }")
         
         var referencedMethods = Set<String>()
         
@@ -711,10 +680,6 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         // Remove code that we did not want generated
         if okList.count > 0 && !okList.contains (cdef.name) {
             p.result = oResult
-        }
-        
-        if cdef.name == "Object" {
-            p ("open class var classInitializer: Void { () }")
         }
     }
 
