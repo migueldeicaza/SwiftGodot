@@ -45,7 +45,31 @@ final class MacroGodotTests: XCTestCase {
             macros: testMacros
         )
     }
-    
+
+    func testGodotMacroWithFinalClass() {
+        assertMacroExpansion(
+            """
+            @Godot final class Hi: Node {
+            }
+            """,
+            expandedSource: """
+            final class Hi: Node {
+
+                override public class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
+
+                private static var _initializeClass: Void = {
+                    let className = StringName("Hi")
+                    let classInfo = ClassInfo<Hi> (name: className)
+                } ()
+            }
+            """,
+            macros: testMacros
+        )
+    }
+
     func testGodotVirtualMethodsMacro() {
         assertMacroExpansion(
             """
