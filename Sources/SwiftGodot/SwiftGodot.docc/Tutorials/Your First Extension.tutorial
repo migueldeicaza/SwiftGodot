@@ -65,7 +65,7 @@
         
         @Steps {
             @Step {
-                Create a new Swift file called **PlayerController** in the SimpleRunnerDriver package and import the 
+                Create a new Swift file called **PlayerController.swift** in the `Sources/SimpleRunnerDriver` directory and import the 
                 SwiftGodot library.
                 
                 @Code(name: "PlayerController.swift", file: "PlayerController-starter-init.swift", reset: true)
@@ -144,6 +144,8 @@
             
         @Steps {
             @Step {
+                Download the provided Example project **SimpleRunner-Starter.zip** at the top of the page.
+
                 Create a new `bin` folder in the SimpleRunner Godot project with an empty file 
                 `SimpleRunnerDriver.gdextension`.
                 
@@ -160,7 +162,7 @@
             }
             @Step {
                 Create a `libraries` section and set the path of `macos.debug` to
-                `res://bin/libSimpleRunnerDriver.dylib`.
+                `res://bin/libSimpleRunnerDriver.dylib`. And a `dependencies` section that will be used to copy the library into the application when exporting the project.
                 
                 The name of the file corresponds to the built version of the dynamic library.
                 
