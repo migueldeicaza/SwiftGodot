@@ -12,7 +12,13 @@ import ExtensionApi
 ///
 func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
     if let pstart = val.firstIndex(of: "("), let pend = val.lastIndex(of: ")"){
-        let splitArgs = val [val.index(pstart, offsetBy: 1)..<pend].split(separator: ", ")
+        let va = val [val.index(pstart, offsetBy: 1)..<pend]
+        let splitArgs: [Substring.SubSequence]
+        if #available(iOS 16.0, *) {
+            splitArgs = va.split(separator: ", ")
+        } else {
+            fatalError ("This requires a modern MacOS to build")
+        }
         // Find a constructor with that number of arguments
         for constructor in bc.constructors {
             
