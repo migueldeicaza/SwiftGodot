@@ -275,7 +275,7 @@ public struct GodotMacro: MemberMacro {
                     return stringName
                 }
                 
-                var implementedOverridesDecl = "override open class func implementedOverrides() -> [StringName] {\nsuper.implementedOverrides() + [\n"
+                var implementedOverridesDecl = "override \(accessControlLevel) class func implementedOverrides() -> [StringName] {\nsuper.implementedOverrides() + [\n"
                 for name in stringNames {
                     implementedOverridesDecl.append("\t\(name),\n")
                 }
