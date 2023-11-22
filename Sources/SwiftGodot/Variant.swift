@@ -152,9 +152,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     ///
     /// Attempts to cast the Variant into a GodotObject, this requires that the Variant value be of type `.object`.
+    /// - Parameter type: the desired type eg. `.asObject(Node.self)`
     /// - Returns: nil on error, or the type on success
     ///
-    public func asObject<T:GodotObject> () -> T? {
+    public func asObject<T:GodotObject> (_ type: T.Type = T.self) -> T? {
         guard gtype == .object else {
             return nil
         }
