@@ -16,7 +16,6 @@ public class ObjectCollection<Element: Object>: Collection {
     
     init (content: Int64) {
         array = GArray (content: content)
-        initType()
     }
     
     func initType () {
