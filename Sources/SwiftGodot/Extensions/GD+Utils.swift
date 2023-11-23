@@ -76,6 +76,7 @@ extension GD {
     /// - Parameter function: the calling function
     /// - Parameter line: the calling line
     public static func printDebug(_ items: Any..., separator: String = " ", fileID: StaticString = #fileID, function: StaticString = #function, line: UInt = #line) {
+        guard OS.isDebugBuild() else { return }
         let transformedItems = items.map(String.init(describing:))
         let finalMessage = transformedItems.joined(separator: separator) + "\n   At: \(fileID):\(line):\(function)"
         GD.print(arg1: Variant(GString(stringLiteral: finalMessage)))
