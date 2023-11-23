@@ -48,7 +48,7 @@ public struct GodotExport: PeerMacro {
     		(res as? RefCounted)?.reference()
     		\(varName) = res
     	}\(optBody)
-    	oldRef?.unreference()
+    	_ = oldRef?.unreference()
     """
         } else {
             if isOptional {
