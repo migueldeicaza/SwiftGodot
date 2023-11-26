@@ -15,7 +15,7 @@ open class GodotTestCase: XCTestCase {
     
     override open class var defaultTestSuite: XCTestSuite {
         let testSuite = super.defaultTestSuite
-        testSuites.append(testSuite)
+        testSuites.append (testSuite)
         return testSuite
     }
     
@@ -31,12 +31,30 @@ open class GodotTestCase: XCTestCase {
                         testSuite.perform (XCTestSuiteRun (test: testSuite))
                     }
                 } else {
+                    Self.godotSetUp ()
                     // Executing single test method
                     super.run ()
+                    Self.godotTearDown ()
                 }
                 
                 GodotRuntime.stop ()
             }
+        }
+    }
+    
+    open class func godotSetUp () {}
+    
+    override open class func setUp () {
+        if GodotRuntime.isRunning {
+            godotSetUp ()
+        }
+    }
+    
+    open class func godotTearDown () {}
+    
+    override open class func tearDown () {
+        if GodotRuntime.isRunning {
+            godotTearDown ()
         }
     }
     
