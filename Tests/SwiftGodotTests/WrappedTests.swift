@@ -25,9 +25,8 @@ final class WrappedTests: GodotTestCase {
         // framework object
         autoreleasepool {
             let node = Node ()
-            checker.assign (node)
+            checker.reference = node
             node.queueFree ()
-            checker.free ()
         }
         await scene.processFrame.emitted
         checker.assertDisposed ()
@@ -35,9 +34,8 @@ final class WrappedTests: GodotTestCase {
         // subtyped object
         autoreleasepool {
             let node = SubtypedNode ()
-            checker.assign (node)
+            checker.reference = node
             node.queueFree ()
-            checker.free ()
         }
         await scene.processFrame.emitted
         checker.assertDisposed ()
@@ -50,19 +48,10 @@ class SubtypedNode: Node { }
 
 final class ReferenceChecker {
     
-    private var strongReference: AnyObject?
-    private weak var weakReference: AnyObject?
+    weak var reference: AnyObject?
     
-    func assign (_ object: AnyObject) {
-        strongReference = object
-        weakReference = object
-    }
-    
-    func free () {
-        strongReference = nil
-    }
     func assertDisposed (file: StaticString = #file, line: UInt = #line) {
-        XCTAssertTrue (weakReference == nil, "Object was not disposed", file: file, line: line)
+        XCTAssertTrue (reference == nil, "Object was not disposed", file: file, line: line)
     }
     
 }
