@@ -480,6 +480,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 
         if bc.name == "String" || bc.name == "StringName" || bc.name == "NodePath" {
             conformances.append ("ExpressibleByStringLiteral")
+            conformances.append ("ExpressibleByStringInterpolation")
         }
         if bc.name.starts(with: "Packed") {
             conformances.append ("Collection")
