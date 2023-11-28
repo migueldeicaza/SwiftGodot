@@ -31,7 +31,6 @@ public extension IntScalable {
     }
     
 }
-
 public protocol DoubleScalable {
     
     static func / (lhs: Self, rhs: Double) -> Self

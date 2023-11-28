@@ -366,3 +366,56 @@ func frameworkTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMut
     return 1
 }
 
+/// This function is called by Godot to invoke our callable, and contains our context in `userData`,
+/// pointer to Variants, an argument count, and a way of returing an error
+///
+/// We extract the arguments and call  the CallableWrapper.method
+///
+func callableProxy (userData: UnsafeMutableRawPointer?, pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
+    guard let pargs else { return }
+    guard let userData else { return }
+    let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(userData)
+    let wrapper = r.takeUnretainedValue()
+    var args: [Variant] = []
+    for i in 0..<argc {
+        let variant = pargs [Int(i)]!.assumingMemoryBound(to: Variant.self).pointee
+        args.append (variant)
+    }
+    if let methodRet = wrapper.method (args) {
+        retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
+    }
+}
+
+func freeMethodWrapper (ptr: UnsafeMutableRawPointer?) {
+    guard let ptr else { return }
+    let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(ptr)
+    r.release()
+}
+
+class CallableWrapper {
+    var method: ([Variant])->Variant?
+    init (method: @escaping ([Variant])->Variant?) {
+        self.method = method
+    }
+    
+    static func makeCallable (_ method: @escaping ([Variant])->Variant?) -> Callable.ContentType {
+        let wrapper = CallableWrapper(method: method)
+        let retained = Unmanaged.passRetained(wrapper)
+        
+        var cci = GDExtensionCallableCustomInfo(
+            callable_userdata: retained.toOpaque(),
+            token: token,
+            object_id: 0,
+            call_func: callableProxy,
+            is_valid_func: nil,
+            free_func: freeMethodWrapper,
+            hash_func: nil,
+            equal_func: nil,
+            less_than_func: nil,
+            to_string_func: nil)
+        var content: Callable.ContentType = Callable.zero
+        gi.callable_custom_create (&content, &cci);
+        return content
+    }
+}
+
