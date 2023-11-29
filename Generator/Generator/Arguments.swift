@@ -82,13 +82,13 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
             
             switch argumentType {
                 // Handle empty type arrays
-                case let at where at.hasPrefix("typedarray::"):
-                    if dv == "[]" {
-                        def = " = \(getGodotType(argument, kind: kind)) ()"
-                    } else {
-                        // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
-                        dvMissing (argumentType)
-                    }
+            case let at where at.hasPrefix("typedarray::"):
+                // We can not generate an array value for RDPipelineSpecializationConstant because it has no public constructor
+                if dv == "[]" || dv.hasSuffix("]([])") && !dv.contains("RDPipelineSpecializationConstant"){
+                    def = " = \(getGodotType(argument, kind: kind)) ()"
+                } else {
+                    dvMissing (argumentType)
+                }
             case "Dictionary":
                 if dv == "{}" {
                     def = " = GDictionary ()"
@@ -151,6 +151,10 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
             case "Transform3D":
                 def = makeWith { a in
                     return "xAxis: Vector3 (x: \(a[0]), y: \(a[1]), z: \(a[2])), yAxis: Vector3 (x: \(a[3]), y: \(a[4]), z: \(a[5])), zAxis: Vector3(x: \(a[6]), y: \(a[7]), z: \(a[8])), origin: Vector3 (x: \(a[9]), y: \(a[10]), z: \(a[11]))"
+                }
+            case "Variant":
+                if dv == "0" {
+                    def = "Variant (0)"
                 }
             default:
                 if dv == "null" {
