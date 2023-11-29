@@ -30,7 +30,29 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
     
     var def: String = ""
     if let dv = argument.defaultValue, dv != "" {
+        func dvMissing (_ kind: String) {
+            print ("Generator/default_value: no support for [\(kind)] = \(dv)")
+        }
+        
         let argumentType = argument.type
+        
+        // This method is useful to customize the output of a call to a constructor
+        // it splits out the arguments into an array of strings, calls the constructor
+        // and then puts together the constructor invocation
+        func makeWith (_ callback: ([String]) -> String) -> String {
+            let values = String (dv [dv.firstIndex(of: "(")!...].dropFirst ().dropLast()).split (separator: ", ").map { String ($0) }
+            let res = callback (values)
+            return " = \(argumentType) (\(res))"
+        }
+        // Given a dv of "Vector (1,0)" returns a SwiftGodot suitable "Vector(x: 1, y: 0)" based on the
+        // args value that contains the desired labels
+        func makeDef (_ args: [String]) -> String {
+            // Turn a string like 'Vector2(0, 1)' into the array of values ["0", "1"]
+            makeWith { values in
+                return zip (args, values).map { v in String ("\(v.0): \(v.1)") }.joined (separator: ", ")
+            }
+        }
+        
         // TODO:
         //  - handle creating initializers from enums (builtint)
         //  - empty arrays
@@ -49,7 +71,7 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                     def = " = \(ev)"
                 }
             } else if argumentType == "Variant" {
-                // Not supported
+                dvMissing ("Variant")
             } else {
                 def = " = \(dv)"
             }
@@ -58,21 +80,22 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
             // above, as the do-not-run conditions are becoming large and difficult
             // to parse - they were fine to bootstrap, but not for the long term.
             
-            // Handle empty type arrays
-            if argumentType.starts(with: "typedarray::") {
-                if dv == "[]" {
-                    def = " = \(getGodotType(argument, kind: kind)) ()"
-                } else {
-                    // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
-                    //print ("Generator: \(argumentType) support for default value: \(dv)")
-                }
-            } else if argumentType == "Dictionary" {
+            switch argumentType {
+                // Handle empty type arrays
+                case let at where at.hasPrefix("typedarray::"):
+                    if dv == "[]" {
+                        def = " = \(getGodotType(argument, kind: kind)) ()"
+                    } else {
+                        // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
+                        dvMissing (argumentType)
+                    }
+            case "Dictionary":
                 if dv == "{}" {
                     def = " = GDictionary ()"
                 } else {
-                    print ("Generator: \(argumentType) missing support for default value: \(dv)")
+                    dvMissing (argumentType)
                 }
-            } else if argumentType.starts(with: "bitfield::") {
+            case let bt where bt.hasPrefix("bitfield::"):
                 if let defIntValue = Int (dv) {
                     if defIntValue == 0 {
                         def = " = []"
@@ -93,18 +116,51 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
                             }
                             def = " = [\(setValues)]"
                         } else {
-                            print ("Generator: \(argumentType) could not produce default value for \(dv) because I can not find the type")
+                            dvMissing ("\(argumentType) due to not being able to lookup the type")
                         }
                     }
                 } else {
-                    print ("Generator: bitfield:: with a non-integer default value")
+                    dvMissing ("bitfield:: with a non-integer default value")
                 }
-            } else if argumentType == "Array" {
+            case "Array":
                 if dv == "[]" {
                     def = " = GArray ()"
                 } else {
                     // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
-                    //print ("Generator: no support for arrays with values: \(dv)")
+                    dvMissing ("arrays with values")
+                    print ("Generator: no support for arrays with values: \(dv)")
+                }
+            case "Vector2":
+                def = makeDef (["x", "y"])
+            case "Vector2i":
+                def = makeDef (["x", "y"])
+            case "Vector3":
+                def = makeDef (["x", "y", "z"])
+            case "Color":
+                def = makeDef (["r", "g", "b", "a"])
+            case "Rect2":
+                def = makeDef (["x", "y", "width", "height"])
+            case "Rect2i":
+                def = makeDef (["x", "y", "width", "height"])
+            case "Transform2D":
+                def = makeWith { a in
+                    return "xAxis: Vector2 (x: \(a[0]), y: \(a[1])), yAxis: Vector2 (x: \(a[2]), y: \(a[3])), origin: Vector2 (x: \(a[4]), y: \(a[5]))"
+                }
+            case "NodePath":
+                def = " = \(dv)"
+            case "Transform3D":
+                def = makeWith { a in
+                    return "xAxis: Vector3 (x: \(a[0]), y: \(a[1]), z: \(a[2])), yAxis: Vector3 (x: \(a[3]), y: \(a[4]), z: \(a[5])), zAxis: Vector3(x: \(a[6]), y: \(a[7]), z: \(a[8])), origin: Vector3 (x: \(a[9]), y: \(a[10]), z: \(a[11]))"
+                }
+            default:
+                if dv == "null" {
+                    if argumentType == "Variant" {
+                        def = " = Variant ()"
+                    } else {
+                        def = " = nil"
+                    }
+                } else {
+                    dvMissing ("General \(argumentType)")
                 }
             }
         }
