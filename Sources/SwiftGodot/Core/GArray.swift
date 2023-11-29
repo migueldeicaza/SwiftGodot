@@ -11,6 +11,15 @@ public enum ArrayError {
     case outOfRange
 }
 extension GArray: Collection {
+	public convenience init<T: VariantStorable>(_ type: T.Type = T.self) {
+		self.init(
+			base: GArray(),
+			type: Int32(T.Representable.godotType.rawValue),
+			className: T.Representable.godotType == .object ? StringName("\(T.self)") : StringName(),
+			script: Variant()
+		)
+	}
+	
     public func index(after i: Int) -> Int {
         return i+1
     }

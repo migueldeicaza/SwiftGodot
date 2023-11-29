@@ -11,12 +11,20 @@
 public protocol GodotObject: Wrapped {}
 
 /// This represents a typed array of one of the built-in types from Godot
-public class ObjectCollection<Element: Object>: Collection {
-    var array: GArray
+public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+	public typealias ArrayLiteralElement = Element
+	
+    public var array: GArray
     
     init (content: Int64) {
         array = GArray (content: content)
     }
+	
+	public required init(arrayLiteral elements: ArrayLiteralElement...) {
+		array = elements.reduce(into: .init(Element.self)) {
+			$0.append(value: Variant($1))
+		}
+	}
     
     func initType () {
         let name = StringName()
