@@ -188,7 +188,7 @@ class GodotMacroProcessor {
             throw GodotMacroError.noVariablesFound
         }
         
-        guard var type = last.typeAnnotation?.type else {
+        guard let type = last.typeAnnotation?.type else {
             throw GodotMacroError.noTypeFound(varDecl)
         }
         
