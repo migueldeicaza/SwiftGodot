@@ -13,32 +13,33 @@ final class VariantCollectionTests: GodotTestCase {
     }
 
     func testInitWithElementsStoresInArray() throws {
-        let sut: VariantCollection<Int> = [3]
+        let sut: VariantCollection<Int> = [333]
 
         XCTAssertEqual(sut.array.count, 1)
         let firstVariant = try XCTUnwrap(sut.array.first)
-        XCTAssertEqual(Int(firstVariant), 3)
+        XCTAssertEqual(Int(firstVariant), 333)
     }
 
     func testArrayCanBeReassigned() throws {
-        let sut: VariantCollection<Int> = [8]
+        let sut: VariantCollection<Int> = [888]
 
-        let newArray: GArray = [13].reduce(into: GArray(Int.self)) { $0.append(value: Variant($1)) }
+        let newArray: GArray = [999].reduce(into: GArray(Int.self)) { $0.append(value: Variant($1)) }
 
         sut.array = newArray
         
         XCTAssertEqual(sut.array, newArray)
         XCTAssertEqual(sut.array.count, 1)
         let firstVariant = try XCTUnwrap(sut.array.first)
-        XCTAssertEqual(Int(firstVariant), 13)
+        XCTAssertEqual(Int(firstVariant), 999)
     }
     
-    func testArrayCanBeModifiedOutsideOfTheCollection() {
+    func testArrayCanBeModifiedOutsideOfTheCollection() throws {
         let sut: VariantCollection<Int> = []
         
-        sut.array.append(value: Variant(100))
+        sut.array.append(value: Variant(222))
         
         XCTAssertEqual(sut.count, 1)
-        XCTAssertEqual(sut[0], 100)
+        let first = try XCTUnwrap(sut.first)
+        XCTAssertEqual(first, 222)
     }
 }
