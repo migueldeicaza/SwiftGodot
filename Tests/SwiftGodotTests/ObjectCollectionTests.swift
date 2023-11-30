@@ -12,25 +12,29 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 final class ObjectCollectionTests: GodotTestCase {
-    func testAppendingElementStoresInArray() throws {
+    func testAppendingElementStoresInArray() {
         let sut: ObjectCollection<Node> = []
         let node = Node()
         
         sut.append(value: node)
         
-        let firstVariant = try XCTUnwrap(sut.array.first)
-        XCTAssertEqual(node, Node.makeOrUnwrap(firstVariant))
+        XCTAssertEqual(sut.count, 1, "The collection should have one element after one element has been appended")
+        XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) behind the collection should have one element after one element has been appended")
+        XCTAssertEqual(node, Node.makeOrUnwrap(sut.array[0]), "The first element in the \(GArray.self) should hold the appended node")
+        XCTAssertEqual(node, sut[0], "The first element in the collection should equal the appended node")
     }
 
-    func testInitWithElementsStoresInArray() throws {
+    func testInitWithElementsStoresInArray() {
         let node = Node()
         let sut: ObjectCollection<Node> = [node]
 
-        let firstVariant = try XCTUnwrap(sut.array.first)
-        XCTAssertEqual(Node.makeOrUnwrap(firstVariant), node)
+        XCTAssertEqual(sut.count, 1, "The collection should have one element after being initialized with a node")
+        XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) behind the collection should have one element after being initialized with a node")
+        XCTAssertEqual(Node.makeOrUnwrap(sut.array[0]), node, "The first element in the \(GArray.self) should be the node passed to init")
+        XCTAssertEqual(sut[0], node, "The first element in the collection should be the node passed to init")
     }
 
-    func testArrayCanBeReassigned() throws {
+    func testArrayCanBeReassigned() {
         let sut: ObjectCollection<Node> = [.init()]
         
         let otherNode = Node()
@@ -38,21 +42,21 @@ final class ObjectCollectionTests: GodotTestCase {
 
         sut.array = newArray
         
-        XCTAssertEqual(sut.array, newArray)
-        let firstVariant = try XCTUnwrap(sut.array.first)
-        XCTAssertEqual(sut.array.count, 1)
-        XCTAssertEqual(Node.makeOrUnwrap(firstVariant), otherNode)
+        XCTAssertEqual(sut.array, newArray, "The GArray should equal the new \(GArray.self)")
+        XCTAssertEqual(sut.count, 1, "The collection count should be 1 after the \(GArray.self) with 0 elements is reassigned with a \(GArray.self) with 1 element")
+        XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) count should be 1 after the \(GArray.self) with 0 elements is reassigned with a \(GArray.self) with 1 element")
+        XCTAssertEqual(Node.makeOrUnwrap(sut.array[0]), otherNode, "The first element in the \(GArray.self) should hold the new node")
+        XCTAssertEqual(sut[0], otherNode, "The first element in the collection should be the new node")
     }
     
-    func testArrayCanBeModifiedOutsideOfTheCollection() throws {
+    func testArrayCanBeModifiedOutsideOfTheCollection() {
         let sut: ObjectCollection<Node> = []
         
         let node = Node()
         sut.array.append(value: Variant(node))
         
-        let firstElement = try XCTUnwrap(sut.first)
-        XCTAssertEqual(sut.count, 1)
-        XCTAssertEqual(firstElement, node)
+        XCTAssertEqual(sut.count, 1, "The collection count should be 1 after a Variant was appended to the \(GArray.self)")
+        XCTAssertEqual(sut[0], node, "The first element in the collection should be the appended node")
     }
 }
 
