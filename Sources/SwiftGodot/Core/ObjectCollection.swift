@@ -26,6 +26,12 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
 		}
 	}
     
+    public init(_ elements: [Element]) {
+        array = elements.reduce(into: .init(Element.self)) {
+            $0.append(value: Variant($1))
+        }
+    }
+    
     func initType () {
         let name = StringName()
         let variant = Variant()

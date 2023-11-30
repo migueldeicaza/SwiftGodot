@@ -24,7 +24,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     }
     
     public init () {
-        array = GArray ()
+        array = GArray (Element.self)
         
 //        let name = StringName()
 //        let variant = Variant()
