@@ -82,7 +82,7 @@ let knownBuiltin = [
     "Vector4.swift",
     "Vector4i.swift",
     "core-defs.swift",
-    "utility.swift"
+    "utility.swift",
 ]
 
 let known = [
@@ -335,12 +335,9 @@ let known = [
     "Font.swift",
     "FontFile.swift",
     "FontVariation.swift",
-    "FramebufferCacheRD.swift",
     "GDExtension.swift",
     "GDExtensionManager.swift",
     "GDScript.swift",
-    "GDScriptEditorTranslationParserPlugin.swift",
-    "GDScriptNativeClass.swift",
     "GLTFAccessor.swift",
     "GLTFAnimation.swift",
     "GLTFBufferView.swift",
@@ -348,8 +345,6 @@ let known = [
     "GLTFDocument.swift",
     "GLTFDocumentExtension.swift",
     "GLTFDocumentExtensionConvertImporterMesh.swift",
-    "GLTFDocumentExtensionPhysics.swift",
-    "GLTFDocumentExtensionTextureWebP.swift",
     "GLTFLight.swift",
     "GLTFMesh.swift",
     "GLTFNode.swift",
@@ -376,8 +371,6 @@ let known = [
     "Geometry2D.swift",
     "Geometry3D.swift",
     "GeometryInstance3D.swift",
-    "GodotPhysicsServer2D.swift",
-    "GodotPhysicsServer3D.swift",
     "Gradient.swift",
     "GradientTexture1D.swift",
     "GradientTexture2D.swift",
@@ -400,7 +393,6 @@ let known = [
     "HeightMapShape3D.swift",
     "HingeJoint3D.swift",
     "IP.swift",
-    "IPUnix.swift",
     "Image.swift",
     "ImageFormatLoader.swift",
     "ImageFormatLoaderExtension.swift",
@@ -477,8 +469,6 @@ let known = [
     "MissingResource.swift",
     "MobileVRInterface.swift",
     "MovieWriter.swift",
-    "MovieWriterMJPEG.swift",
-    "MovieWriterPNGWAV.swift",
     "MultiMesh.swift",
     "MultiMeshInstance2D.swift",
     "MultiMeshInstance3D.swift",
@@ -652,7 +642,6 @@ let known = [
     "RenderSceneBuffersExtension.swift",
     "RenderSceneBuffersRD.swift",
     "Resource.swift",
-    "ResourceFormatImporterSaver.swift",
     "ResourceFormatLoader.swift",
     "ResourceFormatSaver.swift",
     "ResourceImporter.swift",
@@ -812,7 +801,6 @@ let known = [
     "UPNP.swift",
     "UPNPDevice.swift",
     "UndoRedo.swift",
-    "UniformSetCacheRD.swift",
     "VBoxContainer.swift",
     "VFlowContainer.swift",
     "VScrollBar.swift",
@@ -974,5 +962,4 @@ let known = [
     "XRServer.swift",
     "ZIPPacker.swift",
     "ZIPReader.swift",
-
 ]
