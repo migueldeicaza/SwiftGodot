@@ -185,6 +185,7 @@ class GodotMacroProcessor {
     """
     private static var _initializeClass: Void = {
         let className = StringName("\(className)")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
         for member in classDecl.memberBlock.members.enumerated() {
