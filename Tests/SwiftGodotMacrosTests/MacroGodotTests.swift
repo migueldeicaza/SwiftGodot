@@ -267,7 +267,7 @@ final class MacroGodotTests: XCTestCase {
             @Godot class MathHelper: Node {
                 @Callable func multiply(_ a: Int, by b: Int) -> Int { a * b}
                 @Callable func divide(_ a: Float, by b: Float) -> Float { a / b }
-                @Callable func areBothTrue(_ a: Bool, and b: Bool) { a == b }
+                @Callable func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
             }
             """,
             expandedSource:
@@ -285,11 +285,11 @@ class MathHelper: Node {
     	let result = divide (Float.makeOrUnwrap (args [0])!, by: Float.makeOrUnwrap (args [1])!)
     	return Variant (result)
     }
-    func areBothTrue(_ a: Bool, and b: Bool) { a == b }
+    func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
 
     func _mproxy_areBothTrue (args: [Variant]) -> Variant? {
-    	areBothTrue (Bool.makeOrUnwrap (args [0])!, and: Bool.makeOrUnwrap (args [1])!)
-    	return nil
+    	let result = areBothTrue (Bool.makeOrUnwrap (args [0])!, and: Bool.makeOrUnwrap (args [1])!)
+    	return Variant (result)
     }
 
     override open class var classInitializer: Void {
@@ -316,13 +316,14 @@ class MathHelper: Node {
     		prop_5,
     	]
     	classInfo.registerMethod(name: StringName("divide"), flags: .default, returnValue: prop_3, arguments: divideArgs, function: MathHelper._mproxy_divide)
-        let prop_6 = PropInfo (propertyType: .bool, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-    	let prop_7 = PropInfo (propertyType: .bool, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+        let prop_6 = PropInfo (propertyType: .bool, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_7 = PropInfo (propertyType: .bool, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_8 = PropInfo (propertyType: .bool, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
     	let areBothTrueArgs = [
-    		prop_6,
     		prop_7,
+    		prop_8,
     	]
-    	classInfo.registerMethod(name: StringName("areBothTrue"), flags: .default, returnValue: nil, arguments: areBothTrueArgs, function: MathHelper._mproxy_areBothTrue)
+    	classInfo.registerMethod(name: StringName("areBothTrue"), flags: .default, returnValue: prop_6, arguments: areBothTrueArgs, function: MathHelper._mproxy_areBothTrue)
     } ()
 }
 """,
