@@ -187,6 +187,7 @@ final class MacroGodotTests: XCTestCase {
                 @Callable func subscribe(podcast: Podcast) {}
                 @Callable func removeSilences(from: Variant) {}
                 @Callable func getLatestEpisode(podcast: Podcast) -> Episode {}
+                @Callable func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
             }
             """,
             expandedSource:
@@ -216,6 +217,12 @@ final class MacroGodotTests: XCTestCase {
                 	let result = getLatestEpisode (podcast: Podcast.makeOrUnwrap (args [0])!)
                 	return Variant (result)
                 }
+                func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
+
+                func _mproxy_queue (args: [Variant]) -> Variant? {
+                	queue (Podcast.makeOrUnwrap (args [0])!, after: Podcast.makeOrUnwrap (args [1])!)
+                	return nil
+                }
 
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
@@ -241,6 +248,12 @@ final class MacroGodotTests: XCTestCase {
                 		prop_0,
                 	]
                 	classInfo.registerMethod(name: StringName("getLatestEpisode"), flags: .default, returnValue: prop_2, arguments: getLatestEpisodeArgs, function: Castro._mproxy_getLatestEpisode)
+                    let prop_3 = PropInfo (propertyType: .object, propertyName: "preceedingPodcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
+                	let queueArgs = [
+                		prop_0,
+                		prop_3,
+                	]
+                	classInfo.registerMethod(name: StringName("queue"), flags: .default, returnValue: nil, arguments: queueArgs, function: Castro._mproxy_queue)
                 } ()
             }
             """,
