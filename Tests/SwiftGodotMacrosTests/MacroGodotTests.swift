@@ -177,7 +177,7 @@ final class MacroGodotTests: XCTestCase {
         )
     }
 	
-	func testGodotMacroWithCallableFunc() {
+	func testGodotMacroWithCallableFuncWithObjectParams() {
 		// Note when editing: Xcode loves to change all indentation to be consistent as either tabs or spaces, but the macro expansion produces a mix.
 		// I had to set Settings->Text Editing->Tab Key to "Inserts a Tab Character" in order to resolve this.
 		assertMacroExpansion(
@@ -260,6 +260,75 @@ final class MacroGodotTests: XCTestCase {
 			macros: testMacros
 		)
 	}
+    
+    func testGodotMacroWithCallableFuncWithValueParams() {
+        assertMacroExpansion(
+            """
+            @Godot class MathHelper: Node {
+                @Callable func multiply(_ a: Int, by b: Int) -> Int { a * b}
+                @Callable func divide(_ a: Float, by b: Float) -> Float { a / b }
+                @Callable func areBothTrue(_ a: Bool, and b: Bool) { a == b }
+            }
+            """,
+            expandedSource:
+"""
+class MathHelper: Node {
+    func multiply(_ a: Int, by b: Int) -> Int { a * b}
+
+    func _mproxy_multiply (args: [Variant]) -> Variant? {
+    	let result = multiply (Int.makeOrUnwrap (args [0])!, by: Int.makeOrUnwrap (args [1])!)
+    	return Variant (result)
+    }
+    func divide(_ a: Float, by b: Float) -> Float { a / b }
+
+    func _mproxy_divide (args: [Variant]) -> Variant? {
+    	let result = divide (Float.makeOrUnwrap (args [0])!, by: Float.makeOrUnwrap (args [1])!)
+    	return Variant (result)
+    }
+    func areBothTrue(_ a: Bool, and b: Bool) { a == b }
+
+    func _mproxy_areBothTrue (args: [Variant]) -> Variant? {
+    	areBothTrue (Bool.makeOrUnwrap (args [0])!, and: Bool.makeOrUnwrap (args [1])!)
+    	return nil
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("MathHelper")
+        let classInfo = ClassInfo<MathHelper> (name: className)
+    	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .int, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_2 = PropInfo (propertyType: .int, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let multiplyArgs = [
+    		prop_1,
+    		prop_2,
+    	]
+    	classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MathHelper._mproxy_multiply)
+        let prop_3 = PropInfo (propertyType: .float, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_4 = PropInfo (propertyType: .float, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_5 = PropInfo (propertyType: .float, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let divideArgs = [
+    		prop_4,
+    		prop_5,
+    	]
+    	classInfo.registerMethod(name: StringName("divide"), flags: .default, returnValue: prop_3, arguments: divideArgs, function: MathHelper._mproxy_divide)
+        let prop_6 = PropInfo (propertyType: .bool, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_7 = PropInfo (propertyType: .bool, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let areBothTrueArgs = [
+    		prop_6,
+    		prop_7,
+    	]
+    	classInfo.registerMethod(name: StringName("areBothTrue"), flags: .default, returnValue: nil, arguments: areBothTrueArgs, function: MathHelper._mproxy_areBothTrue)
+    } ()
+}
+""",
+			macros: testMacros
+		)
+    }
 	
 	func testExportGodotMacro() {
 		assertMacroExpansion(

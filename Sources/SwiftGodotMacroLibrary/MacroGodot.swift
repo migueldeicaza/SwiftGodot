@@ -37,7 +37,7 @@ class GodotMacroProcessor {
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(parameterTypeName)\"), hint: .none, hintStr: \"\", usage: .default)\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(propType == ".object" ? parameterTypeName : "")\"), hint: .none, hintStr: \"\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -53,7 +53,7 @@ class GodotMacroProcessor {
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(parameterTypeName)\"), hint: .none, hintStr: \"\", usage: .default)\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(propType == ".object" ? parameterTypeName : "")\"), hint: .none, hintStr: \"\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
