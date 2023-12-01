@@ -186,51 +186,64 @@ final class MacroGodotTests: XCTestCase {
                 @Callable func deleteEpisode() {}
                 @Callable func subscribe(podcast: Podcast) {}
                 @Callable func removeSilences(from: Variant) {}
+                @Callable func getLatestEpisode(podcast: Podcast) -> Episode {}
             }
             """,
-            expandedSource: """
-            class Castro: Node {
-                func deleteEpisode() {}
-            
-                func _mproxy_deleteEpisode (args: [Variant]) -> Variant? {
-                	deleteEpisode ()
-                	return nil
-                }
-                func subscribe(podcast: Podcast) {}
-            
-                func _mproxy_subscribe (args: [Variant]) -> Variant? {
-                	subscribe (podcast: Podcast.makeOrUnwrap (args [0])!)
-                	return nil
-                }
-                func removeSilences(from: Variant) {}
-            
-                func _mproxy_removeSilences (args: [Variant]) -> Variant? {
-                	removeSilences (from: args [0])
-                	return nil
-                }
-            
-                override open class var classInitializer: Void {
-                    let _ = super.classInitializer
-                    return _initializeClass
-                }
-            
-                private static var _initializeClass: Void = {
-                    let className = StringName("Castro")
-                    let classInfo = ClassInfo<Castro> (name: className)
-                	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
-                    let prop_0 = PropInfo (propertyType: .object, propertyName: "Podcast", className: className, hint: .none, hintStr: "", usage: .default)
-                	let subscribeArgs = [
-                		prop_0,
-                	]
-                	classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
-                    let prop_1 = PropInfo (propertyType: .object, propertyName: "Variant", className: className, hint: .none, hintStr: "", usage: .default)
-                	let removeSilencesArgs = [
-                		prop_1,
-                	]
-                	classInfo.registerMethod(name: StringName("removeSilences"), flags: .default, returnValue: nil, arguments: removeSilencesArgs, function: Castro._mproxy_removeSilences)
-                } ()
-            }
-            """,
+            expandedSource:
+"""
+class Castro: Node {
+    func deleteEpisode() {}
+
+    func _mproxy_deleteEpisode (args: [Variant]) -> Variant? {
+    	deleteEpisode ()
+    	return nil
+    }
+    func subscribe(podcast: Podcast) {}
+
+    func _mproxy_subscribe (args: [Variant]) -> Variant? {
+    	subscribe (podcast: Podcast.makeOrUnwrap (args [0])!)
+    	return nil
+    }
+    func removeSilences(from: Variant) {}
+
+    func _mproxy_removeSilences (args: [Variant]) -> Variant? {
+    	removeSilences (from: args [0])
+    	return nil
+    }
+    func getLatestEpisode(podcast: Podcast) -> Episode {}
+
+    func _mproxy_getLatestEpisode (args: [Variant]) -> Variant? {
+    	let result = getLatestEpisode (podcast: Podcast.makeOrUnwrap (args [0])!)
+    	return Variant (result)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Castro")
+        let classInfo = ClassInfo<Castro> (name: className)
+    	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
+        let prop_0 = PropInfo (propertyType: .object, propertyName: "podcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
+    	let subscribeArgs = [
+    		prop_0,
+    	]
+    	classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
+        let prop_1 = PropInfo (propertyType: .object, propertyName: "from", className: StringName("Variant"), hint: .none, hintStr: "", usage: .default)
+    	let removeSilencesArgs = [
+    		prop_1,
+    	]
+    	classInfo.registerMethod(name: StringName("removeSilences"), flags: .default, returnValue: nil, arguments: removeSilencesArgs, function: Castro._mproxy_removeSilences)
+        let prop_2 = PropInfo (propertyType: .object, propertyName: "", className: StringName("Episode"), hint: .none, hintStr: "", usage: .default)
+    	let getLatestEpisodeArgs = [
+    		prop_0,
+    	]
+    	classInfo.registerMethod(name: StringName("getLatestEpisode"), flags: .default, returnValue: prop_2, arguments: getLatestEpisodeArgs, function: Castro._mproxy_getLatestEpisode)
+    } ()
+}
+""",
 			macros: testMacros
 		)
 	}
