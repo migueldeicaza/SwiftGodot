@@ -105,7 +105,7 @@ class GodotMacroProcessor {
             funcArgs.append ("\t]\n")
         }
         ctor.append (funcArgs)
-        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
+        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
     
     func processVariable (_ varDecl: VariableDeclSyntax) throws {
@@ -190,7 +190,7 @@ class GodotMacroProcessor {
             
             ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(getterName))\n")
             ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(setterName))\n")
-            ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")")
+            ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
         }
     }
     
@@ -215,7 +215,7 @@ class GodotMacroProcessor {
                 try classInitSignals(macroDecl)
             }
         }
-        ctor.append("} ()")
+        ctor.append("} ()\n")
         return ctor
     }
 
