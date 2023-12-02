@@ -1,4 +1,6 @@
-# Building for Windows
+# Building for Windows with Swift Versions Prior to 5.9.1
+
+### This document was written before macro support was added to the windows version of Swift
 
 The build process for the Windows platform differs a bit from macOS or Linux. 
 One of the largest contributors to that is the Swift build chain on Windows does not support macros [apple/swift#68272](https://github.com/apple/swift/issues/68272) at this time.
