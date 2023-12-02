@@ -136,9 +136,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a different name than the subclass.
     public required init () {
-        guard let godotObject = gi.classdb_construct_object (&Self.godotClassName.content) else {
+        guard let godotObject = bindingObject ?? gi.classdb_construct_object (&Self.godotClassName.content) else {
             fatalError("SWIFT: It was not possible to construct a \(Self.godotClassName.description)")
         }
+        bindingObject = nil
         
         handle = UnsafeRawPointer(godotObject)
         bindGodotInstance(instance: self)
@@ -202,11 +203,13 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
         return type.getVirtualDispatcher(name: StringName (fromPtr: name))
     }
     
-    var info = GDExtensionClassCreationInfo ()
+    var info = GDExtensionClassCreationInfo2 ()
     info.create_instance_func = createFunc(_:)
     info.free_instance_func = freeFunc(_:_:)
     info.get_virtual_func = getVirtual
     info.notification_func = notificationFunc
+    info.recreate_instance_func = recreateFunc
+    info.is_exposed = 1
     
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
@@ -239,6 +242,14 @@ fileprivate var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 
 // Lock for accessing the above
 var tableLock = NIOLock()
+
+// If not-nil, we are in the process of serially re-creating objects from Godot,
+// this contains the handle to use, and prevents a new Godot object peer to
+// be created
+fileprivate var bindingObject: UnsafeMutableRawPointer? = nil
+ 
+ ///
+ /// Looks into the liveSubtypedObjects table if we have an object registered for it,
 
 ///
 /// Looks into the liveSubtypedObjects table if we have an object registered for it,
@@ -293,7 +304,7 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
 ///
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    print ("SWIFT: Creating object userData:\(String(describing: userData))")
+    //print ("SWIFT: Creating object userData:\(String(describing: userData))")
     guard let userData else {
         print ("Got a nil userData")
         return nil
@@ -304,6 +315,23 @@ func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointe
         return nil
     }
     let o = type.init ()
+    return UnsafeMutableRawPointer (mutating: o.handle)
+}
+
+func recreateFunc (_ userData: UnsafeMutableRawPointer?, godotObjecthandle: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    //print ("SWIFT: Recreate object userData:\(String(describing: userData))")
+    guard let userData else {
+        print ("Got a nil userData")
+        return nil
+    }
+    let typeAny = Unmanaged<AnyObject>.fromOpaque(userData).takeUnretainedValue()
+    guard let type  = typeAny as? Wrapped.Type else {
+        print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+        return nil
+    }
+    bindingObject = godotObjecthandle
+    let o = type.init ()
+    bindingObject = nil
     return UnsafeMutableRawPointer (mutating: o.handle)
 }
 
@@ -333,7 +361,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
     }
 }
 
-func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
+func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UInt8) {
     //print ("SWIFT: Notification \(code) on \(ptr)")
 }
 
