@@ -1,7 +1,8 @@
 # SwiftGodot
 
-SwiftGodot provides Swift language bindings for the Godot 4.1 game
-engine using the new GDExtension system.
+SwiftGodot provides Swift language bindings for the Godot 4.2 game
+engine using the new GDExtension system (for 4.1 compatibility, use
+the 4.1 branch).
 
 SwiftGodot can be used to either build an extension that can be added
 to an existing Godot project, where your code is providing services
@@ -161,7 +162,7 @@ You would create something like this in a file called
 ```yml
 [configuration]
 entry_symbol = "swift_entry_point"
-compatibility_minimum = 4.1
+compatibility_minimum = 4.2
 
 [libraries]
 macos.debug = "res://bin/MyFirstGame"
