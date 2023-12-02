@@ -178,10 +178,15 @@ func bindGodotInstance(instance: some Wrapped) {
     var callbacks: GDExtensionInstanceBindingCallbacks
     if frameworkType {
         callbacks = Wrapped.frameworkTypeBindingCallback
-        liveFrameworkObjects [handle] = instance
     } else {
         callbacks = Wrapped.userTypeBindingCallback
-        liveSubtypedObjects [handle] = instance
+    }
+    tableLock.withLockVoid {
+        if frameworkType {
+            liveFrameworkObjects [handle] = instance
+        } else {
+            liveSubtypedObjects [handle] = instance
+        }
     }
     
     gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks)
@@ -229,8 +234,11 @@ public func register<T:Wrapped> (type: T.Type) {
 
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
-var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
-var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+fileprivate var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
+fileprivate var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+
+// Lock for accessing the above
+var tableLock = NIOLock()
 
 ///
 /// Looks into the liveSubtypedObjects table if we have an object registered for it,
@@ -239,7 +247,9 @@ var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 /// The idioms is that we only need to look up subtyped objects, because those
 /// are the only ones that would keep state
 func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
-    return liveSubtypedObjects [handleAddress]
+    tableLock.withLock {
+        return liveSubtypedObjects [handleAddress]
+    }
 }
 
 ///
@@ -249,15 +259,19 @@ func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
 /// We are surfacing this, so that when we recreate an object resurfaced in a collection
 /// we do not get the base type, but the most derived one
 func lookupFrameworkObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
-    return liveFrameworkObjects [handleAddress]
+    tableLock.withLock {
+        return liveFrameworkObjects [handleAddress]
+    }
 }
 
 func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
-    if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
-        return o
+    tableLock.withLock {
+        if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
+            return o
+        }
+        
+        return nil
     }
-    
-    return nil
 }
 
 func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
@@ -308,11 +322,13 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 //    #endif
     if let key = objectHandle {
         let original = Unmanaged<Wrapped>.fromOpaque(key).takeRetainedValue()
-        let removed = liveSubtypedObjects.removeValue(forKey: original.handle)
-        if removed == nil {
-            print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
-        } else {
-            print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
+        tableLock.withLockVoid {
+            let removed = liveSubtypedObjects.removeValue(forKey: original.handle)
+            if removed == nil {
+                print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
+            } else {
+                print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
+            }
         }
     }
 }
@@ -350,10 +366,12 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
     print ("SWIFT: frameworkBindingFree instance=\(String(describing: instance)) binding=\(String(describing: binding)) token=\(String(describing: token))")
     if let key = instance  {
-        if let removed = liveFrameworkObjects.removeValue(forKey: key) {
-            print ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
-        } else {
-            print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
+        tableLock.withLockVoid {
+            if let removed = liveFrameworkObjects.removeValue(forKey: key) {
+                print ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
+            } else {
+                print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
+            }
         }
     }
     if let binding {

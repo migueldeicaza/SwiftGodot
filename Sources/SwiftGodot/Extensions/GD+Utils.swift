@@ -69,6 +69,19 @@ extension GD {
         GD.print(arg1: Variant(GString(stringLiteral: finalMessage)))
     }
 
+    /// Converts one or more arguments of any type to string in the best way possible and prints them to the console, with fileID, line, and function name of the calling function.
+    /// - Parameter items: The items to print into the Godot console.
+    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
+    /// - Parameter fileID: the module/file of the caller
+    /// - Parameter function: the calling function
+    /// - Parameter line: the calling line
+    public static func printDebug(_ items: Any..., separator: String = " ", fileID: StaticString = #fileID, function: StaticString = #function, line: UInt = #line) {
+        guard OS.isDebugBuild() else { return }
+        let transformedItems = items.map(String.init(describing:))
+        let finalMessage = transformedItems.joined(separator: separator) + "\n   At: \(fileID):\(line) in \(function)"
+        GD.print(arg1: Variant(GString(stringLiteral: finalMessage)))
+    }
+
     /// Converts one or more arguments of any type to string in the best way possible and prints them to the console.
     /// - Parameter items: The items to print into the Godot console.
     /// - Parameter separator: The separator to insert between items. The default is a single space (" ").

@@ -14,7 +14,6 @@
 		492B8AF229D12CF00083C150 /* ClassGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492B8AF129D12CF00083C150 /* ClassGen.swift */; };
 		494DF6A629F080C500485C49 /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494DF6A529F080C500485C49 /* Printer.swift */; };
 		4982B71929CE3296008D2CCD /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4982B71829CE3296008D2CCD /* main.swift */; };
-		4982B72029CE33DA008D2CCD /* ApiJsonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4982B71F29CE33DA008D2CCD /* ApiJsonModel.swift */; };
 		4982B72229CE355A008D2CCD /* StringOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4982B72129CE355A008D2CCD /* StringOperations.swift */; };
 		49C9403629CF9E2F006CC78F /* TypeHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C9403529CF9E2F006CC78F /* TypeHelpers.swift */; };
 		49CF7E2529DDBB6600C7EE35 /* Arguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CF7E2429DDBB6600C7EE35 /* Arguments.swift */; };
@@ -43,7 +42,6 @@
 		494DF6A529F080C500485C49 /* Printer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Printer.swift; sourceTree = "<group>"; };
 		4982B71529CE3296008D2CCD /* Generator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Generator; sourceTree = BUILT_PRODUCTS_DIR; };
 		4982B71829CE3296008D2CCD /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		4982B71F29CE33DA008D2CCD /* ApiJsonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiJsonModel.swift; sourceTree = "<group>"; };
 		4982B72129CE355A008D2CCD /* StringOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringOperations.swift; sourceTree = "<group>"; };
 		49C9403529CF9E2F006CC78F /* TypeHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeHelpers.swift; sourceTree = "<group>"; };
 		49CF7E2429DDBB6600C7EE35 /* Arguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Arguments.swift; sourceTree = "<group>"; };
@@ -83,7 +81,6 @@
 			children = (
 				4982B71829CE3296008D2CCD /* main.swift */,
 				494DF6A529F080C500485C49 /* Printer.swift */,
-				4982B71F29CE33DA008D2CCD /* ApiJsonModel.swift */,
 				4982B72129CE355A008D2CCD /* StringOperations.swift */,
 				49C9403529CF9E2F006CC78F /* TypeHelpers.swift */,
 				492B8AEF29D12C440083C150 /* BuiltinGen.swift */,
@@ -163,7 +160,6 @@
 			files = (
 				49CF7E2929DE12F400C7EE35 /* DocModel.swift in Sources */,
 				49008AB12A12794100F2B874 /* MethodGen.swift in Sources */,
-				4982B72029CE33DA008D2CCD /* ApiJsonModel.swift in Sources */,
 				49008AAF2A11CC0D00F2B874 /* UtilityGen.swift in Sources */,
 				490DA41C29F083460093E32B /* Enums.swift in Sources */,
 				492B8AF229D12CF00083C150 /* ClassGen.swift in Sources */,
