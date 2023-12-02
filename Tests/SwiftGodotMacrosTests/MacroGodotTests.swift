@@ -38,6 +38,7 @@ final class MacroGodotTests: XCTestCase {
             
                 private static var _initializeClass: Void = {
                     let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             }
@@ -64,6 +65,7 @@ final class MacroGodotTests: XCTestCase {
 
                 private static var _initializeClass: Void = {
                     let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
 
@@ -96,6 +98,7 @@ final class MacroGodotTests: XCTestCase {
             
                 private static var _initializeClass: Void = {
                     let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             
@@ -132,6 +135,7 @@ final class MacroGodotTests: XCTestCase {
             
                 private static var _initializeClass: Void = {
                     let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             }
@@ -165,6 +169,7 @@ final class MacroGodotTests: XCTestCase {
             
                 private static var _initializeClass: Void = {
                     let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                     classInfo.registerSignal(name: Hi.pickedUpItem.name, arguments: Hi.pickedUpItem.arguments)
                     classInfo.registerSignal(name: Hi.scored.name, arguments: Hi.scored.arguments)
@@ -231,6 +236,7 @@ final class MacroGodotTests: XCTestCase {
 
                     private static var _initializeClass: Void = {
                         let className = StringName("Castro")
+                        assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<Castro> (name: className)
                     	classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
                     	let prop_0 = PropInfo (propertyType: .object, propertyName: "podcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
@@ -299,6 +305,7 @@ final class MacroGodotTests: XCTestCase {
 
                     private static var _initializeClass: Void = {
                         let className = StringName("MathHelper")
+                        assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<MathHelper> (name: className)
                     	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     	let prop_1 = PropInfo (propertyType: .int, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
@@ -359,6 +366,7 @@ final class MacroGodotTests: XCTestCase {
             
                 private static var _initializeClass: Void = {
                     let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                     let _pgoodName = PropInfo (
                         propertyType: .string,
