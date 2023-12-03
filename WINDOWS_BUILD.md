@@ -4,10 +4,23 @@ The build process for the Windows platform requires a very recent
 version of Swift, anything after 5.9.1 will do (5.9.0 will not).
 Linux.
 
-Windows support is generally the same as Linux or MacOS, the only
-difference comes down to the name of shared libraries (you need to use
-`.dll` instead of `.dylib` or `.so`) when describing those in your
-extension file.
+Windows support is generally the same as Linux or MacOS, with a couple of important differences:
+
+* Path sizes that break the build
+* Names of shared libraries.
+
+Windows has a problem with very deep directory structures that the
+Swift Build system can produce, and this is compounded by the default
+location of files that you might have, something like
+'C:\Users\Users\migueldeicaza\Documents\GitHub\Experiments\MyGames`
+and you find yourself with odd errors.
+
+You should use the `subst` command in Windows to map a new drive to
+that path.
+
+The issue of shared libraries comes down to the extension name of
+shared libraries (you need to use `.dll` instead of `.dylib` or `.so`)
+when describing those in your extension file.
 
 
 ## Building
