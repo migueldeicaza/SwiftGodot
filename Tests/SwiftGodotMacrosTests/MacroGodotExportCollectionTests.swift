@@ -94,6 +94,7 @@ class SomeNode: Node {
 
     private static var _initializeClass: Void = {
         let className = StringName("SomeNode")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         let _pgreetings = PropInfo (
             propertyType: .array,
@@ -246,6 +247,7 @@ class SomeNode: Node {
 
     private static var _initializeClass: Void = {
         let className = StringName("SomeNode")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         let _psomeNumbers = PropInfo (
             propertyType: .array,
@@ -317,6 +319,7 @@ class SomeNode: Node {
 
     private static var _initializeClass: Void = {
         let className = StringName("SomeNode")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         let _psomeNumbers = PropInfo (
             propertyType: .array,
@@ -400,6 +403,7 @@ class ArrayTest: Node {
 
     private static var _initializeClass: Void = {
         let className = StringName("ArrayTest")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<ArrayTest> (name: className)
         let _pfirstNames = PropInfo (
             propertyType: .array,
@@ -492,6 +496,7 @@ class SomeNode: Node {
 
     private static var _initializeClass: Void = {
         let className = StringName("SomeNode")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         let _pgreetings = PropInfo (
             propertyType: .array,
