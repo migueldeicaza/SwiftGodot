@@ -11,6 +11,8 @@ public enum ArrayError {
     case outOfRange
 }
 extension GArray: Collection {
+    /// Initializes an empty, but typed `GArray`. For example: `GArray(Node.self)`
+    /// - Parameter type: `T` the type of the elements in the GArray, must conform to `VariantStorable`.
 	public convenience init<T: VariantStorable>(_ type: T.Type = T.self) {
 		self.init(
 			base: GArray(),

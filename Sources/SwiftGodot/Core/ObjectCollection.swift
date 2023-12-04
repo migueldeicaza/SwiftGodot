@@ -14,18 +14,22 @@ public protocol GodotObject: Wrapped {}
 public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
 	public typealias ArrayLiteralElement = Element
 	
+    /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
+    /// In general you should not be modifying this property directly
     public var array: GArray
     
     init (content: Int64) {
         array = GArray (content: content)
     }
 	
+    /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
 	public required init(arrayLiteral elements: ArrayLiteralElement...) {
 		array = elements.reduce(into: .init(Element.self)) {
 			$0.append(value: Variant($1))
 		}
 	}
     
+    /// Initializes the collection using an array
     public init(_ elements: [Element]) {
         array = elements.reduce(into: .init(Element.self)) {
             $0.append(value: Variant($1))
@@ -39,8 +43,9 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
         gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
     }
     
+    /// Initializes the collection with an empty typed GArray
     init () {
-        array = GArray ()
+        array = GArray (Object.self)
         initType()
     }
     
