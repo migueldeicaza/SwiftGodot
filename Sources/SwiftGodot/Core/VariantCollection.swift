@@ -8,15 +8,27 @@
 @_implementationOnly import GDExtension
 
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<Element: VariantStorable>: Collection {
-    var array: GArray
+public class VariantCollection<Element: VariantStorable>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+    public typealias ArrayLiteralElement = Element
+    
+    /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
+    /// In general you should not be modifying this property directly
+    public var array: GArray
+
+    /// Initializes the collection using an array literal, for example: `let variantCollection: VariantCollection<Int> = [0]`
+    public required init(arrayLiteral elements: ArrayLiteralElement...) {
+		array = elements.reduce(into: .init(Element.self)) {
+			$0.append(value: Variant($1))
+		}
+    }
     
     init (content: Int64) {
         array = GArray (content: content)
     }
     
+    /// Initializes the collection with an empty typed GArray
     public init () {
-        array = GArray ()
+        array = GArray (Element.self)
         
 //        let name = StringName()
 //        let variant = Variant()
