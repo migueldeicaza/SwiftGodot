@@ -157,6 +157,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     }
     
     var args = ""
+    var argHelper = ""
     var argSetup = ""
     var varArgSetup = ""
     var varArgSetupInit = ""
@@ -345,7 +346,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // statements.
         #if true
         let ix = margs.indices
-        let helper =
+        argHelper =
         """
         #if false
         func withArgPointers<\(ix.map({"T\($0)"}).joined(separator: ", ")), ReturnType>(
@@ -358,9 +359,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             \(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
             \(getReturnResult())
         }
-        #endif\n
+        #else\n
         """
-        argSetup += helper
+        argSetup += argHelper
         #endif
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         for arg in margs {
@@ -581,6 +582,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 withUnsafeCallNestLevel -= 1
                 p.indent -= 1
                 p ("}")
+            }
+            
+// REFACTOR: just so we can see the two side-by-side
+            if !argHelper.isEmpty {
+                p ("#endif")
             }
         }
     }
