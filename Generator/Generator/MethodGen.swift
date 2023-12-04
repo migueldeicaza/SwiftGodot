@@ -158,6 +158,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     
     var args = ""
     var argHelper = ""
+    var callHelperIndex = argHelper.startIndex
     var argSetup = ""
     var varArgSetup = ""
     var varArgSetupInit = ""
@@ -176,7 +177,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
 
     /// returns appropriate declaration of the return type, used by the helper function.
-    var frameworkType = false
+    let frameworkType = godotReturnTypeIsReferenceType
     func returnTypeDecl() -> String {
         if returnType != "" {
             guard let godotReturnType else {
@@ -191,7 +192,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 return "let _result = GString ()"
             } else {
                 if godotReturnTypeIsReferenceType {
-                    frameworkType = true
+                    // frameworkType = true
                     return "var _result = UnsafeRawPointer (bitPattern: 0)"
                 } else {
                     if godotReturnType.starts(with: "enum::") {
@@ -345,25 +346,37 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // We can modularize this by creating functions that generate the return type and return
         // statements.
         #if true
+        // use variadic args + copy
+        argHelper =
+        """
+        #if true
+        func withArgPointers(_ args: UnsafeRawPointer?...) {
+            var _args = args
+            \(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
+        }\n
+        """
+        #else
+        // use an array literal.
         let ix = margs.indices
         argHelper =
         """
-        #if false
-        func withArgPointers<\(ix.map({"T\($0)"}).joined(separator: ", ")), ReturnType>(
-            \(ix.map({"_ p\($0): UnsafePointer<T\($0)>"}).joined(separator: ", "))
-        ) -> ReturnType {
+        #if true
+        func withArgPointers(
+            \(ix.map({"_ p\($0): UnsafeRawPointer?"}).joined(separator: ", "))
+        ) {
             var _args: [UnsafeRawPointer?] = [
-                \(ix.map({ "UnsafeRawPointer(p\($0))"}).joined(separator: ", "))
+                \(ix.map({"p\($0)"}).joined(separator: ", "))
             ]
-            \(returnTypeDecl())
             \(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
-            \(getReturnResult())
-        }
-        #else\n
+        }\n
         """
-        argSetup += argHelper
         #endif
+        argSetup += argHelper
+        // record insertion point to splice in call.
+        callHelperIndex = argSetup.endIndex
+        argSetup += "\n#else\n"
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
+        var callHelperArgs: [String] = []
         for arg in margs {
             // When we move from GString to String in the public API
             //                if arg.type == "String" {
@@ -414,13 +427,21 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 let accessPar = refParameterIsOptional ? "\(ea) == nil ? nil : p\(withUnsafeCallNestLevel)" : "p\(withUnsafeCallNestLevel)"
                 argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ea)\(deref).handle) { p\(withUnsafeCallNestLevel) in\n\(prefix)_args.append (\(accessPar))\n"
                 withUnsafeCallNestLevel += 1
+                callHelperArgs.append("\(ea)\(deref).handle")
             } else {
                 argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(needAddress)\(escapeSwift(argref))\(optstorage)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    _args.append (p\(withUnsafeCallNestLevel))\n"
                 withUnsafeCallNestLevel += 1
+                callHelperArgs.append("\(needAddress)\(escapeSwift(argref))\(optstorage)")
             }
         }
         argSetup += varArgSetupInit
         argSetup += varArgSetup
+        let callHelper =
+        """
+        withArgPointers(\(callHelperArgs.joined(separator: ", ")))
+        \(getReturnResult())
+        """
+        argSetup.insert(contentsOf: callHelper, at: callHelperIndex)
     } else if method.isVararg {
         // No regular arguments, check if these are varargs
         if method.isVararg {
