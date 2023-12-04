@@ -211,7 +211,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         return ""
     }
     
-    func returnTypePtr() -> String {
+    func getArgsPtr() -> String {
+        (args != "") ? "&_args" : "nil"
+    }
+    
+    func getResultPtr() -> String {
         let ptrResult: String
         if returnType != "" {
             guard let godotReturnType else { fatalError("godotReturnType is nil!") }
@@ -237,6 +241,51 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             ptrResult = "nil"
         }
         return ptrResult
+    }
+    
+    func call_object_method_bind(ptrArgs: String, ptrResult: String) -> String {
+        switch kind {
+        case .class:
+            let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
+            if method.isVararg {
+                return "gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)"
+            } else {
+                return "gi.object_method_bind_ptrcall (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))"
+            }
+        case .utility:
+            if method.isVararg {
+                return "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))"
+            } else {
+                return "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))"
+            }
+        }
+    }
+    
+    func getReturnResult() -> String {
+        guard returnType != "" else { return "" }
+        if method.isVararg {
+            if returnType == "Variant" {
+                return "return Variant (fromContent: _result)"
+            } else if returnType == "GodotError" {
+                return "return GodotError (rawValue: Int (Variant (fromContent: _result))!)!"
+            } else if returnType == "String" {
+                return "return GString (Variant (fromContent: _result))?.description ?? \"\""
+            } else {
+                fatalError("Do not support this return type = \(returnType)")
+            }
+        } else if frameworkType {
+            //print ("OBJ RETURN: \(className) \(method.name)")
+            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result)!"
+        } else if godotReturnType?.starts(with: "typedarray::") ?? false {
+            let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
+            return "return \(defaultInit)"
+        } else if godotReturnType?.starts(with: "enum::") ?? false {
+            return "return \(returnType) (rawValue: _result)!"
+        } else if godotReturnType == "String" {
+            return "return _result.description"
+        } else {
+            return "return _result"
+        }
     }
     
     var withUnsafeCallNestLevel = 0
@@ -296,19 +345,21 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // statements.
         #if true
         let ix = margs.indices
-        var helper = ""
-        helper += "#if false\n"
-        helper += "func withArgPointers<"
-        helper += ix.map({"T\($0)"}).joined(separator: ", ")
-        helper += ", ReturnType>("
-        helper += ix.map({"_ p\($0): UnsafePointer<T\($0)>"}).joined(separator: ", ")
-        helper += ") -> ReturnType {\n"
-        helper += "    var _args: [UnsafeRawPointer?] = [\n"
-        helper += "        \(ix.map({ "UnsafeRawPointer(p\($0))"}).joined(separator: ", "))\n"
-        helper += "    ]\n"
-        helper += "    // here we call gi.object_method_bind_ptrcall()\n"
-        helper += "}\n"
-        helper += "#endif\n"
+        let helper =
+        """
+        #if false
+        func withArgPointers<\(ix.map({"T\($0)"}).joined(separator: ", ")), ReturnType>(
+            \(ix.map({"_ p\($0): UnsafePointer<T\($0)>"}).joined(separator: ", "))
+        ) -> ReturnType {
+            var _args: [UnsafeRawPointer?] = [
+                \(ix.map({ "UnsafeRawPointer(p\($0))"}).joined(separator: ", "))
+            ]
+            \(returnTypeDecl())
+            \(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
+            \(getReturnResult())
+        }
+        #endif\n
+        """
         argSetup += helper
         #endif
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
@@ -445,10 +496,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if withUnsafeCallNestLevel > 0 {
                 p.indent += withUnsafeCallNestLevel
             }
-            
-            let ptrArgs = (args != "") ? "&_args" : "nil"
-            let ptrResult = returnTypePtr()
-// REFACTOR:  use returnTypePtr() local function.
+
+// REFACTOR: use getArgsPtr() local function.
+            let ptrArgs = getArgsPtr()
+            let ptrResult = getResultPtr()
+// REFACTOR:  use getResultPtr() local function.
 //            if returnType != "" {
 //                guard let godotReturnType else { return }
 //
