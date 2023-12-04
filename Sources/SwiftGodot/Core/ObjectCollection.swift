@@ -45,7 +45,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     
     /// Initializes the collection with an empty typed GArray
     init () {
-        array = GArray (Object.self)
+        array = GArray (Element.self)
         initType()
     }
     
