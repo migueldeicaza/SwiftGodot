@@ -62,6 +62,22 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
     }
 }
 
+/// TODO: The current code generation for passing parameters is both inefficient, and technically unsafe. We don't need
+/// to use nested invocations of withUnsafePointer to generate pointers to multiple arguments, but we can instead generate
+/// a helper version that generates multiple pointer in a single call. For example, if a function that we call using
+/// `gi.object_method_bind_ptrcall()` takes 2 arguments, we can generate the following generic helper:
+/// 
+/// ```
+/// func withUnsafePointers<T1, T2, ReturnType>(
+///     _ p1: UnsafePointer<T1>, _ p2: UnsafePointer<T2>,
+///     _ block: (UnsafePointer<T1>, UnsafePointer<T2>) -> ReturnType
+/// ) -> ReturnType {
+///     block(p1, p2)
+/// }
+/// ```
+/// This reduces the complexity of the generated code, and can be extended to an arbitrary number of parameters.
+/// 
+
 /// Generates a method definition
 /// - Parameters:
 ///  - p: Our printer to generate the method
@@ -157,6 +173,71 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
     let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
     let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
+
+    /// returns appropriate declaration of the return type, used by the helper function.
+    var frameworkType = false
+    func returnTypeDecl() -> String {
+        if returnType != "" {
+            guard let godotReturnType else {
+                fatalError ("If the returnType is not empty, we should have a godotReturnType")
+            }
+            if method.isVararg {
+                return "var _result: Variant.ContentType = Variant.zero"
+            } else if godotReturnType.starts(with: "typedarray::") {
+                let (storage, initialize) = getBuiltinStorage ("Array")
+                return "var _result: \(storage)\(initialize)"
+            } else if godotReturnType == "String" {
+                return "let _result = GString ()"
+            } else {
+                if godotReturnTypeIsReferenceType {
+                    frameworkType = true
+                    return "var _result = UnsafeRawPointer (bitPattern: 0)"
+                } else {
+                    if godotReturnType.starts(with: "enum::") {
+                        return "var _result: Int = 0 // to avoid packed enums on the stack"
+                    } else {
+                        
+                        var declType: String = "let"
+                        if (argTypeNeedsCopy(godotType: godotReturnType)) {
+                            if builtinGodotTypeNames [godotReturnType] != .isClass {
+                                declType = "var"
+                            }
+                        }
+                        return "\(declType) _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType))"
+                    }
+                }
+            }
+        }
+        return ""
+    }
+    
+    func returnTypePtr() -> String {
+        let ptrResult: String
+        if returnType != "" {
+            guard let godotReturnType else { fatalError("godotReturnType is nil!") }
+
+            if method.isVararg {
+                ptrResult = "&_result"
+            } else if argTypeNeedsCopy(godotType: godotReturnType) {
+                let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
+                
+                ptrResult = isClass ? "&_result.content" : "&_result"
+            } else {
+                if godotReturnType.starts (with: "typedarray::") {
+                    ptrResult = "&_result"
+                } else if frameworkType {
+                    ptrResult = "&_result"
+                } else if builtinSizes [godotReturnType] != nil {
+                    ptrResult = "&_result.content"
+                } else {
+                    ptrResult = "&_result.handle"
+                }
+            }
+        } else {
+            ptrResult = "nil"
+        }
+        return ptrResult
+    }
     
     var withUnsafeCallNestLevel = 0
     var eliminate: String = allEliminate
@@ -209,6 +290,27 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if args != "" { args += ", "}
             args += "_ arguments: Variant..."
         }
+        // REFACTOR STEP 1:  generate a helper function, a la withUnsafePointers() above, which
+        // combines extracting the parameters into pointers and packing them into the _args array.
+        // We can modularize this by creating functions that generate the return type and return
+        // statements.
+        #if true
+        let ix = margs.indices
+        var helper = ""
+        helper += "#if false\n"
+        helper += "func withArgPointers<"
+        helper += ix.map({"T\($0)"}).joined(separator: ", ")
+        helper += ", ReturnType>("
+        helper += ix.map({"_ p\($0): UnsafePointer<T\($0)>"}).joined(separator: ", ")
+        helper += ") -> ReturnType {\n"
+        helper += "    var _args: [UnsafeRawPointer?] = [\n"
+        helper += "        \(ix.map({ "UnsafeRawPointer(p\($0))"}).joined(separator: ", "))\n"
+        helper += "    ]\n"
+        helper += "    // here we call gi.object_method_bind_ptrcall()\n"
+        helper += "}\n"
+        helper += "#endif\n"
+        argSetup += helper
+        #endif
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         for arg in margs {
             // When we move from GString to String in the public API
@@ -301,37 +403,40 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 p (makeDefaultReturn (godotType: godotReturnType))
             }
         } else {
-            var frameworkType = false
+            // Moved to returnTypeDecl() above.
+            // var frameworkType = false
             if returnType != "" {
-                guard let godotReturnType else {
-                    fatalError ("If the returnType is not empty, we should have a godotReturnType")
-                }
-                if method.isVararg {
-                    p ("var _result: Variant.ContentType = Variant.zero")
-                } else if godotReturnType.starts(with: "typedarray::") {
-                    let (storage, initialize) = getBuiltinStorage ("Array")
-                    p ("var _result: \(storage)\(initialize)")
-                } else if godotReturnType == "String" {
-                    p ("let _result = GString ()")
-                } else {
-                    if godotReturnTypeIsReferenceType {
-                        frameworkType = true
-                        p ("var _result = UnsafeRawPointer (bitPattern: 0)")
-                    } else {
-                        if godotReturnType.starts(with: "enum::") {
-                            p ("var _result: Int = 0 // to avoid packed enums on the stack")
-                        } else {
-                            
-                            var declType: String = "let"
-                            if (argTypeNeedsCopy(godotType: godotReturnType)) {
-                                if builtinGodotTypeNames [godotReturnType] != .isClass {
-                                    declType = "var"
-                                }
-                            }
-                            p ("\(declType) _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType))")
-                        }
-                    }
-                }
+                p(returnTypeDecl())
+// REFACTOR STEP:  use returnTypeDecl() instead of following code:
+//                guard let godotReturnType else {
+//                    fatalError ("If the returnType is not empty, we should have a godotReturnType")
+//                }
+//                if method.isVararg {
+//                    p ("var _result: Variant.ContentType = Variant.zero")
+//                } else if godotReturnType.starts(with: "typedarray::") {
+//                    let (storage, initialize) = getBuiltinStorage ("Array")
+//                    p ("var _result: \(storage)\(initialize)")
+//                } else if godotReturnType == "String" {
+//                    p ("let _result = GString ()")
+//                } else {
+//                    if godotReturnTypeIsReferenceType {
+//                        frameworkType = true
+//                        p ("var _result = UnsafeRawPointer (bitPattern: 0)")
+//                    } else {
+//                        if godotReturnType.starts(with: "enum::") {
+//                            p ("var _result: Int = 0 // to avoid packed enums on the stack")
+//                        } else {
+//                            
+//                            var declType: String = "let"
+//                            if (argTypeNeedsCopy(godotType: godotReturnType)) {
+//                                if builtinGodotTypeNames [godotReturnType] != .isClass {
+//                                    declType = "var"
+//                                }
+//                            }
+//                            p ("\(declType) _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType))")
+//                        }
+//                    }
+//                }
             }
             
             if argSetup != "" {
@@ -342,30 +447,31 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             }
             
             let ptrArgs = (args != "") ? "&_args" : "nil"
-            let ptrResult: String
-            if returnType != "" {
-                guard let godotReturnType else { return }
-
-                if method.isVararg {
-                    ptrResult = "&_result"
-                } else if argTypeNeedsCopy(godotType: godotReturnType) {
-                    let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
-                    
-                    ptrResult = isClass ? "&_result.content" : "&_result"
-                } else {
-                    if godotReturnType.starts (with: "typedarray::") {
-                        ptrResult = "&_result"
-                    } else if frameworkType {
-                        ptrResult = "&_result"
-                    } else if builtinSizes [godotReturnType] != nil {
-                        ptrResult = "&_result.content"
-                    } else {
-                        ptrResult = "&_result.handle"
-                    }
-                }
-            } else {
-                ptrResult = "nil"
-            }
+            let ptrResult = returnTypePtr()
+// REFACTOR:  use returnTypePtr() local function.
+//            if returnType != "" {
+//                guard let godotReturnType else { return }
+//
+//                if method.isVararg {
+//                    ptrResult = "&_result"
+//                } else if argTypeNeedsCopy(godotType: godotReturnType) {
+//                    let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
+//                    
+//                    ptrResult = isClass ? "&_result.content" : "&_result"
+//                } else {
+//                    if godotReturnType.starts (with: "typedarray::") {
+//                        ptrResult = "&_result"
+//                    } else if frameworkType {
+//                        ptrResult = "&_result"
+//                    } else if builtinSizes [godotReturnType] != nil {
+//                        ptrResult = "&_result.content"
+//                    } else {
+//                        ptrResult = "&_result.handle"
+//                    }
+//                }
+//            } else {
+//                ptrResult = "nil"
+//            }
             
             switch kind {
             case .class:
