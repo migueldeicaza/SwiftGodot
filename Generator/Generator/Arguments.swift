@@ -40,9 +40,13 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
         // it splits out the arguments into an array of strings, calls the constructor
         // and then puts together the constructor invocation
         func makeWith (_ callback: ([String]) -> String) -> String {
-            let values = String (dv [dv.firstIndex(of: "(")!...].dropFirst ().dropLast()).split (separator: ", ").map { String ($0) }
-            let res = callback (values)
-            return " = \(argumentType) (\(res))"
+            if #available(iOS 16.0, *) {
+                let values = String (dv [dv.firstIndex(of: "(")!...].dropFirst ().dropLast()).split (separator: ", ").map { String ($0) }
+                let res = callback (values)
+                return " = \(argumentType) (\(res))"
+            } else {
+                fatalError("You need a modern MacOS to build this")
+            }
         }
         // Given a dv of "Vector (1,0)" returns a SwiftGodot suitable "Vector(x: 1, y: 0)" based on the
         // args value that contains the desired labels

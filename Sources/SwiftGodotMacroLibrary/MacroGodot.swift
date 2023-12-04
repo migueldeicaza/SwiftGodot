@@ -26,7 +26,7 @@ class GodotMacroProcessor {
     }
     
     var propertyDeclarations: [String: String] = [:]
-    func lookupProp (parameterTypeName: String, parameterName: String) -> String {
+    func lookupPropParam (parameterTypeName: String, parameterName: String) -> String {
         let key = "\(parameterTypeName)/\(parameterName)"
         if let v = propertyDeclarations [key] {
             return v
@@ -37,7 +37,23 @@ class GodotMacroProcessor {
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\(parameterTypeName)\", className: className, hint: .none, hintStr: \"\", usage: .default)\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(propType == ".object" ? parameterTypeName : "")\"), hint: .none, hintStr: \"\", usage: .default)\n")
+        propertyDeclarations [key] = name
+        return name
+    }
+
+    func lookupPropReturn (parameterTypeName: String, parameterName: String) -> String {
+        let key = "\(parameterTypeName)/\(parameterName)"
+        if let v = propertyDeclarations [key] {
+            return v
+        }
+        let propType = godotTypeToProp (typeName: parameterTypeName)
+        
+        let name = "prop_\(propertyDeclarations.count)"
+        
+        // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
+        // and instead share all the Ints, all the Floats and so on.
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(propType == ".object" ? parameterTypeName : "")\"), hint: .none, hintStr: \"\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -71,14 +87,15 @@ class GodotMacroProcessor {
         var funcArgs = ""
         var retProp: String? = nil
         if let (retType, _) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = lookupProp(parameterTypeName: retType, parameterName: "")
+            retProp = lookupPropReturn(parameterTypeName: retType, parameterName: "")
         }
 
         for parameter in funcDecl.signature.parameterClause.parameters {
             guard let ptype = getTypeName(parameter) else {
                 throw MacroError.typeName (parameter)
             }
-            let propInfo = lookupProp (parameterTypeName: ptype, parameterName: "")
+            let pname = getParamName(parameter)
+            let propInfo = lookupPropParam (parameterTypeName: ptype, parameterName: pname)
             if funcArgs == "" {
                 funcArgs = "\tlet \(funcName)Args = [\n"
             }
@@ -88,7 +105,7 @@ class GodotMacroProcessor {
             funcArgs.append ("\t]\n")
         }
         ctor.append (funcArgs)
-        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))")
+        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
     
     func processVariable (_ varDecl: VariableDeclSyntax) throws {
@@ -287,6 +304,7 @@ class GodotMacroProcessor {
     """
     private static var _initializeClass: Void = {
         let className = StringName("\(className)")
+        assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
         for member in classDecl.memberBlock.members.enumerated() {
@@ -304,7 +322,7 @@ class GodotMacroProcessor {
                 try classInitSignals(macroDecl)
             }
         }
-        ctor.append("} ()")
+        ctor.append("} ()\n")
         return ctor
     }
 

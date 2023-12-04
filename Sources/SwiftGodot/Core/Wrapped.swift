@@ -136,9 +136,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a different name than the subclass.
     public required init () {
-        guard let godotObject = gi.classdb_construct_object (&Self.godotClassName.content) else {
+        guard let godotObject = bindingObject ?? gi.classdb_construct_object (&Self.godotClassName.content) else {
             fatalError("SWIFT: It was not possible to construct a \(Self.godotClassName.description)")
         }
+        bindingObject = nil
         
         handle = UnsafeRawPointer(godotObject)
         bindGodotInstance(instance: self)
@@ -178,10 +179,15 @@ func bindGodotInstance(instance: some Wrapped) {
     var callbacks: GDExtensionInstanceBindingCallbacks
     if frameworkType {
         callbacks = Wrapped.frameworkTypeBindingCallback
-        liveFrameworkObjects [handle] = instance
     } else {
         callbacks = Wrapped.userTypeBindingCallback
-        liveSubtypedObjects [handle] = instance
+    }
+    tableLock.withLockVoid {
+        if frameworkType {
+            liveFrameworkObjects [handle] = instance
+        } else {
+            liveSubtypedObjects [handle] = instance
+        }
     }
     
     gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks)
@@ -197,11 +203,13 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
         return type.getVirtualDispatcher(name: StringName (fromPtr: name))
     }
     
-    var info = GDExtensionClassCreationInfo ()
+    var info = GDExtensionClassCreationInfo2 ()
     info.create_instance_func = createFunc(_:)
     info.free_instance_func = freeFunc(_:_:)
     info.get_virtual_func = getVirtual
     info.notification_func = notificationFunc
+    info.recreate_instance_func = recreateFunc
+    info.is_exposed = 1
     
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
@@ -229,8 +237,19 @@ public func register<T:Wrapped> (type: T.Type) {
 
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
-var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
-var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+fileprivate var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
+fileprivate var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+
+// Lock for accessing the above
+var tableLock = NIOLock()
+
+// If not-nil, we are in the process of serially re-creating objects from Godot,
+// this contains the handle to use, and prevents a new Godot object peer to
+// be created
+fileprivate var bindingObject: UnsafeMutableRawPointer? = nil
+ 
+ ///
+ /// Looks into the liveSubtypedObjects table if we have an object registered for it,
 
 ///
 /// Looks into the liveSubtypedObjects table if we have an object registered for it,
@@ -239,7 +258,9 @@ var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 /// The idioms is that we only need to look up subtyped objects, because those
 /// are the only ones that would keep state
 func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
-    return liveSubtypedObjects [handleAddress]
+    tableLock.withLock {
+        return liveSubtypedObjects [handleAddress]
+    }
 }
 
 ///
@@ -249,15 +270,19 @@ func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
 /// We are surfacing this, so that when we recreate an object resurfaced in a collection
 /// we do not get the base type, but the most derived one
 func lookupFrameworkObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
-    return liveFrameworkObjects [handleAddress]
+    tableLock.withLock {
+        return liveFrameworkObjects [handleAddress]
+    }
 }
 
 func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
-    if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
-        return o
+    tableLock.withLock {
+        if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
+            return o
+        }
+        
+        return nil
     }
-    
-    return nil
 }
 
 func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
@@ -279,7 +304,7 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
 ///
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    print ("SWIFT: Creating object userData:\(String(describing: userData))")
+    //print ("SWIFT: Creating object userData:\(String(describing: userData))")
     guard let userData else {
         print ("Got a nil userData")
         return nil
@@ -290,6 +315,23 @@ func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointe
         return nil
     }
     let o = type.init ()
+    return UnsafeMutableRawPointer (mutating: o.handle)
+}
+
+func recreateFunc (_ userData: UnsafeMutableRawPointer?, godotObjecthandle: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    //print ("SWIFT: Recreate object userData:\(String(describing: userData))")
+    guard let userData else {
+        print ("Got a nil userData")
+        return nil
+    }
+    let typeAny = Unmanaged<AnyObject>.fromOpaque(userData).takeUnretainedValue()
+    guard let type  = typeAny as? Wrapped.Type else {
+        print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+        return nil
+    }
+    bindingObject = godotObjecthandle
+    let o = type.init ()
+    bindingObject = nil
     return UnsafeMutableRawPointer (mutating: o.handle)
 }
 
@@ -308,16 +350,18 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 //    #endif
     if let key = objectHandle {
         let original = Unmanaged<Wrapped>.fromOpaque(key).takeRetainedValue()
-        let removed = liveSubtypedObjects.removeValue(forKey: original.handle)
-        if removed == nil {
-            print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
-        } else {
-            print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
+        tableLock.withLockVoid {
+            let removed = liveSubtypedObjects.removeValue(forKey: original.handle)
+            if removed == nil {
+                print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
+            } else {
+                print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
+            }
         }
     }
 }
 
-func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32) {
+func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UInt8) {
     //print ("SWIFT: Notification \(code) on \(ptr)")
 }
 
@@ -350,10 +394,12 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
     print ("SWIFT: frameworkBindingFree instance=\(String(describing: instance)) binding=\(String(describing: binding)) token=\(String(describing: token))")
     if let key = instance  {
-        if let removed = liveFrameworkObjects.removeValue(forKey: key) {
-            print ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
-        } else {
-            print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
+        tableLock.withLockVoid {
+            if let removed = liveFrameworkObjects.removeValue(forKey: key) {
+                print ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
+            } else {
+                print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
+            }
         }
     }
     if let binding {
@@ -364,5 +410,58 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
 func frameworkTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableRawPointer?, _ z: UInt8) -> UInt8 {
     // No clue what this is used for, but godot-cpp returns 1
     return 1
+}
+
+/// This function is called by Godot to invoke our callable, and contains our context in `userData`,
+/// pointer to Variants, an argument count, and a way of returing an error
+///
+/// We extract the arguments and call  the CallableWrapper.method
+///
+func callableProxy (userData: UnsafeMutableRawPointer?, pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
+    guard let pargs else { return }
+    guard let userData else { return }
+    let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(userData)
+    let wrapper = r.takeUnretainedValue()
+    var args: [Variant] = []
+    for i in 0..<argc {
+        let variant = pargs [Int(i)]!.assumingMemoryBound(to: Variant.self).pointee
+        args.append (variant)
+    }
+    if let methodRet = wrapper.method (args) {
+        retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
+    }
+}
+
+func freeMethodWrapper (ptr: UnsafeMutableRawPointer?) {
+    guard let ptr else { return }
+    let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(ptr)
+    r.release()
+}
+
+class CallableWrapper {
+    var method: ([Variant])->Variant?
+    init (method: @escaping ([Variant])->Variant?) {
+        self.method = method
+    }
+    
+    static func makeCallable (_ method: @escaping ([Variant])->Variant?) -> Callable.ContentType {
+        let wrapper = CallableWrapper(method: method)
+        let retained = Unmanaged.passRetained(wrapper)
+        
+        var cci = GDExtensionCallableCustomInfo(
+            callable_userdata: retained.toOpaque(),
+            token: token,
+            object_id: 0,
+            call_func: callableProxy,
+            is_valid_func: nil,
+            free_func: freeMethodWrapper,
+            hash_func: nil,
+            equal_func: nil,
+            less_than_func: nil,
+            to_string_func: nil)
+        var content: Callable.ContentType = Callable.zero
+        gi.callable_custom_create (&content, &cci);
+        return content
+    }
 }
 

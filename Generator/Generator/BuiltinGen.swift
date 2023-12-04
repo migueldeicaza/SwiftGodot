@@ -541,6 +541,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
+            if bc.name == "Callable" {
+                p ("/// Creates a Callable instance from a Swift function")
+                p ("/// - Parameter callback: the swift function that receives an array of Variant arguments, and returns an optional Variant")
+                p ("public init (_ callback: @escaping ([Variant])->Variant?)") {
+                    p ("content = CallableWrapper.makeCallable (callback)")
+                }
+            }
             if bc.hasDestructor {
                 p ("static var destructor: GDExtensionPtrDestructor = ", suffix: "()"){
                     p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")

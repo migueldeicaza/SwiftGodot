@@ -73,7 +73,7 @@ struct GodotInterface {
     
     let classdb_construct_object: GDExtensionInterfaceClassdbConstructObject
     let classdb_get_method_bind: GDExtensionInterfaceClassdbGetMethodBind
-    let classdb_register_extension_class: GDExtensionInterfaceClassdbRegisterExtensionClass
+    let classdb_register_extension_class: GDExtensionInterfaceClassdbRegisterExtensionClass2
     let classdb_register_extension_class_signal: GDExtensionInterfaceClassdbRegisterExtensionClassSignal
     let classdb_register_extension_class_method: GDExtensionInterfaceClassdbRegisterExtensionClassMethod
     let classdb_register_extension_class_property: GDExtensionInterfaceClassdbRegisterExtensionClassProperty
@@ -123,6 +123,8 @@ struct GodotInterface {
     let packed_int64_array_operator_index: GDExtensionInterfacePackedInt64ArrayOperatorIndex
     let packed_vector2_array_operator_index: GDExtensionInterfacePackedVector2ArrayOperatorIndex
     let packed_vector3_array_operator_index: GDExtensionInterfacePackedVector3ArrayOperatorIndex
+    
+    let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 }
 
 var gi: GodotInterface!
@@ -161,7 +163,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         
         classdb_construct_object: load ("classdb_construct_object"),
         classdb_get_method_bind: load ("classdb_get_method_bind"),
-        classdb_register_extension_class: load ("classdb_register_extension_class"),
+        classdb_register_extension_class: load ("classdb_register_extension_class2"),
         classdb_register_extension_class_signal: load ("classdb_register_extension_class_signal"),
         classdb_register_extension_class_method: load ("classdb_register_extension_class_method"),
         classdb_register_extension_class_property: load ("classdb_register_extension_class_property"),
@@ -205,7 +207,9 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         packed_int32_array_operator_index: load ("packed_int32_array_operator_index"),
         packed_int64_array_operator_index: load ("packed_int64_array_operator_index"),
         packed_vector2_array_operator_index: load ("packed_vector2_array_operator_index"),
-        packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index")
+        packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index"),
+        
+        callable_custom_create: load ("callable_custom_create")
     )
 }
 
