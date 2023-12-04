@@ -498,8 +498,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             }
 
 // REFACTOR: use getArgsPtr() local function.
-            let ptrArgs = getArgsPtr()
-            let ptrResult = getResultPtr()
 // REFACTOR:  use getResultPtr() local function.
 //            if returnType != "" {
 //                guard let godotReturnType else { return }
@@ -524,22 +522,23 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
 //            } else {
 //                ptrResult = "nil"
 //            }
-            
-            switch kind {
-            case .class:
-                let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
-                if method.isVararg {
-                    p ("gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)")
-                } else {
-                    p ("gi.object_method_bind_ptrcall (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))")
-                }
-            case .utility:
-                if method.isVararg {
-                    p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))")
-                } else {
-                    p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))")
-                }
-            }
+            p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
+// REFACTOR: use call_object_method_bind) local function.
+//            switch kind {
+//            case .class:
+//                let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
+//                if method.isVararg {
+//                    p ("gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)")
+//                } else {
+//                    p ("gi.object_method_bind_ptrcall (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))")
+//                }
+//            case .utility:
+//                if method.isVararg {
+//                    p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))")
+//                } else {
+//                    p ("\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))")
+//                }
+//            }
             
             if returnType != "" {
                 if method.isVararg {
