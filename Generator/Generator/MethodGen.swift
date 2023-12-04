@@ -523,7 +523,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
 //                ptrResult = "nil"
 //            }
             p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
-// REFACTOR: use call_object_method_bind) local function.
+// REFACTOR: use call_object_method_bind() local function.
 //            switch kind {
 //            case .class:
 //                let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
@@ -541,37 +541,39 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
 //            }
             
             if returnType != "" {
-                if method.isVararg {
-                    if returnType == "Variant" {
-                        p ("return Variant (fromContent: _result)")
-                    } else if returnType == "GodotError" {
-                        p ("return GodotError (rawValue: Int (Variant (fromContent: _result))!)!")
-                    } else if returnType == "String" {
-                        p ("return GString (Variant (fromContent: _result))?.description ?? \"\"")
-                    } else {
-                        fatalError("Do not support this return type")
-                    }
-                } else if frameworkType {
-                    //print ("OBJ RETURN: \(className) \(method.name)")
-                    p ("guard let _result else") {
-                        if returnOptional {
-                            p ("return nil")
-                        } else {
-                            p ("fatalError (\"Unexpected nil return from a method that should never return nil\")")
-                        }
-                    }
-                    p ("return lookupObject (nativeHandle: _result)!")
-                } else if godotReturnType?.starts(with: "typedarray::") ?? false {
-                    let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
-                    
-                    p ("return \(defaultInit)")
-                } else if godotReturnType!.starts(with: "enum::"){
-                    p ("return \(returnType) (rawValue: _result)!")
-                } else if godotReturnType == "String" {
-                    p ("return _result.description")
-                } else {
-                    p ("return _result")
-                }
+                p (getReturnResult())
+// REFACTOR: use getReturnResult() local function.
+//                if method.isVararg {
+//                    if returnType == "Variant" {
+//                        p ("return Variant (fromContent: _result)")
+//                    } else if returnType == "GodotError" {
+//                        p ("return GodotError (rawValue: Int (Variant (fromContent: _result))!)!")
+//                    } else if returnType == "String" {
+//                        p ("return GString (Variant (fromContent: _result))?.description ?? \"\"")
+//                    } else {
+//                        fatalError("Do not support this return type")
+//                    }
+//                } else if frameworkType {
+//                    //print ("OBJ RETURN: \(className) \(method.name)")
+//                    p ("guard let _result else") {
+//                        if returnOptional {
+//                            p ("return nil")
+//                        } else {
+//                            p ("fatalError (\"Unexpected nil return from a method that should never return nil\")")
+//                        }
+//                    }
+//                    p ("return lookupObject (nativeHandle: _result)!")
+//                } else if godotReturnType?.starts(with: "typedarray::") ?? false {
+//                    let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
+//                    
+//                    p ("return \(defaultInit)")
+//                } else if godotReturnType!.starts(with: "enum::"){
+//                    p ("return \(returnType) (rawValue: _result)!")
+//                } else if godotReturnType == "String" {
+//                    p ("return _result.description")
+//                } else {
+//                    p ("return _result")
+//                }
             }
             
             // Unwrap the nested calls to 'withUnsafePointer'
