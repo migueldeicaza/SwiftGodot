@@ -358,9 +358,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // use variadic args + copy
         builder.body = 
         """
-        func withArgPointers(_ args: UnsafeRawPointer?...) {
-            var _args = args
-            \(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
+        func withArgPointers(_ _args: UnsafeRawPointer?...) {
+            \(call_object_method_bind(ptrArgs: args != "" ? "_args" : "nil", ptrResult: getResultPtr()))
         }\n
         """
         #else
