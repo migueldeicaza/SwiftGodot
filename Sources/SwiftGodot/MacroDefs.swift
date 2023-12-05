@@ -45,6 +45,29 @@ public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #e
 
 // MARK: - Freestanding Macros
 
+/// A macro used to add a category to exported properties
+///
+/// For example:
+/// ```swift
+/// @Godot
+/// class Vehicle: Sprite2D {
+///     #exportCategory("VIN")
+///     @Export
+///     var vin: String = "0123456789ABCDEF0"
+///     #exportCategory("YMM")
+///     @Export
+///     var year: Int = 0
+///     @Export
+///     var make: String = "Make"
+///     @Export
+///     var model: String = "Model"
+/// }
+/// ```
+///
+/// - Parameter categoryName: The name of the category.
+@freestanding(expression)
+public macro exportCategory(_ categoryName: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacroExportCategory")
+
 /// A macro used to write an entrypoint for a Godot extension.
 ///
 /// For example, to initialize a Swift extension to Godot with custom types:

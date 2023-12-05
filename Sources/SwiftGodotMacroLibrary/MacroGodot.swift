@@ -19,10 +19,12 @@ import SwiftSyntaxMacros
 class GodotMacroProcessor {
     let classDecl: ClassDeclSyntax
     let className: String
+    let exportCategories: [MacroExpansionDeclSyntax]
     
     init (classDecl: ClassDeclSyntax) {
         self.classDecl = classDecl
         className = classDecl.name.text
+        exportCategories = classDecl.exportCategories
     }
     
     var propertyDeclarations: [String: String] = [:]
@@ -108,7 +110,7 @@ class GodotMacroProcessor {
         ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
     
-    func processVariable (_ varDecl: VariableDeclSyntax) throws {
+    func processVariable (_ varDecl: VariableDeclSyntax, categoryPrefix: String) throws {
         guard hasExportAttribute(varDecl.attributes) else {
             return
         }
@@ -183,7 +185,7 @@ class GodotMacroProcessor {
     """
     let \(pinfo) = PropInfo (
         propertyType: \(propType),
-        propertyName: "\(varName)",
+        propertyName: "\(categoryPrefix)\(varName)",
         className: className,
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"\""),
@@ -197,7 +199,7 @@ class GodotMacroProcessor {
         }
     }
     
-    func processGArrayCollectionVariable(_ varDecl: VariableDeclSyntax) throws {
+    func processGArrayCollectionVariable(_ varDecl: VariableDeclSyntax, categoryPrefix: String) throws {
         guard hasExportAttribute(varDecl.attributes) else {
             return
         }
@@ -283,7 +285,7 @@ class GodotMacroProcessor {
     """
     let \(pinfo) = PropInfo (
         propertyType: \(godotTypeToProp(typeName: "Array")),
-        propertyName: "\(varName.camelCaseToSnakeCase())",
+        propertyName: "\(categoryPrefix)\(varName.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"Array of \(elementTypeName)\""),
@@ -307,16 +309,26 @@ class GodotMacroProcessor {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
+        for exportCategory in exportCategories {
+            guard let exportCategoryName = exportCategory.exportCategoryName, let exportCategoryPrefix = exportCategory.exportCategoryPrefix else { continue }
+            ctor.append(
+                """
+                classInfo.addPropertyGroup(name: "\(exportCategoryName)", prefix: "\(exportCategoryPrefix)")\n
+                """
+            )
+        }
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
             // MacroExpansionDeclSyntax
 			if let funcDecl = FunctionDeclSyntax(decl) {
 				try processFunction (funcDecl)
 			} else if let varDecl = VariableDeclSyntax(decl) {
+                let categoryPrefix = varDecl.nearestPreceedingMacroExpansionDecl(in: exportCategories)?.exportCategoryPrefix ?? ""
+                
 				if varDecl.isGArrayCollection {
-					try processGArrayCollectionVariable(varDecl)
+					try processGArrayCollectionVariable(varDecl, categoryPrefix: categoryPrefix)
 				} else {
-					try processVariable(varDecl)
+					try processVariable(varDecl, categoryPrefix: categoryPrefix)
 				}
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
@@ -469,6 +481,7 @@ struct godotMacrosPlugin: CompilerPlugin {
         GodotMacro.self,
         GodotCallable.self,
         GodotExport.self,
+        GodotMacroExportCategory.self,
         InitSwiftExtensionMacro.self,
         NativeHandleDiscardingMacro.self,
         PickerNameProviderMacro.self,
@@ -476,4 +489,43 @@ struct godotMacrosPlugin: CompilerPlugin {
         Texture2DLiteralMacro.self,
         SignalMacro.self
     ]
+}
+
+private extension DeclGroupSyntax {
+    var exportCategories: [MacroExpansionDeclSyntax] {
+        memberBlock.members.compactMap { $0.decl.as(MacroExpansionDeclSyntax.self) }
+    }
+}
+
+private extension MacroExpansionDeclSyntax {
+    private var isExportCategory: Bool {
+        macroName.text == "exportCategory"
+    }
+    
+    var exportCategoryPrefix: String? {
+        guard isExportCategory, let exportCategoryName else { return nil }
+        return exportCategoryName.camelCaseToSnakeCase().replacingOccurrences(of: " ", with: "_") + ":"
+    }
+    
+    var exportCategoryName: String? {
+        guard isExportCategory else { return nil }
+        return arguments
+            .first?
+            .as(LabeledExprSyntax.self)?
+            .expression
+            .as(StringLiteralExprSyntax.self)?
+            .segments
+            .first?
+            .as(StringSegmentSyntax.self)?
+            .content
+            .text
+    }
+}
+
+private extension VariableDeclSyntax {
+    func nearestPreceedingMacroExpansionDecl(in macroDeclerations: [MacroExpansionDeclSyntax]) -> MacroExpansionDeclSyntax? {
+        macroDeclerations
+            .sorted(by: { $0.position > $1.position })
+            .first { position > $0.position }
+    }
 }
