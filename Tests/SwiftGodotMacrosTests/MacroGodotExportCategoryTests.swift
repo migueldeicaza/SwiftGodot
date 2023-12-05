@@ -61,10 +61,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle:")
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
         let _pmake = PropInfo (
             propertyType: .string,
-            propertyName: "vehicle:make",
+            propertyName: "vehicle_make",
             className: className,
             hint: .none,
             hintStr: "",
@@ -74,7 +74,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
         let _pmodel = PropInfo (
             propertyType: .string,
-            propertyName: "vehicle:model",
+            propertyName: "vehicle_model",
             className: className,
             hint: .none,
             hintStr: "",
@@ -133,7 +133,6 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms:")
         let _pvin = PropInfo (
             propertyType: .string,
             propertyName: "vin",
@@ -144,9 +143,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
     	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
     	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
+        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms_")
         let _pyear = PropInfo (
             propertyType: .int,
-            propertyName: "ymms:year",
+            propertyName: "ymms_year",
             className: className,
             hint: .none,
             hintStr: "",
@@ -205,7 +205,6 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless:")
         let _pvin = PropInfo (
             propertyType: .string,
             propertyName: "vin",
@@ -226,6 +225,7 @@ class Car: Node {
     	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
     	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
     	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
+        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless_")
     } ()
 }
 """,
@@ -301,11 +301,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "vin:")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm:")
+        classInfo.addPropertyGroup(name: "VIN", prefix: "vin_")
         let _pvin = PropInfo (
             propertyType: .string,
-            propertyName: "vin:vin",
+            propertyName: "vin_vin",
             className: className,
             hint: .none,
             hintStr: "",
@@ -313,9 +312,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
     	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
     	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
+        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm_")
         let _pyear = PropInfo (
             propertyType: .int,
-            propertyName: "ymm:year",
+            propertyName: "ymm_year",
             className: className,
             hint: .none,
             hintStr: "",
@@ -325,7 +325,7 @@ class Car: Node {
     	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
         let _pmake = PropInfo (
             propertyType: .string,
-            propertyName: "ymm:make",
+            propertyName: "ymm_make",
             className: className,
             hint: .none,
             hintStr: "",
@@ -335,7 +335,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
         let _pmodel = PropInfo (
             propertyType: .string,
-            propertyName: "ymm:model",
+            propertyName: "ymm_model",
             className: className,
             hint: .none,
             hintStr: "",
@@ -407,10 +407,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle:")
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle:makes",
+            propertyName: "vehicle_makes",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -420,7 +420,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodel = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle:model",
+            propertyName: "vehicle_model",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -491,7 +491,6 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms:")
         let _pvins = PropInfo (
             propertyType: .array,
             propertyName: "vins",
@@ -502,9 +501,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
+        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms_")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymms:years",
+            propertyName: "ymms_years",
             className: StringName("Array[int]"),
             hint: .none,
             hintStr: "Array of Int",
@@ -575,7 +575,6 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless:")
         let _pvins = PropInfo (
             propertyType: .array,
             propertyName: "vins",
@@ -596,6 +595,7 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
+        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless_")
     } ()
 }
 """,
@@ -695,11 +695,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "vin:")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm:")
+        classInfo.addPropertyGroup(name: "VIN", prefix: "vin_")
         let _pvins = PropInfo (
             propertyType: .array,
-            propertyName: "vin:vins",
+            propertyName: "vin_vins",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -707,9 +706,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
+        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm_")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymm:years",
+            propertyName: "ymm_years",
             className: StringName("Array[int]"),
             hint: .none,
             hintStr: "Array of Int",
@@ -719,7 +719,7 @@ class Car: Node {
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "ymm:makes",
+            propertyName: "ymm_makes",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -729,7 +729,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodels = PropInfo (
             propertyType: .array,
-            propertyName: "ymm:models",
+            propertyName: "ymm_models",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -804,10 +804,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle:")
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle:makes",
+            propertyName: "vehicle_makes",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -817,7 +817,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodel = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle:model",
+            propertyName: "vehicle_model",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -889,7 +889,6 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms:")
         let _pvins = PropInfo (
             propertyType: .array,
             propertyName: "vins",
@@ -900,9 +899,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
+        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms_")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymms:years",
+            propertyName: "ymms_years",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -973,7 +973,6 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless:")
         let _pvins = PropInfo (
             propertyType: .array,
             propertyName: "vins",
@@ -994,6 +993,7 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
+        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless_")
     } ()
 }
 """,
@@ -1093,11 +1093,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "vin:")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm:")
+        classInfo.addPropertyGroup(name: "VIN", prefix: "vin_")
         let _pvins = PropInfo (
             propertyType: .array,
-            propertyName: "vin:vins",
+            propertyName: "vin_vins",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1105,9 +1104,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
+        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm_")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymm:years",
+            propertyName: "ymm_years",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1117,7 +1117,7 @@ class Car: Node {
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "ymm:makes",
+            propertyName: "ymm_makes",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1127,7 +1127,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodels = PropInfo (
             propertyType: .array,
-            propertyName: "ymm:models",
+            propertyName: "ymm_models",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1285,12 +1285,10 @@ class Garage: Node {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
-        classInfo.addPropertyGroup(name: "Front Page", prefix: "front_page:")
-        classInfo.addPropertyGroup(name: "More Details", prefix: "more_details:")
-        classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "hours_and_insurance:")
+        classInfo.addPropertyGroup(name: "Front Page", prefix: "front_page_")
         let _pname = PropInfo (
             propertyType: .string,
-            propertyName: "front_page:name",
+            propertyName: "front_page_name",
             className: className,
             hint: .none,
             hintStr: "",
@@ -1300,7 +1298,7 @@ class Garage: Node {
     	classInfo.registerProperty (_pname, getter: "_mproxy_get_name", setter: "_mproxy_set_name")
         let _prating = PropInfo (
             propertyType: .float,
-            propertyName: "front_page:rating",
+            propertyName: "front_page_rating",
             className: className,
             hint: .none,
             hintStr: "",
@@ -1308,9 +1306,10 @@ class Garage: Node {
     	classInfo.registerMethod (name: "_mproxy_get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
     	classInfo.registerMethod (name: "_mproxy_set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
     	classInfo.registerProperty (_prating, getter: "_mproxy_get_rating", setter: "_mproxy_set_rating")
+        classInfo.addPropertyGroup(name: "More Details", prefix: "more_details_")
         let _previews = PropInfo (
             propertyType: .array,
-            propertyName: "more_details:reviews",
+            propertyName: "more_details_reviews",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -1320,7 +1319,7 @@ class Garage: Node {
     	classInfo.registerProperty (_previews, getter: "get_reviews", setter: "set_reviews")
         let _pcheckIns = PropInfo (
             propertyType: .array,
-            propertyName: "more_details:check_ins",
+            propertyName: "more_details_check_ins",
             className: StringName("Array[CheckIn]"),
             hint: .none,
             hintStr: "Array of CheckIn",
@@ -1330,7 +1329,7 @@ class Garage: Node {
     	classInfo.registerProperty (_pcheckIns, getter: "get_check_ins", setter: "set_check_ins")
         let _paddress = PropInfo (
             propertyType: .string,
-            propertyName: "more_details:address",
+            propertyName: "more_details_address",
             className: className,
             hint: .none,
             hintStr: "",
@@ -1338,9 +1337,10 @@ class Garage: Node {
     	classInfo.registerMethod (name: "_mproxy_get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
     	classInfo.registerMethod (name: "_mproxy_set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
     	classInfo.registerProperty (_paddress, getter: "_mproxy_get_address", setter: "_mproxy_set_address")
+        classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "hours_and_insurance_")
         let _pdaysOfOperation = PropInfo (
             propertyType: .array,
-            propertyName: "hours_and_insurance:days_of_operation",
+            propertyName: "hours_and_insurance_days_of_operation",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -1350,7 +1350,7 @@ class Garage: Node {
     	classInfo.registerProperty (_pdaysOfOperation, getter: "get_days_of_operation", setter: "set_days_of_operation")
         let _phours = PropInfo (
             propertyType: .array,
-            propertyName: "hours_and_insurance:hours",
+            propertyName: "hours_and_insurance_hours",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -1360,7 +1360,7 @@ class Garage: Node {
     	classInfo.registerProperty (_phours, getter: "get_hours", setter: "set_hours")
         let _pinsuranceProvidersAccepted = PropInfo (
             propertyType: .array,
-            propertyName: "hours_and_insurance:insurance_providers_accepted",
+            propertyName: "hours_and_insurance_insurance_providers_accepted",
             className: StringName("Array[InsuranceProvider]"),
             hint: .none,
             hintStr: "Array of InsuranceProvider",

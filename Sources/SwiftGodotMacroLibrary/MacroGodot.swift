@@ -19,12 +19,10 @@ import SwiftSyntaxMacros
 class GodotMacroProcessor {
     let classDecl: ClassDeclSyntax
     let className: String
-    let exportCategories: [MacroExpansionDeclSyntax]
     
     init (classDecl: ClassDeclSyntax) {
         self.classDecl = classDecl
         className = classDecl.name.text
-        exportCategories = classDecl.exportCategories
     }
     
     var propertyDeclarations: [String: String] = [:]
@@ -78,6 +76,14 @@ class GodotMacroProcessor {
         ctor.append("name: \(className).\(signalName.swiftName).name,")
         ctor.append("arguments: \(className).\(signalName.swiftName).arguments")
         ctor.append(")")
+    }
+    
+    func processExportCategory(name: String, prefix: String) {
+        ctor.append(
+            """
+            classInfo.addPropertyGroup(name: "\(name)", prefix: "\(prefix)")\n
+            """
+        )
     }
     
     // Processes a function
@@ -309,26 +315,21 @@ class GodotMacroProcessor {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
-        for exportCategory in exportCategories {
-            guard let exportCategoryName = exportCategory.exportCategoryName, let exportCategoryPrefix = exportCategory.exportCategoryPrefix else { continue }
-            ctor.append(
-                """
-                classInfo.addPropertyGroup(name: "\(exportCategoryName)", prefix: "\(exportCategoryPrefix)")\n
-                """
-            )
-        }
+        var previousExportCategoryPrefix: String = ""
+        
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
-            // MacroExpansionDeclSyntax
-			if let funcDecl = FunctionDeclSyntax(decl) {
+            
+            if let macroExpansion = MacroExpansionDeclSyntax(decl), let name = macroExpansion.exportCategoryName, let prefix = macroExpansion.exportCategoryPrefix {
+                previousExportCategoryPrefix = prefix
+                processExportCategory(name: name, prefix: prefix)
+            } else if let funcDecl = FunctionDeclSyntax(decl) {
 				try processFunction (funcDecl)
 			} else if let varDecl = VariableDeclSyntax(decl) {
-                let categoryPrefix = varDecl.nearestPreceedingMacroExpansionDecl(in: exportCategories)?.exportCategoryPrefix ?? ""
-                
 				if varDecl.isGArrayCollection {
-					try processGArrayCollectionVariable(varDecl, categoryPrefix: categoryPrefix)
+					try processGArrayCollectionVariable(varDecl, categoryPrefix: previousExportCategoryPrefix)
 				} else {
-					try processVariable(varDecl, categoryPrefix: categoryPrefix)
+					try processVariable(varDecl, categoryPrefix: previousExportCategoryPrefix)
 				}
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
@@ -491,12 +492,6 @@ struct godotMacrosPlugin: CompilerPlugin {
     ]
 }
 
-private extension DeclGroupSyntax {
-    var exportCategories: [MacroExpansionDeclSyntax] {
-        memberBlock.members.compactMap { $0.decl.as(MacroExpansionDeclSyntax.self) }
-    }
-}
-
 private extension MacroExpansionDeclSyntax {
     private var isExportCategory: Bool {
         macroName.text == "exportCategory"
@@ -504,7 +499,7 @@ private extension MacroExpansionDeclSyntax {
     
     var exportCategoryPrefix: String? {
         guard isExportCategory, let exportCategoryName else { return nil }
-        return exportCategoryName.camelCaseToSnakeCase().replacingOccurrences(of: " ", with: "_") + ":"
+        return exportCategoryName.camelCaseToSnakeCase().replacingOccurrences(of: " ", with: "_") + "_"
     }
     
     var exportCategoryName: String? {
@@ -519,13 +514,5 @@ private extension MacroExpansionDeclSyntax {
             .as(StringSegmentSyntax.self)?
             .content
             .text
-    }
-}
-
-private extension VariableDeclSyntax {
-    func nearestPreceedingMacroExpansionDecl(in macroDeclerations: [MacroExpansionDeclSyntax]) -> MacroExpansionDeclSyntax? {
-        macroDeclerations
-            .sorted(by: { $0.position > $1.position })
-            .first { position > $0.position }
     }
 }
