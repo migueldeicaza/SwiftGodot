@@ -352,7 +352,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // combines extracting the parameters into pointers and packing them into the _args array.
         // We can modularize this by creating functions that generate the return type and return
         // statements.
-        builder.setup = "#if true\n\n"
         builder.setup += argSetup
         // Use implicit bridging to build _args array of type [UnsafeMutableRawPointer?]. This preserves the
         // values of the parameters, because they are treated as inout parameters. Then cast to [UnsafeRawPointer?],
@@ -431,7 +430,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         """
         withArgPointers(\(builder.args.joined(separator: ", ")))
         \(getReturnResult())
-        #else\n
         """
     } else if method.isVararg {
         // No regular arguments, check if these are varargs
@@ -475,31 +473,26 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 p(builder.setup)
                 p(builder.body)
                 p(builder.call)
-            }
-            
-            if argSetup != "" {
-                p (argSetup)
-            }
-            if withUnsafeCallNestLevel > 0 {
-                p.indent += withUnsafeCallNestLevel
-            }
-
-            p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
-            
-            if returnType != "" {
-                p (getReturnResult())
-            }
-            
-            // Unwrap the nested calls to 'withUnsafePointer'
-            while withUnsafeCallNestLevel > 0 {
-                withUnsafeCallNestLevel -= 1
-                p.indent -= 1
-                p ("}")
-            }
-            
-// REFACTOR: just so we can see the two side-by-side
-            if builder.setup != "" {
-                p ("\n#endif")
+            } else {
+                if argSetup != "" {
+                    p (argSetup)
+                }
+                if withUnsafeCallNestLevel > 0 {
+                    p.indent += withUnsafeCallNestLevel
+                }
+                
+                p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
+                
+                if returnType != "" {
+                    p (getReturnResult())
+                }
+                
+                // Unwrap the nested calls to 'withUnsafePointer'
+                while withUnsafeCallNestLevel > 0 {
+                    withUnsafeCallNestLevel -= 1
+                    p.indent -= 1
+                    p ("}")
+                }
             }
         }
     }
