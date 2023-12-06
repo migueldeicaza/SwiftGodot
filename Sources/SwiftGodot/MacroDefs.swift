@@ -51,22 +51,23 @@ public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #e
 /// ```swift
 /// @Godot
 /// class Vehicle: Sprite2D {
-///     #exportCategory("VIN")
+///     #exportGroup("VIN")
 ///     @Export
 ///     var vin: String = "0123456789ABCDEF0"
-///     #exportCategory("YMM")
+///     #exportGroup("YMM", prefix: "ymms_")
 ///     @Export
-///     var year: Int = 0
+///     var ymms_year: Int = 0
 ///     @Export
-///     var make: String = "Make"
+///     var ymms_make: String = "Make"
 ///     @Export
-///     var model: String = "Model"
+///     var ymms_model: String = "Model"
 /// }
 /// ```
 ///
-/// - Parameter categoryName: The name of the category.
+/// - Parameter name: The name of the group.
+/// - Parameter prefix: The optional prefix of the group which can be used to only group properties with the specified prefix.
 @freestanding(expression)
-public macro exportCategory(_ categoryName: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacroExportCategory")
+public macro exportGroup(_ name: String, prefix: String = "") = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacroExportGroup")
 
 /// A macro used to write an entrypoint for a Godot extension.
 ///

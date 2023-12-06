@@ -1,5 +1,5 @@
 //
-//  MacroGodotExportCategoryTests.swift
+//  MacroGodotExportGroupTests.swift
 //  SwiftGodotMacrosTests
 //
 //  Created by Estevan Hernandez on 12/4/23.
@@ -10,19 +10,91 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 import SwiftGodotMacroLibrary
 
-final class MacroGodotExportCategoryTests: XCTestCase {
+final class MacroGodotExportGroupTests: XCTestCase {
     let testMacros: [String: Macro.Type] = [
         "Godot": GodotMacro.self,
         "Export": GodotExport.self,
-        "exportCategory": GodotMacroExportCategory.self
+        "exportGroup": GodotMacroExportGroup.self
     ]
     
-    func testGodotExportCategoryProducesPropertiesWithPrefixes_whenAllPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupWithPrefix() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
-    #exportCategory("Vehicle")
+    #exportGroup("Vehicle", prefix: "vehicle_")
+    @Export var vehicle_make: String = "Mazda"
+    @Export var vehicle_model: String = "RX7"
+}
+""",
+            expandedSource:
+"""
+
+class Car: Node {
+    var vehicle_make: String = "Mazda"
+
+    func _mproxy_set_vehicle_make (args: [Variant]) -> Variant? {
+    	vehicle_make = String (args [0])!
+    	return nil
+    }
+
+    func _mproxy_get_vehicle_make (args: [Variant]) -> Variant? {
+        return Variant (vehicle_make)
+    }
+    var vehicle_model: String = "RX7"
+
+    func _mproxy_set_vehicle_model (args: [Variant]) -> Variant? {
+    	vehicle_model = String (args [0])!
+    	return nil
+    }
+
+    func _mproxy_get_vehicle_model (args: [Variant]) -> Variant? {
+        return Variant (vehicle_model)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Car")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Car> (name: className)
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
+        let _pvehicle_make = PropInfo (
+            propertyType: .string,
+            propertyName: "vehicle_make",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "get_make", flags: .default, returnValue: _pvehicle_make, arguments: [], function: Car._mproxy_get_vehicle_make)
+    	classInfo.registerMethod (name: "set_make", flags: .default, returnValue: nil, arguments: [_pvehicle_make], function: Car._mproxy_set_vehicle_make)
+    	classInfo.registerProperty (_pvehicle_make, getter: "get_make", setter: "set_make")
+        let _pvehicle_model = PropInfo (
+            propertyType: .string,
+            propertyName: "vehicle_model",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pvehicle_model, arguments: [], function: Car._mproxy_get_vehicle_model)
+    	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pvehicle_model], function: Car._mproxy_set_vehicle_model)
+    	classInfo.registerProperty (_pvehicle_model, getter: "get_model", setter: "set_model")
+    } ()
+}
+""",
+        macros: testMacros
+        )
+    }
+    
+    func testGodotExportGroupProducesPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {
+        assertMacroExpansion(
+"""
+@Godot
+class Car: Node {
+    #exportGroup("Vehicle")
     @Export var make: String = "Mazda"
     @Export var model: String = "RX7"
 }
@@ -61,27 +133,27 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "")
         let _pmake = PropInfo (
             propertyType: .string,
-            propertyName: "vehicle_make",
+            propertyName: "make",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
-    	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
-    	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
+    	classInfo.registerMethod (name: "get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
+    	classInfo.registerMethod (name: "set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
+    	classInfo.registerProperty (_pmake, getter: "get_make", setter: "set_make")
         let _pmodel = PropInfo (
             propertyType: .string,
-            propertyName: "vehicle_model",
+            propertyName: "model",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-    	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-    	classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
+    	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
+    	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
+    	classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
     } ()
 }
 """,
@@ -89,18 +161,19 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryOnlyProducesPropertiesWithPrefixes_whenPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupOnlyProducesPropertiesWithPrefixes_whenPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
     @Export var vin: String = "00000000000000000"
-    #exportCategory("YMMS")
+    #exportGroup("YMMS")
     @Export var year: Int = 1997
 }
 """,
             expandedSource:
 """
+
 
 class Car: Node {
     var vin: String = "00000000000000000"
@@ -140,81 +213,10 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-    	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-    	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
-        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms_")
-        let _pyear = PropInfo (
-            propertyType: .int,
-            propertyName: "ymms_year",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-    	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-    	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
-    } ()
-}
-""",
-            macros: testMacros
-        )
-    }
-    
-    func testGodotExportCategoryProducesPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterExportCategory() {
-        assertMacroExpansion(
-"""
-@Godot
-class Car: Node {
-    @Export var vin: String = "00000000000000000"
-    @Export var year: Int = 1997
-    #exportCategory("Pointless")
-}
-""",
-            expandedSource:
-"""
-
-class Car: Node {
-    var vin: String = "00000000000000000"
-
-    func _mproxy_set_vin (args: [Variant]) -> Variant? {
-    	vin = String (args [0])!
-    	return nil
-    }
-
-    func _mproxy_get_vin (args: [Variant]) -> Variant? {
-        return Variant (vin)
-    }
-    var year: Int = 1997
-
-    func _mproxy_set_year (args: [Variant]) -> Variant? {
-    	year = Int (args [0])!
-    	return nil
-    }
-
-    func _mproxy_get_year (args: [Variant]) -> Variant? {
-        return Variant (year)
-    }
-
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
-    private static var _initializeClass: Void = {
-        let className = StringName("Car")
-        assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Car> (name: className)
-        let _pvin = PropInfo (
-            propertyType: .string,
-            propertyName: "vin",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-    	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-    	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
+    	classInfo.registerMethod (name: "get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
+    	classInfo.registerMethod (name: "set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
+    	classInfo.registerProperty (_pvin, getter: "get_vin", setter: "set_vin")
+        classInfo.addPropertyGroup(name: "YMMS", prefix: "")
         let _pyear = PropInfo (
             propertyType: .int,
             propertyName: "year",
@@ -222,10 +224,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-    	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-    	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
-        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless_")
+    	classInfo.registerMethod (name: "get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
+    	classInfo.registerMethod (name: "set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
+    	classInfo.registerProperty (_pyear, getter: "get_year", setter: "set_year")
     } ()
 }
 """,
@@ -233,14 +234,86 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentExportCategory() {
+    func testGodotExportGroupProducesPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
-    #exportCategory("VIN")
+    @Export var vin: String = "00000000000000000"
+    @Export var year: Int = 1997
+    #exportGroup("Pointless")
+}
+""",
+            expandedSource:
+"""
+
+class Car: Node {
+    var vin: String = "00000000000000000"
+
+    func _mproxy_set_vin (args: [Variant]) -> Variant? {
+    	vin = String (args [0])!
+    	return nil
+    }
+
+    func _mproxy_get_vin (args: [Variant]) -> Variant? {
+        return Variant (vin)
+    }
+    var year: Int = 1997
+
+    func _mproxy_set_year (args: [Variant]) -> Variant? {
+    	year = Int (args [0])!
+    	return nil
+    }
+
+    func _mproxy_get_year (args: [Variant]) -> Variant? {
+        return Variant (year)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Car")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Car> (name: className)
+        let _pvin = PropInfo (
+            propertyType: .string,
+            propertyName: "vin",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
+    	classInfo.registerMethod (name: "set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
+    	classInfo.registerProperty (_pvin, getter: "get_vin", setter: "set_vin")
+        let _pyear = PropInfo (
+            propertyType: .int,
+            propertyName: "year",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
+    	classInfo.registerMethod (name: "set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
+    	classInfo.registerProperty (_pyear, getter: "get_year", setter: "set_year")
+        classInfo.addPropertyGroup(name: "Pointless", prefix: "")
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+    func testGodotExportGroupProducesPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentexportGroup() {
+        assertMacroExpansion(
+"""
+@Godot
+class Car: Node {
+    #exportGroup("VIN")
     @Export var vin: String = ""
-    #exportCategory("YMM")
+    #exportGroup("YMM")
     @Export var year: Int = 1997
     @Export var make: String = "HONDA"
     @Export var model: String = "ACCORD"
@@ -301,48 +374,48 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "vin_")
+        classInfo.addPropertyGroup(name: "VIN", prefix: "")
         let _pvin = PropInfo (
             propertyType: .string,
-            propertyName: "vin_vin",
+            propertyName: "vin",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-    	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-    	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm_")
+    	classInfo.registerMethod (name: "get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
+    	classInfo.registerMethod (name: "set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
+    	classInfo.registerProperty (_pvin, getter: "get_vin", setter: "set_vin")
+        classInfo.addPropertyGroup(name: "YMM", prefix: "")
         let _pyear = PropInfo (
             propertyType: .int,
-            propertyName: "ymm_year",
+            propertyName: "year",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-    	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-    	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
+    	classInfo.registerMethod (name: "get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
+    	classInfo.registerMethod (name: "set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
+    	classInfo.registerProperty (_pyear, getter: "get_year", setter: "set_year")
         let _pmake = PropInfo (
             propertyType: .string,
-            propertyName: "ymm_make",
+            propertyName: "make",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
-    	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
-    	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
+    	classInfo.registerMethod (name: "get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
+    	classInfo.registerMethod (name: "set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
+    	classInfo.registerProperty (_pmake, getter: "get_make", setter: "set_make")
         let _pmodel = PropInfo (
             propertyType: .string,
-            propertyName: "ymm_model",
+            propertyName: "model",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-    	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-    	classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
+    	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
+    	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
+    	classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
     } ()
     
 }
@@ -351,12 +424,12 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesVariantCollectionPropertiesWithPrefixes_whenAllPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupProducesVariantCollectionPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
-    #exportCategory("Vehicle")
+    #exportGroup("Vehicle")
     @Export var makes: VariantCollection<String> = ["Mazda"]
     @Export var model: VariantCollection<String> = ["RX7"]
 }
@@ -407,10 +480,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle_makes",
+            propertyName: "makes",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -420,7 +493,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodel = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle_model",
+            propertyName: "model",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -435,18 +508,19 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryOnlyProducesVariantCollectionPropertiesWithPrefixes_whenPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupOnlyProducesVariantCollectionPropertiesWithPrefixes_whenPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
     @Export var vins: VariantCollection<String> = ["00000000000000000"]
-    #exportCategory("YMMS")
+    #exportGroup("YMMS")
     @Export var years: VariantCollection<Int> = [1997]
 }
 """,
             expandedSource:
 """
+
 
 class Car: Node {
     var vins: VariantCollection<String> = ["00000000000000000"]
@@ -501,10 +575,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
-        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms_")
+        classInfo.addPropertyGroup(name: "YMMS", prefix: "")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymms_years",
+            propertyName: "years",
             className: StringName("Array[int]"),
             hint: .none,
             hintStr: "Array of Int",
@@ -519,14 +593,14 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesVariantCollectionPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupProducesVariantCollectionPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
     @Export var vins: VariantCollection<String> = ["00000000000000000"]
     @Export var years: VariantCollection<Int> = [1997]
-    #exportCategory("Pointless")
+    #exportGroup("Pointless")
 }
 """,
             expandedSource:
@@ -595,7 +669,7 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
-        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless_")
+        classInfo.addPropertyGroup(name: "Pointless", prefix: "")
     } ()
 }
 """,
@@ -603,14 +677,14 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesVariantCollectionPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentExportCategory() {
+    func testGodotExportGroupProducesVariantCollectionPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
-    #exportCategory("VIN")
+    #exportGroup("VIN")
     @Export var vins: VariantCollection<String> = [""]
-    #exportCategory("YMM")
+    #exportGroup("YMM")
     @Export var years: VariantCollection<Int> = [1997]
     @Export var makes: VariantCollection<String> = ["HONDA"]
     @Export var models: VariantCollection<String> = ["ACCORD"]
@@ -695,10 +769,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "vin_")
+        classInfo.addPropertyGroup(name: "VIN", prefix: "")
         let _pvins = PropInfo (
             propertyType: .array,
-            propertyName: "vin_vins",
+            propertyName: "vins",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -706,10 +780,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm_")
+        classInfo.addPropertyGroup(name: "YMM", prefix: "")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymm_years",
+            propertyName: "years",
             className: StringName("Array[int]"),
             hint: .none,
             hintStr: "Array of Int",
@@ -719,7 +793,7 @@ class Car: Node {
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "ymm_makes",
+            propertyName: "makes",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -729,7 +803,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodels = PropInfo (
             propertyType: .array,
-            propertyName: "ymm_models",
+            propertyName: "models",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -747,19 +821,18 @@ class Car: Node {
     
     // TODO: and ObjectCollection as well ...
     
-    func testGodotExportCategoryProducesObjectCollectionPropertiesWithPrefixes_whenAllPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupProducesObjectCollectionPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
-    #exportCategory("Vehicle")
+    #exportGroup("Vehicle")
     @Export var makes: ObjectCollection<Node> = []
     @Export var model: ObjectCollection<Node> = []
 }
 """,
    expandedSource:
 """
-
 
 class Car: Node {
     var makes: ObjectCollection<Node> = []
@@ -804,10 +877,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
+        classInfo.addPropertyGroup(name: "Vehicle", prefix: "")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle_makes",
+            propertyName: "makes",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -817,7 +890,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodel = PropInfo (
             propertyType: .array,
-            propertyName: "vehicle_model",
+            propertyName: "model",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -832,19 +905,18 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryOnlyProducesObjectCollectionPropertiesWithPrefixes_whenPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupOnlyProducesObjectCollectionPropertiesWithPrefixes_whenPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
     @Export var vins: ObjectCollection<Node> = []
-    #exportCategory("YMMS")
+    #exportGroup("YMMS")
     @Export var years: ObjectCollection<Node> = []
 }
 """,
             expandedSource:
 """
-
 
 class Car: Node {
     var vins: ObjectCollection<Node> = []
@@ -899,10 +971,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
-        classInfo.addPropertyGroup(name: "YMMS", prefix: "ymms_")
+        classInfo.addPropertyGroup(name: "YMMS", prefix: "")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymms_years",
+            propertyName: "years",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -917,14 +989,14 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesObjectCollectionPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterExportCategory() {
+    func testGodotExportGroupProducesObjectCollectionPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
     @Export var vins: ObjectCollection<Node> = []
     @Export var years: ObjectCollection<Node> = []
-    #exportCategory("Pointless")
+    #exportGroup("Pointless")
 }
 """,
             expandedSource:
@@ -993,7 +1065,7 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
-        classInfo.addPropertyGroup(name: "Pointless", prefix: "pointless_")
+        classInfo.addPropertyGroup(name: "Pointless", prefix: "")
     } ()
 }
 """,
@@ -1001,14 +1073,14 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesObjectCollectionPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentExportCategory() {
+    func testGodotExportGroupProducesObjectCollectionPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentexportGroup() {
         assertMacroExpansion(
 """
 @Godot
 class Car: Node {
-    #exportCategory("VIN")
+    #exportGroup("VIN")
     @Export var vins: ObjectCollection<Node> = []
-    #exportCategory("YMM")
+    #exportGroup("YMM")
     @Export var years: ObjectCollection<Node> = []
     @Export var makes: ObjectCollection<Node> = []
     @Export var models: ObjectCollection<Node> = []
@@ -1093,10 +1165,10 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "vin_")
+        classInfo.addPropertyGroup(name: "VIN", prefix: "")
         let _pvins = PropInfo (
             propertyType: .array,
-            propertyName: "vin_vins",
+            propertyName: "vins",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1104,10 +1176,10 @@ class Car: Node {
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "ymm_")
+        classInfo.addPropertyGroup(name: "YMM", prefix: "")
         let _pyears = PropInfo (
             propertyType: .array,
-            propertyName: "ymm_years",
+            propertyName: "years",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1117,7 +1189,7 @@ class Car: Node {
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
         let _pmakes = PropInfo (
             propertyType: .array,
-            propertyName: "ymm_makes",
+            propertyName: "makes",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1127,7 +1199,7 @@ class Car: Node {
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
         let _pmodels = PropInfo (
             propertyType: .array,
-            propertyName: "ymm_models",
+            propertyName: "models",
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "Array of Node",
@@ -1143,19 +1215,19 @@ class Car: Node {
         )
     }
     
-    func testGodotExportCategoryProducesPropertiesWithDifferentPrefixes_whenMixingVariantCollectionObjectCollectionAndNormalVariableProperties() {
+    func testGodotExportGroupProducesPropertiesWithDifferentPrefixes_whenMixingVariantCollectionObjectCollectionAndNormalVariableProperties() {
         assertMacroExpansion(
 """
 @Godot
 class Garage: Node {
-    #exportCategory("Front Page")
+    #exportGroup("Front Page")
     @Export var name: String = ""
     @Export var rating: Float = 0.0
-    #exportCategory("More Details")
+    #exportGroup("More Details")
     @Export var reviews: VariantCollection<String> = []
     @Export var checkIns: ObjectCollection<CheckIn> = []
     @Export var address: String = ""
-    #exportCategory("Hours and Insurance")
+    #exportGroup("Hours and Insurance")
     @Export var daysOfOperation: VariantCollection<String> = []
     @Export var hours: VariantCollection<String> = []
     @Export var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
@@ -1285,31 +1357,31 @@ class Garage: Node {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
-        classInfo.addPropertyGroup(name: "Front Page", prefix: "front_page_")
+        classInfo.addPropertyGroup(name: "Front Page", prefix: "")
         let _pname = PropInfo (
             propertyType: .string,
-            propertyName: "front_page_name",
+            propertyName: "name",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_name", flags: .default, returnValue: _pname, arguments: [], function: Garage._mproxy_get_name)
-    	classInfo.registerMethod (name: "_mproxy_set_name", flags: .default, returnValue: nil, arguments: [_pname], function: Garage._mproxy_set_name)
-    	classInfo.registerProperty (_pname, getter: "_mproxy_get_name", setter: "_mproxy_set_name")
+    	classInfo.registerMethod (name: "get_name", flags: .default, returnValue: _pname, arguments: [], function: Garage._mproxy_get_name)
+    	classInfo.registerMethod (name: "set_name", flags: .default, returnValue: nil, arguments: [_pname], function: Garage._mproxy_set_name)
+    	classInfo.registerProperty (_pname, getter: "get_name", setter: "set_name")
         let _prating = PropInfo (
             propertyType: .float,
-            propertyName: "front_page_rating",
+            propertyName: "rating",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
-    	classInfo.registerMethod (name: "_mproxy_set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
-    	classInfo.registerProperty (_prating, getter: "_mproxy_get_rating", setter: "_mproxy_set_rating")
-        classInfo.addPropertyGroup(name: "More Details", prefix: "more_details_")
+    	classInfo.registerMethod (name: "get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
+    	classInfo.registerMethod (name: "set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
+    	classInfo.registerProperty (_prating, getter: "get_rating", setter: "set_rating")
+        classInfo.addPropertyGroup(name: "More Details", prefix: "")
         let _previews = PropInfo (
             propertyType: .array,
-            propertyName: "more_details_reviews",
+            propertyName: "reviews",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -1319,7 +1391,7 @@ class Garage: Node {
     	classInfo.registerProperty (_previews, getter: "get_reviews", setter: "set_reviews")
         let _pcheckIns = PropInfo (
             propertyType: .array,
-            propertyName: "more_details_check_ins",
+            propertyName: "check_ins",
             className: StringName("Array[CheckIn]"),
             hint: .none,
             hintStr: "Array of CheckIn",
@@ -1329,18 +1401,18 @@ class Garage: Node {
     	classInfo.registerProperty (_pcheckIns, getter: "get_check_ins", setter: "set_check_ins")
         let _paddress = PropInfo (
             propertyType: .string,
-            propertyName: "more_details_address",
+            propertyName: "address",
             className: className,
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "_mproxy_get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
-    	classInfo.registerMethod (name: "_mproxy_set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
-    	classInfo.registerProperty (_paddress, getter: "_mproxy_get_address", setter: "_mproxy_set_address")
-        classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "hours_and_insurance_")
+    	classInfo.registerMethod (name: "get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
+    	classInfo.registerMethod (name: "set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
+    	classInfo.registerProperty (_paddress, getter: "get_address", setter: "set_address")
+        classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "")
         let _pdaysOfOperation = PropInfo (
             propertyType: .array,
-            propertyName: "hours_and_insurance_days_of_operation",
+            propertyName: "days_of_operation",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -1350,7 +1422,7 @@ class Garage: Node {
     	classInfo.registerProperty (_pdaysOfOperation, getter: "get_days_of_operation", setter: "set_days_of_operation")
         let _phours = PropInfo (
             propertyType: .array,
-            propertyName: "hours_and_insurance_hours",
+            propertyName: "hours",
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "Array of String",
@@ -1360,7 +1432,7 @@ class Garage: Node {
     	classInfo.registerProperty (_phours, getter: "get_hours", setter: "set_hours")
         let _pinsuranceProvidersAccepted = PropInfo (
             propertyType: .array,
-            propertyName: "hours_and_insurance_insurance_providers_accepted",
+            propertyName: "insurance_providers_accepted",
             className: StringName("Array[InsuranceProvider]"),
             hint: .none,
             hintStr: "Array of InsuranceProvider",
