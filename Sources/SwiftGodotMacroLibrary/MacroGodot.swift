@@ -149,8 +149,8 @@ class GodotMacroProcessor {
             let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix))
             let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
-            let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
-            let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
+            let setterName = "_mproxy_set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
+            let getterName = "_mproxy_get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
 
             if let accessors = last.accessorBlock {
                 if accessors.as (CodeBlockSyntax.self) != nil {

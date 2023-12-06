@@ -141,9 +141,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
-    	classInfo.registerMethod (name: "set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
-    	classInfo.registerProperty (_pmake, getter: "get_make", setter: "set_make")
+    	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
+    	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
+    	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
         let _pmodel = PropInfo (
             propertyType: .string,
             propertyName: "model",
@@ -151,9 +151,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-    	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-    	classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
+    	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
+    	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
+    	classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
     } ()
 }
 """,
@@ -213,9 +213,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-    	classInfo.registerMethod (name: "set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-    	classInfo.registerProperty (_pvin, getter: "get_vin", setter: "set_vin")
+    	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
+    	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
+    	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
         classInfo.addPropertyGroup(name: "YMMS", prefix: "")
         let _pyear = PropInfo (
             propertyType: .int,
@@ -224,9 +224,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-    	classInfo.registerMethod (name: "set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-    	classInfo.registerProperty (_pyear, getter: "get_year", setter: "set_year")
+    	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
+    	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
+    	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
     } ()
 }
 """,
@@ -285,9 +285,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-    	classInfo.registerMethod (name: "set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-    	classInfo.registerProperty (_pvin, getter: "get_vin", setter: "set_vin")
+    	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
+    	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
+    	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
         let _pyear = PropInfo (
             propertyType: .int,
             propertyName: "year",
@@ -295,9 +295,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-    	classInfo.registerMethod (name: "set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-    	classInfo.registerProperty (_pyear, getter: "get_year", setter: "set_year")
+    	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
+    	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
+    	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
         classInfo.addPropertyGroup(name: "Pointless", prefix: "")
     } ()
 }
@@ -382,9 +382,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-    	classInfo.registerMethod (name: "set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-    	classInfo.registerProperty (_pvin, getter: "get_vin", setter: "set_vin")
+    	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
+    	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
+    	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
         classInfo.addPropertyGroup(name: "YMM", prefix: "")
         let _pyear = PropInfo (
             propertyType: .int,
@@ -393,9 +393,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-    	classInfo.registerMethod (name: "set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-    	classInfo.registerProperty (_pyear, getter: "get_year", setter: "set_year")
+    	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
+    	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
+    	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
         let _pmake = PropInfo (
             propertyType: .string,
             propertyName: "make",
@@ -403,9 +403,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
-    	classInfo.registerMethod (name: "set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
-    	classInfo.registerProperty (_pmake, getter: "get_make", setter: "set_make")
+    	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
+    	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
+    	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
         let _pmodel = PropInfo (
             propertyType: .string,
             propertyName: "model",
@@ -413,9 +413,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-    	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-    	classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
+    	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
+    	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
+    	classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
     } ()
     
 }
@@ -1365,9 +1365,9 @@ class Garage: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_name", flags: .default, returnValue: _pname, arguments: [], function: Garage._mproxy_get_name)
-    	classInfo.registerMethod (name: "set_name", flags: .default, returnValue: nil, arguments: [_pname], function: Garage._mproxy_set_name)
-    	classInfo.registerProperty (_pname, getter: "get_name", setter: "set_name")
+    	classInfo.registerMethod (name: "_mproxy_get_name", flags: .default, returnValue: _pname, arguments: [], function: Garage._mproxy_get_name)
+    	classInfo.registerMethod (name: "_mproxy_set_name", flags: .default, returnValue: nil, arguments: [_pname], function: Garage._mproxy_set_name)
+    	classInfo.registerProperty (_pname, getter: "_mproxy_get_name", setter: "_mproxy_set_name")
         let _prating = PropInfo (
             propertyType: .float,
             propertyName: "rating",
@@ -1375,9 +1375,9 @@ class Garage: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
-    	classInfo.registerMethod (name: "set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
-    	classInfo.registerProperty (_prating, getter: "get_rating", setter: "set_rating")
+    	classInfo.registerMethod (name: "_mproxy_get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
+    	classInfo.registerMethod (name: "_mproxy_set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
+    	classInfo.registerProperty (_prating, getter: "_mproxy_get_rating", setter: "_mproxy_set_rating")
         classInfo.addPropertyGroup(name: "More Details", prefix: "")
         let _previews = PropInfo (
             propertyType: .array,
@@ -1406,9 +1406,9 @@ class Garage: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
-    	classInfo.registerMethod (name: "set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
-    	classInfo.registerProperty (_paddress, getter: "get_address", setter: "set_address")
+    	classInfo.registerMethod (name: "_mproxy_get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
+    	classInfo.registerMethod (name: "_mproxy_set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
+    	classInfo.registerProperty (_paddress, getter: "_mproxy_get_address", setter: "_mproxy_set_address")
         classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "")
         let _pdaysOfOperation = PropInfo (
             propertyType: .array,
