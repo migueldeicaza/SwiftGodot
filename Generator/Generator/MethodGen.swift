@@ -354,29 +354,17 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // statements.
         builder.setup = "#if true\n\n"
         builder.setup += argSetup
-        #if true
-        // use variadic args + copy
+        // Use implicit bridging to build _args array of type [UnsafeMutableRawPointer?]. This preserves the
+        // values of the parameters, because they are treated as inout parameters. Then cast to [UnsafeRawPointer?],
+        // because of how GDExtensionInterfaceObjectMethodBindPtrcall is declared: 
+        // public typealias GDExtensionInterfaceObjectMethodBindPtrcall = @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
+        // UnsafePointer<GDExtensionConstTypePtr?>? is equivalent to UnsafePointer<UnsafeRawPointer?>? or [UnsafeRawPointer?].
         builder.body = 
         """
-        func withArgPointers(_ _args: UnsafeRawPointer?...) {
-            \(call_object_method_bind(ptrArgs: args != "" ? "_args" : "nil", ptrResult: getResultPtr()))
+        func withArgPointers(_ _args: UnsafeMutableRawPointer?...) {
+            \(call_object_method_bind(ptrArgs: args != "" ? "unsafeBitCast(_args, to: [UnsafeRawPointer?].self)" : "nil", ptrResult: getResultPtr()))
         }\n
         """
-        #else
-        // use an array literal.
-        let ix = margs.indices
-        builder.body =
-        """
-        func withArgPointers(
-            \(ix.map({"_ p\($0): UnsafeRawPointer?"}).joined(separator: ", "))
-        ) {
-            var _args: [UnsafeRawPointer?] = [
-                \(ix.map({"p\($0)"}).joined(separator: ", "))
-            ]
-            \(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
-        }\n
-        """
-        #endif
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         for arg in margs {
             // When we move from GString to String in the public API
