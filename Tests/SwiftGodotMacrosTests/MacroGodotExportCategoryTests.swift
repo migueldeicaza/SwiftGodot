@@ -69,9 +69,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_make", flags: .default, returnValue: _pvehicle_make, arguments: [], function: Car._mproxy_get_vehicle_make)
-    	classInfo.registerMethod (name: "set_make", flags: .default, returnValue: nil, arguments: [_pvehicle_make], function: Car._mproxy_set_vehicle_make)
-    	classInfo.registerProperty (_pvehicle_make, getter: "get_make", setter: "set_make")
+    	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pvehicle_make, arguments: [], function: Car._mproxy_get_vehicle_make)
+    	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pvehicle_make], function: Car._mproxy_set_vehicle_make)
+    	classInfo.registerProperty (_pvehicle_make, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
         let _pvehicle_model = PropInfo (
             propertyType: .string,
             propertyName: "vehicle_model",
@@ -79,9 +79,9 @@ class Car: Node {
             hint: .none,
             hintStr: "",
             usage: .default)
-    	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pvehicle_model, arguments: [], function: Car._mproxy_get_vehicle_model)
-    	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pvehicle_model], function: Car._mproxy_set_vehicle_model)
-    	classInfo.registerProperty (_pvehicle_model, getter: "get_model", setter: "set_model")
+    	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pvehicle_model, arguments: [], function: Car._mproxy_get_vehicle_model)
+    	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pvehicle_model], function: Car._mproxy_set_vehicle_model)
+    	classInfo.registerProperty (_pvehicle_model, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
     } ()
 }
 """,
