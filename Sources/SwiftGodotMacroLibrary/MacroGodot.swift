@@ -286,7 +286,7 @@ class GodotMacroProcessor {
         propertyName: "\(varName.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
         hint: .\(f?.description ?? "none"),
-        hintStr: \(s?.description ?? "\"Array of \(elementTypeName)\""),
+        hintStr: \(s?.description ?? "\"\""),
         usage: .default)\n
     """)
             
