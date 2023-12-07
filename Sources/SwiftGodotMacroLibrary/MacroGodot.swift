@@ -116,7 +116,7 @@ class GodotMacroProcessor {
         ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
     
-    func processVariable (_ varDecl: VariableDeclSyntax, prefix: String) throws {
+    func processVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
         guard hasExportAttribute(varDecl.attributes) else {
             return
         }
@@ -146,7 +146,7 @@ class GodotMacroProcessor {
                 throw GodotMacroError.expectedIdentifier(singleVar)
             }
             let varNameWithPrefix = ips.identifier.text
-            let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix))
+            let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
             let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
             let setterName = "_mproxy_set_\(varNameWithoutPrefix)"
@@ -194,11 +194,11 @@ class GodotMacroProcessor {
     """
     let \(pinfo) = PropInfo (
         propertyType: \(propType),
-        propertyName: "\(prefix)\(varNameWithoutPrefix)",
+        propertyName: "\(prefix ?? "")\(varNameWithoutPrefix)",
         className: className,
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"\""),
-        usage: .default)
+        usage: \(prefix == nil ? ".default" : "[.default, .group]"))
     
     """)
             
@@ -208,7 +208,7 @@ class GodotMacroProcessor {
         }
     }
     
-    func processGArrayCollectionVariable(_ varDecl: VariableDeclSyntax, prefix: String) throws {
+    func processGArrayCollectionVariable(_ varDecl: VariableDeclSyntax, prefix: String?) throws {
         guard hasExportAttribute(varDecl.attributes) else {
             return
         }
@@ -239,7 +239,7 @@ class GodotMacroProcessor {
                 throw GodotMacroError.expectedIdentifier(singleVar)
             }
             let varNameWithPrefix = ips.identifier.text
-            let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix))
+            let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
             
             let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
@@ -295,11 +295,11 @@ class GodotMacroProcessor {
     """
     let \(pinfo) = PropInfo (
         propertyType: \(godotTypeToProp(typeName: "Array")),
-        propertyName: "\(prefix)\(varNameWithoutPrefix.camelCaseToSnakeCase())",
+        propertyName: "\(prefix ?? "")\(varNameWithoutPrefix.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"Array of \(elementTypeName)\""),
-        usage: .default)\n
+        usage: \(prefix == nil ? ".default" : "[.default, .group]"))\n
     """)
             
             ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
@@ -326,15 +326,15 @@ class GodotMacroProcessor {
             
             if let macroExpansion = MacroExpansionDeclSyntax(decl),
                let name = macroExpansion.exportGroupName {
-                previousPrefix = macroExpansion.exportGroupPrefix
+                previousPrefix = macroExpansion.exportGroupPrefix ?? ""
                 processExportGroup(name: name, prefix: previousPrefix ?? "")
             } else if let funcDecl = FunctionDeclSyntax(decl) {
 				try processFunction (funcDecl)
 			} else if let varDecl = VariableDeclSyntax(decl) {
 				if varDecl.isGArrayCollection {
-                    try processGArrayCollectionVariable(varDecl, prefix: previousPrefix ?? "")
+                    try processGArrayCollectionVariable(varDecl, prefix: previousPrefix)
 				} else {
-					try processVariable(varDecl, prefix: previousPrefix ?? "")
+					try processVariable(varDecl, prefix: previousPrefix)
 				}
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
