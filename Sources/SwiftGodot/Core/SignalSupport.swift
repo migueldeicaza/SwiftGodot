@@ -29,7 +29,8 @@ public class SignalProxy: Object {
     } ()
     
     /// The code invoked when Godot invokes the `proxy` method on this object.
-    public var proxy: ([Variant]) -> () = { args in }
+    public typealias Proxy = ([Variant]) -> ()
+    public var proxy: Proxy?
     
     public required init () {
         let _ = SignalProxy.initClass
@@ -41,7 +42,7 @@ public class SignalProxy: Object {
     }
     
     func proxyFunc (args: [Variant]) -> Variant? {
-        proxy (args)
+        proxy? (args)
         return nil
     }
 }
@@ -104,10 +105,19 @@ public class SimpleSignal {
     @discardableResult
     public func connect (flags: Object.ConnectFlags = [], _ callback: @escaping () -> ()) -> Object {
         let signalProxy = SignalProxy()
-        signalProxy.proxy = { args in
-            callback ()
+        if flags.contains(.oneShot) {
+            signalProxy.proxy = { [weak signalProxy] args in
+                callback ()
+                guard let signalProxy else { return }
+                signalProxy.proxy = nil
+                signalProxy.callDeferred(method: "free")
+            }
+        } else {
+            signalProxy.proxy = { args in
+                callback ()
+            }
         }
-
+        
         let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
         let r = target.connect(signal: signalName, callable: callable, flags: UInt32 (flags.rawValue))
         if r != .ok {
@@ -118,6 +128,9 @@ public class SimpleSignal {
     
     /// Disconnects a signal that was previously connected, the return value from calling ``connect(flags:_:)``
     public func disconnect (_ token: Object) {
+        guard let signalProxy = token as? SignalProxy else { return }
+        signalProxy.proxy = nil
+        signalProxy.callDeferred(method: "free")
         target.disconnect(signal: signalName, callable: Callable (object: token, method: SignalProxy.proxyName))
     }
     

@@ -298,7 +298,7 @@ class GodotMacroProcessor {
         propertyName: "\(prefix ?? "")\(varNameWithoutPrefix.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
         hint: .\(f?.description ?? "none"),
-        hintStr: \(s?.description ?? "\"Array of \(elementTypeName)\""),
+        hintStr: \(s?.description ?? "\"\""),
         usage: \(prefix == nil ? ".default" : "[.default, .group]"))\n
     """)
             
