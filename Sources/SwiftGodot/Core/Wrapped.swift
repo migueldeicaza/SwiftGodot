@@ -418,18 +418,20 @@ func frameworkTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMut
 /// We extract the arguments and call  the CallableWrapper.method
 ///
 func callableProxy (userData: UnsafeMutableRawPointer?, pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
-    guard let pargs else { return }
     guard let userData else { return }
     let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(userData)
     let wrapper = r.takeUnretainedValue()
     var args: [Variant] = []
-    for i in 0..<argc {
-        let variant = pargs [Int(i)]!.assumingMemoryBound(to: Variant.self).pointee
-        args.append (variant)
+    if let pargs {
+        for i in 0..<argc {
+            let variant = pargs [Int(i)]!.assumingMemoryBound(to: Variant.self).pointee
+            args.append (variant)
+        }
     }
     if let methodRet = wrapper.method (args) {
         retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
     }
+    err?.pointee.error = GDEXTENSION_CALL_OK
 }
 
 func freeMethodWrapper (ptr: UnsafeMutableRawPointer?) {
