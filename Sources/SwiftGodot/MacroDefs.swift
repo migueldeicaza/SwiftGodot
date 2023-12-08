@@ -45,6 +45,30 @@ public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #e
 
 // MARK: - Freestanding Macros
 
+/// A macro used to add a category to exported properties
+///
+/// For example:
+/// ```swift
+/// @Godot
+/// class Vehicle: Sprite2D {
+///     #exportGroup("VIN")
+///     @Export
+///     var vin: String = "0123456789ABCDEF0"
+///     #exportGroup("YMM", prefix: "ymms_")
+///     @Export
+///     var ymms_year: Int = 0
+///     @Export
+///     var ymms_make: String = "Make"
+///     @Export
+///     var ymms_model: String = "Model"
+/// }
+/// ```
+///
+/// - Parameter name: The name of the group.
+/// - Parameter prefix: The optional prefix of the group which can be used to only group properties with the specified prefix.
+@freestanding(expression)
+public macro exportGroup(_ name: String, prefix: String = "") = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacroExportGroup")
+
 /// A macro used to write an entrypoint for a Godot extension.
 ///
 /// For example, to initialize a Swift extension to Godot with custom types:
