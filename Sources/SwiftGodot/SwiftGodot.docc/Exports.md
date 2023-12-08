@@ -1,8 +1,8 @@
 # Exports
 
-In Godot, class members can be exported. This means their value gets saved along with the 
-resource (such as the scene) they're attached to. They will also be available for editing in 
-the property editor. Exporting is done by using the @export annotation.
+In Godot, class members can be exported. This means their value gets saved along
+with the resource (such as the scene) they're attached to. They will also be
+available for editing in the property editor. Exporting is done by using the @export annotation.
 
 ## Introduction to Exports
 
@@ -78,6 +78,25 @@ public var node: Node {
         print ("Setting the node")
     } 
 }
+```
+
+### Grouping Exports
+
+It is possible to group your exported properties inside the Godot Inspector with
+the #exportGroup macro. Every exported property after this annotation will be
+added to the group.  Start a new group or use #export_group ("") to break out.
+
+```swift
+#exportGroup("My Properties")
+@Export var number = 3
+```
+
+You can also specifiy that only properties with a given prefix be grouped, like
+this:
+
+```swift
+#exportGroup("My Properties", prefix: "health")
+@Export var health_reload_speed = 3
 ```
 
 ### Customizing the Exported Value
