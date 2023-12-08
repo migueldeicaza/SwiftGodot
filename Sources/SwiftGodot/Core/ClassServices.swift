@@ -119,7 +119,9 @@ public class ClassInfo<T:Object> {
     ///  - function: this is a curried function that will be registered.   It will be invoked on the instance of your object
     public func registerMethod (name: StringName, flags: MethodFlags, returnValue: PropInfo?, arguments: [PropInfo], function: @escaping (T) -> ([Variant]) -> Variant?) {
         let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
+        defer { argPtr.deallocate() }
         let argMeta = UnsafeMutablePointer<GDExtensionClassMethodArgumentMetadata>.allocate(capacity: arguments.count)
+        defer { argMeta.deallocate() }
         var i = 0
         for arg in arguments {
             argPtr [i] = arg.makeNativeStruct()
@@ -154,7 +156,6 @@ public class ClassInfo<T:Object> {
                 }
             }
         }
-        argPtr.deallocate()
     }
     
     /// Starts a new property group for this class, all the properties declared after calling this method
