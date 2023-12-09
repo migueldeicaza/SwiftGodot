@@ -9,14 +9,16 @@
 /// current container that matches the name of the property.
 ///
 /// For example:
-/// ```
-/// class MyElements: CanvasLayer {
-///     @BindNode var GameOverLabel: Label
-/// }
-/// ```
 ///
-/// The above is equivalent to calling getNode (path: NodeName ("GameOverLabel")) as! Label
+///     class MyElements: CanvasLayer {
+///         @BindNode var GameOverLabel: Label
+///     }
 ///
+///
+/// The above is equivalent to calling
+///
+///     getNode(path: NodeName("GameOverLabel")) as! Label
+
 @propertyWrapper
 public struct BindNode<Value: Node> {
     public static subscript<T: Node>(
