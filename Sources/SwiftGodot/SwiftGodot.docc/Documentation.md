@@ -8,6 +8,7 @@ Framework to write Godot Game Extensions using the Swift Programming Language.
 ### Articles and Tutorials
 
 - <doc:SwiftGodot-Tutorials>
+- <doc:Differences>
 - <doc:Variants>
 - <doc:Exports>
 - <doc:Signals>
