@@ -139,6 +139,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         }
     }
     
+    /// This describes the type of the data wrapped by this variant
     public var gtype: GType {
         var copy = content
         return GType (rawValue: Int (gi.variant_get_type (&copy).rawValue)) ?? .nil
@@ -148,6 +149,11 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         withUnsafeMutablePointer(to: &content) { selfPtr in
             Variant.toTypeMap [type.rawValue] (dest, selfPtr)
         }
+    }
+    
+    /// Returns true if the variant is flagged as being an object (`gtype == .object`) and it has a nil pointer.
+    public var isNull: Bool {
+        return asObject(Object.self) == nil
     }
     
     ///
