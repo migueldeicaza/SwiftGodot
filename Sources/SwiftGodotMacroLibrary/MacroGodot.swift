@@ -329,13 +329,13 @@ class GodotMacroProcessor {
                 previousPrefix = macroExpansion.exportGroupPrefix ?? ""
                 processExportGroup(name: name, prefix: previousPrefix ?? "")
             } else if let funcDecl = FunctionDeclSyntax(decl) {
-				try processFunction (funcDecl)
-			} else if let varDecl = VariableDeclSyntax(decl) {
-				if varDecl.isGArrayCollection {
+                try processFunction (funcDecl)
+            } else if let varDecl = VariableDeclSyntax(decl) {
+                if varDecl.isGArrayCollection {
                     try processGArrayCollectionVariable(varDecl, prefix: previousPrefix)
-				} else {
-					try processVariable(varDecl, prefix: previousPrefix)
-				}
+                } else {
+                    try processVariable(varDecl, prefix: previousPrefix)
+                }
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
             }
