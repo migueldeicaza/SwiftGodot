@@ -481,6 +481,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         if bc.name == "String" || bc.name == "StringName" || bc.name == "NodePath" {
             conformances.append ("ExpressibleByStringLiteral")
             conformances.append ("ExpressibleByStringInterpolation")
+            conformances.append ("LosslessStringConvertible")
         }
         if bc.name.starts(with: "Packed") {
             conformances.append ("Collection")
@@ -500,7 +501,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         
         p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
             if bc.name == "String" {
-                p ("public init (_ str: String)") {
+                p ("public required init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
                 }
                 p ("// ExpressibleByStringLiteral conformace")
@@ -518,6 +519,19 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                         p ("NodePath.constructor2 (&content, &args)")
                     }
                 }
+                p ("// LosslessStringConvertible conformance)")
+                p ("public required init (_ value: String)") {
+                    p ("let from = GString (value)")
+                    p ("var args: [UnsafeRawPointer?] = []")
+                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in") {
+                        p ("args.append (ptr)")
+                        p ("NodePath.constructor2 (&content, &args)")
+                    }
+                }
+                p ("public var description: String") {
+                    p ("let sub = getConcatenatedSubnames ().description")
+                    p ("return getConcatenatedNames ().description + (sub == \"\" ? sub : \":\\(sub)\")")
+                }
             }
             if bc.name == "StringName" {
                 // TODO: This is a little brittle, because I am
@@ -533,6 +547,15 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 p ("// ExpressibleByStringLiteral conformace")
                 p ("public required init (stringLiteral value: String)") {
+                    p ("let from = GString (value)")
+                    p ("var args: [UnsafeRawPointer?] = []")
+                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){
+                        p ("args.append (ptr)")
+                        p ("StringName.constructor2 (&content, &args)")
+                    }
+                }
+                p ("// LosslessStringConvertible conformance)")
+                p ("public required init (_ value: String)") {
                     p ("let from = GString (value)")
                     p ("var args: [UnsafeRawPointer?] = []")
                     p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){

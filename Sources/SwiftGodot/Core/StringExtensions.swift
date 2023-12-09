@@ -8,11 +8,6 @@
 @_implementationOnly import GDExtension
 
 extension StringName: CustomStringConvertible {
-    /// Creates a StringName from a Swift String
-    public convenience init (_ from: String) {
-        self.init (from: from)
-    }
-    
     /// Creates a StringName from a Swift String.Substring
     public convenience init (_ from: String.SubSequence) {
         self.init (from: String (from))
