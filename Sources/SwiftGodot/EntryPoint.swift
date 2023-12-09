@@ -282,3 +282,7 @@ public func initializeSwiftModule (
  
  (aka '@convention(c) (GDExtensionVariantType, Int32) -> Optional<@convention(c) (Optional<UnsafeMutableRawPointer>, Optional<UnsafePointer<Optional<UnsafeRawPointer>>>) -> ()>')
  */
+
+func withArgPointers(_ _args: UnsafeMutableRawPointer?..., body: ([UnsafeRawPointer?]) -> Void) {
+    body(unsafeBitCast(_args, to: [UnsafeRawPointer?].self))
+}

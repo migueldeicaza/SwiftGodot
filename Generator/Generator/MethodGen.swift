@@ -157,7 +157,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     
     struct Builder {
         var setup = ""      // all variable copies and _result go here
-        var body = ""       // body of helper function goes here
         var args: [String] = []
         var call = ""       // call to helper goes here.
         var result = ""     // return of _result goes here.
@@ -365,12 +364,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // because of how GDExtensionInterfaceObjectMethodBindPtrcall is declared: 
         // public typealias GDExtensionInterfaceObjectMethodBindPtrcall = @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
         // UnsafePointer<GDExtensionConstTypePtr?>? is equivalent to UnsafePointer<UnsafeRawPointer?>? or [UnsafeRawPointer?].
-        builder.body = 
-        """
-        func withArgPointers(_ _args: UnsafeMutableRawPointer?...) {
-            \(call_object_method_bind(ptrArgs: args != "" ? "unsafeBitCast(_args, to: [UnsafeRawPointer?].self)" : "nil", ptrResult: getResultPtr()))
-        }\n
-        """
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         for arg in margs {
             // When we move from GString to String in the public API
@@ -435,7 +428,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         argSetup += varArgSetup
         builder.call =
         """
-        withArgPointers(\(builder.args.joined(separator: ", ")))
+        withArgPointers(\(builder.args.joined(separator: ", "))) { _args in
+            \(call_object_method_bind(ptrArgs: args != "" ? "_args" : "nil", ptrResult: getResultPtr()))
+        }
         \(getReturnResult())
         #else\n
         """
@@ -481,7 +476,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             
             if builder.setup != "" {
                 p(builder.setup)
-                p(builder.body)
                 p(builder.call)
             }
             
