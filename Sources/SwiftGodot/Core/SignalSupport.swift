@@ -110,7 +110,7 @@ public class SimpleSignal {
                 callback ()
                 guard let signalProxy else { return }
                 signalProxy.proxy = nil
-                signalProxy.callDeferred(method: "free")
+                _ = signalProxy.callDeferred(method: "free")
             }
         } else {
             signalProxy.proxy = { args in
@@ -130,7 +130,7 @@ public class SimpleSignal {
     public func disconnect (_ token: Object) {
         guard let signalProxy = token as? SignalProxy else { return }
         signalProxy.proxy = nil
-        signalProxy.callDeferred(method: "free")
+        _ = signalProxy.callDeferred(method: "free")
         target.disconnect(signal: signalName, callable: Callable (object: token, method: SignalProxy.proxyName))
     }
     
