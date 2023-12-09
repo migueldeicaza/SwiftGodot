@@ -208,4 +208,4 @@ is a Node3D subclass.
 
 ## Community
 
-Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-26brq65x2-t8SLjm_Z6a7FJH17CmHevA)
+Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-28nebxkfm-p4D3P3YrxCF9FPuhyIDmhg)
