@@ -98,7 +98,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
 //        return nil
 //    }
     let bindName = "method_\(method.name)"
-    
     var visibility: String
     var allEliminate: String
     var finalp: String
@@ -247,7 +246,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
             }
         } else {
-            ptrResult = "nil"
+            if method.isVararg {
+                ptrResult = "&_result"
+            } else {
+                ptrResult = "nil"
+            }
         }
         return ptrResult
     }
@@ -271,6 +274,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     }
     
     func getReturnResult() -> String {
+        if returnType == "" {
+            return ""
+        }
         guard returnType != "" else { return "" }
         if method.isVararg {
             if returnType == "Variant" {
@@ -469,6 +475,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         } else {
             if returnType != "" {
                 p(returnTypeDecl())
+            } else if (method.isVararg) {
+                p ("var _result: Variant.ContentType = Variant.zero")
             }
             
             if builder.setup != "" {
