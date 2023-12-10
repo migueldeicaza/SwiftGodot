@@ -357,7 +357,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // combines extracting the parameters into pointers and packing them into the _args array.
         // We can modularize this by creating functions that generate the return type and return
         // statements.
-        builder.setup = "#if true\n\n"
+        if method.isVararg {
+            builder.setup = "#if false\n\n"
+        } else {
+            builder.setup = "#if true\n\n"
+        }
         builder.setup += argSetup
         // Use implicit bridging to build _args array of type [UnsafeMutableRawPointer?]. This preserves the
         // values of the parameters, because they are treated as inout parameters. Then cast to [UnsafeRawPointer?],
