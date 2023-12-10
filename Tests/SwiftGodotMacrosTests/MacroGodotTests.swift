@@ -301,7 +301,7 @@ final class MacroGodotTests: XCTestCase {
                     }
                     let oldRef = dynamicCast (data, as: RefCounted.self)
                     if let res: MyData = args [0].asObject () {
-                        dynamicCast (data, as: RefCounted.self)?.reference()
+                        dynamicCast (res, as: RefCounted.self)?.reference()
                         data = res
                     }
                     oldRef?.unreference()
