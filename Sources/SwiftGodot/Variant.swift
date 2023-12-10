@@ -132,6 +132,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
                 }
             } else {
                 var mutableValue = value
+                
                 withUnsafeMutablePointer(to: &mutableValue) { ptr in
                     Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
                 }
@@ -157,7 +158,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
     
     ///
-    /// Attempts to cast the Variant into a GodotObject, this requires that the Variant value be of type `.object`.
+    /// Attempts to cast the Variant into a GodotObject, if the variant contains a value of type `.object`, then
+    // this will return the object.  If the variant contains the nil value, or the content of the variant is not
+    /// a `.object, the value `nil` is returned.
+    ///
     /// - Parameter type: the desired type eg. `.asObject(Node.self)`
     /// - Returns: nil on error, or the type on success
     ///

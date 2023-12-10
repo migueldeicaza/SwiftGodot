@@ -41,9 +41,23 @@ extension VariantStorable {
     }
 }
 
+/// Internal version of the GString, which is a structure instead of a class
+/// so it is suitable for the codepath that uses the address of the object
+/// as the address for `content` in the `private init<T: VariantRepresentable>(representable value: T)`
+/// method.   You do not need to use this type.
+public struct GStringRaw: VariantRepresentable {
+    public var content: GString.ContentType
+    public init () {
+        content = GString.zero
+    }
+    public static var godotType: Variant.GType { .string }
+}
+
 extension String: VariantStorable {
-    public func toVariantRepresentable() -> GString {
-        GString(stringLiteral: self)
+    public func toVariantRepresentable() -> GStringRaw {
+        var r = GStringRaw ()
+        gi.string_new_with_utf8_chars (&r.content, self)
+        return r
     }
     
     public init?(_ variant: Variant) {

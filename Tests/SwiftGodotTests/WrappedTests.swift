@@ -12,7 +12,7 @@ import SwiftGodotTestability
 final class WrappedTests: GodotTestCase {
     
     override static func godotSetUp () {
-        register (type: SubtypedNode.self)
+        registerTypes ()
     }
     
     /// Checks memory leaks of the swift wrappers during object's life cycle
