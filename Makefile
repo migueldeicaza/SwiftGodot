@@ -9,7 +9,20 @@ all:
 	echo    - sync: synchronizes the Macro system to the ../SwiftGodotBinary module
 
 build-docs:
-	GENERATE_DOCS=1 swift package --allow-writing-to-directory $(ODOCS) generate-documentation --target SwiftGodot --disable-indexing --transform-for-static-hosting --hosting-base-path /SwiftGodotDocs --emit-digest --output-path $(ODOCS) >& build-docs.log
+	GENERATE_DOCS=1 swift package \
+		--allow-writing-to-directory $(ODOCS) \
+		generate-documentation \
+		--target SwiftGodot \
+		--disable-indexing \
+		--transform-for-static-hosting \
+		--hosting-base-path /SwiftGodotDocs \
+		--source-service github \
+		--source-service-base-url https://github.com/migueldeicaza/SwiftGodot/blob/main \
+		--checkout-path . \
+		--emit-digest \
+		--output-path $(ODOCS) \
+		--verbose \
+		>& build-docs.log
 
 preview-docs:
 	GENERATE_DOCS=1 swift package --disable-sandbox preview-documentation --target SwiftGodot --disable-indexing --emit-digest
