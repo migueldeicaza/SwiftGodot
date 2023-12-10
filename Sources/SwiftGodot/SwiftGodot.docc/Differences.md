@@ -1,5 +1,7 @@
 # SwiftGodot API differences to GDScript
 
+This document lists some common differences between GDSscript and SwiftGodot.
+
 ## General differences
 
 The SwiftGodot API follows the convention of the Swift platform, and one of the
@@ -88,6 +90,23 @@ that operate on Swift ranges.
 | GDScript Idiom      | SwiftGodot Equivalent                  |
 |---------------------|----------------------------------------|
 | instance_from_id(n) | GD.instanceFromId (instanceId: n)      |
+
+### Checking for the contents of a variant
+
+You can check in one go if a given variant contains a valid object and is of a
+given type, with the
+[`asObject()`](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/variant/asobject(_:)) 
+method, combined with Swift's let:
+
+```
+func demo (input: Variant) {
+	if let node = input.asObject(Node.self) {
+		// We have a happy node inside 'input'
+	} else {
+		print ("The variant did not wrap an object, if it did, it was either nil, or was not of type Node")
+	}
+}
+```
 
 ## @export annotations
 

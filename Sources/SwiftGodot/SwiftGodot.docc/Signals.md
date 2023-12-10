@@ -182,6 +182,11 @@ class Level: Area2D {
     func _ready() { 
        player.connect(Player.gameStarted, to: self, method: "game_started")
     }
+
+    @Callable func livesChanged (newLivesCount: Int) {
+        print ("New lives: \(newLivesCount)")
+    }
+    
     @Callable func game_started() { 
        GD.print("got game started signal!")
     }
