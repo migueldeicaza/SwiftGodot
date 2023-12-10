@@ -50,7 +50,7 @@ public struct GodotExport: PeerMacro {
         func dynamicCast<T, U>(_ value: T, as type: U.Type) -> U? { value as? U }
         let oldRef = dynamicCast (\(varName), as: RefCounted.self)
         if let res: \(typeName) = args [0].asObject () {
-            dynamicCast (\(varName), as: RefCounted.self)?.reference()
+            dynamicCast (res, as: RefCounted.self)?.reference()
             \(varName) = res
         }\(optBody)
         oldRef?.unreference()
