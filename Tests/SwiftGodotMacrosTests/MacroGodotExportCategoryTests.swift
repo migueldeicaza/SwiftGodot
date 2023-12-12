@@ -68,7 +68,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pvehicle_make, arguments: [], function: Car._mproxy_get_vehicle_make)
     	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pvehicle_make], function: Car._mproxy_set_vehicle_make)
     	classInfo.registerProperty (_pvehicle_make, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
@@ -78,7 +78,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pvehicle_model, arguments: [], function: Car._mproxy_get_vehicle_model)
     	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pvehicle_model], function: Car._mproxy_set_vehicle_model)
     	classInfo.registerProperty (_pvehicle_model, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
@@ -140,7 +140,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
     	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
     	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
@@ -150,7 +150,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
     	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
     	classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
@@ -223,7 +223,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
     	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
     	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
@@ -381,7 +381,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
     	classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
     	classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
@@ -392,7 +392,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
     	classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
     	classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
@@ -402,7 +402,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
     	classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
     	classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
@@ -412,7 +412,7 @@ class Car: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
     	classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
     	classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
@@ -487,7 +487,7 @@ class Car: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
     	classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
@@ -497,7 +497,7 @@ class Car: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
     	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
     	classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
@@ -582,7 +582,7 @@ class Car: Node {
             className: StringName("Array[int]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
@@ -776,7 +776,7 @@ class Car: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
@@ -787,7 +787,7 @@ class Car: Node {
             className: StringName("Array[int]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
@@ -797,7 +797,7 @@ class Car: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
     	classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
@@ -807,7 +807,7 @@ class Car: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_models", flags: .default, returnValue: _pmodels, arguments: [], function: Car._mproxy_get_models)
     	classInfo.registerMethod (name: "set_models", flags: .default, returnValue: nil, arguments: [_pmodels], function: Car._mproxy_set_models)
     	classInfo.registerProperty (_pmodels, getter: "get_models", setter: "set_models")
@@ -884,7 +884,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
     	classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
@@ -894,7 +894,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
     	classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
     	classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
@@ -978,7 +978,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
@@ -1172,7 +1172,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
     	classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
     	classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
@@ -1183,7 +1183,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
     	classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
     	classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
@@ -1193,7 +1193,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
     	classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
     	classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
@@ -1203,7 +1203,7 @@ class Car: Node {
             className: StringName("Array[Node]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_models", flags: .default, returnValue: _pmodels, arguments: [], function: Car._mproxy_get_models)
     	classInfo.registerMethod (name: "set_models", flags: .default, returnValue: nil, arguments: [_pmodels], function: Car._mproxy_set_models)
     	classInfo.registerProperty (_pmodels, getter: "get_models", setter: "set_models")
@@ -1364,7 +1364,7 @@ class Garage: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_name", flags: .default, returnValue: _pname, arguments: [], function: Garage._mproxy_get_name)
     	classInfo.registerMethod (name: "_mproxy_set_name", flags: .default, returnValue: nil, arguments: [_pname], function: Garage._mproxy_set_name)
     	classInfo.registerProperty (_pname, getter: "_mproxy_get_name", setter: "_mproxy_set_name")
@@ -1374,7 +1374,7 @@ class Garage: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
     	classInfo.registerMethod (name: "_mproxy_set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
     	classInfo.registerProperty (_prating, getter: "_mproxy_get_rating", setter: "_mproxy_set_rating")
@@ -1385,7 +1385,7 @@ class Garage: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_reviews", flags: .default, returnValue: _previews, arguments: [], function: Garage._mproxy_get_reviews)
     	classInfo.registerMethod (name: "set_reviews", flags: .default, returnValue: nil, arguments: [_previews], function: Garage._mproxy_set_reviews)
     	classInfo.registerProperty (_previews, getter: "get_reviews", setter: "set_reviews")
@@ -1395,7 +1395,7 @@ class Garage: Node {
             className: StringName("Array[CheckIn]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_check_ins", flags: .default, returnValue: _pcheckIns, arguments: [], function: Garage._mproxy_get_checkIns)
     	classInfo.registerMethod (name: "set_check_ins", flags: .default, returnValue: nil, arguments: [_pcheckIns], function: Garage._mproxy_set_checkIns)
     	classInfo.registerProperty (_pcheckIns, getter: "get_check_ins", setter: "set_check_ins")
@@ -1405,7 +1405,7 @@ class Garage: Node {
             className: className,
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "_mproxy_get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
     	classInfo.registerMethod (name: "_mproxy_set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
     	classInfo.registerProperty (_paddress, getter: "_mproxy_get_address", setter: "_mproxy_set_address")
@@ -1416,7 +1416,7 @@ class Garage: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_days_of_operation", flags: .default, returnValue: _pdaysOfOperation, arguments: [], function: Garage._mproxy_get_daysOfOperation)
     	classInfo.registerMethod (name: "set_days_of_operation", flags: .default, returnValue: nil, arguments: [_pdaysOfOperation], function: Garage._mproxy_set_daysOfOperation)
     	classInfo.registerProperty (_pdaysOfOperation, getter: "get_days_of_operation", setter: "set_days_of_operation")
@@ -1426,7 +1426,7 @@ class Garage: Node {
             className: StringName("Array[String]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_hours", flags: .default, returnValue: _phours, arguments: [], function: Garage._mproxy_get_hours)
     	classInfo.registerMethod (name: "set_hours", flags: .default, returnValue: nil, arguments: [_phours], function: Garage._mproxy_set_hours)
     	classInfo.registerProperty (_phours, getter: "get_hours", setter: "set_hours")
@@ -1436,7 +1436,7 @@ class Garage: Node {
             className: StringName("Array[InsuranceProvider]"),
             hint: .none,
             hintStr: "",
-            usage: [.default, .group])
+            usage: .default)
     	classInfo.registerMethod (name: "get_insurance_providers_accepted", flags: .default, returnValue: _pinsuranceProvidersAccepted, arguments: [], function: Garage._mproxy_get_insuranceProvidersAccepted)
     	classInfo.registerMethod (name: "set_insurance_providers_accepted", flags: .default, returnValue: nil, arguments: [_pinsuranceProvidersAccepted], function: Garage._mproxy_set_insuranceProvidersAccepted)
     	classInfo.registerProperty (_pinsuranceProvidersAccepted, getter: "get_insurance_providers_accepted", setter: "set_insurance_providers_accepted")

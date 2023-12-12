@@ -198,7 +198,7 @@ class GodotMacroProcessor {
         className: className,
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"\""),
-        usage: \(prefix == nil ? ".default" : "[.default, .group]"))
+        usage: .default)
     
     """)
             
@@ -299,7 +299,7 @@ class GodotMacroProcessor {
         className: StringName("\(godotArrayTypeName)"),
         hint: .\(f?.description ?? "none"),
         hintStr: \(s?.description ?? "\"\""),
-        usage: \(prefix == nil ? ".default" : "[.default, .group]"))\n
+        usage: .default)\n
     """)
             
             ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
