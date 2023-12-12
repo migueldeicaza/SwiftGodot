@@ -13,6 +13,7 @@ Framework to write Godot Game Extensions using the Swift Programming Language.
 - <doc:Exports>
 - <doc:Signals>
 - <doc:CustomTypes>
+- <doc:DebugInXcode.md>
 
 ### Godot Nodes
 - ``Node``
