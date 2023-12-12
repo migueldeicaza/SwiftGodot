@@ -37,14 +37,7 @@ func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
     return nil
 }
 
-func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], constantDocs: [DocConstant]? , prefix: String?) {
-    
-    var docEnumToValue: [String:String] = [:]
-    for d in constantDocs ?? [] {
-        docEnumToValue [d.name] = d.rest
-    }
-    //let classPrefix = cdef == nil ? "" : cdef!.name + "."
-    
+func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], prefix: String?) {
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
         
@@ -66,9 +59,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     }
 
                     let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
-                    if let ed = docEnumToValue [enumVal.name] {
-                        doc (p, cdef, ed)
-                    }
+                    doc (p, cdef, enumVal.description)
                     let optionName = escapeSwift (name)
                     optionNames.append(optionName)
                     p ("public static let \(optionName) = \(enumDef.name) (rawValue: \(enumVal.value))")
@@ -111,9 +102,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     prefix = ""
                 }
                 used.insert(enumVal.value)
-                if let ed = docEnumToValue [enumValName] {
-                    doc (p, cdef, ed)
-                }
+                doc (p, cdef, enumVal.description)
                 p ("\(prefix)case \(escapeSwift(name)) = \(enumVal.value) // \(enumVal.name)")
             }
         }

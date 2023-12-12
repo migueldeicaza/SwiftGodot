@@ -228,7 +228,6 @@ func generateMethod (_ p: Printer, method: MethodDefinition) {
 ///
 func generateMethods (_ p: Printer,
                       cdef: JGodotExtensionAPIClass,
-                      docClass: DocClass?,
                       methods: [JGodotClassMethod],
                       usedMethods: Set<String>,
                       asSingleton: Bool) -> [String:(String, JGodotClassMethod)] {
@@ -237,7 +236,7 @@ func generateMethods (_ p: Printer,
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
     for method in methods {
-        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, docClass: docClass, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
+        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
             virtuals [method.name] = (virtualMethodName, method)
         }
     }
@@ -260,23 +259,16 @@ func generateMethods (_ p: Printer,
 
 func generateConstants (_ p: Printer,
                         cdef: JGodotExtensionAPIClass,
-                        docClass: DocClass?,
                         _ constants: [JGodotValueElement]) {
     p ("/* Constants */")
-    let docConstants = docClass?.constants?.constant
     
     for constant in constants {
-        for dc in docConstants ?? [] {
-            if dc.name == constant.name {
-                doc (p, cdef, "\(dc.rest)")
-            }
-        }
+        doc (p, cdef, constant.description)
         p ("public static let \(snakeToCamel (constant.name)) = \(constant.value)")
     }
 }
 func generateProperties (_ p: Printer,
                          cdef: JGodotExtensionAPIClass,
-                         docClass: DocClass?,
                          _ properties: [JGodotProperty],
                          _ methods: [JGodotClassMethod],
                          _ referencedMethods: inout Set<String>,
@@ -398,10 +390,8 @@ func generateProperties (_ p: Printer,
             access = ""
         }
         
-        if let docClass, let members = docClass.members {
-            if let docMember = members.member.first(where: { $0.name == property.name }) {
-                doc (p, cdef, docMember.value)
-            }
+        if property.description != "" {
+            doc (p, cdef, property.description)
         }
         p ("\(asSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name)): \(type!)"){
             p ("get"){
@@ -553,7 +543,6 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
 
 func generateSignals (_ p: Printer,
                       cdef: JGodotExtensionAPIClass,
-                      docClass: DocClass?,
                       signals: [JGodotSignal]) {
     p ("// Signals ")
     var parameterSignals: [JGodotSignal] = []
@@ -574,10 +563,8 @@ func generateSignals (_ p: Printer,
         }
         let signalName = godotMethodToSwift (signal.name)
         
-        if let sdoc = docClass?.signals?.signal.first (where: { $0.name == signal.name }) {
-            doc (p, cdef, sdoc.description)
-            p ("///")
-        }
+        doc (p, cdef, signal.description)
+        p ("///")
         doc (p, cdef, "To connect to this signal, reference this property and call the\n`connect` method with the method you want to invoke\n")
         doc (p, cdef, "Example:")
         doc (p, cdef, "```swift")
@@ -605,8 +592,6 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
 }
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
-    let docClass = loadClassDoc(base: docRoot, name: cdef.name)
-    
     // Determine if it is a singleton, but exclude EditorInterface
     let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
     let asSingleton = isSingleton && cdef.name != "EditorInterface"
@@ -638,11 +623,18 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
     
     var virtuals: [String: (String, JGodotClassMethod)] = [:]
-    doc (p, cdef, docClass?.brief_description)
-    if docClass?.description ?? "" != "" {
-        doc (p, cdef, "")      // Add a newline before the fuller description
-        doc (p, cdef, docClass?.description)
+    if cdef.brief_description == "" {
+        if cdef.description != "" {
+            doc (p, cdef, cdef.description)
+        }
+    } else {
+        doc (p, cdef, cdef.brief_description)
+        if cdef.description != "" {
+            doc (p, cdef, "")      // Add a newline before the fuller description
+            doc (p, cdef, cdef.description)
+        }
     }
+    
     generateSignalDocAppendix (p, cdef: cdef, signals: cdef.signals)
     // class or extension (for Object)
     p (typeDecl) {
@@ -659,24 +651,24 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         var referencedMethods = Set<String>()
         
         if let enums = cdef.enums {
-            generateEnums (p, cdef: cdef, values: enums, constantDocs: docClass?.constants?.constant, prefix: nil)
+            generateEnums (p, cdef: cdef, values: enums, prefix: nil)
         }
         
         let oResult = p.result
         
         if let constants = cdef.constants {
-            generateConstants (p, cdef: cdef, docClass: docClass, constants)
+            generateConstants (p, cdef: cdef, constants)
         }
         
         if let properties = cdef.properties {
-            generateProperties (p, cdef: cdef, docClass: docClass, properties, cdef.methods ?? [], &referencedMethods, asSingleton: asSingleton)
+            generateProperties (p, cdef: cdef, properties, cdef.methods ?? [], &referencedMethods, asSingleton: asSingleton)
         }
         if let methods = cdef.methods {
-            virtuals = generateMethods (p, cdef: cdef, docClass: docClass, methods: methods, usedMethods: referencedMethods, asSingleton: asSingleton)
+            virtuals = generateMethods (p, cdef: cdef, methods: methods, usedMethods: referencedMethods, asSingleton: asSingleton)
         }
         
         if let signals = cdef.signals {
-            generateSignals (p, cdef: cdef, docClass: docClass, signals: signals)
+            generateSignals (p, cdef: cdef, signals: signals)
         }
 
         // Remove code that we did not want generated

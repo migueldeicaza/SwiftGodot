@@ -26,6 +26,7 @@ public protocol MethodDefinition {
     var isVirtual: Bool { get }
     var optionalHash: Int? { get }
     var returnValue: JGodotReturnValue? { get }
+    var description: String? { get }
     var arguments: [JGodotArgument]? { get }
 }
 

@@ -85,7 +85,7 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
 ///  - className: the name of the class where this is being generated
 ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
-func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, docClass: DocClass?, usedMethods: Set<String>, kind: MethodGenType, asSingleton: Bool) -> String? {
+func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodGenType, asSingleton: Bool) -> String? {
     var registerVirtualMethodName: String? = nil
     
     //let loc = "\(cdef.name).\(method.name)"
@@ -457,13 +457,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     if inline != "" {
         p (inline)
     }
-
-    if let docClass, let methods = docClass.methods {
-        if let docMethod = methods.method.first(where: { $0.name == method.name }) {
-            doc (p, cdef, docMethod.description)
-            // Sadly, the parameters have no useful documentation
-        }
-    }
+    // Sadly, the parameters have no useful documentation
+    doc (p, cdef, method.description)
     // Generate the method entry point
     if let classDiscardables = discardableResultList [className] {
         if classDiscardables.contains(method.name) == true {

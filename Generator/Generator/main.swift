@@ -57,7 +57,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 
 print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
-let globalDocs = loadClassDoc(base: docRoot, name:  "@GlobalScope")
 
 // Maps from a the class name to its definition
 var classMap: [String:JGodotExtensionAPIClass] = [:]
@@ -118,7 +117,7 @@ let semaphore = DispatchSemaphore(value: 0)
 let _ = Task {
     let coreDefPrinter = await PrinterFactory.shared.initPrinter()
     coreDefPrinter.preamble()
-    generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, constantDocs: globalDocs?.constants?.constant, prefix: "")
+    generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
     await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
     await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
     await generateClasses (values: jsonApi.classes, outputDir: generatedDir)

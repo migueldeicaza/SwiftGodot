@@ -17,14 +17,13 @@ func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async 
         }
     }
     
-    let docClass = loadClassDoc(base: docRoot, name: "@GlobalScope")
     let emptyUsedMethods = Set<String>()
     
     p ("public class GD") {
         for method in values {
             // We ignore the request for virtual methods, should not happen for these
             
-            _ = methodGen (p, method: method, className: "Godot", cdef: nil, docClass: docClass, usedMethods: emptyUsedMethods, kind: .utility, asSingleton: false)
+            _ = methodGen (p, method: method, className: "Godot", cdef: nil, usedMethods: emptyUsedMethods, kind: .utility, asSingleton: false)
             
         }
     }

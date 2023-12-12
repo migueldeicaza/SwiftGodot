@@ -65,16 +65,9 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
 
 func generateBuiltinConstants (_ p: Printer,
                                _ bc: JGodotBuiltinClass,
-                               _ docClass: DocBuiltinClass?,
                                typeName: String) {
         
     guard let constants = bc.constants else { return }
-    let docConstants = docClass?.constants?.constant
-    
-    var docConstantMap: [String: String] = [:]
-    for dc in docConstants ?? [] {
-        docConstantMap [dc.name] = dc.rest
-    }
     
     for constant in constants {
         // Check if we need to inject parameter names
@@ -83,8 +76,8 @@ func generateBuiltinConstants (_ p: Printer,
             continue
         }
         
-        if let rest = docConstantMap [constant.name] {
-            doc (p, bc, "\(rest)")
+        if constant.description != "" {
+            doc (p, bc, constant.description)
         }
         p ("public static let \(snakeToCamel (constant.name)) = \(val)")
     }
@@ -92,7 +85,6 @@ func generateBuiltinConstants (_ p: Printer,
 
 func generateBuiltinCtors (_ p: Printer,
                            _ bc: JGodotBuiltinClass,
-                           _ docClass: DocBuiltinClass?,
                            _ ctors: [JGodotConstructor],
                            godotTypeName: String,
                            typeName: String,
@@ -113,24 +105,8 @@ func generateBuiltinCtors (_ p: Printer,
             args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField, isOptional: false)
         }
         
-        // Find the document for this constructor
-        if let docClass, let ctorDocs = docClass.constructors?.constructor {
-            for ctorDoc in ctorDocs {
-                let ctorDocParamCount = ctorDoc.param.count
-                if ctorDocParamCount == (m.arguments?.count ?? -1) {
-                    var fail = false
-                    for i in 0..<ctorDocParamCount {
-                        if ctorDoc.param [i].type != m.arguments! [i].type {
-                            fail = true
-                            break
-                        }
-                    }
-                    if !fail {
-                        doc (p, bc, ctorDoc.description)
-                        break
-                    }
-                }
-            }
+        if let desc = m.description, desc != "" {
+            doc (p, bc, desc)
         }
         if args == "" {
             if !isStruct {
@@ -290,7 +266,6 @@ let skipOperators: [String:[(String,String)]] = [
 ///   - typeName: the type name above, but in Swift
 func generateBuiltinOperators (_ p: Printer,
                                _ bc: JGodotBuiltinClass,
-                               _ docClass: DocBuiltinClass?,
                                typeName: String) {
     let operators = bc.operators
     let godotTypeName = bc.name
@@ -319,13 +294,8 @@ func generateBuiltinOperators (_ p: Printer,
             }
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
-            if let docClass, let opDocs = docClass.operators?.operator {
-                for opDoc in opDocs {
-                    if opDoc.name.hasSuffix(op.name) && opDoc.return.first?.type == op.returnType && right == opDoc.param.first?.type {
-                        doc (p, bc, opDoc.description)
-                        break
-                    }
-                }
+            if let desc = op.description, desc != "" {
+                doc (p, bc, desc)
             }
             p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
                 let ptrResult: String
@@ -364,7 +334,6 @@ func generateBuiltinOperators (_ p: Printer,
 
 func generateBuiltinMethods (_ p: Printer,
                              _ bc: JGodotBuiltinClass,
-                             _ docClass: DocBuiltinClass?,
                              _ methods: [JGodotBuiltinClassMethod],
                              _ typeName: String,
                              _ typeEnum: String,
@@ -400,12 +369,7 @@ func generateBuiltinMethods (_ p: Printer,
             args += getArgumentDeclaration(arg, eliminate: "", isOptional: false)
         }
         
-        if let docClass, let methods = docClass.methods {
-            if let docMethod = methods.method.first(where: { $0.name == m.name }) {
-                doc (p, bc, docMethod.description)
-                // Sadly, the parameters have no useful documentation
-            }
-        }
+        doc (p, bc, m.description)
         // Generate the method entry point
         if discardableResultList [bc.name]?.contains(m.name) ?? false && m.returnType != "" {
             p ("@discardableResult /* 1: \(m.name) */ ")
@@ -460,7 +424,7 @@ var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) async {
 
-    func generateBuiltinClass (p: Printer, _ bc: JGodotBuiltinClass, _ docClass: DocBuiltinClass?) {
+    func generateBuiltinClass (p: Printer, _ bc: JGodotBuiltinClass) {
         // TODO: isKeyed, hasDestrcturo,
         let kind: BKind = builtinGodotTypeNames[bc.name]!
         
@@ -493,10 +457,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             proto = ""
         }
         
-        doc (p, bc, docClass?.brief_description)
-        if docClass?.description ?? "" != "" {
+        doc (p, bc, bc.brief_description)
+        if (bc.description ?? "") != "" {
             doc (p, bc, "")      // Add a newline before the fuller description
-            doc (p, bc, docClass?.description)
+            doc (p, bc, bc.description)
         }
         
         p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
@@ -608,11 +572,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
             }
            
-            let mdocs = docClass?.members
-            func memberDoc (_ name: String)  {
-                for md in mdocs?.member ?? [] {
-                    if md.name == name {
-                        doc (p, bc, md.value)
+            func memberDoc (_ name: String) {
+                guard let members = bc.members else { return }
+                for m in members {
+                    if m.name == name {
+                        doc (p, bc, m.description)
                     }
                 }
             }
@@ -644,17 +608,17 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
                 
             if let enums = bc.enums {
-                generateEnums(p, cdef: bc, values: enums, constantDocs: docClass?.constants?.constant, prefix: bc.name + ".")
+                generateEnums(p, cdef: bc, values: enums, prefix: bc.name + ".")
             }
-            generateBuiltinCtors (p, bc, docClass, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: storedMembers)
+            generateBuiltinCtors (p, bc, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: storedMembers)
             
-            generateBuiltinMethods(p, bc, docClass, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
-            generateBuiltinOperators (p, bc, docClass, typeName: typeName)
+            generateBuiltinMethods(p, bc, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
+            generateBuiltinOperators (p, bc, typeName: typeName)
             
             if bc.isKeyed {
                 
             }
-            generateBuiltinConstants (p, bc, docClass, typeName: typeName)
+            generateBuiltinConstants (p, bc, typeName: typeName)
             
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {
@@ -710,9 +674,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         default:
             let p: Printer = await PrinterFactory.shared.initPrinter()
             p.preamble()
-            let docClass = loadBuiltinDoc(base: docRoot, name: bc.name)
             mapStringToSwift = bc.name != "String"
-            generateBuiltinClass (p: p, bc, docClass)
+            generateBuiltinClass (p: p, bc)
             mapStringToSwift = true
             if let outputDir {
                 p.save(outputDir + "/\(bc.name).swift")
