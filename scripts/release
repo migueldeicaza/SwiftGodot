@@ -62,7 +62,7 @@ if [ ! -z "$SWIFT_GODOT_NODEPLOY" ]; then
 fi
 
 #(cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
-(cd $ouputuDir; ditto -c -k --sequesterRsrc --keepParent SwiftGodot.xcframework SwiftGodot.xcframework.zip)
+(cd $outputDir; ditto -c -k --sequesterRsrc --keepParent SwiftGodot.xcframework SwiftGodot.xcframework.zip)
 csum=`swift package compute-checksum $outputDir/SwiftGodot.xcframework.zip`
 
 gh release create $tag $outputDir/SwiftGodot.xcframework.zip -R migueldeicaza/SwiftGodot -F $2
