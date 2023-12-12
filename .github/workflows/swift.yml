@@ -25,3 +25,15 @@ jobs:
       run: swift build -v
     - name: Run tests
       run: swift test -v
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-5.9.1-release
+          tag: 5.9.1-RELEASE
+      - uses: actions/checkout@v3
+      - name: Build
+        run: swift build -v
+        
