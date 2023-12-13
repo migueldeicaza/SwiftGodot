@@ -1,4 +1,4 @@
-// 
+//
 //  SceneTreeMacro.swift
 //  SwiftGodot
 //
@@ -14,7 +14,6 @@ import SwiftSyntaxMacros
 
 public struct SceneTreeMacro: AccessorMacro {
     enum ProviderDiagnostic: String, DiagnosticMessage {
-        case missingPathArgument
         case invalidDeclaration
         case missingTypeAnnotation
         case nonOptionalTypeAnnotation
@@ -23,8 +22,6 @@ public struct SceneTreeMacro: AccessorMacro {
 
         var message: String {
             switch self {
-            case .missingPathArgument:
-                "Missing argument 'path'"
             case .invalidDeclaration:
                 "SceneTree can only be applied to stored properties"
             case .missingTypeAnnotation:
@@ -47,34 +44,34 @@ public struct SceneTreeMacro: AccessorMacro {
         var fixItID: SwiftDiagnostics.MessageID {
             ProviderDiagnostic.nonOptionalTypeAnnotation.diagnosticID
         }
-
     }
 
     public static func expansion(of node: AttributeSyntax,
                                  providingAccessorsOf declaration: some DeclSyntaxProtocol,
-                                 in context: some MacroExpansionContext) throws -> [AccessorDeclSyntax] {
-        guard let argument = node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression else {
-            let missingArgErr = Diagnostic(node: node.root, message: ProviderDiagnostic.missingPathArgument)
-            context.diagnose(missingArgErr)
-            return [
-                """
-                get { getNodeOrNull(path: NodePath(stringLiteral: "")) as? Node }
-                """
-            ]
-        }
+                                 in context: some MacroExpansionContext) throws -> [AccessorDeclSyntax]
+    {
         guard let varDecl = declaration.as(VariableDeclSyntax.self) else {
             let invalidUsageErr = Diagnostic(node: node.root, message: ProviderDiagnostic.invalidDeclaration)
             context.diagnose(invalidUsageErr)
             return []
         }
+
         guard let nodeType = varDecl.bindings.first?.typeAnnotation?.type else {
             let missingAnnotationErr = Diagnostic(node: node.root, message: ProviderDiagnostic.missingTypeAnnotation)
             context.diagnose(missingAnnotationErr)
             return []
         }
 
+        guard let nodeIdentifier = varDecl.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier else {
+            fatalError("No identifier for this expression could be found.")
+        }
+
+        let preferredIdentifierExpr = node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression.as(StringLiteralExprSyntax.self)
+        let preferredContent = preferredIdentifierExpr?.segments.first?.as(StringSegmentSyntax.self)?.content
+        let preferredIdentifier = preferredContent?.text
+
         let unwrappedType = nodeType.as(OptionalTypeSyntax.self)?.wrappedType ?? nodeType.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType
-        
+
         guard let unwrappedType else {
             let newOptional = OptionalTypeSyntax(wrappedType: nodeType)
             let addOptionalFix = FixIt(message: MarkOptionalMessage(),
@@ -85,15 +82,15 @@ public struct SceneTreeMacro: AccessorMacro {
             context.diagnose(nonOptional)
             return [
                 """
-                get { getNodeOrNull(path: NodePath(stringLiteral: \(argument))) as? \(nodeType) }
-                """
+                get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as? \(nodeType) }
+                """,
             ]
         }
 
         return [
             """
-            get { getNodeOrNull(path: NodePath(stringLiteral: \(argument))) as? \(unwrappedType) }
-            """
+            get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as? \(unwrappedType) }
+            """,
         ]
     }
 }

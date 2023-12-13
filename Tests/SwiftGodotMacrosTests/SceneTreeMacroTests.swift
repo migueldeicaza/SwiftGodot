@@ -5,14 +5,14 @@
 //  Created by Marquis Kurt on 21/6/23.
 //
 
+import SwiftGodotMacroLibrary
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
-import SwiftGodotMacroLibrary
 
 final class SceneTreeMacroTests: XCTestCase {
     let testMacros: [String: Macro.Type] = [
-        "SceneTree": SceneTreeMacro.self
+        "SceneTree": SceneTreeMacro.self,
     ]
 
     func testMacroExpansion() {
@@ -35,7 +35,7 @@ final class SceneTreeMacroTests: XCTestCase {
             macros: testMacros
         )
     }
-    
+
     func testMacroExpansionWithImplicitlyUnwrappedOptional() {
         assertMacroExpansion(
             """
@@ -57,26 +57,22 @@ final class SceneTreeMacroTests: XCTestCase {
         )
     }
 
-    func testMacroMissingPathDiagnostic() {
+    func testMacroExpansionWithDefaultArgument() {
         assertMacroExpansion(
             """
             class MyNode: Node {
-                @SceneTree
-                var character: CharacterBody2D?
+                @SceneTree var character: CharacterBody2D?
             }
             """,
             expandedSource: """
             class MyNode: Node {
                 var character: CharacterBody2D? {
                     get {
-                        getNodeOrNull(path: NodePath(stringLiteral: "")) as? Node
+                        getNodeOrNull(path: NodePath(stringLiteral: "character")) as? CharacterBody2D
                     }
                 }
             }
             """,
-            diagnostics: [
-                .init(message: "Missing argument 'path'", line: 2, column: 5)
-            ],
             macros: testMacros
         )
     }
@@ -103,12 +99,10 @@ final class SceneTreeMacroTests: XCTestCase {
                       line: 2,
                       column: 5,
                       fixIts: [
-                        .init(message: "Mark as Optional")
-                      ])
+                          .init(message: "Mark as Optional"),
+                      ]),
             ],
             macros: testMacros
         )
     }
-    
-    
 }
