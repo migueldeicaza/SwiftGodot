@@ -99,8 +99,8 @@ continously by Godot and we use it to change the position of our sprite.
 In addition to modifying the behavior of a built-in type, you might want to
 surface properties that would allow users to customize your type from the Godot
 editor, or expose methods that can be invoked by users from either other
-programming languages, like GDScript or C#, and you might want to [surface
-signals](Signals) that your object emits that can be wired up externally.
+programming languages, like GDScript or C#, and you might want to surface
+<doc:Signals> that your object emits that can be wired up externally.
 
 ```swift
 class SwiftSprite: Sprite2D {
