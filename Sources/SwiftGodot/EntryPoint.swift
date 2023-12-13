@@ -87,9 +87,32 @@ struct GodotInterface {
     
     let object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
     
+    // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
+    @inline(__always)
+    func object_method_bind_ptrcall_v(
+        _ method: GDExtensionMethodBindPtr?,
+        _ object: GDExtensionObjectPtr?,
+        _ result: GDExtensionTypePtr?,
+        _ _args: UnsafeMutableRawPointer?...
+    ) {
+        object_method_bind_ptrcall(method, object, unsafeBitCast(_args, to: [UnsafeRawPointer?].self), result)
+    }
+    
     let global_get_singleton: GDExtensionInterfaceGlobalGetSingleton
     let ref_get_object: GDExtensionInterfaceRefGetObject
     let object_method_bind_call: GDExtensionInterfaceObjectMethodBindCall
+    
+    // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstVariantPtr?>?, GDExtensionInt, GDExtensionUninitializedVariantPtr?, UnsafeMutablePointer<GDExtensionCallError>?) -> Void
+    @inline(__always)
+    func object_method_bind_call_v(
+        _ method: GDExtensionMethodBindPtr?,
+        _ object: GDExtensionObjectPtr?,
+        _ result: GDExtensionUninitializedVariantPtr?,
+        _ error: UnsafeMutablePointer<GDExtensionCallError>?,
+        _ _args: UnsafeMutableRawPointer?...
+    ) {
+        object_method_bind_call(method, object, unsafeBitCast(_args, to: [UnsafeRawPointer?].self), GDExtensionInt(_args.count), result, error)
+    }
     
     let variant_new_nil: GDExtensionInterfaceVariantNewNil
     let variant_new_copy: GDExtensionInterfaceVariantNewCopy
