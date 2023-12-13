@@ -59,7 +59,7 @@ type of the variant by accessing the `.gtype` property of the variant.
 ## Extracting Godot-derived objects from Variants
 
 Godot-derived objects are slightly different. If you know you have a
-``GodotObject`` stored in the variant, you can call the ``Variant/asObject()``
+``GodotObject`` stored in the variant, you can call the ``Variant/asObject(_:)``
 instead.  This is a generic method, so you would invoke it like this:
 
 ```swift

@@ -9,19 +9,17 @@ most notable places where this happens is in the use of camelCase style instead
 of the snake_case style used in GDScript.
 
 Enumerations and their values also change, for example, rather than having a
-constant value like `CORNER_TOP_LEFT` for the
-[`Corner`](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/corner)
-value, we use `.topLeft`
+constant value like `CORNER_TOP_LEFT` for the ``Corner`` value, we use
+``Corner/topLeft``.
 
 In Swift, function definitions take parameter names, and sometimes this
-parameter name is omitted for the first argument.   Instead of `myNode.add_child
-(box)`, you would use `myNode.addChild (node: box)`.
+parameter name is omitted for the first argument. Instead of
+`myNode.add_child(box)`, you would use `myNode.addChild (node: box)`.
 
 ## Global Scope
 
 Global functions and some constants had to be moved to classes to avoid
-polluting the global name space, and you can find them in the [`GD
-class`](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/gd).
+polluting the global name space, and you can find them in the ``GD`` class.
 
 ## Type Mappings
 
@@ -36,53 +34,45 @@ Here is a list of the current data type mappings:
 | dictionary    | GDictionary     |
 | array         | GArray          |
 
-The
-[`GArray`](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/garray)
-is a type-erased array that can hold any sort of element that can be managed by
-Godot (Variants or Objects).
+The ``GArray`` is a type-erased array that can hold any sort of element that
+can be managed by Godot (Variants or Objects).
 
 In addition, there are two special kinds of strongly-typed versions of the
 GArray:
 
-* [VariantCollection](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/variantcollection) hat holds:
-[Variant](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/variants) elements.
+* ``VariantCollection`` that holds any ``Variant`` instances.
 
-* [ObjectCollection](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/variantcollection)
-  that holds any
-  SwiftGodot.[GodotObject](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/godotobject)
-  instances.
+* ``ObjectCollection`` that holds any ``GodotObject`` instances.
 
 ## GDScript Helper Functions
 
 Many global helper functions that are exposed in GDScript have been exposed in
-the [GD
-class](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/gd/)
-as static methods.
+the ``GD`` class as static methods.
 
 This means that you can invoke them like this:
 
-```
+```swift
 func reportError (error: Variant) {
-	GD.printerr (msg)
+    GD.printerr (msg)
 }
 ```
 
 ### Godot Math Functions
 
 The various GDScript Math functions like `abs`, `acos`, `atan` as well as their
-helper functions like `clamp` are defined as static functions in the [GD class](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/gd/).
+helper functions like `clamp` are defined as static functions in the ``GD``
+class.
 
 Generally, you can use the Swift versions instead of the GDScript versions,
 which are more complete and do not incurr a marshaling overhead.
 
 ### Random Functions
 
-The random functions like `randi`, `randf` and under the  [GD
-class](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/gd/).
-But Swift provides a set of random functions that are just as good, like
-[`Int.random(in:)`](https://developer.apple.com/documentation/swift/int/random(in:)-9mjpw)
+The random functions like `randi`, `randf` and under the ``GD`` class. But Swift
+provides a set of random functions that are just as good, like
+ [Int.random(in:)](https://developer.apple.com/documentation/swift/int/random(in:)-9mjpw)
 or
-[`Double.random(in:)`](https://developer.apple.com/documentation/swift/double/random(in:)-6idef)
+[Double.random(in:)](https://developer.apple.com/documentation/swift/double/random(in:)-6idef)
 that operate on Swift ranges.
 
 ## Idiom Mapping 
@@ -94,12 +84,11 @@ that operate on Swift ranges.
 ### Checking for the contents of a variant
 
 You can check in one go if a given variant contains a valid object and is of a
-given type, with the
-[`asObject()`](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/variant/asobject(_:)) 
-method, combined with Swift's let:
+given type, with the ``Variant/asObject(_:)`` method, combined with Swift's
+"let":
 
-```
-func demo (input: Variant) {
+```swift
+func demo(input: Variant) {
 	if let node = input.asObject(Node.self) {
 		// We have a happy node inside 'input'
 	} else {
@@ -110,22 +99,23 @@ func demo (input: Variant) {
 
 ## @export annotations
 
-The `@export` annotation works the same way as it does in GDScript.   Some 
-parameters and directives are different see the [Exports
-documentation](Exports.md) for additional information.
+The `@export` annotation works the same way as it does in GDScript. Some
+parameters and directives are different see the <doc:Exports> documentation
+for additional information.
 
 ## Signals
 
 Generally, use the `#signal` macro to declare a new signal for your classes,
 like this:
 
-```
+```swift
 class Demo: Node {
     #signal("lives_changed", argument: ["new_lives_count": Int.self])
+}
 ```
 
 For additional information on defining and connecting to signals see the
-[Signals Documentation](Signals.md).
+<doc:Signals> documentation.
 
 ## @onready annotation
 
@@ -139,7 +129,7 @@ GDScript supports an `@onready` annotation on variables, like this:
 This does not exist in SwiftGodot, to achieve a similar behavior, initialize
 those variables in an overwritten `_ready` method, so code like this:
 
-```
+```swift
 class Demo: Node {
 	var myLabel: Node3D
 
@@ -152,7 +142,7 @@ class Demo: Node {
 If you do not need to load the node right away, and you merely need to be able
 to access it, you can use this instead:
 
-```
+```swift
 class Demo: Node {
 	@BindNode var myLabel: Node3D
 }
@@ -163,13 +153,16 @@ class Demo: Node {
 Godot Singletons surface their API as static methods, to make the code more
 shorter, for example:
 
-```
+```swift
 let pressed = Input.isActionPressed(ui_down)
 ```
 
-However, in some very rare cases this is not enough. For example, you may want to access a member from the base class GodotObject, like `connect`. For such use cases we provide a static property named `shared` that returns the singleton instance. 
+However, in some very rare cases this is not enough. For example, you may want 
+to access a member from the base class GodotObject, like `connect`. For such
+use cases we provide a static property named `shared` that returns the singleton
+instance. 
 
-```
+```swift
 let demo = Input.shared.joyConnectionChanged.connect { device, connected in 
    print ("joyConnectionChanged called")
 }
@@ -179,10 +172,8 @@ let demo = Input.shared.joyConnectionChanged.connect { device, connected in
 
 SwiftGodot generally exposes a Swift-string based API, but there are some
 convenience methods that you might have come to expect from the Godot String
-(things like
-[validateFilename](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/gstring/validatefilename()),
-those APIs are available in the  [`GString`
-class](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/gstring).
+(things like ``GString/validateFilename``, those APIs are available in the
+``GString`` class).
 
 ## Callable
 
@@ -191,13 +182,13 @@ that binds a method that you have exported (via, the `@Callable` macro), or you
 can pass directly a Swift function that takes an array of `Variant` arguments,
 and returns an optional `Variant` result, like this:
 
-```
-func myCallback (args: [Variant])-> Variant? {
+```swift
+func myCallback(args: [Variant])-> Variant? {
 	print ("MyCallback invoked with \(args.count) arguments")
 	return nil
 }
 
-let myCallable = Callable (myCallback)
+let myCallable = Callable(myCallback)
 ```
 
 ## Async/Await
@@ -208,16 +199,16 @@ invoked from `async` methods.
 
 This means that code like this wont work:
 
-```
-func demo () {
+```swift
+func demo() {
 	await someSignal.emitted
 }
 ```
 
 For this to work, this needs to be in an async context, like this one:
 
-```
-func demo () async {
+```swift
+func demo() async {
 	await someSignal.emitted
 }
 ```
@@ -225,8 +216,8 @@ func demo () async {
 If you are inside of a function that is not async, you need to wrap your code in
 Task, like this:
 
-```
-func demo () {
+```swift
+func demo() {
 	// We are not an async function, but we can start a Task
 	Task {
 		await someSignal.emitted
