@@ -173,20 +173,24 @@ class Player: Node2D {
     #signal("lives_changed", argument: ["new_lives_count": Int.self])
 
     func startGame() {
-       emit(Player.gameStarted)
-       emit(Player.livesChanged, 5)
+        // No arguments
+        emit(Player.gameStarted)
+
+        // One argument of type int
+        emit(Player.livesChanged, 5)
     }
 }
 
 class Level: Area2D {
     func _ready() { 
        player.connect(Player.gameStarted, to: self, method: "game_started")
+       player.connect(Player.livesChanged, to: self, method: "myLivesChanged")
     }
 
-    @Callable func livesChanged (newLivesCount: Int) {
+    @Callable func myLivesChanged (newLivesCount: Int) {
         print ("New lives: \(newLivesCount)")
     }
-    
+
     @Callable func game_started() { 
        GD.print("got game started signal!")
     }
