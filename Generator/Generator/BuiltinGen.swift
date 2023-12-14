@@ -347,7 +347,11 @@ func generateBuiltinMethods (_ p: Printer,
             // TODO: Avoid clash for now
             continue
         }
-
+        
+        if omittedMethodsList[typeName]?.contains(m.name) == true {
+            continue
+        }
+        
         let ret = getGodotType(SimpleType (type: m.returnType ?? ""), kind: .builtIn)
         
         // TODO: problem caused by gobject_object being defined as "void", so it is not possible to create storage to that.

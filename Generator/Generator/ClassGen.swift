@@ -202,7 +202,7 @@ func generateVirtualProxy (_ p: Printer,
 }
 
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
-var discardableResultList: [String: Set<String>] = [
+let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
     "GArray": ["append"],
     "PackedByteArray": ["append"],
@@ -219,9 +219,24 @@ var discardableResultList: [String: Set<String>] = [
     "RefCounted": ["reference", "unreference"]
 ]
 
-func generateMethod (_ p: Printer, method: MethodDefinition) {
-    
-}
+// Dictionary used to tell the generator to _not_ generate specific functionality since
+// Source/Native has a better alternative that avoids having to access Godot pointers.
+let omittedMethodsList: [String: Set<String>] = [
+    "Color": ["lerp"],
+    "Vector2": ["lerp", "snapped"],
+    "Vector2i": ["snapped"],
+    "Vector3": ["lerp", "snapped"],
+    "Vector3i": ["snapped"],
+    "Vector4": ["lerp", "snapped"],
+    "Vector4i": ["snapped"],
+    "utility_functions": [
+        "absf", "absi", "absi", "acos", "acosh", "asbs", "asin", "asinh", "atan", "atan2", "atanh", "ceil", "ceilf",
+        "ceili", "cos", "cosh", "deg_to_rad", "exp", "floor", "floor", "floorf", "floorf", "floori", "floori",
+        "fmod", "fposmod", "inverse_lerp", "lerp", "lerpf", "log", "posmod", "pow", "rad_to_deg", "round", "roundf",
+        "roundi", "sin", "snapped", "snappedf", "sqrt", "tan", "tanh",
+    ],
+]
+
 ///
 /// Returns a hashtable mapping a godot method name to a Swift Name + its definition
 /// this list is used to generate later the proxies outside the class
@@ -235,7 +250,7 @@ func generateMethods (_ p: Printer,
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
-    for method in methods {
+    for method in methods {        
         if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
             virtuals [method.name] = (virtualMethodName, method)
         }
