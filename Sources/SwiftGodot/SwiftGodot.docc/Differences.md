@@ -148,6 +148,30 @@ class Demo: Node {
 }
 ```
 
+## Running code before nodes are added to the Scene Tree
+
+If you need to run some code in your constructor, but overriding the `_ready()`
+function is already too late for you, you can use the following idiom:
+
+```swift
+@Godot
+class NetworkedNode: Node {
+    required init() {
+        super.init()
+        onInit()
+    }
+
+    required init(nativeHandle: UnsafeRawPointer) {
+        super.init(nativeHandle: nativeHandle)
+        onInit()
+    }
+
+    func onInit() {
+        print("Was init!")
+    }
+}
+```
+
 ## Singletons
 
 Godot Singletons surface their API as static methods, to make the code more
