@@ -253,6 +253,34 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         }
         return ptrResult
     }
+
+    /// this version inlines withArgPointers by calling `object_method_bind_call_v` or `gi.object_method_bind_ptrcall_v`
+    /// which builds the argument list using variadic arguments.
+    func call_object_method_bind_v(hasArgs: Bool, ptrResult: String) -> String {
+        switch kind {
+        case .class:
+            let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
+            let argList = hasArgs ? ", \(builder.args.joined(separator: ", "))" : ""
+            if method.isVararg {
+                return "gi.object_method_bind_call_v (\(className).method_\(method.name), \(instanceHandle)\(ptrResult), nil\(argList))"
+            } else {
+                return "gi.object_method_bind_ptrcall_v (\(className).method_\(method.name), \(instanceHandle)\(ptrResult)\(argList))"
+            }
+        case .utility:
+            let ptrArgs = hasArgs ? "_args" : "nil"
+            let call_object_method_bind = if method.isVararg {
+                "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))"
+            } else {
+                "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))"
+            }
+            return
+                """
+                withArgPointers(\(builder.args.joined(separator: ", "))) { _args in
+                    \(call_object_method_bind)
+                }
+                """
+        }
+    }
     
     func call_object_method_bind(ptrArgs: String, ptrResult: String) -> String {
         switch kind {
@@ -438,9 +466,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         argSetup += varArgSetup
         builder.call =
         """
-        withArgPointers(\(builder.args.joined(separator: ", "))) { _args in
-            \(call_object_method_bind(ptrArgs: args != "" ? "_args" : "nil", ptrResult: getResultPtr()))
-        }
+        \(call_object_method_bind_v(hasArgs: args != "", ptrResult: getResultPtr()))
         \(getReturnResult())
         #else\n
         """
