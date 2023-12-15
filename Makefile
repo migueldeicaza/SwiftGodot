@@ -29,6 +29,8 @@ preview-docs:
 
 push-docs:
 	cp scripts/google1fb990296a5c506c.html ../SwiftGodotDocs/docs/documentation/swiftgodot/
+	(cd ../SwiftGodotDocs/docs/; find . -name '*html' | sed -e 's,^.,https://migueldeicaza.github.io/SwiftGodotDocs,' -e 's,/index.html,,') > ../SwiftGodotDocs/docs/documentation/swiftgodot/sitemap.txt
+
 	(cd ../SwiftGodotDocs; mv docs tmp; git reset --hard 8b5f69a631f42a37176a040aeb5cfa1620249ff1; mv tmp docs; touch .nojekyll docs/.nojekyll; git add docs/* .nojekyll docs/.nojekyll; git commit -m "Import Docs"; git push -f; git prune)
 
 release: check-args build-release build-docs push-docs
