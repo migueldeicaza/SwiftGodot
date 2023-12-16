@@ -10,13 +10,14 @@ to the game engine, or it can be used as an API with SwiftGodotKit
 which embeds Godot as an application that is driven directly from
 Swift.
 
+Tutorials and Documentation:
+
+* [Meet Swift Godot](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot)
+* [SwiftGodot API Documentation](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/)
+* [Differences to GDScript](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/differences)
+
 Driving Godot from Swift has the advantage that on MacOS you can
 debug your code from Xcode as well as the Godot code.
-
-You can [browse the API
-documentation](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/),
-and it can also be edited for local use, if you enable it in the
-Generator.
 
 https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b812-c775c55b8b77.mov
 
