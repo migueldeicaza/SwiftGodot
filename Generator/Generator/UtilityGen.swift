@@ -22,9 +22,11 @@ func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async 
     p ("public class GD") {
         for method in values {
             // We ignore the request for virtual methods, should not happen for these
+            if omittedMethodsList["utility_functions"]?.contains(method.name) == true {
+                continue
+            }
             
             _ = methodGen (p, method: method, className: "Godot", cdef: nil, usedMethods: emptyUsedMethods, kind: .utility, asSingleton: false)
-            
         }
     }
 }
