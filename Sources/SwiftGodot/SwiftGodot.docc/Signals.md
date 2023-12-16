@@ -13,8 +13,9 @@ In SwiftGodot, there is a convenient interface to connect to a signal, as well
 as a low-level framework to manually connect to signals and a mechanism to 
 define your own signals.
 
-Objects that emit signals typically do so by using the ``Object/emitSignal(signal:_:)``
-function which takes as a parameter the ``StringName`` of the signal as well
+Objects that emit signals typically do so by using the ``Object/emit(signal:)`` 
+method (or the lower-level ``Object/emitSignal(signal:_:)``
+function) which takes as a parameter the ``StringName`` of the signal as well
 as an optional list of additional arguments.   And users can connect to those
 signals and direct a method to be invoked when they are raised.
 
@@ -241,3 +242,35 @@ func setup () {
         function: Demo.mySwiftCallback)
 }
 ```
+
+### Emitting Signals
+
+The ``Object/emit(signal:)`` family of methods is a high-level version
+that provides some of the boilerplate information for you, and also
+conveniently allows you to call the emit method with any type that implements
+the ``VariantStorable`` protocol.   
+
+It is quite convenient to use as you do not need to wrap your parameters in 
+``Variants`` nor provide the ``PropInfo`` elements for your signal definition.
+
+When you declare signals using the #signal macro, you can trivially use this path.
+
+Sometimes you might need to emit a signal on a foreign object, to pretend the
+object triggered that signal.  I will not pass any judgement on this, I merely 
+want to empower you to get the job done.
+
+In those situations, you might still want to use the convenience emit method, over
+the ``emitSignal`` version.   But you will find that you can not just call the method
+with the signal name as you did before.
+
+In those cases, you will need to provide both the signal name, and the argument 
+names, like this:
+
+```swift
+let foreign: Node
+
+foreign.emit(signal: SignalWith1Argument("open", argument1Name: "path"), "/tmp/demo")
+```
+
+The `signal` parameter is not a plain ``StringName``, instead it takes one of the
+SignalWithArgument types to specify the names of the arguments.
