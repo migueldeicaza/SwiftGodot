@@ -57,10 +57,6 @@ class SwiftSprite: Sprite2D {
     @Export(.file, "*txt") var file: String?
     @Export var demo: String = "demo"
     @Export var food: String = "none"
-
-    static func lerp(from: Double, to: Double, weight: Double) -> Double {
-        return Double(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
-    }
     
     var x: Rigid?
     
@@ -82,7 +78,7 @@ class SwiftSprite: Sprite2D {
             GD.print("2 Found this value \(value)")
         }
         
-        let lerp = SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
+        let lerp = Double(0.1).lerp(to: 10, weight: 1)
         print ("Lerp result from 0.1 to 10 weight:1 => \(lerp)")
         let newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
                              y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
@@ -158,11 +154,6 @@ class SwiftSprite2: Sprite2D {
     func demoGetFavoriteFood (args: [Variant]) -> Variant? {
         return Variant(food)
     }
-    
-    static func lerp(from: Double, to: Double, weight: Double) -> Double {
-        return Double(GD.lerp(from: Variant(from), to: Variant(to), weight: Variant(weight))) ?? 0
-    }
-
 
     override func _process (delta: Double) {
         time_passed += delta
@@ -179,7 +170,6 @@ class SwiftSprite2: Sprite2D {
             GD.print("2 Found this value \(value ?? "no value found")")
         }
         
-        _ = SwiftSprite.lerp (from: 0.1, to: 10, weight: 1)
         let newPos = Vector2(x: Float (10 + (10 * sin(time_passed * 2.0))),
                              y: Float (10.0 + (10.0 * cos(time_passed * 1.5))))
         
