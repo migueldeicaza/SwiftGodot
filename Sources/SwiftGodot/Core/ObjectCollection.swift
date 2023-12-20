@@ -7,6 +7,13 @@
 
 @_implementationOnly import GDExtension
 
+extension ObjectCollection: VariantStorable {
+    public typealias Representable = GArray
+    public func toVariantRepresentable() -> GArray {
+        array
+    }
+}
+
 /// Protocol implemented by the built-in classes in Godot to allow to be wrapped in a ``Variant``
 public protocol GodotObject: Wrapped {}
 
@@ -50,7 +57,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Creates a new instance from the given variant if it contains a GArray
-    public init? (_ variant: Variant) {
+    public required init? (_ variant: Variant) {
         if let array = GArray (variant) {
             self.array = array
             initType()

@@ -47,13 +47,35 @@ class GodotMacroProcessor {
         if let v = propertyDeclarations [key] {
             return v
         }
-        let propType = godotTypeToProp (typeName: parameterTypeName)
+        
+        let type = TypeSyntax(stringLiteral: parameterTypeName)
+        
+        let propType: String
+        let className: String
+        
+        if let gArrayCollectionElementTypeName = type.gArrayCollectionElementTypeName {
+            let godotArrayElementTypeName: String
+            if let gType = godotVariants[gArrayCollectionElementTypeName], let fromGType = godotArrayElementType(gType: gType) {
+                godotArrayElementTypeName = fromGType
+            } else {
+                godotArrayElementTypeName = gArrayCollectionElementTypeName
+            }
+            
+            propType = godotTypeToProp (typeName: "Array")
+            className = "Array[\(godotArrayElementTypeName)]"
+        } else {
+            propType = godotTypeToProp (typeName: parameterTypeName)
+            switch propType {
+            case ".object": className = parameterTypeName
+            default: className = ""
+            }
+        }
         
         let name = "prop_\(propertyDeclarations.count)"
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(propType == ".object" ? parameterTypeName : "")\"), hint: .none, hintStr: \"\", usage: .default)\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: .none, hintStr: \"\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }

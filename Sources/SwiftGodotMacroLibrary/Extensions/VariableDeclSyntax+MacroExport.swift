@@ -14,15 +14,11 @@ extension VariableDeclSyntax {
     }
     
     var isGArrayCollection: Bool {
-        isVariantCollection || isObjectCollection
+        type?.isGArrayCollection == true
     }
     
     var gArrayCollectionElementTypeName: String? {
-        [
-            variantCollectionElementTypeName,
-            objectCollectionElementTypeName
-        ]	.compactMap { $0 }
-            .first
+        type?.gArrayCollectionElementTypeName
     }
 }
 
@@ -87,16 +83,20 @@ private extension VariableDeclSyntax {
 }
 
 extension TypeSyntax {
-    var isGArrayCollection: Bool {
-        isVariantCollection || isObjectCollection
-    }
-}
-
-private extension TypeSyntax {
     var isArray: Bool {
         isSquareArray || isGenericArray
     }
     
+    var isGArrayCollection: Bool {
+        isVariantCollection || isObjectCollection
+    }
+    
+    var gArrayCollectionElementTypeName: String? {
+        variantCollectionElementTypeName ?? objectCollectionElementTypeName
+    }
+}
+
+private extension TypeSyntax {
     var isSquareArray: Bool {
         self.is(ArrayTypeSyntax.self)
     }

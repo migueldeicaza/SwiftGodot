@@ -21,7 +21,7 @@ func getIdentifier (_ x: TypeSyntax?) -> (String, Bool)? {
         x = optSyntax.wrappedType
         opt = true
     }
-    if let txt = x.as (IdentifierTypeSyntax.self)?.name.text {
+    if let txt = x.as (IdentifierTypeSyntax.self)?.description.trimmingCharacters(in: .whitespaces) {
         return (txt, opt)
     }
     return nil

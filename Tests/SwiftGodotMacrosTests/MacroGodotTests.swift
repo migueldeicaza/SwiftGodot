@@ -338,6 +338,89 @@ final class MacroGodotTests: XCTestCase {
         )
     }
     
+    func testGodotMacroWithCallableFuncsWithVariantCollectionAndObjectCollectionReturnTypes() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class Node: Node {
+                @Callable
+                func getIntegerCollection() -> VariantCollection<Int> {
+                    let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
+                    return result
+                }
+            
+                @Callable
+                func getNodeCollection() -> ObjectCollection<Node> {
+                    let result: ObjectCollection<Node> = [Node(), Node()]
+                    return result
+                }
+            }
+            """,
+            expandedSource:
+"""
+class Node: Node {
+    func getIntegerCollection() -> VariantCollection<Int> {
+        let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
+        return result
+    }
+
+    func _mproxy_getIntegerCollection (args: [Variant]) -> Variant? {
+    	let result = getIntegerCollection ()
+    	return Variant (result)
+    }
+    func getNodeCollection() -> ObjectCollection<Node> {
+        let result: ObjectCollection<Node> = [Node(), Node()]
+        return result
+    }
+
+    func _mproxy_getNodeCollection (args: [Variant]) -> Variant? {
+    	let result = getNodeCollection ()
+    	return Variant (result)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Node")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Node> (name: className)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: Node._mproxy_getIntegerCollection)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
+    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_1, arguments: [], function: Node._mproxy_getNodeCollection)
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+//    func testGodotMacroWithCallableFuncsWithVariantCollectionAndObjectCollectionArgs() {
+//        assertMacroExpansion(
+//            """
+//            @Godot
+//            class Node: Node {
+//                @Callable
+//                func printIntegerCollection(integers: VariantCollection<Int>) {
+//                    print(integers)
+//                }
+//            
+//                @Callable
+//                func printNodeCollection(nodes: ObjectCollection<Node>) {
+//                    print(nodes)
+//                }
+//            }
+//            """,
+//            expandedSource:
+//"""
+//""",
+//            macros: testMacros
+//        )
+//    }
+    
     func testGodotMacroWithCallableFuncWithValueParams() {
         assertMacroExpansion(
             """
