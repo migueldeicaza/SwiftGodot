@@ -381,6 +381,48 @@ final class MacroGodotTests: XCTestCase {
         )
     }
     
+    func testGodotMacroWithCallableFuncsWithVariantCollectionParam() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class SomeNode: Node {
+                @Callable
+                func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
+                    integers.map { $0 * $0}
+                }
+            }
+            """,
+            expandedSource:
+                """
+                class SomeNode: Node {
+                    func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
+                        integers.map { $0 * $0}
+                    }
+
+                    func _mproxy_square (args: [Variant]) -> Variant? {
+                    	let result = square ()
+                    	return Variant (result)
+                    }
+
+                    override open class var classInitializer: Void {
+                        let _ = super.classInitializer
+                        return _initializeClass
+                    }
+
+                    private static var _initializeClass: Void = {
+                        let className = StringName("SomeNode")
+                        assert(ClassDB.classExists(class: className))
+                        let classInfo = ClassInfo<SomeNode> (name: className)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+                        let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+                    	classInfo.registerMethod(name: StringName("square"), flags: .default, returnValue: prop_0, arguments: [prop_1], function: SomeNode.square)
+                    } ()
+                }
+                """,
+            macros: testMacros
+        )
+    }
+    
     func testGodotMacroWithCallableFuncsWithObjectCollectionReturnType() {
         assertMacroExpansion(
             """
@@ -390,6 +432,48 @@ final class MacroGodotTests: XCTestCase {
                 func getNodeCollection() -> ObjectCollection<Node> {
                     let result: ObjectCollection<Node> = [Node(), Node()]
                     return result
+                }
+            }
+            """,
+            expandedSource:
+                """
+                class SomeNode: Node {
+                    func getNodeCollection() -> ObjectCollection<Node> {
+                        let result: ObjectCollection<Node> = [Node(), Node()]
+                        return result
+                    }
+
+                    func _mproxy_getNodeCollection (args: [Variant]) -> Variant? {
+                    	let result = getNodeCollection ()
+                    	return Variant (result)
+                    }
+
+                    override open class var classInitializer: Void {
+                        let _ = super.classInitializer
+                        return _initializeClass
+                    }
+
+                    private static var _initializeClass: Void = {
+                        let className = StringName("SomeNode")
+                        assert(ClassDB.classExists(class: className))
+                        let classInfo = ClassInfo<SomeNode> (name: className)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
+                    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
+                    } ()
+                }
+                """,
+            macros: testMacros
+        )
+    }
+    
+    func testGodotMacroWithCallableFuncsWithObjectCollectionParam() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class SomeNode: Node {
+                @Callable
+                func printNames(of nodes: ObjectCollection<Node>) {
+                    nodes.forEach { print($0.name) }
                 }
             }
             """,
