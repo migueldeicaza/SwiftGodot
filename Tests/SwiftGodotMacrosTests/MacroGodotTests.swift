@@ -338,7 +338,7 @@ final class MacroGodotTests: XCTestCase {
         )
     }
     
-    func testGodotMacroWithCallableFuncsWithVariantCollectionAndObjectCollectionReturnTypes() {
+    func testGodotMacroWithCallableFuncsWithVariantCollectionReturnType() {
         assertMacroExpansion(
             """
             @Godot
@@ -346,12 +346,6 @@ final class MacroGodotTests: XCTestCase {
                 @Callable
                 func getIntegerCollection() -> VariantCollection<Int> {
                     let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
-                    return result
-                }
-            
-                @Callable
-                func getNodeCollection() -> ObjectCollection<Node> {
-                    let result: ObjectCollection<Node> = [Node(), Node()]
                     return result
                 }
             }
@@ -368,6 +362,40 @@ final class MacroGodotTests: XCTestCase {
                     	let result = getIntegerCollection ()
                     	return Variant (result)
                     }
+
+                    override open class var classInitializer: Void {
+                        let _ = super.classInitializer
+                        return _initializeClass
+                    }
+
+                    private static var _initializeClass: Void = {
+                        let className = StringName("SomeNode")
+                        assert(ClassDB.classExists(class: className))
+                        let classInfo = ClassInfo<SomeNode> (name: className)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+                    	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
+                    } ()
+                }
+                """,
+            macros: testMacros
+        )
+    }
+    
+    func testGodotMacroWithCallableFuncsWithObjectCollectionReturnType() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class SomeNode: Node {
+                @Callable
+                func getNodeCollection() -> ObjectCollection<Node> {
+                    let result: ObjectCollection<Node> = [Node(), Node()]
+                    return result
+                }
+            }
+            """,
+            expandedSource:
+                """
+                class SomeNode: Node {
                     func getNodeCollection() -> ObjectCollection<Node> {
                         let result: ObjectCollection<Node> = [Node(), Node()]
                         return result
@@ -387,10 +415,8 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
-                    	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
-                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
-                    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_1, arguments: [], function: SomeNode._mproxy_getNodeCollection)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
+                    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
                     } ()
                 }
                 """,
