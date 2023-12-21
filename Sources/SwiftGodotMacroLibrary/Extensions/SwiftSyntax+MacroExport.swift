@@ -10,7 +10,7 @@ import SwiftSyntax
 extension VariableDeclSyntax {
     /// Returns `true` if type is either `[Element]` or `Array<Element>`
     var isArray: Bool {
-        type?.isSquareArray == true || type?.isGenericArray == true
+        type?.isArray == true
     }
     
     var isGArrayCollection: Bool {
@@ -103,6 +103,23 @@ extension TypeSyntax {
         isSquareArray || isGenericArray
     }
     
+    var arrayElementTypeName: String? {
+        if isSquareArray, let arrayElementTypeName = self
+            .as(ArrayTypeSyntax.self)?
+            .element
+            .as(IdentifierTypeSyntax.self)?
+            .name
+            .text {
+            arrayElementTypeName
+        } else if isGenericArray, let arrayElementTypeName = self
+            .as(IdentifierTypeSyntax.self)?
+            .genericElementName {
+            arrayElementTypeName
+        } else {
+            nil
+        }
+    }
+    
     var isGArrayCollection: Bool {
         isVariantCollection || isObjectCollection
     }
@@ -166,24 +183,18 @@ private extension TypeSyntax {
 }
 
 extension FunctionDeclSyntax {
-    /// Returns true if return type is an array; `[Foo]`
     var returnTypeIsArray: Bool {
         signature
             .returnClause?
             .type
-            .is(ArrayTypeSyntax.self) == true
+            .isArray == true
     }
     
-    /// For [Foo], returns "Foo"
     var arrayElementType: String? {
         signature
             .returnClause?
             .type
-            .as(ArrayTypeSyntax.self)?
-            .element
-            .as(IdentifierTypeSyntax.self)?
-            .name
-            .text
+            .arrayElementTypeName
     }
     
     var returnTypeIsGArrayCollection: Bool {
@@ -196,11 +207,6 @@ extension FunctionDeclSyntax {
 
 extension FunctionParameterSyntax {
     var arrayElementTypeName: String? {
-        type
-            .as(ArrayTypeSyntax.self)?
-            .element
-            .as(IdentifierTypeSyntax.self)?
-            .name
-            .text
+        type.arrayElementTypeName
     }
 }

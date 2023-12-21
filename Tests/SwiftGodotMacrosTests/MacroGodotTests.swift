@@ -504,6 +504,113 @@ class CallableCollectionsNode: Node {
             macros: testMacros
         )
     }
+
+    func testGodotMacroWithCallableFuncsWithGenericArrayParam() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class MultiplierNode: Node {
+                @Callable
+                func multiply(_ integers: Array<Int>) -> Int {
+                    reduce(into: 1) { $0 *= $1 }
+                }
+            }
+            """,
+            expandedSource:
+"""
+
+class MultiplierNode: Node {
+    func multiply(_ integers: Array<Int>) -> Int {
+        reduce(into: 1) { $0 *= $1 }
+    }
+
+    func _mproxy_multiply (args: [Variant]) -> Variant? {
+    	let result = multiply (GArray (args [0])!.compactMap(Int.makeOrUnwrap))
+    	return Variant (result)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("MultiplierNode")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<MultiplierNode> (name: className)
+    	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	let multiplyArgs = [
+    		prop_1,
+    	]
+    	classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+    func testGodotMacroWithCallableFuncsWithGenericArrayReturnTypes() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class CallableCollectionsNode: Node {
+                @Callable
+                func get_ages() -> Array<Int> {
+                    [1, 2, 3, 4]
+                }
+            
+                @Callable
+                func get_markers() -> Array<Marker3D> {
+                    [.init(), .init(), .init()]
+                }
+            }
+            """,
+            expandedSource:
+"""
+
+class CallableCollectionsNode: Node {
+    func get_ages() -> Array<Int> {
+        [1, 2, 3, 4]
+    }
+
+    func _mproxy_get_ages (args: [Variant]) -> Variant? {
+    	let result = get_ages ()
+    	return Variant ( result.reduce(into: GArray(Int.self)) {
+    	        $0.append(value: Variant($1))
+    	    })
+    }
+    func get_markers() -> Array<Marker3D> {
+        [.init(), .init(), .init()]
+    }
+
+    func _mproxy_get_markers (args: [Variant]) -> Variant? {
+    	let result = get_markers ()
+    	return Variant ( result.reduce(into: GArray(Marker3D.self)) {
+    	        $0.append(value: Variant($1))
+    	    })
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("CallableCollectionsNode")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .none, hintStr: "", usage: .default)
+    	classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
     
     func testGodotMacroWithCallableFuncWithValueParams() {
         assertMacroExpansion(
