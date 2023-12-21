@@ -42,18 +42,16 @@ class GodotMacroProcessor {
         return name
     }
 
-    func lookupPropReturn (parameterTypeName: String, parameterName: String) -> String {
+    func lookupPropReturn (parameterTypeName: String, genericParameterTypeNames: [String], parameterName: String) -> String {
         let key = "\(parameterTypeName)/\(parameterName)"
         if let v = propertyDeclarations [key] {
             return v
         }
         
-        let type = TypeSyntax(stringLiteral: parameterTypeName)
-        
         let propType: String
         let className: String
         
-        if let gArrayCollectionElementTypeName = type.gArrayCollectionElementTypeName {
+        if let gArrayCollectionElementTypeName = genericParameterTypeNames.first {
             let godotArrayElementTypeName: String
             if let gType = godotVariants[gArrayCollectionElementTypeName], let fromGType = godotArrayElementType(gType: gType) {
                 godotArrayElementTypeName = fromGType
@@ -65,9 +63,11 @@ class GodotMacroProcessor {
             className = "Array[\(godotArrayElementTypeName)]"
         } else {
             propType = godotTypeToProp (typeName: parameterTypeName)
-            switch propType {
-            case ".object": className = parameterTypeName
-            default: className = ""
+            
+            if propType == ".object" {
+                className = parameterTypeName
+            } else {
+                className = ""
             }
         }
         
@@ -116,8 +116,12 @@ class GodotMacroProcessor {
         let funcName = funcDecl.name.text
         var funcArgs = ""
         var retProp: String? = nil
-        if let (retType, _) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = lookupPropReturn(parameterTypeName: retType, parameterName: "")
+        if let (retType, generics, _) = getIdentifier (funcDecl.signature.returnClause?.type) {
+            retProp = lookupPropReturn(
+                parameterTypeName: retType,
+                genericParameterTypeNames: generics,
+                parameterName: ""
+            )
         }
 
         for parameter in funcDecl.signature.parameterClause.parameters {

@@ -19,7 +19,7 @@ public struct GodotCallable: PeerMacro {
         var retProp: String? = nil
         var retOptional: Bool = false
         
-        if let (retType, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
+        if let (retType, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
             retProp = godotTypeToProp (typeName: retType)
             genMethod.append ("\tlet result = \(funcName) (")
             retOptional = ro

@@ -398,29 +398,6 @@ class Node: Node {
         )
     }
     
-//    func testGodotMacroWithCallableFuncsWithVariantCollectionAndObjectCollectionArgs() {
-//        assertMacroExpansion(
-//            """
-//            @Godot
-//            class Node: Node {
-//                @Callable
-//                func printIntegerCollection(integers: VariantCollection<Int>) {
-//                    print(integers)
-//                }
-//            
-//                @Callable
-//                func printNodeCollection(nodes: ObjectCollection<Node>) {
-//                    print(nodes)
-//                }
-//            }
-//            """,
-//            expandedSource:
-//"""
-//""",
-//            macros: testMacros
-//        )
-//    }
-    
     func testGodotMacroWithCallableFuncWithValueParams() {
         assertMacroExpansion(
             """
