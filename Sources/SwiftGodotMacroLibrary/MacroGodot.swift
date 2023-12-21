@@ -26,7 +26,7 @@ class GodotMacroProcessor {
     }
     
     var propertyDeclarations: [String: String] = [:]
-    func lookupPropParam (parameterTypeName: String, parameterName: String) -> String {
+    func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
         let key = "\(parameterTypeName)/\(parameterName)"
         if let v = propertyDeclarations [key] {
             return v
@@ -35,9 +35,30 @@ class GodotMacroProcessor {
         
         let name = "prop_\(propertyDeclarations.count)"
         
+        let className: String
+        
+        if propType == ".object" {
+            className = parameterTypeName
+        } else if propType == ".array" {
+            if let parameterElementTypeName {
+                let godotArrayElementTypeName: String
+                if let gType = godotVariants[parameterElementTypeName],
+                   let fromGType = godotArrayElementType(gType: gType) {
+                    godotArrayElementTypeName = fromGType
+                } else {
+                    godotArrayElementTypeName = parameterElementTypeName
+                }
+                className = "Array[\(godotArrayElementTypeName)]"
+            } else {
+                className = "Array"
+            }
+        } else {
+            className = ""
+        }
+        
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(propType == ".object" ? parameterTypeName : "")\"), hint: .none, hintStr: \"\", usage: .default)\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: .none, hintStr: \"\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -129,7 +150,11 @@ class GodotMacroProcessor {
                 throw MacroError.typeName (parameter)
             }
             let pname = getParamName(parameter)
-            let propInfo = lookupPropParam (parameterTypeName: ptype, parameterName: pname)
+            let propInfo = lookupPropParam(
+                parameterTypeName: ptype,
+                parameterElementTypeName: parameter.arrayElementTypeName,
+                parameterName: pname
+            )
             if funcArgs == "" {
                 funcArgs = "\tlet \(funcName)Args = [\n"
             }

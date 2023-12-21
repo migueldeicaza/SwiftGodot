@@ -135,6 +135,9 @@ func hasSignalAttribute (_ attrs: AttributeListSyntax?) -> Bool {
 }
 
 func getTypeName (_ parameter: FunctionParameterSyntax) -> String? {
+    if let arrayType = parameter.type.as(ArrayTypeSyntax.self) {
+        return "Array"
+    }
     guard let typeName = parameter.type.as (IdentifierTypeSyntax.self)?.name.text else {
         return nil
     }

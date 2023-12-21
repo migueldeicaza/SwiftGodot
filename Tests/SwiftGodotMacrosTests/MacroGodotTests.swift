@@ -398,6 +398,52 @@ final class MacroGodotTests: XCTestCase {
         )
     }
     
+    func testGodotMacroWithCallableFuncsWithArrayReturnType() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class MultiplierNode: Node {
+                @Callable
+                func multiply(_ integers: [Int]) -> Int {
+                    reduce(into: 1) { $0 *= $1 }
+                }
+            }
+            """,
+            expandedSource:
+"""
+
+class MultiplierNode: Node {
+    func multiply(_ integers: [Int]) -> Int {
+        reduce(into: 1) { $0 *= $1 }
+    }
+
+    func _mproxy_multiply (args: [Variant]) -> Variant? {
+    	let result = multiply (GArray (args [0])!.compactMap(Int.makeOrUnwrap))
+    	return Variant (result)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("MultiplierNode")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<MultiplierNode> (name: className)
+    	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	let multiplyArgs = [
+    		prop_1,
+    	]
+    	classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
     func testGodotMacroWithCallableFuncWithValueParams() {
         assertMacroExpansion(
             """

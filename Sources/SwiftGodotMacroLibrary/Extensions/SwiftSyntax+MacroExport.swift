@@ -173,3 +173,14 @@ extension FunctionDeclSyntax {
             .isGArrayCollection == true
     }
 }
+
+extension FunctionParameterSyntax {
+    var arrayElementTypeName: String? {
+        type
+            .as(ArrayTypeSyntax.self)?
+            .element
+            .as(IdentifierTypeSyntax.self)?
+            .name
+            .text
+    }
+}
