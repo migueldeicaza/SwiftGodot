@@ -29,6 +29,9 @@ func getIdentifier (_ typeSyntax: TypeSyntax?) -> (typeName: String, generics: [
             .compactMap { $0.argument.as(IdentifierTypeSyntax.self) }
             .map { $0.name.text } ?? []
         return (typeName: identifier.name.text, generics: genericTypeNames, isOptional: opt)
+    } else if let array = typeSyntax.as(ArrayTypeSyntax.self),
+       let elementTypeName = array.element.as(IdentifierTypeSyntax.self)?.name.text {
+        return (typeName: "Array", generics: [elementTypeName], isOptional: opt)
     }
     return nil
 }

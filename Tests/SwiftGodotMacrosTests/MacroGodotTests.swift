@@ -398,7 +398,7 @@ final class MacroGodotTests: XCTestCase {
         )
     }
     
-    func testGodotMacroWithCallableFuncsWithArrayReturnType() {
+    func testGodotMacroWithCallableFuncsWithArrayParam() {
         assertMacroExpansion(
             """
             @Godot
@@ -437,6 +437,63 @@ class MultiplierNode: Node {
     		prop_1,
     	]
     	classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+    func testGodotMacroWithCallableFuncsWithArrayReturnTypes() {
+        assertMacroExpansion(
+            """
+            @Godot
+            class CallableCollectionsNode: Node {
+                @Callable
+                func get_ages() -> [Int] {
+                    [1, 2, 3, 4]
+                }
+            
+                @Callable
+                func get_markers() -> [Marker3D] {
+                    [.init(), .init(), .init()]
+                }
+            }
+            """,
+            expandedSource:
+"""
+
+class CallableCollectionsNode: Node {
+    func get_ages() -> [Int] {
+        [1, 2, 3, 4]
+    }
+
+    func _mproxy_get_ages (args: [Variant]) -> Variant? {
+    	let result = get_ages ()
+    	return Variant (result)
+    }
+    func get_markers() -> [Marker3D] {
+        [.init(), .init(), .init()]
+    }
+
+    func _mproxy_get_markers (args: [Variant]) -> Variant? {
+    	let result = get_markers ()
+    	return Variant (result)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("CallableCollectionsNode")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .none, hintStr: "", usage: .default)
+    	classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
     } ()
 }
 """,

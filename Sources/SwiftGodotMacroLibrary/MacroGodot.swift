@@ -27,7 +27,7 @@ class GodotMacroProcessor {
     
     var propertyDeclarations: [String: String] = [:]
     func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
-        let key = "\(parameterTypeName)/\(parameterName)"
+        let key = [parameterTypeName, parameterElementTypeName, parameterName].compactMap { $0 }.joined(separator: "/")
         if let v = propertyDeclarations [key] {
             return v
         }
@@ -64,7 +64,7 @@ class GodotMacroProcessor {
     }
 
     func lookupPropReturn (parameterTypeName: String, genericParameterTypeNames: [String], parameterName: String) -> String {
-        let key = "\(parameterTypeName)/\(parameterName)"
+        let key = "\(parameterTypeName)/\(genericParameterTypeNames.joined(separator: "/"))/\(parameterName)"
         if let v = propertyDeclarations [key] {
             return v
         }
