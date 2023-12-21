@@ -470,7 +470,9 @@ class CallableCollectionsNode: Node {
 
     func _mproxy_get_ages (args: [Variant]) -> Variant? {
     	let result = get_ages ()
-    	return Variant (result)
+    	return Variant ( result.reduce(into: GArray(Int.self)) {
+    	        $0.append(value: Variant($1))
+    	    })
     }
     func get_markers() -> [Marker3D] {
         [.init(), .init(), .init()]
@@ -478,7 +480,9 @@ class CallableCollectionsNode: Node {
 
     func _mproxy_get_markers (args: [Variant]) -> Variant? {
     	let result = get_markers ()
-    	return Variant (result)
+    	return Variant ( result.reduce(into: GArray(Marker3D.self)) {
+    	        $0.append(value: Variant($1))
+    	    })
     }
 
     override open class var classInitializer: Void {

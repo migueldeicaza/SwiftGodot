@@ -166,6 +166,26 @@ private extension TypeSyntax {
 }
 
 extension FunctionDeclSyntax {
+    /// Returns true if return type is an array; `[Foo]`
+    var returnTypeIsArray: Bool {
+        signature
+            .returnClause?
+            .type
+            .is(ArrayTypeSyntax.self) == true
+    }
+    
+    /// For [Foo], returns "Foo"
+    var arrayElementType: String? {
+        signature
+            .returnClause?
+            .type
+            .as(ArrayTypeSyntax.self)?
+            .element
+            .as(IdentifierTypeSyntax.self)?
+            .name
+            .text
+    }
+    
     var returnTypeIsGArrayCollection: Bool {
         signature
             .returnClause?

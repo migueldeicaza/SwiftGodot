@@ -61,7 +61,11 @@ public struct GodotCallable: PeerMacro {
             if retOptional {
                 genMethod.append ("\tguard let result else { return nil }\n")
             }
-            genMethod.append ("\treturn Variant (result)\n")
+            if funcDecl.returnTypeIsArray, let elementTypeName = funcDecl.arrayElementType {
+                genMethod.append ("\treturn Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(value: Variant($1)) })\n")
+            } else {
+                genMethod.append ("\treturn Variant (result)\n")
+            }
         } else {
             genMethod.append ("\treturn nil\n")
         }
