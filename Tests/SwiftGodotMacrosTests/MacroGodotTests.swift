@@ -384,13 +384,13 @@ final class MacroGodotTests: XCTestCase {
                     }
 
                     private static var _initializeClass: Void = {
-                        let className = StringName("Node")
+                        let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
-                        let classInfo = ClassInfo<Node> (name: className)
+                        let classInfo = ClassInfo<SomeNode> (name: className)
                     	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
-                    	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: Node._mproxy_getIntegerCollection)
+                    	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
                     	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
-                    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_1, arguments: [], function: Node._mproxy_getNodeCollection)
+                    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_1, arguments: [], function: SomeNode._mproxy_getNodeCollection)
                     } ()
                 }
                 """,
