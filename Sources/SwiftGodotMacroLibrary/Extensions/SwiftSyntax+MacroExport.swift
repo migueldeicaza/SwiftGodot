@@ -1,5 +1,5 @@
 //
-//  TypeSyntax+MacroExport.swift
+//  SwiftSyntax+MacroExport.swift
 //
 //
 //  Created by Estevan Hernandez on 11/22/23.
@@ -82,6 +82,22 @@ private extension VariableDeclSyntax {
     }
 }
 
+private extension IdentifierTypeSyntax {
+    var genericElementName: String? {
+        guard let elementTypeName = genericArgumentClause?
+            .arguments
+            .first?
+            .argument
+            .as(IdentifierTypeSyntax.self)?
+            .name
+            .text else {
+            return nil
+        }
+        
+        return elementTypeName
+    }
+}
+
 extension TypeSyntax {
     var isArray: Bool {
         isSquareArray || isGenericArray
@@ -149,18 +165,11 @@ private extension TypeSyntax {
     }
 }
 
-private extension IdentifierTypeSyntax {
-    var genericElementName: String? {
-        guard let elementTypeName = genericArgumentClause?
-            .arguments
-            .first?
-            .argument
-            .as(IdentifierTypeSyntax.self)?
-            .name
-            .text else {
-            return nil
-        }
-        
-        return elementTypeName
+extension FunctionDeclSyntax {
+    var returnTypeIsGArrayCollection: Bool {
+        signature
+            .returnClause?
+            .type
+            .isGArrayCollection == true
     }
 }

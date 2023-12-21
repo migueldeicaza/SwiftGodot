@@ -28,11 +28,7 @@ public struct GodotCallable: PeerMacro {
         }
         //     let result = computeGodot (String (args [0]), Int (args [1]))
         
-        if funcDecl
-            .signature
-            .returnClause?
-            .type
-            .isGArrayCollection == true {
+        if funcDecl.returnTypeIsGArrayCollection {
             retProp = ".array"
         }
         
