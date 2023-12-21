@@ -342,7 +342,7 @@ final class MacroGodotTests: XCTestCase {
         assertMacroExpansion(
             """
             @Godot
-            class Node: Node {
+            class SomeNode: Node {
                 @Callable
                 func getIntegerCollection() -> VariantCollection<Int> {
                     let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
@@ -358,7 +358,7 @@ final class MacroGodotTests: XCTestCase {
             """,
             expandedSource:
                 """
-                class Node: Node {
+                class SomeNode: Node {
                     func getIntegerCollection() -> VariantCollection<Int> {
                         let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
                         return result
