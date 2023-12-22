@@ -1,5 +1,5 @@
 //
-//  TypeSyntax+MacroExport.swift
+//  SwiftSyntax+MacroExport.swift
 //
 //
 //  Created by Estevan Hernandez on 11/22/23.
@@ -10,19 +10,15 @@ import SwiftSyntax
 extension VariableDeclSyntax {
     /// Returns `true` if type is either `[Element]` or `Array<Element>`
     var isArray: Bool {
-        type?.isSquareArray == true || type?.isGenericArray == true
+        type?.isArray == true
     }
     
     var isGArrayCollection: Bool {
-        isVariantCollection || isObjectCollection
+        type?.isGArrayCollection == true
     }
     
     var gArrayCollectionElementTypeName: String? {
-        [
-            variantCollectionElementTypeName,
-            objectCollectionElementTypeName
-        ]	.compactMap { $0 }
-            .first
+        type?.gArrayCollectionElementTypeName
     }
 }
 
@@ -86,17 +82,54 @@ private extension VariableDeclSyntax {
     }
 }
 
-extension TypeSyntax {
-    var isGArrayCollection: Bool {
-        isVariantCollection || isObjectCollection
+private extension IdentifierTypeSyntax {
+    var genericElementName: String? {
+        guard let elementTypeName = genericArgumentClause?
+            .arguments
+            .first?
+            .argument
+            .as(IdentifierTypeSyntax.self)?
+            .name
+            .text else {
+            return nil
+        }
+        
+        return elementTypeName
     }
 }
 
-private extension TypeSyntax {
+extension TypeSyntax {
     var isArray: Bool {
         isSquareArray || isGenericArray
     }
     
+    var arrayElementTypeName: String? {
+        if isSquareArray, let arrayElementTypeName = self
+            .as(ArrayTypeSyntax.self)?
+            .element
+            .as(IdentifierTypeSyntax.self)?
+            .name
+            .text {
+            arrayElementTypeName
+        } else if isGenericArray, let arrayElementTypeName = self
+            .as(IdentifierTypeSyntax.self)?
+            .genericElementName {
+            arrayElementTypeName
+        } else {
+            nil
+        }
+    }
+    
+    var isGArrayCollection: Bool {
+        isVariantCollection || isObjectCollection
+    }
+    
+    var gArrayCollectionElementTypeName: String? {
+        variantCollectionElementTypeName ?? objectCollectionElementTypeName
+    }
+}
+
+private extension TypeSyntax {
     var isSquareArray: Bool {
         self.is(ArrayTypeSyntax.self)
     }
@@ -149,18 +182,63 @@ private extension TypeSyntax {
     }
 }
 
-private extension IdentifierTypeSyntax {
-    var genericElementName: String? {
-        guard let elementTypeName = genericArgumentClause?
-            .arguments
-            .first?
-            .argument
-            .as(IdentifierTypeSyntax.self)?
-            .name
-            .text else {
+extension FunctionDeclSyntax {
+    var returnTypeIsArray: Bool {
+        signature
+            .returnClause?
+            .type
+            .isArray == true
+    }
+    
+    var arrayElementType: String? {
+        signature
+            .returnClause?
+            .type
+            .arrayElementTypeName
+    }
+    
+    var returnTypeIsGArrayCollection: Bool {
+        signature
+            .returnClause?
+            .type
+            .isGArrayCollection == true
+    }
+}
+
+extension FunctionParameterSyntax {
+    var isArray: Bool {
+        type.isArray
+    }
+    
+    var arrayElementTypeName: String? {
+        type.arrayElementTypeName
+    }
+    
+    /// Returns `true` if type is a `VariantCollection<Element>`
+    var isVariantCollection: Bool {
+        type.isVariantCollection == true
+    }
+    
+    /// Returns `true` if type is a `ObjectCollection<Element>`
+    var isObjectCollection: Bool {
+        type.isObjectCollection == true
+    }
+    
+    /// Returns `"Element"` for `VariantCollection<Element>`
+    var variantCollectionElementTypeName: String? {
+        guard isVariantCollection else {
             return nil
         }
         
-        return elementTypeName
+        return type.variantCollectionElementTypeName
+    }
+    
+    /// Returns `"Element"` for `ObjectCollection<Element>`
+    var objectCollectionElementTypeName: String? {
+        guard isObjectCollection else {
+            return nil
+        }
+        
+        return type.objectCollectionElementTypeName
     }
 }

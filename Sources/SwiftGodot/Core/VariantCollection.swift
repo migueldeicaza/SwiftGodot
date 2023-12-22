@@ -7,6 +7,13 @@
 
 @_implementationOnly import GDExtension
 
+extension VariantCollection: VariantStorable {
+    public typealias Representable = GArray
+    public func toVariantRepresentable() -> GArray {
+        array
+    }
+}
+
 /// This represents a typed array of one of the built-in types from Godot
 public class VariantCollection<Element: VariantStorable>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
     public typealias ArrayLiteralElement = Element
@@ -39,7 +46,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     }
     
     /// Creates a new instance from the given variant if it contains a GArray
-    public init? (_ variant: Variant) {
+    public required init? (_ variant: Variant) {
         if let array = GArray (variant) {
             self.array = array
         } else {
