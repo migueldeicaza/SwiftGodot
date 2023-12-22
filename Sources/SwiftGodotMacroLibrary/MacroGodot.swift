@@ -290,8 +290,8 @@ class GodotMacroProcessor {
         propertyType: \(godotTypeToProp(typeName: "Array")),
         propertyName: "\(prefix ?? "")\(varNameWithoutPrefix.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
-        hint: .arrayType),
-        hintStr: "\(godotArrayElementTypeName)"),
+        hint: .arrayType,
+        hintStr: "\(godotArrayElementTypeName)",
         usage: .array)\n
     """)
             
