@@ -17,6 +17,21 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 class GodotMacroProcessor {
+    var propertyDeclarations: [PropertyDeclarationKey: String] = [:]
+    struct PropertyDeclarationKey: Hashable {
+        let typeName: String
+        let parameterElementTypeName: String?
+        let genericParameterNames: [String]
+        let parameterName: String
+        
+        init(typeName: String, parameterElementTypeName: String? = nil, genericParameterNames: [String] = [], parameterName: String) {
+            self.typeName = typeName
+            self.parameterElementTypeName = parameterElementTypeName
+            self.genericParameterNames = genericParameterNames
+            self.parameterName = parameterName
+        }
+    }
+    
     let classDecl: ClassDeclSyntax
     let className: String
     
@@ -25,9 +40,12 @@ class GodotMacroProcessor {
         className = classDecl.name.text
     }
     
-    var propertyDeclarations: [String: String] = [:]
     func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
-        let key = [parameterTypeName, parameterElementTypeName, parameterName].compactMap { $0 }.joined(separator: "/")
+        let key = PropertyDeclarationKey(
+            typeName: parameterTypeName,
+            parameterElementTypeName: parameterElementTypeName,
+            parameterName: parameterName
+        )
         if let v = propertyDeclarations [key] {
             return v
         }
@@ -69,7 +87,11 @@ class GodotMacroProcessor {
     }
 
     func lookupPropReturn (parameterTypeName: String, genericParameterTypeNames: [String], parameterName: String) -> String {
-        let key = "\(parameterTypeName)/\(genericParameterTypeNames.joined(separator: "/"))/\(parameterName)"
+        let key = PropertyDeclarationKey(
+            typeName: parameterTypeName,
+            genericParameterNames: genericParameterTypeNames,
+            parameterName: parameterName
+        )
         if let v = propertyDeclarations [key] {
             return v
         }
