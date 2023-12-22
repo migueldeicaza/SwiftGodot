@@ -2,7 +2,11 @@
 
 In Godot, class members can be exported. This means their value gets saved along
 with the resource (such as the scene) they're attached to. They will also be
-available for editing in the property editor. Exporting is done by using the @export annotation.
+available for editing in the property editor. Exporting is done by using the @Export 
+annotation.
+
+This document deals with exporting properties, for information about exposing
+functions to the Godot world, see the <doc:CustomTypes> document.
 
 ## Introduction to Exports
 

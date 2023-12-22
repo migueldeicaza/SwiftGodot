@@ -102,32 +102,21 @@ editor, or expose methods that can be invoked by users from either other
 programming languages, like GDScript or C#, and you might want to surface
 <doc:Signals> that your object emits that can be wired up externally.
 
+To do this, you will be using the `@Godot` macro to annotate your class, like
+this:
+
 ```swift
+@Godot
 class SwiftSprite: Sprite2D {
-    static var initClass: Void = {
-        let classInfo = ClassInfo<SwiftSprite> (name: "SwiftSprite")   
-    }
-
-    required init () {
-	SwiftSprite.initClass
-	super.init()
-    }
+}
 ```
 
-Notice that the constructor is now referencing the `initClass` variable, which
-is defined as a lazy property, and will execute the code in `initClass` only
-once on first use.
+When you use the `@Godot` macro, a number of additional macros can be used inside
+your class, like `#signal` [to define signals](Signals.md), `@Callable` to surface a method to
+Godot, and `@Export` to [surface properties](Exports.md).
 
-Inside `initClass`, you will use ``ClassInfo`` to register all your
-capabilities, and you declare it like this:
-
-```swift
-   let classInfo = ClassInfo<SwiftSprite> (name: "SwiftSprite")
-```
-
-We will come back to it shortly, but before I want to let you know about a
-work-horse of this process, the ``PropInfo`` structure.
-
+Behind the scenes these macros use the lower-level ``ClassDB`` API to define functions,
+properties and their values.
 
 #### Surfacing Methods
 
@@ -148,6 +137,10 @@ func readyCallback (text: String) {
 ```
 
 Now your method can be invoked from the Godot editor or from scripts written in other languages.
+
+The functions can be any of the types that can be wrapped in a [Variant](Variant.md) including
+the core Swift data types for integers and floats, the Godot Object subclasses as well as
+``VariantCollection`` and ``ObjectCollection``.
 
 #### Surfacing Properties and Variables
 
@@ -174,11 +167,14 @@ To learn more, read the <doc:Exports> page.
 
 Surfacing signals is covered in the <doc:Signals> document.
 
-## PropInfo
+## Low-Leve Details: PropInfo
 
 In SwiftGodot, the ``PropInfo`` structure is used to define argument types,
 properties and return values.  You will be exposed to these when you define 
 signal parameters.
+
+This is only required if you do not use the various macros provided by 
+SwiftGodot.
 
 It looks like this:
 
