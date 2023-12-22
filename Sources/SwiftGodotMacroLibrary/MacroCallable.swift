@@ -47,8 +47,12 @@ public struct GodotCallable: PeerMacro {
             
             if ptype == "Variant" {
                 genMethod.append ("args [\(argc)]")
-            } else if ptype == "Array", let elementType = parameter.arrayElementTypeName {
+            } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
                 genMethod.append ("GArray (args [\(argc)])!.compactMap(\(elementType).makeOrUnwrap)")
+            } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
+                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(value: \(elementType).makeOrUnwrap($1)!) }")
+            } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
+                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(value: \(elementType).makeOrUnwrap($1)!) }")
             } else {
                 genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
             }

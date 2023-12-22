@@ -206,7 +206,39 @@ extension FunctionDeclSyntax {
 }
 
 extension FunctionParameterSyntax {
+    var isArray: Bool {
+        type.isArray
+    }
+    
     var arrayElementTypeName: String? {
         type.arrayElementTypeName
+    }
+    
+    /// Returns `true` if type is a `VariantCollection<Element>`
+    var isVariantCollection: Bool {
+        type.isVariantCollection == true
+    }
+    
+    /// Returns `true` if type is a `ObjectCollection<Element>`
+    var isObjectCollection: Bool {
+        type.isObjectCollection == true
+    }
+    
+    /// Returns `"Element"` for `VariantCollection<Element>`
+    var variantCollectionElementTypeName: String? {
+        guard isVariantCollection else {
+            return nil
+        }
+        
+        return type.variantCollectionElementTypeName
+    }
+    
+    /// Returns `"Element"` for `ObjectCollection<Element>`
+    var objectCollectionElementTypeName: String? {
+        guard isObjectCollection else {
+            return nil
+        }
+        
+        return type.objectCollectionElementTypeName
     }
 }

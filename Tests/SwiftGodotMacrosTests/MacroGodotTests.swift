@@ -372,7 +372,7 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
                     	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
                     } ()
                 }
@@ -388,37 +388,43 @@ final class MacroGodotTests: XCTestCase {
             class SomeNode: Node {
                 @Callable
                 func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
-                    integers.map { $0 * $0}
+                    integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
                 }
             }
             """,
             expandedSource:
-                """
-                class SomeNode: Node {
-                    func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
-                        integers.map { $0 * $0}
-                    }
+"""
 
-                    func _mproxy_square (args: [Variant]) -> Variant? {
-                    	let result = square ()
-                    	return Variant (result)
-                    }
+class SomeNode: Node {
+    func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
+        integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
+    }
 
-                    override open class var classInitializer: Void {
-                        let _ = super.classInitializer
-                        return _initializeClass
-                    }
+    func _mproxy_square (args: [Variant]) -> Variant? {
+    	let result = square (GArray(args[0])!.reduce(into: VariantCollection<Int>()) {
+    	        $0.append(value: Int.makeOrUnwrap($1)!)
+    	    })
+    	return Variant (result)
+    }
 
-                    private static var _initializeClass: Void = {
-                        let className = StringName("SomeNode")
-                        assert(ClassDB.classExists(class: className))
-                        let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
-                        let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
-                    	classInfo.registerMethod(name: StringName("square"), flags: .default, returnValue: prop_0, arguments: [prop_1], function: SomeNode.square)
-                    } ()
-                }
-                """,
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("SomeNode")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<SomeNode> (name: className)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+    	let squareArgs = [
+    		prop_1,
+    	]
+    	classInfo.registerMethod(name: StringName("square"), flags: .default, returnValue: prop_0, arguments: squareArgs, function: SomeNode._mproxy_square)
+    } ()
+}
+""",
             macros: testMacros
         )
     }
@@ -457,7 +463,7 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .array)
                     	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
                     } ()
                 }
@@ -478,32 +484,37 @@ final class MacroGodotTests: XCTestCase {
             }
             """,
             expandedSource:
-                """
-                class SomeNode: Node {
-                    func getNodeCollection() -> ObjectCollection<Node> {
-                        let result: ObjectCollection<Node> = [Node(), Node()]
-                        return result
-                    }
+"""
 
-                    func _mproxy_getNodeCollection (args: [Variant]) -> Variant? {
-                    	let result = getNodeCollection ()
-                    	return Variant (result)
-                    }
+class SomeNode: Node {
+    func printNames(of nodes: ObjectCollection<Node>) {
+        nodes.forEach { print($0.name) }
+    }
 
-                    override open class var classInitializer: Void {
-                        let _ = super.classInitializer
-                        return _initializeClass
-                    }
+    func _mproxy_printNames (args: [Variant]) -> Variant? {
+    	printNames (of: GArray(args[0])!.reduce(into: ObjectCollection<Node>()) {
+    	        $0.append(value: Node.makeOrUnwrap($1)!)
+    	    })
+    	return nil
+    }
 
-                    private static var _initializeClass: Void = {
-                        let className = StringName("SomeNode")
-                        assert(ClassDB.classExists(class: className))
-                        let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .none, hintStr: "", usage: .default)
-                    	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
-                    } ()
-                }
-                """,
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("SomeNode")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<SomeNode> (name: className)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "nodes", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .array)
+    	let printNamesArgs = [
+    		prop_0,
+    	]
+    	classInfo.registerMethod(name: StringName("printNames"), flags: .default, returnValue: nil, arguments: printNamesArgs, function: SomeNode._mproxy_printNames)
+    } ()
+}
+""",
             macros: testMacros
         )
     }
@@ -515,7 +526,7 @@ final class MacroGodotTests: XCTestCase {
             class MultiplierNode: Node {
                 @Callable
                 func multiply(_ integers: [Int]) -> Int {
-                    reduce(into: 1) { $0 *= $1 }
+                    integers.reduce(into: 1) { $0 *= $1 }
                 }
             }
             """,
@@ -524,7 +535,7 @@ final class MacroGodotTests: XCTestCase {
 
 class MultiplierNode: Node {
     func multiply(_ integers: [Int]) -> Int {
-        reduce(into: 1) { $0 *= $1 }
+        integers.reduce(into: 1) { $0 *= $1 }
     }
 
     func _mproxy_multiply (args: [Variant]) -> Variant? {
@@ -542,7 +553,7 @@ class MultiplierNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MultiplierNode> (name: className)
     	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
     	let multiplyArgs = [
     		prop_1,
     	]
@@ -604,9 +615,9 @@ class CallableCollectionsNode: Node {
         let className = StringName("CallableCollectionsNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
     	classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
-    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .array)
     	classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
     } ()
 }
@@ -622,7 +633,7 @@ class CallableCollectionsNode: Node {
             class MultiplierNode: Node {
                 @Callable
                 func multiply(_ integers: Array<Int>) -> Int {
-                    reduce(into: 1) { $0 *= $1 }
+                    integers.reduce(into: 1) { $0 *= $1 }
                 }
             }
             """,
@@ -631,7 +642,7 @@ class CallableCollectionsNode: Node {
 
 class MultiplierNode: Node {
     func multiply(_ integers: Array<Int>) -> Int {
-        reduce(into: 1) { $0 *= $1 }
+        integers.reduce(into: 1) { $0 *= $1 }
     }
 
     func _mproxy_multiply (args: [Variant]) -> Variant? {
@@ -649,7 +660,7 @@ class MultiplierNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MultiplierNode> (name: className)
     	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
     	let multiplyArgs = [
     		prop_1,
     	]
@@ -711,9 +722,9 @@ class CallableCollectionsNode: Node {
         let className = StringName("CallableCollectionsNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .none, hintStr: "", usage: .default)
+    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
     	classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
-    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .none, hintStr: "", usage: .default)
+    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .array)
     	classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
     } ()
 }
