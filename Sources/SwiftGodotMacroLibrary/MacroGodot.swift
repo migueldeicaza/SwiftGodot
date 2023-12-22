@@ -136,10 +136,9 @@ class GodotMacroProcessor {
             throw GodotMacroError.unsupportedType(varDecl)
         }
         let exportAttr = varDecl.attributes.first?.as(AttributeSyntax.self)
-        let lel = exportAttr?.arguments?.as(LabeledExprListSyntax.self)
-        let f = lel?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
-        
-        let s = lel?.dropFirst().first
+        let labeledExpressionList = exportAttr?.arguments?.as(LabeledExprListSyntax.self)
+        let firstLabeledExpression = labeledExpressionList?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
+        let secondLabeledExpression = labeledExpressionList?.dropFirst().first
         
         for singleVar in varDecl.bindings {
             guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
@@ -196,8 +195,8 @@ class GodotMacroProcessor {
         propertyType: \(propType),
         propertyName: "\(prefix ?? "")\(varNameWithoutPrefix)",
         className: className,
-        hint: .\(f?.description ?? "none"),
-        hintStr: \(s?.description ?? "\"\""),
+        hint: .\(firstLabeledExpression?.description ?? "none"),
+        hintStr: \(secondLabeledExpression?.description ?? "\"\""),
         usage: .default)
     
     """)
@@ -227,12 +226,6 @@ class GodotMacroProcessor {
         guard let elementTypeName = varDecl.gArrayCollectionElementTypeName else {
             return
         }
-        
-        let exportAttr = varDecl.attributes.first?.as(AttributeSyntax.self)
-        let lel = exportAttr?.arguments?.as(LabeledExprListSyntax.self)
-        let f = lel?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
-        
-        let s = lel?.dropFirst().first
         
         for singleVar in varDecl.bindings {
             guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
@@ -297,9 +290,9 @@ class GodotMacroProcessor {
         propertyType: \(godotTypeToProp(typeName: "Array")),
         propertyName: "\(prefix ?? "")\(varNameWithoutPrefix.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
-        hint: .\(f?.description ?? "none"),
-        hintStr: \(s?.description ?? "\"\""),
-        usage: .default)\n
+        hint: .arrayType),
+        hintStr: "\(godotArrayElementTypeName)"),
+        usage: .array)\n
     """)
             
             ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
