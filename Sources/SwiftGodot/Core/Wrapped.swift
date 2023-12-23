@@ -286,6 +286,9 @@ func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
 }
 
 func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
+    if nativeHandle == nil {
+        return nil
+    }
     if let a = objectFromHandle(nativeHandle: nativeHandle) {
         return a as? T
     }
