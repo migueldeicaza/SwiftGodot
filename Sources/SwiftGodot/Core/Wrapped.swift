@@ -307,7 +307,11 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
     if let userTypeCtor = userTypes [className] {
         if let created = userTypeCtor (nativeHandle) as? T {
             return created
+        } else {
+            print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
+    } else {
+        print ("Could not find a register used type for \(className)")
     }
     print ("Could not find class \(className), fallback to creating a \(T.self)")
     return T.init (nativeHandle: nativeHandle)
