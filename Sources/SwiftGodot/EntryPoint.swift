@@ -16,7 +16,7 @@ var token: GDExtensionClassLibraryPtr! {
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
-public var swiftGodotLibraryGeneration: Int = 0
+public var swiftGodotLibraryGeneration: UInt16 = 0
 
 var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
 var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []

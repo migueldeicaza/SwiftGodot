@@ -468,10 +468,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
         
         p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
-            if generateResettableCache {
-                p ("static var generation: Int = 0")
-            }
-
             if bc.name == "String" {
                 p ("public required init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")

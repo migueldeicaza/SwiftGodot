@@ -69,7 +69,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public var handle: UnsafeRawPointer
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
-    static var generation: Int = 0
     
     public var id: Int { Int (bitPattern: handle) }
     
