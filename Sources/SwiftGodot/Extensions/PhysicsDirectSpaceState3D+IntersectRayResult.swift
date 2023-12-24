@@ -6,7 +6,7 @@
 //
 
 private extension GDictionary {
-    func makeOrUnwrap<T: VariantStorable>(_ type: T.Type = T.self, key: String) -> T? {
+    func makeOrUnwrap<T: VariantStorable>(key: String) -> T? {
         guard let variant = self[key] else {
             GD.pushWarning("There was no Variant for key: \(key)")
             return nil
