@@ -20,6 +20,10 @@ func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async 
     let emptyUsedMethods = Set<String>()
     
     p ("public class GD") {
+        if generateResettableCache {
+            p ("static var generation: Int = 0")
+        }
+
         for method in values {
             // We ignore the request for virtual methods, should not happen for these
             if omittedMethodsList["utility_functions"]?.contains(method.name) == true {

@@ -34,7 +34,23 @@ class Printer {
     
     // Prints a variable definition
     func staticVar (visibility: String = "", name: String, type: String, block: () -> ()) {
-        if true {
+        if generateResettableCache {
+            p ("fileprivate static var _c_\(name): \(type)? = nil")
+            b ("\(visibility)static var \(name): \(type) ") {
+                self ("if generation == swiftGodotLibraryGeneration") {
+                    self ("if let _c_\(name)") {
+                        self ("return _c_\(name)")
+                    }
+                }
+                p ("generation = swiftGodotLibraryGeneration")
+                self ("func load () -> \(type)") {
+                    block ()
+                }
+                self ("let ret = load ()")
+                self ("_c_\(name) = ret")
+                self ("return ret")
+            }
+        } else {
             b ("\(visibility)static var \(name): \(type) =", suffix: "()", block: block)
         }
     }
