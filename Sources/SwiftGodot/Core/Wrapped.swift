@@ -193,6 +193,8 @@ func bindGodotInstance(instance: some Wrapped) {
     gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks)
 }
 
+var userTypes: [String:(UnsafeRawPointer)->Wrapped] = [:]
+
 func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
@@ -210,6 +212,9 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.notification_func = notificationFunc
     info.recreate_instance_func = recreateFunc
     info.is_exposed = 1
+    userTypes [name.description] = { ptr in
+        return type.init(nativeHandle: ptr)
+    }
     
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
@@ -295,10 +300,16 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
     let _result: GString = GString ()
     let copy = nativeHandle
     gi.object_method_bind_ptrcall (Object.method_get_class, UnsafeMutableRawPointer (mutating: copy), nil, &_result.content)
-    if let ctor = godotFrameworkCtors [_result.description] {
+    let className = _result.description
+    if let ctor = godotFrameworkCtors [className] {
         return ctor.init (nativeHandle: nativeHandle) as? T
     }
-    print ("Could not find class \(_result.description), fallback to creating a \(T.self)")
+    if let userTypeCtor = userTypes [className] {
+        if let created = userTypeCtor (nativeHandle) as? T {
+            return created
+        }
+    }
+    print ("Could not find class \(className), fallback to creating a \(T.self)")
     return T.init (nativeHandle: nativeHandle)
 }
 
