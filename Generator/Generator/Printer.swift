@@ -31,6 +31,13 @@ class Printer {
             print ("\(indentStr)\(x)", to: &result)
         }
     }
+    
+    // Prints a variable definition
+    func staticVar (visibility: String = "", name: String, type: String, block: () -> ()) {
+        if true {
+            b ("\(visibility)static var \(name): \(type) =", suffix: "()", block: block)
+        }
+    }
 
     // Prints a block, automatically indents the code in the closure
     func b (_ str: String, arg: String? = nil, suffix: String = "", block: () -> ()) {
