@@ -59,7 +59,11 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     }
 
                     let name = snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
-                    doc (p, cdef, enumVal.description)
+                    if let cname = cdef?.name {
+                        doc (p, cdef, enumVal.description, path: "\(cname)/\(enumVal.name)")
+                    } else {
+                        doc (p, cdef, enumVal.description)
+                    }
                     let optionName = escapeSwift (name)
                     optionNames.append(optionName)
                     p ("public static let \(optionName) = \(enumDef.name) (rawValue: \(enumVal.value))")
@@ -102,7 +106,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     prefix = ""
                 }
                 used.insert(enumVal.value)
-                doc (p, cdef, enumVal.description)
+                doc (p, cdef, enumVal.description, path: "\(cdef?.name ?? "")/\(enumVal.name)")
                 p ("\(prefix)case \(escapeSwift(name)) = \(enumVal.value) // \(enumVal.name)")
             }
         }

@@ -38,7 +38,7 @@ func splitAtLastDot (str: String.SubSequence) -> (String, String) {
 // [b]..[/b] bold
 // [method name] is a method reference, should apply the remapping we do
 // 
-func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
+func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?, path: String = "") {
     guard let text else { return }
 //    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
 //        return
@@ -188,16 +188,36 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
     
     var inCodeBlock = false
     let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+    var codeBlock = ""
     for x in lines {
         if x.contains ("[codeblock") {
             inCodeBlock = true
+            codeBlock = ""
             continue
         }
         if x.contains ("[/codeblock") {
             inCodeBlock = false
+            let rpath = path.replacing("/", with: "--")
+            var file = "/tmp/codeblocks/\(rpath)"
+            var ext = ""
+            var next = 1
+            
+            while FileManager.default.fileExists(atPath: "\(file)\(ext)") {
+                if ext == "" {
+                    ext = ".1"
+                } else {
+                    ext = ".\(next)"
+                    next += 1
+                }
+            }
+            file = file + ext
+            try? codeBlock.write(toFile: file, atomically: false, encoding: .utf8)
             continue
         }
-        if inCodeBlock { continue }
+        if inCodeBlock {
+            codeBlock += "\(x)\n"
+            continue
+        }
         
         var mod = x
         

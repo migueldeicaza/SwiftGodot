@@ -65,7 +65,7 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
 
 func generateBuiltinConstants (_ p: Printer,
                                _ bc: JGodotBuiltinClass,
-                               typeName: String) {
+                               typeName: String, path: String) {
         
     guard let constants = bc.constants else { return }
     
@@ -77,7 +77,7 @@ func generateBuiltinConstants (_ p: Printer,
         }
         
         if constant.description != "" {
-            doc (p, bc, constant.description)
+            doc (p, bc, constant.description, path: "\(path)/\(constant.name)")
         }
         p ("public static let \(snakeToCamel (constant.name)) = \(val)")
     }
@@ -106,7 +106,7 @@ func generateBuiltinCtors (_ p: Printer,
         }
         
         if let desc = m.description, desc != "" {
-            doc (p, bc, desc)
+            doc (p, bc, desc, path: "\(bc.name)/ctor-\(m.index)")
         }
         if args == "" {
             if !isStruct {
@@ -295,7 +295,7 @@ func generateBuiltinOperators (_ p: Printer,
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
             if let desc = op.description, desc != "" {
-                doc (p, bc, desc)
+                doc (p, bc, desc, path: "\(typeName)/\(op.name)")
             }
             p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
                 let ptrResult: String
@@ -373,7 +373,7 @@ func generateBuiltinMethods (_ p: Printer,
             args += getArgumentDeclaration(arg, eliminate: "", isOptional: false)
         }
         
-        doc (p, bc, m.description)
+        doc (p, bc, m.description, path: "\(bc.name)/\(m.name)")
         // Generate the method entry point
         if discardableResultList [bc.name]?.contains(m.name) ?? false && m.returnType != "" {
             p ("@discardableResult /* 1: \(m.name) */ ")
@@ -461,10 +461,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             proto = ""
         }
         
-        doc (p, bc, bc.brief_description)
+        doc (p, bc, bc.brief_description, path: "\(bc.name)")
         if (bc.description ?? "") != "" {
-            doc (p, bc, "")      // Add a newline before the fuller description
-            doc (p, bc, bc.description)
+            doc (p, bc, "", path: "\(bc.name)")      // Add a newline before the fuller description
+            doc (p, bc, bc.description, path: "\(bc.name)")
         }
         
         p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
@@ -622,7 +622,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if bc.isKeyed {
                 
             }
-            generateBuiltinConstants (p, bc, typeName: typeName)
+            generateBuiltinConstants (p, bc, typeName: typeName, path: typeName)
             
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {

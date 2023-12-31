@@ -278,7 +278,7 @@ func generateConstants (_ p: Printer,
     p ("/* Constants */")
     
     for constant in constants {
-        doc (p, cdef, constant.description)
+        doc (p, cdef, constant.description, path: "\(cdef.name)/\(constant.name)")
         p ("public static let \(snakeToCamel (constant.name)) = \(constant.value)")
     }
 }
@@ -406,7 +406,7 @@ func generateProperties (_ p: Printer,
         }
         
         if property.description != "" {
-            doc (p, cdef, property.description)
+            doc (p, cdef, property.description, path: "\(cdef.name)/\(property.name)")
         }
         p ("\(asSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name)): \(type!)"){
             p ("get"){
@@ -578,7 +578,7 @@ func generateSignals (_ p: Printer,
         }
         let signalName = godotMethodToSwift (signal.name)
         
-        doc (p, cdef, signal.description)
+        doc (p, cdef, signal.description, path: "\(cdef.name)/\(signal.name)")
         p ("///")
         doc (p, cdef, "To connect to this signal, reference this property and call the\n`connect` method with the method you want to invoke\n")
         doc (p, cdef, "Example:")
@@ -640,13 +640,13 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     var virtuals: [String: (String, JGodotClassMethod)] = [:]
     if cdef.brief_description == "" {
         if cdef.description != "" {
-            doc (p, cdef, cdef.description)
+            doc (p, cdef, cdef.description, path: "\(cdef.name)")
         }
     } else {
-        doc (p, cdef, cdef.brief_description)
+        doc (p, cdef, cdef.brief_description, path: "\(cdef.name)")
         if cdef.description != "" {
             doc (p, cdef, "")      // Add a newline before the fuller description
-            doc (p, cdef, cdef.description)
+            doc (p, cdef, cdef.description, path: "\(cdef.name)")
         }
     }
     

@@ -484,7 +484,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         p (inline)
     }
     // Sadly, the parameters have no useful documentation
-    doc (p, cdef, method.description)
+    doc (p, cdef, method.description, path: "\(cdef?.name ?? "")/\(method.name)")
     // Generate the method entry point
     if let classDiscardables = discardableResultList [className] {
         if classDiscardables.contains(method.name) == true {
