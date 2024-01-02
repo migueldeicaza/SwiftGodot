@@ -501,7 +501,7 @@ func camelToSnake(_ s: String) -> String {
 /// `init(nativeHandle:)` and `init()` constructors along with the
 /// static class initializer for any exported properties and methods.
 ///
-public struct GodotMacro: MemberMacro {
+public struct GodotMacro: MemberMacro, ExtensionMacro {
     
     public static func expansion(of node: AttributeSyntax,
                                  providingMembersOf declaration: some DeclGroupSyntax,
@@ -573,6 +573,27 @@ public struct GodotMacro: MemberMacro {
             context.diagnose(diagnostic)
             return []
         }
+    }
+    
+    public static func expansion(
+      of node: AttributeSyntax,
+      attachedTo declaration: some DeclGroupSyntax,
+      providingExtensionsOf type: some TypeSyntaxProtocol,
+      conformingTo protocols: [TypeSyntax],
+      in context: some MacroExpansionContext
+    ) throws -> [ExtensionDeclSyntax] {
+        guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
+            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresClass)
+            context.diagnose(classError)
+            return []
+        }
+        return [
+            try ExtensionDeclSyntax(
+            """
+            extension \(raw: classDecl.name.text): GodotMacroClass {}
+            """
+            )
+        ]
     }
 }
 
