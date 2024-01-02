@@ -197,11 +197,12 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?, path: String = "")
         }
         if x.contains ("[/codeblock") {
             inCodeBlock = false
-            let rpath = path.replacing("/", with: "--")
-            var file = "/tmp/codeblocks/\(rpath)"
+            var file = "/tmp/codeblocks/\(path)"
+            let dir = NSString (string: file).deletingLastPathComponent
             var ext = ""
             var next = 1
             
+            try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
             while FileManager.default.fileExists(atPath: "\(file)\(ext)") {
                 if ext == "" {
                     ext = ".1"
