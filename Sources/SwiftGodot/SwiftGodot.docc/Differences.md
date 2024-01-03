@@ -201,9 +201,7 @@ convenience methods that you might have come to expect from the Godot String
 
 ## Callable
 
-In SwiftGodot, you can create `Callable` instances, either by using a StringName
-that binds a method that you have exported (via, the `@Callable` macro), or you
-can pass directly a Swift function that takes an array of `Variant` arguments,
+In SwiftGodot, you can create `Callable` instances by directly passing a Swift function that takes an array of `Variant` arguments,
 and returns an optional `Variant` result, like this:
 
 ```swift
@@ -213,6 +211,20 @@ func myCallback(args: [Variant])-> Variant? {
 }
 
 let myCallable = Callable(myCallback)
+```
+
+Alternatively, you can use a StringName that binds a method that you have exported (via, the `@Callable` macro), like this:
+
+```swift
+@Callable func myCallback(message: String) {
+	GD.print(message)
+}
+```
+
+You can call the callable in GDScript by invoking call() method of the exported Swift type.
+
+```GDScript
+MySwiftNode.myCallback.call("Hello from Swift!")
 ```
 
 ## Async/Await
