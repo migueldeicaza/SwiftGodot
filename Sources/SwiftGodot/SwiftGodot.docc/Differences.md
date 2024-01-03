@@ -221,6 +221,8 @@ Alternatively, you can use a StringName that binds a method that you have export
 }
 ```
 
+You can call the callable in GDScript by invoking call() method of the exported Swift type.
+
 ```GDScript
 MySwiftNode.myCallback.call("Hello from Swift!")
 ```
