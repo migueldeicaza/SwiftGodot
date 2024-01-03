@@ -65,15 +65,27 @@ instead.  This is a generic method, so you would invoke it like this:
 
 ```swift
 func getNode (variant: Variant) -> Node? {
-    guard let node = variant.asObject<Node> ()) else {
+    guard let node = variant.asObject (Node.self)) else {
 	  return nil
     }
     return node
 }
 ```
 
-The reason to have a method rather than a constructor is that this method will
-make sure that only one instance of your objects is surfaced to Swift. 
+Swift type inference can also be used, so you can avoid specifying the type if
+the compiler can infer the type, like here:
+
+```swift
+func getNode (variant: Variant) -> Node? {
+    var node: Node?
+    node = variant.asObject ()
+    return node
+}
+```
+
+The reason to rely on calling the `asObject` method rather than having a
+constructor for the type that takes a variant (like the case for the non-object
+types) is that the method can ensure that only one instance of your objects is surfaced to Swift. 
 
 ## Accessing Array Elements
 
