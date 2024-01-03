@@ -61,7 +61,6 @@ var targets: [Target] = [
     .executableTarget(
         name: "Generator",
         dependencies: [
-            "XMLCoder",
             "ExtensionApi",
         ],
         path: "Generator",
@@ -169,7 +168,6 @@ let package = Package(
     ],
     products: products,
     dependencies: [
-        .package(url: "https://github.com/CoreOffice/XMLCoder", from: "0.15.0"),
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
     ],
