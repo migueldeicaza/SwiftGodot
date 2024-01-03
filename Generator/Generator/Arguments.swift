@@ -29,7 +29,7 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
     let optNeedInOut = ""
     
     var def: String = ""
-    if let dv = argument.defaultValue, dv != "" {
+    if var dv = argument.defaultValue, dv != "" {
         func dvMissing (_ kind: String) {
             print ("Generator/default_value: no support for [\(kind)] = \(dv)")
         }
@@ -69,7 +69,12 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
             if argument.type == "String" {
                 def = " = \(dv)"
             } else if argument.type == "StringName" {
-                def = " = StringName (\"dv\")"
+                // GDScript has StringName literals, e.g. &"example" == StringName("example")
+                // Some of the default values are marked as such literals in extension_api.json
+                if dv.starts(with: "&") {
+                    dv = String(dv.dropFirst())
+                }
+                def = " = StringName (\(dv))"
             } else if argument.type.starts(with: "enum::"){
                 if let ev = mapEnumValue (enumDef: argument.type, value: dv) {
                     def = " = \(ev)"
