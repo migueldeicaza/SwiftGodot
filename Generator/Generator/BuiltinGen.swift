@@ -379,7 +379,15 @@ func generateBuiltinMethods (_ p: Printer,
             p ("@discardableResult /* 1: \(m.name) */ ")
         }
 
-        p ("public\(isStruct ? "" : " final") func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
+        let keyword: String
+        if m.isStatic {
+            keyword = " static"
+        } else if !isStruct {
+            keyword = " final"
+        } else {
+            keyword = ""
+        }
+        p ("public\(keyword) func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
             
             generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, arguments: m.arguments, kind: .methodCall)
         }
