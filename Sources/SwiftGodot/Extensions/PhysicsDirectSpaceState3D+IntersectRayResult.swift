@@ -57,7 +57,7 @@ extension PhysicsDirectSpaceState3D {
 }
 
 extension PhysicsDirectSpaceState3D {
-    /// Intersects a ray in a given space. Ray position and other parameters are defined through `PhysicsRayQueryParameters3D` The return value is a result: `IntersectRayResult<T>?` where `T` is any Godot `Object`. If the ray did not intersect anything, or the intersecting collider was not of type `T` then a nil object is returned instead.
+    /// Intersects a ray in a given space. Ray position and other parameters are defined through `PhysicsRayQueryParameters3D` The return value is an `IntersectRayResult<T>?` where `T` is any Godot `Object`, however if the ray did not intersect anything, or the intersecting collider was not of type `T` then a nil object is returned instead.
     public func intersectRay<T: Object>(_ type: T.Type = T.self, parameters: PhysicsRayQueryParameters3D) -> IntersectRayResult<T>? {
         let dictionary: GDictionary = intersectRay(parameters: parameters)
         return IntersectRayResult<T>(dictionary)
