@@ -21,15 +21,23 @@ private extension GDictionary {
 }
 
 extension PhysicsDirectSpaceState3D {
-    // https://docs.godotengine.org/en/stable/classes/class_physicsdirectspacestate3d.html#class-physicsdirectspacestate3d-method-intersect-ray
+    /// Result from intersecting a ray
     public struct IntersectRayResult<T: Object> {
+        /// The intersection point
         public let position: Vector3
+        /// The object's surface normal at the intersection point, or `Vector3(x: 0, y: 0, z: 0)` if the ray starts inside the shape and `PhysicsRayQueryParameters3D.hitFromInside` is true.
         public let normal: Vector3
+        /// The colliding object
         public let collider: T
+        /// The colliding object's ID.
         public let colliderId: Int
+        /// The The intersecting object's ``RID``.
         public let rid: RID
+        /// The shape index of the colliding shape.
         public let shape: Int
+        /// The metadata value from the dictionary.
         public let metadata: Variant?
+        /// The face index at the intersection point.
         public let faceIndex: Int
 
         init?(_ dictionary: GDictionary) {
