@@ -146,6 +146,11 @@ func generateBuiltinCtors (_ p: Printer,
                     p ("self.green = 0")
                     p ("self.blue = 0")
                     p ("self.alpha = 0")
+                } else if bc.name == "Quaternion" && m.arguments == nil {
+                    p ("self.x = 0")
+                    p ("self.y = 0")
+                    p ("self.z = 0")
+                    p ("self.w = 1")
                 } else {
                     for x in members {
                         p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
