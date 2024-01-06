@@ -34,6 +34,11 @@
 
 @_implementationOnly import GDExtension
 
+func pd (_ str: String) {
+    #if false
+    print ("SwiftGodot: \(str)")
+    #endif
+}
 ///
 /// The base class for all class bindings in Godot, you should not have
 /// to instantiate or subclass this class directly - there are better options
@@ -102,7 +107,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
 
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
-        print ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
+        pd ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
         return nil
     }
     
@@ -163,13 +168,13 @@ func bindGodotInstance(instance: some Wrapped) {
     let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: instance)))
     let frameworkType = thisTypeName == name
     
-    //print ("SWIFT: Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
+    //pd ("Wrapped(StringName) at \(handle) with retain=\(retain.toOpaque()), this is a class of type: \(Swift.type(of: self)) and it is: \(frameworkType ? "Builtin" : "User defined")")
     
     // This I believe should only be set for user subclasses, and not anything else.
     if frameworkType {
-        //print ("SWIFT: Skipping object registration, this is a framework type")
+        //pd ("Skipping object registration, this is a framework type")
     } else {
-        //print ("SWIFT: Registering instance with Godot")
+        //pd ("Registering instance with Godot")
         withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
             gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
                                     ptr, retain.toOpaque())
@@ -199,7 +204,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
         guard let type  = typeAny as? Wrapped.Type else {
-            print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+            pd ("The wrapped value did not contain a type: \(typeAny)")
             return nil
         }
         return type.getVirtualDispatcher(name: StringName (fromPtr: name))
@@ -236,7 +241,7 @@ public func register<T:Wrapped> (type: T.Type) {
     }
     let typeStr = String (describing: type)
     let superStr = String(describing: superType)
-    print("Registering \(typeStr) : \(superStr)")
+    pd("Registering \(typeStr) : \(superStr)")
     register (type: StringName (typeStr), parent: StringName (superStr), type: type)
 }
 
@@ -308,9 +313,8 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
     } else {
-        print ("Could not find a register used type for \(className)")
+        print ("Could not find a register used type for \(className), falling back to creaeting a \(T.self)")
     }
-    print ("Could not find class \(className), fallback to creating a \(T.self)")
     return T.init (nativeHandle: nativeHandle)
 }
 
@@ -321,12 +325,12 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
 func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
     //print ("SWIFT: Creating object userData:\(String(describing: userData))")
     guard let userData else {
-        print ("Got a nil userData")
+        print ("SwiftGodot.createFunc: Got a nil userData")
         return nil
     }
     let typeAny = Unmanaged<AnyObject>.fromOpaque(userData).takeUnretainedValue()
     guard let type  = typeAny as? Wrapped.Type else {
-        print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+        print ("SwiftGodot.createFunc: The wrapped value did not contain a type: \(typeAny)")
         return nil
     }
     let o = type.init ()
@@ -341,7 +345,7 @@ func recreateFunc (_ userData: UnsafeMutableRawPointer?, godotObjecthandle: Unsa
     }
     let typeAny = Unmanaged<AnyObject>.fromOpaque(userData).takeUnretainedValue()
     guard let type  = typeAny as? Wrapped.Type else {
-        print ("SWIFT: The wrapped value did not contain a type: \(typeAny)")
+        print ("SwiftGodot.recreateFunc: The wrapped value did not contain a type: \(typeAny)")
         return nil
     }
     bindingObject = godotObjecthandle
@@ -370,7 +374,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
             if removed == nil {
                 print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
             } else {
-                print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
+                //print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
             }
         }
     }
@@ -391,7 +395,7 @@ func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeM
     // I do not think this is necessary, since we are handling the release in the
     // user-binding catch-all (that also covers the Godot-triggers invocations)
     // freeFunc above.
-    print ("SWIFT: instanceBindingFree token=\(String(describing: token)) instance=\(String(describing: instance)) binding=\(String(describing: binding))")
+    pd ("SWIFT: instanceBindingFree token=\(String(describing: token)) instance=\(String(describing: instance)) binding=\(String(describing: binding))")
 }
 
 func userTypeBindingReference(_ x: UnsafeMutableRawPointer?, _ y: UnsafeMutableRawPointer?, _ z: UInt8) -> UInt8{
@@ -411,7 +415,7 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
     if let key = instance  {
         tableLock.withLockVoid {
             if let removed = liveFrameworkObjects.removeValue(forKey: key) {
-                print ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
+                pd ("SWIFT: Removed from our live Objects with key \(key), removed: \(removed)")
             } else {
                 print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(String(describing: instance))")
             }
