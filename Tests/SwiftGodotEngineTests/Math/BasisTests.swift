@@ -254,9 +254,3 @@ final class BasisTests: GodotTestCase {
     }
     
 }
-
-extension FloatingPoint {
-    
-    var degreesToRadians: Self { self * .pi / 180 }
-    
-}
