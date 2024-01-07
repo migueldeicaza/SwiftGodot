@@ -47,9 +47,9 @@ echo ArchiveData: $archivePath
 echo Commit: $3
 start=`date`
 
-ssh -A macpro.local "mkdir -p $derivedData && mkdir -p $archivePath"
-ssh -A macpro.local "cd cvs/SwiftGodot && git fetch && git reset --hard $commit && xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath" >& $dir/x86_64.log
-rsync -a macpro.local:$dir/derived/ $dir/derived
+ssh -A macpro.localdomain "mkdir -p $derivedData && mkdir -p $archivePath"
+ssh -A macpro.localdomain "cd cvs/SwiftGodot && git fetch && git reset --hard $commit && xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath" >& $dir/x86_64.log
+rsync -a macpro.localdomain:$dir/derived/ $dir/derived
 if [ $arch = "arm64" ]; then
     xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=arm64 -derivedDataPath "${derivedData}_arm" -archivePath $archivePath >& $dir/arm64.log
 fi

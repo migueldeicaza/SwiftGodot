@@ -2,16 +2,16 @@
 
 In Godot, class members can be exported. This means their value gets saved along
 with the resource (such as the scene) they're attached to. They will also be
-available for editing in the property editor. Exporting is done by using the @Export 
-annotation.
+available for editing in the property editor. Exporting is done by using the
+@Export annotation.
 
 This document deals with exporting properties, for information about exposing
 functions to the Godot world, see the <doc:CustomTypes> document.
 
 ## Introduction to Exports
 
-The simplest way of exporting a variable is to annotate it with the `@Export` attribute, like
-this:
+The simplest way of exporting a variable is to annotate it with the `@Export`
+attribute, like this:
 
 ```swift
 import SwiftGodot
@@ -24,16 +24,18 @@ public class ExportExample: Node3D
 }
 ```
 
-In that example the value 5 will be saved, and after building the current project it will be 
-visible in the property editor.
+In that example the value 5 will be saved, and after building the current
+project it will be visible in the property editor.
 
-One of the fundamental benefits of exporting member variables is to have them visible and 
-editable in the editor. This way, artists and game designers can modify values that later 
-influence how the program runs. For this, a special export syntax is provided.
+One of the fundamental benefits of exporting member variables is to have them
+visible and editable in the editor. This way, artists and game designers can
+modify values that later influence how the program runs. For this, a special export syntax is provided.
 
-Exporting can only be applied to ``Variant``-compatible types.  The Godot core-structures and classes, 
-as well as objects that subclass ``GodotObject``.
+Exporting can only be applied to ``Variant``-compatible types.  The Godot
+core-structures and classes, as well as objects that subclass ``GodotObject``.
 
+The `@Export` macro only works in your class definition, and will not work
+on Swift class extensions.
 
 ### Basic Usage
 
