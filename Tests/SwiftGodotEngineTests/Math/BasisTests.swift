@@ -35,9 +35,9 @@ final class BasisTests: GodotTestCase {
         
         var res: Basis = toRotation.inverse () * rotationFromComputedEuler
         
-        XCTAssert ((res.x - Vector3 (x: 1, y: 0, z: 0)).length () <= 0.1, "Fail due to X \(res.x)")
-        XCTAssert ((res.y - Vector3 (x: 0, y: 1, z: 0)).length () <= 0.1, "Fail due to Y \(res.y)")
-        XCTAssert ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Fail due to Z \(res.z)")
+        XCTAssert ((res.x - Vector3 (x: 1, y: 0, z: 0)).length () <= 0.1, "Fail due to X \(res.x)", file: file, line: line)
+        XCTAssert ((res.y - Vector3 (x: 0, y: 1, z: 0)).length () <= 0.1, "Fail due to Y \(res.y)", file: file, line: line)
+        XCTAssert ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Fail due to Z \(res.z)", file: file, line: line)
         
         // Double check `toRotation` decomposing with XYZ rotation order.
         
@@ -149,7 +149,6 @@ final class BasisTests: GodotTestCase {
     func testGetAxisAngle () {
         var basis: Basis
         var axis: Vector3
-        let accuracy: Float = 0.0001
         
         // Testing the singularity when the angle is 0°.
         basis = Basis (xAxis: Vector3 (x: 1, y: 0, z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
@@ -157,7 +156,7 @@ final class BasisTests: GodotTestCase {
         
         // Testing the singularity when the angle is 180°.
         basis = Basis (xAxis: Vector3 (x: -1, y: 0, z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: -1))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi)
         
         // Testing reversing the an axis (of an 30° angle).
         
@@ -165,46 +164,46 @@ final class BasisTests: GodotTestCase {
         let cos30: Float = cos (rad30)
         
         basis = Basis (xAxis: Vector3 (x: cos30, y: -0.5, z: 0), yAxis: Vector3 (x: 0.5, y: cos30, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), rad30, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), rad30)
         axis = basis.getRotationQuaternion ().getAxis ()
-        XCTAssertEqual (axis.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.z, 1.0, accuracy: accuracy)
+        assertApproxEqual (axis.x, 0.0)
+        assertApproxEqual (axis.y, 0.0)
+        assertApproxEqual (axis.z, 1.0)
         
         basis = Basis (xAxis: Vector3 (x: cos30, y: 0.5, z: 0), yAxis: Vector3 (x: -0.5, y: cos30, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), rad30, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), rad30)
         axis = basis.getRotationQuaternion ().getAxis ()
-        XCTAssertEqual (axis.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.z, -1.0, accuracy: accuracy)
+        assertApproxEqual (axis.x, 0.0)
+        assertApproxEqual (axis.y, 0.0)
+        assertApproxEqual (axis.z, -1.0)
         
         // Testing a rotation of 90° on x-y-z.
         
         basis = Basis (xAxis: Vector3 (x: 1, y: 0, z: 0), yAxis: Vector3 (x: 0, y: 0, z: -1), zAxis: Vector3 (x: 0, y: 1, z: 0))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi / 2, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi / 2)
         axis = basis.getRotationQuaternion ().getAxis ()
-        XCTAssertEqual (axis.x, 1.0, accuracy: accuracy)
-        XCTAssertEqual (axis.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.z, 0.0, accuracy: accuracy)
+        assertApproxEqual (axis.x, 1.0)
+        assertApproxEqual (axis.y, 0.0)
+        assertApproxEqual (axis.z, 0.0)
         
         basis = Basis (xAxis: Vector3 (x: 0, y: 0, z: 1), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: -1, y: 0, z: 0))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi / 2, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi / 2)
         axis = basis.getRotationQuaternion ().getAxis ()
-        XCTAssertEqual (axis.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.y, 1.0, accuracy: accuracy)
-        XCTAssertEqual (axis.z, 0.0, accuracy: accuracy)
+        assertApproxEqual (axis.x, 0.0)
+        assertApproxEqual (axis.y, 1.0)
+        assertApproxEqual (axis.z, 0.0)
         
         basis = Basis (xAxis: Vector3 (x: 0, y: -1, z: 0), yAxis: Vector3 (x: 1, y: 0, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi / 2, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), Float.pi / 2)
         axis = basis.getRotationQuaternion ().getAxis ()
-        XCTAssertEqual (axis.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (axis.z, 1.0, accuracy: accuracy)
+        assertApproxEqual (axis.x, 0.0)
+        assertApproxEqual (axis.y, 0.0)
+        assertApproxEqual (axis.z, 1.0)
         
         // Regression test: checks that the method returns a small angle (not 0).
         // The min angle possible with float is 0.001rad.
         basis = Basis (xAxis: Vector3 (x: 1, y: 0, z: 0), yAxis: Vector3 (x: 0, y: 0.9999995, z: -0.001), zAxis: Vector3 (x: 0, y: 0.001, z: 0.9999995))
-        XCTAssertEqual (Float (basis.getRotationQuaternion ().getAngle ()), 0.001, accuracy: accuracy)
+        assertApproxEqual (Float (basis.getRotationQuaternion ().getAngle ()), 0.001, epsilon: 0.0001)
         
         // Regression test: checks that the method returns an angle which is a number (not NaN)
         basis = Basis (xAxis: Vector3 (x: 1.00000024, y: 0, z: 0.000100001693), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: -0.000100009143, y: 0, z: 1.00000024))

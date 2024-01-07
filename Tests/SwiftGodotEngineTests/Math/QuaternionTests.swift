@@ -6,8 +6,6 @@ import SwiftGodotTestability
 
 final class QuaternionTests: GodotTestCase {
     
-    private let accuracy: Float = 0.0001
-    
     func testDefaultConstruct () {
         let q: Quaternion = Quaternion ()
         XCTAssertEqual (q.x, 0)
@@ -30,43 +28,43 @@ final class QuaternionTests: GodotTestCase {
         
         // Easy to visualize: 120 deg about X-axis.
         q = Quaternion (axis: Vector3 (x: 1.0, y: 0.0, z: 0.0), angle: Float (120).degreesToRadians)
-        XCTAssertEqual (q.x, 0.866025, accuracy: accuracy) // Sine of half the angle.
-        XCTAssertEqual (q.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (q.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (q.w, 0.5, accuracy: accuracy) // Cosine of half the angle.
+        assertApproxEqual (q.x, 0.866025) // Sine of half the angle.
+        assertApproxEqual (q.y, 0.0)
+        assertApproxEqual (q.z, 0.0)
+        assertApproxEqual (q.w, 0.5) // Cosine of half the angle.
         
         // Easy to visualize: 30 deg about Y-axis.
         q = Quaternion (axis: Vector3 (x: 0.0, y: 1.0, z: 0.0), angle: Float (30).degreesToRadians)
-        XCTAssertEqual (q.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (q.y, 0.258819, accuracy: accuracy) // Sine of half the angle.
-        XCTAssertEqual (q.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (q.w, 0.965926, accuracy: accuracy) // Cosine of half the angle.
+        assertApproxEqual (q.x, 0.0)
+        assertApproxEqual (q.y, 0.258819) // Sine of half the angle.
+        assertApproxEqual (q.z, 0.0)
+        assertApproxEqual (q.w, 0.965926) // Cosine of half the angle.
         
         // Easy to visualize: 60 deg about Z-axis.
         q = Quaternion (axis: Vector3 (x: 0.0, y: 0.0, z: 1.0), angle: Float (60).degreesToRadians)
-        XCTAssertEqual (q.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (q.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (q.z, 0.5, accuracy: accuracy) // Sine of half the angle.
-        XCTAssertEqual (q.w, 0.866025, accuracy: accuracy) // Cosine of half the angle.
+        assertApproxEqual (q.x, 0.0)
+        assertApproxEqual (q.y, 0.0)
+        assertApproxEqual (q.z, 0.5) // Sine of half the angle.
+        assertApproxEqual (q.w, 0.866025) // Cosine of half the angle.
         
         
         // More complex & hard to visualize, so test w/ data from online calculator.
         let axis: Vector3 = Vector3 (x: 1.0, y: 2.0, z: 0.5)
         q = Quaternion (axis: axis.normalized (), angle: Float (35).degreesToRadians)
-        XCTAssertEqual (q.x, 0.131239, accuracy: accuracy)
-        XCTAssertEqual (q.y, 0.262478, accuracy: accuracy)
-        XCTAssertEqual (q.z, 0.0656194, accuracy: accuracy)
-        XCTAssertEqual (q.w, 0.953717, accuracy: accuracy)
+        assertApproxEqual (q.x, 0.131239)
+        assertApproxEqual (q.y, 0.262478)
+        assertApproxEqual (q.z, 0.0656194)
+        assertApproxEqual (q.w, 0.953717)
     }
     
     func testConstructFromQuaternion () {
         let axis: Vector3 = Vector3 (x: 1.0, y: 2.0, z: 0.5)
         let qSrc: Quaternion = Quaternion (axis: axis.normalized (), angle: Float (35).degreesToRadians)
         let q: Quaternion = Quaternion (from: qSrc)
-        XCTAssertEqual (q.x, 0.131239, accuracy: accuracy)
-        XCTAssertEqual (q.y, 0.262478, accuracy: accuracy)
-        XCTAssertEqual (q.z, 0.0656194, accuracy: accuracy)
-        XCTAssertEqual (q.w, 0.953717, accuracy: accuracy)
+        assertApproxEqual (q.x, 0.131239)
+        assertApproxEqual (q.y, 0.262478)
+        assertApproxEqual (q.z, 0.0656194)
+        assertApproxEqual (q.w, 0.953717)
     }
     
     func testConstructEulerSingleAxis () {
@@ -76,24 +74,24 @@ final class QuaternionTests: GodotTestCase {
 
         let eulerY: Vector3 = Vector3 (x: 0.0, y: yaw, z: 0.0)
         let qY: Quaternion = Quaternion.fromEuler (euler: eulerY)
-        XCTAssertEqual (qY.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qY.y, 0.382684, accuracy: accuracy)
-        XCTAssertEqual (qY.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qY.w, 0.923879, accuracy: accuracy)
+        assertApproxEqual (qY.x, 0.0)
+        assertApproxEqual (qY.y, 0.382684)
+        assertApproxEqual (qY.z, 0.0)
+        assertApproxEqual (qY.w, 0.923879)
         
         let eulerP: Vector3 = Vector3 (x: pitch, y: 0.0, z: 0.0)
         let qP: Quaternion = Quaternion.fromEuler (euler: eulerP)
-        XCTAssertEqual (qP.x, 0.258819, accuracy: accuracy)
-        XCTAssertEqual (qP.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qP.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qP.w, 0.965926, accuracy: accuracy)
+        assertApproxEqual (qP.x, 0.258819)
+        assertApproxEqual (qP.y, 0.0)
+        assertApproxEqual (qP.z, 0.0)
+        assertApproxEqual (qP.w, 0.965926)
         
         let eulerR: Vector3 = Vector3 (x: 0.0, y: 0.0, z: roll)
         let qR: Quaternion = Quaternion.fromEuler (euler: eulerR)
-        XCTAssertEqual (qR.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qR.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qR.z, 0.0871558, accuracy: accuracy)
-        XCTAssertEqual (qR.w, 0.996195, accuracy: accuracy)
+        assertApproxEqual (qR.x, 0.0)
+        assertApproxEqual (qR.y, 0.0)
+        assertApproxEqual (qR.z, 0.0871558)
+        assertApproxEqual (qR.w, 0.996195)
     }
     
     func testConstructEulerYXZDynamicAxes () {
@@ -117,10 +115,7 @@ final class QuaternionTests: GodotTestCase {
         // Test construction from YXZ Euler angles.
         let eulerYxz: Vector3 = Vector3 (x: pitch, y: yaw, z: roll)
         let q: Quaternion = Quaternion.fromEuler (euler: eulerYxz)
-        XCTAssertEqual (q.x, checkYxz.x, accuracy: accuracy)
-        XCTAssertEqual (q.y, checkYxz.y, accuracy: accuracy)
-        XCTAssertEqual (q.z, checkYxz.z, accuracy: accuracy)
-        XCTAssertEqual (q.w, checkYxz.w, accuracy: accuracy)
+        assertApproxEqual (q, checkYxz)
     }
     
     func testConstructBasisEuler () {
@@ -131,10 +126,7 @@ final class QuaternionTests: GodotTestCase {
         let qYxz: Quaternion = Quaternion.fromEuler (euler: eulerYxz)
         let basisAxes: Basis = Basis.fromEuler (euler: eulerYxz)
         let q: Quaternion = basisAxes.getRotationQuaternion ()
-        XCTAssertEqual (q.x, qYxz.x, accuracy: accuracy)
-        XCTAssertEqual (q.y, qYxz.y, accuracy: accuracy)
-        XCTAssertEqual (q.z, qYxz.z, accuracy: accuracy)
-        XCTAssertEqual (q.w, qYxz.w, accuracy: accuracy)
+        assertApproxEqual (q, qYxz)
     }
     
     func testConstructBasisAxes () {
@@ -166,14 +158,8 @@ final class QuaternionTests: GodotTestCase {
         let qLocal: Quaternion = quatEulerYxzDeg (angle: Vector3 (x: 31.41, y: -49.16, z: 12.34))
         // Quaternion from Euler angles constructor.
         let qEuler: Quaternion = Quaternion.fromEuler (euler: eulerYxz)
-        XCTAssertEqual (qCalc.x, qLocal.x, accuracy: accuracy)
-        XCTAssertEqual (qCalc.y, qLocal.y, accuracy: accuracy)
-        XCTAssertEqual (qCalc.z, qLocal.z, accuracy: accuracy)
-        XCTAssertEqual (qCalc.w, qLocal.w, accuracy: accuracy)
-        XCTAssertEqual (qLocal.x, qEuler.x, accuracy: accuracy)
-        XCTAssertEqual (qLocal.y, qEuler.y, accuracy: accuracy)
-        XCTAssertEqual (qLocal.z, qEuler.z, accuracy: accuracy)
-        XCTAssertEqual (qLocal.w, qEuler.w, accuracy: accuracy)
+        assertApproxEqual (qCalc, qLocal)
+        assertApproxEqual (qLocal, qEuler)
 
         // Calculate Basis and construct Quaternion.
         // When this is written, C++ Basis class does not construct from basis vectors.
@@ -182,32 +168,23 @@ final class QuaternionTests: GodotTestCase {
         // basis_axes = Basis (i_unit, j_unit, k_unit);
         let basisAxes: Basis = Basis.fromEuler (euler: eulerYxz)
         let q: Quaternion = basisAxes.getRotationQuaternion ()
-        XCTAssertEqual (basisAxes.x.x, iUnit.x, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.y.x, iUnit.y, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.z.x, iUnit.z, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.x.y, jUnit.x, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.y.y, jUnit.y, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.z.y, jUnit.z, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.x.z, kUnit.x, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.y.z, kUnit.y, accuracy: accuracy)
-        XCTAssertEqual (basisAxes.z.z, kUnit.z, accuracy: accuracy)
+        assertApproxEqual (basisAxes.x.x, iUnit.x)
+        assertApproxEqual (basisAxes.y.x, iUnit.y)
+        assertApproxEqual (basisAxes.z.x, iUnit.z)
+        assertApproxEqual (basisAxes.x.y, jUnit.x)
+        assertApproxEqual (basisAxes.y.y, jUnit.y)
+        assertApproxEqual (basisAxes.z.y, jUnit.z)
+        assertApproxEqual (basisAxes.x.z, kUnit.x)
+        assertApproxEqual (basisAxes.y.z, kUnit.y)
+        assertApproxEqual (basisAxes.z.z, kUnit.z)
         
-        XCTAssertEqual (q.x, qCalc.x, accuracy: accuracy)
-        XCTAssertEqual (q.y, qCalc.y, accuracy: accuracy)
-        XCTAssertEqual (q.z, qCalc.z, accuracy: accuracy)
-        XCTAssertEqual (q.w, qCalc.w, accuracy: accuracy)
-        XCTAssertEqual (q.x, qLocal.x, accuracy: accuracy)
-        XCTAssertEqual (q.y, qLocal.y, accuracy: accuracy)
-        XCTAssertEqual (q.z, qLocal.z, accuracy: accuracy)
-        XCTAssertEqual (q.w, qLocal.w, accuracy: accuracy)
-        XCTAssertEqual (q.x, qEuler.x, accuracy: accuracy)
-        XCTAssertEqual (q.y, qEuler.y, accuracy: accuracy)
-        XCTAssertEqual (q.z, qEuler.z, accuracy: accuracy)
-        XCTAssertEqual (q.w, qEuler.w, accuracy: accuracy)
-        XCTAssertEqual (q.x, 0.2016913, accuracy: accuracy)
-        XCTAssertEqual (q.y, -0.4245716, accuracy: accuracy)
-        XCTAssertEqual (q.z, 0.206033, accuracy: accuracy)
-        XCTAssertEqual (q.w, 0.8582598, accuracy: accuracy)
+        assertApproxEqual (q, qCalc)
+        assertApproxEqual (q, qLocal)
+        assertApproxEqual (q, qEuler)
+        assertApproxEqual (q.x, 0.2016913)
+        assertApproxEqual (q.y, -0.4245716)
+        assertApproxEqual (q.z, 0.206033)
+        assertApproxEqual (q.w, 0.8582598)
     }
     
     func testGetEulerOrders () {
@@ -220,13 +197,13 @@ final class QuaternionTests: GodotTestCase {
             let basis: Basis = Basis.fromEuler (euler: euler, order: order)
             let q: Quaternion = basis.getRotationQuaternion ()
             let check: Vector3 = q.getEuler (order: order)
-            XCTAssertEqual (check.x, euler.x, accuracy: accuracy, "Quaternion getEuler() method should return the original angles.")
-            XCTAssertEqual (check.y, euler.y, accuracy: accuracy, "Quaternion getEuler() method should return the original angles.")
-            XCTAssertEqual (check.z, euler.z, accuracy: accuracy, "Quaternion getEuler() method should return the original angles.")
+            assertApproxEqual (check.x, euler.x, "Quaternion getEuler() method should return the original angles.")
+            assertApproxEqual (check.y, euler.y, "Quaternion getEuler() method should return the original angles.")
+            assertApproxEqual (check.z, euler.z, "Quaternion getEuler() method should return the original angles.")
             let basisEuler: Vector3 = basis.getEuler (order: order)
-            XCTAssertEqual (check.x, basisEuler.x, accuracy: accuracy, "Quaternion getEuler() method should behave the same as Basis get_euler.")
-            XCTAssertEqual (check.y, basisEuler.y, accuracy: accuracy, "Quaternion getEuler() method should behave the same as Basis get_euler.")
-            XCTAssertEqual (check.z, basisEuler.z, accuracy: accuracy, "Quaternion getEuler() method should behave the same as Basis get_euler.")
+            assertApproxEqual (check.x, basisEuler.x, "Quaternion getEuler() method should behave the same as Basis get_euler.")
+            assertApproxEqual (check.y, basisEuler.y, "Quaternion getEuler() method should behave the same as Basis get_euler.")
+            assertApproxEqual (check.z, basisEuler.z, "Quaternion getEuler() method should behave the same as Basis get_euler.")
         }
     }
     
@@ -235,10 +212,10 @@ final class QuaternionTests: GodotTestCase {
         let p: Quaternion = Quaternion (x: 1.0, y: -2.0, z: 1.0, w: 3.0)
         let q: Quaternion = Quaternion (x: -1.0, y: 2.0, z: 3.0, w: 2.0)
         let pq: Quaternion = p * q
-        XCTAssertEqual (pq.x, -9.0, accuracy: accuracy)
-        XCTAssertEqual (pq.y, -2.0, accuracy: accuracy)
-        XCTAssertEqual (pq.z, 11.0, accuracy: accuracy)
-        XCTAssertEqual (pq.w, 8.0, accuracy: accuracy)
+        assertApproxEqual (pq.x, -9.0)
+        assertApproxEqual (pq.y, -2.0)
+        assertApproxEqual (pq.z, 11.0)
+        assertApproxEqual (pq.w, 8.0)
     }
     
     func testProduct () {
@@ -248,39 +225,39 @@ final class QuaternionTests: GodotTestCase {
         
         let eulerY: Vector3 = Vector3 (x: 0.0, y: yaw, z: 0.0)
         let qY: Quaternion = Quaternion.fromEuler (euler: eulerY)
-        XCTAssertEqual (qY.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qY.y, 0.382684, accuracy: accuracy)
-        XCTAssertEqual (qY.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qY.w, 0.923879, accuracy: accuracy)
+        assertApproxEqual (qY.x, 0.0)
+        assertApproxEqual (qY.y, 0.382684)
+        assertApproxEqual (qY.z, 0.0)
+        assertApproxEqual (qY.w, 0.923879)
         
         let eulerP: Vector3 = Vector3 (x: pitch, y: 0.0, z: 0.0)
         let qP: Quaternion = Quaternion.fromEuler (euler: eulerP)
-        XCTAssertEqual (qP.x, 0.258819, accuracy: accuracy)
-        XCTAssertEqual (qP.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qP.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qP.w, 0.965926, accuracy: accuracy)
+        assertApproxEqual (qP.x, 0.258819)
+        assertApproxEqual (qP.y, 0.0)
+        assertApproxEqual (qP.z, 0.0)
+        assertApproxEqual (qP.w, 0.965926)
         
         let eulerR: Vector3 = Vector3 (x: 0.0, y: 0.0, z: roll)
         let qR: Quaternion = Quaternion.fromEuler (euler: eulerR)
-        XCTAssertEqual (qR.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qR.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (qR.z, 0.0871558, accuracy: accuracy)
-        XCTAssertEqual (qR.w, 0.996195, accuracy: accuracy)
+        assertApproxEqual (qR.x, 0.0)
+        assertApproxEqual (qR.y, 0.0)
+        assertApproxEqual (qR.z, 0.0871558)
+        assertApproxEqual (qR.w, 0.996195)
 
         // Test ZYX dynamic-axes since test data is available online.
         // Rotate first about X axis, then new Y axis, then new Z axis.
         // (Godot uses YXZ Yaw-Pitch-Roll order).
         let qYP: Quaternion = qY * qP
-        XCTAssertEqual (qYP.x, 0.239118, accuracy: accuracy)
-        XCTAssertEqual (qYP.y, 0.369644, accuracy: accuracy)
-        XCTAssertEqual (qYP.z, -0.099046, accuracy: accuracy)
-        XCTAssertEqual (qYP.w, 0.892399, accuracy: accuracy)
+        assertApproxEqual (qYP.x, 0.239118)
+        assertApproxEqual (qYP.y, 0.369644)
+        assertApproxEqual (qYP.z, -0.099046)
+        assertApproxEqual (qYP.w, 0.892399)
         
         let qRYP: Quaternion = qR * qYP
-        XCTAssertEqual (qRYP.x, 0.205991, accuracy: accuracy)
-        XCTAssertEqual (qRYP.y, 0.389078, accuracy: accuracy)
-        XCTAssertEqual (qRYP.z, -0.0208912, accuracy: accuracy)
-        XCTAssertEqual (qRYP.w, 0.897636, accuracy: accuracy)
+        assertApproxEqual (qRYP.x, 0.205991)
+        assertApproxEqual (qRYP.y, 0.389078)
+        assertApproxEqual (qRYP.z, -0.0208912)
+        assertApproxEqual (qRYP.w, 0.897636)
     }
     
     func testXformUnitVectors () {
@@ -291,15 +268,15 @@ final class QuaternionTests: GodotTestCase {
         var jT: Vector3 = q * Vector3 (x: 0.0, y: 1.0, z: 0.0)
         var kT: Vector3 = q * Vector3 (x: 0.0, y: 0.0, z: 1.0)
         
-        XCTAssertEqual (iT.x, 1.0, accuracy: accuracy)
-        XCTAssertEqual (iT.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (iT.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (jT.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (jT.y, -0.5, accuracy: accuracy)
-        XCTAssertEqual (jT.z, 0.866025, accuracy: accuracy)
-        XCTAssertEqual (kT.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (kT.y, -0.866025, accuracy: accuracy)
-        XCTAssertEqual (kT.z, -0.5, accuracy: accuracy)
+        assertApproxEqual (iT.x, 1.0)
+        assertApproxEqual (iT.y, 0.0)
+        assertApproxEqual (iT.z, 0.0)
+        assertApproxEqual (jT.x, 0.0)
+        assertApproxEqual (jT.y, -0.5)
+        assertApproxEqual (jT.z, 0.866025)
+        assertApproxEqual (kT.x, 0.0)
+        assertApproxEqual (kT.y, -0.866025)
+        assertApproxEqual (kT.z, -0.5)
         XCTAssertEqual (iT.length (), 1)
         XCTAssertEqual (jT.length (), 1)
         XCTAssertEqual (kT.length (), 1)
@@ -310,15 +287,15 @@ final class QuaternionTests: GodotTestCase {
         jT = q * Vector3 (x: 0.0, y: 1.0, z: 0.0)
         kT = q * Vector3 (x: 0.0, y: 0.0, z: 1.0)
         
-        XCTAssertEqual (iT.x, 0.866025, accuracy: accuracy)
-        XCTAssertEqual (iT.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (iT.z, -0.5, accuracy: accuracy)
-        XCTAssertEqual (jT.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (jT.y, 1.0, accuracy: accuracy)
-        XCTAssertEqual (jT.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (kT.x, 0.5, accuracy: accuracy)
-        XCTAssertEqual (kT.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (kT.z, 0.866025, accuracy: accuracy)
+        assertApproxEqual (iT.x, 0.866025)
+        assertApproxEqual (iT.y, 0.0)
+        assertApproxEqual (iT.z, -0.5)
+        assertApproxEqual (jT.x, 0.0)
+        assertApproxEqual (jT.y, 1.0)
+        assertApproxEqual (jT.z, 0.0)
+        assertApproxEqual (kT.x, 0.5)
+        assertApproxEqual (kT.y, 0.0)
+        assertApproxEqual (kT.z, 0.866025)
         XCTAssertEqual (iT.length (), 1)
         XCTAssertEqual (jT.length (), 1)
         XCTAssertEqual (kT.length (), 1)
@@ -329,15 +306,15 @@ final class QuaternionTests: GodotTestCase {
         jT = q * Vector3 (x: 0.0, y: 1.0, z: 0.0)
         kT = q * Vector3 (x: 0.0, y: 0.0, z: 1.0)
         
-        XCTAssertEqual (iT.x, 0.5, accuracy: accuracy)
-        XCTAssertEqual (iT.y, 0.866025, accuracy: accuracy)
-        XCTAssertEqual (iT.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (jT.x, -0.866025, accuracy: accuracy)
-        XCTAssertEqual (jT.y, 0.5, accuracy: accuracy)
-        XCTAssertEqual (jT.z, 0.0, accuracy: accuracy)
-        XCTAssertEqual (kT.x, 0.0, accuracy: accuracy)
-        XCTAssertEqual (kT.y, 0.0, accuracy: accuracy)
-        XCTAssertEqual (kT.z, 1.0, accuracy: accuracy)
+        assertApproxEqual (iT.x, 0.5)
+        assertApproxEqual (iT.y, 0.866025)
+        assertApproxEqual (iT.z, 0.0)
+        assertApproxEqual (jT.x, -0.866025)
+        assertApproxEqual (jT.y, 0.5)
+        assertApproxEqual (jT.z, 0.0)
+        assertApproxEqual (kT.x, 0.0)
+        assertApproxEqual (kT.y, 0.0)
+        assertApproxEqual (kT.z, 1.0)
         XCTAssertEqual (iT.length (), 1)
         XCTAssertEqual (jT.length (), 1)
         XCTAssertEqual (kT.length (), 1)
@@ -353,10 +330,8 @@ final class QuaternionTests: GodotTestCase {
         let vRot: Vector3 = q * vArb
         let vCompare: Vector3 = basisAxes * vArb
         
-        XCTAssertEqual (vRot.lengthSquared (), vArb.lengthSquared (), accuracy: Double (accuracy))
-        XCTAssertEqual (vRot.x, vCompare.x, accuracy: accuracy)
-        XCTAssertEqual (vRot.y, vCompare.y, accuracy: accuracy)
-        XCTAssertEqual (vRot.z, vCompare.z, accuracy: accuracy)
+        assertApproxEqual (vRot.lengthSquared (), vArb.lengthSquared ())
+        assertApproxEqual (vRot, vCompare)
     }
     
     func testManyVectorXforms () {
@@ -368,10 +343,8 @@ final class QuaternionTests: GodotTestCase {
             let vRot: Vector3 = q * vIn
             let vCompare: Vector3 = basisAxes * vIn
             
-            XCTAssertEqual (vRot.lengthSquared (), vIn.lengthSquared (), accuracy: Double (accuracy))
-            XCTAssertEqual (vRot.x, vCompare.x, accuracy: accuracy)
-            XCTAssertEqual (vRot.y, vCompare.y, accuracy: accuracy)
-            XCTAssertEqual (vRot.z, vCompare.z, accuracy: accuracy)
+            assertApproxEqual (vRot.lengthSquared (), vIn.lengthSquared ())
+            assertApproxEqual (vRot, vCompare)
         }
         
         // Many arbitrary quaternions rotate many arbitrary vectors.
