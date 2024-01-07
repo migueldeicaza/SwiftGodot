@@ -59,3 +59,32 @@ open class GodotTestCase: XCTestCase {
     }
     
 }
+
+public extension GodotTestCase {
+    
+    /// Asserts approximate equality of two floating point values based on `Math::is_equal_approx` implementation in Godot
+    func assertApproxEqual<T: FloatingPoint & ExpressibleByFloatLiteral> (_ a: T, _ b: T, epsilon: T = 0.00001, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        // Check for exact equality first, required to handle "infinity" values.
+        guard a != b else { return }
+        
+        // Then check for approximate equality.
+        let tolerance: T = max (epsilon * abs (a), epsilon)
+        XCTAssertEqual (a, b, accuracy: tolerance, message, file: file, line: line)
+    }
+    
+    /// Asserts approximate equality of two vectors by comparing approximately each component
+    func assertApproxEqual (_ a: Vector3, _ b: Vector3, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        assertApproxEqual (a.x, b.x, "Fail due to X. " + message, file: file, line: line)
+        assertApproxEqual (a.y, b.y, "Fail due to Y. " + message, file: file, line: line)
+        assertApproxEqual (a.z, b.z, "Fail due to Z. " + message, file: file, line: line)
+    }
+    
+    /// Asserts approximate equality of two quaternions by comparing approximately each component
+    func assertApproxEqual (_ a: Quaternion, _ b: Quaternion, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        assertApproxEqual (a.x, b.x, "Fail due to X. " + message, file: file, line: line)
+        assertApproxEqual (a.y, b.y, "Fail due to Y. " + message, file: file, line: line)
+        assertApproxEqual (a.z, b.z, "Fail due to Z. " + message, file: file, line: line)
+        assertApproxEqual (a.w, b.w, "Fail due to W. " + message, file: file, line: line)
+    }
+    
+}

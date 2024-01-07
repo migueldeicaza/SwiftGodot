@@ -136,6 +136,14 @@ targets.append(contentsOf: [
             "SwiftGodotTestability",
         ]
     ),
+    
+    // Runtime dependant tests based on the engine tests from Godot's repository
+    .testTarget(
+        name: "SwiftGodotEngineTests",
+        dependencies: [
+            "SwiftGodotTestability",
+        ]
+    ),
 ])
 #endif
 
