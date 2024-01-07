@@ -10,7 +10,7 @@ on Mac, Linux, or Windows.
 
 ### Prerequisites
 
-To develop with SwiftGodot in Visual Studio, you will need the following prerequisites:  
+To develop with SwiftGodot in Visual Studio Code, you will need the following prerequisites:  
 
 1. Godot Engine without .NET support from the [official Godot website](https://godotengine.org/download/).
 
@@ -20,7 +20,7 @@ To develop with SwiftGodot in Visual Studio, you will need the following prerequ
 
 ### Configuring Visual Studio Code
 
-The Swift Extension for Visual Studio from the Swift Work Group provides code 
+The Swift Extension for Visual Studio Code from the Swift Work Group provides code 
 completion, code navigation, build task creation, and integration with LLDB for 
 debugging, along with many other features for devloping code with Swift.
 
