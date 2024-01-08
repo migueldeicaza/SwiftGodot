@@ -37,9 +37,14 @@ class MySprite: Sprite {
 }
 ```
 
-The `@Godot` macro does a few things, it creates a default constructor that follows
-the convention to call the parent `init()` method and performs any registrations
-that you might have done in your class for variables or methods.
+The `@Godot` macro does a few things, it creates a default constructor that
+follows the convention to call the parent `init()` method and performs any
+registrations that you might have done in your class for variables or methods.
+
+As you will see later, the @Godot macro is applied to a class definition, and
+will scan your type for various other macros to integrate with Godot.   These
+attributes will not work if you attempt to apply those in a Swift
+extension-method, as the @Godot macro has no visibility into those.
 
 ### Register Your Type
 
@@ -124,8 +129,8 @@ To surface a method, apply the `@Callable` attribute to it, this will register
 the method with Godot.
 
 The only limitation is that the parameters of those methods need to be one
-of the types that Godot can surface to the rest of the engine: anything that can be
-passed in a ``Variant``.
+of the types that Godot can surface to the rest of the engine: anything that can
+be passed in a ``Variant``.
 
 
 ```swift
@@ -138,9 +143,13 @@ func readyCallback (text: String) {
 
 Now your method can be invoked from the Godot editor or from scripts written in other languages.
 
-The functions can be any of the types that can be wrapped in a [Variant](Variant.md) including
-the core Swift data types for integers and floats, the Godot Object subclasses as well as
-``VariantCollection`` and ``ObjectCollection``.
+The functions can be any of the types that can be wrapped in a
+[Variant](Variant.md) including the core Swift data types for integers and
+floats, the Godot Object subclasses as well as ``VariantCollection`` and
+``ObjectCollection``.
+
+The `@Callable` macro only works in your class definition, and will not work
+on Swift class extensions.
 
 #### Surfacing Properties and Variables
 
