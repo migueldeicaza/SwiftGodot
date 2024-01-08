@@ -21,9 +21,9 @@ prerequisites:
 
 ### Configuring Visual Studio Code
 
-The Swift Extension for Visual Studio Code from the Swift Work Group provides
-code completion, code navigation, build task creation, and integration with
-LLDB for debugging, along with many other features for devloping code with
+The Swift Extension for Visual Studio Code from the Swift Server Work Group 
+provides code completion, code navigation, build task creation, and integration 
+with LLDB for debugging, along with many other features for devloping code with
 Swift.
 
 Install the Swift Extension for Visual Studio from the 
@@ -107,13 +107,13 @@ your Godot project.
 
 #### Windows
 
-If you are developing on Linux, your `libraries` and `dependencies` will need
+If you are developing on Windows, your `libraries` and `dependencies` will need
 to be specified as `windows.debug.x86_64` and your libraries will be compiled
 into `.dll` files, so that these sections should look like this:
 
 ```
 [libraries]
-window.debug.x86_64 = "res://bin/SimpleRunnerDriver.dll"
+windows.debug.x86_64 = "res://bin/SimpleRunnerDriver.dll"
 
 [dependencies]
 windows.debug.x86_64 = {"res://bin/SwiftGodot.dll" : ""}
