@@ -83,7 +83,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             p.indent += 1
             enumDefName = String (enumDefName.dropFirst("Variant.".count))
         }
-        p ("public enum \(getGodotType (SimpleType (type: enumDefName))): Int") {
+        p ("public enum \(getGodotType (SimpleType (type: enumDefName))): Int64") {
             var used = Set<Int> ()
             
             for enumVal in enumDef.values {
