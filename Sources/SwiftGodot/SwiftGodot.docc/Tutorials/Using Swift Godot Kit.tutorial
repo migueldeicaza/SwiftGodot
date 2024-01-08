@@ -46,6 +46,9 @@
             }
             
             @Step {
+                Create a "Project" directory where you place your Godot-assets.   These include things like the main entry point `project.godot`, your scene files, and resources that your app will use
+            }
+            @Step {
                 You can now enter a sample SwiftGodot project.   This needs to import both the  `SwiftGodotKit` API which provides one entry point: the `runGodot` method, and the `SwiftGodot` API, that contains the bulk of the code.
                 
                 @Code(name: "SwiftGodotKit-Main.swift",
