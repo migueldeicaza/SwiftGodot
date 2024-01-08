@@ -116,7 +116,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         
         withUnsafeMutablePointer(to: &content) { selfPtr in
             withUnsafeMutablePointer(to: &mutableValue) { ptr in
-                Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
+                Variant.fromTypeMap [Int (godotType.rawValue)] (selfPtr, ptr)
             }
         }
     }
@@ -128,13 +128,13 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             if let object = value as? Object {
                 var mutableValue = object.handle
                 withUnsafeMutablePointer(to: &mutableValue) { ptr in
-                    Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
+                    Variant.fromTypeMap [Int (godotType.rawValue)] (selfPtr, ptr)
                 }
             } else {
                 var mutableValue = value
                 
                 withUnsafeMutablePointer(to: &mutableValue) { ptr in
-                    Variant.fromTypeMap [godotType.rawValue] (selfPtr, ptr)
+                    Variant.fromTypeMap [Int (godotType.rawValue)] (selfPtr, ptr)
                 }
             }
         }
@@ -143,12 +143,12 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     /// This describes the type of the data wrapped by this variant
     public var gtype: GType {
         var copy = content
-        return GType (rawValue: Int (gi.variant_get_type (&copy).rawValue)) ?? .nil
+        return GType (rawValue: Int64 (gi.variant_get_type (&copy).rawValue)) ?? .nil
     }
     
     func toType (_ type: GType, dest: UnsafeMutableRawPointer) {
         withUnsafeMutablePointer(to: &content) { selfPtr in
-            Variant.toTypeMap [type.rawValue] (dest, selfPtr)
+            Variant.toTypeMap [Int (type.rawValue)] (dest, selfPtr)
         }
     }
     

@@ -42,7 +42,7 @@ public func setExtensionInterface (to: OpaquePointer?, library lib: OpaquePointe
 // Extension initialization callback
 func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
-    let level = GDExtension.InitializationLevel(rawValue: Int (exactly: l.rawValue)!)!
+    let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!)!
     
     for cb in extensionInitCallbacks {
         cb (level)
@@ -53,7 +53,7 @@ func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionIni
 func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_deinitialize")
     
-    let level = GDExtension.InitializationLevel(rawValue: Int (exactly: l.rawValue)!)!
+    let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!)!
     for cb in extensionDeInitCallbacks {
         cb (level)
     }
