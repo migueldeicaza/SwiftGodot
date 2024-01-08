@@ -55,4 +55,8 @@ func registerTypes (level: GDExtension.InitializationLevel) {
     }
 }
 
-runGodot(args: [], initHook: registerTypes, loadScene: loadScene, loadProjectSettings: { settings in })
+guard let projectPath = Bundle.module.path(forResource: "Project", ofType: nil) else {
+    fatalError("Could not load resource path")
+}
+
+runGodot(args: ["--path", projectPath], initHook: registerTypes, loadScene: loadScene, loadProjectSettings: { settings in })
