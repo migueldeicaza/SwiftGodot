@@ -73,21 +73,21 @@ final class QuaternionTests: GodotTestCase {
         let roll: Float = Float (10.0).degreesToRadians
 
         let eulerY: Vector3 = Vector3 (x: 0.0, y: yaw, z: 0.0)
-        let qY: Quaternion = Quaternion.fromEuler (euler: eulerY)
+        let qY: Quaternion = Quaternion.fromEuler (eulerY)
         assertApproxEqual (qY.x, 0.0)
         assertApproxEqual (qY.y, 0.382684)
         assertApproxEqual (qY.z, 0.0)
         assertApproxEqual (qY.w, 0.923879)
         
         let eulerP: Vector3 = Vector3 (x: pitch, y: 0.0, z: 0.0)
-        let qP: Quaternion = Quaternion.fromEuler (euler: eulerP)
+        let qP: Quaternion = Quaternion.fromEuler (eulerP)
         assertApproxEqual (qP.x, 0.258819)
         assertApproxEqual (qP.y, 0.0)
         assertApproxEqual (qP.z, 0.0)
         assertApproxEqual (qP.w, 0.965926)
         
         let eulerR: Vector3 = Vector3 (x: 0.0, y: 0.0, z: roll)
-        let qR: Quaternion = Quaternion.fromEuler (euler: eulerR)
+        let qR: Quaternion = Quaternion.fromEuler (eulerR)
         assertApproxEqual (qR.x, 0.0)
         assertApproxEqual (qR.y, 0.0)
         assertApproxEqual (qR.z, 0.0871558)
@@ -102,11 +102,11 @@ final class QuaternionTests: GodotTestCase {
         // Generate YXZ comparison data (Z-then-X-then-Y) using single-axis Euler
         // constructor and quaternion product, both tested separately.
         let eulerY: Vector3 = Vector3 (x: 0.0, y: yaw, z: 0.0)
-        let qY: Quaternion = Quaternion.fromEuler (euler: eulerY)
+        let qY: Quaternion = Quaternion.fromEuler (eulerY)
         let eulerP: Vector3 = Vector3 (x: pitch, y: 0.0, z: 0.0)
-        let qP: Quaternion = Quaternion.fromEuler (euler: eulerP)
+        let qP: Quaternion = Quaternion.fromEuler (eulerP)
         let eulerR: Vector3 = Vector3 (x: 0.0, y: 0.0, z: roll)
-        let qR: Quaternion = Quaternion.fromEuler (euler: eulerR)
+        let qR: Quaternion = Quaternion.fromEuler (eulerR)
 
         // Instrinsically, Yaw-Y then Pitch-X then Roll-Z.
         // Extrinsically, Roll-Z is followed by Pitch-X, then Yaw-Y.
@@ -114,7 +114,7 @@ final class QuaternionTests: GodotTestCase {
 
         // Test construction from YXZ Euler angles.
         let eulerYxz: Vector3 = Vector3 (x: pitch, y: yaw, z: roll)
-        let q: Quaternion = Quaternion.fromEuler (euler: eulerYxz)
+        let q: Quaternion = Quaternion.fromEuler (eulerYxz)
         assertApproxEqual (q, checkYxz)
     }
     
@@ -123,8 +123,8 @@ final class QuaternionTests: GodotTestCase {
         let pitch: Float = Float (30.0).degreesToRadians
         let roll: Float = Float (10.0).degreesToRadians
         let eulerYxz: Vector3 = Vector3 (x: pitch, y: yaw, z: roll)
-        let qYxz: Quaternion = Quaternion.fromEuler (euler: eulerYxz)
-        let basisAxes: Basis = Basis.fromEuler (euler: eulerYxz)
+        let qYxz: Quaternion = Quaternion.fromEuler (eulerYxz)
+        let basisAxes: Basis = Basis.fromEuler (eulerYxz)
         let q: Quaternion = basisAxes.getRotationQuaternion ()
         assertApproxEqual (q, qYxz)
     }
@@ -137,9 +137,9 @@ final class QuaternionTests: GodotTestCase {
 
             // Generate YXZ (Z-then-X-then-Y) Quaternion using single-axis Euler
             // constructor and quaternion product, both tested separately.
-            let qY: Quaternion = Quaternion.fromEuler (euler: Vector3 (x: 0.0, y: yaw, z: 0.0))
-            let qP: Quaternion = Quaternion.fromEuler (euler: Vector3 (x: pitch, y: 0.0, z: 0.0))
-            let qR: Quaternion = Quaternion.fromEuler (euler: Vector3 (x: 0.0, y: 0.0, z: roll))
+            let qY: Quaternion = Quaternion.fromEuler (Vector3 (x: 0.0, y: yaw, z: 0.0))
+            let qP: Quaternion = Quaternion.fromEuler (Vector3 (x: pitch, y: 0.0, z: 0.0))
+            let qR: Quaternion = Quaternion.fromEuler (Vector3 (x: 0.0, y: 0.0, z: roll))
             // Roll-Z is followed by Pitch-X, then Yaw-Y.
             let qYxz: Quaternion = qY * qP * qR
 
@@ -157,7 +157,7 @@ final class QuaternionTests: GodotTestCase {
         // Quaternion from local calculation.
         let qLocal: Quaternion = quatEulerYxzDeg (angle: Vector3 (x: 31.41, y: -49.16, z: 12.34))
         // Quaternion from Euler angles constructor.
-        let qEuler: Quaternion = Quaternion.fromEuler (euler: eulerYxz)
+        let qEuler: Quaternion = Quaternion.fromEuler (eulerYxz)
         assertApproxEqual (qCalc, qLocal)
         assertApproxEqual (qLocal, qEuler)
 
@@ -166,7 +166,7 @@ final class QuaternionTests: GodotTestCase {
         // This is by design, but may be subject to change.
         // Workaround by constructing Basis from Euler angles.
         // basis_axes = Basis (i_unit, j_unit, k_unit);
-        let basisAxes: Basis = Basis.fromEuler (euler: eulerYxz)
+        let basisAxes: Basis = Basis.fromEuler (eulerYxz)
         let q: Quaternion = basisAxes.getRotationQuaternion ()
         assertApproxEqual (basisAxes.x.x, iUnit.x)
         assertApproxEqual (basisAxes.y.x, iUnit.y)
@@ -194,7 +194,7 @@ final class QuaternionTests: GodotTestCase {
         let euler: Vector3 = Vector3 (x: x, y: y, z: z)
         
         for order: Int64 in 0..<6 {
-            let basis: Basis = Basis.fromEuler (euler: euler, order: order)
+            let basis: Basis = Basis.fromEuler (euler, order: order)
             let q: Quaternion = basis.getRotationQuaternion ()
             let check: Vector3 = q.getEuler (order: order)
             assertApproxEqual (check.x, euler.x, "Quaternion getEuler() method should return the original angles.")
@@ -224,21 +224,21 @@ final class QuaternionTests: GodotTestCase {
         let roll: Float = Float (10.0).degreesToRadians
         
         let eulerY: Vector3 = Vector3 (x: 0.0, y: yaw, z: 0.0)
-        let qY: Quaternion = Quaternion.fromEuler (euler: eulerY)
+        let qY: Quaternion = Quaternion.fromEuler (eulerY)
         assertApproxEqual (qY.x, 0.0)
         assertApproxEqual (qY.y, 0.382684)
         assertApproxEqual (qY.z, 0.0)
         assertApproxEqual (qY.w, 0.923879)
         
         let eulerP: Vector3 = Vector3 (x: pitch, y: 0.0, z: 0.0)
-        let qP: Quaternion = Quaternion.fromEuler (euler: eulerP)
+        let qP: Quaternion = Quaternion.fromEuler (eulerP)
         assertApproxEqual (qP.x, 0.258819)
         assertApproxEqual (qP.y, 0.0)
         assertApproxEqual (qP.z, 0.0)
         assertApproxEqual (qP.w, 0.965926)
         
         let eulerR: Vector3 = Vector3 (x: 0.0, y: 0.0, z: roll)
-        let qR: Quaternion = Quaternion.fromEuler (euler: eulerR)
+        let qR: Quaternion = Quaternion.fromEuler (eulerR)
         assertApproxEqual (qR.x, 0.0)
         assertApproxEqual (qR.y, 0.0)
         assertApproxEqual (qR.z, 0.0871558)
@@ -323,7 +323,7 @@ final class QuaternionTests: GodotTestCase {
     func testXformVector () {
         // Arbitrary quaternion rotates an arbitrary vector.
         let eulerYzx: Vector3 = Vector3 (x: Float (31.41).degreesToRadians, y: Float (-49.16).degreesToRadians, z: Float (12.34).degreesToRadians)
-        let basisAxes: Basis = Basis.fromEuler (euler: eulerYzx)
+        let basisAxes: Basis = Basis.fromEuler (eulerYzx)
         let q: Quaternion = basisAxes.getRotationQuaternion ()
         
         let vArb: Vector3 = Vector3 (x: 3.0, y: 4.0, z: 5.0)
@@ -337,7 +337,7 @@ final class QuaternionTests: GodotTestCase {
     func testManyVectorXforms () {
         // Test vector xform for a single combination of Quaternion and Vector.
         func assertQuatVecRotate (eulerYzx: Vector3, vIn: Vector3) {
-            let basisAxes: Basis = Basis.fromEuler (euler: eulerYzx)
+            let basisAxes: Basis = Basis.fromEuler (eulerYzx)
             let q: Quaternion = basisAxes.getRotationQuaternion ()
             
             let vRot: Vector3 = q * vIn

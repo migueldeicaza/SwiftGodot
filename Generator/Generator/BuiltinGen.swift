@@ -374,8 +374,15 @@ func generateBuiltinMethods (_ p: Printer,
         }
         
         for arg in m.arguments ?? [] {
+            var eliminate: String = ""
+            if args.isEmpty, m.name.hasSuffix ("_\(arg.name)") {
+                // if the first argument name matches the last part of the method name, we want
+                // to skip giving it a name.   For example:
+                // addPattern (pattern: xx) becomes addPattern (_ pattern: xx)
+                eliminate = "_ "
+            }
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "", isOptional: false)
+            args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: false)
         }
         
         doc (p, bc, m.description)

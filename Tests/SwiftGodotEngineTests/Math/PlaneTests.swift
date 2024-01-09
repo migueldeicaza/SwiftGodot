@@ -49,16 +49,16 @@ final class PlaneTests: GodotTestCase {
         let xFacingPlaneWithDOffset: Plane = Plane (a: 1, b: 0, c: 0, d: 1)
         let yXxisPointWithDOffset: Vector3 = Vector3 (x: 1, y: 10, z: 0)
         
-        XCTAssertTrue (xFacingPlane.hasPoint (point: yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
-        XCTAssertTrue (xFacingPlane.hasPoint (point: zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        XCTAssertTrue (xFacingPlane.hasPoint (yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        XCTAssertTrue (xFacingPlane.hasPoint (zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
         
-        XCTAssertTrue (yFacingPlane.hasPoint (point: xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
-        XCTAssertTrue (yFacingPlane.hasPoint (point: zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        XCTAssertTrue (yFacingPlane.hasPoint (xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        XCTAssertTrue (yFacingPlane.hasPoint (zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
         
-        XCTAssertTrue (zFacingPlane.hasPoint (point: yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
-        XCTAssertTrue (zFacingPlane.hasPoint (point: xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        XCTAssertTrue (zFacingPlane.hasPoint (yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        XCTAssertTrue (zFacingPlane.hasPoint (xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
         
-        XCTAssertTrue (xFacingPlaneWithDOffset.hasPoint (point: yXxisPointWithDOffset), "hasPoint () with passed Vector3 should return the expected result.")
+        XCTAssertTrue (xFacingPlaneWithDOffset.hasPoint (yXxisPointWithDOffset), "hasPoint () with passed Vector3 should return the expected result.")
     }
     
     func testIntersection () {
