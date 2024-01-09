@@ -47,7 +47,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case unsupportedType(VariableDeclSyntax)
     case expectedIdentifier(PatternBindingListSyntax.Element)
     case unknownError(Error)
-	case unsupportedCallableEffect
+    case unsupportedCallableEffect
     
     var severity: DiagnosticSeverity {
         return .error
@@ -75,8 +75,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Export attribute can not be applied to Array types, use a VariantCollection, or an ObjectCollection instead"
         case .requiresNonOptionalGArrayCollection:
             "@Export optional Collections are not supported"
-		case .unsupportedCallableEffect:
-			"@Callable does not support asynchronous or throwing functions"
+        case .unsupportedCallableEffect:
+            "@Callable does not support asynchronous or throwing functions"
 		}
     }
     
