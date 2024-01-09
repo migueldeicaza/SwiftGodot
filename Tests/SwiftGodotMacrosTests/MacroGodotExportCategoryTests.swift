@@ -34,7 +34,14 @@ class Car: Node {
     var vehicle_make: String = "Mazda"
 
     func _mproxy_set_vehicle_make (args: [Variant]) -> Variant? {
-    	vehicle_make = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		vehicle_make = value
+    	} else {
+    		GD.printErr ("Unable to set `vehicle_make` value: ", arg)
+    	}
     	return nil
     }
 
@@ -44,7 +51,14 @@ class Car: Node {
     var vehicle_model: String = "RX7"
 
     func _mproxy_set_vehicle_model (args: [Variant]) -> Variant? {
-    	vehicle_model = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		vehicle_model = value
+    	} else {
+    		GD.printErr ("Unable to set `vehicle_model` value: ", arg)
+    	}
     	return nil
     }
 
@@ -106,7 +120,14 @@ class Car: Node {
     var make: String = "Mazda"
 
     func _mproxy_set_make (args: [Variant]) -> Variant? {
-    	make = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		make = value
+    	} else {
+    		GD.printErr ("Unable to set `make` value: ", arg)
+    	}
     	return nil
     }
 
@@ -116,7 +137,14 @@ class Car: Node {
     var model: String = "RX7"
 
     func _mproxy_set_model (args: [Variant]) -> Variant? {
-    	model = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		model = value
+    	} else {
+    		GD.printErr ("Unable to set `model` value: ", arg)
+    	}
     	return nil
     }
 
@@ -179,7 +207,14 @@ class Car: Node {
     var vin: String = "00000000000000000"
 
     func _mproxy_set_vin (args: [Variant]) -> Variant? {
-    	vin = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		vin = value
+    	} else {
+    		GD.printErr ("Unable to set `vin` value: ", arg)
+    	}
     	return nil
     }
 
@@ -189,7 +224,14 @@ class Car: Node {
     var year: Int = 1997
 
     func _mproxy_set_year (args: [Variant]) -> Variant? {
-    	year = Int (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Int (arg) {
+    		year = value
+    	} else {
+    		GD.printErr ("Unable to set `year` value: ", arg)
+    	}
     	return nil
     }
 
@@ -251,7 +293,14 @@ class Car: Node {
     var vin: String = "00000000000000000"
 
     func _mproxy_set_vin (args: [Variant]) -> Variant? {
-    	vin = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		vin = value
+    	} else {
+    		GD.printErr ("Unable to set `vin` value: ", arg)
+    	}
     	return nil
     }
 
@@ -261,7 +310,14 @@ class Car: Node {
     var year: Int = 1997
 
     func _mproxy_set_year (args: [Variant]) -> Variant? {
-    	year = Int (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Int (arg) {
+    		year = value
+    	} else {
+    		GD.printErr ("Unable to set `year` value: ", arg)
+    	}
     	return nil
     }
 
@@ -327,7 +383,14 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin (args: [Variant]) -> Variant? {
-    	vin = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		vin = value
+    	} else {
+    		GD.printErr ("Unable to set `vin` value: ", arg)
+    	}
     	return nil
     }
 
@@ -337,7 +400,14 @@ class Car: Node {
     var year: Int = 1997
 
     func _mproxy_set_year (args: [Variant]) -> Variant? {
-    	year = Int (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Int (arg) {
+    		year = value
+    	} else {
+    		GD.printErr ("Unable to set `year` value: ", arg)
+    	}
     	return nil
     }
 
@@ -347,7 +417,14 @@ class Car: Node {
     var make: String = "HONDA"
 
     func _mproxy_set_make (args: [Variant]) -> Variant? {
-    	make = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		make = value
+    	} else {
+    		GD.printErr ("Unable to set `make` value: ", arg)
+    	}
     	return nil
     }
 
@@ -357,7 +434,14 @@ class Car: Node {
     var model: String = "ACCORD"
 
     func _mproxy_set_model (args: [Variant]) -> Variant? {
-    	model = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		model = value
+    	} else {
+    		GD.printErr ("Unable to set `model` value: ", arg)
+    	}
     	return nil
     }
 
@@ -1240,7 +1324,14 @@ class Garage: Node {
     var name: String = ""
 
     func _mproxy_set_name (args: [Variant]) -> Variant? {
-    	name = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		name = value
+    	} else {
+    		GD.printErr ("Unable to set `name` value: ", arg)
+    	}
     	return nil
     }
 
@@ -1250,7 +1341,14 @@ class Garage: Node {
     var rating: Float = 0.0
 
     func _mproxy_set_rating (args: [Variant]) -> Variant? {
-    	rating = Float (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Float (arg) {
+    		rating = value
+    	} else {
+    		GD.printErr ("Unable to set `rating` value: ", arg)
+    	}
     	return nil
     }
 
@@ -1292,7 +1390,14 @@ class Garage: Node {
     var address: String = ""
 
     func _mproxy_set_address (args: [Variant]) -> Variant? {
-    	address = String (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = String (arg) {
+    		address = value
+    	} else {
+    		GD.printErr ("Unable to set `address` value: ", arg)
+    	}
     	return nil
     }
 
