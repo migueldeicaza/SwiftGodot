@@ -27,11 +27,11 @@ final class BasisTests: GodotTestCase {
         
         // Euler to rotation
         let originalEuler: Vector3 = Vector3 (x: eulerDegrees.x.degreesToRadians, y: eulerDegrees.y.degreesToRadians, z: eulerDegrees.z.degreesToRadians)
-        let toRotation: Basis = Basis.fromEuler (euler: originalEuler)
+        let toRotation: Basis = Basis.fromEuler (originalEuler)
 
         // Euler from rotation
         let eulerFromRotation: Vector3 = toRotation.getEuler (order: rawEulerOrder)
-        let rotationFromComputedEuler: Basis = Basis.fromEuler (euler: eulerFromRotation, order: rawEulerOrder)
+        let rotationFromComputedEuler: Basis = Basis.fromEuler (eulerFromRotation, order: rawEulerOrder)
         
         var res: Basis = toRotation.inverse () * rotationFromComputedEuler
         
@@ -43,7 +43,7 @@ final class BasisTests: GodotTestCase {
         
         let rawXyzEulerOrder: Int64 = Int64 (EulerOrder.xyz.rawValue)
         let eulerXyzFromRotation: Vector3 = toRotation.getEuler (order: rawXyzEulerOrder)
-        let rotationFromXyzComputedEuler: Basis = Basis.fromEuler (euler: eulerXyzFromRotation, order: rawXyzEulerOrder)
+        let rotationFromXyzComputedEuler: Basis = Basis.fromEuler (eulerXyzFromRotation, order: rawXyzEulerOrder)
         
         res = toRotation.inverse () * rotationFromXyzComputedEuler
         
@@ -233,19 +233,19 @@ final class BasisTests: GodotTestCase {
         basis = Basis ()
         XCTAssertTrue (basis.isConformal (), "Identity Basis should be conformal.")
         
-        basis = Basis.fromEuler (euler: Vector3 (x: 1.2, y: 3.4, z: 5.6))
+        basis = Basis.fromEuler (Vector3 (x: 1.2, y: 3.4, z: 5.6))
         XCTAssertTrue (basis.isConformal (), "Basis with only rotation should be conformal.")
         
-        basis = Basis.fromScale (scale: Vector3 (x: -1, y: -1, z: -1))
+        basis = Basis.fromScale (Vector3 (x: -1, y: -1, z: -1))
         XCTAssertTrue (basis.isConformal (), "Basis with only a flip should be conformal.")
         
-        basis = Basis.fromScale (scale: Vector3 (x: 1.2, y: 1.2, z: 1.2))
+        basis = Basis.fromScale (Vector3 (x: 1.2, y: 1.2, z: 1.2))
         XCTAssertTrue (basis.isConformal (), "Basis with only uniform scale should be conformal.")
         
         basis = Basis (xAxis: Vector3 (x: 3, y: 4, z: 0), yAxis: Vector3 (x: 4, y: -3, z: 0.0), zAxis: Vector3 (x: 0, y: 0, z: 5))
         XCTAssertTrue (basis.isConformal (), "Basis with a flip, rotation, and uniform scale should be conformal.")
         
-        basis = Basis.fromScale (scale: Vector3 (x: 1.2, y: 3.4, z: 5.6))
+        basis = Basis.fromScale (Vector3 (x: 1.2, y: 3.4, z: 5.6))
         XCTAssertFalse (basis.isConformal (), "Basis with non-uniform scale should not be conformal.")
         
         basis = Basis (xAxis: Vector3 (x: Float (0.5.squareRoot ()), y: Float (0.5.squareRoot ()), z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))

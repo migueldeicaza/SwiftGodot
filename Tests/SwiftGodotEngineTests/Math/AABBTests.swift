@@ -102,9 +102,9 @@ final class AABBTests: GodotTestCase {
         aabbSmall = AABB (position: Vector3 (x: 10, y: -10, z: -10), size: Vector3 (x: 1, y: 1, z: 1))
         XCTAssertEqual (aabbBig.intersection (with: aabbSmall), AABB (), "intersection() with non-contained AABB should return the expected result.")
         
-        XCTAssertTrue (aabbBig.intersectsPlane (plane: Plane (normal: Vector3 (x: 0, y: 1, z: 0), d: 4)), "intersectsPlane() should return the expected result.")
-        XCTAssertTrue (aabbBig.intersectsPlane (plane: Plane (normal: Vector3 (x: 0, y: -1, z: 0), d: -4)), "intersectsPlane() should return the expected result.")
-        XCTAssertFalse (aabbBig.intersectsPlane (plane: Plane (normal: Vector3 (x: 0, y: 1, z: 0), d: 200)), "intersectsPlane() should return the expected result.")
+        XCTAssertTrue (aabbBig.intersectsPlane (Plane (normal: Vector3 (x: 0, y: 1, z: 0), d: 4)), "intersectsPlane() should return the expected result.")
+        XCTAssertTrue (aabbBig.intersectsPlane (Plane (normal: Vector3 (x: 0, y: -1, z: 0), d: -4)), "intersectsPlane() should return the expected result.")
+        XCTAssertFalse (aabbBig.intersectsPlane (Plane (normal: Vector3 (x: 0, y: 1, z: 0), d: 200)), "intersectsPlane() should return the expected result.")
         
         XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 1, y: 3, z: 0), to: Vector3 (x: 0, y: 3, z: 0)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result.")
         XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 3, z: 0), to: Vector3 (x: 0, y: -300, z: 0)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result.")
@@ -186,16 +186,16 @@ final class AABBTests: GodotTestCase {
     func testHasPoint () {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: -1, y: 3, z: 0)), "hasPoint() with contained point should return the expected value.")
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: 2, y: 3, z: 0)), "hasPoint() with contained point should return the expected value.")
-        XCTAssertFalse (aabb.hasPoint (point: Vector3 (x: -20, y: 0, z: 0)), "hasPoint() with non-contained point should return the expected value.")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: -1, y: 3, z: 0)), "hasPoint() with contained point should return the expected value.")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: 2, y: 3, z: 0)), "hasPoint() with contained point should return the expected value.")
+        XCTAssertFalse (aabb.hasPoint (Vector3 (x: -20, y: 0, z: 0)), "hasPoint() with non-contained point should return the expected value.")
         
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: -1.5, y: 3, z: 0)), "hasPoint() with positive size should include point on near face (X axis).")
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: 2.5, y: 3, z: 0)), "hasPoint() with positive size should include point on far face (X axis).")
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: 0, y: 2, z: 0)), "hasPoint() with positive size should include point on near face (Y axis).")
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: 0, y: 7, z: 0)), "hasPoint() with positive size should include point on far face (Y axis).")
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: 0, y: 3, z: -2.5)), "hasPoint() with positive size should include point on near face (Z axis).")
-        XCTAssertTrue (aabb.hasPoint (point: Vector3 (x: 0, y: 3, z: 3.5)), "hasPoint() with positive size should include point on far face (Z axis).")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: -1.5, y: 3, z: 0)), "hasPoint() with positive size should include point on near face (X axis).")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: 2.5, y: 3, z: 0)), "hasPoint() with positive size should include point on far face (X axis).")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: 0, y: 2, z: 0)), "hasPoint() with positive size should include point on near face (Y axis).")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: 0, y: 7, z: 0)), "hasPoint() with positive size should include point on far face (Y axis).")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: 0, y: 3, z: -2.5)), "hasPoint() with positive size should include point on near face (Z axis).")
+        XCTAssertTrue (aabb.hasPoint (Vector3 (x: 0, y: 3, z: 3.5)), "hasPoint() with positive size should include point on far face (Z axis).")
     }
     
     func testExpanding () {
