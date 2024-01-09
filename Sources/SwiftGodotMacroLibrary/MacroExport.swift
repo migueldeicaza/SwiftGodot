@@ -64,7 +64,14 @@ public struct GodotExport: PeerMacro {
             } else {
                 body =
     """
-    	\(varName) = \(typeName) (args [0])!
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = \(typeName) (arg) {
+    		\(varName) = value
+    	} else {
+    		GD.printErr ("Unable to set `\(varName)` value: ", arg)
+    	}
     """
             }
         }
