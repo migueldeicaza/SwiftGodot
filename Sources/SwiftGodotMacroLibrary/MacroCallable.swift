@@ -18,6 +18,12 @@ public struct GodotCallable: PeerMacro {
         var genMethod = "func _mproxy_\(funcName) (args: [Variant]) -> Variant? {\n"
         var retProp: String? = nil
         var retOptional: Bool = false
+		
+        if let effects = funcDecl.signature.effectSpecifiers,
+           effects.asyncSpecifier?.presence == .present ||
+            effects.throwsSpecifier?.presence == .present {
+            throw GodotMacroError.unsupportedCallableEffect
+        }
         
         if let (retType, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
             retProp = godotTypeToProp (typeName: retType)
