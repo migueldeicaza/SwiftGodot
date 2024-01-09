@@ -817,7 +817,14 @@ final class MacroGodotTests: XCTestCase {
             	var goodName: String = "Supertop"
             
             	func _mproxy_set_goodName (args: [Variant]) -> Variant? {
-            		goodName = String (args [0])!
+            		guard let arg = args.first else {
+            			return nil
+            		}
+            		if let value = String (arg) {
+            			goodName = value
+            		} else {
+            			GD.printErr ("Unable to set `goodName` value: ", arg)
+            		}
             		return nil
             	}
             
