@@ -171,6 +171,9 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         }
         var value: UnsafeRawPointer = UnsafeRawPointer(bitPattern: 1)!
         toType(.object, dest: &value)
+        if value == UnsafeRawPointer(bitPattern: 0) {
+            return nil
+        }
         let ret: T? = lookupObject(nativeHandle: value)
         return ret
     }
