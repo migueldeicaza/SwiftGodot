@@ -151,6 +151,19 @@ func generateBuiltinCtors (_ p: Printer,
                     p ("self.y = 0")
                     p ("self.z = 0")
                     p ("self.w = 1")
+                } else if bc.name == "Transform2D" && m.arguments == nil {
+                    p ("self.x = Vector2 (x: 1, y: 0)")
+                    p ("self.y = Vector2 (x: 0, y: 1)")
+                    p ("self.origin = Vector2 ()")                    
+                } else if bc.name == "Basis" && m.arguments == nil {
+                    p ("self.x = Vector3 (x: 1, y: 0, z: 0)")
+                    p ("self.y = Vector3 (x: 0, y: 1, z: 0)")
+                    p ("self.z = Vector3 (x: 0, y: 0, z: 1)")
+                } else if bc.name == "Projection" && m.arguments == nil {
+                    p ("self.x = Vector4 (x: 1, y: 0, z: 0, w: 0)")
+                    p ("self.y = Vector4 (x: 0, y: 1, z: 0, w: 0)")
+                    p ("self.z = Vector4 (x: 0, y: 0, z: 1, w: 0)")
+                    p ("self.w = Vector4 (x: 0, y: 0, z: 0, w: 1)")
                 } else {
                     for x in members {
                         p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
