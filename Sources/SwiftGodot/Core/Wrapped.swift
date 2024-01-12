@@ -443,7 +443,7 @@ func callableProxy (userData: UnsafeMutableRawPointer?, pargs: UnsafePointer<Uns
     var args: [Variant] = []
     if let pargs {
         for i in 0..<argc {
-            let variant = pargs [Int(i)]!.assumingMemoryBound(to: Variant.self).pointee
+            let variant = Variant (fromContent: pargs [Int(i)]!.assumingMemoryBound(to: Variant.ContentType.self).pointee)
             args.append (variant)
         }
     }
