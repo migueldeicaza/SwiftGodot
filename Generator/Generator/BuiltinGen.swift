@@ -484,7 +484,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             conformances.append ("ExpressibleByStringInterpolation")
             conformances.append ("LosslessStringConvertible")
         }
-        if bc.name.starts(with: "Packed") {
+        if bc.name.hasSuffix ("Array") {
             conformances.append ("Collection")
         }
         var proto = ""
@@ -677,7 +677,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
-            if bc.name.starts(with: "Packed") {
+            if bc.name.hasSuffix ("Array") {
                 p ("public var startIndex: Int") {
                     p ("0")
                 }
