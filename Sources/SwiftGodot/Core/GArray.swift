@@ -10,7 +10,7 @@
 public enum ArrayError {
     case outOfRange
 }
-extension GArray: Collection {
+extension GArray {
     /// Initializes an empty, but typed `GArray`. For example: `GArray(Node.self)`
     /// - Parameter type: `T` the type of the elements in the GArray, must conform to `VariantStorable`.
 	public convenience init<T: VariantStorable>(_ type: T.Type = T.self) {
@@ -21,19 +21,6 @@ extension GArray: Collection {
 			script: Variant()
 		)
 	}
-	
-    public func index(after i: Int) -> Int {
-        return i+1
-    }
-    
-    public var startIndex: Int {
-        return 0
-    }
-    
-    /// The collection’s “past the end” position—that is, the position one greater than the last valid subscript argument.
-    public var endIndex: Int {
-        return Int (size())
-    }
     
     public subscript (index: Int) -> Variant {
         get {
