@@ -275,7 +275,7 @@ class GodotMacroProcessor {
     """
     let \(pinfo) = PropInfo (
         propertyType: \(propType),
-        propertyName: "\(prefix ?? "")\(varNameWithoutPrefix)",
+        propertyName: "\(varNameWithPrefix)",
         className: className,
         hint: .\(firstLabeledExpression?.description ?? "none"),
         hintStr: \(secondLabeledExpression?.description ?? "\"\""),
@@ -370,7 +370,7 @@ class GodotMacroProcessor {
     """
     let \(pinfo) = PropInfo (
         propertyType: \(godotTypeToProp(typeName: "Array")),
-        propertyName: "\(prefix ?? "")\(varNameWithoutPrefix.camelCaseToSnakeCase())",
+        propertyName: "\(varNameWithPrefix.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
         hint: .arrayType,
         hintStr: "\(godotArrayElementTypeName)",
