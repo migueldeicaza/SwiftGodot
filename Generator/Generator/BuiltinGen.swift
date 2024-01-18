@@ -418,21 +418,22 @@ func generateBuiltinMethods (_ p: Printer,
         }
     }
     if bc.isKeyed {
-        p.staticVar (name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
-            p ("return gi.variant_get_ptr_keyed_setter (GDEXTENSION_VARIANT_TYPE_DICTIONARY)!")
+        let variantType = builtinTypecode(bc.name)
+        p.staticVar (visibility: "private ", name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
+            p ("return gi.variant_get_ptr_keyed_getter (\(variantType))!")
         }
-        p.staticVar(name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
-            p ("return gi.variant_get_ptr_keyed_getter (GDEXTENSION_VARIANT_TYPE_DICTIONARY)!")
+        p.staticVar (visibility: "private ", name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
+            p ("return gi.variant_get_ptr_keyed_setter (\(variantType))!")
         }
-        p.staticVar(name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
-            p ("return gi.variant_get_ptr_keyed_checker (GDEXTENSION_VARIANT_TYPE_DICTIONARY)!")
+        p.staticVar (visibility: "private ", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
+            p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p ("public subscript (key: Variant) -> Variant?") {
             p ("get") {
                 p ("let keyCopy = key")
                 p ("var result = Variant.zero")
-                p ("if GDictionary.keyed_checker (&content, &keyCopy.content) != 0") {
-                    p ("GDictionary.keyed_getter (&content, &keyCopy.content, &result)")
+                p ("if Self.keyed_checker (&content, &keyCopy.content) != 0") {
+                    p ("Self.keyed_getter (&content, &keyCopy.content, &result)")
                     p ("return Variant (fromContent: result)")
                 }
                 p ("else") {
@@ -442,11 +443,32 @@ func generateBuiltinMethods (_ p: Printer,
             p ("set") {
                 p ("let keyCopy = key")
                 p ("if let newCopy = newValue") {
-                    p ("GDictionary.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
+                    p ("Self.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
                 }
                 p ("else") {
-                    p ("GDictionary.keyed_setter (&content, &keyCopy.content, nil)")
+                    p ("Self.keyed_setter (&content, &keyCopy.content, nil)")
                 }
+            }
+        }
+    }
+    if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
+        let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
+        let variantType = builtinTypecode (bc.name)
+        p.staticVar (visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
+            p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
+        }
+        p.staticVar (visibility: "private ", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
+            p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
+        }
+        p (" public subscript (index: Int64) -> \(godotType)") {
+            p ("mutating get") {
+                p ("var result = \(godotType) ()")
+                p ("Self.indexed_getter (&self, index, &result)")
+                p ("return result")
+            }
+            p ("set") {
+                p ("var value = newValue")
+                p ("Self.indexed_setter (&self, index, &value)")
             }
         }
     }
@@ -651,10 +673,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             
             generateBuiltinMethods(p, bc, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
             generateBuiltinOperators (p, bc, typeName: typeName)
-            
-            if bc.isKeyed {
-                
-            }
             generateBuiltinConstants (p, bc, typeName: typeName)
             
             // Generate the synthetic `end` property
