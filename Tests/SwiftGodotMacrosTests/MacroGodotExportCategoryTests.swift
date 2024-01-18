@@ -1551,4 +1551,289 @@ class Garage: Node {
             macros: testMacros
         )
     }
+    
+    func testGodotExportGroupWithPrefixTerminatedWithNoMatchingExports() {
+        assertMacroExpansion(
+"""
+@Godot
+class Garage: Node {
+    #exportGroup("Example", prefix: "example")
+    @Export var bar: Bool = false
+}
+""",
+            expandedSource:
+"""
+
+class Garage: Node {
+    var bar: Bool = false
+
+    func _mproxy_set_bar (args: [Variant]) -> Variant? {
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Bool (arg) {
+    		bar = value
+    	} else {
+    		GD.printErr ("Unable to set `bar` value: ", arg)
+    	}
+    	return nil
+    }
+
+    func _mproxy_get_bar (args: [Variant]) -> Variant? {
+        return Variant (bar)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Garage")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Garage> (name: className)
+        classInfo.addPropertyGroup(name: "Example", prefix: "example")
+        let _pbar = PropInfo (
+            propertyType: .bool,
+            propertyName: "bar",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "_mproxy_get_bar", flags: .default, returnValue: _pbar, arguments: [], function: Garage._mproxy_get_bar)
+    	classInfo.registerMethod (name: "_mproxy_set_bar", flags: .default, returnValue: nil, arguments: [_pbar], function: Garage._mproxy_set_bar)
+    	classInfo.registerProperty (_pbar, getter: "_mproxy_get_bar", setter: "_mproxy_set_bar")
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+    func testGodotExportGroupWithPrefixTerminatedWithOneMatchingExport() {
+        assertMacroExpansion(
+"""
+@Godot
+public class Issue353: Node {
+    #exportGroup("Group With a Prefix", prefix: "prefix1")
+    @Export var prefix1_prefixed_bool: Bool = true
+    @Export var non_prefixed_bool: Bool = true
+}
+""",
+            expandedSource:
+"""
+
+public class Issue353: Node {
+    var prefix1_prefixed_bool: Bool = true
+
+    func _mproxy_set_prefix1_prefixed_bool (args: [Variant]) -> Variant? {
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Bool (arg) {
+    		prefix1_prefixed_bool = value
+    	} else {
+    		GD.printErr ("Unable to set `prefix1_prefixed_bool` value: ", arg)
+    	}
+    	return nil
+    }
+
+    func _mproxy_get_prefix1_prefixed_bool (args: [Variant]) -> Variant? {
+        return Variant (prefix1_prefixed_bool)
+    }
+    var non_prefixed_bool: Bool = true
+
+    func _mproxy_set_non_prefixed_bool (args: [Variant]) -> Variant? {
+    	guard let arg = args.first else {
+    		return nil
+    	}
+    	if let value = Bool (arg) {
+    		non_prefixed_bool = value
+    	} else {
+    		GD.printErr ("Unable to set `non_prefixed_bool` value: ", arg)
+    	}
+    	return nil
+    }
+
+    func _mproxy_get_non_prefixed_bool (args: [Variant]) -> Variant? {
+        return Variant (non_prefixed_bool)
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Issue353")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Issue353> (name: className)
+        classInfo.addPropertyGroup(name: "Group With a Prefix", prefix: "prefix1")
+        let _pprefix1_prefixed_bool = PropInfo (
+            propertyType: .bool,
+            propertyName: "prefix1_prefixed_bool",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "_mproxy_get__prefixed_bool", flags: .default, returnValue: _pprefix1_prefixed_bool, arguments: [], function: Issue353._mproxy_get_prefix1_prefixed_bool)
+    	classInfo.registerMethod (name: "_mproxy_set__prefixed_bool", flags: .default, returnValue: nil, arguments: [_pprefix1_prefixed_bool], function: Issue353._mproxy_set_prefix1_prefixed_bool)
+    	classInfo.registerProperty (_pprefix1_prefixed_bool, getter: "_mproxy_get__prefixed_bool", setter: "_mproxy_set__prefixed_bool")
+        let _pnon_prefixed_bool = PropInfo (
+            propertyType: .bool,
+            propertyName: "non_prefixed_bool",
+            className: className,
+            hint: .none,
+            hintStr: "",
+            usage: .default)
+    	classInfo.registerMethod (name: "_mproxy_get_non_prefixed_bool", flags: .default, returnValue: _pnon_prefixed_bool, arguments: [], function: Issue353._mproxy_get_non_prefixed_bool)
+    	classInfo.registerMethod (name: "_mproxy_set_non_prefixed_bool", flags: .default, returnValue: nil, arguments: [_pnon_prefixed_bool], function: Issue353._mproxy_set_non_prefixed_bool)
+    	classInfo.registerProperty (_pnon_prefixed_bool, getter: "_mproxy_get_non_prefixed_bool", setter: "_mproxy_set_non_prefixed_bool")
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+    func testGodotExportGroupWithPrefixTerminatedWithNoMatchingCollectionExports() {
+        assertMacroExpansion(
+"""
+@Godot
+class Garage: Node {
+    #exportGroup("Example", prefix: "example")
+    @Export var bar: VariantCollection<Bool> = [false]
+}
+""",
+            expandedSource:
+"""
+
+class Garage: Node {
+    var bar: VariantCollection<Bool> = [false]
+
+    func _mproxy_get_bar(args: [Variant]) -> Variant? {
+    	return Variant(bar.array)
+    }
+
+    func _mproxy_set_bar(args: [Variant]) -> Variant? {
+    	guard let arg = args.first,
+    		  let gArray = GArray(arg),
+    		  gArray.isTyped(),
+    		  gArray.isSameTyped(array: GArray(Bool.self)) else {
+    		return nil
+    	}
+    	bar.array = gArray
+    	return nil
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Garage")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Garage> (name: className)
+        classInfo.addPropertyGroup(name: "Example", prefix: "example")
+        let _pbar = PropInfo (
+            propertyType: .array,
+            propertyName: "bar",
+            className: StringName("Array[bool]"),
+            hint: .arrayType,
+            hintStr: "bool",
+            usage: .array)
+    	classInfo.registerMethod (name: "get_bar", flags: .default, returnValue: _pbar, arguments: [], function: Garage._mproxy_get_bar)
+    	classInfo.registerMethod (name: "set_bar", flags: .default, returnValue: nil, arguments: [_pbar], function: Garage._mproxy_set_bar)
+    	classInfo.registerProperty (_pbar, getter: "get_bar", setter: "set_bar")
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
+    
+    func testGodotExportGroupWithPrefixTerminatedWithOneMatchingCollectionExport() {
+        assertMacroExpansion(
+"""
+@Godot
+public class Issue353: Node {
+    #exportGroup("Group With a Prefix", prefix: "prefix1")
+    @Export var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
+    @Export var non_prefixed_bool: VariantCollection<Bool> = [false]
+}
+""",
+            expandedSource:
+"""
+
+public class Issue353: Node {
+    var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
+
+    func _mproxy_get_prefix1_prefixed_bool(args: [Variant]) -> Variant? {
+    	return Variant(prefix1_prefixed_bool.array)
+    }
+
+    func _mproxy_set_prefix1_prefixed_bool(args: [Variant]) -> Variant? {
+    	guard let arg = args.first,
+    		  let gArray = GArray(arg),
+    		  gArray.isTyped(),
+    		  gArray.isSameTyped(array: GArray(Bool.self)) else {
+    		return nil
+    	}
+    	prefix1_prefixed_bool.array = gArray
+    	return nil
+    }
+    var non_prefixed_bool: VariantCollection<Bool> = [false]
+
+    func _mproxy_get_non_prefixed_bool(args: [Variant]) -> Variant? {
+    	return Variant(non_prefixed_bool.array)
+    }
+
+    func _mproxy_set_non_prefixed_bool(args: [Variant]) -> Variant? {
+    	guard let arg = args.first,
+    		  let gArray = GArray(arg),
+    		  gArray.isTyped(),
+    		  gArray.isSameTyped(array: GArray(Bool.self)) else {
+    		return nil
+    	}
+    	non_prefixed_bool.array = gArray
+    	return nil
+    }
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static var _initializeClass: Void = {
+        let className = StringName("Issue353")
+        assert(ClassDB.classExists(class: className))
+        let classInfo = ClassInfo<Issue353> (name: className)
+        classInfo.addPropertyGroup(name: "Group With a Prefix", prefix: "prefix1")
+        let _pprefix1_prefixed_bool = PropInfo (
+            propertyType: .array,
+            propertyName: "prefix1_prefixed_bool",
+            className: StringName("Array[bool]"),
+            hint: .arrayType,
+            hintStr: "bool",
+            usage: .array)
+    	classInfo.registerMethod (name: "get__prefixed_bool", flags: .default, returnValue: _pprefix1_prefixed_bool, arguments: [], function: Issue353._mproxy_get_prefix1_prefixed_bool)
+    	classInfo.registerMethod (name: "set__prefixed_bool", flags: .default, returnValue: nil, arguments: [_pprefix1_prefixed_bool], function: Issue353._mproxy_set_prefix1_prefixed_bool)
+    	classInfo.registerProperty (_pprefix1_prefixed_bool, getter: "get__prefixed_bool", setter: "set__prefixed_bool")
+        let _pnon_prefixed_bool = PropInfo (
+            propertyType: .array,
+            propertyName: "non_prefixed_bool",
+            className: StringName("Array[bool]"),
+            hint: .arrayType,
+            hintStr: "bool",
+            usage: .array)
+    	classInfo.registerMethod (name: "get_non_prefixed_bool", flags: .default, returnValue: _pnon_prefixed_bool, arguments: [], function: Issue353._mproxy_get_non_prefixed_bool)
+    	classInfo.registerMethod (name: "set_non_prefixed_bool", flags: .default, returnValue: nil, arguments: [_pnon_prefixed_bool], function: Issue353._mproxy_set_non_prefixed_bool)
+    	classInfo.registerProperty (_pnon_prefixed_bool, getter: "get_non_prefixed_bool", setter: "set_non_prefixed_bool")
+    } ()
+}
+""",
+            macros: testMacros
+        )
+    }
 }
