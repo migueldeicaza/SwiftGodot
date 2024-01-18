@@ -132,6 +132,8 @@ struct GodotInterface {
     let variant_get_ptr_utility_function:
     GDExtensionInterfaceVariantGetPtrUtilityFunction
     let variant_get_ptr_destructor: GDExtensionInterfaceVariantGetPtrDestructor
+    let variant_get_ptr_indexed_getter: GDExtensionInterfaceVariantGetPtrIndexedGetter
+    let variant_get_ptr_indexed_setter: GDExtensionInterfaceVariantGetPtrIndexedSetter
     let variant_get_ptr_keyed_checker: GDExtensionInterfaceVariantGetPtrKeyedChecker
     let variant_get_ptr_keyed_getter: GDExtensionInterfaceVariantGetPtrKeyedGetter
     let variant_get_ptr_keyed_setter: GDExtensionInterfaceVariantGetPtrKeyedSetter
@@ -218,6 +220,8 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         variant_get_ptr_operator_evaluator: load ("variant_get_ptr_operator_evaluator"),
         variant_get_ptr_utility_function: load ("variant_get_ptr_utility_function"),
         variant_get_ptr_destructor: load ("variant_get_ptr_destructor"),
+        variant_get_ptr_indexed_getter: load ("variant_get_ptr_indexed_getter"),
+        variant_get_ptr_indexed_setter: load ("variant_get_ptr_indexed_setter"),
         variant_get_ptr_keyed_checker: load ("variant_get_ptr_keyed_checker"),
         variant_get_ptr_keyed_getter: load ("variant_get_ptr_keyed_getter"),
         variant_get_ptr_keyed_setter: load ("variant_get_ptr_keyed_setter"),
