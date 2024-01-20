@@ -535,7 +535,16 @@ public struct GodotMacro: MemberMacro {
                     return stringName
                 }
                 
-                var implementedOverridesDecl = "override \(accessControlLevel) class func implementedOverrides() -> [StringName] {\nsuper.implementedOverrides() + [\n"
+                var isTool: Bool = false
+                if case let .argumentList (arguments) = node.arguments, let expression = arguments.first?.expression {
+                    isTool = expression.description.trimmingCharacters (in: .whitespacesAndNewlines) .hasSuffix(".tool")
+                }
+                
+                var implementedOverridesDecl = "override \(accessControlLevel) class func implementedOverrides () -> [StringName] {\n"
+                if !isTool {
+                    implementedOverridesDecl += "guard !Engine.isEditorHint () else { return [] }\n"
+                }
+                implementedOverridesDecl += "return super.implementedOverrides () + [\n"
                 for name in stringNames {
                     implementedOverridesDecl.append("\t\(name),\n")
                 }

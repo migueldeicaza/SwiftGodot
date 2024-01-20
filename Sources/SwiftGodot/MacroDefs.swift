@@ -14,9 +14,16 @@
 /// any `@Export` and `@Callable` methods for the class effectively surfacing properties and
 /// methods to godot
 ///
+/// - Parameter behavior: using `.tool` value makes the overridden methods like `_ready` or
+/// `_process` run in editor, making the class work like `@tool` annotated script in GDScript
+///
 @attached(member,
           names: named (_initializeClass), named(classInitializer), named (implementedOverrides))
-public macro Godot() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
+public macro Godot(_ behavior: ClassBehavior = .gameplay) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
+
+public enum ClassBehavior: Int {
+    case gameplay, tool
+}
 
 /// Exposes the function to the Godot runtime
 ///
