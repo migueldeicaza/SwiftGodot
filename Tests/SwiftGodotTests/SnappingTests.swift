@@ -3,29 +3,65 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 final class SnappingTests: GodotTestCase {
-    override static func godotSetUp () {
-        registerTypes ()
-    }
-    
+
     func testSnapDouble() {
+        XCTAssertEqual(Double(0).snapped(step: 10), 0)
+        XCTAssertEqual(Double(1).snapped(step: 10), 0)
+        XCTAssertEqual(Double(5).snapped(step: 10), 10)
+        XCTAssertEqual(Double(9).snapped(step: 10), 10)
+        XCTAssertEqual(Double(10).snapped(step: 10), 10)
+        XCTAssertEqual(Double(1.1).snapped(step: 1), 1)
+        XCTAssertEqual(Double(1.49).snapped(step: 1), 1)
+        XCTAssertEqual(Double(1.5).snapped(step: 1), 2)
+        XCTAssertEqual(Double(1.9).snapped(step: 1), 2)
+        XCTAssertEqual(Double(1.7).snapped(step: 3.5), 0)
+        XCTAssertEqual(Double(1.75).snapped(step: 3.5), 3.5)
+        XCTAssertEqual(Double(1.1).snapped(step: 0), 1.1)
+        
+        XCTAssertEqual(Double(-1).snapped(step: 10), 0)
+        XCTAssertEqual(Double(-5).snapped(step: 10), 0)
+        XCTAssertEqual(Double(-5.1).snapped(step: 10), -10)
+        XCTAssertEqual(Double(-9).snapped(step: 10), -10)
+        XCTAssertEqual(Double(-10).snapped(step: 10), -10)
+        XCTAssertEqual(Double(-1.1).snapped(step: 1), -1)
+        XCTAssertEqual(Double(-1.49).snapped(step: 1), -1)
+        XCTAssertEqual(Double(-1.5).snapped(step: 1), -1)
+        XCTAssertEqual(Double(-1.51).snapped(step: 1), -2)
+        XCTAssertEqual(Double(-1.9).snapped(step: 1), -2)
+        XCTAssertEqual(Double(-1.75).snapped(step: 3.5), 0)
+        XCTAssertEqual(Double(-1.751).snapped(step: 3.5), -3.5)
+        XCTAssertEqual(Double(-1.1).snapped(step: 0), -1.1)
+        
         XCTAssertEqual(Double(1008).snapped(step: 1000), 1000)
         XCTAssertEqual(Double(4023).snapped(step: 1000), 4000)
         XCTAssertEqual(Double(128).snapped(step: 128), 128)
-        XCTAssertEqual(Double(128).snapped(step: 200), 0)
+        XCTAssertEqual(Double(128).snapped(step: 200), 200)
     }
     
     func testSnapFloat() {
         XCTAssertEqual(Float(1008).snapped(step: 1000), 1000)
         XCTAssertEqual(Float(4023).snapped(step: 1000), 4000)
         XCTAssertEqual(Float(128).snapped(step: 128), 128)
-        XCTAssertEqual(Float(128).snapped(step: 200), 0)
+        XCTAssertEqual(Float(128).snapped(step: 200), 200)
     }
     
     func testSnapInt() {
+        XCTAssertEqual(Int(0).snapped(step: 10), 0)
+        XCTAssertEqual(Int(1).snapped(step: 10), 0)
+        XCTAssertEqual(Int(5).snapped(step: 10), 10)
+        XCTAssertEqual(Int(9).snapped(step: 10), 10)
+        XCTAssertEqual(Int(10).snapped(step: 10), 10)
+        
+        XCTAssertEqual(Int(-1).snapped(step: 10), 0)
+        XCTAssertEqual(Int(-5).snapped(step: 10), 0)
+        XCTAssertEqual(Int(-6).snapped(step: 10), -10)
+        XCTAssertEqual(Int(-9).snapped(step: 10), -10)
+        XCTAssertEqual(Int(-10).snapped(step: 10), -10)
+        
         XCTAssertEqual(Int(1008).snapped(step: 1000), 1000)
         XCTAssertEqual(Int(4023).snapped(step: 1000), 4000)
         XCTAssertEqual(Int(128).snapped(step: 128), 128)
-        XCTAssertEqual(Int(128).snapped(step: 200), 0)
+        XCTAssertEqual(Int(128).snapped(step: 200), 200)
     }
     
     func testSnapVector4() {

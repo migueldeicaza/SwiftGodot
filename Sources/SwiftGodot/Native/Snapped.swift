@@ -5,15 +5,18 @@ public protocol Snappable {
     func snapped(step: Self) -> Self
 }
 
-extension Numeric where Self: FloatingPoint {
+extension Numeric where Self: FloatingPoint & ExpressibleByFloatLiteral {
     public func snapped(step: Self) -> Self {
-        return self - self.truncatingRemainder(dividingBy: step)
+        if step.isZero {
+            return self
+        }
+        return floor(self / step + 0.5) * step
     }
 }
 
 extension Numeric where Self: SignedInteger {
     public func snapped(step: Self) -> Self {
-        return self - self % step
+        return Self(Double(self).snapped(step: Double(step)))
     }
 }
 
