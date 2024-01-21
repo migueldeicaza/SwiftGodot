@@ -248,7 +248,7 @@ final class BasisTests: GodotTestCase {
         basis = Basis.fromScale (Vector3 (x: 1.2, y: 3.4, z: 5.6))
         XCTAssertFalse (basis.isConformal (), "Basis with non-uniform scale should not be conformal.")
         
-        basis = Basis (xAxis: Vector3 (x: Float (0.5.squareRoot ()), y: Float (0.5.squareRoot ()), z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
+        basis = Basis (xAxis: Vector3 (x: Float.sqrt12, y: Float.sqrt12, z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
         XCTAssertFalse (basis.isConformal (), "Basis with the X axis skewed 45 degrees should not be conformal.")
     }
     

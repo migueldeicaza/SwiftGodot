@@ -90,7 +90,7 @@ final class Transform2DTests: GodotTestCase {
         XCTAssertTrue (Transform2D (xAxis: Vector2 (x: 1.2, y: 0), yAxis: Vector2 (x: 0, y: 1.2), origin: Vector2 ()).isConformal (), "Transform2D with only uniform scale should be conformal.")
         XCTAssertTrue (Transform2D (xAxis: Vector2 (x: 1.2, y: 3.4), yAxis: Vector2 (x: 3.4, y: -1.2), origin: Vector2 ()).isConformal (), "Transform2D with a flip, rotation, and uniform scale should be conformal.")
         XCTAssertFalse (Transform2D (xAxis: Vector2 (x: 1.2, y: 0), yAxis: Vector2 (x: 0, y: 3.4), origin: Vector2 ()).isConformal (), "Transform2D with non-uniform scale should not be conformal.")
-        XCTAssertFalse (Transform2D (xAxis: Vector2 (x: Float (0.5).squareRoot (), y: Float (0.5).squareRoot ()), yAxis: Vector2 (x: 0, y: 1), origin: Vector2 ()).isConformal (), "Transform2D with the X axis skewed 45 degrees should not be conformal.")
+        XCTAssertFalse (Transform2D (xAxis: Vector2 (x: Float.sqrt12, y: Float.sqrt12), yAxis: Vector2 (x: 0, y: 1), origin: Vector2 ()).isConformal (), "Transform2D with the X axis skewed 45 degrees should not be conformal.")
     }
     
 }
