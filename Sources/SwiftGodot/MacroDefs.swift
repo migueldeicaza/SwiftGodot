@@ -89,7 +89,7 @@ public macro exportGroup(_ name: String, prefix: String = "") = #externalMacro(m
 ///
 /// - Parameter cdecl: The name of the entrypoint exposed to C.
 /// - Parameter types: The node types that should be registered with Godot.
-@freestanding(declaration, names: named(enterExtension), named(setupExtension))
+@freestanding(declaration, names: named(enterExtension))
 public macro initSwiftExtension(cdecl: String,
                                 types: [Wrapped.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")

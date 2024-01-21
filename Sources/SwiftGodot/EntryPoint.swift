@@ -84,7 +84,8 @@ struct GodotInterface {
     let classdb_register_extension_class_property_group: GDExtensionInterfaceClassdbRegisterExtensionClassPropertyGroup
     let classdb_register_extension_class_property_subgroup:
     GDExtensionInterfaceClassdbRegisterExtensionClassPropertySubgroup
-    
+    let classdb_unregister_extension_class: GDExtensionInterfaceClassdbUnregisterExtensionClass
+
     let object_set_instance: GDExtensionInterfaceObjectSetInstance
     let object_set_instance_binding: GDExtensionInterfaceObjectSetInstanceBinding
     let object_get_class_name: GDExtensionInterfaceObjectGetClassName
@@ -198,6 +199,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         classdb_register_extension_class_property: load ("classdb_register_extension_class_property"),
         classdb_register_extension_class_property_group: load ("classdb_register_extension_class_property_group"),
         classdb_register_extension_class_property_subgroup: load ("classdb_register_extension_class_property_subgroup"),
+        classdb_unregister_extension_class: load ("classdb_unregister_extension_class"),
         
         object_set_instance: load ("object_set_instance"),
         object_set_instance_binding: load ("object_set_instance_binding"),
@@ -300,12 +302,12 @@ public func initializeSwiftModule (
     if library == nil {
         library = GDExtensionClassLibraryPtr(libraryPtr)
     }
+    extensionInitCallbacks = [initHook]
+    extensionDeInitCallbacks = [deInitHook]
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
-    initialization.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_CORE
-    extensionInitCallbacks.append(initHook)
-    extensionDeInitCallbacks.append (deInitHook)
+    initialization.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_SCENE
 }
 
 /*

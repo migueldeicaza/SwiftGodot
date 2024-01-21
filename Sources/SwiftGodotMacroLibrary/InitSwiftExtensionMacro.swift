@@ -28,28 +28,30 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
 		}
 
         let initModule: DeclSyntax = """
-        @_cdecl(\(raw: cDecl.description)) public func enterExtension(interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
+        @_cdecl(\(raw: cDecl.description)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
             guard let library, let interface, let `extension` else {
-                print("Error: Not all parameters were initialized.")
+                print ("Error: Not all parameters were initialized.")
                 return 0
             }
-            let deinitHook: (GDExtension.InitializationLevel) -> Void = { _ in }
-            initializeSwiftModule(interface, library, `extension`, initHook: setupExtension, deInitHook: deinitHook)
+            let types: [Wrapped.Type] = \(types)
+            initializeSwiftModule (interface, library, `extension`, initHook: { level in
+                switch level {
+                case .scene:
+                    types.forEach (register)
+                default:
+                    break
+                }
+            }, deInitHook: { level in
+                switch level {
+                case .scene:
+                    types.forEach (unregister)
+                default:
+                    break
+                }
+            })
             return 1
         }
         """
-
-        let setupModule: DeclSyntax = """
-        func setupExtension(level: GDExtension.InitializationLevel) {
-            let types: [Wrapped.Type] = \(types)
-            switch level {
-            case .scene:
-                types.forEach(register)
-            default:
-                break
-            }
-        }
-        """
-        return [initModule, setupModule]
+        return [initModule]
     }
 }

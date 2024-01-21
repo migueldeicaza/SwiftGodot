@@ -245,6 +245,15 @@ public func register<T:Wrapped> (type: T.Type) {
     register (type: StringName (typeStr), parent: StringName (superStr), type: type)
 }
 
+public func unregister<T:Wrapped> (type: T.Type) {
+    let typeStr = String (describing: type)
+    let name = StringName (typeStr)
+    pd ("Unregistering \(typeStr)")
+    withUnsafePointer (to: &name.content) { namePtr in
+        gi.classdb_unregister_extension_class (library, namePtr)
+    }
+}
+
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
 fileprivate var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
