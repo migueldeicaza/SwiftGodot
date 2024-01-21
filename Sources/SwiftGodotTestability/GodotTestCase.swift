@@ -73,6 +73,12 @@ public extension GodotTestCase {
     }
     
     /// Asserts approximate equality of two vectors by comparing approximately each component
+    func assertApproxEqual (_ a: Vector2, _ b: Vector2, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        assertApproxEqual (a.x, b.x, "Fail due to X. " + message, file: file, line: line)
+        assertApproxEqual (a.y, b.y, "Fail due to Y. " + message, file: file, line: line)
+    }
+    
+    /// Asserts approximate equality of two vectors by comparing approximately each component
     func assertApproxEqual (_ a: Vector3, _ b: Vector3, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
         assertApproxEqual (a.x, b.x, "Fail due to X. " + message, file: file, line: line)
         assertApproxEqual (a.y, b.y, "Fail due to Y. " + message, file: file, line: line)
