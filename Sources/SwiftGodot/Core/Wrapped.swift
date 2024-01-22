@@ -312,9 +312,8 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
         } else {
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
-    } else {
-        print ("Could not find a register used type for \(className), falling back to creaeting a \(T.self)")
-    }
+    } 
+    
     return T.init (nativeHandle: nativeHandle)
 }
 
@@ -411,7 +410,6 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
-    print ("SWIFT: frameworkBindingFree instance=\(String(describing: instance)) binding=\(String(describing: binding)) token=\(String(describing: token))")
     if let key = instance  {
         tableLock.withLockVoid {
             if let removed = liveFrameworkObjects.removeValue(forKey: key) {
