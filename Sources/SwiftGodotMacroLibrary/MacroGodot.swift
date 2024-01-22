@@ -160,6 +160,14 @@ class GodotMacroProcessor {
         )
     }
     
+    func processExportSubgroup(name: String, prefix: String) {
+        ctor.append(
+            """
+            classInfo.addPropertySubgroup(name: "\(name)", prefix: "\(prefix)")\n
+            """
+        )
+    }
+    
     // Processes a function
     func processFunction (_ funcDecl: FunctionDeclSyntax) throws {
         guard hasCallableAttribute(funcDecl.attributes) else {
@@ -394,22 +402,27 @@ class GodotMacroProcessor {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
-        var previousPrefix: String? = nil
+        var previousGroupPrefix: String? = nil
+        var previousSubgroupPrefix: String? = nil
         
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
             
             if let macroExpansion = MacroExpansionDeclSyntax(decl),
                let name = macroExpansion.exportGroupName {
-                previousPrefix = macroExpansion.exportGroupPrefix ?? ""
-                processExportGroup(name: name, prefix: previousPrefix ?? "")
+                previousGroupPrefix = macroExpansion.exportGroupPrefix ?? ""
+                processExportGroup(name: name, prefix: previousGroupPrefix ?? "")
+            } else if let macroExpansion = MacroExpansionDeclSyntax(decl),
+                 let name = macroExpansion.exportSubgroupName {
+                previousSubgroupPrefix = macroExpansion.exportSubgroupPrefix ?? ""
+                processExportSubgroup(name: name, prefix: previousSubgroupPrefix ?? "")
             } else if let funcDecl = FunctionDeclSyntax(decl) {
 				try processFunction (funcDecl)
 			} else if let varDecl = VariableDeclSyntax(decl) {
 				if varDecl.isGArrayCollection {
-                    try processGArrayCollectionVariable(varDecl, prefix: previousPrefix)
+                    try processGArrayCollectionVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
 				} else {
-					try processVariable(varDecl, prefix: previousPrefix)
+					try processVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
 				}
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
@@ -586,6 +599,10 @@ private extension MacroExpansionDeclSyntax {
         macroName.text == "exportGroup"
     }
     
+    private var isExportSubgroup: Bool {
+        macroName.text == "exportSubgroup"
+    }
+    
     var exportGroupPrefix: String? {
         guard isExportGroup, arguments.count == 2 else { return nil }
         return arguments
@@ -602,6 +619,34 @@ private extension MacroExpansionDeclSyntax {
     
     var exportGroupName: String? {
         guard isExportGroup, arguments.count >= 1 else { return nil }
+        return arguments
+            .first?
+            .as(LabeledExprSyntax.self)?
+            .expression
+            .as(StringLiteralExprSyntax.self)?
+            .segments
+            .first?
+            .as(StringSegmentSyntax.self)?
+            .content
+            .text
+    }
+    
+    var exportSubgroupPrefix: String? {
+        guard isExportSubgroup, arguments.count == 2 else { return nil }
+        return arguments
+            .last?
+            .as(LabeledExprSyntax.self)?
+            .expression
+            .as(StringLiteralExprSyntax.self)?
+            .segments
+            .first?
+            .as(StringSegmentSyntax.self)?
+            .content
+            .text
+    }
+    
+    var exportSubgroupName: String? {
+        guard isExportSubgroup, arguments.count >= 1 else { return nil }
         return arguments
             .first?
             .as(LabeledExprSyntax.self)?
