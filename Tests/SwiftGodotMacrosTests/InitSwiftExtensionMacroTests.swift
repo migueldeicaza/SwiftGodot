@@ -22,24 +22,28 @@ final class InitSwiftExtensionMacroTests: XCTestCase {
             #initSwiftExtension(cdecl: "libchrysalis_entry_point")
             """,
             expandedSource: """
-            @_cdecl("libchrysalis_entry_point") public func enterExtension(interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
+            @_cdecl("libchrysalis_entry_point") public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
                 guard let library, let interface, let `extension` else {
-                    print("Error: Not all parameters were initialized.")
+                    print ("Error: Not all parameters were initialized.")
                     return 0
                 }
-                let deinitHook: (GDExtension.InitializationLevel) -> Void = { _ in
-                }
-                initializeSwiftModule(interface, library, `extension`, initHook: setupExtension, deInitHook: deinitHook)
-                return 1
-            }
-            func setupExtension(level: GDExtension.InitializationLevel) {
                 let types: [Wrapped.Type] = []
-                switch level {
-                case .scene:
-                    types.forEach(register)
-                default:
-                    break
-                }
+                initializeSwiftModule (interface, library, `extension`, initHook: { level in
+                    switch level {
+                    case .scene:
+                        types.forEach (register)
+                    default:
+                        break
+                    }
+                }, deInitHook: { level in
+                    switch level {
+                    case .scene:
+                        types.forEach (unregister)
+                    default:
+                        break
+                    }
+                })
+                return 1
             }
             """,
             macros: testMacros
@@ -52,24 +56,28 @@ final class InitSwiftExtensionMacroTests: XCTestCase {
             #initSwiftExtension(cdecl: "libchrysalis_entry_point", types: [])
             """,
             expandedSource: """
-            @_cdecl("libchrysalis_entry_point") public func enterExtension(interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
+            @_cdecl("libchrysalis_entry_point") public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
                 guard let library, let interface, let `extension` else {
-                    print("Error: Not all parameters were initialized.")
+                    print ("Error: Not all parameters were initialized.")
                     return 0
                 }
-                let deinitHook: (GDExtension.InitializationLevel) -> Void = { _ in
-                }
-                initializeSwiftModule(interface, library, `extension`, initHook: setupExtension, deInitHook: deinitHook)
-                return 1
-            }
-            func setupExtension(level: GDExtension.InitializationLevel) {
                 let types: [Wrapped.Type] = []
-                switch level {
-                case .scene:
-                    types.forEach(register)
-                default:
-                    break
-                }
+                initializeSwiftModule (interface, library, `extension`, initHook: { level in
+                    switch level {
+                    case .scene:
+                        types.forEach (register)
+                    default:
+                        break
+                    }
+                }, deInitHook: { level in
+                    switch level {
+                    case .scene:
+                        types.forEach (unregister)
+                    default:
+                        break
+                    }
+                })
+                return 1
             }
             """,
             macros: testMacros
@@ -82,24 +90,28 @@ final class InitSwiftExtensionMacroTests: XCTestCase {
             #initSwiftExtension(cdecl: "libchrysalis_entry_point", types: [ChrysalisNode.self])
             """,
             expandedSource: """
-            @_cdecl("libchrysalis_entry_point") public func enterExtension(interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
+            @_cdecl("libchrysalis_entry_point") public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
                 guard let library, let interface, let `extension` else {
-                    print("Error: Not all parameters were initialized.")
+                    print ("Error: Not all parameters were initialized.")
                     return 0
                 }
-                let deinitHook: (GDExtension.InitializationLevel) -> Void = { _ in
-                }
-                initializeSwiftModule(interface, library, `extension`, initHook: setupExtension, deInitHook: deinitHook)
-                return 1
-            }
-            func setupExtension(level: GDExtension.InitializationLevel) {
                 let types: [Wrapped.Type] = [ChrysalisNode.self]
-                switch level {
-                case .scene:
-                    types.forEach(register)
-                default:
-                    break
-                }
+                initializeSwiftModule (interface, library, `extension`, initHook: { level in
+                    switch level {
+                    case .scene:
+                        types.forEach (register)
+                    default:
+                        break
+                    }
+                }, deInitHook: { level in
+                    switch level {
+                    case .scene:
+                        types.forEach (unregister)
+                    default:
+                        break
+                    }
+                })
+                return 1
             }
             """,
             macros: testMacros
