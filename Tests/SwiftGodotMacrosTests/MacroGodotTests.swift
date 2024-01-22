@@ -305,7 +305,7 @@ final class MacroGodotTests: XCTestCase {
                     let oldRef = dynamicCast (data, as: RefCounted.self)
                     if let res: MyData = args [0].asObject () {
                         dynamicCast (res, as: RefCounted.self)?.reference()
-                        data = res
+                        self.data = res
                     }
                     oldRef?.unreference()
                 	return nil
@@ -824,7 +824,7 @@ final class MacroGodotTests: XCTestCase {
             			return nil
             		}
             		if let value = String (arg) {
-            			goodName = value
+            			self.goodName = value
             		} else {
             			GD.printErr ("Unable to set `goodName` value: ", arg)
             		}
