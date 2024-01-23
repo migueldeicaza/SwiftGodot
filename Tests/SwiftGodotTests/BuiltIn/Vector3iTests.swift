@@ -11,6 +11,35 @@ import SwiftGodotTestability
 
 final class Vector3iTests: GodotTestCase {
     
+    func testOperatorUnaryMinus () {
+        var value: Vector3i
+        
+        value = -Vector3i (x: -1, y: 2, z: -3)
+        XCTAssertEqual (value.x, 1)
+        XCTAssertEqual (value.y, -2)
+        XCTAssertEqual (value.z, 3)
+        
+        value = -Vector3i (x: 4, y: -5, z: 6)
+        XCTAssertEqual (value.x, -4)
+        XCTAssertEqual (value.y, 5)
+        XCTAssertEqual (value.z, -6)
+        
+        value = -Vector3i (x: Int32.max, y: Int32.max, z: Int32.max)
+        XCTAssertEqual (value.x, Int32.min + 1)
+        XCTAssertEqual (value.y, Int32.min + 1)
+        XCTAssertEqual (value.z, Int32.min + 1)
+        
+        value = -Vector3i (x: Int32.min + 1, y: Int32.min + 1, z: Int32.min + 1)
+        XCTAssertEqual (value.x, Int32.max)
+        XCTAssertEqual (value.y, Int32.max)
+        XCTAssertEqual (value.z, Int32.max)
+        
+        value = -Vector3i (x: Int32.min, y: Int32.min, z: Int32.min)
+        XCTAssertEqual (value.x, Int32.min)
+        XCTAssertEqual (value.y, Int32.min)
+        XCTAssertEqual (value.z, Int32.min)
+    }
+    
     func testOperatorPlus () {
         var value: Vector3i
         
