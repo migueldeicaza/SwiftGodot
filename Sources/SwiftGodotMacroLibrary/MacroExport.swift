@@ -51,7 +51,7 @@ public struct GodotExport: PeerMacro {
         let oldRef = dynamicCast (\(varName), as: RefCounted.self)
         if let res: \(typeName) = args [0].asObject () {
             dynamicCast (res, as: RefCounted.self)?.reference()
-            \(varName) = res
+            self.\(varName) = res
         }\(optBody)
         oldRef?.unreference()
     """
@@ -68,7 +68,7 @@ public struct GodotExport: PeerMacro {
     		return nil
     	}
     	if let value = \(typeName) (arg) {
-    		\(varName) = value
+    		self.\(varName) = value
     	} else {
     		GD.printErr ("Unable to set `\(varName)` value: ", arg)
     	}
