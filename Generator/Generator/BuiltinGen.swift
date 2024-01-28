@@ -551,9 +551,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                         p ("NodePath.constructor2 (&content, &args)")
                     }
                 }
+                p ("/// Produces a string representation of this NodePath")
                 p ("public var description: String") {
                     p ("let sub = getConcatenatedSubnames ().description")
-                    p ("return getConcatenatedNames ().description + (sub == \"\" ? sub : \":\\(sub)\")")
+                    p ("return (isAbsolute() ? \"/\" : \"\") + getConcatenatedNames ().description + (sub == \"\" ? sub : \":\\(sub)\")")
                 }
             }
             if bc.name == "StringName" {
