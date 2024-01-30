@@ -99,6 +99,7 @@ struct GodotInterface {
     let mem_alloc: GDExtensionInterfaceMemAlloc
     let mem_realloc: GDExtensionInterfaceMemRealloc
     let mem_free: GDExtensionInterfaceMemFree
+    let mem_release: GDExtensionInterfaceMemFree
     
     let print_error: GDExtensionInterfacePrintError
     let print_error_with_message: GDExtensionInterfacePrintErrorWithMessage
@@ -219,6 +220,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         mem_alloc: load ("mem_alloc"),
         mem_realloc: load ("mem_realloc"),
         mem_free: load ("mem_free"),
+        mem_release: load ("mem_release"),
         
         print_error: load ("print_error"),
         print_error_with_message: load ("print_error_with_message"),
