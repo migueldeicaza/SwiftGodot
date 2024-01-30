@@ -145,7 +145,7 @@ func generateBuiltinCtors (_ p: Printer,
                     p ("self.red = 0")
                     p ("self.green = 0")
                     p ("self.blue = 0")
-                    p ("self.alpha = 0")
+                    p ("self.alpha = 1")
                 } else if bc.name == "Quaternion" && m.arguments == nil {
                     p ("self.x = 0")
                     p ("self.y = 0")
