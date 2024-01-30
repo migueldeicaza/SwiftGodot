@@ -101,4 +101,12 @@ public extension GodotTestCase {
         assertApproxEqual (a.w, b.w, "Fail due to W. " + message, file: file, line: line)
     }
     
+    /// Asserts approximate equality of two colors by comparing approximately each component
+    func assertApproxEqual (_ a: Color, _ b: Color, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        assertApproxEqual (a.red, b.red, "Fail due to R. " + message, file: file, line: line)
+        assertApproxEqual (a.green, b.green, "Fail due to G. " + message, file: file, line: line)
+        assertApproxEqual (a.blue, b.blue, "Fail due to B. " + message, file: file, line: line)
+        assertApproxEqual (a.alpha, b.alpha, "Fail due to A. " + message, file: file, line: line)
+    }
+    
 }
