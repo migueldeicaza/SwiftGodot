@@ -127,7 +127,7 @@ targets.append(contentsOf: [
     // on non-macOS platforms, link directly to libgodot, which must be available
     // already in the .build/config directory, or in /usr/lib.
     .systemLibrary(
-        name: "libgodot"
+        name: "libgodot_system"
     ),
     
     // Base functionality for Godot runtime dependant tests
@@ -136,7 +136,7 @@ targets.append(contentsOf: [
         dependencies: [
             "SwiftGodot",
             .target(name: "libgodot_tests", condition: .when(platforms: [.macOS])),
-            .target(name: "libgodot", condition: .when(platforms: [.linux, .windows])),
+            .target(name: "libgodot_system", condition: .when(platforms: [.linux, .windows])),
             "GDExtension"
         ]),
     
