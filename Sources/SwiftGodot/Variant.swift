@@ -68,7 +68,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
     
     deinit {
-        //gi.variant_destroy (&content)
+        gi.variant_destroy (&content)
     }
     
     public init () {
