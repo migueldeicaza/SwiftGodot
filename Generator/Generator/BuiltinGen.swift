@@ -606,7 +606,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
-
+            if bc.name.hasPrefix("Packed") && bc.name.hasSuffix("Array") {
+                p ("/// The number of elements in the array")
+                p ("public var count: Int { Int (size()) }")
+            }
             if kind == .isClass {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
                 p ("// Contains a binary blob where this type information is stored")
