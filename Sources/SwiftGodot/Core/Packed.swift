@@ -7,7 +7,7 @@
 import Foundation
 extension PackedStringArray {
     /// Initializes a ``PackedStringArray`` from an array of strings
-    convenience init (_ values: [String]) {
+    public convenience init (_ values: [String]) {
         self.init ()
         for x in values {
             append(value: x)
