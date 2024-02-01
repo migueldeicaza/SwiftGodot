@@ -5,7 +5,7 @@
 //  Created by Mikhail Tishin on 29.01.2024.
 //
 
-extension Color {
+public extension Color {
     
     /// The HSV hue of this color, on the range 0 to 1.
     var hue: Float {
