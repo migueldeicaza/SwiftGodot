@@ -9,6 +9,7 @@ import XCTest
 import SwiftGodotTestability
 import SwiftGodot
 
+#if os(macOS)
 extension Vector2 {
     static let zero = Vector2(x: 0, y: 0)
 }
@@ -31,3 +32,4 @@ final class PerformanceTests: GodotTestCase {
         }
     }
 }
+#endif
