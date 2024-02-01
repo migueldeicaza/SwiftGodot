@@ -77,6 +77,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         }
     }
 
+    /// Compares two variants, does this by delegating the comparison to Godot
     public static func == (lhs: Variant, rhs: Variant) -> Bool {
         var valid = GDExtensionBool (0)
         let ret = Variant (false)
@@ -89,6 +90,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         hasher.combine(gi.variant_hash (&content))
     }
     
+    /// Creates a new Variant based on a copy of the reference variant passed in
     public init (_ other: Variant) {
         var copy = other.content
         withUnsafeMutablePointer(to: &content) { selfPtr in
@@ -189,5 +191,84 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     public var debugDescription: String {
         "\(gtype) [\(description)]"
+    }
+    
+    /// Invokes a variant's method by name.
+    /// - Parameters:
+    ///  - method: name of the method to invoke
+    ///  - arguments: variable list of arguments to pass to the method
+    /// - Returns: on success, the variant result, on error, the reason
+    public func call (method: StringName, _ arguments: Variant...) -> Result<Variant,CallErrorType> {
+        let copy_method = method
+        var _result: Variant.ContentType = Variant.zero
+        var _args: [UnsafeRawPointer?] = []
+        var copy_content = content
+        //return withUnsafePointer (to: &copy_method.content) { p0 in
+//            _args.append (p0)
+        
+        let content = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
+        defer { content.deallocate () }
+        for idx in 0..<arguments.count {
+            content [idx] = arguments [idx].content
+            _args.append (content.baseAddress! + idx)
+        }
+        var err = GDExtensionCallError ()
+        
+        gi.variant_call (&copy_content, &copy_method.content, &_args, Int64(_args.count), &_result, &err)
+        if err.error != GDEXTENSION_CALL_OK {
+            return .failure(toCallErrorType(err.error))
+        }
+        return .success(Variant (fromContent: _result))
+    }
+    
+    /// Errors raised by the variant subscript
+    ///
+    /// There are two possible error conditions, an attempt to use an indexer on a variant that is not
+    /// an array, or an attempt to access an element out bounds.
+    public enum VariantIndexerError: Error, CustomDebugStringConvertible {
+        case ok
+        /// The variant is not an array
+        case invalidOperation
+        /// The index is out of bounds
+        case outOfBounds
+        
+        public var debugDescription: String {
+            switch self {
+            case .ok:
+                return "Success"
+            case .invalidOperation:
+                return "Attempt to use indexer methods in a variant that does not support it"
+            case .outOfBounds:
+                return "Index value was out of bounds"
+            }
+        }
+    }
+    
+    /// Variants that represent arrays can be indexed, this subscript allows you to fetch the individual elements of those arrays
+    ///
+    public subscript (index: Int) -> Variant? {
+        get {
+            var copy_content = content
+            var _result: Variant.ContentType = Variant.zero
+            var valid: GDExtensionBool = 0
+            var oob: GDExtensionBool = 0
+            
+            gi.variant_get_indexed(&copy_content, Int64(index), &_result, &valid, &oob)
+            if valid == 0 || oob != 0 {
+                return nil
+            }
+            return Variant(fromContent: _result)
+        }
+        set {
+            guard let newValue else {
+                return
+            }
+            var copy_content = content
+            var newV = newValue.content
+            var valid: GDExtensionBool = 0
+            var oob: GDExtensionBool = 0
+
+            gi.variant_set_indexed (&copy_content, Int64(index), &newV, &valid, &oob)
+        }
     }
 }

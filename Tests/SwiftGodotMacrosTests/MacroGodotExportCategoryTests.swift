@@ -38,7 +38,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		vehicle_make = value
+    		self.vehicle_make = value
     	} else {
     		GD.printErr ("Unable to set `vehicle_make` value: ", arg)
     	}
@@ -55,7 +55,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		vehicle_model = value
+    		self.vehicle_model = value
     	} else {
     		GD.printErr ("Unable to set `vehicle_model` value: ", arg)
     	}
@@ -124,7 +124,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		make = value
+    		self.make = value
     	} else {
     		GD.printErr ("Unable to set `make` value: ", arg)
     	}
@@ -141,7 +141,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		model = value
+    		self.model = value
     	} else {
     		GD.printErr ("Unable to set `model` value: ", arg)
     	}
@@ -211,7 +211,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		vin = value
+    		self.vin = value
     	} else {
     		GD.printErr ("Unable to set `vin` value: ", arg)
     	}
@@ -228,7 +228,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = Int (arg) {
-    		year = value
+    		self.year = value
     	} else {
     		GD.printErr ("Unable to set `year` value: ", arg)
     	}
@@ -297,7 +297,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		vin = value
+    		self.vin = value
     	} else {
     		GD.printErr ("Unable to set `vin` value: ", arg)
     	}
@@ -314,7 +314,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = Int (arg) {
-    		year = value
+    		self.year = value
     	} else {
     		GD.printErr ("Unable to set `year` value: ", arg)
     	}
@@ -387,7 +387,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		vin = value
+    		self.vin = value
     	} else {
     		GD.printErr ("Unable to set `vin` value: ", arg)
     	}
@@ -404,7 +404,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = Int (arg) {
-    		year = value
+    		self.year = value
     	} else {
     		GD.printErr ("Unable to set `year` value: ", arg)
     	}
@@ -421,7 +421,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		make = value
+    		self.make = value
     	} else {
     		GD.printErr ("Unable to set `make` value: ", arg)
     	}
@@ -438,7 +438,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		model = value
+    		self.model = value
     	} else {
     		GD.printErr ("Unable to set `model` value: ", arg)
     	}
@@ -1328,7 +1328,7 @@ class Garage: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		name = value
+    		self.name = value
     	} else {
     		GD.printErr ("Unable to set `name` value: ", arg)
     	}
@@ -1345,7 +1345,7 @@ class Garage: Node {
     		return nil
     	}
     	if let value = Float (arg) {
-    		rating = value
+    		self.rating = value
     	} else {
     		GD.printErr ("Unable to set `rating` value: ", arg)
     	}
@@ -1394,7 +1394,7 @@ class Garage: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		address = value
+    		self.address = value
     	} else {
     		GD.printErr ("Unable to set `address` value: ", arg)
     	}
@@ -1572,7 +1572,7 @@ class Garage: Node {
     		return nil
     	}
     	if let value = Bool (arg) {
-    		bar = value
+    		self.bar = value
     	} else {
     		GD.printErr ("Unable to set `bar` value: ", arg)
     	}
@@ -1631,7 +1631,7 @@ public class Issue353: Node {
     		return nil
     	}
     	if let value = Bool (arg) {
-    		prefix1_prefixed_bool = value
+    		self.prefix1_prefixed_bool = value
     	} else {
     		GD.printErr ("Unable to set `prefix1_prefixed_bool` value: ", arg)
     	}
@@ -1648,7 +1648,7 @@ public class Issue353: Node {
     		return nil
     	}
     	if let value = Bool (arg) {
-    		non_prefixed_bool = value
+    		self.non_prefixed_bool = value
     	} else {
     		GD.printErr ("Unable to set `non_prefixed_bool` value: ", arg)
     	}

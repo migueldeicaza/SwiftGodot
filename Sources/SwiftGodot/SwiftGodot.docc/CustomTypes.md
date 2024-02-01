@@ -123,6 +123,47 @@ Godot, and `@Export` to [surface properties](Exports.md).
 Behind the scenes these macros use the lower-level ``ClassDB`` API to define functions,
 properties and their values.
 
+### Overriding Methods
+
+The Godot Object model does not surface a traditional object-oriented system.
+Not all the methods surfaced by the Godot API can be overwritten.  The
+SwiftGodot binding makes this explicit.   Methods that can be overwritten are
+declared as `open`, while those that can not be overwritten are declared as
+`public`.
+
+Godot prefixes all of the overwritable methods with an underscore (we have seen
+in this guide some examples already, like `_process`).
+
+Another important difference is that Godot does not expect your code to call the
+"super" method, in fact, those methods do nothing in SwiftGodot.   
+
+Of course, if your Swift code relies on a class hierarhcy where you do delegate
+code to the original implementation, you should still call the base class
+method.   For example:
+
+```
+@Godot 
+class Base: Node2D {
+    override func _ready () { 
+        /* important work */ 
+        /* no need to call super._ready */
+    }
+}
+
+class Derived: Base {
+    override func _ready () {
+        /* some prep work here */
+        /* because we want to execute the Base._ready important work */
+        super._ready ()
+        /* some additional work here */
+    }
+}
+```
+
+You can think of those methods that can be overwritten as hooks into Godot, but
+with an important distinction.   When you override those methods, Godot knows
+that you overwrote them, and might take a different course of action based on it.
+
 #### Surfacing Methods
 
 To surface a method, apply the `@Callable` attribute to it, this will register

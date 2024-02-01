@@ -13,8 +13,9 @@ that derive from ``GodotObject``).
 You can create Variants from types that conform to the VariantStorable protocol. 
 This includes the following types:
 
-* Godot's native types: GString, Vector, Rect, Transform, Plane, Quaternion, AABB, 
-  Basis, Projection, Int64, NodePaths, RIDs, Callable, GDictionary, Array and PackedArrays. 
+* Godot's native types: GString, Vector, Rect, Transform, Plane, Quaternion,
+  AABB,  Basis, Projection, Int64, NodePaths, RIDs, Callable, GDictionary, Array
+  and PackedArrays. 
 * Swift types that SwiftGodot adds convenience conformances for: Bool, Int, String and Float
 * Godot's objects: e.g. Node, Area2D
 * Other types that you can manually conform to VariantStorable.
@@ -74,3 +75,29 @@ func getNode (variant: Variant) -> Node? {
 The reason to have a method rather than a constructor is that this method will
 make sure that only one instance of your objects is surfaced to Swift. 
 
+## Accessing Array Elements
+
+Some of the variant types contain arrays, either objects, or a particular
+packed version of those.   You can access the individual elements of the
+those with a convenient subscript provided on the array.
+
+## Calling Variant Methods
+
+It is possible to invoke the built-in variant methods that exist in the Godot
+universe by using the `call` method on a Variant.   This is very similar to the
+call method on an Object.
+
+For example, you can invoke this generic "size" method on an array to get the
+size of an array, regardless of the specific type of array:
+
+```
+func printSize (myArray: Variant) {
+    switch variant.call(method: "size") {
+    case .failure(let err):
+        print (err)
+        return 0
+    case .success(let val):
+        return Int (val) ?? 0
+    }
+}
+```

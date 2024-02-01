@@ -59,6 +59,42 @@ func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionI
     }
 }
 
+/// Error types returned by Godot when invoking a method
+public enum CallErrorType: Error {
+    /// No error
+    case ok
+    case invalidMethod
+    case invalidArgument
+    case tooFewArguments
+    case tooManyArguments
+    case instanceIsNull
+    case methodNotConst
+    
+    /// A new error was introduced into Godot, and the SwiftGodot bindings are out of sync
+    case unknown
+}
+
+func toCallErrorType (_ godotCallError: GDExtensionCallErrorType) -> CallErrorType {
+    switch godotCallError {
+    case GDEXTENSION_CALL_OK:
+        return .ok
+    case GDEXTENSION_CALL_ERROR_INVALID_METHOD:
+        return .invalidMethod
+    case GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT:
+        return .invalidArgument
+    case GDEXTENSION_CALL_ERROR_INSTANCE_IS_NULL:
+        return .instanceIsNull
+    case GDEXTENSION_CALL_ERROR_METHOD_NOT_CONST:
+        return .methodNotConst
+    case GDEXTENSION_CALL_ERROR_TOO_FEW_ARGUMENTS:
+        return .tooFewArguments
+    case GDEXTENSION_CALL_ERROR_TOO_MANY_ARGUMENTS:
+        return .tooManyArguments
+    default:
+        return .unknown
+    }
+}
+
 struct GodotInterface {
     let mem_alloc: GDExtensionInterfaceMemAlloc
     let mem_realloc: GDExtensionInterfaceMemRealloc
@@ -126,6 +162,10 @@ struct GodotInterface {
     let variant_destroy: GDExtensionInterfaceVariantDestroy
     let variant_get_type: GDExtensionInterfaceVariantGetType
     let variant_stringify: GDExtensionInterfaceVariantStringify
+    let variant_call: GDExtensionInterfaceVariantCall
+    let variant_call_static: GDExtensionInterfaceVariantCallStatic
+    let variant_get_indexed: GDExtensionInterfaceVariantGetIndexed
+    let variant_set_indexed: GDExtensionInterfaceVariantSetIndexed
     
     let variant_get_ptr_constructor: GDExtensionInterfaceVariantGetPtrConstructor
     let variant_get_ptr_builtin_method: GDExtensionInterfaceVariantGetPtrBuiltinMethod
@@ -216,6 +256,10 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         variant_destroy: load ("variant_destroy"),
         variant_get_type: load ("variant_get_type"),
         variant_stringify: load ("variant_stringify"),
+        variant_call: load ("variant_call"),
+        variant_call_static: load ("variant_call_static"),
+        variant_get_indexed: load ("variant_get_indexed"),
+        variant_set_indexed: load ("variant_set_indexed"),
 
         variant_get_ptr_constructor: load ("variant_get_ptr_constructor"),
         variant_get_ptr_builtin_method: load ("variant_get_ptr_builtin_method"),

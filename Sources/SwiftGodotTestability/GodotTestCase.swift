@@ -85,12 +85,28 @@ public extension GodotTestCase {
         assertApproxEqual (a.z, b.z, "Fail due to Z. " + message, file: file, line: line)
     }
     
+    /// Asserts approximate equality of two vectors by comparing approximately each component
+    func assertApproxEqual (_ a: Vector4, _ b: Vector4, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        assertApproxEqual (a.x, b.x, "Fail due to X. " + message, file: file, line: line)
+        assertApproxEqual (a.y, b.y, "Fail due to Y. " + message, file: file, line: line)
+        assertApproxEqual (a.z, b.z, "Fail due to Z. " + message, file: file, line: line)
+        assertApproxEqual (a.w, b.w, "Fail due to W. " + message, file: file, line: line)
+    }
+    
     /// Asserts approximate equality of two quaternions by comparing approximately each component
     func assertApproxEqual (_ a: Quaternion, _ b: Quaternion, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
         assertApproxEqual (a.x, b.x, "Fail due to X. " + message, file: file, line: line)
         assertApproxEqual (a.y, b.y, "Fail due to Y. " + message, file: file, line: line)
         assertApproxEqual (a.z, b.z, "Fail due to Z. " + message, file: file, line: line)
         assertApproxEqual (a.w, b.w, "Fail due to W. " + message, file: file, line: line)
+    }
+    
+    /// Asserts approximate equality of two colors by comparing approximately each component
+    func assertApproxEqual (_ a: Color, _ b: Color, _ message: String = "", file: StaticString = #file, line: UInt = #line) {
+        assertApproxEqual (a.red, b.red, "Fail due to R. " + message, file: file, line: line)
+        assertApproxEqual (a.green, b.green, "Fail due to G. " + message, file: file, line: line)
+        assertApproxEqual (a.blue, b.blue, "Fail due to B. " + message, file: file, line: line)
+        assertApproxEqual (a.alpha, b.alpha, "Fail due to A. " + message, file: file, line: line)
     }
     
 }

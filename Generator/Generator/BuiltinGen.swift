@@ -145,7 +145,7 @@ func generateBuiltinCtors (_ p: Printer,
                     p ("self.red = 0")
                     p ("self.green = 0")
                     p ("self.blue = 0")
-                    p ("self.alpha = 0")
+                    p ("self.alpha = 1")
                 } else if bc.name == "Quaternion" && m.arguments == nil {
                     p ("self.x = 0")
                     p ("self.y = 0")
@@ -551,9 +551,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                         p ("NodePath.constructor2 (&content, &args)")
                     }
                 }
+                p ("/// Produces a string representation of this NodePath")
                 p ("public var description: String") {
-                    p ("let sub = getConcatenatedSubnames ().description")
-                    p ("return getConcatenatedNames ().description + (sub == \"\" ? sub : \":\\(sub)\")")
+                    p ("let sub = getSubnameCount () > 0 ? getConcatenatedSubnames ().description : \"\"")
+                    p ("return (isAbsolute() ? \"/\" : \"\") + (getNameCount () > 0 ? getConcatenatedNames ().description : \"\") + (sub == \"\" ? sub : \":\\(sub)\")")
                 }
             }
             if bc.name == "StringName" {
@@ -605,7 +606,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
-
+            if bc.name.hasPrefix("Packed") && bc.name.hasSuffix("Array") {
+                p ("/// The number of elements in the array")
+                p ("public var count: Int { Int (size()) }")
+            }
             if kind == .isClass {
                 let (storage, initialize) = getBuiltinStorage (bc.name)
                 p ("// Contains a binary blob where this type information is stored")

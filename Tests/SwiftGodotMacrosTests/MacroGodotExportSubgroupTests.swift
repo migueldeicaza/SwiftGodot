@@ -42,7 +42,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		vin = value
+    		self.vin = value
     	} else {
     		GD.printErr ("Unable to set `vin` value: ", arg)
     	}
@@ -59,7 +59,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = Int (arg) {
-    		ymms_year = value
+    		self.ymms_year = value
     	} else {
     		GD.printErr ("Unable to set `ymms_year` value: ", arg)
     	}
@@ -76,7 +76,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		ymms_make = value
+    		self.ymms_make = value
     	} else {
     		GD.printErr ("Unable to set `ymms_make` value: ", arg)
     	}
@@ -93,7 +93,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		ymms_model = value
+    		self.ymms_model = value
     	} else {
     		GD.printErr ("Unable to set `ymms_model` value: ", arg)
     	}
@@ -110,7 +110,7 @@ class Car: Node {
     		return nil
     	}
     	if let value = String (arg) {
-    		ymms_series = value
+    		self.ymms_series = value
     	} else {
     		GD.printErr ("Unable to set `ymms_series` value: ", arg)
     	}
