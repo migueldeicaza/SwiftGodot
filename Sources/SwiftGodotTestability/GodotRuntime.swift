@@ -6,9 +6,9 @@
 //
 
 import libgodot
+import Foundation
 @testable import SwiftGodot
 
-@MainActor
 public final class GodotRuntime {
     
     static var isInitialized: Bool = false

@@ -8,16 +8,17 @@
 import XCTest
 import SwiftGodot
 
-@MainActor
 open class GodotTestCase: XCTestCase {
     
     private static var testSuites: [XCTestSuite] = []
     
+    #if os(macOS)
     override open class var defaultTestSuite: XCTestSuite {
         let testSuite = super.defaultTestSuite
         testSuites.append (testSuite)
         return testSuite
     }
+    #endif
     
     override open func run () {
         if GodotRuntime.isRunning {
