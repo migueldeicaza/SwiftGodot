@@ -11,6 +11,40 @@ import SwiftGodotTestability
 
 final class Vector4iTests: GodotTestCase {
     
+    func testOperatorUnaryMinus () {
+        var value: Vector4i
+        
+        value = -Vector4i (x: -1, y: 2, z: -3, w: 4)
+        XCTAssertEqual (value.x, 1)
+        XCTAssertEqual (value.y, -2)
+        XCTAssertEqual (value.z, 3)
+        XCTAssertEqual (value.w, -4)
+        
+        value = -Vector4i (x: 5, y: -6, z: 7, w: -8)
+        XCTAssertEqual (value.x, -5)
+        XCTAssertEqual (value.y, 6)
+        XCTAssertEqual (value.z, -7)
+        XCTAssertEqual (value.w, 8)
+        
+        value = -Vector4i (x: Int32.max, y: Int32.max, z: Int32.max, w: Int32.max)
+        XCTAssertEqual (value.x, Int32.min + 1)
+        XCTAssertEqual (value.y, Int32.min + 1)
+        XCTAssertEqual (value.z, Int32.min + 1)
+        XCTAssertEqual (value.w, Int32.min + 1)
+        
+        value = -Vector4i (x: Int32.min + 1, y: Int32.min + 1, z: Int32.min + 1, w: Int32.min + 1)
+        XCTAssertEqual (value.x, Int32.max)
+        XCTAssertEqual (value.y, Int32.max)
+        XCTAssertEqual (value.z, Int32.max)
+        XCTAssertEqual (value.w, Int32.max)
+        
+        value = -Vector4i (x: Int32.min, y: Int32.min, z: Int32.min, w: Int32.min)
+        XCTAssertEqual (value.x, Int32.min)
+        XCTAssertEqual (value.y, Int32.min)
+        XCTAssertEqual (value.z, Int32.min)
+        XCTAssertEqual (value.w, Int32.min)
+    }
+    
     func testOperatorPlus () {
         var value: Vector4i
         

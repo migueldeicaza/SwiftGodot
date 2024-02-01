@@ -59,11 +59,16 @@ extension Vector4: IntScalable & DoubleScalable {}
 extension Quaternion: IntScalable & DoubleScalable {}
 extension Color: IntScalable & DoubleScalable {}
 
+prefix operator &-
+@inline(__always) prefix func &- <T: SignedInteger & FixedWidthInteger> (_ i: T) -> T {
+    return 0 &- i
+}
+
 public extension Vector2i {
     
     /// Returns the negative value of the Vector2i. This is the same as writing Vector2i(-v.x, -v.y). This operation flips the direction of the vector while keeping the same magnitude.
     static prefix func - (_ v: Self) -> Self {
-        return Self (x: -v.x, y: -v.y)
+        return Self (x: &-v.x, y: &-v.y)
     }
     
     static func += (left: inout Self, right: Self) {
@@ -115,7 +120,7 @@ public extension Vector3i {
     
     /// Returns the negative value of the Vector3i. This is the same as writing Vector3i(-v.x, -v.y, -v.z). This operation flips the direction of the vector while keeping the same magnitude.
     static prefix func - (_ v: Self) -> Self {
-        return Self (x: -v.x, y: -v.y, z: -v.z)
+        return Self (x: &-v.x, y: &-v.y, z: &-v.z)
     }
     
     static func += (left: inout Self, right: Self) {
@@ -167,7 +172,7 @@ public extension Vector4i {
     
     /// Returns the negative value of the Vector4i. This is the same as writing Vector4i(-v.x, -v.y, -v.z, -v.w). This operation flips the direction of the vector while keeping the same magnitude.
     static prefix func - (_ v: Self) -> Self {
-        return Self (x: -v.x, y: -v.y, z: -v.z, w: -v.w)
+        return Self (x: &-v.x, y: &-v.y, z: &-v.z, w: &-v.w)
     }
     
     static func += (left: inout Self, right: Self) {
