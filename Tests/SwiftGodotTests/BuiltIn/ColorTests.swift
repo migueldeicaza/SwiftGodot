@@ -31,6 +31,7 @@ final class ColorTests: GodotTestCase {
         XCTAssertEqual (value.green, 0.8)
         XCTAssertEqual (value.blue, 0.7)
         XCTAssertEqual (value.alpha, 0.6)
+    }
 
     func testHue () {
         XCTAssertEqual (Color.black.hue, 0)
