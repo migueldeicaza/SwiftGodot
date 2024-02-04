@@ -1,0 +1,196 @@
+import XCTest
+import SwiftGodotTestability
+@testable import SwiftGodotTests
+
+@main
+@available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+struct TestRunner {
+    static func main() {
+        GodotRuntime.run {
+            // XCTMain(__SwiftGodotTests__allTests())
+            XCTMain([testCase(ResourceTests.__allTests__ResourceTests)])
+            GodotRuntime.stop()
+        }
+    }
+}
+
+fileprivate extension ColorTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__ColorTests = [
+        ("testHue", testHue),
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+        ("testSaturation", testSaturation),
+        ("testValue", testValue),
+    ]
+}
+
+fileprivate extension IntersectRayResultTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__IntersectRayResultTests = [
+        ("testIntersectRayResultIsNil_whenColliderPropertyIsMissing", testIntersectRayResultIsNil_whenColliderPropertyIsMissing),
+        ("testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent", testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent),
+    ]
+}
+
+fileprivate extension LinearInterpolationTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__LinearInterpolationTests = [
+        ("testColorLinearInterpolation", testColorLinearInterpolation),
+        ("testDoubleLinearInterpolation", testDoubleLinearInterpolation),
+        ("testFloatLinearInterpolation", testFloatLinearInterpolation),
+        ("testIntLinearInterpolation", testIntLinearInterpolation),
+        ("testInverseInterpolation", testInverseInterpolation),
+        ("testVector2LinearInterpolation", testVector2LinearInterpolation),
+        ("testVector3LinearInterpolation", testVector3LinearInterpolation),
+        ("testVector4LinearInterpolation", testVector4LinearInterpolation),
+    ]
+}
+
+fileprivate extension MarshalTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__MarshalTests = [
+        ("testVarArgs", testVarArgs),
+        ("testVariants", testVariants),
+    ]
+}
+
+fileprivate extension ObjectCollectionTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__ObjectCollectionTests = [
+        ("testAppendingElementStoresInArray", testAppendingElementStoresInArray),
+        ("testArrayCanBeModifiedOutsideOfTheCollection", testArrayCanBeModifiedOutsideOfTheCollection),
+        ("testArrayCanBeReassigned", testArrayCanBeReassigned),
+        ("testInitWithElementsStoresInArray", testInitWithElementsStoresInArray),
+    ]
+}
+
+fileprivate extension PlaneTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__PlaneTests = [
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension QuaternionTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__QuaternionTests = [
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension ResourceTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__ResourceTests = [
+        ("testRefCountedDeallocates", testRefCountedDeallocates),
+        ("testRefCountedLeaks", testRefCountedLeaks),
+    ]
+}
+
+fileprivate extension SnappingTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__SnappingTests = [
+        ("testSnapDouble", testSnapDouble),
+        ("testSnapFloat", testSnapFloat),
+        ("testSnapInt", testSnapInt),
+        ("testSnapVector2", testSnapVector2),
+        ("testSnapVector3", testSnapVector3),
+        ("testSnapVector4", testSnapVector4),
+    ]
+}
+
+fileprivate extension VariantCollectionTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__VariantCollectionTests = [
+        ("testAppendingElementStoresInArray", testAppendingElementStoresInArray),
+        ("testArrayCanBeModifiedOutsideOfTheCollection", testArrayCanBeModifiedOutsideOfTheCollection),
+        ("testArrayCanBeReassigned", testArrayCanBeReassigned),
+        ("testInitWithElementsStoresInArray", testInitWithElementsStoresInArray),
+    ]
+}
+
+fileprivate extension VariantTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__VariantTests = [
+        ("testInitVariantStorable", testInitVariantStorable),
+        ("testOperatorEqualsEquals", testOperatorEqualsEquals),
+        ("testVariant", testVariant),
+    ]
+}
+
+fileprivate extension Vector2Tests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__Vector2Tests = [
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension Vector2iTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__Vector2iTests = [
+        ("testOperatorMinus", testOperatorMinus),
+        ("testOperatorPlus", testOperatorPlus),
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension Vector3Tests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__Vector3Tests = [
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension Vector3iTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__Vector3iTests = [
+        ("testOperatorMinus", testOperatorMinus),
+        ("testOperatorPlus", testOperatorPlus),
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension Vector4Tests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__Vector4Tests = [
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension Vector4iTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__Vector4iTests = [
+        ("testOperatorMinus", testOperatorMinus),
+        ("testOperatorPlus", testOperatorPlus),
+        ("testOperatorUnaryMinus", testOperatorUnaryMinus),
+    ]
+}
+
+fileprivate extension WrappedTests {
+    @available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+    static let __allTests__WrappedTests = [
+        ("testRetain", asyncTest(testRetain)),
+    ]
+}
+@available(*, deprecated, message: "Not actually deprecated. Marked as deprecated to allow inclusion of deprecated tests (which test deprecated functionality) without warnings")
+func __SwiftGodotTests__allTests() -> [XCTestCaseEntry] {
+    return [
+        testCase(ColorTests.__allTests__ColorTests),
+        testCase(IntersectRayResultTests.__allTests__IntersectRayResultTests),
+        testCase(LinearInterpolationTests.__allTests__LinearInterpolationTests),
+        testCase(MarshalTests.__allTests__MarshalTests),
+        testCase(ObjectCollectionTests.__allTests__ObjectCollectionTests),
+        testCase(PlaneTests.__allTests__PlaneTests),
+        testCase(QuaternionTests.__allTests__QuaternionTests),
+        testCase(ResourceTests.__allTests__ResourceTests),
+        testCase(SnappingTests.__allTests__SnappingTests),
+        testCase(VariantCollectionTests.__allTests__VariantCollectionTests),
+        testCase(VariantTests.__allTests__VariantTests),
+        testCase(Vector2Tests.__allTests__Vector2Tests),
+        testCase(Vector2iTests.__allTests__Vector2iTests),
+        testCase(Vector3Tests.__allTests__Vector3Tests),
+        testCase(Vector3iTests.__allTests__Vector3iTests),
+        testCase(Vector4Tests.__allTests__Vector4Tests),
+        testCase(Vector4iTests.__allTests__Vector4iTests),
+        testCase(WrappedTests.__allTests__WrappedTests),
+    ]
+}
