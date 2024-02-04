@@ -37,12 +37,10 @@ products.append(
 #endif
 
 // libgodot is only available for macOS and testability runtime depends on it
-#if os(macOS)
 products.append(
     .library(
         name: "SwiftGodotTestability",
         targets: ["SwiftGodotTestability"]))
-#endif
 
 var targets: [Target] = [
     // This contains GDExtension's JSON API data models
@@ -115,13 +113,13 @@ swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 targets.append(
     // on macOS, libgodot is distributed as a binary .xcframework.
     .binaryTarget(
-        name: "libgodot_binary",
+        name: "libgodot_tests",
         url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",
         checksum: "c8ddf62be6c00eacc36bd2dafe8d424c0b374833efe80546f6ee76bd27cee84e"
         //path: "../libgodot.xcframework.zip"
     )
 )
-let libgodot_dependency: Target.Dependency = .target(name: "libgodot_binary")
+let libgodot_dependency: Target.Dependency = "libgodot_tests"
 #else
 targets.append(
     // on non-macOS platforms, link directly to libgodot, which must be available
@@ -130,7 +128,7 @@ targets.append(
         name: "libgodot_system"
     )
 )
-let libgodot_dependency: Target.Dependency = .target(name: "libgodot_system")
+let libgodot_dependency: Target.Dependency = "libgodot_system"
 #endif
 
 targets.append(contentsOf: [
