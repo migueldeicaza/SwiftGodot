@@ -16,7 +16,7 @@ public final class GodotRuntime {
     
     static var scene: SceneTree?
     
-    static func run (completion: @escaping () -> Void) {
+    public static func run (completion: @escaping () -> Void) {
         guard !isRunning else { return }
         isInitialized = true
         isRunning = true
@@ -26,7 +26,7 @@ public final class GodotRuntime {
         })
     }
     
-    static func stop () {
+    public static func stop () {
         isRunning = false
         scene?.quit ()
     }
@@ -78,7 +78,7 @@ private extension GodotRuntime {
             }
         )
 
-        let args = ["SwiftGodotKit", "--headless"]
+        let args = ["SwiftGodotKit", "--headless", "--verbose"]
         withUnsafePtr (strings: args) { ptr in
             godot_main (Int32 (args.count), ptr)
         }
