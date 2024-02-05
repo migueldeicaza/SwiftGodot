@@ -3,7 +3,7 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 @Godot
-class TestVariant: Node {
+private class TestVariant: Node {
     #signal("mySignal", arguments: ["age": Int.self, "name": String.self])
     var receivedInt: Int? = nil
     var receivedString: String? = nil
@@ -21,8 +21,9 @@ class TestVariant: Node {
 }
 
 final class MarshalTests: GodotTestCase {
-    override static func godotSetUp () {
-        registerTypes ()
+    
+    override static var godotSubclasses: [Wrapped.Type] {
+        return [TestVariant.self]
     }
 
     func testVarArgs() {

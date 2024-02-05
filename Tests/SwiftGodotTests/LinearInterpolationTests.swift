@@ -3,9 +3,6 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 final class LinearInterpolationTests: GodotTestCase {
-    override static func godotSetUp () {
-        registerTypes ()
-    }
     
     func testDoubleLinearInterpolation() {
         let result = Double(1000).lerp(to: 1100, weight: 0.5)
