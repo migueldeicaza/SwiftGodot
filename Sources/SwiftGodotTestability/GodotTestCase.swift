@@ -42,15 +42,27 @@ open class GodotTestCase: XCTestCase {
         }
     }
     
-    open class func godotSetUp () {}
+    open class var godotSubclasses: [Wrapped.Type] {
+        return []
+    }
+    
+    open class func godotSetUp () {
+        for subclass in godotSubclasses {
+            register (type: subclass)
+        }
+    }
+    
+    open class func godotTearDown () {
+        for subclass in godotSubclasses {
+            unregister (type: subclass)
+        }
+    }
     
     override open class func setUp () {
         if GodotRuntime.isRunning {
             godotSetUp ()
         }
     }
-    
-    open class func godotTearDown () {}
     
     override open class func tearDown () {
         if GodotRuntime.isRunning {

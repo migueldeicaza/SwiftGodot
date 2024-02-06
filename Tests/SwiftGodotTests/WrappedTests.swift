@@ -11,8 +11,8 @@ import SwiftGodotTestability
 
 final class WrappedTests: GodotTestCase {
     
-    override static func godotSetUp () {
-        registerTypes ()
+    override class var godotSubclasses: [Wrapped.Type] {
+        return [SubtypedNode.self]
     }
     
     /// Checks memory leaks of the swift wrappers during object's life cycle
@@ -44,7 +44,7 @@ final class WrappedTests: GodotTestCase {
 }
 
 @Godot
-class SubtypedNode: Node { }
+private class SubtypedNode: Node { }
 
 final class ReferenceChecker {
     
