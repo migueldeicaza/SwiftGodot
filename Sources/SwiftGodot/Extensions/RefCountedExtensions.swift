@@ -15,3 +15,21 @@ public extension RefCounted {
         }
     }
 }
+
+public extension RunLoop {
+    static var in_runloop_count: Int = 0
+
+    static func install() {
+        gi.displayserver_set_runloop {
+            RunLoop.in_runloop_count += 1
+            RunLoop.main.run(until: .now)
+            RunLoop.in_runloop_count -= 1
+        }
+        let timer = Foundation.Timer(timeInterval: 0.1, repeats: true) { _ in
+            if RunLoop.in_runloop_count > 0 {
+                gi.main_iteration()
+            }
+        }
+        RunLoop.main.add(timer, forMode: .default)
+    }
+}
