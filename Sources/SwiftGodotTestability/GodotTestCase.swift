@@ -8,10 +8,23 @@
 import XCTest
 import SwiftGodot
 
-open class GodotTestCase: XCTestCase {
-    
+open class GodotTestCase: XCTestCase, XCTestObservation {
     private static var testSuites: [XCTestSuite] = []
-    
+    private static weak var observation: GodotTestCase?
+
+    public func testSuiteWillStart(_ testSuite: XCTestSuite) {
+        Self.testSuites.append(testSuite)
+        XCTestObservationCenter.shared.removeTestObserver(self)
+    }
+
+    public required init(name: String, testClosure: @escaping XCTestCaseClosure) {
+        super.init(name: name, testClosure: testClosure)
+        if Self.observation == nil {
+            Self.observation = self
+            XCTestObservationCenter.shared.addTestObserver(self)
+        }
+    }
+
     #if os(macOS)
     override open class var defaultTestSuite: XCTestSuite {
         let testSuite = super.defaultTestSuite
@@ -24,21 +37,24 @@ open class GodotTestCase: XCTestCase {
         if GodotRuntime.isRunning {
             super.run ()
         } else {
-            guard !GodotRuntime.isInitialized else { return }
+            guard GodotRuntime.state == .begin else { return }
             GodotRuntime.run {
-                if !Self.testSuites.isEmpty {
-                    // Executing all test suites from the context
-                    for testSuite in Self.testSuites {
-                        testSuite.perform (XCTestSuiteRun (test: testSuite))
+                let testSuites = Self.testSuites
+                Task { @MainActor in
+                    if !testSuites.isEmpty {
+                        // Executing all test suites from the context
+                        for testSuite in Self.testSuites {
+                            testSuite.perform (XCTestSuiteRun (test: testSuite))
+                        }
+                    } else {
+                        Self.godotSetUp ()
+                        // Executing single test method
+                        super.run ()
+                        Self.godotTearDown ()
                     }
-                } else {
-                    Self.godotSetUp ()
-                    // Executing single test method
-                    super.run ()
-                    Self.godotTearDown ()
+                    
+                    GodotRuntime.stop ()
                 }
-                
-                GodotRuntime.stop ()
             }
         }
     }
