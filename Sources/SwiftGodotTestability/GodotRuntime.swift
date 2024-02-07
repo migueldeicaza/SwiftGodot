@@ -7,27 +7,34 @@
 
 import libgodot
 import Foundation
+@_implementationOnly import GDExtension
 @testable import SwiftGodot
 
 public final class GodotRuntime {
-    
-    static var isInitialized: Bool = false
-    static var isRunning: Bool = false
+    enum State {
+    case begin
+    case running
+    case stopping
+    case end
+    }
+
+    static var state: State = .begin
+    static var isRunning: Bool { state == .running }
     
     static var scene: SceneTree?
     
     public static func run (completion: @escaping () -> Void) {
-        guard !isRunning else { return }
-        isInitialized = true
-        isRunning = true
+        guard state == .begin else { return }
+        state = .running
         runGodot (loadScene: { scene in
+            RunLoop.install()
             self.scene = scene
             completion ()
         })
     }
     
     public static func stop () {
-        isRunning = false
+        state = .stopping
         scene?.quit ()
     }
     
