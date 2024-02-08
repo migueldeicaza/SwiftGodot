@@ -127,6 +127,7 @@ struct GodotInterface {
     let object_get_class_name: GDExtensionInterfaceObjectGetClassName
     
     let object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
+    let object_destroy: GDExtensionInterfaceObjectDestroy
     
     // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
     @inline(__always)
@@ -245,6 +246,8 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         object_set_instance_binding: load ("object_set_instance_binding"),
         object_get_class_name: load ("object_get_class_name"),
         object_method_bind_ptrcall: load ("object_method_bind_ptrcall"),
+        object_destroy: load ("object_destroy"),
+        
         global_get_singleton: load ("global_get_singleton"),
         ref_get_object: load ("ref_get_object"),
         object_method_bind_call: load ("object_method_bind_call"),

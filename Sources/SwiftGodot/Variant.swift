@@ -7,6 +7,11 @@
 
 @_implementationOnly import GDExtension
 
+/// If your application is crashing due to the Variant leak fixes, please
+/// enable this flag, and provide me with a test case, so I can find that
+/// pesky scenario.
+public var experimentalDisableVariantUnref = false
+
 /// Variant objects box various Godot Objects, you create them with one of the
 /// constructors, and you can retrieve the contents using the various extension
 /// constructors that are declared on the various types that are wrapped.
@@ -68,7 +73,8 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
     
     deinit {
-        //gi.variant_destroy (&content)
+        if experimentalDisableVariantUnref { return }
+        gi.variant_destroy (&content)
     }
     
     public init () {
@@ -175,6 +181,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         toType(.object, dest: &value)
         if value == UnsafeRawPointer(bitPattern: 0) {
             return nil
+        }
+        if let rc = ret as? RefCounted {
+            // When we pull out a refcounted out of a Variant, take a reference
+            rc.reference ()
         }
         let ret: T? = lookupObject(nativeHandle: value)
         return ret
