@@ -28,7 +28,7 @@ final class ResourceTests: GodotTestCase {
         XCTAssertEqual(scene.getReferenceCount(), 1)
         let instanceID = Int64(bitPattern: UInt64(scene.getInstanceId()))
         XCTAssertTrue(GD.isInstanceIdValid(id: instanceID))
-        scene.unref()
+        scene._exp_unref()
         XCTAssertFalse(GD.isInstanceIdValid(id: instanceID))
     }
 }
