@@ -67,12 +67,18 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     var content: ContentType = (0, 0, 0)
     static var zero: ContentType = (0, 0, 0)
     
+    /// Underlying Godot Variant should be destroyed on Swift Variant deinit
+    var destroyOnDeinit: Bool = true
+    
     /// Initializes from the raw contents of another Variant
     init (fromContent: ContentType) {
         content = fromContent
+        // Content deallocation is managed externally
+        destroyOnDeinit = false
     }
     
     deinit {
+        guard destroyOnDeinit else { return }
         if experimentalDisableVariantUnref { return }
         gi.variant_destroy (&content)
     }
