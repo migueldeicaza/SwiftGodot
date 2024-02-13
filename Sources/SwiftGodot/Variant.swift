@@ -67,16 +67,23 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     var content: ContentType = (0, 0, 0)
     static var zero: ContentType = (0, 0, 0)
     
-    /// Initializes from the raw contents of another Variant
+    /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
     init (fromContent: ContentType) {
-        content = fromContent
+        var copy = fromContent
+        gi.variant_new_copy (&content, &copy)
     }
-    
+
+    /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
+    init (fromContentPtr: inout ContentType) {
+        gi.variant_new_copy (&content, &fromContentPtr)
+    }
+
     deinit {
         if experimentalDisableVariantUnref { return }
         gi.variant_destroy (&content)
     }
     
+    /// Creates an empty Variant, that represents the Godot type `nil`
     public init () {
         withUnsafeMutablePointer(to: &content) { ptr in
             gi.variant_new_nil (ptr)
