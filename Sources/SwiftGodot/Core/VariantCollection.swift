@@ -124,11 +124,6 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     public final func append (value: Element) {
         array.append (value: Variant(value))
     }
-
-    /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
-    public final func append (value: Element) where Element: ContentTypeStoring {
-	array.append (value: Variant(value))
-    }
     
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
     ///

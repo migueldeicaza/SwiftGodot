@@ -45,10 +45,14 @@ extension VariantStorable {
 /// so it is suitable for the codepath that uses the address of the object
 /// as the address for `content` in the `private init<T: VariantRepresentable>(representable value: T)`
 /// method.   You do not need to use this type.
-public struct GStringRaw: VariantRepresentable {
+public struct GStringRaw: ContentVariantRepresentable {
     public var content: GString.ContentType
+    public static var zero: GString.ContentType = 0
     public init () {
         content = GString.zero
+    }
+    public init (content: GString.ContentType) {
+        self.content = content
     }
     public static var godotType: Variant.GType { .string }
 }
