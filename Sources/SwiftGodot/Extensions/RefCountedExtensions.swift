@@ -6,7 +6,7 @@ public extension RefCounted {
     /// 
     /// This is flagged `_exp` because it will eventually be folded into deinit for RefCounted
     /// objects
-    public func _exp_unref() {
+    func _exp_unref() {
         let instanceID = Int64(bitPattern: UInt64(getInstanceId()))
         if GD.isInstanceIdValid(id: instanceID) {
             if unreference() {
