@@ -138,7 +138,7 @@ targets.append(contentsOf: [
         dependencies: [
             "SwiftGodot",
             libgodot_dependency,
-            "GDExtension"
+            "GDExtension", "XCTRuntime"
         ]),
     
     // General purpose runtime dependant tests
@@ -189,6 +189,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
+        .package(path: "../XCTRuntime"),
     ],
     targets: targets
 )
