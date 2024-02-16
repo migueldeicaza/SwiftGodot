@@ -16,6 +16,15 @@ public extension RefCounted {
     }
 }
 
+#if !canImport(Darwin)
+///
+/// Installs a callback into Godot engine on non-Darwin platforms, which don't typically have a run-loop.
+/// Creates a 10 Hz timer that gives time back to the Godot main loop, so that XCTest can use blocking sub-runloops
+/// to wait for expectations to be fulfilled, which is the basis for the async versions of tests.
+/// This mechanism avoids hangs using this bi-directional callback approach.
+/// This code is currently in the SwiftGodot package because it needs to make calls into
+/// GodotInterface functions.
+/// 
 public extension RunLoop {
     static var in_runloop_count: Int = 0
 
@@ -33,3 +42,4 @@ public extension RunLoop {
         RunLoop.main.add(timer, forMode: .default)
     }
 }
+#endif

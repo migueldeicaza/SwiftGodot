@@ -7,10 +7,11 @@
 
 import libgodot
 import Foundation
+import XCTRuntime
 @_implementationOnly import GDExtension
 @testable import SwiftGodot
 
-public final class GodotRuntime {
+public final class GodotRuntime: XCTRuntime {
     enum State {
     case begin
     case running
@@ -26,11 +27,20 @@ public final class GodotRuntime {
     public static func run (completion: @escaping () -> Void) {
         guard state == .begin else { return }
         state = .running
-        runGodot (loadScene: { scene in
+        runGodot { scene in
+            #if !canImport(Darwin)
+            // non-Darwin OS doesn't have implicit runloop.
             RunLoop.install()
+            #endif
             self.scene = scene
-            completion ()
-        })
+            Task { @MainActor in
+                // Calling the completion block from a main actor task guarantees it will be called when the Godot engine has
+                // finished starting up, and calling the runloop callback installed above.
+                completion ()
+                // after the tests complete, signal the engine to shut down.
+                stop()
+            }
+        }
     }
     
     public static func stop () {

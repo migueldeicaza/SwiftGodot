@@ -8,57 +8,11 @@
 import XCTest
 import SwiftGodot
 
-open class GodotTestCase: XCTestCase, XCTestObservation {
-    private static var testSuites: [XCTestSuite] = []
-    private static weak var observation: GodotTestCase?
+///
+/// All the heavy lifting is now done in GodotRuntime.
+///
+open class GodotTestCase: XCTestCase {
 
-    public func testSuiteWillStart(_ testSuite: XCTestSuite) {
-        Self.testSuites.append(testSuite)
-        XCTestObservationCenter.shared.removeTestObserver(self)
-    }
-
-    public required init(name: String, testClosure: @escaping XCTestCaseClosure) {
-        super.init(name: name, testClosure: testClosure)
-        if Self.observation == nil {
-            Self.observation = self
-            XCTestObservationCenter.shared.addTestObserver(self)
-        }
-    }
-
-    #if os(macOS)
-    override open class var defaultTestSuite: XCTestSuite {
-        let testSuite = super.defaultTestSuite
-        testSuites.append (testSuite)
-        return testSuite
-    }
-    #endif
-    
-    override open func run () {
-        if GodotRuntime.isRunning {
-            super.run ()
-        } else {
-            guard GodotRuntime.state == .begin else { return }
-            GodotRuntime.run {
-                let testSuites = Self.testSuites
-                Task { @MainActor in
-                    if !testSuites.isEmpty {
-                        // Executing all test suites from the context
-                        for testSuite in Self.testSuites {
-                            testSuite.perform (XCTestSuiteRun (test: testSuite))
-                        }
-                    } else {
-                        Self.godotSetUp ()
-                        // Executing single test method
-                        super.run ()
-                        Self.godotTearDown ()
-                    }
-                    
-                    GodotRuntime.stop ()
-                }
-            }
-        }
-    }
-    
     open class var godotSubclasses: [Wrapped.Type] {
         return []
     }
