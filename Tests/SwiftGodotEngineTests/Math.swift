@@ -22,6 +22,15 @@ extension Float {
     
 }
 
+extension FloatingPoint where Self: ExpressibleByFloatLiteral {
+    
+    func isEqualApprox(_ b: Self, epsilon: Self = 0.00001) -> Bool {
+        let tolerance: Self = max (epsilon * abs (self), epsilon)
+        return abs (self - b) < tolerance
+    }
+    
+}
+
 extension Collection {
     
     subscript (safe index: Index) -> Iterator.Element? {
