@@ -180,7 +180,7 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 ///
 /// - Important: This property will become a computed property, and it cannot be reassigned later.
 @attached(accessor)
-public macro SceneTree(path: String) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
+public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
 /// Defines a Godot signal on a class.
 ///
