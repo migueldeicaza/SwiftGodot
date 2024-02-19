@@ -135,6 +135,7 @@ public class SimpleSignal {
     }
     
     /// You can await this property to wait for the signal to be emitted once
+    @MainActor
     public var emitted: Void {
         get async {
             await withCheckedContinuation { c in
