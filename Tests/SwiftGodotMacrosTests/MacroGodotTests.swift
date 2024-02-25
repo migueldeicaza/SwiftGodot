@@ -375,7 +375,7 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     	classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
                     } ()
                 }
@@ -419,8 +419,8 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
-                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
+                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     	let squareArgs = [
                     		prop_1,
                     	]
@@ -466,7 +466,7 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .array)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
                     	classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
                     } ()
                 }
@@ -510,7 +510,7 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "nodes", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .array)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "nodes", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
                     	let printNamesArgs = [
                     		prop_0,
                     	]
@@ -556,7 +556,7 @@ final class MacroGodotTests: XCTestCase {
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<MultiplierNode> (name: className)
                     	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     	let multiplyArgs = [
                     		prop_1,
                     	]
@@ -618,9 +618,9 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("CallableCollectionsNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     	classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
-                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .array)
+                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .default)
                     	classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
                     } ()
                 }
@@ -663,7 +663,7 @@ final class MacroGodotTests: XCTestCase {
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<MultiplierNode> (name: className)
                     	let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     	let multiplyArgs = [
                     		prop_1,
                     	]
@@ -725,9 +725,9 @@ final class MacroGodotTests: XCTestCase {
                         let className = StringName("CallableCollectionsNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .array)
+                    	let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     	classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
-                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .array)
+                    	let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .default)
                     	classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
                     } ()
                 }

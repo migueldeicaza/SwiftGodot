@@ -102,7 +102,7 @@ class SomeNode: Node {
             className: StringName("Array[String]"),
             hint: .arrayType,
             hintStr: "String",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_greetings", flags: .default, returnValue: _pgreetings, arguments: [], function: SomeNode._mproxy_get_greetings)
     	classInfo.registerMethod (name: "set_greetings", flags: .default, returnValue: nil, arguments: [_pgreetings], function: SomeNode._mproxy_set_greetings)
     	classInfo.registerProperty (_pgreetings, getter: "get_greetings", setter: "set_greetings")
@@ -255,7 +255,7 @@ class SomeNode: Node {
             className: StringName("Array[int]"),
             hint: .arrayType,
             hintStr: "int",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_some_numbers", flags: .default, returnValue: _psomeNumbers, arguments: [], function: SomeNode._mproxy_get_someNumbers)
     	classInfo.registerMethod (name: "set_some_numbers", flags: .default, returnValue: nil, arguments: [_psomeNumbers], function: SomeNode._mproxy_set_someNumbers)
     	classInfo.registerProperty (_psomeNumbers, getter: "get_some_numbers", setter: "set_some_numbers")
@@ -327,7 +327,7 @@ class SomeNode: Node {
             className: StringName("Array[int]"),
             hint: .arrayType,
             hintStr: "int",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_some_numbers", flags: .default, returnValue: _psomeNumbers, arguments: [], function: SomeNode._mproxy_get_someNumbers)
     	classInfo.registerMethod (name: "set_some_numbers", flags: .default, returnValue: nil, arguments: [_psomeNumbers], function: SomeNode._mproxy_set_someNumbers)
     	classInfo.registerProperty (_psomeNumbers, getter: "get_some_numbers", setter: "set_some_numbers")
@@ -337,7 +337,7 @@ class SomeNode: Node {
             className: StringName("Array[int]"),
             hint: .arrayType,
             hintStr: "int",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_some_other_numbers", flags: .default, returnValue: _psomeOtherNumbers, arguments: [], function: SomeNode._mproxy_get_someOtherNumbers)
     	classInfo.registerMethod (name: "set_some_other_numbers", flags: .default, returnValue: nil, arguments: [_psomeOtherNumbers], function: SomeNode._mproxy_set_someOtherNumbers)
     	classInfo.registerProperty (_psomeOtherNumbers, getter: "get_some_other_numbers", setter: "set_some_other_numbers")
@@ -411,7 +411,7 @@ class ArrayTest: Node {
             className: StringName("Array[String]"),
             hint: .arrayType,
             hintStr: "String",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_first_names", flags: .default, returnValue: _pfirstNames, arguments: [], function: ArrayTest._mproxy_get_firstNames)
     	classInfo.registerMethod (name: "set_first_names", flags: .default, returnValue: nil, arguments: [_pfirstNames], function: ArrayTest._mproxy_set_firstNames)
     	classInfo.registerProperty (_pfirstNames, getter: "get_first_names", setter: "set_first_names")
@@ -421,7 +421,7 @@ class ArrayTest: Node {
             className: StringName("Array[String]"),
             hint: .arrayType,
             hintStr: "String",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_last_names", flags: .default, returnValue: _plastNames, arguments: [], function: ArrayTest._mproxy_get_lastNames)
     	classInfo.registerMethod (name: "set_last_names", flags: .default, returnValue: nil, arguments: [_plastNames], function: ArrayTest._mproxy_set_lastNames)
     	classInfo.registerProperty (_plastNames, getter: "get_last_names", setter: "set_last_names")
@@ -504,7 +504,7 @@ class SomeNode: Node {
             className: StringName("Array[Node3D]"),
             hint: .arrayType,
             hintStr: "Node3D",
-            usage: .array)
+            usage: .default)
     	classInfo.registerMethod (name: "get_greetings", flags: .default, returnValue: _pgreetings, arguments: [], function: SomeNode._mproxy_get_greetings)
     	classInfo.registerMethod (name: "set_greetings", flags: .default, returnValue: nil, arguments: [_pgreetings], function: SomeNode._mproxy_set_greetings)
     	classInfo.registerProperty (_pgreetings, getter: "get_greetings", setter: "set_greetings")
