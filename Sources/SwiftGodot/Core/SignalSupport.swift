@@ -47,8 +47,6 @@ public class SignalProxy: Object {
     }
 }
 
-extension GodotError: Error {}
-
 /// The simple signal is used to raise signals that take no arguments and return no values.
 ///
 /// To connect, you access the connect method, and pass you callback function, like this:
