@@ -55,7 +55,6 @@ class GodotMacroProcessor {
         
         let className: String
         let hintStr: String
-        let usage = propType == ".array" ? ".array" : ".default"
         let hint = propType == ".array" ? ".arrayType" : ".none"
         
         if propType == ".array",
@@ -81,7 +80,7 @@ class GodotMacroProcessor {
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: \(usage))\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -123,11 +122,10 @@ class GodotMacroProcessor {
         }
         
         let name = "prop_\(propertyDeclarations.count)"
-        let usage = propType == ".array" ? ".array" : ".default"
         let hint = propType == ".array" ? ".arrayType" : ".none"
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: \(usage))\n")
+        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -382,7 +380,7 @@ class GodotMacroProcessor {
         className: StringName("\(godotArrayTypeName)"),
         hint: .arrayType,
         hintStr: "\(godotArrayElementTypeName)",
-        usage: .array)\n
+        usage: .default)\n
     """)
             
             ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
