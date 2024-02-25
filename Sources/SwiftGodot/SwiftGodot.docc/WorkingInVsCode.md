@@ -107,6 +107,11 @@ your Godot project.
 
 #### Windows
 
+Windows does not deal well with long paths, so you should make sure that you 
+either checkout your SwiftGodot into a toplevel directory, or use the Windows
+`subst` command to map a drive name to the location that contains your
+SwiftGodot builds.
+
 If you are developing on Windows, your `libraries` and `dependencies` will need
 to be specified as `windows.debug.x86_64` and your libraries will be compiled
 into `.dll` files, so that these sections should look like this:
