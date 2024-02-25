@@ -256,8 +256,8 @@ public func unregister<T:Wrapped> (type: T.Type) {
 
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
-fileprivate var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
-fileprivate var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
+var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 
 // Lock for accessing the above
 var tableLock = NIOLock()
