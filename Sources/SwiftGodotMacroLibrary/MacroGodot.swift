@@ -107,7 +107,7 @@ class GodotMacroProcessor {
                 godotArrayElementTypeName = gArrayCollectionElementTypeName
             }
             
-            propType = godotTypeToProp (typeName: "Array")
+            propType = godotTypeToProp (typeName: "GArray")
             className = "Array[\(godotArrayElementTypeName)]"
             hintStr = godotArrayElementTypeName
         } else {
@@ -375,7 +375,7 @@ class GodotMacroProcessor {
             ctor.append (
     """
     let \(pinfo) = PropInfo (
-        propertyType: \(godotTypeToProp(typeName: "Array")),
+        propertyType: \(godotTypeToProp(typeName: "GArray")),
         propertyName: "\(varNameWithPrefix.camelCaseToSnakeCase())",
         className: StringName("\(godotArrayTypeName)"),
         hint: .arrayType,

@@ -39,7 +39,9 @@ public struct GodotExport: PeerMacro {
         let name = "_mproxy_set_\(varName)"
         var body: String = ""
 
-        if godotVariants [typeName] == nil {
+		if typeName == "Variant" {
+			body = "\(varName) = args [0]"
+		} else if godotVariants [typeName] == nil {
             let optBody = isOptional ? " else { \(varName) = nil }" : ""
             
             // The use of the local function dynamicCast here is such that the compiler
