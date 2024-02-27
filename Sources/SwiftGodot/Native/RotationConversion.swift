@@ -7,7 +7,7 @@ extension BinaryFloatingPoint {
     }
     
     /// Convert given radians value to degrees.
-    public var radiansToDegreess: Self {
+    public var radiansToDegrees: Self {
         return self * 180 / .pi
     }
 }
