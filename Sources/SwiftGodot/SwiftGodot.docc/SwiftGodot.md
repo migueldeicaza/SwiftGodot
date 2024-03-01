@@ -38,6 +38,7 @@ Going in depth with SwiftGodot:
 - <doc:Signals>
 - <doc:CustomTypes>
 - <doc:BindingNodes>
+- <doc:RunningInEditor>
 
 
 ### Godot Nodes
