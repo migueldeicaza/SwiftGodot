@@ -70,11 +70,13 @@ func pd (_ str: String) {
 /// If you do not call this method, many of the overloads that Godot would
 /// call you back on will not be invoked.
 open class Wrapped: Equatable, Identifiable, Hashable {
+    static let invalidHandle = UnsafeRawPointer(bitPattern: -1)!
     /// Points to the underlying object
     public var handle: UnsafeRawPointer
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     
+    /// Conformance to Identifiable by using the native handle to the object
     public var id: Int { Int (bitPattern: handle) }
     
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
@@ -137,6 +139,15 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         handle = nativeHandle
     }
     
+    /// This property indicates if the instance is valid or not.
+    ///
+    /// In Godot, some objects can be freed manually, and in particular
+    /// when you call the ``Node/queueFree()`` which might queue the object
+    /// for disposal
+    public var isValid: Bool {
+        return handle != Wrapped.invalidHandle
+    }
+
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a different name than the subclass.
@@ -384,6 +395,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
             } else {
                 //print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
             }
+            original.handle = Wrapped.invalidHandle
         }
     }
 }
