@@ -6,28 +6,45 @@
 //
 
 import libgodot
+import Foundation
+import XCTRuntime
+@_implementationOnly import GDExtension
 @testable import SwiftGodot
 
-@MainActor
-public final class GodotRuntime {
-    
-    static var isInitialized: Bool = false
-    static var isRunning: Bool = false
+public final class GodotRuntime: XCTRuntime {
+    enum State {
+    case begin
+    case running
+    case stopping
+    case end
+    }
+
+    static var state: State = .begin
+    static var isRunning: Bool { state == .running }
     
     static var scene: SceneTree?
     
-    static func run (completion: @escaping () -> Void) {
-        guard !isRunning else { return }
-        isInitialized = true
-        isRunning = true
-        runGodot (loadScene: { scene in
+    public static func run (completion: @escaping () -> Void) {
+        guard state == .begin else { return }
+        state = .running
+        runGodot { scene in
+            #if !canImport(Darwin)
+            // non-Darwin OS doesn't have implicit runloop.
+            RunLoop.install()
+            #endif
             self.scene = scene
-            completion ()
-        })
+            Task { @MainActor in
+                // Calling the completion block from a main actor task guarantees it will be called when the Godot engine has
+                // finished starting up, and calling the runloop callback installed above.
+                completion ()
+                // after the tests complete, signal the engine to shut down.
+                stop()
+            }
+        }
     }
     
-    static func stop () {
-        isRunning = false
+    public static func stop () {
+        state = .stopping
         scene?.quit ()
     }
     
@@ -78,7 +95,7 @@ private extension GodotRuntime {
             }
         )
 
-        let args = ["SwiftGodotKit", "--headless"]
+        let args = ["SwiftGodotKit", "--headless", "--verbose"]
         withUnsafePtr (strings: args) { ptr in
             godot_main (Int32 (args.count), ptr)
         }

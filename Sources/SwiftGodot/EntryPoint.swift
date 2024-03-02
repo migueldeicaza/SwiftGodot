@@ -196,6 +196,13 @@ struct GodotInterface {
     let packed_vector3_array_operator_index: GDExtensionInterfacePackedVector3ArrayOperatorIndex
     
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
+
+    typealias runloop_function_t = @convention(c) () -> Void
+    typealias GDExtensionInterfaceDisplayServerSetRunloop = @convention(c) (runloop_function_t) -> Void
+    let displayserver_set_runloop: GDExtensionInterfaceDisplayServerSetRunloop
+
+    typealias GDExtensionInterfaceMainIteration = @convention(c) () -> Void
+    let main_iteration: GDExtensionInterfaceMainIteration
 }
 
 var gi: GodotInterface!
@@ -289,7 +296,9 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         packed_vector2_array_operator_index: load ("packed_vector2_array_operator_index"),
         packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index"),
         
-        callable_custom_create: load ("callable_custom_create")
+        callable_custom_create: load ("callable_custom_create"),
+        displayserver_set_runloop: load ("displayserver_set_runloop"),
+        main_iteration: load ("main_iteration")
     )
 }
 

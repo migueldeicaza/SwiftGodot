@@ -37,12 +37,10 @@ products.append(
 #endif
 
 // libgodot is only available for macOS and testability runtime depends on it
-#if os(macOS)
 products.append(
     .library(
         name: "SwiftGodotTestability",
         targets: ["SwiftGodotTestability"]))
-#endif
 
 var targets: [Target] = [
     // This contains GDExtension's JSON API data models
@@ -112,21 +110,35 @@ swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 
 // libgodot is only available for macOS
 #if os(macOS)
-targets.append(contentsOf: [
-    // Godot runtime as a library
+targets.append(
+    // on macOS, libgodot is distributed as a binary .xcframework.
     .binaryTarget(
         name: "libgodot_tests",
         url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",
         checksum: "c8ddf62be6c00eacc36bd2dafe8d424c0b374833efe80546f6ee76bd27cee84e"
-    ),
-    
+        //path: "../libgodot.xcframework.zip"
+    )
+)
+let libgodot_dependency: Target.Dependency = "libgodot_tests"
+#else
+targets.append(
+    // on non-macOS platforms, link directly to libgodot, which must be available
+    // already in the .build/config directory, or in /usr/lib.
+    .systemLibrary(
+        name: "libgodot_system"
+    )
+)
+let libgodot_dependency: Target.Dependency = "libgodot_system"
+#endif
+
+targets.append(contentsOf: [
     // Base functionality for Godot runtime dependant tests
     .target(
         name: "SwiftGodotTestability",
         dependencies: [
             "SwiftGodot",
-            "libgodot_tests",
-            "GDExtension"
+            libgodot_dependency,
+            "GDExtension", "XCTRuntime"
         ]),
     
     // General purpose runtime dependant tests
@@ -145,7 +157,6 @@ targets.append(contentsOf: [
         ]
     ),
 ])
-#endif
 
 targets.append(contentsOf: [
     // This is the binding itself, it is made up of our generated code for the
@@ -178,6 +189,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
+        .package(path: "../XCTRuntime"),
     ],
     targets: targets
 )

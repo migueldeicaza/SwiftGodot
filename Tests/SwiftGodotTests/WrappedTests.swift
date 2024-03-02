@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import Foundation
 import SwiftGodotTestability
 @testable import SwiftGodot
 
@@ -23,20 +24,22 @@ final class WrappedTests: GodotTestCase {
         let checker = ReferenceChecker ()
         
         // framework object
-        autoreleasepool {
+        let frameworkCheck = {
             let node = Node ()
             checker.reference = node
             node.queueFree ()
         }
+        frameworkCheck()
         await scene.processFrame.emitted
         checker.assertDisposed ()
         
         // subtyped object
-        autoreleasepool {
+        let subtypedCheck = {
             let node = SubtypedNode ()
             checker.reference = node
             node.queueFree ()
         }
+        subtypedCheck()
         await scene.processFrame.emitted
         checker.assertDisposed ()
     }
