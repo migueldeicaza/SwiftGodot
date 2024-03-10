@@ -27,7 +27,7 @@ if args.count < 2 {
     print ("Running with Miguel's testing defaults")
 }
 
-let jsonData = try! Data(contentsOf: URL(fileURLWithPath: jsonFile))
+let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
 // Determines whether a built-in type is defined as a structure, this means:
