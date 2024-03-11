@@ -240,10 +240,10 @@ class GodotMacroProcessor {
             let getterName = "_mproxy_get_\(varNameWithoutPrefix)"
 
             if let accessors = last.accessorBlock {
-                if accessors.as (CodeBlockSyntax.self) != nil {
+                if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }
-                if let block = accessors.as (AccessorBlockSyntax.self) {
+                if let block = AccessorBlockSyntax (accessors) {
                     var hasSet = false
                     var hasGet = false
                     switch block.accessors {
@@ -328,10 +328,10 @@ class GodotMacroProcessor {
             let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             
             if let accessors = last.accessorBlock {
-                if accessors.as (CodeBlockSyntax.self) != nil {
+                if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }
-                if let block = accessors.as (AccessorBlockSyntax.self) {
+                if let block = AccessorBlockSyntax (accessors) {
                     var hasSet = false
                     var hasGet = false
                     switch block.accessors {
@@ -602,10 +602,8 @@ private extension MacroExpansionDeclSyntax {
     }
     
     var exportGroupPrefix: String? {
-        guard isExportGroup, arguments.count == 2 else { return nil }
-        return arguments
-            .last?
-            .as(LabeledExprSyntax.self)?
+        guard isExportGroup, arguments.count == 2, let argument = arguments.last else { return nil }
+        return LabeledExprSyntax (argument)?
             .expression
             .as(StringLiteralExprSyntax.self)?
             .segments
@@ -616,10 +614,8 @@ private extension MacroExpansionDeclSyntax {
     }
     
     var exportGroupName: String? {
-        guard isExportGroup, arguments.count >= 1 else { return nil }
-        return arguments
-            .first?
-            .as(LabeledExprSyntax.self)?
+        guard isExportGroup, arguments.count >= 1, let argument = arguments.first else { return nil }
+        return LabeledExprSyntax (argument)?
             .expression
             .as(StringLiteralExprSyntax.self)?
             .segments
@@ -630,10 +626,8 @@ private extension MacroExpansionDeclSyntax {
     }
     
     var exportSubgroupPrefix: String? {
-        guard isExportSubgroup, arguments.count == 2 else { return nil }
-        return arguments
-            .last?
-            .as(LabeledExprSyntax.self)?
+        guard isExportSubgroup, arguments.count == 2, let argument = arguments.last else { return nil }
+        return LabeledExprSyntax (argument)?
             .expression
             .as(StringLiteralExprSyntax.self)?
             .segments
@@ -644,10 +638,8 @@ private extension MacroExpansionDeclSyntax {
     }
     
     var exportSubgroupName: String? {
-        guard isExportSubgroup, arguments.count >= 1 else { return nil }
-        return arguments
-            .first?
-            .as(LabeledExprSyntax.self)?
+        guard isExportSubgroup, arguments.count >= 1, let argument = arguments.first else { return nil }
+        return LabeledExprSyntax (argument)?
             .expression
             .as(StringLiteralExprSyntax.self)?
             .segments

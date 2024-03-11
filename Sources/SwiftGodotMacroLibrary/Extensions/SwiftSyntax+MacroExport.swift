@@ -60,7 +60,7 @@ private extension VariableDeclSyntax {
     }
     
     var genericInitializerElementTypeName: String? {
-        guard let elementTypeName = bindings
+        guard let argument = bindings
             .first?
             .initializer?
             .value
@@ -69,8 +69,8 @@ private extension VariableDeclSyntax {
             .as(GenericSpecializationExprSyntax.self)?
             .genericArgumentClause
             .arguments
-            .first?
-            .as(GenericArgumentSyntax.self)?
+            .first,
+        let elementTypeName = GenericArgumentSyntax (argument)?
             .argument
             .as(IdentifierTypeSyntax.self)?
             .genericElementName

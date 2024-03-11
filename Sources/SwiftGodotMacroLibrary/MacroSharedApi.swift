@@ -25,7 +25,7 @@ func getIdentifier (_ typeSyntax: TypeSyntax?) -> (typeName: String, generics: [
         let genericTypeNames: [String] = identifier
             .genericArgumentClause?
             .arguments
-            .compactMap { $0.as(GenericArgumentSyntax.self) }
+            .compactMap { GenericArgumentSyntax ($0) }
             .compactMap { $0.argument.as(IdentifierTypeSyntax.self) }
             .map { $0.name.text } ?? []
         return (typeName: identifier.name.text, generics: genericTypeNames, isOptional: opt)

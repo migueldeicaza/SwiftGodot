@@ -16,13 +16,13 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
     public static func expansion(of node: some FreestandingMacroExpansionSyntax,
                                  in context: some MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
 
-        guard let cDecl = node.argumentList.first?.expression else {
+        guard let cDecl = node.arguments.first?.expression else {
             fatalError("compiler bug: the macro does not have any arguments")
         }
 		
 		let types: ExprSyntax
-		if node.argumentList.count >= 2 {
-			types = node.argumentList.last!.expression
+		if node.arguments.count >= 2 {
+			types = node.arguments.last!.expression
 		} else {
 			types = "[]"
 		}

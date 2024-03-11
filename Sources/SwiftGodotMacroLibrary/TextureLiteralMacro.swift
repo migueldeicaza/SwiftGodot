@@ -35,7 +35,7 @@ public struct Texture2DLiteralMacro: ExpressionMacro {
 
     public static func expansion(of node: some FreestandingMacroExpansionSyntax,
                                  in context: some MacroExpansionContext) throws -> ExprSyntax {
-        guard let argument = node.argumentList.first?.expression else {
+        guard let argument = node.arguments.first?.expression else {
             let argumentError = Diagnostic(node: node.root, message: ProviderDiagnostic.missingArguments)
             context.diagnose(argumentError)
             return "\"\""
