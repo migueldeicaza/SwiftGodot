@@ -162,6 +162,7 @@ struct GodotInterface {
     let variant_hash: GDExtensionInterfaceVariantHash
     let variant_destroy: GDExtensionInterfaceVariantDestroy
     let variant_get_type: GDExtensionInterfaceVariantGetType
+    let variant_get_type_name: GDExtensionInterfaceVariantGetTypeName
     let variant_stringify: GDExtensionInterfaceVariantStringify
     let variant_call: GDExtensionInterfaceVariantCall
     let variant_call_static: GDExtensionInterfaceVariantCallStatic
@@ -258,6 +259,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         variant_hash: load ("variant_hash"),
         variant_destroy: load ("variant_destroy"),
         variant_get_type: load ("variant_get_type"),
+        variant_get_type_name: load ("variant_get_type_name"),
         variant_stringify: load ("variant_stringify"),
         variant_call: load ("variant_call"),
         variant_call_static: load ("variant_call_static"),
