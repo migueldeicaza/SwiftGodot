@@ -261,4 +261,14 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             gi.variant_set_indexed (&copy_content, Int64(index), &newV, &valid, &oob)
         }
     }
+    
+    
+    /// Gets the name of a Variant type.
+    public static func typeName (_ type: GType) -> String {
+        var res = GStringRaw()
+        gi.variant_get_type_name (GDExtensionVariantType (UInt32(type.rawValue)), &res.content)
+        let ret = GString.stringFromGStringPtr(ptr: &res.content)
+        GString.destructor (&res.content)
+        return ret ?? ""
+    }
 }
