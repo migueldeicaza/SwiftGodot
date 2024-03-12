@@ -37,12 +37,15 @@ import PackagePlugin
         outputFiles.append (contentsOf: known.map { genSourcesDir.appending(["generated", $0])})
         #endif
 
+        // For Windows with Swift 5.10 both prebuildCommand and buildCommand are needed
+        #if !os(Windows) || swift(>=5.10)
         commands.append(Command.buildCommand(
             displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
             executable: generator,
             arguments: arguments,
             inputFiles: [api],
             outputFiles: outputFiles))
+        #endif
         
         return commands
     }
