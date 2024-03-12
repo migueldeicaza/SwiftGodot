@@ -11,6 +11,7 @@ import PackagePlugin
 /// Generates the API for the SwiftGodot from the Godot exported Json API
 @main struct SwiftCodeGeneratorPlugin: BuildToolPlugin {
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
+        var commands: [Command] = []
         // Configure the commands to write to a "GeneratedSources" directory.
         let genSourcesDir = context.pluginWorkDirectory.appending("GeneratedSources")
 
@@ -26,23 +27,24 @@ import PackagePlugin
         outputFiles.append(genSourcesDir.appending(subpath: "Generated.swift"))
         arguments.append(context.package.directory.appending(subpath: "doc"))
         arguments.append("--singlefile")
-        let cmd: Command = Command.prebuildCommand(
+        commands.append(Command.prebuildCommand(
             displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
             executable: generator,
             arguments: arguments,
-            outputFilesDirectory: genSourcesDir)
+            outputFilesDirectory: genSourcesDir))
         #else
         outputFiles.append (contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0])})
         outputFiles.append (contentsOf: known.map { genSourcesDir.appending(["generated", $0])})
-        let cmd: Command = Command.buildCommand(
+        #endif
+
+        commands.append(Command.buildCommand(
             displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
             executable: generator,
             arguments: arguments,
             inputFiles: [api],
-            outputFiles: outputFiles)
-        #endif
+            outputFiles: outputFiles))
         
-        return [cmd]
+        return commands
     }
 }
 
