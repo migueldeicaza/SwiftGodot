@@ -41,7 +41,7 @@ public struct SignalMacro: DeclarationMacro {
         var signalName: SignalName? = nil
         var arguments = [(name: String, type: String)]()
         
-        for (index, argument) in node.argumentList.enumerated() {
+        for (index, argument) in node.arguments.enumerated() {
             if index == 0 {
                 signalName = argument.expression.signalName()
             }

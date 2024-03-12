@@ -122,10 +122,10 @@ public struct GodotExport: PeerMacro {
             let varName = ips.identifier.text
             
             if let accessors = last.accessorBlock {
-                if accessors.as (CodeBlockSyntax.self) != nil {
+                if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }
-                if let block = accessors.as (AccessorBlockSyntax.self) {
+                if let block = AccessorBlockSyntax (accessors) {
                     var hasSet = false
                     var hasGet = false
                     switch block.accessors {
