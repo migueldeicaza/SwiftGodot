@@ -99,15 +99,20 @@ targets.append(contentsOf: [
         dependencies: ["SwiftGodot"],
         exclude: ["SwiftSprite.gdextension", "README.md"]),
         //linkerSettings: linkerSettings),
-    // Idea: -mark_dead_strippable_dylib
-    .testTarget(name: "SwiftGodotMacrosTests",
-                dependencies: [
-                    "SwiftGodotMacroLibrary",
-                    "SwiftGodot",
-                    .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
-                ])
 ])
 swiftGodotPlugins.append("SwiftGodotMacroLibrary")
+#endif
+
+// Macro tests don't work on Windows yet
+#if !os(Windows)
+// Idea: -mark_dead_strippable_dylib
+targets.append(
+    .testTarget(name: "SwiftGodotMacrosTests",
+            dependencies: [
+                "SwiftGodotMacroLibrary",
+                "SwiftGodot",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+            ]))
 #endif
 
 // libgodot is only available for macOS
