@@ -8,7 +8,6 @@
 import XCTest
 @testable import SwiftGodot
 
-@MainActor
 open class GodotTestCase: XCTestCase {
     
     private static var testSuites: [XCTestSuite] = []
