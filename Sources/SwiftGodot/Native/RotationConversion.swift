@@ -1,4 +1,3 @@
-import Foundation
 
 extension BinaryFloatingPoint {
     /// Converts this floating point value assumed to be in degrees to radians.
