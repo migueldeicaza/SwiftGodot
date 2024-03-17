@@ -4,7 +4,7 @@
 //
 //  Created by Miguel de Icaza on 4/7/23.
 //
-import Foundation
+
 extension PackedStringArray {
     /// Initializes a ``PackedStringArray`` from an array of strings
     public convenience init (_ values: [String]) {
@@ -36,11 +36,20 @@ extension PackedByteArray {
             set (index: Int64 (index), value: Int64 (newValue))
         }
     }
-    
-    /// Returns a new Data object with a copy of the data contained by this PackedByteArray
-    public func asData() -> Data? {
+
+    /// Provides a mechanism to access the underlying data for the packed byte array
+    ///
+    /// - Parameter method: a callback that is invoked with a pointer to the underlying data, and
+    /// the number of bytes in that block of data.   The callback is allowed to return nil it if fails to
+    /// do anything with the data.
+    ///
+    /// You could implement a method to access your data like this:
+    /// ```
+    /// let data: Data? = withUnsafeAccessToData { ptr, count in Data (ptr, count) }
+    /// ```
+    public func withUnsafeAccessToData<T> (_ method: (_ pointer: UnsafeRawPointer, _ count: Int)->T?) -> T? {
         if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
-            return Data (bytes: ptr, count: Int (size()))
+            return method (ptr, Int (size ()))
         }
         return nil
     }
