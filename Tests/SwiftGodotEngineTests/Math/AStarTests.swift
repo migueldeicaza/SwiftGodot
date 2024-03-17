@@ -142,7 +142,7 @@ final class AStarTests: GodotTestCase {
         XCTAssertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 3, y: 2, z: 0)), Vector3 (x: 2, y: 1, z: 0))
         
         // Random tests for connectivity checks
-        for i in 0..<2000 {
+        for _ in 0..<2000 {
             let u: Int = Int.random (in: 0..<5)
             var v: Int = Int.random (in: 0..<4)
             if u == v {
@@ -160,13 +160,13 @@ final class AStarTests: GodotTestCase {
         }
         
         // Random tests for point removal.
-        for i in 0..<2000 {
+        for _ in 0..<2000 {
             a.clear ()
             for j in 0..<5 {
                 a.addPoint (id: j, position: Vector3 (x: 0, y: 0, z: 0))
             }
             // Add or remove random edges.
-            for j in 0..<10 {
+            for _ in 0..<10 {
                 let u: Int = Int.random (in: 0..<5)
                 var v: Int = Int.random (in: 0..<4)
                 if u == v {
