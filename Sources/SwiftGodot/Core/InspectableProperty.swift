@@ -5,8 +5,6 @@
 //  Created by Marquis Kurt on 10/15/23.
 //
 
-import Foundation
-
 /// A structure that houses a property that can be added to a Godot inspector.
 public struct InspectableProperty<T> {
     /// A typealias for the the method type used to register a property to Godot for inspectors.

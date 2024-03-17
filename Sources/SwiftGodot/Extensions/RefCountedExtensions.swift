@@ -1,4 +1,3 @@
-import Foundation
 @_implementationOnly import GDExtension
 
 public extension RefCounted {

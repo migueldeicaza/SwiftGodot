@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol LinearInterpolation {
     /// Linearly interpolate from self to the given value considering the weight.
