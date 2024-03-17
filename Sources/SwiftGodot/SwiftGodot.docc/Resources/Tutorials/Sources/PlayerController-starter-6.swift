@@ -26,7 +26,7 @@ class PlayerController: CharacterBody2D {
         if movementVector != .zero {
             let acceleratedVector = Vector2(x: acceleration, y: acceleration)
             let acceleratedMovement = movementVector * acceleratedVector
-            self.velocity = acceleratedMovement.limitLength(length: speed)
+            self.velocity = acceleratedMovement.limitLength(speed)
         }
     }
 }
