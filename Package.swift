@@ -19,6 +19,9 @@ var products: [Product] = [
         type: .dynamic,
         targets: ["SwiftGodot"]),
     .library(
+        name: "SwiftGodotStatic",
+        targets: ["SwiftGodot"]),
+    .library(
         name: "ExtensionApi",
         targets: [
             "ExtensionApi",
