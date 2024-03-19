@@ -100,7 +100,7 @@ actor PrinterFactory {
     
     func save (_ file: String) {
         let result = printers.map({ $0.result }).joined(separator: "\n")
-        if let existing = try? String (contentsOfFile: file) {
+        if let existingData = try? Data(url: URL(fileURLWithPath: file)), let existing = String(data: existingData, encoding: .utf8) {
             if existing == result {
                 return
             }
