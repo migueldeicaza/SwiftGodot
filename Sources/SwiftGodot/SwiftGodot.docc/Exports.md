@@ -246,6 +246,17 @@ public override func _ready()
 }
 ```
 
+If you find yourself that you do not want to provide manual get/set properties
+in your export, and want to have an optional for one of the Object types, you 
+can use something like this:
+
+```swift
+@Export(.nodeType, "Camera3D")
+var camera: Camera3D? = nil
+```
+
+The parameter to `.nodeType` needs to match the type of the object.
+
 ### Resources
 
 ```
