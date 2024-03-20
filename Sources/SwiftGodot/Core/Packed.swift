@@ -36,7 +36,7 @@ extension PackedByteArray {
             set (index: Int64 (index), value: Int64 (newValue))
         }
     }
-
+    
     /// Provides a mechanism to access the underlying data for the packed byte array
     ///
     /// - Parameter method: a callback that is invoked with a pointer to the underlying data, and
@@ -52,6 +52,38 @@ extension PackedByteArray {
             return method (ptr, Int (size ()))
         }
         return nil
+    }
+    
+    /// Provides a mechanism to access the underlying data for the packed byte array for mutation
+    ///
+    /// - Parameter method: a callback that is invoked with a pointer to the underlying data, and
+    /// the number of bytes in that block of data.   The callback is allowed to return nil it if fails to
+    /// do anything with the data.
+    ///
+    /// You could implement a method to access your data like this:
+    /// ```
+    /// let data: Data? = withUnsafeAccessToData { ptr, count in Data (ptr, count) }
+    /// ```
+    public func withUnsafeMutableAccessToData<T> (_ method: (_ pointer: UnsafeMutableRawPointer, _ count: Int)->T?) -> T? {
+        if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
+            return method (ptr, Int (size ()))
+        }
+        return nil
+    }
+
+    /// Initializes a PackedByteArray from an array of UInt8 values.
+    public convenience init (_ data: [UInt8]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: UInt8.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
     }
 }
 
@@ -79,6 +111,21 @@ extension PackedFloat32Array {
             set (index: Int64 (index), value: Double (newValue))
         }
     }
+    
+    /// Initializes a PackedByteArray from an array of Float values.
+    public convenience init (_ data: [Float]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_float32_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Float.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
 }
 
 extension PackedFloat64Array {
@@ -92,6 +139,22 @@ extension PackedFloat64Array {
             set (index: Int64 (index), value: newValue)
         }
     }
+    
+    /// Initializes a PackedByteArray from an array of Double values.
+    public convenience init (_ data: [Double]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_float64_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Double.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
+
 }
 
 extension PackedInt32Array {
@@ -105,6 +168,21 @@ extension PackedInt32Array {
             set (index: Int64 (index), value: Int64(newValue))
         }
     }
+    
+    /// Initializes a PackedByteArray from an array of Int32 values values.
+    public convenience init (_ data: [Int32]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_int32_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Int32.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
 }
 
 extension PackedInt64Array {
@@ -116,6 +194,21 @@ extension PackedInt64Array {
         }
         set {
             set (index: Int64 (index), value: newValue)
+        }
+    }
+    
+    /// Initializes a PackedByteArray from an array of Int32 values values.
+    public convenience init (_ data: [Int64]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_int64_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Int64.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
         }
     }
 }
