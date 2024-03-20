@@ -11,7 +11,7 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 final class PackedArrayTests: GodotTestCase {
-    func testCustomInitializes () {
+    func testCustomInitializers () {
         let bytes: [UInt8] = [10, 20, 30, 255, 0, 3]
         
         let a = PackedByteArray (bytes)
@@ -42,6 +42,12 @@ final class PackedArrayTests: GodotTestCase {
         for (idx, v) in doubles.enumerated() {
             XCTAssertEqual (v, e [idx])
         }
-
+    }
+    
+    func testPackedByteArrayExtract () {
+        let bytes: [UInt8] = [10, 20, 30, 255, 0, 3]
+        let packed = PackedByteArray(bytes)
+        let ret = packed.asBytes()
+        XCTAssertEqual (ret, bytes)
     }
 }

@@ -41,7 +41,7 @@ extension PackedByteArray {
     ///
     /// - Parameter method: a callback that is invoked with a pointer to the underlying data, and
     /// the number of bytes in that block of data.   The callback is allowed to return nil it if fails to
-    /// do anything with the data.
+    /// do anything with the data or if the array is empty.
     ///
     /// You could implement a method to access your data like this:
     /// ```
@@ -54,16 +54,26 @@ extension PackedByteArray {
         return nil
     }
     
+    /// Returns the underlying storage as an array of bytes
+    public func asBytes () -> [UInt8] {
+        let count = Int (size())
+        if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
+            return ptr.withMemoryRebound(to: UInt8.self, capacity: count) { typed in
+                var ret: [UInt8] = Array.init(repeating: 0, count: count)
+                for idx in 0..<count {
+                    ret [idx] = typed [idx]
+                }
+                return ret
+            }
+        }
+        return []
+    }
     /// Provides a mechanism to access the underlying data for the packed byte array for mutation
     ///
     /// - Parameter method: a callback that is invoked with a pointer to the underlying data, and
     /// the number of bytes in that block of data.   The callback is allowed to return nil it if fails to
     /// do anything with the data.
     ///
-    /// You could implement a method to access your data like this:
-    /// ```
-    /// let data: Data? = withUnsafeAccessToData { ptr, count in Data (ptr, count) }
-    /// ```
     public func withUnsafeMutableAccessToData<T> (_ method: (_ pointer: UnsafeMutableRawPointer, _ count: Int)->T?) -> T? {
         if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
             return method (ptr, Int (size ()))
