@@ -115,7 +115,7 @@ if singleFile {
 
 let semaphore = DispatchSemaphore(value: 0)
 let _ = Task {
-    let coreDefPrinter = await PrinterFactory.shared.initPrinter()
+    let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
     coreDefPrinter.preamble()
     generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
     await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
