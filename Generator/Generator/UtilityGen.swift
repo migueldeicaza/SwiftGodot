@@ -9,7 +9,7 @@ import Foundation
 import ExtensionApi
 
 func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async {
-    let p = await PrinterFactory.shared.initPrinter()
+    let p = await PrinterFactory.shared.initPrinter("utility")
     p.preamble()
     defer {
         if let outputDir {

@@ -731,7 +731,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         case "int", "float", "bool":
             break
         default:
-            let p: Printer = await PrinterFactory.shared.initPrinter()
+            let p: Printer = await PrinterFactory.shared.initPrinter(bc.name)
             p.preamble()
             mapStringToSwift = bc.name != "String"
             generateBuiltinClass (p: p, bc)
