@@ -31,6 +31,10 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     
     init (content: Int64) {
         array = GArray (content: content)
+        var copy = content
+        // Array took a reference, we do not need to take it.
+        GArray.destructor (&copy)
+
     }
     
     /// Initializes the collection with an empty typed GArray
