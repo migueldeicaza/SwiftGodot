@@ -1,16 +1,15 @@
-import Foundation
 
 public protocol Snappable {
     /// Returns a new value snapped to the nearest multiple of the specified step.
     func snapped(step: Self) -> Self
 }
 
-extension Numeric where Self: FloatingPoint & ExpressibleByFloatLiteral {
+extension Numeric where Self: BinaryFloatingPoint {
     public func snapped(step: Self) -> Self {
         if step.isZero {
             return self
         }
-        return floor(self / step + 0.5) * step
+        return (self / step + 0.5).rounded(.down) * step
     }
 }
 
