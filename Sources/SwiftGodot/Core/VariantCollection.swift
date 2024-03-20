@@ -31,6 +31,13 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     
     init (content: Int64) {
         array = GArray (content: content)
+        
+        // Explanation: we already own this reference, and what we were doing here was
+        // creating a nested array that was taking a reference.
+        //
+        // I should add support to the generator to produce a GArray internal constructor
+        // that can take this existing reference, rather than calling the constructor that
+        // makes the copy.
         var copy = content
         // Array took a reference, we do not need to take it.
         GArray.destructor (&copy)
@@ -40,13 +47,6 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// Initializes the collection with an empty typed GArray
     public init () {
         array = GArray (Element.self)
-        
-//        let name = StringName()
-//        let variant = Variant()
-        // Looks like this is not useful for Variants, godot says:
-        // ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
-
-        //gi.array_set_typed (&content, GDExtensionVariantType (GDExtensionVariantType.RawValue(T.variantType.rawValue)), &name.content, &variant.content)
     }
     
     /// Creates a new instance from the given variant if it contains a GArray
