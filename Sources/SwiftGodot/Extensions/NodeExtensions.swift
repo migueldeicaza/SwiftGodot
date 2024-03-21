@@ -11,23 +11,9 @@
 /// For example:
 ///
 ///     class MyElements: CanvasLayer {
-///         @BindNode var GameOverLabel: Label
-///     }
-///
-///
-/// The above is equivalent to calling
-///
-///     getNode(path: NodeName("GameOverLabel")) as! Label
-
-/// Use the BindNode property wrapper in any subclass of Node to retrieve the node from the
-/// current container that matches the name of the property.
-///
-/// For example:
-///
-///     class MyElements: CanvasLayer {
 ///         @BindNode var MovementComponent: Node?
 ///         @BindNode var movementComponent: Node?
-///         @BindNode(nodeName: "MovementComponent") var customLabel: Node?
+///         @BindNode("MovementComponent") var customLabel: Node?
 ///     }
 ///
 /// The above is equivalent to calling
@@ -89,7 +75,7 @@ public struct BindNode<Value: Node> {
     }
 
     var nodeName: String?
-    public init(nodeName: String? = nil) {
+    public init(_ nodeName: String? = nil) {
         self.nodeName = nodeName
     }
 
