@@ -40,14 +40,16 @@ public struct BindNode<Value: Node> {
                         return cleanedDebugName
                     }
 
-                    // Check lower/upper cased first character variants to bridge the casing gap with
-                    // swift variables and GD scene names.
-                    let firstCharacterCaseVariantNames = makeVariantNames(from: cleanedDebugName)
-                    if instance.hasNode(path: NodePath(from: firstCharacterCaseVariantNames.camel)) {
-                        return firstCharacterCaseVariantNames.camel
-                    } else {
-                        return firstCharacterCaseVariantNames.pascal
+                    // Check upper cased first character variant to bridge the casing gap with swift
+                    // variables and GD scene names.
+                    let pascalVariantName = makePascalCaseName(from: cleanedDebugName)
+                    if instance.hasNode(path: NodePath(from: pascalVariantName)) {
+                        return pascalVariantName
                     }
+
+                    // This won't be found, but it triggers a warning in godot pointing to the original
+                    // inferred name used in the binding.
+                    return cleanedDebugName
                 }()
 
                 return instance.getNode(path: NodePath(from: discoveredName)) as? Value
@@ -68,10 +70,8 @@ public struct BindNode<Value: Node> {
         }
     }
 
-    private static func makeVariantNames(from name: String) -> (camel: String, pascal: String) {
-        let camel = name.prefix(1).lowercased() + name.dropFirst()
-        let pascal = name.prefix(1).uppercased() + name.dropFirst()
-        return (camel, pascal)
+    private static func makePascalCaseName(from name: String) -> String {
+        return name.prefix(1).uppercased() + name.dropFirst()
     }
 
     var nodeName: String?
