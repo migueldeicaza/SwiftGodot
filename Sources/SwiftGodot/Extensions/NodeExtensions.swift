@@ -25,15 +25,14 @@
 /// For example:
 ///
 ///     class MyElements: CanvasLayer {
-///         @BindNode var GameOverLabel: Label
-///         @BindNode var gameOverLabel: Label
-///
-///         @BindNode(nodeName: "GameOverLabel") var customLabel: Label
+///         @BindNode var MovementComponent: Node?
+///         @BindNode var movementComponent: Node?
+///         @BindNode(nodeName: "MovementComponent") var customLabel: Node?
 ///     }
 ///
 /// The above is equivalent to calling
 ///
-///     getNode(path: NodeName("GameOverLabel")) as! Label
+///     getNode(path: NodeName("MovementComponent")) as? Node
 
 @propertyWrapper
 public struct BindNode<Value: Node> {
