@@ -42,6 +42,9 @@ final class MacroGodotTests: XCTestCase {
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             }
+            
+            extension Hi: GodotMacroClass {
+            }
             """,
             macros: testMacros
         )
@@ -78,6 +81,9 @@ final class MacroGodotTests: XCTestCase {
                     ]
                 }
             }
+            
+            extension Hi: GodotMacroClass {
+            }
             """,
             macros: testMacros
         )
@@ -111,6 +117,9 @@ final class MacroGodotTests: XCTestCase {
                     ]
                 }
             }
+            
+            extension Hi: GodotMacroClass {
+            }
             """,
             macros: testMacros
         )
@@ -141,6 +150,9 @@ final class MacroGodotTests: XCTestCase {
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
                 } ()
+            }
+            
+            extension Hi: GodotMacroClass {
             }
             """,
 			macros: testMacros
@@ -179,6 +191,9 @@ final class MacroGodotTests: XCTestCase {
                     classInfo.registerSignal(name: Hi.differentInit.name, arguments: Hi.differentInit.arguments)
                     classInfo.registerSignal(name: Hi.differentInit2.name, arguments: Hi.differentInit2.arguments)
                 } ()
+            }
+            
+            extension Hi: GodotMacroClass {
             }
             """,
             macros: testMacros
@@ -265,6 +280,9 @@ final class MacroGodotTests: XCTestCase {
                     	classInfo.registerMethod(name: StringName("queue"), flags: .default, returnValue: nil, arguments: queueArgs, function: Castro._mproxy_queue)
                     } ()
                 }
+                
+                extension Castro: GodotMacroClass {
+                }
                 """,
 			macros: testMacros
 		)
@@ -335,6 +353,12 @@ final class MacroGodotTests: XCTestCase {
                 	classInfo.registerMethod (name: "_mproxy_set_data", flags: .default, returnValue: nil, arguments: [_pdata], function: MyClass._mproxy_set_data)
                 	classInfo.registerProperty (_pdata, getter: "_mproxy_get_data", setter: "_mproxy_set_data")
                 } ()
+            }
+
+            extension MyData: GodotMacroClass {
+            }
+
+            extension MyClass: GodotMacroClass {
             }
             """,
             macros: testMacros
@@ -802,6 +826,9 @@ final class MacroGodotTests: XCTestCase {
                     	classInfo.registerMethod(name: StringName("areBothTrue"), flags: .default, returnValue: prop_6, arguments: areBothTrueArgs, function: MathHelper._mproxy_areBothTrue)
                     } ()
                 }
+
+                extension MathHelper: GodotMacroClass {
+                }
                 """,
 			macros: testMacros
 		)
@@ -855,6 +882,9 @@ final class MacroGodotTests: XCTestCase {
                 	classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .default, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
                 	classInfo.registerProperty (_pgoodName, getter: "_mproxy_get_goodName", setter: "_mproxy_set_goodName")
                 } ()
+            }
+
+            extension Hi: GodotMacroClass {
             }
             """,
 			macros: testMacros

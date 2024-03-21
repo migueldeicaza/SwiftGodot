@@ -7,6 +7,8 @@
 
 #if !(os(Windows) && swift(<5.9.1))
 
+public protocol GodotMacroClass: GodotObject {}
+
 /// Creates the definition for a Swift class to be surfaced to Godot.
 ///
 /// This macro creates the required constructors that the SwiftGodot framework requires (the `init`, and the
@@ -19,6 +21,7 @@
 ///
 @attached(member,
           names: named (_initializeClass), named(classInitializer), named (implementedOverrides))
+@attached(extension, conformances: GodotMacroClass)
 public macro Godot(_ behavior: ClassBehavior = .gameplay) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
 
 public enum ClassBehavior: Int {
