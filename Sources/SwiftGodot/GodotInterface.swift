@@ -5,6 +5,8 @@
 //  Created by Miguel de Icaza on 3/25/23.
 //
 
+@_implementationOnly import GDExtension
+
 func gmem_alloc (_ size: Int) -> UnsafeMutableRawPointer? {
     gi.mem_alloc (size)
 }
@@ -43,6 +45,14 @@ func gprintScriptError (_ description: String, message: String? = nil, function:
 
 func gGetNativeStructSize (name: String) -> UInt64 {
     return gi.get_native_struct_size (name)
+}
+
+// public func gCreateGodotInstance (_ argc: Int32, _ argv: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?, _ initFunc: GDExtensionInitializationFunction?, nativePtr: UnsafeMutableRawPointer?) -> GDExtensionObjectPtr? {
+//    return gi.create_godot_instance (argc, argv, initFunc, nativePtr)
+// }
+
+public func gDestroyGodotInstance (_ instance: UnsafeMutableRawPointer) {
+    gi.destroy_godot_instance (instance)
 }
 
 //

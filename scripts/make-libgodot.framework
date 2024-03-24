@@ -8,17 +8,13 @@ ODIR=$2
 rm -rf $ODIR/libgodot.xcframework
 tmp=/tmp/dir-$$
 mkdir $tmp
-echo '#define LIBRARY_ENABLED' > $tmp/libgodot.h
-#echo '#define LIBRARY_ENABLED' > $tmp/libgodot_callable.h
 cp $DIR/core/extension/gdextension_interface.h $tmp/gdextension_interface.h
-sed -e 's#core/extension/gdextension#gdextension#' -e 's/bool/int/' < $DIR/core/libgodot/libgodot.h >> $tmp/libgodot.h
-#cat $DIR/core/libgodot/libgodot_callable.h >> $tmp/libgodot_callable.h
 cat > $tmp/module.modulemap << EOF
 module libgodot {
-    header "libgodot.h"
+    header "gdextension_interface.h"
     export *
 }
 EOF
 
-xcodebuild -create-xcframework -library $DIR/bin/libgodot.macos*.dylib -headers $tmp -output $ODIR/libgodot.xcframework
+xcodebuild -create-xcframework -library $DIR/bin/libgodot.ios*.a -headers $tmp -output $ODIR/libgodot.xcframework
 rm -rf /tmp/dir-$$

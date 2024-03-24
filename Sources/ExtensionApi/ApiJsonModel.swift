@@ -189,7 +189,7 @@ public struct JGodotBuiltinClassConstant: Codable {
     public let name: String
     public let type: JGodotTypeEnum
     public let value: String
-    public let description: String
+    public let description: String?
 
     public init(name: String, type: JGodotTypeEnum, value: String, description: String) {
         self.name = name
@@ -227,7 +227,7 @@ public struct JGodotBuiltinClassEnum: Codable {
 public struct JGodotValueElement: Codable {
     public let name: String
     public let value: Int
-    public let description: String
+    public let description: String?
     
     public init(name: String, value: Int, description: String) {
         self.name = name
@@ -242,7 +242,7 @@ public struct JGodotBuiltinClassMethod: Codable {
     public let returnType: String?
     public let isVararg, isConst, isStatic: Bool
     public let hash: Int
-    public let description: String
+    public let description: String?
     public let arguments: [JGodotArgument]?
 
     enum CodingKeys: String, CodingKey {
@@ -331,8 +331,8 @@ public struct JGodotExtensionAPIClass: Codable {
     public let isRefcounted, isInstantiable: Bool
     public let inherits: String?
     public let apiType: JGodotAPIType
-    public let brief_description: String
-    public let description: String
+    public let brief_description: String?
+    public let description: String?
     public let enums: [JGodotGlobalEnumElement]?
     public let methods: [JGodotClassMethod]?
     public let properties: [JGodotProperty]?
@@ -457,7 +457,7 @@ public struct JGodotProperty: Codable {
 public struct JGodotSignal: Codable {
     public let name: String
     public let arguments: [JGodotArgument]?
-    public let description: String
+    public let description: String?
 
     public init(name: String, description: String, arguments: [JGodotArgument]?) {
         self.name = name
