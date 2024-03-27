@@ -18,7 +18,12 @@
 /// The above is equivalent to calling
 ///
 ///     getNode(path: NodeName("GameOverLabel")) as! Label
-
+/// 
+/// Notice that nodes wrapped with @BindNode will crash at runtime if you do not have a 
+/// node in your scene that matches that name.    If your are dealing with dynamic content
+/// or you are developing and things change often, you might use the alternative ``SceneTree``
+/// which allow you to use a nullable value, so you can test at runtime if the node
+/// exists or not.
 @propertyWrapper
 public struct BindNode<Value: Node> {
     public static subscript<T: Node>(
