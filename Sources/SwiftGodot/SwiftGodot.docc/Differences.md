@@ -130,8 +130,9 @@ This does not exist in SwiftGodot, to achieve a similar behavior, initialize
 those variables in an overwritten `_ready` method, so code like this:
 
 ```swift
+@Godot
 class Demo: Node {
-	var myLabel: Node3D
+	var myLabel: Node3D?
 
 	override func _ready () {
 		myLabel = getNode (path: "myLabel") as? Node3D
