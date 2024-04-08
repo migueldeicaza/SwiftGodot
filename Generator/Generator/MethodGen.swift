@@ -88,10 +88,10 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
 func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodGenType, asSingleton: Bool) -> String? {
     var registerVirtualMethodName: String? = nil
     
-    //let loc = "\(cdef.name).\(method.name)"
+    let loc = "\(cdef?.name ?? "NONE").\(method.name)"
     if (method.arguments ?? []).contains(where: { $0.type.contains("*")}) {
-        //print ("TODO: do not currently have support for C pointer types \(loc)")
-        return nil
+        print ("DPING IT not currently have support for C pointer types \(loc)")
+        //return nil
     }
 //    if method.returnValue?.type.firstIndex(of: "*") != nil {
 //        //print ("TODO: do not currently support C pointer returns \(loc)")
@@ -447,7 +447,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
             let retFromWith = returnType != "" ? "return " : ""
 
-            if refParameterIsOptional || optstorage == ".handle" {
+            if arg.type.hasSuffix("*") {
+                argSetup += "\(prefix)_args.append (Int (bitPattern: \(arg.name)))"
+                builder.args.append("UnsafeMutableRawPointer (\(escapeSwift(argref)))")
+            } else if refParameterIsOptional || optstorage == ".handle" {
                 let ea = escapeSwift(argref)
                 let deref = refParameterIsOptional ? "?" : ""
                 let accessPar = refParameterIsOptional ? "\(ea) == nil ? nil : p\(withUnsafeCallNestLevel)" : "p\(withUnsafeCallNestLevel)"

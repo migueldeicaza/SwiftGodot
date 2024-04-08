@@ -341,6 +341,13 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         if t.type.starts (with: "bitfield::") {
             return "\(t.type.dropFirst(10))"
         }
+        
+        if t.type.hasPrefix("const void *"){
+            return "OpaquePointer"
+        }
+        if t.type.hasSuffix ("*"){
+            return "OpaquePointer"
+        }
         return t.type
     }
 }
