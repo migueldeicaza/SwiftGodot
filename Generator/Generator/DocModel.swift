@@ -16,6 +16,8 @@ let rxEnumMethodMember: Regex<(Substring,Substring,Substring)> = try! Regex ("\\
 let rxTypeName: Regex<(Substring, Substring)> = try! Regex ("\\[([A-Z]\\w+)\\]")
 @available(macOS 13.0, iOS 16.0, *)
 let rxEmptyLeading: Regex<Substring> = try! Regex ("\\s+")
+@available(macOS 13.0, iOS 16.0, *)
+let rxUrl: Regex<(Substring,Substring)> = try! Regex ("\\[url=([A-Za-z:/&?0-9$._]*)\\]")
 
 // If the string contains a ".", it will return a pair
 // with the first element containing all the text up until the last dot
@@ -242,6 +244,13 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
                 }
             })
             
+            mod = mod.replacing(rxUrl, with: { x in
+                let word = x.output.1
+                let resolved = word.replacing("$DOCS_URL", with: "https://docs.godotengine.org/en/")
+                
+                return "<a href=\"\(resolved)\">"
+            })
+            
             // [FirstLetterIsUpperCase] is a reference to a type
             mod = mod.replacing(rxTypeName, with: { x in
                 let word = x.output.1
@@ -258,6 +267,7 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             mod = mod.replacing("[/b]", with: "**")
             mod = mod.replacing("[code]", with: "`")
             mod = mod.replacing("[/code]", with: "`")
+            mod = mod.replacing("[/url]", with: "</a>")
             mod = mod.trimmingPrefix(rxEmptyLeading)
             // TODO
             // [member X]
