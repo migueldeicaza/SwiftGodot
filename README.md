@@ -105,7 +105,7 @@ here we declare a spinning cube:
 ```swift
 import SwiftGodot
 
-@Godot
+@Godot(.tool)
 class SpinningCube: Node3D {
     public override func _ready () {
         let meshRender = MeshInstance3D()
