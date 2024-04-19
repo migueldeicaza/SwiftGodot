@@ -657,7 +657,11 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             p ("/// The shared instance of this class")
             p.staticVar(visibility: "public ", name: "shared", type: cdef.name) {
                 p ("return withUnsafePointer (to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
-                    p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (ptr)!)")
+                    if hasSubclasses.contains(cdef.name) {
+                        p ("lookupObject (nativeHandle: gi.global_get_singleton (ptr)!)!")
+                    } else {
+                        p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (ptr)!)")
+                    }
                 }
             }
         }
