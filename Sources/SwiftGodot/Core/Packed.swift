@@ -45,7 +45,7 @@ extension PackedByteArray {
     ///
     /// You could implement a method to access your data like this:
     /// ```
-    /// let data: Data? = withUnsafeAccessToData { ptr, count in Data (ptr, count) }
+    /// let data: Data? = withUnsafeAccessToData { ptr, count in Data (bytes: ptr, count: count) }
     /// ```
     public func withUnsafeAccessToData<T> (_ method: (_ pointer: UnsafeRawPointer, _ count: Int)->T?) -> T? {
         if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
