@@ -80,6 +80,13 @@ extension PackedByteArray {
         }
         return nil
     }
+    
+    public func withUnsafeConstAccessToData<T> (_ method: (_ pointer: UnsafeRawPointer, _ count: Int) -> T?) -> T? {
+        if let ptr = gi.packed_byte_array_operator_index_const(&content, 0) {
+            return method(ptr, Int(size()))
+        }
+        return nil
+    }
 
     /// Initializes a PackedByteArray from an array of UInt8 values.
     public convenience init (_ data: [UInt8]) {

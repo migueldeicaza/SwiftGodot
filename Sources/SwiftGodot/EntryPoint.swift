@@ -188,6 +188,7 @@ struct GodotInterface {
     
     let packed_string_array_operator_index: GDExtensionInterfacePackedStringArrayOperatorIndex
     let packed_byte_array_operator_index: GDExtensionInterfacePackedByteArrayOperatorIndex
+    let packed_byte_array_operator_index_const: GDExtensionInterfacePackedByteArrayOperatorIndexConst
     let packed_color_array_operator_index: GDExtensionInterfacePackedColorArrayOperatorIndex
     let packed_float32_array_operator_index: GDExtensionInterfacePackedFloat32ArrayOperatorIndex
     let packed_float64_array_operator_index: GDExtensionInterfacePackedFloat64ArrayOperatorIndex
@@ -283,6 +284,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         
         packed_string_array_operator_index: load ("packed_string_array_operator_index"),
         packed_byte_array_operator_index: load ("packed_byte_array_operator_index"),
+        packed_byte_array_operator_index_const: load ("packed_byte_array_operator_index_const"),
         packed_color_array_operator_index: load ("packed_color_array_operator_index"),
         packed_float32_array_operator_index: load ("packed_float32_array_operator_index"),
         packed_float64_array_operator_index: load ("packed_float64_array_operator_index"),
