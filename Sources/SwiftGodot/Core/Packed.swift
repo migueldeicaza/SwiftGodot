@@ -81,6 +81,11 @@ extension PackedByteArray {
         return nil
     }
     
+    /// Read-only access the underlying data for this packed byte array
+    ///
+    /// - Parameter method: a callback that is invoked with a non-mutable pointer to the underlying data, and
+    /// the number of bytes in that block of data. The callback is allowed to return nil if it fails to
+    /// do anything with the data.
     public func withUnsafeConstAccessToData<T> (_ method: (_ pointer: UnsafeRawPointer, _ count: Int) -> T?) -> T? {
         if let ptr = gi.packed_byte_array_operator_index_const(&content, 0) {
             return method(ptr, Int(size()))
