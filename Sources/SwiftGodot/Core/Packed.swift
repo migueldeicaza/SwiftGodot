@@ -70,7 +70,7 @@ extension PackedByteArray {
     }
     /// Provides a mechanism to access the underlying data for the packed byte array for mutation
     ///
-    /// - Parameter method: a callback that is invoked with a pointer to the underlying data, and
+    /// - Parameter method: a callback that is invoked with a pointer to a copy of the underlying data, and
     /// the number of bytes in that block of data.   The callback is allowed to return nil it if fails to
     /// do anything with the data.
     ///
