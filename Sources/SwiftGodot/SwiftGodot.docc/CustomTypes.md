@@ -14,9 +14,7 @@ and configure it from the user interface.
 3. Augment the type with your own custom behaviors.
 4. Expose your properties, methods and signals to the Godot Editor.
 
-## Topics
-
-### Subclassing a Godot Type
+## Subclassing a Godot Type
 
 To subclass a Godot type, you would follow the usual Swift idiom to subclass,
 and annotate it with the @Godot macro, like this:
@@ -46,7 +44,7 @@ will scan your type for various other macros to integrate with Godot.   These
 attributes will not work if you attempt to apply those in a Swift
 extension-method, as the @Godot macro has no visibility into those.
 
-### Register Your Type
+## Register Your Type
 
 Now we need to tell Godot about the existence of your type, to do this you need
 to call the `register(type:)` method.   I like to register all my types at
@@ -83,7 +81,7 @@ public func swift_entry_point(
 }
 ```
 
-### Defining your class behavior
+## Defining your class behavior
 
 To make your custom type interesting, you will want to alter the default
 behavior that Godot provides.   In Godot, this is achieved by overwriting one or
@@ -99,7 +97,7 @@ it.
 In the example shown above, we overwrote the method `_process` which is invoked
 continously by Godot and we use it to change the position of our sprite.
 
-### Surfacing Methods, Properties and Signals
+## Surfacing Methods, Properties and Signals
 
 In addition to modifying the behavior of a built-in type, you might want to
 surface properties that would allow users to customize your type from the Godot
@@ -123,7 +121,7 @@ Godot, and `@Export` to [surface properties](Exports.md).
 Behind the scenes these macros use the lower-level ``ClassDB`` API to define functions,
 properties and their values.
 
-### Overriding Methods
+## Overriding Methods
 
 The Godot Object model does not surface a traditional object-oriented system.
 Not all the methods surfaced by the Godot API can be overwritten.  The
@@ -164,7 +162,7 @@ You can think of those methods that can be overwritten as hooks into Godot, but
 with an important distinction.   When you override those methods, Godot knows
 that you overwrote them, and might take a different course of action based on it.
 
-#### Surfacing Methods
+### Surfacing Methods
 
 To surface a method, apply the `@Callable` attribute to it, this will register
 the method with Godot.
@@ -192,7 +190,7 @@ floats, the Godot Object subclasses as well as ``VariantCollection`` and
 The `@Callable` macro only works in your class definition, and will not work
 on Swift class extensions.
 
-#### Surfacing Properties and Variables
+### Surfacing Properties and Variables
 
 To surface properties and variables, use the ``Export`` attribute on them.
 
@@ -213,7 +211,7 @@ can take an optional string with additional confirmation information.
 
 To learn more, read the <doc:Exports> page.
 
-#### Signals
+### Signals
 
 Surfacing signals is covered in the <doc:Signals> document.
 

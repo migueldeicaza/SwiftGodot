@@ -5,7 +5,6 @@ achieved by using the dollar sign and the name of the object you want to referen
 
 With SwiftGodot, you can achieve the same behavior by using the ``BindNode`` property wrapper
 
-## 
 
 In your class declaration, use the ``BindNode`` property wrapper like this to reference the nodes
 that you created with the Godot Editor:
