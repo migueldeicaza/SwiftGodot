@@ -10,7 +10,9 @@ Godot's way of passing around certain data types.  They are similar to Swift's
 that derive from ``GodotObject``). 
 
 ## Creating Variant values
-You can create Variants from types that conform to the VariantStorable protocol. 
+You can create Variants from types that conform to the VariantStorable 
+protocol. 
+
 This includes the following types:
 
 * Godot's native types: GString, Vector, Rect, Transform, Plane, Quaternion,
@@ -18,6 +20,7 @@ This includes the following types:
   and PackedArrays. 
 * Swift types that SwiftGodot adds convenience conformances for: Bool, Int, String and Float
 * Godot's objects: e.g. Node, Area2D
+* Your own subclasses of SwiftGodot.Object type.
 * Other types that you can manually conform to VariantStorable.
 
 You wrap your data type by calling one of the ``Variant`` constructors, and then
