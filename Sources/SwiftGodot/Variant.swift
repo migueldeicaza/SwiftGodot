@@ -10,7 +10,7 @@
 /// If your application is crashing due to the Variant leak fixes, please
 /// enable this flag, and provide me with a test case, so I can find that
 /// pesky scenario.
-public var experimentalDisableVariantUnref = false
+nonisolated(unsafe) public var experimentalDisableVariantUnref = false
 
 /// Variant objects box various Godot Objects, you create them with one of the
 /// constructors, and you can retrieve the contents using the various extension
@@ -43,7 +43,7 @@ public var experimentalDisableVariantUnref = false
 /// Modifications to a container will modify all references to it.
 
 public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
-    static var fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
+    static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
         for vtype in 0..<Variant.GType.max.rawValue {
@@ -53,7 +53,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         return map
     }()
     
-    static var toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
+    static let toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
         var map: [GDExtensionTypeFromVariantConstructorFunc] = []
         
         for vtype in 0..<Variant.GType.max.rawValue {
@@ -65,7 +65,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     typealias ContentType = (Int, Int, Int)
     var content: ContentType = (0, 0, 0)
-    static var zero: ContentType = (0, 0, 0)
+    static let zero: ContentType = (0, 0, 0)
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
     init (fromContent: ContentType) {

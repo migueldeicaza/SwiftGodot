@@ -40,7 +40,7 @@ class Printer {
         if generateResettableCache {
             p ("fileprivate static var _c_\(name): \(type)? = nil")
             p ("fileprivate static var _g_\(name): UInt16 = 0")
-            b ("\(visibility)static var \(name): \(type) ") {
+            b ("\(visibility)nonisolated static var \(name): \(type) ") {
                 self ("if _g_\(name) == swiftGodotLibraryGeneration") {
                     self ("if let _c_\(name)") {
                         self ("return _c_\(name)")
@@ -55,7 +55,7 @@ class Printer {
                 self ("return ret")
             }
         } else {
-            b ("\(visibility)static var \(name): \(type) =", suffix: "()", block: block)
+            b ("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)
         }
     }
 

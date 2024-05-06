@@ -138,16 +138,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public required init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
     }
-    
-    /// This property indicates if the instance is valid or not.
-    ///
-    /// In Godot, some objects can be freed manually, and in particular
-    /// when you call the ``Node/queueFree()`` which might queue the object
-    /// for disposal
-    public var isValid: Bool {
-        return handle != Wrapped.invalidHandle
-    }
-
+   
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a different name than the subclass.
@@ -395,7 +386,6 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
             } else {
                 //print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
             }
-            original.handle = Wrapped.invalidHandle
         }
     }
 }

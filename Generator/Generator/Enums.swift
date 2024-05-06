@@ -47,7 +47,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
         if isBitField || enumDef.name == "ConnectFlags" {
             let optionTypeName = getGodotType (SimpleType (type: enumDef.name))
             var optionNames: [String] = []
-            p ("public struct \(optionTypeName): OptionSet, CustomDebugStringConvertible") {
+            p ("public struct \(optionTypeName): OptionSet, CustomDebugStringConvertible, Sendable") {
                 p ("public let rawValue: Int")
                 p ("public init (rawValue: Int)") {
                     p ("self.rawValue = rawValue")

@@ -9,17 +9,18 @@
 
 /// The pointer to the Godot Extension Interface
 /// The library pointer we received at startup
-var library: GDExtensionClassLibraryPtr!
-var token: GDExtensionClassLibraryPtr! {
+nonisolated(unsafe) var library: GDExtensionClassLibraryPtr!
+nonisolated(unsafe) var token: GDExtensionClassLibraryPtr! {
     return library
 }
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
-public var swiftGodotLibraryGeneration: UInt16 = 0
+nonisolated(unsafe) public var swiftGodotLibraryGeneration: UInt16 = 0
 
-var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
-var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
+nonisolated(unsafe) var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
+
+nonisolated(unsafe) var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
 
 func loadFunctions (loader: GDExtensionInterfaceGetProcAddress) {
     
@@ -200,7 +201,7 @@ struct GodotInterface {
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 }
 
-var gi: GodotInterface!
+nonisolated(unsafe) var gi: GodotInterface!
 
 func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddress) {
     
@@ -336,6 +337,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
 ///  - initHook: this method is invoked repeatedly during the various stages of the extension
 ///  initialization
 ///  - deInitHook: this method is invoked repeatedly when various stages of the extension are wrapped up
+@MainActor
 public func initializeSwiftModule (
     _ godotGetProcAddrPtr: OpaquePointer,
     _ libraryPtr: OpaquePointer,

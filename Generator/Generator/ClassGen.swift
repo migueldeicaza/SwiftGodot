@@ -95,7 +95,7 @@ func generateVirtualProxy (_ p: Printer,
     } else {
         virtRet = nil
     }
-    p ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
+    p ("@MainActor func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
         p ("guard let instance else { return }")
         if let arguments = method.arguments, arguments.count > 0 {
             p ("guard let args else { return }")
@@ -484,7 +484,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
     doc (p, cdef, "Use the ``\(name)/connect(flags:_:)`` method to connect to the signal on the container object, and ``\(name)/disconnect(_:)`` to drop the connection.\nYou can also await the ``\(name)/emitted`` property for waiting for a single emission of the signal.")
     
     var lambdaFull = ""
-    p ("public class \(name)") {
+    p ("@MainActor public class \(name)") {
         p ("var target: Object")
         p ("var signalName: StringName")
         p ("init (target: Object, signalName: StringName)") {
@@ -635,7 +635,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         proto = ""
     }
     
-    let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
+    let typeDecl = "@MainActor open class \(cdef.name): \(inherits)\(proto)"
     
     var virtuals: [String: (String, JGodotClassMethod)] = [:]
     if cdef.brief_description == "" {

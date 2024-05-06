@@ -43,3 +43,4 @@ check-args:
 
 sync:
 	@if test ../SwiftGodotBinary; then rsync -a Sources/SwiftGodotMacroLibrary ../SwiftGodotBinary/Sources; else echo "missing directory ../SwiftGodotBinary"; fi
+
