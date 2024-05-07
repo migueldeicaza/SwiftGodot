@@ -18,8 +18,8 @@
 /// invokeScript ("myDemo.proxy ()", params: ["myDemo", demo])
 /// ```
 public class SignalProxy: Object {
-    public static var proxyName = StringName ("proxy")
-    static var initClass: Bool = {
+    public static let proxyName = StringName ("proxy")
+    static let initClass: Bool = {
         register(type: SignalProxy.self)
         
         let s = ClassInfo<SignalProxy>(name: "SignalProxy")

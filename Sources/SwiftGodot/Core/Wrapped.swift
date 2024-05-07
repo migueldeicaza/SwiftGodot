@@ -73,8 +73,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     static let invalidHandle = UnsafeRawPointer(bitPattern: -1)!
     /// Points to the underlying object
     public var handle: UnsafeRawPointer
-    public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
-    public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
+//    public static let fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
+//    public static let ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     
     /// Conformance to Identifiable by using the native handle to the object
     public var id: Int { Int (bitPattern: handle) }
@@ -113,11 +113,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return nil
     }
     
-    static var userTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
+    static let userTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: userTypeBindingCreate,
         free_callback: userTypeBindingFree,
         reference_callback: userTypeBindingReference)
-    static var frameworkTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
+    static let frameworkTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: frameworkTypeBindingCreate,
         free_callback: frameworkTypeBindingFree,
         reference_callback: frameworkTypeBindingReference)
@@ -267,11 +267,11 @@ public func unregister<T:Wrapped> (type: T.Type) {
 
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
-var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
-var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+nonisolated(unsafe) var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
+nonisolated(unsafe) var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
 
 // Lock for accessing the above
-var tableLock = NIOLock()
+nonisolated(unsafe) var tableLock = NIOLock()
 
 // If not-nil, we are in the process of serially re-creating objects from Godot,
 // this contains the handle to use, and prevents a new Godot object peer to

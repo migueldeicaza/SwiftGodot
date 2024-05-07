@@ -98,7 +98,7 @@ func generateBuiltinCtors (_ p: Printer,
         var visibility = "public"
         
         let ptrName = "constructor\(m.index)"
-        p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
+        p ("static let \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }

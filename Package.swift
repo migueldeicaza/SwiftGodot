@@ -162,6 +162,9 @@ targets.append(contentsOf: [
     .target(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
+        swiftSettings: [
+            .enableExperimentalFeature("StrictConcurrency")
+        ],
         //linkerSettings: linkerSettings,
         plugins: swiftGodotPlugins),
     

@@ -47,7 +47,7 @@ extension VariantStorable {
 /// method.   You do not need to use this type.
 public struct GStringRaw: ContentVariantRepresentable {
     public var content: GString.ContentType
-    public static var zero: GString.ContentType = 0
+    public static let zero: GString.ContentType = 0
     public init () {
         content = GString.zero
     }

@@ -7,19 +7,25 @@
 
 @_implementationOnly import GDExtension
 
+// Nonisolated comment: Considering that these are only valid after the proper initialization
+// of Godot, I suspect it is ok to keep these nonisolated, their use would crash if not
+// initialized.  That said, it is likely that we can create a different system, see
+// bug https://github.com/migueldeicaza/SwiftGodot/issues/72 for other considerations
+// for extending the initilialization
+
 /// The pointer to the Godot Extension Interface
 /// The library pointer we received at startup
-var library: GDExtensionClassLibraryPtr!
-var token: GDExtensionClassLibraryPtr! {
+nonisolated(unsafe) var library: GDExtensionClassLibraryPtr!
+nonisolated(unsafe) var token: GDExtensionClassLibraryPtr! {
     return library
 }
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
-public var swiftGodotLibraryGeneration: UInt16 = 0
+nonisolated(unsafe) public var swiftGodotLibraryGeneration: UInt16 = 0
 
-var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
-var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
+nonisolated(unsafe) var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
+nonisolated(unsafe) var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
 
 func loadFunctions (loader: GDExtensionInterfaceGetProcAddress) {
     
@@ -200,7 +206,7 @@ struct GodotInterface {
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 }
 
-var gi: GodotInterface!
+nonisolated(unsafe) var gi: GodotInterface!
 
 func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddress) {
     

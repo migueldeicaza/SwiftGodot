@@ -55,7 +55,7 @@ class Printer {
                 self ("return ret")
             }
         } else {
-            b ("\(visibility)static var \(name): \(type) =", suffix: "()", block: block)
+            b ("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)
         }
     }
 
