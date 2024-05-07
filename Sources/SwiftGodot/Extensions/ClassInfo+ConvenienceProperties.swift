@@ -11,19 +11,19 @@ import UniformTypeIdentifiers
 @available(macOS 11.0, *)
 extension UTType {
     /// The file type that corresponds to a Godot resource file.
-    public static var godotResource = UTType(filenameExtension: "res")
+    public static let godotResource = UTType(filenameExtension: "res")
 
     /// The file type that corresponds to a Godot scene file.
-    public static var godotScene = UTType(filenameExtension: "tscn")
+    public static let godotScene = UTType(filenameExtension: "tscn")
 
     /// The file type that corresponds to a GDScript file.
-    public static var gdscript = UTType(filenameExtension: "gd")
+    public static let gdscript = UTType(filenameExtension: "gd")
 
     /// The file type that corresponds to a Godot shader file.
-    public static var godotShader = UTType(filenameExtension: "gdshader")
+    public static let godotShader = UTType(filenameExtension: "gdshader")
 
     /// The file type that corresponds to a Godot tileset resource.
-    public static var godotTilesetResource = UTType(filenameExtension: "tres")
+    public static let godotTilesetResource = UTType(filenameExtension: "tres")
 }
 #endif
 
