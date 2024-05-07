@@ -522,7 +522,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             doc (p, bc, bc.description)
         }
         
-        p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
+        p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)\(kind == .isStruct ? ", Sendable" : "")") {
             if bc.name == "String" {
                 p ("public required init (_ str: String)") {
                     p ("gi.string_new_with_utf8_chars (&content, str)")
