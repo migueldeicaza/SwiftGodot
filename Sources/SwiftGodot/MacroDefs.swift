@@ -119,6 +119,17 @@ public macro initSwiftExtension(cdecl: String,
                                 types: [Wrapped.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")
 
+@freestanding(declaration, names: named(enterExtension))
+public macro initSwiftExtension(
+    cdecl: String,
+    coreTypes: [Wrapped.Type] = [],
+    editorTypes: [Wrapped.Type] = [],
+    sceneTypes: [Wrapped.Type] = [],
+    serverTypes: [Wrapped.Type] = []
+) = #externalMacro(
+    module: "SwiftGodotMacroLibrary",
+    type: "InitSwiftExtensionMacro")
+
 /// A macro that instantiates a `Texture2D` from a specified resource path. If the texture cannot be created, a
 /// `preconditionFailure` will be thrown.
 ///
