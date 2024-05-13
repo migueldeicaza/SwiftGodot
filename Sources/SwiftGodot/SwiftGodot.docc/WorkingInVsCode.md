@@ -55,13 +55,17 @@ Or use the "Open Folder..." File menu option in Visual Studio Code.
 
 Inside Visual Studio Code, open Package.swift
 
-Set your library type to dynamic by adding `type: .dynamic,` to the products library section of your package configuration. E.g.,
+
+Set the minimum platform target to macOS 13 and set your library type to dynamic by adding `type: .dynamic,` to the products library section of your package configuration. E.g.,
 
 ```swift
-.library(
-   name: "SimpleRunnerDriver",
-   type: .dynamic,
-   targets: ["SimpleRunnerDriver"]),
+platforms: [.macOS(.v13)],
+products: [
+   .library(
+      name: "SimpleRunnerDriver",
+      type: .dynamic,
+      targets: ["SimpleRunnerDriver"]),
+]
 ```
 
 Add the SwiftGodot dependency to your package.
