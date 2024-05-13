@@ -17,7 +17,7 @@ let rxTypeName: Regex<(Substring, Substring)> = try! Regex ("\\[([A-Z]\\w+)\\]")
 @available(macOS 13.0, iOS 16.0, *)
 let rxEmptyLeading: Regex<Substring> = try! Regex ("\\s+")
 @available(macOS 13.0, iOS 16.0, *)
-let rxUrl: Regex<(Substring,Substring)> = try! Regex ("\\[url=([A-Za-z:/&?0-9$._]*)\\]")
+let rxUrl: Regex<(Substring,Substring)> = try! Regex ("\\[url=(.*?)\\]")
 
 // If the string contains a ".", it will return a pair
 // with the first element containing all the text up until the last dot
