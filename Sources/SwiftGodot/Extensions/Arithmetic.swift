@@ -7,19 +7,19 @@
 
 public protocol IntScalable {
     
-    static func / (lhs: Self, rhs: Int64) -> Self
-    static func * (lhs: Self, rhs: Int64) -> Self
+    static func / (lhs: Self, rhs: Int) -> Self
+    static func * (lhs: Self, rhs: Int) -> Self
     
 }
 
 public extension IntScalable {
     
     static func / (lhs: Self, rhs: Int) -> Self {
-        return lhs / Int64(rhs)
+        return lhs / Int(rhs)
     }
     
     static func * (lhs: Self, rhs: Int) -> Self {
-        return lhs * Int64(rhs)
+        return lhs * Int(rhs)
     }
     
     static func /= (_ lhs: inout Self, _ rhs: Int) {

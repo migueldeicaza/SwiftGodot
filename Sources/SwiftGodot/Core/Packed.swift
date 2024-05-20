@@ -20,7 +20,7 @@ extension PackedStringArray {
             return GString.stringFromGStringPtr(ptr: gi.packed_string_array_operator_index_const (&content, Int64 (index))) ?? ""
         }
         set {
-            set (index: Int64 (index), value: newValue)
+            set (index: index, value: newValue)
         }
     }
 }
@@ -29,11 +29,11 @@ extension PackedByteArray {
     /// Accesses a specific element in the ``PackedByteArray``
     public subscript (index: Int) -> UInt8 {
         get {
-            let ptr = gi.packed_byte_array_operator_index_const (&content, Int64 (index))
+            let ptr = gi.packed_byte_array_operator_index_const (&content, Int64(index))
             return ptr!.pointee
         }
         set {
-            set (index: Int64 (index), value: Int64 (newValue))
+            set (index: index, value: Int(newValue))
         }
     }
     
@@ -96,7 +96,7 @@ extension PackedByteArray {
     /// Initializes a PackedByteArray from an array of UInt8 values.
     public convenience init (_ data: [UInt8]) {
         self.init ()
-        _ = resize(newSize: Int64(data.count))
+        _ = resize(newSize: data.count)
         if let ptr = gi.packed_byte_array_operator_index(&content, 0) {
             ptr.withMemoryRebound(to: UInt8.self, capacity: data.count) { typed in
                 var idx = 0
@@ -117,7 +117,7 @@ extension PackedColorArray {
             return ptr!.assumingMemoryBound(to: Color.self).pointee
         }
         set {
-            set (index: Int64 (index), value: newValue)
+            set (index: index, value: newValue)
         }
     }
 }
@@ -130,14 +130,14 @@ extension PackedFloat32Array {
             return ptr!.pointee
         }
         set {
-            set (index: Int64 (index), value: Double (newValue))
+            set (index: index, value: Double (newValue))
         }
     }
     
     /// Initializes a PackedByteArray from an array of Float values.
     public convenience init (_ data: [Float]) {
         self.init ()
-        _ = resize(newSize: Int64(data.count))
+        _ = resize(newSize: data.count)
         if let ptr = gi.packed_float32_array_operator_index(&content, 0) {
             ptr.withMemoryRebound(to: Float.self, capacity: data.count) { typed in
                 var idx = 0
@@ -158,14 +158,14 @@ extension PackedFloat64Array {
             return ptr!.pointee
         }
         set {
-            set (index: Int64 (index), value: newValue)
+            set (index: index, value: newValue)
         }
     }
     
     /// Initializes a PackedByteArray from an array of Double values.
     public convenience init (_ data: [Double]) {
         self.init ()
-        _ = resize(newSize: Int64(data.count))
+        _ = resize(newSize: data.count)
         if let ptr = gi.packed_float64_array_operator_index(&content, 0) {
             ptr.withMemoryRebound(to: Double.self, capacity: data.count) { typed in
                 var idx = 0
@@ -187,14 +187,14 @@ extension PackedInt32Array {
             return ptr!.pointee
         }
         set {
-            set (index: Int64 (index), value: Int64(newValue))
+            set (index: Int (index), value: Int(newValue))
         }
     }
     
     /// Initializes a PackedByteArray from an array of Int32 values values.
     public convenience init (_ data: [Int32]) {
         self.init ()
-        _ = resize(newSize: Int64(data.count))
+        _ = resize(newSize: Int(data.count))
         if let ptr = gi.packed_int32_array_operator_index(&content, 0) {
             ptr.withMemoryRebound(to: Int32.self, capacity: data.count) { typed in
                 var idx = 0
@@ -215,7 +215,7 @@ extension PackedInt64Array {
             return ptr!.pointee
         }
         set {
-            set (index: Int64 (index), value: newValue)
+            set (index: Int (index), value: Int(newValue))
         }
     }
     
@@ -243,7 +243,7 @@ extension PackedVector2Array {
             return ptr!.assumingMemoryBound(to: Vector2.self).pointee
         }
         set {
-            set (index: Int64 (index), value: newValue)
+            set (index: Int (index), value: newValue)
         }
     }
 }
@@ -256,7 +256,7 @@ extension PackedVector3Array {
             return ptr!.assumingMemoryBound(to: Vector3.self).pointee
         }
         set {
-            set (index: Int64 (index), value: newValue)
+            set (index: Int (index), value: newValue)
         }
     }
 }

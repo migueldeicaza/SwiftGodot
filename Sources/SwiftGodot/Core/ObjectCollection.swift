@@ -98,7 +98,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Returns the number of elements in the array.
-    public final func size ()-> Int64 {
+    public final func size ()-> Int {
         return array.size ()
     }
 
@@ -116,7 +116,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: ``GArray``s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does _not_ imply the arrays are equal, because different arrays can have identical hash values due to hash collisions.
     ///
-    public final func hash ()-> Int64 {
+    public final func hash ()-> Int {
         array.hash ()
     }
     
@@ -142,7 +142,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: This method acts in-place and doesn't return a modified array.
     ///
-    public final func resize (size: Int64)-> Int64 {
+    public final func resize (size: Int)-> Int {
         array.resize (size: size)
     }
     
@@ -152,7 +152,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
     ///
-    public final func insert (position: Int64, value: Element)-> Int64 {
+    public final func insert (position: Int, value: Element)-> Int {
         array.insert (position: position, value: Variant (value))
     }
     
@@ -164,7 +164,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: `position` cannot be negative. To remove an element relative to the end of the array, use `arr.remove_at(arr.size() - (i + 1))`. To remove the last element from the array without returning the value, use `arr.resize(arr.size() - 1)`.
     ///
-    public final func removeAt (position: Int64) {
+    public final func removeAt (position: Int) {
         array.removeAt (position: position)
     }
 
@@ -204,17 +204,17 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
 
     
     /// Searches the array for a value and returns its index or `-1` if not found. Optionally, the initial search index can be passed.
-    public final func find (what: Element, from: Int64 = 0)-> Int64 {
+    public final func find (what: Element, from: Int = 0)-> Int {
         array.find (what: Variant (what), from: from)
     }
     
     /// Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
-    public final func rfind (what: Element, from: Int64 = -1)-> Int64 {
+    public final func rfind (what: Element, from: Int = -1)-> Int {
         array.rfind (what: Variant (what), from: from)
     }
     
     /// Returns the number of times an element is in the array.
-    public final func count (value: Element)-> Int64 {
+    public final func count (value: Element)-> Int {
         array.count (value: Variant (value))
     }
     
@@ -243,7 +243,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     ///
-    public final func popAt (position: Int64)-> Element {
+    public final func popAt (position: Int)-> Element {
         toStrong (array.popAt (position: position))
     }
     
@@ -278,7 +278,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: Calling ``bsearch(value:before:)`` on an unsorted array results in unexpected behavior.
     ///
-    public final func bsearch (value: Element, before: Bool = true)-> Int64 {
+    public final func bsearch (value: Element, before: Bool = true)-> Int {
         array.bsearch(value: Variant (value), before: before)
     }
     
@@ -286,7 +286,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: Calling ``bsearchCustom(value:`func`:before:)`` on an unsorted array results in unexpected behavior.
     ///
-    public final func bsearchCustom (value: Element, `func`: Callable, before: Bool = true)-> Int64 {
+    public final func bsearchCustom (value: Element, `func`: Callable, before: Bool = true)-> Int {
         array.bsearchCustom(value: Variant(value), func: `func`, before: before)
     }
     
@@ -306,7 +306,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Returns the ``Variant.GType`` constant for a typed array. If the ``GArray`` is not typed, returns ``Variant.GType/`nil```.
-    public final func getTypedBuiltin ()-> Int64 {
+    public final func getTypedBuiltin ()-> Int {
         array.getTypedBuiltin()
     }
     
