@@ -201,7 +201,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     return "var _result = UnsafeRawPointer (bitPattern: 0)"
                 } else {
                     if godotReturnType.starts(with: "enum::") {
-                        return "var _result: Int64 = 0 // to avoid packed enums on the stack"
+                        return "var _result: Int = 0 // to avoid packed enums on the stack"
                     } else {
                         
                         var declType: String = "let"
@@ -309,7 +309,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if returnType == "Variant" {
                 return "return Variant (fromContentPtr: &_result)"
             } else if returnType == "GodotError" {
-                return "return GodotError (rawValue: Int64 (Variant (fromContentPtr: &_result))!)!"
+                return "return GodotError (rawValue: Int (Variant (fromContentPtr: &_result))!)!"
             } else if returnType == "String" {
                 return "return GString (Variant (fromContentPtr: &_result))?.description ?? \"\""
             } else {

@@ -264,7 +264,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             if kind == .builtInField {
                 return "Int32"
             } else {
-                return "Int64"
+                return "Int"
             }
         }
     case "float", "real":
