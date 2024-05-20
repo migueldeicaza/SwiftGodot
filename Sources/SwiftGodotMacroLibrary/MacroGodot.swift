@@ -232,6 +232,13 @@ class GodotMacroProcessor {
             guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
                 throw GodotMacroError.expectedIdentifier(singleVar)
             }
+            guard let last = varDecl.bindings.last else {
+                throw GodotMacroError.noVariablesFound
+            }
+            guard var ta = last.typeAnnotation?.type.description.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) else {
+                throw GodotMacroError.noTypeFound(varDecl)
+            }
+            
             let varNameWithPrefix = ips.identifier.text
             let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
             let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
@@ -275,8 +282,14 @@ class GodotMacroProcessor {
                     }
                 }
             }
-            let propType = godotTypeToProp (typeName: typeName)
+            let mappedType = godotTypeToProp (typeName: typeName)
             let pinfo = "_p\(varNameWithPrefix)"
+            let isEnum = firstLabeledExpression?.description == "enum"
+            
+            
+            let propType = isEnum ? ".int" : mappedType
+            let fallback = isEnum ? "tryCase (\(ta).self)" : ""
+            
             ctor.append (
     """
     let \(pinfo) = PropInfo (
@@ -284,7 +297,7 @@ class GodotMacroProcessor {
         propertyName: "\(varNameWithPrefix)",
         className: className,
         hint: .\(firstLabeledExpression?.description ?? "none"),
-        hintStr: \(secondLabeledExpression?.description ?? "\"\""),
+        hintStr: \(secondLabeledExpression?.description) ?? \(fallback),
         usage: .default)
     
     """)
@@ -396,6 +409,10 @@ class GodotMacroProcessor {
         ctor =
     """
     private static var _initializeClass: Void = {
+        func tryCase <T : RawRepresentable & CaseIterable> (_ type: T.Type) -> GString {
+            GString (type.allCases.map { v in "\\(v):\\(v.rawValue)" }.joined(separator: ","))
+        }
+        func tryCase <T : RawRepresentable> (_ type: T.Type) -> String { "" }
         let className = StringName("\(className)")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
