@@ -51,7 +51,7 @@ public struct GodotExport: PeerMacro {
         if isEnum {
             body =
     """
-        if let iv = Int64 (Int (args [0])), let ev = \(typeName)(rawValue: iv) {
+        if let iv = Int (args [0]), let ev = \(typeName)(rawValue: Int64 (iv)) {
             self.\(varName) = ev
         }
     """
