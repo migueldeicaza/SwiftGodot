@@ -19,14 +19,14 @@ final class PickerNameProviderMacroTests: XCTestCase {
         assertMacroExpansion(
             """
             @PickerNameProvider
-            enum Character: Int {
+            enum Character: Int64 {
                 case chelsea
                 case sky
             }
             """,
             expandedSource: """
 
-            enum Character: Int {
+            enum Character: Int64 {
                 case chelsea
                 case sky
             }
@@ -83,7 +83,7 @@ final class PickerNameProviderMacroTests: XCTestCase {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "@PickerNameProvider requires an Int backing", line: 1, column: 1)
+                DiagnosticSpec(message: "@PickerNameProvider requires an Int64 backing", line: 1, column: 1)
             ],
             macros: testMacros
         )

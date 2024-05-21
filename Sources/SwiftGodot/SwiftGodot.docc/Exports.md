@@ -288,3 +288,23 @@ To surface arrays in Godot, use a strong type for it, for example:
 @Export
 var myResources: VariantCollection<Resource>
 ```
+
+### Enumeration Values
+
+To surface enumeration values, use the `@Export(.enum)` marker on your variable,
+this only works with enumerations that have a backing store of type Int64, and
+conform to CaseIterable, like this:
+
+```
+enum MyEnum: Int64, CaseIterable {
+    case first
+    case second
+}
+
+@Godot
+class Sample: Node {
+    @Export(.enum)
+    var myValue: MyEnum
+}
+```
+

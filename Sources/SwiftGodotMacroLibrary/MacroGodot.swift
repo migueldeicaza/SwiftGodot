@@ -204,9 +204,11 @@ class GodotMacroProcessor {
         ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
     
-    func processVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
+    // Returns true if it used "tryCase"
+    func processVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws -> Bool {
+        var usedTryCase = false
         guard hasExportAttribute(varDecl.attributes) else {
-            return
+            return false
         }
         guard let last = varDecl.bindings.last else {
             throw GodotMacroError.noVariablesFound
@@ -235,7 +237,7 @@ class GodotMacroProcessor {
             guard let last = varDecl.bindings.last else {
                 throw GodotMacroError.noVariablesFound
             }
-            guard var ta = last.typeAnnotation?.type.description.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) else {
+            guard let ta = last.typeAnnotation?.type.description.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) else {
                 throw GodotMacroError.noTypeFound(varDecl)
             }
             
@@ -288,8 +290,10 @@ class GodotMacroProcessor {
             
             
             let propType = isEnum ? ".int" : mappedType
-            let fallback = isEnum ? "tryCase (\(ta).self)" : ""
-            
+            let fallback = isEnum ? "tryCase (\(ta).self)" : "\"\""
+            if isEnum {
+                usedTryCase = true
+            }
             ctor.append (
     """
     let \(pinfo) = PropInfo (
@@ -297,7 +301,7 @@ class GodotMacroProcessor {
         propertyName: "\(varNameWithPrefix)",
         className: className,
         hint: .\(firstLabeledExpression?.description ?? "none"),
-        hintStr: \(secondLabeledExpression?.description) ?? \(fallback),
+        hintStr: \(secondLabeledExpression?.description ?? fallback),
         usage: .default)
     
     """)
@@ -306,6 +310,10 @@ class GodotMacroProcessor {
             ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
             ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
         }
+        if usedTryCase {
+            return true
+        }
+        return false
     }
     
     func processGArrayCollectionVariable(_ varDecl: VariableDeclSyntax, prefix: String?) throws {
@@ -409,17 +417,13 @@ class GodotMacroProcessor {
         ctor =
     """
     private static var _initializeClass: Void = {
-        func tryCase <T : RawRepresentable & CaseIterable> (_ type: T.Type) -> GString {
-            GString (type.allCases.map { v in "\\(v):\\(v.rawValue)" }.joined(separator: ","))
-        }
-        func tryCase <T : RawRepresentable> (_ type: T.Type) -> String { "" }
         let className = StringName("\(className)")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
     """
         var previousGroupPrefix: String? = nil
         var previousSubgroupPrefix: String? = nil
-        
+        var needTrycase = false
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
             
@@ -437,11 +441,22 @@ class GodotMacroProcessor {
 				if varDecl.isGArrayCollection {
                     try processGArrayCollectionVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
 				} else {
-					try processVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
+                    if try processVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix) {
+                        needTrycase = true
+                    }
 				}
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
             }
+        }
+        if needTrycase {
+            ctor.append (
+            """
+            func tryCase <T : RawRepresentable & CaseIterable> (_ type: T.Type) -> GString {
+                GString (type.allCases.map { v in "\\(v):\\(v.rawValue)" }.joined(separator: ","))
+            }
+            func tryCase <T : RawRepresentable> (_ type: T.Type) -> String { "" }
+            """)
         }
         ctor.append("} ()\n")
         return ctor
