@@ -292,11 +292,10 @@ var myResources: VariantCollection<Resource>
 ### Enumeration Values
 
 To surface enumeration values, use the `@Export(.enum)` marker on your variable,
-this only works with enumerations that have a backing store of type Int64, and
-conform to CaseIterable, like this:
+and it is important that your enumeration conforms to `CaseIterable`, like this:
 
 ```
-enum MyEnum: Int64, CaseIterable {
+enum MyEnum: CaseIterable {
     case first
     case second
 }
