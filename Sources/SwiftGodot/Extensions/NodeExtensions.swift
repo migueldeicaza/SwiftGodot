@@ -32,7 +32,11 @@ public struct BindNode<Value: Node> {
           storage storageKeyPath: ReferenceWritableKeyPath<T, Self>
     ) -> Value {
         get {
-            if #available(macOS 13.3, iOS 16.4, tvOS 16.4, *){
+            if #available(macOS 13.3, iOS 16.4, tvOS 16.4, *) {
+				if let node = instance[keyPath: storageKeyPath].cachedNode {
+					return node as! Value
+				}
+
                 let name: String
                 let fullName = wrappedKeyPath.debugDescription
                 if let namePos = fullName.lastIndex(of: ".") {
@@ -42,7 +46,8 @@ public struct BindNode<Value: Node> {
                 }
                 let nodePath = NodePath(from: name)
                 
-                return instance.getNode(path: nodePath) as! Value
+				instance[keyPath: storageKeyPath].cachedNode = instance.getNode(path: nodePath)
+                return instance[keyPath: storageKeyPath].cachedNode as! Value
             } else {
                 fatalError ("BindNode is not supported with current swift, or older Mac")
             }
@@ -62,5 +67,6 @@ public struct BindNode<Value: Node> {
             fatalError()
         }
     }
+	private var cachedNode: Node?
 }
 
