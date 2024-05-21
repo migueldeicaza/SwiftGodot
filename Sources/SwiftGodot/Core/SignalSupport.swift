@@ -117,18 +117,9 @@ public class SimpleSignal {
         }
         
         let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
-        if let tn = target as? Node, false {
-            _ = tn.callDeferredThreadGroup (
-                method: "connect",
-                Variant (signalName),
-                Variant (callable),
-                Variant (flags.rawValue)
-            )
-        } else {
-            let r = target.connect(signal: signalName, callable: callable, flags: UInt32 (flags.rawValue))
-            if r != .ok {
-                print ("Warning, error connecting to signal \(signalName.description): \(r)")
-            }
+        let r = target.connect(signal: signalName, callable: callable, flags: UInt32 (flags.rawValue))
+        if r != .ok {
+            print ("Warning, error connecting to signal \(signalName.description): \(r)")
         }
         return signalProxy
     }
