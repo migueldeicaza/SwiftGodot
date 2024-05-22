@@ -37,6 +37,12 @@ public struct BindNode<Value: Node> {
 					return node as! Value
 				}
 
+				if !instance[keyPath: storageKeyPath].path.isEmpty {
+					let nodePath = NodePath(from: instance[keyPath: storageKeyPath].path)
+					instance[keyPath: storageKeyPath].cachedNode = instance.getNode(path: nodePath)
+					return instance[keyPath: storageKeyPath].cachedNode as! Value
+				}
+
                 let name: String
                 let fullName = wrappedKeyPath.debugDescription
                 if let namePos = fullName.lastIndex(of: ".") {
@@ -57,7 +63,8 @@ public struct BindNode<Value: Node> {
         }
     }
     
-    public init () {}
+    /// - Parameter path: An optional path to the node within the tree, if not provided, the name of the property is used.
+    public init (withPath path: String = "") { self.path = path }
     @available(*, unavailable, message: "This property wrapper can only be applied to classes")
     public var wrappedValue: Value {
         get {
@@ -68,5 +75,6 @@ public struct BindNode<Value: Node> {
         }
     }
 	private var cachedNode: Node?
+	private var path: String
 }
 
