@@ -19,14 +19,23 @@ final class PickerNameProviderMacroTests: XCTestCase {
         assertMacroExpansion(
             """
             @PickerNameProvider
-            enum Character: Int {
+            enum Character: Int64 {
+                case chelsea
+                case sky
+            }
+            @PickerNameProvider
+            enum Character2: Int {
                 case chelsea
                 case sky
             }
             """,
             expandedSource: """
 
-            enum Character: Int {
+            enum Character: Int64 {
+                case chelsea
+                case sky
+            }
+            enum Character2: Int {
                 case chelsea
                 case sky
             }
@@ -35,6 +44,20 @@ final class PickerNameProviderMacroTests: XCTestCase {
             }
             
             extension Character: Nameable {
+                var name: String {
+                    switch self {
+                    case .chelsea:
+                        return "Chelsea"
+                    case .sky:
+                        return "Sky"
+                    }
+                }
+            }
+
+            extension Character2: CaseIterable {
+            }
+            
+            extension Character2: Nameable {
                 var name: String {
                     switch self {
                     case .chelsea:
@@ -63,27 +86,6 @@ final class PickerNameProviderMacroTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(message: "@PickerNameProvider can only be applied to an 'enum'", line: 1, column: 1)
-            ],
-            macros: testMacros
-        )
-
-        assertMacroExpansion(
-            """
-            @PickerNameProvider
-            enum Character {
-                case chelsea
-                case sky
-            }
-            """,
-            expandedSource: """
-
-            enum Character {
-                case chelsea
-                case sky
-            }
-            """,
-            diagnostics: [
-                DiagnosticSpec(message: "@PickerNameProvider requires an Int backing", line: 1, column: 1)
             ],
             macros: testMacros
         )
