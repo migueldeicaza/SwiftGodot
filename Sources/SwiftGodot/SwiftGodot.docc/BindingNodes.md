@@ -21,3 +21,17 @@ class Main: Node {
     }
 }
 ```
+
+You can specify a complete path to the element you want to bind in your node,
+like this:
+
+```swift
+@Godot
+class Main: Node {
+    @BindNode(withPath: "timers/start") var startTimer: SwiftGodot.Timer
+
+    func newGame () {
+        startTimer.start ()
+    }
+}
+```
