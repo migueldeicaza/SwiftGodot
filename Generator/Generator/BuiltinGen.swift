@@ -391,7 +391,7 @@ func generateBuiltinMethods (_ p: Printer,
         for arg in m.arguments ?? [] {
             var eliminate: String = ""
             
-            if arg.omitArgumentLabel ?? false {
+            if arg.omitLabel ?? false {
                 eliminate = "_ "
             }
             

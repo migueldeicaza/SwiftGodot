@@ -284,14 +284,14 @@ public struct JGodotArgument: Codable {
     public let description: String?
     public let defaultValue: String?
     public let meta: JGodotArgumentMeta?
-    public let omitArgumentLabel: Bool?
+    public let omitLabel: Bool?
 
     enum CodingKeys: String, CodingKey {
         case name, type
         case defaultValue = "default_value"
         case meta
         case description
-        case omitArgumentLabel = "omit_argument_label"
+        case omitLabel = "omit_argument_label"
     }
 
     public init(name: String, type: String, description: String? = nil, defaultValue: String?, meta: JGodotArgumentMeta?) {
@@ -300,7 +300,7 @@ public struct JGodotArgument: Codable {
         self.defaultValue = defaultValue
         self.meta = meta
         self.description = description
-        self.omitArgumentLabel = false
+        self.omitLabel = false
     }
 }
 
