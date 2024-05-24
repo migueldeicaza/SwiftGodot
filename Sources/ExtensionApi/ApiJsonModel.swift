@@ -244,7 +244,14 @@ public struct JGodotBuiltinClassMethod: Codable {
     public let hash: Int
     public let description: String
     public let arguments: [JGodotArgument]?
+    public let isDuplicateCallSignature: Bool?
+    public let deprecation: Deprecation?
 
+    public struct Deprecation: Codable {
+        public let message: String
+        public let renamed: String?
+    }
+    
     enum CodingKeys: String, CodingKey {
         case name
         case returnType = "return_type"
@@ -253,6 +260,8 @@ public struct JGodotBuiltinClassMethod: Codable {
         case isStatic = "is_static"
         case hash, arguments
         case description
+        case isDuplicateCallSignature = "is_duplicate_call_signature"
+        case deprecation
     }
 
     public init(name: String, description: String, returnType: String?, isVararg: Bool, isConst: Bool, isStatic: Bool, hash: Int, arguments: [JGodotArgument]?) {
@@ -264,6 +273,8 @@ public struct JGodotBuiltinClassMethod: Codable {
         self.hash = hash
         self.arguments = arguments
         self.description = description
+        self.isDuplicateCallSignature = false
+        self.deprecation = nil
     }
 }
 
@@ -273,12 +284,14 @@ public struct JGodotArgument: Codable {
     public let description: String?
     public let defaultValue: String?
     public let meta: JGodotArgumentMeta?
+    public let omitArgumentLabel: Bool?
 
     enum CodingKeys: String, CodingKey {
         case name, type
         case defaultValue = "default_value"
         case meta
         case description
+        case omitArgumentLabel = "omit_argument_label"
     }
 
     public init(name: String, type: String, description: String? = nil, defaultValue: String?, meta: JGodotArgumentMeta?) {
@@ -287,6 +300,7 @@ public struct JGodotArgument: Codable {
         self.defaultValue = defaultValue
         self.meta = meta
         self.description = description
+        self.omitArgumentLabel = false
     }
 }
 

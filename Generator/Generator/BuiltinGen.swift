@@ -381,13 +381,20 @@ func generateBuiltinMethods (_ p: Printer,
     
         let ptrName = "method_\(m.name)"
         
-        p.staticVar (name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
-            p ("let name = StringName (\"\(m.name)\")")
-            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.content, \(m.hash))!")
+        if !(m.isDuplicateCallSignature ?? false) {
+            p.staticVar (name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
+                p ("let name = StringName (\"\(m.name)\")")
+                p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.content, \(m.hash))!")
+            }
         }
         
         for arg in m.arguments ?? [] {
             var eliminate: String = ""
+            
+            if arg.omitArgumentLabel ?? false {
+                eliminate = "_ "
+            }
+            
             if args.isEmpty, m.name.hasSuffix ("_\(arg.name)") {
                 // if the first argument name matches the last part of the method name, we want
                 // to skip giving it a name.   For example:
@@ -396,6 +403,14 @@ func generateBuiltinMethods (_ p: Printer,
             }
             if args != "" { args += ", " }
             args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: false)
+        }
+        
+        if let deprecation = m.deprecation {
+            if let renamed = deprecation.renamed {
+                p ("@available(*, deprecated, renamed: \"\(renamed)\", message: \"\(deprecation.message)\")")
+            } else {
+                p ("@available(*, deprecated, message: \"\(deprecation.message)\")")
+            }
         }
         
         doc (p, bc, m.description)
