@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// The GeneratorException protocol can be used to define an exception to the standard flow of the Generator.
 protocol GeneratorException {
     associatedtype GodotType: ExceptionalGodotType
     associatedtype Method: ExceptionalMethod
@@ -42,9 +43,11 @@ protocol ExceptionalMethod: Equatable, RawRepresentable where RawValue == String
     init?(rawValue: String)
 }
 
+/// Namespace for `GeneratorExceptions`
+/// If an exception does not fit the `GeneratorException` model it can still be included in `Exceptions` (see `UtilityMethod`).
 enum Exceptions {
 
-    /// Determines if the method should be omitted from autogeneration since Source/Native has a better alternative that avoids having to access Godot pointers.
+    /// Determines if the method should be omitted from generation since Source/Native has a better alternative that avoids having to access Godot pointers.
     enum OmittedMethod: GeneratorException {
         enum Method: String, ExceptionalMethod {
             case lerp, snapped
