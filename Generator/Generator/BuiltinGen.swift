@@ -366,7 +366,7 @@ func generateBuiltinMethods (_ p: Printer,
             continue
         }
         
-        if omittedMethodsList[typeName]?.contains(m.name) == true {
+        if Exceptions.OmittedMethod.isException(typeName: typeName, methodName: m.name) {
             continue
         }
         
@@ -400,7 +400,7 @@ func generateBuiltinMethods (_ p: Printer,
         
         doc (p, bc, m.description)
         // Generate the method entry point
-        if discardableResultList [bc.name]?.contains(m.name) ?? false && m.returnType != "" {
+        if Exceptions.DiscardableResult.isException(typeName: bc.name, methodName: m.name) && m.returnType != "" {
             p ("@discardableResult /* 1: \(m.name) */ ")
         }
 
