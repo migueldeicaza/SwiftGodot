@@ -486,11 +486,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     // Sadly, the parameters have no useful documentation
     doc (p, cdef, method.description)
     // Generate the method entry point
-    if let classDiscardables = discardableResultList [className] {
-        if classDiscardables.contains(method.name) == true {
-            p ("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
-        }
+    if Exceptions.DiscardableResult.isException(typeName: className, methodName: method.name) {
+        p ("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
     }
+    
     p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
         // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls
         
