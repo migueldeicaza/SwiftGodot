@@ -1,6 +1,6 @@
 # Working in VS Code
 
-Develop and debug SwfitGodot Code in Visual Studio Code
+Develop and debug SwiftGodot Code in Visual Studio Code
 
 ## Overview
 
