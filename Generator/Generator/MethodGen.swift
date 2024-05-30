@@ -341,11 +341,9 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
             }
             
-            // if the first argument name matches the last part of the method name, we want
-            // to skip giving it a name.   For example:
-            // addPattern (pattern: xx) becomes addPattern (_ pattern: xx)
+            // Omit first argument label, if necessary
             if firstArg == nil {
-                if method.name.hasSuffix("_\(arg.name)") {
+                if shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name) {
                     eliminate = "_ "
                 } else {
                     eliminate = allEliminate
