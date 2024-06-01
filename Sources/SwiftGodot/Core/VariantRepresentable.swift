@@ -216,6 +216,10 @@ extension PackedVector3Array: ContentVariantRepresentable {
     public static var godotType: Variant.GType { .packedVector3Array }
 }
 
+extension PackedVector4Array: ContentVariantRepresentable {
+    public static var godotType: Variant.GType { .packedVector4Array }
+}
+
 extension PackedColorArray: ContentVariantRepresentable {
     public static var godotType: Variant.GType { .packedColorArray }
 }

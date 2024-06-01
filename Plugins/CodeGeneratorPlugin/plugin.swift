@@ -69,6 +69,7 @@ let knownBuiltin = [
     "PackedStringArray.swift",
     "PackedVector2Array.swift",
     "PackedVector3Array.swift",
+    "PackedVector4Array.swift",
     "Plane.swift",
     "Projection.swift",
     "Quaternion.swift",
@@ -917,6 +918,7 @@ let known = [
     "VisualShaderNodeProximityFade.swift",
     "VisualShaderNodeRandomRange.swift",
     "VisualShaderNodeRemap.swift",
+    "VisualShaderNodeReroute.swift",
     "VisualShaderNodeResizableBase.swift",
     "VisualShaderNodeRotationByAxis.swift",
     "VisualShaderNodeSDFRaymarch.swift",
@@ -1006,6 +1008,7 @@ let known = [
     "XRPositionalTracker.swift",
     "XRServer.swift",
     "XRTracker.swift",
+    "XRVRS.swift",
     "ZIPPacker.swift",
     "ZIPReader.swift",
 

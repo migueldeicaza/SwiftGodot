@@ -204,6 +204,8 @@ struct GodotInterface {
     let packed_vector2_array_operator_index_const: GDExtensionInterfacePackedVector2ArrayOperatorIndexConst
     let packed_vector3_array_operator_index: GDExtensionInterfacePackedVector3ArrayOperatorIndex
     let packed_vector3_array_operator_index_const: GDExtensionInterfacePackedVector3ArrayOperatorIndexConst
+    let packed_vector4_array_operator_index: GDExtensionInterfacePackedVector4ArrayOperatorIndex
+    let packed_vector4_array_operator_index_const: GDExtensionInterfacePackedVector4ArrayOperatorIndexConst
 
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 }
@@ -308,6 +310,8 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         packed_vector2_array_operator_index_const: load ("packed_vector2_array_operator_index_const"),
         packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index"),
         packed_vector3_array_operator_index_const: load ("packed_vector3_array_operator_index_const"),
+        packed_vector4_array_operator_index: load ("packed_vector4_array_operator_index"),
+        packed_vector4_array_operator_index_const: load ("packed_vector4_array_operator_index_const"),
 
         callable_custom_create: load ("callable_custom_create")
     )

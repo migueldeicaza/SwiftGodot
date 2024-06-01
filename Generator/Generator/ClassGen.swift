@@ -214,6 +214,7 @@ let discardableResultList: [String: Set<String>] = [
     "PackedStringArray": ["append", "push_back"],
     "PackedVector2Array": ["append", "push_back"],
     "PackedVector3Array": ["append", "push_back"],
+    "PackedVector4Array": ["append", "push_back"],
     "CharacterBody2D": ["move_and_slide"],
     "CharacterBody3D": ["move_and_slide"],
     "RefCounted": ["reference", "unreference"]

@@ -183,6 +183,7 @@ var godotVariants = [
     "PackedStringArray": ".packedStringArray",
     "PackedVector2Array": ".packedVector2Array",
     "PackedVector3Array": ".packedVector3Array",
+    "PackedVector4Array": ".packedVector4Array",
     "Plane": ".plane",
     "Projection": ".projection",
     "Quaternion": ".quaternion",

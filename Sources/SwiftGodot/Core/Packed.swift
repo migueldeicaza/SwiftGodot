@@ -261,4 +261,15 @@ extension PackedVector3Array {
     }
 }
 
-
+extension PackedVector4Array {
+    /// Accesses a specific element in the ``PackedVector3Array``
+    public subscript (index: Int) -> Vector4 {
+        get {
+            let ptr = gi.packed_vector4_array_operator_index_const (&content, Int64(index))
+            return ptr!.assumingMemoryBound(to: Vector4.self).pointee
+        }
+        set {
+            set (index: Int64 (index), value: newValue)
+        }
+    }
+}
