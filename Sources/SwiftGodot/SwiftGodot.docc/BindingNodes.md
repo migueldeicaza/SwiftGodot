@@ -5,7 +5,6 @@ achieved by using the dollar sign and the name of the object you want to referen
 
 With SwiftGodot, you can achieve the same behavior by using the ``BindNode`` property wrapper
 
-## 
 
 In your class declaration, use the ``BindNode`` property wrapper like this to reference the nodes
 that you created with the Godot Editor:
@@ -16,6 +15,20 @@ class Main: Node {
     @BindNode var startTimer: SwiftGodot.Timer
     @BindNode var music: AudioStreamPlayer
     @BindNode var mobTimer: SwiftGodot.Timer
+
+    func newGame () {
+        startTimer.start ()
+    }
+}
+```
+
+You can specify a complete path to the element you want to bind in your node,
+like this:
+
+```swift
+@Godot
+class Main: Node {
+    @BindNode(withPath: "timers/start") var startTimer: SwiftGodot.Timer
 
     func newGame () {
         startTimer.start ()

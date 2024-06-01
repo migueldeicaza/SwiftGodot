@@ -48,6 +48,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case expectedIdentifier(PatternBindingListSyntax.Element)
     case unknownError(Error)
     case unsupportedCallableEffect
+    case noSupportForOptionalEnums
     
     var severity: DiagnosticSeverity {
         return .error
@@ -77,6 +78,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Export optional Collections are not supported"
         case .unsupportedCallableEffect:
             "@Callable does not support asynchronous or throwing functions"
+        case .noSupportForOptionalEnums:
+            "@Export(.enum) does not support optional values for the enumeration"
 		}
     }
     

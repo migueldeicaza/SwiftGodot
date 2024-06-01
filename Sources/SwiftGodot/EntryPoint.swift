@@ -187,16 +187,24 @@ struct GodotInterface {
     let array_set_typed: GDExtensionInterfaceArraySetTyped
     
     let packed_string_array_operator_index: GDExtensionInterfacePackedStringArrayOperatorIndex
+    let packed_string_array_operator_index_const: GDExtensionInterfacePackedStringArrayOperatorIndexConst
     let packed_byte_array_operator_index: GDExtensionInterfacePackedByteArrayOperatorIndex
     let packed_byte_array_operator_index_const: GDExtensionInterfacePackedByteArrayOperatorIndexConst
     let packed_color_array_operator_index: GDExtensionInterfacePackedColorArrayOperatorIndex
+    let packed_color_array_operator_index_const: GDExtensionInterfacePackedColorArrayOperatorIndexConst
     let packed_float32_array_operator_index: GDExtensionInterfacePackedFloat32ArrayOperatorIndex
+    let packed_float32_array_operator_index_const: GDExtensionInterfacePackedFloat32ArrayOperatorIndexConst
     let packed_float64_array_operator_index: GDExtensionInterfacePackedFloat64ArrayOperatorIndex
+    let packed_float64_array_operator_index_const: GDExtensionInterfacePackedFloat64ArrayOperatorIndexConst
     let packed_int32_array_operator_index: GDExtensionInterfacePackedInt32ArrayOperatorIndex
+    let packed_int32_array_operator_index_const: GDExtensionInterfacePackedInt32ArrayOperatorIndexConst
     let packed_int64_array_operator_index: GDExtensionInterfacePackedInt64ArrayOperatorIndex
+    let packed_int64_array_operator_index_const: GDExtensionInterfacePackedInt64ArrayOperatorIndexConst
     let packed_vector2_array_operator_index: GDExtensionInterfacePackedVector2ArrayOperatorIndex
+    let packed_vector2_array_operator_index_const: GDExtensionInterfacePackedVector2ArrayOperatorIndexConst
     let packed_vector3_array_operator_index: GDExtensionInterfacePackedVector3ArrayOperatorIndex
-    
+    let packed_vector3_array_operator_index_const: GDExtensionInterfacePackedVector3ArrayOperatorIndexConst
+
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 }
 
@@ -283,16 +291,24 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         array_set_typed: load ("array_set_typed"),
         
         packed_string_array_operator_index: load ("packed_string_array_operator_index"),
+        packed_string_array_operator_index_const: load ("packed_string_array_operator_index_const"),
         packed_byte_array_operator_index: load ("packed_byte_array_operator_index"),
         packed_byte_array_operator_index_const: load ("packed_byte_array_operator_index_const"),
         packed_color_array_operator_index: load ("packed_color_array_operator_index"),
+        packed_color_array_operator_index_const: load ("packed_color_array_operator_index_const"),
         packed_float32_array_operator_index: load ("packed_float32_array_operator_index"),
+        packed_float32_array_operator_index_const: load ("packed_float32_array_operator_index_const"),
         packed_float64_array_operator_index: load ("packed_float64_array_operator_index"),
+        packed_float64_array_operator_index_const: load ("packed_float64_array_operator_index_const"),
         packed_int32_array_operator_index: load ("packed_int32_array_operator_index"),
+        packed_int32_array_operator_index_const: load ("packed_int32_array_operator_index_const"),
         packed_int64_array_operator_index: load ("packed_int64_array_operator_index"),
+        packed_int64_array_operator_index_const: load ("packed_int64_array_operator_index_const"),
         packed_vector2_array_operator_index: load ("packed_vector2_array_operator_index"),
+        packed_vector2_array_operator_index_const: load ("packed_vector2_array_operator_index_const"),
         packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index"),
-        
+        packed_vector3_array_operator_index_const: load ("packed_vector3_array_operator_index_const"),
+
         callable_custom_create: load ("callable_custom_create")
     )
 }

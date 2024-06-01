@@ -101,7 +101,7 @@ public macro exportGroup(_ name: String, prefix: String = "") = #externalMacro(m
 @freestanding(expression)
 public macro exportSubgroup(_ name: String, prefix: String = "") = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacroExportSubgroup")
 
-/// A macro used to write an entrypoint for a Godot extension.
+/// A macro used to write an entrypoint for a Godot extension and register scene types.
 ///
 /// For example, to initialize a Swift extension to Godot with custom types:
 /// ```swift
@@ -118,6 +118,40 @@ public macro exportSubgroup(_ name: String, prefix: String = "") = #externalMacr
 public macro initSwiftExtension(cdecl: String,
                                 types: [Wrapped.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")
+
+/// Macro used to write an entrypoint for a Godot extension and register all the supported scene types.
+///
+/// When Godot initializes your extension it does so in stages and you get
+/// a chance to register the types that you want to expose to the Godot engine for
+/// each stage (``GDExtension/InitializationLevel``).
+///
+/// For example, to initialize a Swift extension to Godot with some custom types
+/// to use in the editor, and some other types to use on the scene.
+///
+/// ```swift
+/// class MySprite: Sprite2D { ... }
+/// class MyControl: Control { ... }
+///
+/// #initSwiftExtension(cdecl: "myextension_entry_point",
+///                     editorTypes: [MyEditorPlugin.self],  
+///                     sceneTypes: [MySprite.self, MyControl.self])
+/// ```
+///
+/// - Parameter cdecl: The name of the entrypoint exposed to C.
+/// - Parameter coreTypes: Types registered at the `.core` level
+/// - Parameter editorTypes: Types registered at the `.editor` level
+/// - Parameter sceneTypes: Types registered at the `.scene` level
+/// - Parameter serverTypes: Types registered at the `.server` level
+@freestanding(declaration, names: named(enterExtension))
+public macro initSwiftExtension(
+    cdecl: String,
+    coreTypes: [Wrapped.Type] = [],
+    editorTypes: [Wrapped.Type] = [],
+    sceneTypes: [Wrapped.Type] = [],
+    serverTypes: [Wrapped.Type] = []
+) = #externalMacro(
+    module: "SwiftGodotMacroLibrary",
+    type: "InitSwiftExtensionMacro")
 
 /// A macro that instantiates a `Texture2D` from a specified resource path. If the texture cannot be created, a
 /// `preconditionFailure` will be thrown.

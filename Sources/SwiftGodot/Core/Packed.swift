@@ -17,7 +17,7 @@ extension PackedStringArray {
     /// Accesses a specific element in the ``PackedStringArray``
     public subscript (index: Int) -> String {
         get {
-            return GString.stringFromGStringPtr(ptr: gi.packed_string_array_operator_index (&content, Int64 (index))) ?? ""
+            return GString.stringFromGStringPtr(ptr: gi.packed_string_array_operator_index_const (&content, Int64 (index))) ?? ""
         }
         set {
             set (index: Int64 (index), value: newValue)
@@ -29,7 +29,7 @@ extension PackedByteArray {
     /// Accesses a specific element in the ``PackedByteArray``
     public subscript (index: Int) -> UInt8 {
         get {
-            let ptr = gi.packed_byte_array_operator_index (&content, Int64 (index))
+            let ptr = gi.packed_byte_array_operator_index_const (&content, Int64 (index))
             return ptr!.pointee
         }
         set {
@@ -113,7 +113,7 @@ extension PackedColorArray {
     /// Accesses a specific element in the ``PackedColorArray``
     public subscript (index: Int) -> Color {
         get {
-            let ptr = gi.packed_color_array_operator_index (&content, Int64 (index))
+            let ptr = gi.packed_color_array_operator_index_const (&content, Int64 (index))
             return ptr!.assumingMemoryBound(to: Color.self).pointee
         }
         set {
@@ -126,7 +126,7 @@ extension PackedFloat32Array {
     /// Accesses a specific element in the ``PackedFloat32Array``
     public subscript (index: Int) -> Float {
         get {
-            let ptr = gi.packed_float32_array_operator_index (&content, Int64 (index))
+            let ptr = gi.packed_float32_array_operator_index_const (&content, Int64 (index))
             return ptr!.pointee
         }
         set {
@@ -154,7 +154,7 @@ extension PackedFloat64Array {
     /// Accesses a specific element in the ``PackedFloat64Array``
     public subscript (index: Int) -> Double {
         get {
-            let ptr = gi.packed_float64_array_operator_index (&content, Int64(index))
+            let ptr = gi.packed_float64_array_operator_index_const (&content, Int64(index))
             return ptr!.pointee
         }
         set {
@@ -183,7 +183,7 @@ extension PackedInt32Array {
     /// Accesses a specific element in the ``PackedInt32Array``
     public subscript (index: Int) -> Int32 {
         get {
-            let ptr = gi.packed_int32_array_operator_index (&content, Int64(index))
+            let ptr = gi.packed_int32_array_operator_index_const (&content, Int64(index))
             return ptr!.pointee
         }
         set {
@@ -211,7 +211,7 @@ extension PackedInt64Array {
     /// Accesses a specific element in the ``PackedInt64Array``
     public subscript (index: Int) -> Int64 {
         get {
-            let ptr = gi.packed_int64_array_operator_index(&content, Int64(index))
+            let ptr = gi.packed_int64_array_operator_index_const(&content, Int64(index))
             return ptr!.pointee
         }
         set {
@@ -239,7 +239,7 @@ extension PackedVector2Array {
     /// Accesses a specific element in the ``PackedVector2Array``
     public subscript (index: Int) -> Vector2 {
         get {
-            let ptr = gi.packed_vector2_array_operator_index (&content, Int64(index))
+            let ptr = gi.packed_vector2_array_operator_index_const (&content, Int64(index))
             return ptr!.assumingMemoryBound(to: Vector2.self).pointee
         }
         set {
@@ -252,7 +252,7 @@ extension PackedVector3Array {
     /// Accesses a specific element in the ``PackedVector3Array``
     public subscript (index: Int) -> Vector3 {
         get {
-            let ptr = gi.packed_vector3_array_operator_index (&content, Int64(index))
+            let ptr = gi.packed_vector3_array_operator_index_const (&content, Int64(index))
             return ptr!.assumingMemoryBound(to: Vector3.self).pointee
         }
         set {

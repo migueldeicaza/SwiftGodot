@@ -11,4 +11,6 @@ DerivedData/
 .netrc
 *~
 build-docs.log
-.nova/
+*rej
+*orig
+\#*

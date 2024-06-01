@@ -19,13 +19,16 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         guard let cDecl = node.arguments.first?.expression else {
             fatalError("compiler bug: the macro does not have any arguments")
         }
-		
-		let types: ExprSyntax
-		if node.arguments.count >= 2 {
-			types = node.arguments.last!.expression
-		} else {
-			types = "[]"
-		}
+
+        let sceneTypes: ExprSyntax
+        if let types = node.arguments.first(where: { $0.label?.text == "types" })?.expression {
+            sceneTypes = types
+        } else {
+            sceneTypes = node.arguments.first(where: { $0.label?.text == "sceneTypes" })?.expression ?? "[]"
+        }
+        let coreTypes = node.arguments.first(where: { $0.label?.text == "coreTypes" })?.expression ?? "[]"
+        let editorTypes = node.arguments.first(where: { $0.label?.text == "editorTypes" })?.expression ?? "[]"
+        let serverTypes = node.arguments.first(where: { $0.label?.text == "serverTypes" })?.expression ?? "[]"
 
         let initModule: DeclSyntax = """
         @_cdecl(\(raw: cDecl.description)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
@@ -33,21 +36,15 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 print ("Error: Not all parameters were initialized.")
                 return 0
             }
-            let types: [Wrapped.Type] = \(types)
+            var types: [GDExtension.InitializationLevel: [Wrapped.Type]] = [:]
+            types[.core] = \(coreTypes)
+            types[.editor] = \(editorTypes)
+            types[.scene] = \(sceneTypes)
+            types[.servers] = \(serverTypes)
             initializeSwiftModule (interface, library, `extension`, initHook: { level in
-                switch level {
-                case .scene:
-                    types.forEach (register)
-                default:
-                    break
-                }
+                types[level]?.forEach (register)
             }, deInitHook: { level in
-                switch level {
-                case .scene:
-                    types.forEach (unregister)
-                default:
-                    break
-                }
+                types[level]?.forEach (unregister)
             })
             return 1
         }
