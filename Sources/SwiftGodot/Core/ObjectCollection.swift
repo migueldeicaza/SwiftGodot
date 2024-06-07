@@ -32,14 +32,14 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
 	public required init(arrayLiteral elements: ArrayLiteralElement...) {
 		array = elements.reduce(into: .init(Element.self)) {
-			$0.append(value: Variant($1))
+            $0.append(Variant($1))
 		}
 	}
     
     /// Initializes the collection using an array
     public init(_ elements: [Element]) {
         array = elements.reduce(into: .init(Element.self)) {
-            $0.append(value: Variant($1))
+            $0.append(Variant($1))
         }
     }
     
@@ -135,7 +135,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
     public final func append (value: Element) {
-        array.append (value: Variant (value))
+        array.append (Variant (value))
     }
     
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.

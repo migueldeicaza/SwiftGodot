@@ -84,7 +84,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             enumDefName = String (enumDefName.dropFirst("Variant.".count))
         }
         let extraConformances = enumDefName == "Error" ? ", Error" : ""
-            
+        
         p ("public enum \(getGodotType (SimpleType (type: enumDefName))): Int64, CaseIterable, CustomDebugStringConvertible\(extraConformances)") {
             var used = Set<Int> ()
             
@@ -128,7 +128,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             }
             if enumDefName == "Error" {
                 /// Provides the description of the error.
-                p ("public var localizedDescription: String { debugDescription }")
+                p ("public var localizedDescription: String { GD.errorString(error: self.rawValue) }")
             }
         }
         if enumDef.name.starts (with: "Variant") {

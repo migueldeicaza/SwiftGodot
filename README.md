@@ -16,6 +16,7 @@ Tutorials and Documentation:
 * [SwiftGodot API Documentation](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/)
 * [Differences to GDScript](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot/differences)
 * [Tutorials and walkthroughs](https://migueldeicaza.github.io/SwiftGodotDocs/tutorials/swiftgodot-tutorials/)
+* SwiftGodot port of [KenneyNL's StarterKit 3D Platformer](https://github.com/lorenalexm/Starter-Kit-3D-Platformer-Swift)
 
 Of interest to the community:
 * Running Godot in VisionPro using [GodotVision](https://github.com/kevinw/GodotVision)

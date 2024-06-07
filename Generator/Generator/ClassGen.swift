@@ -238,6 +238,24 @@ let omittedMethodsList: [String: Set<String>] = [
     ],
 ]
 
+// Dictionary used to explicitly tell the generator to replace the first argument label with "_ "
+let omittedFirstArgLabelList: [String: Set<String>] = [
+    "GArray": ["append"]
+]
+
+/// Determines if the first argument name should be replaced with an underscore.
+///
+/// First argument name should be omitted if:
+/// 1. The name matches the suffix of the method name, for example: `addPattern(pattern: xx)` becomes `addPattern(_ pattern: xx)`
+/// 2. If it's found in `omittedFirstArgLabelList`.
+/// - Parameters:
+///   - typeName: Name of the parent type
+///   - methodName: Name of the method
+///   - argName: Name of the argument
+func shouldOmitFirstArgLabel(typeName: String, methodName: String, argName: String) -> Bool {
+    return methodName.hasSuffix ("_\(argName)") || omittedFirstArgLabelList[typeName]?.contains(methodName) == true
+}
+
 ///
 /// Returns a hashtable mapping a godot method name to a Swift Name + its definition
 /// this list is used to generate later the proxies outside the class

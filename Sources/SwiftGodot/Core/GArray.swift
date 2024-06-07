@@ -38,4 +38,9 @@ extension GArray {
             ptr.pointee = newValue.content
         }
     }
+    
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: Variant) {
+        append(value)
+    }
 }
