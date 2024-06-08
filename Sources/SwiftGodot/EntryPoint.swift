@@ -369,8 +369,8 @@ public func initializeSwiftModule (
     if library == nil {
         library = GDExtensionClassLibraryPtr(libraryPtr)
     }
-    extensionInitCallbacks = [initHook]
-    extensionDeInitCallbacks = [deInitHook]
+    extensionInitCallbacks.append(initHook)
+    extensionDeInitCallbacks.append(deInitHook)
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
