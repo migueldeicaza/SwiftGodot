@@ -252,7 +252,6 @@ public func register<T:Wrapped> (type: T.Type) {
     }
     let typeStr = String (describing: type)
     let superStr = String(describing: superType)
-    pd("Registering \(typeStr) : \(superStr)")
     register (type: StringName (typeStr), parent: StringName (superStr), type: type)
 }
 
