@@ -52,7 +52,8 @@ func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionIni
 func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_deinitialize")
     guard let userData else { return }
-    guard let callback = extensionInitCallbacks [OpaquePointer(userData)] else { return }
+    let key = OpaquePointer(userData)
+    guard let callback = extensionDeInitCallbacks.removeValue(forKey: key) else { return }
     guard let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!) else { return }
     callback (level)
 }
