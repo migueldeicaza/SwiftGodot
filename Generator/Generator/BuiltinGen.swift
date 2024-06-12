@@ -175,7 +175,7 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            var (argPrepare, nestLevel) = generateArgPrepare(m.arguments ?? [], methodHasReturn: false)
+            var (argPrepare, nestLevel) = generateArgPrepare(isVararg: false, m.arguments ?? [], methodHasReturn: false)
             if argPrepare != "" {
                 p (argPrepare)
                 if nestLevel > 0 {
@@ -206,6 +206,7 @@ func generateMethodCall (_ p: Printer,
                          methodToCall: String,
                          godotReturnType: String?,
                          isStatic: Bool,
+                         isVararg: Bool,
                          arguments: [JGodotArgument]?,
                          kind: MethodCallKind) {
     let has_return = godotReturnType != nil
@@ -223,14 +224,14 @@ func generateMethodCall (_ p: Printer,
         }
     }
     
-    var (argPrep, nestLevel) = generateArgPrepare(arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
+    var (argPrep, nestLevel) = generateArgPrepare(isVararg: isVararg, arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
     if argPrep != "" {
         p (argPrep)
         if nestLevel > 0 {
             p.indent += nestLevel
         }
     }
-    let ptrArgs = (arguments?.count ?? 0) > 0 ? "&args" : "nil"
+    let ptrArgs = (isVararg || (arguments?.count ?? 0) > 0) ? "&args" : "nil"
     let ptrResult: String
     if has_return {
         let isStruct = isStructMap [godotReturnType ?? ""] ?? false
@@ -244,7 +245,15 @@ func generateMethodCall (_ p: Printer,
     }
     
     // Method calls pass the number of parameters to the method
-    let numberOfArgs = kind == .methodCall ? ", \(arguments?.count ?? 0)" : ""
+    var argCount: String
+    if isVararg {
+        // All the arguments that we accumulated, count dynamically
+        argCount = "Int32(args.count)"
+    } else {
+        // We know statically the number of arguments, harcode that
+        argCount = "\(arguments?.count ?? 0)"
+    }
+    let numberOfArgs = kind == .methodCall ? ", \(argCount)" : ""
     
     if isStatic {
             p ("\(typeName).\(methodToCall) (nil, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
@@ -395,7 +404,10 @@ func generateBuiltinMethods (_ p: Printer,
             if args != "" { args += ", " }
             args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: false)
         }
-        
+        if m.isVararg {
+            if args != "" { args += ", " }
+            args += "_ arguments: Variant..."
+        }
         doc (p, bc, m.description)
         // Generate the method entry point
         if discardableResultList [bc.name]?.contains(m.name) ?? false && m.returnType != "" {
@@ -411,8 +423,7 @@ func generateBuiltinMethods (_ p: Printer,
             keyword = ""
         }
         p ("public\(keyword) func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
-            
-            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, arguments: m.arguments, kind: .methodCall)
+            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments, kind: .methodCall)
         }
     }
     if bc.isKeyed {
