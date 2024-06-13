@@ -134,6 +134,37 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return ""
     }
     
+    /// Checks if this object has a script with the given method.
+    /// - Parameter method: StringName identifying the method.
+    /// - Returns: `true` if the object has a script and that script has a method with the given name.
+    /// `false` if the object has no script.
+    public func hasScript (method: StringName) -> Bool {
+        gi.object_has_script_method(handle, &method.content) != 0
+    }
+    
+    /// Invokes the specified method on the object
+    /// - Parameters:
+    ///  - method: the method to invoke on the target
+    ///  - arguments: variable list of arguments
+    /// - Returns: if there is an error, this function raises an error, otherwise, a Variant with the result is returned
+    public func callScript (method: StringName, _ arguments: Variant...) throws -> Variant {
+        var args: [UnsafeRawPointer?] = []
+        let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
+        defer { cptr.deallocate () }
+        
+        for idx in 0..<arguments.count {
+            cptr [idx] = arguments [idx].content
+            args.append (cptr.baseAddress! + idx)
+        }
+        let result: Variant = Variant()
+        var error = GDExtensionCallError()
+        gi.object_call_script_method(&handle, &method.content, &args, Int64(args.count), &result.content, &error)
+        if error.error != GDEXTENSION_CALL_OK {
+            throw toCallErrorType(error.error)
+        }
+        return result
+    }
+    
     /// For use by the framework, you should not need to call this.
     public required init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
