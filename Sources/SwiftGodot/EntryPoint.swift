@@ -18,8 +18,8 @@ var token: GDExtensionClassLibraryPtr! {
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
 public var swiftGodotLibraryGeneration: UInt16 = 0
 
-var extensionInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
-var extensionDeInitCallbacks: [((GDExtension.InitializationLevel)->())] = []
+var extensionInitCallbacks: [OpaquePointer:((GDExtension.InitializationLevel)->())] = [:]
+var extensionDeInitCallbacks: [OpaquePointer:((GDExtension.InitializationLevel)->())] = [:]
 
 func loadFunctions (loader: GDExtensionInterfaceGetProcAddress) {
     
@@ -42,21 +42,20 @@ public func setExtensionInterface (to: OpaquePointer?, library lib: OpaquePointe
 // Extension initialization callback
 func extension_initialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
-    let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!)!
-    
-    for cb in extensionInitCallbacks {
-        cb (level)
-    }
+    guard let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!) else { return }
+    guard let userData else { return }
+    guard let callback = extensionInitCallbacks [OpaquePointer(userData)] else { return }
+    callback (level)
 }
 
 // Extension deinitialization callback
 func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_deinitialize")
-    
-    let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!)!
-    for cb in extensionDeInitCallbacks {
-        cb (level)
-    }
+    guard let userData else { return }
+    let key = OpaquePointer(userData)
+    guard let callback = extensionDeInitCallbacks.removeValue(forKey: key) else { return }
+    guard let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!) else { return }
+    callback (level)
 }
 
 /// Error types returned by Godot when invoking a method
@@ -373,12 +372,13 @@ public func initializeSwiftModule (
     if library == nil {
         library = GDExtensionClassLibraryPtr(libraryPtr)
     }
-    extensionInitCallbacks = [initHook]
-    extensionDeInitCallbacks = [deInitHook]
+    extensionInitCallbacks [libraryPtr] = initHook
+    extensionDeInitCallbacks [libraryPtr] = deInitHook
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
     initialization.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_SCENE
+    initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
 }
 
 /*
