@@ -318,10 +318,17 @@ func lookupObject<T:GodotObject> (nativeHandle: UnsafeRawPointer) -> T? {
     if let a = objectFromHandle(nativeHandle: nativeHandle) {
         return a as? T
     }
-    let _result: GString = GString ()
-    let copy = nativeHandle
-    gi.object_method_bind_ptrcall (Object.method_get_class, UnsafeMutableRawPointer (mutating: copy), nil, &_result.content)
-    let className = _result.description
+    var className: String = ""
+    var sc: StringName.ContentType = StringName.zero
+    if gi.object_get_class_name (nativeHandle, library, &sc) != 0 {
+        let sn = StringName(content: sc)
+        className = String(sn)
+    } else {
+        let copy = nativeHandle
+        let _result: GString = GString ()
+        gi.object_method_bind_ptrcall (Object.method_get_class, UnsafeMutableRawPointer (mutating: copy), nil, &_result.content)
+        className = _result.description
+    }
     if let ctor = godotFrameworkCtors [className] {
         return ctor.init (nativeHandle: nativeHandle) as? T
     }
