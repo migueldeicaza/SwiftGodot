@@ -158,37 +158,89 @@ the directory where you initialized your Swift package.
 ### Debugging your SwiftGodot code
 
 You can debug your SwiftGodot code on Windows or Linux using the 
-CodeLLDB Extension to attach to your game launched from Godot.  
+CodeLLDB Extension to launch your game directly from vscode.  
 
-In order to do this, you will need to add an Attach to Process 
-launch task  to your project.
-
+In order to do this, you will need to add a Launch 
+task to your project.
 In Visual Sutdio Code, switch to the "Run and Debug" tab.
 
 Create a `launch.json` file by tapping on "create a launch.json file"
 and selecting "LLDB", which should be the first suggested option.
 
-In the newly created launch.json file, you should have a single
-lldb task.  To turn this task into an attach task:
+In the newly created launch.json file, you should modify the existing
+lldb task to support launching as follows:
 
-1. Change the value for `request` from `launch` to `attach` 
-2. Change the value for `name` to `Attach to PID`
-3. Remove the lines for `program`, `args`, and `cwd`
-4. Add a line for `pid` with value `${command:pickProcess}`
+1. Change the value for `name` to `Launch Godot Game`
+2. Add a line for `program` with the path to your Godot executable
+3. Add a line for `args` with any necessary arguments to launch your game,
+   such as the path to your godot project
+4. specify the `cwd` (current working directory)
 
 Your launch configuration for lldb should now look like this:
 
 ```json
-"type": "lldb",
-"request": "attach",
-"name": "Attach to PID",
-"pid": "${command:pickProcess}"
+{
+   "type": "lldb",
+   "request": "launch",
+   "name": "Launch Godot Game",
+   "program": "path/to/your/Godot/executable",
+   "args": ["--path", "path/to/your/game/project"],
+   "cwd": "${workspaceFolder}"
+}
 ```
 
-Once you save this file, Attach to PID should be the default debug 
-task, and can be run by pressing F5.
+Once you save this file, "Launch Godot Game" will appear as the default debug
+task in the "Run and Debug" sidebar.
+To run this task, click on the green play button next to
+"Launch Godot Game" in the "Run and Debug" sidebar.
+This action will launch the game with the LLDB debugger attached.
 
-To debug your app, 
+At this point, Visual Studio Code should now stop on any breakpoints you have
+set, and you should be able to inspect Variables, set Watches, etc.
+
+#### (Optional) Add a `Attach` Debug task
+
+1. Open the launch.json file.
+2. Add a comma after the last closing brace `}` of the existing configuration.
+3. Paste the following configuration:
+
+```json
+{
+    "type": "lldb",
+    "request": "attach",
+    "name": "Attach to PID",
+    "pid": "${command:pickProcess}"
+}
+```
+
+Your `launch.json` should now look something like this:
+
+```json
+{
+   "version": "0.2.0",
+   "configurations": [
+      {
+         "type": "lldb",
+         "request": "launch",
+         "name": "Launch Godot Game",
+         "program": "path/to/your/Godot/executable",
+         "args": ["--path", "path/to/your/game/project"],
+         "cwd": "${workspaceFolder}"
+      },
+      {
+         "type": "lldb",
+         "request": "attach",
+         "name": "Attach to PID",
+         "pid": "${command:pickProcess}"
+      }
+   ]
+}
+```
+
+Once you save this file, "Attach to PID" should appear in the debug options list.
+
+To debug your app using "Attach to PID", follow these steps: 
+
 1. First, take note of running Godot process PIDs by running "Attach to PID" 
 and searching for Godot. 
 
@@ -203,9 +255,6 @@ and searching for Godot.
 > Godot PIDs by looking at the additional information Visual Studio Code lists about 
 > each process, including command line options.  On Windows, the Godot processes are 
 > pretty much identical, making it difficult to differentiate your game from the editor.
-
-At this point, Visual Studio Code should now stop on any breakpoints you have
-set, and you should be able to inspect Variables, set Watches, etc.
 
 > Warning: 
 > On Mac, you will need to make your Godot engine debuggable following the steps from
