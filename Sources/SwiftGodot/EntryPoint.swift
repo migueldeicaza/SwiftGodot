@@ -53,9 +53,13 @@ func extension_deinitialize (userData: UnsafeMutableRawPointer?, l: GDExtensionI
     //print ("SWIFT: extension_deinitialize")
     guard let userData else { return }
     let key = OpaquePointer(userData)
-    guard let callback = extensionDeInitCallbacks.removeValue(forKey: key) else { return }
+    guard let callback = extensionDeInitCallbacks [key] else { return }
     guard let level = GDExtension.InitializationLevel(rawValue: Int64 (exactly: l.rawValue)!) else { return }
     callback (level)
+    if level == .core {
+        // Last one, remove 
+        extensionDeInitCallbacks.removeValue(forKey: key)
+    }
 }
 
 /// Error types returned by Godot when invoking a method
