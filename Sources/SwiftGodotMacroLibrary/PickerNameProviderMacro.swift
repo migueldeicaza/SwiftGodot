@@ -56,7 +56,7 @@ public struct PickerNameProviderMacro: ExtensionMacro {
         }
 
         let types = inheritors.map { $0.type.as(IdentifierTypeSyntax.self) }
-        let names = types.map { $0?.name.text }
+        //let names = types.map { $0?.name.text }
 
         let members = enumDecl.memberBlock.members
         let cases = members.compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
