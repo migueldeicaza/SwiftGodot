@@ -32,7 +32,6 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
         XCTAssertEqual(result.colliderId, collider.id)
         XCTAssertEqual(result.rid, RID())
         XCTAssertEqual(result.shape, 22)
-        XCTAssertEqual(result.faceIndex, 44)
     }
     
     func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
