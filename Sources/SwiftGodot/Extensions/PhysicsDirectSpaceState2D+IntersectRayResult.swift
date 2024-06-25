@@ -25,7 +25,7 @@ extension PhysicsDirectSpaceState2D {
     public struct IntersectRayResult<T: Object> {
         /// The intersection point
         public let position: Vector2
-        /// The object's surface normal at the intersection point, or `Vector3(x: 0, y: 0, z: 0)` if the ray starts inside the shape and `PhysicsRayQueryParameters2D.hitFromInside` is true.
+        /// The object's surface normal at the intersection point, or `Vector2(x: 0, y: 0)` if the ray starts inside the shape and `PhysicsRayQueryParameters2D.hitFromInside` is true.
         public let normal: Vector2
         /// The colliding object
         public let collider: T
