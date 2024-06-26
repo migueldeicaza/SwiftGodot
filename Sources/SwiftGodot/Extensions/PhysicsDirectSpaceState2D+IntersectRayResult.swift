@@ -1,8 +1,8 @@
 //
-//  PhysicsDirectSpaceState3D+IntersectRayResult.swift
+//  PhysicsDirectSpaceState2D+IntersectRayResult.swift
 //
 //
-//  Created by Estevan Hernandez on 12/24/23.
+//  Created by Estevan Hernandez on 06/24/24.
 //
 
 private extension GDictionary {
@@ -20,13 +20,13 @@ private extension GDictionary {
     }
 }
 
-extension PhysicsDirectSpaceState3D {
+extension PhysicsDirectSpaceState2D {
     /// Result from intersecting a ray
     public struct IntersectRayResult<T: Object> {
         /// The intersection point
-        public let position: Vector3
-        /// The object's surface normal at the intersection point, or `Vector3(x: 0, y: 0, z: 0)` if the ray starts inside the shape and `PhysicsRayQueryParameters3D.hitFromInside` is true.
-        public let normal: Vector3
+        public let position: Vector2
+        /// The object's surface normal at the intersection point, or `Vector2(x: 0, y: 0)` if the ray starts inside the shape and `PhysicsRayQueryParameters2D.hitFromInside` is true.
+        public let normal: Vector2
         /// The colliding object
         public let collider: T
         /// The colliding object's ID.
@@ -37,19 +37,16 @@ extension PhysicsDirectSpaceState3D {
         public let shape: Int
         /// The metadata value from the dictionary.
         public let metadata: Variant?
-        /// The face index at the intersection point.
-        public let faceIndex: Int
 
         init?(_ dictionary: GDictionary) {
             guard dictionary.isEmpty() == false,
-                  let position: Vector3 = dictionary.makeOrUnwrap(key: "position"),
-                  let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),
+                  let position: Vector2 = dictionary.makeOrUnwrap(key: "position"),
+                  let normal: Vector2 = dictionary.makeOrUnwrap(key: "normal"),
                   let colliderVariant = dictionary["collider"],
                   let collider = T.makeOrUnwrap(colliderVariant),
                   let colliderId: Int = dictionary.makeOrUnwrap(key: "collider_id"),
                   let rid: RID = dictionary.makeOrUnwrap(key: "rid"),
-                  let shape: Int = dictionary.makeOrUnwrap(key: "shape"),
-                  let faceIndex: Int = dictionary.makeOrUnwrap(key: "face_index") else {
+                  let shape: Int = dictionary.makeOrUnwrap(key: "shape") else {
                     return nil
                   }
             self.position = position
@@ -58,15 +55,14 @@ extension PhysicsDirectSpaceState3D {
             self.colliderId = colliderId
             self.rid = rid
             self.shape = shape
-            self.faceIndex = faceIndex
             self.metadata = dictionary["metadata"]
         }
     }
 }
 
-extension PhysicsDirectSpaceState3D {
-    /// Intersects a ray in a given space. Ray position and other parameters are defined through `PhysicsRayQueryParameters3D` The return value is an `IntersectRayResult<T>?` where `T` is any Godot `Object`, however if the ray did not intersect anything, or the intersecting collider was not of type `T` then a nil object is returned instead. Usually `T` is a physics object such as `StaticBody` for example but it could also be a `GridMap` if the `mesh_library` has collisions.
-    public func intersectRay<T: Object>(_ type: T.Type = T.self, parameters: PhysicsRayQueryParameters3D) -> IntersectRayResult<T>? {
+extension PhysicsDirectSpaceState2D {
+    /// Intersects a ray in a given space. Ray position and other parameters are defined through `PhysicsRayQueryParameters2D` The return value is an `IntersectRayResult<T>?` where `T` is any Godot `Object`, however if the ray did not intersect anything, or the intersecting collider was not of type `T` then a nil object is returned instead. Usually `T` is a physics object such as `StaticBody` for example but it could also be a `GridMap` if the `mesh_library` has collisions.
+    public func intersectRay<T: Object>(_ type: T.Type = T.self, parameters: PhysicsRayQueryParameters2D) -> IntersectRayResult<T>? {
         let dictionary: GDictionary = intersectRay(parameters: parameters)
         return IntersectRayResult<T>(dictionary)
     }
