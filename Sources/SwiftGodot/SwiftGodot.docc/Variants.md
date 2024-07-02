@@ -55,9 +55,10 @@ func getBoolValue (variant: Variant) -> Bool? {
 }
 ```
 
-SwiftGodot provides convenience failable initializers for all the types that can
-be stored in a Variant.  If the variant does not contain the type you are
-requesting the result of the call is `nil`.
+SwiftGodot provides convenience [failable
+initializers](https://developer.apple.com/swift/blog/?id=17) for all the types
+that can be stored in a Variant.  If the variant does not contain the type you
+are requesting the result of the call is `nil`.
 
 
 ## Common Usage Patterns
