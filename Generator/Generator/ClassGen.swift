@@ -204,7 +204,7 @@ func generateVirtualProxy (_ p: Printer,
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
 let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
-    "GArray": ["append"],
+    "GArray": ["append", "resize"],
     "PackedByteArray": ["append", "push_back"],
     "PackedColorArray": ["append", "push_back"],
     "PackedFloat32Array": ["append", "push_back"],
@@ -239,7 +239,14 @@ let omittedMethodsList: [String: Set<String>] = [
 
 // Dictionary used to explicitly tell the generator to replace the first argument label with "_ "
 let omittedFirstArgLabelList: [String: Set<String>] = [
-    "GArray": ["append"]
+    "GArray": ["append"],
+    "PackedColorArray": ["append"],
+    "PackedFloat64Array": ["append"],
+    "PackedInt64Array": ["append"],
+    "PackedStringArray": ["append"],
+    "PackedVector2Array": ["append"],
+    "PackedVector3Array": ["append"],
+
 ]
 
 /// Determines if the first argument name should be replaced with an underscore.
