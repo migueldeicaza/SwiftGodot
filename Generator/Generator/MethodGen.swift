@@ -89,14 +89,29 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     var registerVirtualMethodName: String? = nil
     
     //let loc = "\(cdef.name).\(method.name)"
-    if (method.arguments ?? []).contains(where: { $0.type.contains("*")}) {
-        //print ("TODO: do not currently have support for C pointer types \(loc)")
-        return nil
+    if let arguments = method.arguments, arguments.contains(where: { $0.type.contains("*")}) {
+        var fault = false
+        for arg in arguments {
+            if arg.type.contains ("*") {
+                switch arg.type {
+                case "const void*":
+                    break
+                case "AudioFrame*":
+                    break
+                default:
+                    if !fault {
+                        fault = true
+                        //print ("TODO: do not currently have support for C pointer types \(cdef?.name ?? "").\(method.name):")
+                    }
+                    //print ("     \(arg.name): \(arg.type)")
+                    break
+                }
+            }
+        }
+        if fault {
+            return nil
+        }
     }
-//    if method.returnValue?.type.firstIndex(of: "*") != nil {
-//        //print ("TODO: do not currently support C pointer returns \(loc)")
-//        return nil
-//    }
     let bindName = "method_\(method.name)"
     var visibility: String
     var allEliminate: String
