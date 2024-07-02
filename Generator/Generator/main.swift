@@ -12,7 +12,6 @@ var args = CommandLine.arguments
 
 let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/SwiftGodot/Sources/ExtensionApi/extension_api.json"
 var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot-DEBUG"
-var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 let generateResettableCache = false 
 
@@ -20,10 +19,9 @@ let generateResettableCache = false
 var singleFile = args.contains("--singlefile")
 
 if args.count < 2 {
-    print ("Usage is: generator path-to-extension-api output-directory doc-directory")
+    print ("Usage is: generator path-to-extension-api output-directory")
     print ("- path-to-extensiona-ppi is the full path to extension_api.json from Godot")
     print ("- output-directory is where the files will be placed")
-    print ("- doc-directory is the Godot documentation resides (godot/doc)")
     print ("Running with Miguel's testing defaults")
 }
 
