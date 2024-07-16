@@ -33,6 +33,12 @@ https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b81
 
 * Learn more: [Swift Godot: Fixing the Multi-million dollar mistake](https://www.youtube.com/watch?v=tzt36EGKEZo)
 
+# Quickly Getting Started
+
+The [SwiftGodotKick](https://github.com/EstevanBR/SwiftGodotKick) project can create a skeleton template
+GDExtension with Swift, as well as a standalone SwiftGodotKit project that can be used to quickly
+iterate on your game on MacOS.
+
 # Consuming SwiftGodot
 
 There are two ways of consuming SwiftGodot, you can either reference
