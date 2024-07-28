@@ -50,7 +50,7 @@ Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS, o
 
 # Development Status
 
-SwiftGodot is built on the GDExtension framework, which is still in an [experimental](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html#differences-between-gdextension-and-c-modules) state and, consequently, SwiftGodot is still in an experimental state. Compatibility may break in order to fix major bugs or include critical features. That being said, much of the Godot API surface has been implemented and SwiftGodot is suitable for use in small to mid size projects.
+SwiftGodot is built on the GDExtension framework, which is still in an [experimental](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html#differences-between-gdextension-and-c-modules) state, and consequently SwiftGodot is still in an experimental state. Compatibility may break in order to fix major bugs or include critical features. That being said, much of the Godot API surface has been implemented and SwiftGodot is suitable for use in small to mid size projects.
 
 # Consuming SwiftGodot
 
