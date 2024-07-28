@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?maxAge=2592000)](https://raw.githubusercontent.com/migueldeicaza/SwiftGodot/main/LICENSE)
 
 SwiftGodot provides Swift language bindings for the Godot 4.2 game
-engine using the new GDExtension system (for 4.1 compatibility, use
+engine using the new [GDExtension](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html) system (for 4.1 compatibility, use
 the 4.1 branch).
 
 SwiftGodot can be used to either build an extension that can be added
