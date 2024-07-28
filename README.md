@@ -230,5 +230,8 @@ is a Node3D subclass.
 
 ## Community
 
-
 Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-2aqygohvb-stSRGEAN~c3awuMwtaqCAA)
+
+## Contributing
+
+Have a bug fix or feature request you'd like to see added? Consider contributing! Join our [community](#community) to get started.
