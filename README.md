@@ -48,6 +48,10 @@ iterate on your game on MacOS.
 
 Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS, or Windows platforms. It may be possible to target additional platforms, but testing for other platforms has not been completed and stability cannot be verified at this time.
 
+# Development Status
+
+SwiftGodot is built on the GDExtension framework, which is still in an [experimental](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html#differences-between-gdextension-and-c-modules) state and, consequently, SwiftGodot is still in an experimental state. Compatibility may break in order to fix major bugs or include critical features. That being said, much of the Godot API surface has been implemented and SwiftGodot is suitable for use in small to mid size projects.
+
 # Consuming SwiftGodot
 
 There are two ways of consuming SwiftGodot, you can either reference
