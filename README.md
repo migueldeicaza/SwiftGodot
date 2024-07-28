@@ -1,5 +1,23 @@
 # SwiftGodot
 
+<p align="center">
+  <a href="https://raw.githubusercontent.com/migueldeicaza/SwiftGodot/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-lightgrey.svg?maxAge=2592000" alt="MIT license">
+  </a>
+  <a href="Platforms">
+    <img src="https://img.shields.io/badge/platforms-iOS%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-333333.svg" alt="Supported Platforms: iOS, Linux, macOS, Windows" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/apple/swift">
+    <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" alt="Swift 5.9 supported">
+  </a>
+  <a href="https://swift.org/package-manager/">
+    <img src="https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square" alt="Swift Package Manager compatible">
+  </a>
+</p>
+
 SwiftGodot provides Swift language bindings for the Godot 4.2 game
 engine using the new GDExtension system (for 4.1 compatibility, use
 the 4.1 branch).
