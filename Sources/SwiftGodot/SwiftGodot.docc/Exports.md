@@ -289,6 +289,14 @@ To surface arrays in Godot, use a strong type for it, for example:
 var myResources: VariantCollection<Resource>
 ```
 
+Alternatively, if you want to surface an array of Godot objects, or even your
+own subclasses of those, use `ObjectCollection<YourCustomType>`, for example:
+
+```
+@Export
+var myNodes: ObjectCollection<MySpinnerCube>
+```
+
 ### Enumeration Values
 
 To surface enumeration values, use the `@Export(.enum)` marker on your variable,
