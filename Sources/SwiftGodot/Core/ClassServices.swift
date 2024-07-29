@@ -196,7 +196,7 @@ public class ClassInfo<T:Object> {
 /// PropInfo structures describe arguments to signals, and methods as well as return values from methods.
 ///
 /// The supported types are those that can be wrapped as a Godot Variant type.
-public struct PropInfo {
+public struct PropInfo: CustomDebugStringConvertible {
     /// The type of the property being defined
     public let propertyType: Variant.GType
     /// The name for the property
@@ -232,6 +232,15 @@ public struct PropInfo {
                 }
             }
         }
+    }
+
+    /// Provides a human-readable description of the property
+    public var debugDescription: String {
+        var hs = hintStr.description
+        if hs != "" {
+            hs = "hintStr: \"" + hs + "\", "
+        }
+        return "PropInfo (propertyType: \(propertyType), name: \"\(propertyName.description)\", className: \"\(className.description)\", hint: [\(hint)], \(hs)usage: \(usage))"
     }
 }
 
