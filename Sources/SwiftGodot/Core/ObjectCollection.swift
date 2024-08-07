@@ -24,9 +24,18 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
     /// In general you should not be modifying this property directly
     public var array: GArray
-    
+
+    // Explanation: we already own this reference, and what we were doing here was
+    // creating a nested array that was taking a reference.
+    //
+    // I should add support to the generator to produce a GArray internal constructor
+    // that can take this existing reference, rather than calling the constructor that
+    // makes the copy.
     init (content: Int64) {
         array = GArray (content: content)
+        var copy = content
+        // Array took a reference, we do not need to take it.
+        GArray.destructor (&copy)
     }
 	
     /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
