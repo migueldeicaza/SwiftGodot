@@ -517,6 +517,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
         if bc.name.hasSuffix ("Array") {
             conformances.append ("Collection")
+            conformances.append ("RandomAccessCollection")
         }
         var proto = ""
         if conformances.count > 0 {
@@ -718,6 +719,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 
                 p ("public func index(after i: Int) -> Int") {
                     p ("i+1")
+                }
+
+                p ("public func index(before i: Int) -> Int") {
+                    p ("return i-1")
                 }
             }
         }
