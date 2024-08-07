@@ -202,18 +202,20 @@ func generateVirtualProxy (_ p: Printer,
 }
 
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
+// Notice that the type is looked up as the original Godot name, not
+// the mapped name (it is "Array", not "GArray"):
 let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
-    "GArray": ["append", "resize"],
+    "Array": ["append", "resize"],
     "PackedByteArray": ["append", "push_back"],
-    "PackedColorArray": ["append", "push_back"],
-    "PackedFloat32Array": ["append", "push_back"],
-    "PackedFloat64Array": ["append", "push_back"],
-    "PackedInt32Array": ["append", "push_back"],
-    "PackedInt64Array": ["append", "push_back"],
-    "PackedStringArray": ["append", "push_back"],
-    "PackedVector2Array": ["append", "push_back"],
-    "PackedVector3Array": ["append", "push_back"],
+    "PackedColorArray": ["append", "push_back", "resize"],
+    "PackedFloat32Array": ["append", "push_back", "resize"],
+    "PackedFloat64Array": ["append", "push_back", "resize"],
+    "PackedInt32Array": ["append", "push_back", "resize"],
+    "PackedInt64Array": ["append", "push_back", "resize"],
+    "PackedStringArray": ["append", "push_back", "resize"],
+    "PackedVector2Array": ["append", "push_back", "resize"],
+    "PackedVector3Array": ["append", "push_back", "resize"],
     "CharacterBody2D": ["move_and_slide"],
     "CharacterBody3D": ["move_and_slide"],
     "RefCounted": ["reference", "unreference"]
