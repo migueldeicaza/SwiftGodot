@@ -224,9 +224,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         self.handle = handle
 #if DEBUG_INSTANCES
         xmap[handle] = "\(Self.godotClassName.description)"
-        if xmap[handle] == "InputEventMouseMotion" {
-            print ("Fuck")
-        }
 #endif
         bindGodotInstance(instance: self, handle: handle)
         let _ = Self.classInitializer
