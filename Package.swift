@@ -122,6 +122,7 @@ targets.append(
 #if os(macOS)
 targets.append(contentsOf: [
     // Godot runtime as a library
+
     .binaryTarget(
         name: "libgodot_tests",
         url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",

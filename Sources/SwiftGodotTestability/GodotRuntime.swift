@@ -77,7 +77,7 @@ private extension GodotRuntime {
             }
         )
 
-        let args = ["SwiftGodotKit", "--headless"]
+        let args = ["SwiftGodotKit", "--headless", "--verbose"]
         withUnsafePtr (strings: args) { ptr in
             godot_main (Int32 (args.count), ptr)
         }

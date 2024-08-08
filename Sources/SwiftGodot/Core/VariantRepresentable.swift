@@ -225,7 +225,7 @@ extension Nil: ContentVariantRepresentable {
 }
 
 extension Object: VariantRepresentable {
-    public typealias VariantContent = UnsafeRawPointer
+    public typealias VariantContent = UnsafeRawPointer?
     public static var godotType: Variant.GType { .object }
-    public var content: UnsafeRawPointer { handle }
+    public var content: UnsafeRawPointer? { handle }
 }

@@ -693,7 +693,18 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             }
         }
         p ("override open class var godotClassName: StringName { \"\(cdef.name)\" }")
-        
+
+        if cdef.name == "RefCounted" {
+            p ("public required init ()") {
+                p ("super.init ()")
+                p ("initRef ()")
+            }
+            p ("public required init(nativeHandle: UnsafeRawPointer)") {
+                p ("super.init (nativeHandle: nativeHandle)")
+                p ("reference()")
+                p ("ownsHandle = true")
+            }
+        }
         var referencedMethods = Set<String>()
         
         if let enums = cdef.enums {
