@@ -92,7 +92,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -246,7 +246,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -301,7 +301,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -373,7 +373,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -457,7 +457,7 @@ class ArrayTest: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("ArrayTest")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<ArrayTest> (name: className)
@@ -550,7 +550,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)

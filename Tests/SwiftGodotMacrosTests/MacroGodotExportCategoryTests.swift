@@ -71,7 +71,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -157,7 +157,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -244,7 +244,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -330,7 +330,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -454,7 +454,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -560,7 +560,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -645,7 +645,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -729,7 +729,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -849,7 +849,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -957,7 +957,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1041,7 +1041,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1125,7 +1125,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1245,7 +1245,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1458,7 +1458,7 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
@@ -1588,7 +1588,7 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
@@ -1664,7 +1664,7 @@ public class Issue353: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)
@@ -1731,7 +1731,7 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
@@ -1805,7 +1805,7 @@ public class Issue353: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)
