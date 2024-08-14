@@ -126,7 +126,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)

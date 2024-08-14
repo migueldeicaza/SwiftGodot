@@ -36,7 +36,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
             
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
@@ -63,7 +63,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
 
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
@@ -99,7 +99,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
             
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
@@ -136,7 +136,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
             
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
@@ -170,7 +170,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
             
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)
@@ -237,7 +237,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("Castro")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<Castro> (name: className)
@@ -290,7 +290,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
 
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("MyData")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<MyData> (name: className)
@@ -320,7 +320,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
 
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("MyClass")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<MyClass> (name: className)
@@ -371,7 +371,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -415,7 +415,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
                 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -462,7 +462,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -506,7 +506,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
                 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("SomeNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -551,7 +551,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
                 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("MultiplierNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<MultiplierNode> (name: className)
@@ -614,7 +614,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
                 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("CallableCollectionsNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
@@ -658,7 +658,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
                 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("MultiplierNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<MultiplierNode> (name: className)
@@ -721,7 +721,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
                 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("CallableCollectionsNode")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
@@ -772,7 +772,7 @@ final class MacroGodotTests: XCTestCase {
                         return _initializeClass
                     }
 
-                    private static var _initializeClass: Void = {
+                    private static let _initializeClass: Void = {
                         let className = StringName("MathHelper")
                         assert(ClassDB.classExists(class: className))
                         let classInfo = ClassInfo<MathHelper> (name: className)
@@ -840,7 +840,7 @@ final class MacroGodotTests: XCTestCase {
                     return _initializeClass
                 }
             
-                private static var _initializeClass: Void = {
+                private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Hi> (name: className)

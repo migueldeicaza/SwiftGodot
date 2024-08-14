@@ -70,7 +70,7 @@ final class MacroGodotExportEnumTests: XCTestCase {
                 return _initializeClass
             }
 
-            private static var _initializeClass: Void = {
+            private static let _initializeClass: Void = {
                 let className = StringName("SomeNode")
                 assert(ClassDB.classExists(class: className))
                 let classInfo = ClassInfo<SomeNode> (name: className)
