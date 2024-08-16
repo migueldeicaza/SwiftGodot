@@ -114,7 +114,7 @@ targets.append(
             dependencies: [
                 "SwiftGodotMacroLibrary",
                 "SwiftGodot",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+                .product(name: "MacroTesting", package: "swift-macro-testing"),
             ]))
 #endif
 
@@ -187,6 +187,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "510.0.1"),
+        .package(url: "https://github.com/pointfreeco/swift-macro-testing.git", from: "0.5.2"),
     ],
     targets: targets
 )

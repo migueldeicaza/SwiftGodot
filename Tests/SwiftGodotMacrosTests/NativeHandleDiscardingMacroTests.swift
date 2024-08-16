@@ -1,59 +1,50 @@
-//
-//  SwiftGodotNativeHandleDiscardingMacroTests.swift
-//  SwiftGodot
-//
-//  Created by Marquis Kurt on 6/9/23.
-//
-
-import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
+import MacroTesting
 import XCTest
-import SwiftGodotMacroLibrary
 
 final class NativeHandleDiscardingMacroTests: XCTestCase {
-    let testMacros: [String: Macro.Type] = [
-        "NativeHandleDiscarding": NativeHandleDiscardingMacro.self
-    ]
+
+    override func invokeTest() {
+        withMacroTesting(macros: allMacros) {
+            super.invokeTest()
+        }
+    }
 
     func testNativeHandleDiscardingMacro() {
-        assertMacroExpansion(
+        assertMacro {
             """
             @NativeHandleDiscarding
             class MyNode: Sprite2D {
                 var collider: CollisionShape2D?
             }
-            """,
-            expandedSource: """
-
+            """
+        } expansion: {
+            """
             class MyNode: Sprite2D {
                 var collider: CollisionShape2D?
 
                 required init(nativeHandle _: UnsafeRawPointer) {fatalError("init(nativeHandle:) has not been implemented")
                 }
             }
-            """,
-            macros: testMacros
-        )
+            """
+        }
     }
 
     func testNativeHandleDiscardingMacroDiagnostics() {
-        assertMacroExpansion(
+        assertMacro {
             """
             @NativeHandleDiscarding
             struct MyNode: Sprite2D {
                 var collider: CollisionShape2D?
             }
-            """,
-            expandedSource: """
-            
+            """
+        } diagnostics: {
+            """
+            @NativeHandleDiscarding
+            ╰─ 🛑 @NativeHandleDiscarding can only be applied to a 'class'
             struct MyNode: Sprite2D {
                 var collider: CollisionShape2D?
             }
-            """,
-            diagnostics: [
-                DiagnosticSpec(message: "@NativeHandleDiscarding can only be applied to a 'class'", line: 1, column: 1)
-            ],
-            macros: testMacros
-        )
+            """
+        }
     }
 }

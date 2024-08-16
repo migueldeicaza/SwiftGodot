@@ -1,22 +1,16 @@
-//
-//  SwiftGodotNamePickerMacroTests.swift
-//  SwiftGodot
-//
-//  Created by Marquis Kurt on 6/9/23.
-//
-
-import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
+import MacroTesting
 import XCTest
-import SwiftGodotMacroLibrary
 
 final class PickerNameProviderMacroTests: XCTestCase {
-    let testMacros: [String: Macro.Type] = [
-        "PickerNameProvider": PickerNameProviderMacro.self
-    ]
-    
+
+    override func invokeTest() {
+        withMacroTesting(macros: allMacros) {
+            super.invokeTest()
+        }
+    }
+
     func testPickerNameProviderMacro() {
-        assertMacroExpansion(
+        assertMacro {
             """
             @PickerNameProvider
             enum Character: Int64 {
@@ -28,9 +22,9 @@ final class PickerNameProviderMacroTests: XCTestCase {
                 case chelsea
                 case sky
             }
-            """,
-            expandedSource: """
-
+            """
+        } expansion: {
+            """
             enum Character: Int64 {
                 case chelsea
                 case sky
@@ -67,27 +61,24 @@ final class PickerNameProviderMacroTests: XCTestCase {
                     }
                 }
             }
-            """,
-            macros: testMacros
-        )
+            """
+        }
     }
 
     func testPickerNameProviderMacroDiagnostics() {
-        assertMacroExpansion(
+        assertMacro {
             """
             @PickerNameProvider
             struct Character {
             }
-            """,
-            expandedSource: """
-
+            """
+        } diagnostics: {
+            """
+            @PickerNameProvider
+            ╰─ 🛑 @PickerNameProvider can only be applied to an 'enum'
             struct Character {
             }
-            """,
-            diagnostics: [
-                DiagnosticSpec(message: "@PickerNameProvider can only be applied to an 'enum'", line: 1, column: 1)
-            ],
-            macros: testMacros
-        )
+            """
+        }
     }
 }

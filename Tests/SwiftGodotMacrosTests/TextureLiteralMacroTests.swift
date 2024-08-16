@@ -1,53 +1,46 @@
-//
-//  TextureLiteralMacroTests.swift
-//  SwiftGodot
-//
-//  Created by Marquis Kurt on 6/11/23.
-//
-
-import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
+import MacroTesting
 import XCTest
-import SwiftGodotMacroLibrary
 
 final class TextureLiteralMacroTests: XCTestCase {
-    let testMacros: [String: Macro.Type] = [
-        "texture2DLiteral": Texture2DLiteralMacro.self
-    ]
+
+    override func invokeTest() {
+        withMacroTesting(macros: allMacros) {
+            super.invokeTest()
+        }
+    }
 
     func testMacroExpansion() {
-        assertMacroExpansion(
+        assertMacro {
             """
             let spriteTexture = #texture2DLiteral("res://assets/icon.png")
-            """,
-            expandedSource: """
+            """
+        } expansion: {
+            """
             let spriteTexture = {
                 guard let texture: Texture2D = GD.load(path: "res://assets/icon.png") else {
-                    GD.pushError("Texture could not be loaded.", "TestModule/test.swift", 1)
+                    GD.pushError("Texture could not be loaded.", "TestModule/Test.swift", 1)
                     preconditionFailure(
                         "Texture could not be loaded.",
-                        file: "TestModule/test.swift",
+                        file: "TestModule/Test.swift",
                         line: 1)
                 }
                 return texture
             }()
-            """,
-            macros: testMacros
-        )
+            """
+        }
     }
 
     func testMacroExpansionFailure() {
-        assertMacroExpansion(
+        assertMacro {
             """
             let spriteTexture = #texture2DLiteral()
-            """,
-            expandedSource: """
-            let spriteTexture = ""
-            """,
-            diagnostics: [
-                .init(message: "Argument 'path' is missing.", line: 1, column: 21)
-            ],
-            macros: testMacros
-        )
+            """
+        } diagnostics: {
+            """
+            let spriteTexture = #texture2DLiteral()
+                                ┬──────────────────
+                                ╰─ 🛑 Argument 'path' is missing.
+            """
+        }
     }
 }
