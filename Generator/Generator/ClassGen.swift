@@ -206,7 +206,7 @@ func generateVirtualProxy (_ p: Printer,
 // the mapped name (it is "Array", not "GArray"):
 let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
-    "Array": ["append", "resize"],
+    "Array": ["resize"],
     "PackedByteArray": ["append", "push_back"],
     "PackedColorArray": ["append", "push_back", "resize"],
     "PackedFloat32Array": ["append", "push_back", "resize"],
@@ -697,7 +697,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         if cdef.name == "RefCounted" {
             p ("public required init ()") {
                 p ("super.init ()")
-                p ("initRef ()")
+                p ("_ = initRef()")
             }
             p ("public required init(nativeHandle: UnsafeRawPointer)") {
                 p ("super.init (nativeHandle: nativeHandle)")

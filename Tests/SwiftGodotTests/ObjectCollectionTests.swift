@@ -38,7 +38,7 @@ final class ObjectCollectionTests: GodotTestCase {
         let sut: ObjectCollection<Node> = [.init()]
         
         let otherNode = Node()
-        let newArray: GArray = [otherNode].reduce(into: GArray(Node.self)) { $0.append(value: Variant($1)) }
+        let newArray: GArray = [otherNode].reduce(into: GArray(Node.self)) { $0.append(Variant($1)) }
 
         sut.array = newArray
         
@@ -53,7 +53,7 @@ final class ObjectCollectionTests: GodotTestCase {
         let sut: ObjectCollection<Node> = []
         
         let node = Node()
-        sut.array.append(value: Variant(node))
+        sut.array.append(Variant(node))
         
         XCTAssertEqual(sut.count, 1, "The collection count should be 1 after a Variant was appended to the \(GArray.self)")
         XCTAssertEqual(sut[0], node, "The first element in the collection should be the appended node")
