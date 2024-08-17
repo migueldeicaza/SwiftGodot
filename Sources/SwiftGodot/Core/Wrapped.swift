@@ -140,7 +140,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
 #endif
                     }
                 } else {
-                    if let node = self as? Node {
+                    if self is Node {
                         // TODO: I seem to recall that Nodes that are added to a scene are managed by the scene
                         // and they are owned by the scene.   I do indeed not get leaks from those.
                         //
@@ -508,7 +508,7 @@ func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: Unsa
 
     let wrapped = Unmanaged<Wrapped>.fromOpaque(binding)
     if reference == 0 {
-        wrapped.retain()
+        _ = wrapped.retain()
     } else {
         wrapped.release()
     }

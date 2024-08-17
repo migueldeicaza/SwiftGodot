@@ -10,7 +10,7 @@ extension PackedStringArray {
     public convenience init (_ values: [String]) {
         self.init ()
         for x in values {
-            append(value: x)
+            append(x)
         }
     }
     

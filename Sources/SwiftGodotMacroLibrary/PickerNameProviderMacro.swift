@@ -49,14 +49,11 @@ public struct PickerNameProviderMacro: ExtensionMacro {
             return []
         }
 
-        guard let inheritors = enumDecl.inheritanceClause?.inheritedTypes else {
+        guard enumDecl.inheritanceClause != nil else {
             let missingInt = Diagnostic(node: declaration.root, message: ProviderDiagnostic.missingInt)
             context.diagnose(missingInt)
             return []
         }
-
-        let types = inheritors.map { $0.type.as(IdentifierTypeSyntax.self) }
-        //let names = types.map { $0?.name.text }
 
         let members = enumDecl.memberBlock.members
         let cases = members.compactMap { $0.decl.as(EnumCaseDeclSyntax.self) }
