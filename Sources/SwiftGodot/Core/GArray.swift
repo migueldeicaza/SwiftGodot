@@ -24,11 +24,12 @@ extension GArray {
     
     public subscript (index: Int) -> Variant {
         get {
+            // array_operator_index returns a copy of the Variant, we own it.
             guard let ret = gi.array_operator_index (&content, Int64 (index)) else {
                 return Variant()
             }
             let ptr = ret.assumingMemoryBound(to: Variant.ContentType.self)
-            return Variant(fromContent: ptr.pointee)
+            return Variant(fromContentNoCopy: ptr.pointee)
         }
         set {
             guard let ret = gi.array_operator_index (&content, Int64 (index)) else {
