@@ -14,9 +14,6 @@ extension ObjectCollection: VariantStorable {
     }
 }
 
-/// Protocol implemented by the built-in classes in Godot to allow to be wrapped in a ``Variant``
-public protocol GodotObject: Wrapped {}
-
 /// This represents a typed array of one of the built-in types from Godot
 public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
 	public typealias ArrayLiteralElement = Element

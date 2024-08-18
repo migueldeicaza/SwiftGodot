@@ -32,7 +32,7 @@ visible and editable in the editor. This way, artists and game designers can
 modify values that later influence how the program runs. For this, a special export syntax is provided.
 
 Exporting can only be applied to ``Variant``-compatible types.  The Godot
-core-structures and classes, as well as objects that subclass ``GodotObject``.
+core-structures and classes, as well as objects that subclass ``SwiftGodot.Object``.
 
 The `@Export` macro only works in your class definition, and will not work
 on Swift class extensions.
