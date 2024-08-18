@@ -42,7 +42,7 @@ GArray:
 
 * ``VariantCollection`` that holds any ``Variant`` instances.
 
-* ``ObjectCollection`` that holds any ``GodotObject`` instances.
+* ``ObjectCollection`` that holds any ``SwiftGodot.Object`` instances.
 
 ## GDScript Helper Functions
 
@@ -183,7 +183,7 @@ let pressed = Input.isActionPressed(ui_down)
 ```
 
 However, in some very rare cases this is not enough. For example, you may want 
-to access a member from the base class GodotObject, like `connect`. For such
+to access a member from the base class SwiftGodot.Object, like `connect`. For such
 use cases we provide a static property named `shared` that returns the singleton
 instance. 
 

@@ -7,7 +7,7 @@ Follow up on the fundamental building block of Godot's data types.
 You will often find the type ``Variant`` in Godot source code.   Variants are
 Godot's way of passing around certain data types.  They are similar to Swift's
 `Any` type, but they can only hold Godot types (most structures and classes
-that derive from ``GodotObject``). 
+that derive from ``SwiftGodot.Object``). 
 
 ## Creating Variant values
 
@@ -171,7 +171,7 @@ type of the variant by accessing the `.gtype` property of the variant.
 ## Extracting Godot-derived objects from Variants
 
 Godot-derived objects are slightly different. If you know you have a
-``GodotObject`` stored in the variant, you can call the ``Variant/asObject(_:)``
+``SwiftGodot.Object`` stored in the variant, you can call the ``Variant/asObject(_:)``
 instead.  This is a generic method, so you would invoke it like this:
 
 ```swift
