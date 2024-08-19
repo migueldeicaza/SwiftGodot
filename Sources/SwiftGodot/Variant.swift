@@ -73,11 +73,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         gi.variant_new_copy (&content, &copy)
     }
 
-    /// Initializes from the raw contents of another Variant, this will not make a copy of the variant contents
-    init (fromContentNoCopy: ContentType) {
-        content = fromContentNoCopy
-    }
-
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
     init (fromContentPtr: inout ContentType) {
         gi.variant_new_copy (&content, &fromContentPtr)
@@ -252,7 +247,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             if valid == 0 || oob != 0 {
                 return nil
             }
-            return Variant(fromContentNoCopy: _result)
+            return Variant(fromContent: _result)
         }
         set {
             guard let newValue else {

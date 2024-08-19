@@ -643,6 +643,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                         p ("\(typeName).constructor1 (&self.content, &args)")
                     }
                 }
+                p ("// Used to construct objects when the underlying built-in's ref count has already been incremented for me")
+                p ("public required init(alreadyOwnedContent content: ContentType)") {
+                    p ("self.content = content")
+                }
             }
            
             func memberDoc (_ name: String) {
