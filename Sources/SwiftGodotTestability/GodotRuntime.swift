@@ -5,6 +5,22 @@
 //  Created by Mikhail Tishin on 22.10.2023.
 //
 
+// Imports for low-level C functions setenv, strdup, free.
+// These #ifs were shamelessly stolen from swift-system's CInterop.swift.
+#if os(Windows)
+import CSystem
+#elseif canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#elseif canImport(WASILibc)
+import WASILibc
+#elseif canImport(Bionic)
+@_implementationOnly import CSystem
+#endif
+
 import libgodot
 @testable import SwiftGodot
 
