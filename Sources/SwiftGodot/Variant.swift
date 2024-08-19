@@ -163,10 +163,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             return nil
         }
         let ret: T? = lookupObject(nativeHandle: value)
-        if let rc = ret as? RefCounted {
-            // When we pull out a refcounted out of a Variant, take a reference
-            rc.reference ()
-        }
         return ret
     }
     
