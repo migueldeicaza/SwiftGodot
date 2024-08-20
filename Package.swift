@@ -120,15 +120,32 @@ targets.append(
 
 // libgodot is only available for macOS
 #if os(macOS)
+
+/// You might want to build your own libgodot, so you can step into it in the debugger when fixing failing tests. Here's how:
+///
+/// 1. Check out the appropriate branch of https://github.com/migueldeicaza/libgodot
+/// 2. Build with `scons platform=macos target=template_debug dev_build=yes library_type=shared_library`. The `target=template_debug` is important, because `target=editor` will get you a `TOOLS_ENABLED` build that breaks some test cases.
+/// 3. Use `scripts/make-libgodot.framework` to build an `xcframework` and put it at the root of your SwiftGodot work tree.
+/// 4. Change `#if true` to `#if false` below.
+///
+#if true
+let libgodot_tests = Target.binaryTarget(
+    name: "libgodot_tests",
+    url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",
+    checksum: "c8ddf62be6c00eacc36bd2dafe8d424c0b374833efe80546f6ee76bd27cee84e"
+)
+#else
+let libgodot_tests = Target .binaryTarget(
+    name: "libgodot_tests",
+    path: "libgodot.xcframework"
+)
+#endif
+
 targets.append(contentsOf: [
     // Godot runtime as a library
 
-    .binaryTarget(
-        name: "libgodot_tests",
-        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",
-        checksum: "c8ddf62be6c00eacc36bd2dafe8d424c0b374833efe80546f6ee76bd27cee84e"
-    ),
-    
+    libgodot_tests,
+
     // Base functionality for Godot runtime dependant tests
     .target(
         name: "SwiftGodotTestability",

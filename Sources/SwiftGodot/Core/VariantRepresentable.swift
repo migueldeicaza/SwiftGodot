@@ -53,14 +53,14 @@ extension SelfVariantRepresentable {
     }
 }
 
-/// Some of Godot's build-in classes use ContentType for storage.
+/// Some of Godot's builtin classes use ContentType for storage.
 /// This needs to be public because it affects their initialization, but
 /// SwiftGodot users should never need to conform their types
 /// to`ContentVariantRepresentable`.
 public protocol ContentVariantRepresentable: VariantRepresentable {
     static var zero: VariantContent { get }
     
-    init (content: VariantContent)
+    init (alreadyOwnedContent: VariantContent)
 }
 
 extension ContentVariantRepresentable {
@@ -69,10 +69,11 @@ extension ContentVariantRepresentable {
         
         var content = Self.zero
         withUnsafeMutablePointer(to: &content) { ptr in
+            // This copies the builtin's content out of the Variant and increments its internal retain count (if it has one).
             variant.toType(Self.godotType, dest: ptr)
         }
         
-        self.init(content: content)
+        self.init(alreadyOwnedContent: content)
     }
 }
 

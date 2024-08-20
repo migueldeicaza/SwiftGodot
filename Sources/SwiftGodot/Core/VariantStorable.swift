@@ -51,7 +51,7 @@ public struct GStringRaw: ContentVariantRepresentable {
     public init () {
         content = GString.zero
     }
-    public init (content: GString.ContentType) {
+    public init (alreadyOwnedContent content: GString.ContentType) {
         self.content = content
     }
     public static var godotType: Variant.GType { .string }
