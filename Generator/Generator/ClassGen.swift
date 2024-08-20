@@ -651,18 +651,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     }
     
     let inherits = cdef.inherits ?? "Wrapped"
-    var conformances: [String] = []
-    if cdef.name == "Object" {
-        conformances.append("GodotObject")
-    }
-    var proto = ""
-    if conformances.count > 0 {
-        proto = ", " + conformances.joined(separator: ", ")
-    } else {
-        proto = ""
-    }
-    
-    let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
+    let typeDecl = "open class \(cdef.name): \(inherits)"
     
     var virtuals: [String: (String, JGodotClassMethod)] = [:]
     if cdef.brief_description == "" {

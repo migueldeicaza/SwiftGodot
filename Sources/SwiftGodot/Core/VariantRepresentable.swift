@@ -32,7 +32,7 @@ extension VariantRepresentable {
 
 extension VariantRepresentable where Self: Object {
     public init? (_ variant: Variant) {
-        GD.printErr ("Attempted to initialize a new `\(Self.self)` with \(variant.description) but it is not possible to initialize a GodotObject in a Swift initializer. Instead, use `\(Self.self).makeOrUnwrap(variant)`.")
+        GD.printErr ("Attempted to initialize a new `\(Self.self)` with \(variant.description) but it is not possible to initialize a SwiftGodot.Object in a Swift initializer. Instead, use `\(Self.self).makeOrUnwrap(variant)`.")
         return nil
     }
 }
