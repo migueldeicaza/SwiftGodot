@@ -40,7 +40,7 @@ final class WrappedTests: GodotTestCase {
         await scene.processFrame.emitted
         checker.assertDisposed ()
     }
-    
+
 }
 
 @Godot
@@ -54,4 +54,29 @@ final class ReferenceChecker {
         XCTAssertTrue (reference == nil, "Object was not disposed", file: file, line: line)
     }
     
+}
+
+@Godot
+private class DuplicateClassTestNode: Node { }
+
+final class DuplicateClassRegistrationTests: GodotTestCase {
+
+    var duplicateClassNames: [StringName] = []
+
+    func testDuplicateClassNameIsDetected() {
+        register(type: DuplicateClassTestNode.self)
+        defer { unregister(type: DuplicateClassTestNode.self) }
+
+        let old = duplicateClassNameDetected
+        defer { duplicateClassNameDetected = old }
+
+        duplicateClassNameDetected = { [weak self] name, type in
+            self?.duplicateClassNames.append(name)
+        }
+
+        register(type: DuplicateClassTestNode.self)
+
+        XCTAssertEqual(duplicateClassNames, ["DuplicateClassTestNode"])
+    }
+
 }
