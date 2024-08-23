@@ -238,9 +238,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     
 func bindGodotInstance(instance: some Wrapped, handle: UnsafeRawPointer) {
     let name = instance.self.godotClassName
-
-    // TODO: what happens if the user subclasses but the name conflicts with the Godot type?
-    // say "class Sprite2D: Godot.Sprite2D"
     let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: instance)))
     let frameworkType = thisTypeName == name
     let retain = frameworkType ? Unmanaged.passUnretained(instance) : Unmanaged.passRetained(instance)
@@ -276,7 +273,25 @@ func bindGodotInstance(instance: some Wrapped, handle: UnsafeRawPointer) {
 
 var userTypes: [String:(UnsafeRawPointer)->Wrapped] = [:]
 
+// @_spi(SwiftGodotTesting) public
+var duplicateClassNameDetected: (_ name: StringName, _ type: Wrapped.Type) -> Void = { name, type in
+    preconditionFailure(
+                """
+                Godot already has a class named \(name), so I cannot register \(type) using that name. This is a fatal error because the only way I can tell whether Godot is handing me a pointer to a class I'm responsible for is by checking the class name.
+                """
+    )
+}
+
 func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
+    var nameContent = name.content
+
+    // The classdb_get_class_tag function is documented to return “a pointer uniquely identifying the given built-in class”. As of Godot 4.2.2, it also returns non-nil for types registered by extensions. If Godot is changed in the future to return nil for extension types, this will simply stop detecting duplicate class names. It won't break valid code.
+
+    let existingClassTag = gi.classdb_get_class_tag(&nameContent)
+    if existingClassTag != nil {
+        duplicateClassNameDetected(name, type)
+    }
+
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
         guard let type  = typeAny as? Wrapped.Type else {
@@ -300,10 +315,8 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
     
-    withUnsafePointer(to: &name.content) { namePtr in
-        withUnsafePointer(to: &parent.content) { parentPtr in
-            gi.classdb_register_extension_class (library, namePtr, parentPtr, &info)
-        }
+    withUnsafePointer(to: &parent.content) { parentPtr in
+        gi.classdb_register_extension_class (library, &nameContent, parentPtr, &info)
     }
 }
 
