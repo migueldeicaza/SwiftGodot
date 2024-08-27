@@ -56,9 +56,9 @@ public struct GodotCallable: PeerMacro {
             } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
                 genMethod.append ("GArray (args [\(argc)])!.compactMap(\(elementType).makeOrUnwrap)")
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(value: \(elementType).makeOrUnwrap($1)!) }")
+                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
             } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(value: \(elementType).makeOrUnwrap($1)!) }")
+                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
             } else {
                 genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
             }
@@ -72,7 +72,7 @@ public struct GodotCallable: PeerMacro {
                 genMethod.append ("\tguard let result else { return nil }\n")
             }
             if funcDecl.returnTypeIsArray, let elementTypeName = funcDecl.arrayElementType {
-                genMethod.append ("\treturn Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(value: Variant($1)) })\n")
+                genMethod.append ("\treturn Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(Variant($1)) })\n")
             } else {
                 genMethod.append ("\treturn Variant (result)\n")
             }
