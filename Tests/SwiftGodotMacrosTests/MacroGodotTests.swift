@@ -405,7 +405,7 @@ final class MacroGodotTests: XCTestCase {
                 
                     func _mproxy_square (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
                     	let result = square (GArray(args[0])!.reduce(into: VariantCollection<Int>()) {
-                    	        $0.append(value: Int.makeOrUnwrap($1)!)
+                    	        $0.append(Int.makeOrUnwrap($1)!)
                     	    })
                     	return Variant (result)
                     }
@@ -496,7 +496,7 @@ final class MacroGodotTests: XCTestCase {
                 
                     func _mproxy_printNames (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
                     	printNames (of: GArray(args[0])!.reduce(into: ObjectCollection<Node>()) {
-                    	        $0.append(value: Node.makeOrUnwrap($1)!)
+                    	        $0.append(Node.makeOrUnwrap($1)!)
                     	    })
                     	return nil
                     }
@@ -595,7 +595,7 @@ final class MacroGodotTests: XCTestCase {
                     func _mproxy_get_ages (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
                     	let result = get_ages ()
                     	return Variant ( result.reduce(into: GArray(Int.self)) {
-                    	        $0.append(value: Variant($1))
+                    	        $0.append(Variant($1))
                     	    })
                     }
                     func get_markers() -> [Marker3D] {
@@ -605,7 +605,7 @@ final class MacroGodotTests: XCTestCase {
                     func _mproxy_get_markers (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
                     	let result = get_markers ()
                     	return Variant ( result.reduce(into: GArray(Marker3D.self)) {
-                    	        $0.append(value: Variant($1))
+                    	        $0.append(Variant($1))
                     	    })
                     }
                 
@@ -702,7 +702,7 @@ final class MacroGodotTests: XCTestCase {
                     func _mproxy_get_ages (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
                     	let result = get_ages ()
                     	return Variant ( result.reduce(into: GArray(Int.self)) {
-                    	        $0.append(value: Variant($1))
+                    	        $0.append(Variant($1))
                     	    })
                     }
                     func get_markers() -> Array<Marker3D> {
@@ -712,7 +712,7 @@ final class MacroGodotTests: XCTestCase {
                     func _mproxy_get_markers (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
                     	let result = get_markers ()
                     	return Variant ( result.reduce(into: GArray(Marker3D.self)) {
-                    	        $0.append(value: Variant($1))
+                    	        $0.append(Variant($1))
                     	    })
                     }
                 
