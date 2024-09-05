@@ -416,7 +416,7 @@ func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer) -> T? {
         } else {
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
-    } 
+    }
     
     return T.init (nativeHandle: nativeHandle)
 }
@@ -539,57 +539,52 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
 }
 
 /// This function is called by Godot to invoke our callable, and contains our context in `userData`,
-/// pointer to Variants, an argument count, and a way of returing an error
-///
-/// We extract the arguments and call  the CallableWrapper.method
-///
-func callableProxy (userData: UnsafeMutableRawPointer?, pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
-    guard let userData else { return }
-    let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(userData)
-    let wrapper = r.takeUnretainedValue()
-    var args: [Variant] = []
-    if let pargs {
-        for i in 0..<argc {
-            let variant = Variant (fromContent: pargs [Int(i)]!.assumingMemoryBound(to: Variant.ContentType.self).pointee)
-            args.append (variant)
+/// pointer to Variants, an argument count, and a way of returing an error.
+/// We extract the arguments and call  the CallableWrapper.invoke.
+func invokeWrappedCallable(wrapperPtr: UnsafeMutableRawPointer?, pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
+    guard let wrapperPtr else { return }
+    
+    withArguments(pargs: pargs, argc: argc) { arguments in
+        wrapperPtr
+            .assumingMemoryBound(to: CallableWrapper.self)
+            .pointee
+            .invoke(arguments: arguments, retPtr: retPtr, err: err)
+    }
+}
+
+func freeCallableWrapper(wrapperPtr: UnsafeMutableRawPointer?) {
+    guard let wrapperPtr = wrapperPtr?.assumingMemoryBound(to: CallableWrapper.self) else { return }
+    wrapperPtr.deinitialize(count: 1)
+    wrapperPtr.deallocate()
+}
+
+struct CallableWrapper {
+    let function: (borrowing Arguments) -> Variant?
+        
+    func invoke(arguments: borrowing Arguments, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
+        if let methodRet = function(arguments) {
+            retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
         }
-    }
-    if let methodRet = wrapper.method (Arguments(from: args)) {
-        retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
-    }
-    err?.pointee.error = GDEXTENSION_CALL_OK
-}
-
-func freeMethodWrapper (ptr: UnsafeMutableRawPointer?) {
-    guard let ptr else { return }
-    let r: Unmanaged<CallableWrapper> = Unmanaged.fromOpaque(ptr)
-    r.release()
-}
-
-class CallableWrapper {
-    var method: (borrowing Arguments)->Variant?
-    init (method: @escaping (borrowing Arguments)->Variant?) {
-        self.method = method
+        err?.pointee.error = GDEXTENSION_CALL_OK
     }
     
-    static func makeCallable (_ method: @escaping (borrowing Arguments)->Variant?) -> Callable.ContentType {
-        let wrapper = CallableWrapper(method: method)
-        let retained = Unmanaged.passRetained(wrapper)
+    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant?) -> Callable.ContentType {
+        let wrapperPtr = UnsafeMutablePointer<Self>.allocate(capacity: 1)
+        wrapperPtr.initialize(to: Self(function: function))
         
         var cci = GDExtensionCallableCustomInfo(
-            callable_userdata: retained.toOpaque(),
+            callable_userdata: wrapperPtr,
             token: token,
             object_id: 0,
-            call_func: callableProxy,
+            call_func: invokeWrappedCallable,
             is_valid_func: nil,
-            free_func: freeMethodWrapper,
+            free_func: freeCallableWrapper,
             hash_func: nil,
             equal_func: nil,
             less_than_func: nil,
             to_string_func: nil)
         var content: Callable.ContentType = Callable.zero
-        gi.callable_custom_create (&content, &cci);
+        gi.callable_custom_create(&content, &cci);
         return content
     }
 }
-
