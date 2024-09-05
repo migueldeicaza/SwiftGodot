@@ -300,8 +300,8 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
             getArgRef(arg: arg)
         }.joined(separator: ", ")
         
-        body += "\(prefix)\(retFromWith)withUnsafePointerToUnsafePointers(\(argsString)) { nPtrs in nPtrs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(args.count)) { args in"
-        withUnsafeCallNestLevel += 2
+        body += "\(prefix)\(retFromWith)withUnsafeArgumentsPointer(\(argsString)) { args in"
+        withUnsafeCallNestLevel += 1
     }
     
     return (body, withUnsafeCallNestLevel)

@@ -86,7 +86,7 @@ final class MarshalTests: GodotTestCase {
         var v13 = 13
         var v14 = 14
         
-        withUnsafePointerToUnsafePointers(&v0, &v1, &v2, &v3, &v4, &v5, &v6) { ptr in
+        withUnsafeArgumentsPointer(&v0, &v1, &v2, &v3, &v4, &v5, &v6) { ptr in
             ptr.withMemoryRebound(to: UnsafePointer<Int>.self, capacity: 7) { reboundPtr in
                 for i in 0..<7 {
                     XCTAssertEqual(reboundPtr[i].pointee, i)
@@ -94,7 +94,7 @@ final class MarshalTests: GodotTestCase {
             }
         }
         
-        withUnsafePointerToUnsafePointers(&v0, &v1, &v2, &v3) { ptr in
+        withUnsafeArgumentsPointer(&v0, &v1, &v2, &v3) { ptr in
             ptr.withMemoryRebound(to: UnsafePointer<Int>.self, capacity: 4) { reboundPtr in
                 for i in 0..<4 {
                     XCTAssertEqual(reboundPtr[i].pointee, i)
@@ -102,7 +102,7 @@ final class MarshalTests: GodotTestCase {
             }
         }
         
-        withUnsafePointerToUnsafePointers(&v0, &v1, &v2, &v3, &v4, &v5, &v6, &v7, &v8, &v9, &v10, &v11, &v12, &v13, &v14) { ptr in
+        withUnsafeArgumentsPointer(&v0, &v1, &v2, &v3, &v4, &v5, &v6, &v7, &v8, &v9, &v10, &v11, &v12, &v13, &v14) { ptr in
             ptr.withMemoryRebound(to: UnsafePointer<Int>.self, capacity: 15) { reboundPtr in
                 for i in 0..<15 {
                     XCTAssertEqual(reboundPtr[i].pointee, i)
