@@ -8,6 +8,15 @@
 import Foundation
 import ExtensionApi
 
+
+#if LEGACY_MARSHALING
+// Legacy marshaling passes a [UnsafeRawPointer?] named args, that requires a &
+let argsRef = "&args"
+#else
+// New marshaling just rebinds the pointer from `UnsafeRawPointersN*` to `UnsafeRawPointer?` and passes it as it is
+let argsRef = "args"
+#endif
+
 /// Given an initializer of the form "Vector (0, 1, 0)" returns a proper Swift "Vector (x: 0, y: 1, z: 0)" value
 ///
 func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
@@ -133,7 +142,7 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            let ptrArgs = (m.arguments != nil) ? "&args" : "nil"
+            let ptrArgs = (m.arguments != nil) ? argsRef : "nil"
             
             // I used to have a nicer model, rather than everything having a
             // handle, I had a named handle, like "_godot_string"
@@ -154,7 +163,7 @@ func generateBuiltinCtors (_ p: Printer,
                 } else if bc.name == "Transform2D" && m.arguments == nil {
                     p ("self.x = Vector2 (x: 1, y: 0)")
                     p ("self.y = Vector2 (x: 0, y: 1)")
-                    p ("self.origin = Vector2 ()")                    
+                    p ("self.origin = Vector2 ()")
                 } else if bc.name == "Basis" && m.arguments == nil {
                     p ("self.x = Vector3 (x: 1, y: 0, z: 0)")
                     p ("self.y = Vector3 (x: 0, y: 1, z: 0)")
@@ -231,7 +240,8 @@ func generateMethodCall (_ p: Printer,
             p.indent += nestLevel
         }
     }
-    let ptrArgs = (isVararg || (arguments?.count ?? 0) > 0) ? "&args" : "nil"
+    
+    let ptrArgs = (isVararg || (arguments?.count ?? 0) > 0) ? argsRef : "nil"
     let ptrResult: String
     if has_return {
         let isStruct = isStructMap [godotReturnType ?? ""] ?? false
@@ -259,8 +269,9 @@ func generateMethodCall (_ p: Printer,
             p ("\(typeName).\(methodToCall) (nil, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
     } else {
         if isStructMap [typeName] ?? false {
-            p ("withUnsafePointer (to: self) { ptr in ")
-            p ("    \(typeName).\(methodToCall) (UnsafeMutableRawPointer (mutating: ptr), \(ptrArgs), \(ptrResult)\(numberOfArgs))")
+            p ("var mutSelfCopy = self")
+            p ("withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in ")
+            p ("    \(typeName).\(methodToCall) (ptr, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
             p ("}")
         } else {
             p ("\(typeName).\(methodToCall) (&content, \(ptrArgs), \(ptrResult)\(numberOfArgs))")

@@ -66,7 +66,7 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
 /// to use nested invocations of withUnsafePointer to generate pointers to multiple arguments, but we can instead generate
 /// a helper version that generates multiple pointer in a single call. For example, if a function that we call using
 /// `gi.object_method_bind_ptrcall()` takes 2 arguments, we can generate the following generic helper:
-/// 
+///
 /// ```
 /// func withUnsafePointers<T1, T2, ReturnType>(
 ///     _ p1: UnsafePointer<T1>, _ p2: UnsafePointer<T2>,
@@ -76,7 +76,7 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
 /// }
 /// ```
 /// This reduces the complexity of the generated code, and can be extended to an arbitrary number of parameters.
-/// 
+///
 
 /// Generates a method definition
 /// - Parameters:
@@ -274,12 +274,44 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     func call_object_method_bind_v(hasArgs: Bool, ptrResult: String) -> String {
         switch kind {
         case .class:
-            let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
-            let argList = hasArgs ? ", \(builder.args.joined(separator: ", "))" : ""
+            let instance = method.isStatic ? "nil" : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle)"
+            let methodName = "\(className).method_\(method.name)"
+            let methodArgs = builder.args.joined(separator: ", ")
+            
             if method.isVararg {
-                return "gi.object_method_bind_call_v (\(className).method_\(method.name), \(instanceHandle)\(ptrResult), nil\(argList))"
+                #if LEGACY_MARSHALING
+                return "gi.object_method_bind_call_v(\([methodName, instance, ptrResult, "nil", methodArgs].joined(separator: ", ")))"
+                #else
+                if hasArgs {
+                    let methodArgsCount = "GDExtensionInt(\(builder.args.count))"
+                    
+                    return """
+                    withUnsafePointerToUnsafePointers(storing: \(methodArgs)) { nPtrs in 
+                        nPtrs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(builder.args.count)) { args in
+                            gi.object_method_bind_call(\([methodName, instance, "args", methodArgsCount, ptrResult, "nil"].joined(separator: ", ")))
+                        }                        
+                    }
+                    """
+                } else {
+                    return "gi.object_method_bind_call(\([methodName, instance, "nil", "0", ptrResult, "nil"].joined(separator: ", ")))"
+                }
+                #endif
             } else {
-                return "gi.object_method_bind_ptrcall_v (\(className).method_\(method.name), \(instanceHandle)\(ptrResult)\(argList))"
+                #if LEGACY_MARSHALING
+                return "gi.object_method_bind_ptrcall_v(\([methodName, instance, ptrResult, methodArgs].joined(separator: ", ")))"
+                #else
+                if hasArgs {
+                    return """
+                    withUnsafePointerToUnsafePointers(storing: \(methodArgs)) { nPtrs in 
+                        nPtrs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(builder.args.count)) { args in
+                            gi.object_method_bind_ptrcall(\([methodName, instance, "args", ptrResult].joined(separator: ", ")))
+                        }                        
+                    }
+                    """
+                } else {
+                    return "gi.object_method_bind_ptrcall(\([methodName, instance, "nil", ptrResult].joined(separator: ", ")))"
+                }
+                #endif
             }
         case .utility:
             let ptrArgs = hasArgs ? "_args" : "nil"
@@ -412,7 +444,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         builder.setup += argSetup
         // Use implicit bridging to build _args array of type [UnsafeMutableRawPointer?]. This preserves the
         // values of the parameters, because they are treated as inout parameters. Then cast to [UnsafeRawPointer?],
-        // because of how GDExtensionInterfaceObjectMethodBindPtrcall is declared: 
+        // because of how GDExtensionInterfaceObjectMethodBindPtrcall is declared:
         // public typealias GDExtensionInterfaceObjectMethodBindPtrcall = @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
         // UnsafePointer<GDExtensionConstTypePtr?>? is equivalent to UnsafePointer<UnsafeRawPointer?>? or [UnsafeRawPointer?].
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"

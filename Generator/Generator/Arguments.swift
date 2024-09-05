@@ -7,6 +7,8 @@
 
 import Foundation
 import ExtensionApi
+import SwiftSyntax
+import SwiftSyntaxBuilder
 
 func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
@@ -230,6 +232,8 @@ func generateCopies (_ args: [JGodotArgument]) -> String {
     return body
 }
 
+#if LEGACY_MARSHALING
+
 func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
     var body = ""
     var withUnsafeCallNestLevel = 0
@@ -258,3 +262,49 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
     }
     return (body, withUnsafeCallNestLevel)
 }
+
+#else
+
+func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
+    var body = ""
+    var withUnsafeCallNestLevel = 0
+    let retFromWith = methodHasReturn ? "return " : ""
+    
+    // TODO: this case should get the same treatment as a second branch.
+    if isVararg {
+        body += generateCopies (args)
+        body += "var args: [UnsafeRawPointer?] = []\n"
+        if isVararg {
+            body += "let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n"
+            body += "defer { cptr.deallocate () }\n\n"
+        }
+        
+        for arg in args {
+            let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
+            let ar = getArgRef(arg: arg)
+            body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    args.append (p\(withUnsafeCallNestLevel))\n"
+            withUnsafeCallNestLevel += 1
+        }
+        if isVararg {
+            body += "for idx in 0..<arguments.count {\n"
+            body += "    cptr [idx] = arguments [idx].content\n"
+            body += "    args.append (cptr.baseAddress! + idx)\n"
+            body += "}\n"
+        }
+    } else if args.count > 0 {
+        body += generateCopies (args)
+        
+        let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
+        
+        let argsString = args.map { arg in
+            getArgRef(arg: arg)
+        }.joined(separator: ", ")
+        
+        body += "\(prefix)\(retFromWith)withUnsafePointerToUnsafePointers(storing: \(argsString)) { nPtrs in nPtrs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(args.count)) { args in"
+        withUnsafeCallNestLevel += 2
+    }
+    
+    return (body, withUnsafeCallNestLevel)
+}
+
+#endif
