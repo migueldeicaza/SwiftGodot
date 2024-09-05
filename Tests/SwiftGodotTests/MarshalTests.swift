@@ -34,6 +34,36 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual (tv.receivedString, "Joey", "Strings should have been the same")
     }
     
+    func testClassesMethodsPerformance() {
+        let tv = TestVariant()
+        let child = TestVariant()
+
+        measure {
+            for _ in 0..<10000000 {
+                tv.addChild(node: child)
+                tv.removeChild(node: child)
+            }
+        }
+    }
+    
+    func testBuiltinsTypesMethodsPerformance() {
+        let makeRandomVector = {
+            Vector3(x: .random(in: -1.0...1.0), y: .random(in: -1.0...1.0), z: .random(in: -1.0...1.0))
+        }
+        
+        let a = makeRandomVector()
+        let b = makeRandomVector()
+        let preA = makeRandomVector()
+        let preB = makeRandomVector()
+        let weight = 0.23
+        
+        measure {
+            for _ in 0..<10000000 {
+                let _ = a.cubicInterpolate(b: b, preA: preA, postB: preB, weight: weight)
+            }
+        }
+    }
+    
     func wrapInt <A: VariantStorable>(_ argument: A) -> Int? {
         Int (.init (argument))
     }
