@@ -69,7 +69,12 @@ var targets: [Target] = [
             .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
         ],
         path: "Generator",
-        exclude: ["README.md"]),
+        exclude: ["README.md"],
+        swiftSettings: [
+            // Uncomment for using legacy array-based marshalling
+            //.define("LEGACY_MARSHALING")
+        ]
+    ),
     
     // This is a build-time plugin that invokes the generator and produces
     // the bindings that are compiled into SwiftGodot
