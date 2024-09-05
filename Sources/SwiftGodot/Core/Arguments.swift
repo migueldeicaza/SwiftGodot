@@ -27,6 +27,7 @@ public struct Arguments: ~Copyable {
             }
         }
         /// User constructed and passed an array, reuse it
+        /// It's also cheap to use in a case with no arguments, Swift array impl will just hold a null pointer inside.
         case array([Variant])
         
         /// Godot passed internally managed buffer, retrieve values lazily
