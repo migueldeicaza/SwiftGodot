@@ -427,7 +427,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         // We can modularize this by creating functions that generate the return type and return
         // statements.
 
-#if os(Windows)
+#if os(Windows) && LEGACY_MARSHALING
         // Workaround for: https://github.com/migueldeicaza/SwiftGodot/issues/299
         builder.setup = "#if false\n\n"
 #else
