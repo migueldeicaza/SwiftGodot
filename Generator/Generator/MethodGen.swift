@@ -286,7 +286,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     let methodArgsCount = "GDExtensionInt(\(builder.args.count))"
                     
                     return """
-                    withUnsafePointerToUnsafePointers(storing: \(methodArgs)) { nPtrs in 
+                    withUnsafePointerToUnsafePointers(\(methodArgs)) { nPtrs in 
                         nPtrs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(builder.args.count)) { args in
                             gi.object_method_bind_call(\([methodName, instance, "args", methodArgsCount, ptrResult, "nil"].joined(separator: ", ")))
                         }                        
@@ -302,7 +302,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 #else
                 if hasArgs {
                     return """
-                    withUnsafePointerToUnsafePointers(storing: \(methodArgs)) { nPtrs in 
+                    withUnsafePointerToUnsafePointers(\(methodArgs)) { nPtrs in 
                         nPtrs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(builder.args.count)) { args in
                             gi.object_method_bind_ptrcall(\([methodName, instance, "args", ptrResult].joined(separator: ", ")))
                         }                        

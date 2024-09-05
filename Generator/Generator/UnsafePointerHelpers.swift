@@ -135,12 +135,9 @@ private func generateWithUnsafePointerToUnsafePointersStoring(argumentsCount cou
                 for i in 0..<count {
                     FunctionParameterSyntax(
                         
-                        firstName: i == 0 ? "storing" : "_",
-                        secondName: "v\(raw: i)",
-                        type: AttributedTypeSyntax(
-                            specifier: TokenSyntax(stringLiteral: "inout"),
-                            baseType: TypeSyntax(stringLiteral: "T\(i)")
-                        )
+                        firstName: "_",
+                        secondName: "p\(raw: i)",
+                        type: TypeSyntax(stringLiteral: "UnsafePointer<T\(i)>")
                     )
                 }
                 
@@ -149,26 +146,24 @@ private func generateWithUnsafePointerToUnsafePointersStoring(argumentsCount cou
             returnClause: ReturnClauseSyntax(type: TypeSyntax(stringLiteral: "R"))
         )
     ) {
-        let vParameters = (0..<count).map { i in
-            "&v\(i)"
-        }.joined(separator: ", ")
-        
-        let pParameters = (0..<count).map { i in
-            "p\(i)"
-        }.joined(separator: ", ")
-        
+//        let vParameters = (0..<count).map { i in
+//            "&v\(i)"
+//        }.joined(separator: ", ")
+//        
+//        let pParameters = (0..<count).map { i in
+//            "p\(i)"
+//        }.joined(separator: ", ")
+//        
         let storageInitParameters = (0..<count).map { i in
             "p\(i): p\(i)"
         }.joined(separator: ", ")
         
         """
-        withUnsafePointers(to: \(raw: vParameters)) { \(raw: pParameters) in
             var storage = UnsafeRawPointersN\(raw: count)(\(raw: storageInitParameters))
         
             return withUnsafePointer(to: &storage) { ptr in
                 body(ptr)
             }
-        }
         """
     }
     
