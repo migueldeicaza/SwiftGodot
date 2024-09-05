@@ -186,7 +186,7 @@ func setupScene (level: GDExtension.InitializationLevel) {
 }
 
 // Set the swift.gdextension's entry_symbol to "swift_entry_point
-@_cdecl ("swift_entry_point")
+@_cdecl("swift_entry_point")
 public func swift_entry_point(
     godotGetProcAddr: OpaquePointer?,
     libraryPtr: OpaquePointer?,

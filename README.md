@@ -151,7 +151,7 @@ func setupScene (level: GDExtension.InitializationLevel) {
 }
 
 // Export our entry point to Godot:
-@_cdecl ("swift_entry_point")
+@_cdecl("swift_entry_point")
 public func swift_entry_point(
     interfacePtr: OpaquePointer?,
     libraryPtr: OpaquePointer?,
