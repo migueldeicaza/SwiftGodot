@@ -59,11 +59,11 @@ public class ClassInfo<T:Object> {
     
     // Here so we can box the function pointer
     class FunctionInfo {
-        var function: (T) -> ([Variant]) -> Variant?
+        var function: (T) -> (borrowing Arguments) -> Variant?
         var retType: Variant.GType?
         var ttype: T.Type
         
-        init (_ function: @escaping (T) -> ([Variant]) -> Variant?, retType: Variant.GType?) {
+        init (_ function: @escaping (T) -> (borrowing Arguments) -> Variant?, retType: Variant.GType?) {
             self.function = function
             self.retType = retType
             self.ttype = T.self
@@ -95,7 +95,7 @@ public class ClassInfo<T:Object> {
     ///     let _ = initClass ()
     ///   }
     ///
-    ///   func checkBaddies (args: [Variant]) -> Variant? {
+    ///   func checkBaddies (args: borrowing Arguments) -> Variant? {
     ///     // We are getting one integer if called from Godot of type Int
     ///     // validate in case you called this directly from Swift
     ///     guard args.count > 0 else {
@@ -117,7 +117,7 @@ public class ClassInfo<T:Object> {
     ///  - returnValue: if nil, this method does not return a value, otherwise, the descritption of the return value as a PropInfo
     ///  - arguments: an array describing the parameters that this method takes
     ///  - function: this is a curried function that will be registered.   It will be invoked on the instance of your object
-    public func registerMethod (name: StringName, flags: MethodFlags, returnValue: PropInfo?, arguments: [PropInfo], function: @escaping (T) -> ([Variant]) -> Variant?) {
+    public func registerMethod (name: StringName, flags: MethodFlags, returnValue: PropInfo?, arguments: [PropInfo], function: @escaping (T) -> (borrowing Arguments) -> Variant?) {
         let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
         defer { argPtr.deallocate() }
         let argMeta = UnsafeMutablePointer<GDExtensionClassMethodArgumentMetadata>.allocate(capacity: arguments.count)
@@ -270,7 +270,7 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
         }
     }
     let bound = finfo.function (target.takeUnretainedValue())
-    let ret = bound (args)
+    let ret = bound (Arguments(from: args))
     if let returnValue, let ret {
         if ret.gtype != finfo.retType {
             print ("Your declared function should return the type originally set \(String(describing: finfo.retType)) and \(ret.gtype)")

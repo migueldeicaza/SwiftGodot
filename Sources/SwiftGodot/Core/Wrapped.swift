@@ -554,7 +554,7 @@ func callableProxy (userData: UnsafeMutableRawPointer?, pargs: UnsafePointer<Uns
             args.append (variant)
         }
     }
-    if let methodRet = wrapper.method (args) {
+    if let methodRet = wrapper.method (Arguments(from: args)) {
         retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
     }
     err?.pointee.error = GDEXTENSION_CALL_OK
@@ -567,12 +567,12 @@ func freeMethodWrapper (ptr: UnsafeMutableRawPointer?) {
 }
 
 class CallableWrapper {
-    var method: ([Variant])->Variant?
-    init (method: @escaping ([Variant])->Variant?) {
+    var method: (borrowing Arguments)->Variant?
+    init (method: @escaping (borrowing Arguments)->Variant?) {
         self.method = method
     }
     
-    static func makeCallable (_ method: @escaping ([Variant])->Variant?) -> Callable.ContentType {
+    static func makeCallable (_ method: @escaping (borrowing Arguments)->Variant?) -> Callable.ContentType {
         let wrapper = CallableWrapper(method: method)
         let retained = Unmanaged.passRetained(wrapper)
         

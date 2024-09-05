@@ -141,7 +141,7 @@ class SwiftSprite2: Sprite2D {
     // This callback style receives the arguments from Godot as an array of Variants, and returns a Variant
     // harder than using the macros above
     var food: String = "none"
-    func demoSetFavoriteFood (args: [Variant]) -> Variant? {
+    func demoSetFavoriteFood (args: borrowing Arguments) -> Variant? {
         guard let arg = args.first else {
             print ("Method registered taking one argument got none")
             return nil
@@ -151,7 +151,7 @@ class SwiftSprite2: Sprite2D {
         return nil
     }
     
-    func demoGetFavoriteFood (args: [Variant]) -> Variant? {
+    func demoGetFavoriteFood (args: borrowing Arguments) -> Variant? {
         return Variant(food)
     }
 
