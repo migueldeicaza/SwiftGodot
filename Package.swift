@@ -65,6 +65,8 @@ var targets: [Target] = [
         name: "Generator",
         dependencies: [
             "ExtensionApi",
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
         ],
         path: "Generator",
         exclude: ["README.md"]),
