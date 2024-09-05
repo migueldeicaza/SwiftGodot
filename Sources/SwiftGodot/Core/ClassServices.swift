@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  ClassServices.swift
+//
 //
 //  Created by Miguel de Icaza on 4/13/23.
 //
@@ -42,7 +42,7 @@ public class ClassInfo<T:Object> {
     ///
     /// Users of your signal can then connect to the signal using the ``Object/connect(signal:callable:flags:)``
     /// method.
-    /// 
+    ///
     /// - Parameters:
     ///  - name: the name we want to use to register the signal
     ///  - arguments: an array of PropInfo structures that describe each argument that must be passed to the signal
@@ -58,7 +58,7 @@ public class ClassInfo<T:Object> {
     }
     
     // Here so we can box the function pointer
-    class FunctionInfo {
+    struct FunctionInfo {
         var function: (T) -> (borrowing Arguments) -> Variant?
         var retType: Variant.GType?
         var ttype: T.Type
@@ -133,13 +133,14 @@ public class ClassInfo<T:Object> {
         if let returnValue {
             retInfo = returnValue.makeNativeStruct()
         }
-        let functionInfo = Unmanaged.passRetained(FunctionInfo (function, retType: returnValue?.propertyType))
+        let userdata = UnsafeMutablePointer<FunctionInfo>.allocate(capacity: 1)
+        userdata.initialize(to: .init(function, retType: returnValue?.propertyType))
         
         withUnsafeMutablePointer(to: &name.content) { namePtr in
             withUnsafeMutablePointer(to: &retInfo) { retInfoPtr in
             var info = GDExtensionClassMethodInfo (
                 name: namePtr,
-                method_userdata: functionInfo.toOpaque(),
+                method_userdata: userdata,
                 call_func: bind_call,
                 ptrcall_func: nil, //ClassInfo.bind_call_ptr,
                 method_flags: UInt32 (flags.rawValue),
@@ -252,25 +253,15 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
                 r_error: UnsafeMutablePointer<GDExtensionCallError>?){
     guard let udata else { return }
     guard let classInstance else { return }
+        
+    let finfo = udata.assumingMemoryBound(to: ClassInfo.FunctionInfo.self).pointee
+    let object = Unmanaged<Object>.fromOpaque(classInstance).takeUnretainedValue()
     
-    let finfoPtr: Unmanaged<ClassInfo.FunctionInfo> = Unmanaged.fromOpaque(udata)
-    let finfo = finfoPtr.takeUnretainedValue()
-    let target : Unmanaged<Object> = Unmanaged.fromOpaque(classInstance)
-    
-    var args: [Variant] = []
-    
-    if let variantArgs {
-        for i in 0..<Int (argc) {
-            guard let va = variantArgs [i] else {
-                args.append (Variant())
-                continue
-            }
-            let ct = va.assumingMemoryBound(to: Variant.ContentType.self)
-            args.append (Variant (fromContent: ct.pointee))
-        }
+    let ret = withArguments(pargs: variantArgs, argc: argc) { arguments in
+        let bound = finfo.function(object)
+        return bound(arguments)
     }
-    let bound = finfo.function (target.takeUnretainedValue())
-    let ret = bound (Arguments(from: args))
+
     if let returnValue, let ret {
         if ret.gtype != finfo.retType {
             print ("Your declared function should return the type originally set \(String(describing: finfo.retType)) and \(ret.gtype)")
