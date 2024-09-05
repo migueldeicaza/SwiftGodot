@@ -38,10 +38,10 @@ private func generateUnsafeRawPointersN(pointerCount count: Int) -> String {
 
 
 /// Generate methods to put the unsafe pointers into the `UnsafeRawPointersN#` to provide a scope to execute logic using the unsafe pointer to that struct, rebound to a
-/// `UnsafeRawPointer`. This approach works on assumption, that the struct has the same layout as a static size array of `const void *` with the same element count..
+/// `UnsafeRawPointer`. This approach works on assumption, that the struct has the same layout as a static size array of `const void *` with the same element count.
 ///
 /// ```swift
-/// func withArgumentsUnsafeRawPointer<T0, T1, T2, R>(_ p0: UnsafePointer<T0>, _ p1: UnsafePointer<T1>, _ p2: UnsafePointer<T2>, _ body: (UnsafePointer<UnsafeRawPointer?>) -> R) -> R {
+/// func withUnsafeArgumentsPointer<T0, T1, T2, R>(_ p0: UnsafePointer<T0>, _ p1: UnsafePointer<T1>, _ p2: UnsafePointer<T2>, _ body: (UnsafePointer<UnsafeRawPointer?>) -> R) -> R {
 ///     var storage = UnsafeRawPointersN3(p0: p0, p1: p1, p2: p2)
 ///
 ///     return withUnsafePointer(to: &storage) { ptr in
