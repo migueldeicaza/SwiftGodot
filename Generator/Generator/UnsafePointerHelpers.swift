@@ -80,15 +80,15 @@ private func generateWithUnsafeArgumentsPointer(argumentsCount count: Int) -> St
         let storageInitParameters = (0..<count).map { i in
             "p\(i): p\(i)"
         }.joined(separator: ", ")
+                
+        "var storage = UnsafeRawPointersN\(raw: count)(\(raw: storageInitParameters))"
         
         """
-            var storage = UnsafeRawPointersN\(raw: count)(\(raw: storageInitParameters))
-        
-            return withUnsafePointer(to: &storage) { ptr in
-                ptr.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(raw: count)) { rawPtr in
-                    body(rawPtr)
-                }                
-            }
+        return withUnsafePointer(to: &storage) { ptr in
+            ptr.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(raw: count)) { rawPtr in
+                body(rawPtr)
+            }                
+        }
         """
     }
     
