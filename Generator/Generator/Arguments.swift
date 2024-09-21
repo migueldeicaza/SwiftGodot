@@ -274,10 +274,8 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
     if isVararg {
         body += generateCopies (args)
         body += "var args: [UnsafeRawPointer?] = []\n"
-        if isVararg {
-            body += "let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n"
-            body += "defer { cptr.deallocate () }\n\n"
-        }
+        body += "let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n"
+        body += "defer { cptr.deallocate () }\n\n"        
         
         for arg in args {
             let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
@@ -285,12 +283,10 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
             body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    args.append (p\(withUnsafeCallNestLevel))\n"
             withUnsafeCallNestLevel += 1
         }
-        if isVararg {
-            body += "for idx in 0..<arguments.count {\n"
-            body += "    cptr [idx] = arguments [idx].content\n"
-            body += "    args.append (cptr.baseAddress! + idx)\n"
-            body += "}\n"
-        }
+        body += "for idx in 0..<arguments.count {\n"
+        body += "    cptr [idx] = arguments [idx].content\n"
+        body += "    args.append (cptr.baseAddress! + idx)\n"
+        body += "}\n"        
     } else if args.count > 0 {
         body += generateCopies (args)
         
