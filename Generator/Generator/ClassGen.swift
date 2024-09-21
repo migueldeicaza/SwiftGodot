@@ -539,7 +539,16 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
             if let _ = classMap [arg.type] {
                 argUnwrap += "var ptr_\(argIdx): UnsafeMutableRawPointer?\n"
                 argUnwrap += "args [\(argIdx)].toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
-                construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(arg.type) (nativeHandle: ptr_\(argIdx)!)"
+                let handleResolver: String
+                if hasSubclasses.contains(cdef.name) {
+                    // If the type we are bubbling up has subclasses, we want to create the most
+                    // derived type if possible, so we perform the longer lookup
+                    handleResolver = "lookupObject (nativeHandle: ptr_\(argIdx)!) ?? "
+                } else {
+                    handleResolver = ""
+                }
+                
+                construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(handleResolver)\(arg.type) (nativeHandle: ptr_\(argIdx)!)"
             } else if arg.type == "String" {
                     construct = "\(mapTypeName(arg.type)) (args [\(argIdx)])!.description"
             } else if arg.type == "Variant" {
