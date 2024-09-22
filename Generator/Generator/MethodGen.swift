@@ -278,36 +278,43 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             let methodName = "\(className).method_\(method.name)"
             let methodArgs = builder.args.joined(separator: ", ")
             
+            // A runtime hook for opt-out from using new marshaling in case some specific method breaks
+            var useLegacyMarshaling = false
+            
+            #if LEGACY_MARSHALING || !canImport(Darwin)
+            useLegacyMarshaling = true
+            #endif
+            
             if method.isVararg {
-                #if LEGACY_MARSHALING || !canImport(Darwin)
-                return "gi.object_method_bind_call_v(\([methodName, instance, ptrResult, "nil", methodArgs].joined(separator: ", ")))"
-                #else
-                if hasArgs {
-                    let methodArgsCount = "GDExtensionInt(\(builder.args.count))"
-                    
-                    return """
-                    withUnsafeArgumentsPointer(\(methodArgs)) { args in 
-                        gi.object_method_bind_call(\([methodName, instance, "args", methodArgsCount, ptrResult, "nil"].joined(separator: ", ")))                        
-                    }
-                    """
+                if useLegacyMarshaling {
+                    return "gi.object_method_bind_call_v(\([methodName, instance, ptrResult, "nil", methodArgs].joined(separator: ", ")))"
                 } else {
-                    return "gi.object_method_bind_call(\([methodName, instance, "nil", "0", ptrResult, "nil"].joined(separator: ", ")))"
+                    if hasArgs {
+                        let methodArgsCount = "GDExtensionInt(\(builder.args.count))"
+                        
+                        return """
+                        withUnsafeArgumentsPointer(\(methodArgs)) { args in 
+                            gi.object_method_bind_call(\([methodName, instance, "args", methodArgsCount, ptrResult, "nil"].joined(separator: ", ")))                        
+                        }
+                        """
+                    } else {
+                        return "gi.object_method_bind_call(\([methodName, instance, "nil", "0", ptrResult, "nil"].joined(separator: ", ")))"
+                    }
                 }
-                #endif
             } else {
-                #if LEGACY_MARSHALING || !canImport(Darwin)
-                return "gi.object_method_bind_ptrcall_v(\([methodName, instance, ptrResult, methodArgs].joined(separator: ", ")))"
-                #else
-                if hasArgs {
-                    return """
-                    withUnsafeArgumentsPointer(\(methodArgs)) { args in
-                        gi.object_method_bind_ptrcall(\([methodName, instance, "args", ptrResult].joined(separator: ", ")))
-                    }
-                    """
+                if useLegacyMarshaling {
+                    return "gi.object_method_bind_ptrcall_v(\([methodName, instance, ptrResult, methodArgs].joined(separator: ", ")))"
                 } else {
-                    return "gi.object_method_bind_ptrcall(\([methodName, instance, "nil", ptrResult].joined(separator: ", ")))"
+                    if hasArgs {
+                        return """
+                        withUnsafeArgumentsPointer(\(methodArgs)) { args in
+                            gi.object_method_bind_ptrcall(\([methodName, instance, "args", ptrResult].joined(separator: ", ")))
+                        }
+                        """
+                    } else {
+                        return "gi.object_method_bind_ptrcall(\([methodName, instance, "nil", ptrResult].joined(separator: ", ")))"
+                    }
                 }
-                #endif
             }
         case .utility:
             let ptrArgs = hasArgs ? "_args" : "nil"

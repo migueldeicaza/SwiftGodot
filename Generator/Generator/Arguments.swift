@@ -232,12 +232,33 @@ func generateCopies (_ args: [JGodotArgument]) -> String {
     return body
 }
 
-#if LEGACY_MARSHALING || !canImport(Darwin)
+/// Wrap arguments before marshaling them to Godot
+///
+/// Returns a tuple of
+/// - `body` - blob with arguments preparation
+/// - `identation` - for caller to add missing braces
+/// - `argsRef` - literal expression to be passed into GDExtensionInterface. Can be `nil` if method takes no args, `args` if arguments are wrapped into stack-resident struct, or `&args` if legacy approach is used and `[UnsafeRawPointer?]` is passed.
+func generateArgPrepare(isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (body: String, indentation: Int, argsRef: String) {
+    // A runtime hook for opt-out from using new marshaling in case some specific method breaks
+    var useLegacyMarshalling = false
+        
+    #if LEGACY_MARSHALING || !canImport(Darwin)
+    useLegacyMarshalling = true
+    #endif
+    
+    if useLegacyMarshalling {
+        return generateArgPrepareLegacy(isVararg: isVararg, args, methodHasReturn: methodHasReturn)
+    } else {
+        return generateArgPrepareNew(isVararg: isVararg, args, methodHasReturn: methodHasReturn)
+    }
+}
 
-func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
+func generateArgPrepareLegacy(isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (body: String, indentation: Int, argsRef: String) {
     var body = ""
     var withUnsafeCallNestLevel = 0
     let retFromWith = methodHasReturn ? "return " : ""
+    
+    let argsRef: String
     
     if isVararg || args.count > 0 {
         body += generateCopies (args)
@@ -259,16 +280,21 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
             body += "    args.append (cptr.baseAddress! + idx)\n"
             body += "}\n"
         }
+        
+        argsRef = "&args"
+    } else {
+        argsRef = "nil"
     }
-    return (body, withUnsafeCallNestLevel)
+    
+    return (body, withUnsafeCallNestLevel, argsRef)
 }
 
-#else
-
-func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
+func generateArgPrepareNew(isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (body: String, indentation: Int, argsRef: String) {
     var body = ""
     var withUnsafeCallNestLevel = 0
     let retFromWith = methodHasReturn ? "return " : ""
+    
+    let argsRef: String
     
     // TODO: this case should get the same treatment as a second branch.
     if isVararg {
@@ -286,7 +312,9 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
         body += "for idx in 0..<arguments.count {\n"
         body += "    cptr [idx] = arguments [idx].content\n"
         body += "    args.append (cptr.baseAddress! + idx)\n"
-        body += "}\n"        
+        body += "}\n"
+        
+        argsRef = "&args"
     } else if args.count > 0 {
         body += generateCopies (args)
         
@@ -298,9 +326,11 @@ func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasRetu
         
         body += "\(prefix)\(retFromWith)withUnsafeArgumentsPointer(\(argsString)) { args in"
         withUnsafeCallNestLevel += 1
+        
+        argsRef = "args"
+    } else {
+        argsRef = "nil"
     }
     
-    return (body, withUnsafeCallNestLevel)
+    return (body, withUnsafeCallNestLevel, argsRef)
 }
-
-#endif
