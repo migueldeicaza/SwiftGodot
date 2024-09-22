@@ -68,14 +68,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     static var zero: ContentType = (0, 0, 0)
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
-    init (fromContent: ContentType) {
-        var copy = fromContent
-        gi.variant_new_copy (&content, &copy)
-    }
-
-    /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
-    init (fromContentPtr: inout ContentType) {
-        gi.variant_new_copy (&content, &fromContentPtr)
+    init(copying otherContent: ContentType) {
+        withUnsafePointer(to: otherContent) { src in
+            gi.variant_new_copy(&content, src)
+        }
     }
 
     deinit {
@@ -105,10 +101,9 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     /// Creates a new Variant based on a copy of the reference variant passed in
     public init (_ other: Variant) {
-        var copy = other.content
         withUnsafeMutablePointer(to: &content) { selfPtr in
-            withUnsafeMutablePointer(to: &copy) { ptr in
-                gi.variant_new_copy (selfPtr, ptr)
+            withUnsafePointer(to: other.content) { ptr in
+                gi.variant_new_copy(selfPtr, ptr)
             }
         }
     }
@@ -234,7 +229,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             return .failure(toCallErrorType(err.error))
         }
         
-        return .success(Variant(fromContent: result))
+        return .success(Variant(copying: result))
     }
     
     /// Errors raised by the variant subscript
@@ -273,7 +268,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             if valid == 0 || oob != 0 {
                 return nil
             }
-            return Variant(fromContent: _result)
+            return Variant(copying: _result)
         }
         set {
             guard let newValue else {

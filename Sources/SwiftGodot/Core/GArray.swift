@@ -28,7 +28,7 @@ extension GArray {
                 return Variant()
             }
             let ptr = ret.assumingMemoryBound(to: Variant.ContentType.self)
-            return Variant(fromContent: ptr.pointee)
+            return Variant(copying: ptr.pointee)
         }
         set {
             guard let ret = gi.array_operator_index (&content, Int64 (index)) else {

@@ -23,7 +23,7 @@ public struct Arguments: ~Copyable {
                     return Variant()
                 }
                 
-                return Variant(fromContent: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
+                return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
             }
         }
         /// User constructed and passed an array, reuse it

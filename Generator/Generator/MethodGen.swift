@@ -357,11 +357,11 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         guard returnType != "" else { return "" }
         if method.isVararg {
             if returnType == "Variant" {
-                return "return Variant (fromContentPtr: &_result)"
+                return "return Variant(copying: _result)"
             } else if returnType == "GodotError" {
-                return "return GodotError (rawValue: Int64 (Variant (fromContentPtr: &_result))!)!"
+                return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {
-                return "return GString (Variant (fromContentPtr: &_result))?.description ?? \"\""
+                return "return GString(Variant(copying: _result))?.description ?? \"\""
             } else {
                 fatalError("Do not support this return type = \(returnType)")
             }

@@ -443,7 +443,7 @@ func generateBuiltinMethods (_ p: Printer,
                 p ("var result = Variant.zero")
                 p ("if Self.keyed_checker (&content, &keyCopy.content) != 0") {
                     p ("Self.keyed_getter (&content, &keyCopy.content, &result)")
-                    p ("return Variant (fromContentPtr: &result)")
+                    p ("return Variant(copying: result)")
                 }
                 p ("else") {
                     p ("return nil")
