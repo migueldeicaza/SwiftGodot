@@ -54,6 +54,7 @@ private func generateUnsafeRawPointersN(pointerCount count: Int) -> String {
 private func generateWithUnsafeArgumentsPointer(argumentsCount count: Int) -> String {
     let funcDecl = FunctionDeclSyntax(
         attributes: "@inline(__always)",
+        funcKeyword: .keyword(.func, leadingTrivia: .newline),
         name: "withUnsafeArgumentsPointer",
         genericParameterClause: GenericParameterClauseSyntax(parameters: GenericParameterListSyntax {
             for i in 0..<count {
@@ -82,10 +83,8 @@ private func generateWithUnsafeArgumentsPointer(argumentsCount count: Int) -> St
             "p\(i): p\(i)"
         }.joined(separator: ", ")
                 
-        "var storage = UnsafeRawPointersN\(raw: count)(\(raw: storageInitParameters))"
-        
         """
-        return withUnsafePointer(to: &storage) { ptr in
+        return withUnsafePointer(to: UnsafeRawPointersN\(raw: count)(\(raw: storageInitParameters))) { ptr in
             ptr.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(raw: count)) { rawPtr in
                 body(rawPtr)
             }                
