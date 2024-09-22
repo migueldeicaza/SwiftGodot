@@ -8,6 +8,18 @@
 import Foundation
 import ExtensionApi
 
+extension String {
+    func indented(by indentation: Int) -> String {
+        let indentationString = String(repeating: "    ", count: indentation)
+        let lines = split(separator: "\n", omittingEmptySubsequences: false)
+        return lines
+            .map {
+                "\(indentationString)\($0)"
+            }
+            .joined(separator: "\n")
+    }
+}
+
 enum MethodGenType {
     case `class`
     case `utility`
@@ -510,8 +522,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 builder.args.append("\(needAddress)\(escapeSwift(argref))\(optstorage)")
             }
         }
-        argSetup += varArgSetupInit
-        argSetup += varArgSetup
+        argSetup += varArgSetupInit.indented(by: withUnsafeCallNestLevel)
+        argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
         builder.call =
         """
         \(call_object_method_bind_v(hasArgs: args != "", ptrResult: getResultPtr()))
@@ -524,8 +536,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             args = "_ arguments: Variant..."
         }
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
-        argSetup += varArgSetupInit
-        argSetup += varArgSetup
+        argSetup += varArgSetupInit.indented(by: withUnsafeCallNestLevel)
+        argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
     }
     
     if inline != "" {
