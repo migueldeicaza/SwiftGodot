@@ -64,6 +64,16 @@ final class MarshalTests: GodotTestCase {
         }
     }
     
+    func testVarargMethodsPerformance() {
+        let randomValues = (0..<10).map { _ in Variant(Float.random(in: -1.0...1.0)) }
+        
+        measure {
+            for _ in 0..<1000000 {
+                let _ = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
+            }
+        }
+    }
+    
     func testUnsafePointersNMemoryLayout() {
         // UnsafeRawPointersN# is keeping `UnsafeRawPointer?` inside, but Swift Compiler is smart enough to confine the optionality of `UnsafeRawPointer` as a property of its payload (being a zero address or not) instead of introducing an extra byte and consequential alignment padding.
         XCTAssertEqual(MemoryLayout<UnsafeRawPointersN9>.size, MemoryLayout<UnsafeRawPointer>.stride * 9, "UnsafeRawPointersN should have the same size as a N of UnsafeRawPointers")
