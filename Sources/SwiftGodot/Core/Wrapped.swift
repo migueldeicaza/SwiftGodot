@@ -568,7 +568,16 @@ struct CallableWrapper {
         err?.pointee.error = GDEXTENSION_CALL_OK
     }
     
-    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant?) -> Callable.ContentType {
+    @available(*, deprecated, message: "Use version taking `@escaping (borrowing Arguments) -> Variant?` instead.")    
+    static func callableVariantContent(wrapping function: @escaping ([Variant]) -> Variant?) -> Callable.ContentType {
+        callableVariantContent { (arguments: borrowing Arguments) in
+            let array = Array(arguments)
+            let result = function(array)
+            return result ?? Variant()
+        }
+    }
+    
+    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant) -> Callable.ContentType {
         let wrapperPtr = UnsafeMutablePointer<Self>.allocate(capacity: 1)
         wrapperPtr.initialize(to: Self(function: function))
         
