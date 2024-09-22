@@ -232,7 +232,7 @@ func generateCopies (_ args: [JGodotArgument]) -> String {
     return body
 }
 
-#if LEGACY_MARSHALING
+#if LEGACY_MARSHALING || !os(macOS)
 
 func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
     var body = ""

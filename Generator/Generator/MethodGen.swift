@@ -279,7 +279,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             let methodArgs = builder.args.joined(separator: ", ")
             
             if method.isVararg {
-                #if LEGACY_MARSHALING
+                #if LEGACY_MARSHALING || !os(macOS)
                 return "gi.object_method_bind_call_v(\([methodName, instance, ptrResult, "nil", methodArgs].joined(separator: ", ")))"
                 #else
                 if hasArgs {
@@ -295,7 +295,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
                 #endif
             } else {
-                #if LEGACY_MARSHALING
+                #if LEGACY_MARSHALING || !os(macOS)
                 return "gi.object_method_bind_ptrcall_v(\([methodName, instance, ptrResult, methodArgs].joined(separator: ", ")))"
                 #else
                 if hasArgs {

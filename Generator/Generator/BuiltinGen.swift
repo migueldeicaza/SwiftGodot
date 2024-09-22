@@ -9,7 +9,7 @@ import Foundation
 import ExtensionApi
 
 
-#if LEGACY_MARSHALING
+#if LEGACY_MARSHALING || !os(macOS)
 // Legacy marshaling passes a [UnsafeRawPointer?] named args, that requires a &
 let argsRef = "&args"
 #else
