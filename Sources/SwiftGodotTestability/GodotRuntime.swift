@@ -5,6 +5,7 @@
 //  Created by Mikhail Tishin on 22.10.2023.
 //
 
+import Foundation
 import libgodot
 @testable import SwiftGodot
 
