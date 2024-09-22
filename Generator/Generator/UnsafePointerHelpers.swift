@@ -53,6 +53,7 @@ private func generateUnsafeRawPointersN(pointerCount count: Int) -> String {
 /// ```
 private func generateWithUnsafeArgumentsPointer(argumentsCount count: Int) -> String {
     let funcDecl = FunctionDeclSyntax(
+        attributes: "@inline(__always)",
         name: "withUnsafeArgumentsPointer",
         genericParameterClause: GenericParameterClauseSyntax(parameters: GenericParameterListSyntax {
             for i in 0..<count {
