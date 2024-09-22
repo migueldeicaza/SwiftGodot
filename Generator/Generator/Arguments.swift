@@ -298,7 +298,7 @@ func generateArgPrepareNew(isVararg: Bool, _ args: [JGodotArgument], methodHasRe
     
     // TODO: this case should get the same treatment as a second branch.
     if isVararg {
-        body += generateCopies (args)
+        body += generateCopies(args)
         body += "var args: [UnsafeRawPointer?] = []\n"
         body += "let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n"
         body += "defer { cptr.deallocate () }\n\n"        
@@ -309,14 +309,14 @@ func generateArgPrepareNew(isVararg: Bool, _ args: [JGodotArgument], methodHasRe
             body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    args.append (p\(withUnsafeCallNestLevel))\n"
             withUnsafeCallNestLevel += 1
         }
-        body += "for idx in 0..<arguments.count {\n"
-        body += "    cptr [idx] = arguments [idx].content\n"
-        body += "    args.append (cptr.baseAddress! + idx)\n"
-        body += "}\n"
+        body += "for idx in 0..<arguments.count {\n".indented(by: withUnsafeCallNestLevel)
+        body += "    cptr [idx] = arguments [idx].content\n".indented(by: withUnsafeCallNestLevel)
+        body += "    args.append (cptr.baseAddress! + idx)\n".indented(by: withUnsafeCallNestLevel)
+        body += "}\n".indented(by: withUnsafeCallNestLevel)
         
         argsRef = "&args"
     } else if args.count > 0 {
-        body += generateCopies (args)
+        body += generateCopies(args)
         
         let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
         
