@@ -10,9 +10,36 @@ import ExtensionApi
 
 var args = CommandLine.arguments
 
-let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/SwiftGodot/Sources/ExtensionApi/extension_api.json"
-var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot-DEBUG"
-var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
+var rootUrl: URL {
+    let url = URL(fileURLWithPath: #file)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent() 
+        .deletingLastPathComponent() 
+    return url
+}
+
+var defaultExtensionApiJsonUrl: URL {
+    return rootUrl
+        .appending(path: "Sources")
+        .appending(path: "ExtensionApi")
+        .appending(path: "extension_api.json")
+}
+
+var defaultGeneratorOutputlUrl: URL {
+    return rootUrl
+        .appending(path: "GeneratedForDebug")
+        .appending(path: "Sources")
+}
+
+var defaultDocRootUrl: URL {
+    return rootUrl
+        .appending(path: "GeneratedForDebug")
+        .appending(path: "Docs")
+}
+
+let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path()
+var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path()
+var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path()
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 let generateResettableCache = false 
 
