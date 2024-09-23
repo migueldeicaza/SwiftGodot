@@ -8,6 +8,17 @@
 import Foundation
 import ExtensionApi
 
+extension URL {
+    /// 🤷 non-Darwin are missing Foundation.URL.path() function for some reason and only have deprecated path
+    var compatPath: String {
+#if canImport(Darwin)
+        path()
+#else
+        path
+#endif
+    }
+}
+
 var args = CommandLine.arguments
 
 var rootUrl: URL {
@@ -37,9 +48,9 @@ var defaultDocRootUrl: URL {
         .appending(path: "Docs")
 }
 
-let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path()
-var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path()
-var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path()
+let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.compatPath
+var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.compatPath
+var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.compatPath
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 let generateResettableCache = false 
 
