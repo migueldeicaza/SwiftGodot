@@ -11,10 +11,10 @@ import ExtensionApi
 var args = CommandLine.arguments
 
 var rootUrl: URL {
-    let url = URL(fileURLWithPath: #file)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent() 
-        .deletingLastPathComponent() 
+    let url = URL(fileURLWithPath: #file) // SwiftGodot/Generator/Generator/main.swift
+        .deletingLastPathComponent() // SwiftGodot/Generator/Generator
+        .deletingLastPathComponent() // SwiftGodot/Generator
+        .deletingLastPathComponent() // SwiftGodot
     return url
 }
 
