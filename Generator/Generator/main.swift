@@ -8,17 +8,6 @@
 import Foundation
 import ExtensionApi
 
-extension URL {
-    /// 🤷 non-Darwin are missing Foundation.URL.path() function for some reason and only have deprecated path
-    var compatPath: String {
-#if canImport(Darwin)
-        path()
-#else
-        path
-#endif
-    }
-}
-
 var args = CommandLine.arguments
 
 var rootUrl: URL {
@@ -31,26 +20,26 @@ var rootUrl: URL {
 
 var defaultExtensionApiJsonUrl: URL {
     rootUrl
-        .appending(path: "Sources")
-        .appending(path: "ExtensionApi")
-        .appending(path: "extension_api.json")
+        .appendingPathComponent("Sources")
+        .appendingPathComponent("ExtensionApi")
+        .appendingPathComponent("extension_api.json")
 }
 
 var defaultGeneratorOutputlUrl: URL {
     rootUrl
-        .appending(path: "GeneratedForDebug")
-        .appending(path: "Sources")
+        .appendingPathComponent("GeneratedForDebug")
+        .appendingPathComponent("Sources")
 }
 
 var defaultDocRootUrl: URL {
     rootUrl
-        .appending(path: "GeneratedForDebug")
-        .appending(path: "Docs")
+        .appendingPathComponent("GeneratedForDebug")
+        .appendingPathComponent("Docs")
 }
 
-let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.compatPath
-var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.compatPath
-var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.compatPath
+let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
+var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
+var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 let generateResettableCache = false 
 
@@ -103,8 +92,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 }
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
-
-print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
 
 // Maps from a the class name to its definition
 var classMap: [String:JGodotExtensionAPIClass] = [:]
