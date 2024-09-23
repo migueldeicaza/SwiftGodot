@@ -19,20 +19,20 @@ var rootUrl: URL {
 }
 
 var defaultExtensionApiJsonUrl: URL {
-    return rootUrl
+    rootUrl
         .appending(path: "Sources")
         .appending(path: "ExtensionApi")
         .appending(path: "extension_api.json")
 }
 
 var defaultGeneratorOutputlUrl: URL {
-    return rootUrl
+    rootUrl
         .appending(path: "GeneratedForDebug")
         .appending(path: "Sources")
 }
 
 var defaultDocRootUrl: URL {
-    return rootUrl
+    rootUrl
         .appending(path: "GeneratedForDebug")
         .appending(path: "Docs")
 }
@@ -47,11 +47,16 @@ let generateResettableCache = false
 var singleFile = args.contains("--singlefile")
 
 if args.count < 2 {
-    print ("Usage is: generator path-to-extension-api output-directory doc-directory")
-    print ("- path-to-extensiona-ppi is the full path to extension_api.json from Godot")
-    print ("- output-directory is where the files will be placed")
-    print ("- doc-directory is the Godot documentation resides (godot/doc)")
-    print ("Running with Miguel's testing defaults")
+    print("""
+    Usage is: generator path-to-extension-api output-directory doc-directory
+    - path-to-extension-api is the full path to extension_api.json from Godot
+    - output-directory is where the files will be placed
+    - doc-directory is the Godot documentation resides (godot/doc)
+    Running with defaults:
+        path-to-extension-api = "\(jsonFile)"
+        output-directory = "\(outputDir)"
+        doc-directory = "\(docRoot)"
+    """)
 }
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
