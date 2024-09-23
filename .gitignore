@@ -18,3 +18,4 @@ build-docs.log
 Package.resolved
 /.vscode
 .swiftpm/xcode/xcshareddata/xcschemes
+GeneratedForDebug/

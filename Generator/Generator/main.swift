@@ -10,9 +10,36 @@ import ExtensionApi
 
 var args = CommandLine.arguments
 
-let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/SwiftGodot/Sources/ExtensionApi/extension_api.json"
-var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot-DEBUG"
-var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
+var rootUrl: URL {
+    let url = URL(fileURLWithPath: #file) // SwiftGodot/Generator/Generator/main.swift
+        .deletingLastPathComponent() // SwiftGodot/Generator/Generator
+        .deletingLastPathComponent() // SwiftGodot/Generator
+        .deletingLastPathComponent() // SwiftGodot
+    return url
+}
+
+var defaultExtensionApiJsonUrl: URL {
+    rootUrl
+        .appendingPathComponent("Sources")
+        .appendingPathComponent("ExtensionApi")
+        .appendingPathComponent("extension_api.json")
+}
+
+var defaultGeneratorOutputlUrl: URL {
+    rootUrl
+        .appendingPathComponent("GeneratedForDebug")
+        .appendingPathComponent("Sources")
+}
+
+var defaultDocRootUrl: URL {
+    rootUrl
+        .appendingPathComponent("GeneratedForDebug")
+        .appendingPathComponent("Docs")
+}
+
+let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
+var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
+var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 let generateResettableCache = false 
 
@@ -20,11 +47,16 @@ let generateResettableCache = false
 var singleFile = args.contains("--singlefile")
 
 if args.count < 2 {
-    print ("Usage is: generator path-to-extension-api output-directory doc-directory")
-    print ("- path-to-extensiona-ppi is the full path to extension_api.json from Godot")
-    print ("- output-directory is where the files will be placed")
-    print ("- doc-directory is the Godot documentation resides (godot/doc)")
-    print ("Running with Miguel's testing defaults")
+    print("""
+    Usage is: generator path-to-extension-api output-directory doc-directory
+    - path-to-extension-api is the full path to extension_api.json from Godot
+    - output-directory is where the files will be placed
+    - doc-directory is the Godot documentation resides (godot/doc)
+    Running with defaults:
+        path-to-extension-api = "\(jsonFile)"
+        output-directory = "\(outputDir)"
+        doc-directory = "\(docRoot)"
+    """)
 }
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
@@ -60,8 +92,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 }
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
-
-print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
 
 // Maps from a the class name to its definition
 var classMap: [String:JGodotExtensionAPIClass] = [:]
