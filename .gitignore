@@ -15,3 +15,6 @@ build-docs.log
 *orig
 \#*
 /libgodot.xcframework/
+Package.resolved
+/.vscode
+.swiftpm/xcode/xcshareddata/xcschemes

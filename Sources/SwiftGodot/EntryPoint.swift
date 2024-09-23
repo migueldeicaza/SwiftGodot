@@ -329,7 +329,7 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
 /// your Swift entry point, which can look like this:
 ///
 /// ```
-/// @cdecl ("swift_entry_point")
+/// @cdecl("swift_entry_point")
 /// public func swift_entry_point (i: OpaquePointer?, l: OpaquePointer?, e: OpaquePointer?) -> UInt8 {
 ///     guard let iface, let lib, let ext else {
 ///         return 0

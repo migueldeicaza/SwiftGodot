@@ -133,8 +133,7 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            let ptrArgs = (m.arguments != nil) ? "&args" : "nil"
-            
+                        
             // I used to have a nicer model, rather than everything having a
             // handle, I had a named handle, like "_godot_string"
             let ptr = isStruct ? "self" : "content"
@@ -154,7 +153,7 @@ func generateBuiltinCtors (_ p: Printer,
                 } else if bc.name == "Transform2D" && m.arguments == nil {
                     p ("self.x = Vector2 (x: 1, y: 0)")
                     p ("self.y = Vector2 (x: 0, y: 1)")
-                    p ("self.origin = Vector2 ()")                    
+                    p ("self.origin = Vector2 ()")
                 } else if bc.name == "Basis" && m.arguments == nil {
                     p ("self.x = Vector3 (x: 1, y: 0, z: 0)")
                     p ("self.y = Vector3 (x: 0, y: 1, z: 0)")
@@ -175,7 +174,7 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            var (argPrepare, nestLevel) = generateArgPrepare(isVararg: false, m.arguments ?? [], methodHasReturn: false)
+            var (argPrepare, nestLevel, argsRef) = generateArgPrepare(isVararg: false, m.arguments ?? [], methodHasReturn: false)
             if argPrepare != "" {
                 p (argPrepare)
                 if nestLevel > 0 {
@@ -184,7 +183,7 @@ func generateBuiltinCtors (_ p: Printer,
             }
             
             // Call
-            p ("\(typeName).\(ptrName) (&\(ptr), \(ptrArgs))")
+            p ("\(typeName).\(ptrName) (&\(ptr), \(argsRef))")
             
             // Unwrap the nested calls to 'withUnsafePointer'
             while nestLevel > 0 {
@@ -224,14 +223,14 @@ func generateMethodCall (_ p: Printer,
         }
     }
     
-    var (argPrep, nestLevel) = generateArgPrepare(isVararg: isVararg, arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
+    var (argPrep, nestLevel, argsRef) = generateArgPrepare(isVararg: isVararg, arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
     if argPrep != "" {
         p (argPrep)
         if nestLevel > 0 {
             p.indent += nestLevel
         }
     }
-    let ptrArgs = (isVararg || (arguments?.count ?? 0) > 0) ? "&args" : "nil"
+        
     let ptrResult: String
     if has_return {
         let isStruct = isStructMap [godotReturnType ?? ""] ?? false
@@ -256,14 +255,15 @@ func generateMethodCall (_ p: Printer,
     let numberOfArgs = kind == .methodCall ? ", \(argCount)" : ""
     
     if isStatic {
-            p ("\(typeName).\(methodToCall) (nil, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
+            p ("\(typeName).\(methodToCall) (nil, \(argsRef), \(ptrResult)\(numberOfArgs))")
     } else {
         if isStructMap [typeName] ?? false {
-            p ("withUnsafePointer (to: self) { ptr in ")
-            p ("    \(typeName).\(methodToCall) (UnsafeMutableRawPointer (mutating: ptr), \(ptrArgs), \(ptrResult)\(numberOfArgs))")
+            p ("var mutSelfCopy = self")
+            p ("withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in ")
+            p ("    \(typeName).\(methodToCall) (ptr, \(argsRef), \(ptrResult)\(numberOfArgs))")
             p ("}")
         } else {
-            p ("\(typeName).\(methodToCall) (&content, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
+            p ("\(typeName).\(methodToCall) (&content, \(argsRef), \(ptrResult)\(numberOfArgs))")
         }
     }
     if has_return {
@@ -443,7 +443,7 @@ func generateBuiltinMethods (_ p: Printer,
                 p ("var result = Variant.zero")
                 p ("if Self.keyed_checker (&content, &keyCopy.content) != 0") {
                     p ("Self.keyed_getter (&content, &keyCopy.content, &result)")
-                    p ("return Variant (fromContentPtr: &result)")
+                    p ("return Variant(copying: result)")
                 }
                 p ("else") {
                     p ("return nil")
@@ -600,9 +600,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
             if bc.name == "Callable" {
                 p ("/// Creates a Callable instance from a Swift function")
+                p ("/// - Parameter callback: the swift function that receives `Arguments`, and returns a `Variant`")
+                p ("public init(_ callback: @escaping (borrowing Arguments) -> Variant)") {
+                    p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
+                }
+                
+                p ("/// Creates a Callable instance from a Swift function")
                 p ("/// - Parameter callback: the swift function that receives an array of Variant arguments, and returns an optional Variant")
+                p("""
+                @available(*, deprecated, message: "Use `init(_ callback: @escaping (borrowing Arguments) -> Variant)` instead.")
+                """)
                 p ("public init (_ callback: @escaping ([Variant])->Variant?)") {
-                    p ("content = CallableWrapper.makeCallable (callback)")
+                    p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
             }
             if bc.hasDestructor {

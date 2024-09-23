@@ -203,31 +203,31 @@ final class MacroGodotTests: XCTestCase {
                 class Castro: Node {
                     func deleteEpisode() {}
 
-                    func _mproxy_deleteEpisode (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_deleteEpisode (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	deleteEpisode ()
                     	return nil
                     }
                     func subscribe(podcast: Podcast) {}
 
-                    func _mproxy_subscribe (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_subscribe (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	subscribe (podcast: Podcast.makeOrUnwrap (args [0])!)
                     	return nil
                     }
                     func removeSilences(from: Variant) {}
 
-                    func _mproxy_removeSilences (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_removeSilences (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	removeSilences (from: args [0])
                     	return nil
                     }
                     func getLatestEpisode(podcast: Podcast) -> Episode {}
 
-                    func _mproxy_getLatestEpisode (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_getLatestEpisode (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = getLatestEpisode (podcast: Podcast.makeOrUnwrap (args [0])!)
                     	return Variant (result)
                     }
                     func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
 
-                    func _mproxy_queue (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_queue (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	queue (Podcast.makeOrUnwrap (args [0])!, after: Podcast.makeOrUnwrap (args [1])!)
                     	return nil
                     }
@@ -298,7 +298,7 @@ final class MacroGodotTests: XCTestCase {
             final class MyClass: Node {
                 var data: MyData = .init()
 
-                func _mproxy_set_data (args: [Variant]) -> Variant? {
+                func _mproxy_set_data (args: borrowing Arguments) -> Variant? {
                     func dynamicCast<T, U>(_ value: T, as type: U.Type) -> U? {
                         value as? U
                     }
@@ -311,7 +311,7 @@ final class MacroGodotTests: XCTestCase {
                 	return nil
                 }
 
-                func _mproxy_get_data (args: [Variant]) -> Variant? {
+                func _mproxy_get_data (args: borrowing Arguments) -> Variant? {
                     return Variant (data)
                 }
 
@@ -361,7 +361,7 @@ final class MacroGodotTests: XCTestCase {
                         return result
                     }
 
-                    func _mproxy_getIntegerCollection (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_getIntegerCollection (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = getIntegerCollection ()
                     	return Variant (result)
                     }
@@ -403,7 +403,7 @@ final class MacroGodotTests: XCTestCase {
                         integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
                     }
                 
-                    func _mproxy_square (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_square (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = square (GArray(args[0])!.reduce(into: VariantCollection<Int>()) {
                     	        $0.append(Int.makeOrUnwrap($1)!)
                     	    })
@@ -452,7 +452,7 @@ final class MacroGodotTests: XCTestCase {
                         return result
                     }
 
-                    func _mproxy_getNodeCollection (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_getNodeCollection (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = getNodeCollection ()
                     	return Variant (result)
                     }
@@ -494,7 +494,7 @@ final class MacroGodotTests: XCTestCase {
                         nodes.forEach { print($0.name) }
                     }
                 
-                    func _mproxy_printNames (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_printNames (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	printNames (of: GArray(args[0])!.reduce(into: ObjectCollection<Node>()) {
                     	        $0.append(Node.makeOrUnwrap($1)!)
                     	    })
@@ -541,7 +541,7 @@ final class MacroGodotTests: XCTestCase {
                         integers.reduce(into: 1) { $0 *= $1 }
                     }
                 
-                    func _mproxy_multiply (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_multiply (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = multiply (GArray (args [0])!.compactMap(Int.makeOrUnwrap))
                     	return Variant (result)
                     }
@@ -592,7 +592,7 @@ final class MacroGodotTests: XCTestCase {
                         [1, 2, 3, 4]
                     }
                 
-                    func _mproxy_get_ages (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_get_ages (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = get_ages ()
                     	return Variant ( result.reduce(into: GArray(Int.self)) {
                     	        $0.append(Variant($1))
@@ -602,7 +602,7 @@ final class MacroGodotTests: XCTestCase {
                         [.init(), .init(), .init()]
                     }
                 
-                    func _mproxy_get_markers (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_get_markers (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = get_markers ()
                     	return Variant ( result.reduce(into: GArray(Marker3D.self)) {
                     	        $0.append(Variant($1))
@@ -648,7 +648,7 @@ final class MacroGodotTests: XCTestCase {
                         integers.reduce(into: 1) { $0 *= $1 }
                     }
                 
-                    func _mproxy_multiply (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_multiply (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = multiply (GArray (args [0])!.compactMap(Int.makeOrUnwrap))
                     	return Variant (result)
                     }
@@ -699,7 +699,7 @@ final class MacroGodotTests: XCTestCase {
                         [1, 2, 3, 4]
                     }
                 
-                    func _mproxy_get_ages (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_get_ages (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = get_ages ()
                     	return Variant ( result.reduce(into: GArray(Int.self)) {
                     	        $0.append(Variant($1))
@@ -709,7 +709,7 @@ final class MacroGodotTests: XCTestCase {
                         [.init(), .init(), .init()]
                     }
                 
-                    func _mproxy_get_markers (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_get_markers (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = get_markers ()
                     	return Variant ( result.reduce(into: GArray(Marker3D.self)) {
                     	        $0.append(Variant($1))
@@ -750,19 +750,19 @@ final class MacroGodotTests: XCTestCase {
                 class MathHelper: Node {
                     func multiply(_ a: Int, by b: Int) -> Int { a * b}
 
-                    func _mproxy_multiply (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_multiply (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = multiply (Int.makeOrUnwrap (args [0])!, by: Int.makeOrUnwrap (args [1])!)
                     	return Variant (result)
                     }
                     func divide(_ a: Float, by b: Float) -> Float { a / b }
 
-                    func _mproxy_divide (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_divide (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = divide (Float.makeOrUnwrap (args [0])!, by: Float.makeOrUnwrap (args [1])!)
                     	return Variant (result)
                     }
                     func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
 
-                    func _mproxy_areBothTrue (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {
+                    func _mproxy_areBothTrue (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     	let result = areBothTrue (Bool.makeOrUnwrap (args [0])!, and: Bool.makeOrUnwrap (args [1])!)
                     	return Variant (result)
                     }
@@ -819,7 +819,7 @@ final class MacroGodotTests: XCTestCase {
             class Hi: Node {
             	var goodName: String = "Supertop"
             
-            	func _mproxy_set_goodName (args: [Variant]) -> Variant? {
+            	func _mproxy_set_goodName (args: borrowing Arguments) -> Variant? {
             		guard let arg = args.first else {
             			return nil
             		}
@@ -831,7 +831,7 @@ final class MacroGodotTests: XCTestCase {
             		return nil
             	}
             
-            	func _mproxy_get_goodName (args: [Variant]) -> Variant? {
+            	func _mproxy_get_goodName (args: borrowing Arguments) -> Variant? {
             	    return Variant (goodName)
             	}
             
