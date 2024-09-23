@@ -73,6 +73,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             gi.variant_new_copy(&content, src)
         }
     }
+    
+    public init(takingOver other: Variant) {
+        content = other.content
+    }
 
     deinit {
         if experimentalDisableVariantUnref { return }
