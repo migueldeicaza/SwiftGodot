@@ -43,7 +43,7 @@ extension VariantStorable {
 
 extension String: VariantStorable {
     public func toVariantRepresentable() -> GString {
-        var r = GString()
+        let r = GString()
         gi.string_new_with_utf8_chars (&r.content, self)
         return r
     }
