@@ -66,8 +66,7 @@ final class MemoryLeakTests: GodotTestCase {
         
         for i in 0...10000000 {
             autoreleasepool {
-                let string = Variant("\(i)")
-                let str = Variant(takingOver: string)
+                let variant = Variant("daosdoasodasoda")                
             }
         }
         
