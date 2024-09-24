@@ -73,6 +73,11 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             gi.variant_new_copy(&content, src)
         }
     }
+    
+    /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
+    init(takingOver other: ContentType) {
+        self.content = other
+    }
 
     deinit {
         if experimentalDisableVariantUnref { return }
@@ -229,7 +234,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             return .failure(toCallErrorType(err.error))
         }
         
-        return .success(Variant(copying: result))
+        return .success(Variant(takingOver: result))
     }
     
     /// Errors raised by the variant subscript
