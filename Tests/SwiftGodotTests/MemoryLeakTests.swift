@@ -64,9 +64,9 @@ final class MemoryLeakTests: GodotTestCase {
     func test_541_leak() {
         let before = Performance.getMonitor(.memoryStatic)
         
-        for i in 0...10000000 {
+        for _ in 0...10000000 {
             autoreleasepool {
-                let variant = Variant("daosdoasodasoda")
+                let _ = Variant("daosdoasodasoda")
             }
         }
         
