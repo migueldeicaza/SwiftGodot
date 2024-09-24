@@ -1,4 +1,4 @@
-@testable import SwiftGodot
+import SwiftGodot
 import SwiftGodotTestability
 import XCTest
 
@@ -66,7 +66,7 @@ final class MemoryLeakTests: GodotTestCase {
         
         for i in 0...10000000 {
             autoreleasepool {
-                let variant = Variant("daosdoasodasoda")                
+                let variant = Variant("daosdoasodasoda")
             }
         }
         
