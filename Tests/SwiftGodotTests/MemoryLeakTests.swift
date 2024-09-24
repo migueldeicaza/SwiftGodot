@@ -59,5 +59,22 @@ final class MemoryLeakTests: GodotTestCase {
 
         XCTAssertEqual(before, after, "Leaked \(Int((after - before) / Double(count))) bytes per iteration.")
     }
+    
+    func test_544_leak() {
+        let string = "Hello, World!"
+        let variant = Variant(string)
 
+        // https://docs.godotengine.org/en/stable/classes/class_string.html#class-string-method-left
+        let methodName = StringName("left")
+
+        let before = Performance.getMonitor(.memoryStatic)
+        
+        for _ in 0 ..< 2000 {
+            let _ = variant.call(method: methodName, Variant(2))
+        }
+        
+        let after = Performance.getMonitor(.memoryStatic)
+
+        XCTAssertEqual(before, after, "Leaked \(Int(after - before)) bytes")
+    }
 }
