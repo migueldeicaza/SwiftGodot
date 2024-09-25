@@ -287,6 +287,35 @@ let skipOperators: [String:[(String,String)]] = [
     "StringName": [("==", "StringName")]
 ]
 
+struct OperatorSignature: Hashable, ExpressibleByStringLiteral {
+    let name: String
+    let lhs: String
+    let rhs: String
+    
+    init(name: String, lhs: String, rhs: String) {
+        self.name = name
+        self.lhs = lhs
+        self.rhs = rhs
+    }
+    
+    init(stringLiteral value: StringLiteralType) {
+        let components = value.split(separator: " ")
+        
+        precondition(components.count == 3)
+        
+        lhs = String(components[0])
+        name = String(components[1])
+        rhs = String(components[2])
+    }
+}
+
+let customSimdOperatorImplementations: Set<OperatorSignature> = [
+//    "Vector3 * Vector3",
+//    "Vector3 / Vector3",
+//    "Vector3 + Vector3",
+//    "Vector3 - Vector3",
+]
+
 /// - Parameters:
 ///   - operators: the array of operators
 ///   - godotTypeName: the type for which we are generating operators
@@ -321,10 +350,22 @@ func generateBuiltinOperators (_ p: Printer,
             }
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
+            
+            let lhsTypeName = typeName
+            let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
+            
+            // See SIMDImplementations.swift for actual implementations
+            let hasCustomSimdImplementation = customSimdOperatorImplementations.contains(OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName))
+            
+            if hasCustomSimdImplementation {
+                p("#if !canImport(simd)")
+            }
+            
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
             }
-            p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
+            
+            p ("public static func \(swiftOperator) (lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
                 let ptrResult: String
                 if op.returnType == "String" && mapStringToSwift {
                     p ("let result = GString ()")
@@ -352,6 +393,10 @@ func generateBuiltinOperators (_ p: Printer,
                 } else {
                     p ("return result")
                 }
+            }
+            
+            if hasCustomSimdImplementation {
+                p("#endif // canImport(simd)")
             }
         }
     }
