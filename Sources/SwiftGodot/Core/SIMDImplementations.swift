@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 25/09/2024.
 //
 
-#if canImport(simd)
+#if canImport(simd) && USE_SIMD_IMPLEMENTATION
 import simd
 
 // MARK: Conversions
@@ -48,42 +48,64 @@ extension Vector2 {
 
 // MARK: Implementations
 
-//public extension Vector3 {
-//    static func * (lhs: Vector3, rhs: Vector3) -> Vector3 {
-//        let lhs = SIMD3(lhs)
-//        let rhs = SIMD3(rhs)
-//        return Vector3(lhs * rhs)
-//    }
-//    
-//    static func / (lhs: Vector3, rhs: Vector3) -> Vector3 {
-//        let lhs = SIMD3(lhs)
-//        let rhs = SIMD3(rhs)
-//        return Vector3(lhs / rhs)
-//    }
-//    
-//    static func + (lhs: Vector3, rhs: Vector3) -> Vector3 {
-//        let lhs = SIMD3(lhs)
-//        let rhs = SIMD3(rhs)
-//        return Vector3(lhs + rhs)
-//    }
-//    
-//    static func - (lhs: Vector3, rhs: Vector3) -> Vector3 {
-//        let lhs = SIMD3(lhs)
-//        let rhs = SIMD3(rhs)
-//        return Vector3(lhs - rhs)
-//    }
-//    
-//    static func * (lhs: Vector3, rhs: Float) -> Vector3 {
-//        return Vector3(SIMD3(lhs) * rhs)
-//    }
-//    
-//    static func * (lhs: Float, rhs: Vector3) -> Vector3 {
-//        return Vector3(lhs * SIMD3(rhs))
-//    }
-//    
-//    static func / (lhs: Vector3, rhs: Float) -> Vector3 {
-//        return Vector3(SIMD3(lhs) / rhs)
-//    }
-//}
+public extension Vector3 {
+    @inline(__always)
+    static func * (lhs: Vector3, rhs: Vector3) -> Vector3 {
+        let lhs = SIMD3(lhs)
+        let rhs = SIMD3(rhs)
+        return Vector3(lhs * rhs)
+    }
+    
+    @inline(__always)
+    static func / (lhs: Vector3, rhs: Vector3) -> Vector3 {
+        let lhs = SIMD3(lhs)
+        let rhs = SIMD3(rhs)
+        return Vector3(lhs / rhs)
+    }
+    
+    @inline(__always)
+    static func + (lhs: Vector3, rhs: Vector3) -> Vector3 {
+        let lhs = SIMD3(lhs)
+        let rhs = SIMD3(rhs)
+        return Vector3(lhs + rhs)
+    }
+    
+    @inline(__always)
+    static func - (lhs: Vector3, rhs: Vector3) -> Vector3 {
+        let lhs = SIMD3(lhs)
+        let rhs = SIMD3(rhs)
+        return Vector3(lhs - rhs)
+    }
+    
+    @inline(__always)
+    static func * (lhs: Vector3, rhs: Float) -> Vector3 {
+        return Vector3(SIMD3(lhs) * rhs)
+    }
+        
+    @inline(__always)
+    static func * (lhs: Vector3, rhs: Double) -> Vector3 {
+        return lhs * Float(rhs)
+    }
+    
+    @inline(__always)
+    static func * (lhs: Float, rhs: Vector3) -> Vector3 {
+        return Vector3(lhs * SIMD3(rhs))
+    }
+        
+    @inline(__always)
+    static func * (lhs: Double, rhs: Vector3) -> Vector3 {
+        return Float(lhs) * rhs
+    }
+    
+    @inline(__always)
+    static func / (lhs: Vector3, rhs: Float) -> Vector3 {
+        return Vector3(SIMD3(lhs) / rhs)
+    }
+    
+    @inline(__always)
+    static func / (lhs: Vector3, rhs: Double) -> Vector3 {
+        return lhs / Float(rhs)
+    }
+}
 
 #endif

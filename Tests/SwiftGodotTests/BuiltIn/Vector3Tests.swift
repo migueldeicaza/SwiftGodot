@@ -45,7 +45,7 @@ final class Vector3Tests: GodotTestCase {
         let b = Vector3 (x: 4, y: 5, z: 6)
         
         measure {
-            for _ in 0..<10000000 {
+            for i in 0..<1000000 {
                 _ = a + b
             }
         }

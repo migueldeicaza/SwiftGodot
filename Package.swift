@@ -188,7 +188,8 @@ targets.append(contentsOf: [
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
         //linkerSettings: linkerSettings,
-        plugins: swiftGodotPlugins),
+        plugins: swiftGodotPlugins
+    ),
     
     // General purpose cross-platform tests
     .testTarget(

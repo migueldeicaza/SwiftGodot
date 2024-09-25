@@ -309,13 +309,6 @@ struct OperatorSignature: Hashable, ExpressibleByStringLiteral {
     }
 }
 
-let customSimdOperatorImplementations: Set<OperatorSignature> = [
-//    "Vector3 * Vector3",
-//    "Vector3 / Vector3",
-//    "Vector3 + Vector3",
-//    "Vector3 - Vector3",
-]
-
 /// - Parameters:
 ///   - operators: the array of operators
 ///   - godotTypeName: the type for which we are generating operators
@@ -358,7 +351,7 @@ func generateBuiltinOperators (_ p: Printer,
             let hasCustomSimdImplementation = customSimdOperatorImplementations.contains(OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName))
             
             if hasCustomSimdImplementation {
-                p("#if !canImport(simd)")
+                p("#if !canImport(simd) || !USE_SIMD_IMPLEMENTATION")
             }
             
             if let desc = op.description, desc != "" {
@@ -396,7 +389,7 @@ func generateBuiltinOperators (_ p: Printer,
             }
             
             if hasCustomSimdImplementation {
-                p("#endif // canImport(simd)")
+                p("#endif // !canImport(simd) || !USE_SIMD_IMPLEMENTATION")
             }
         }
     }
@@ -814,3 +807,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
     }
 }
+
+let customSimdOperatorImplementations: Set<OperatorSignature> = [
+    "Vector3 * Vector3",
+    "Vector3 / Vector3",
+    "Vector3 + Vector3",
+    "Vector3 - Vector3",
+    "Vector3 * Float",
+    "Vector3 * Double",
+    "Float * Vector3",
+    "Double * Vector3",
+    "Vector3 / Float",
+    "Vector3 / Double",
+]
