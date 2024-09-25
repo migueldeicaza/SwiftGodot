@@ -59,7 +59,23 @@ final class MemoryLeakTests: GodotTestCase {
 
         XCTAssertEqual(before, after, "Leaked \(Int((after - before) / Double(count))) bytes per iteration.")
     }
-    
+  
+    // https://github.com/migueldeicaza/SwiftGodot/issues/541
+    func test_541_leak() {
+        let before = Performance.getMonitor(.memoryStatic)
+        
+        for _ in 0...10000000 {
+            autoreleasepool {
+                let _ = Variant("daosdoasodasoda")
+            }
+        }
+        
+        let after = Performance.getMonitor(.memoryStatic)
+        
+        XCTAssertEqual(before, after, "Leaked \(Int(after - before))")
+    }
+  
+    // https://github.com/migueldeicaza/SwiftGodot/issues/544
     func test_544_leak() {
         let string = "Hello, World!"
         let variant = Variant(string)
