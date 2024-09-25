@@ -388,7 +388,7 @@ func generateBuiltinOperators (_ p: Printer,
             }
             
             if hasCustomImplementation {
-                p("#endif // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                p("#endif // !CUSTOM_BUILTIN_IMPLEMENTATIONS")
             }
         }
     }

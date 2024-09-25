@@ -51,4 +51,4 @@ public extension Vector3 {
     }
 }
 
-#endif
+#endif // CUSTOM_BUILTIN_IMPLEMENTATIONS
