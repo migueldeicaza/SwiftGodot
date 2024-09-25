@@ -38,17 +38,5 @@ final class Vector3Tests: GodotTestCase {
         XCTAssertTrue (value.x.isNaN)
         XCTAssertTrue (value.y.isNaN)
         XCTAssertTrue (value.z.isNaN)
-    }
-    
-    func testPerformance() {
-        let a = Vector3 (x: 1, y: 2, z: 3)
-        let b = Vector3 (x: 4, y: 5, z: 6)
-        
-        measure {
-            for i in 0..<1000000 {
-                _ = a + b
-            }
-        }
-    }
-    
+    }        
 }

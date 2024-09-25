@@ -188,6 +188,9 @@ targets.append(contentsOf: [
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
         //linkerSettings: linkerSettings,
+        swiftSettings: [
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS")
+        ],
         plugins: swiftGodotPlugins
     ),
     

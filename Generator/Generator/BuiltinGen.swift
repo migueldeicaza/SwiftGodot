@@ -346,12 +346,11 @@ func generateBuiltinOperators (_ p: Printer,
             
             let lhsTypeName = typeName
             let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
+                        
+            let hasCustomImplementation = customBuiltinOperatorImplementations.contains(OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName))
             
-            // See SIMDImplementations.swift for actual implementations
-            let hasCustomSimdImplementation = customSimdOperatorImplementations.contains(OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName))
-            
-            if hasCustomSimdImplementation {
-                p("#if !canImport(simd) || !USE_SIMD_IMPLEMENTATION")
+            if hasCustomImplementation {
+                p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
             }
             
             if let desc = op.description, desc != "" {
@@ -388,8 +387,8 @@ func generateBuiltinOperators (_ p: Printer,
                 }
             }
             
-            if hasCustomSimdImplementation {
-                p("#endif // !canImport(simd) || !USE_SIMD_IMPLEMENTATION")
+            if hasCustomImplementation {
+                p("#endif // CUSTOM_BUILTIN_IMPLEMENTATIONS")
             }
         }
     }
@@ -808,7 +807,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     }
 }
 
-let customSimdOperatorImplementations: Set<OperatorSignature> = [
+let customBuiltinOperatorImplementations: Set<OperatorSignature> = [
     "Vector3 * Vector3",
     "Vector3 / Vector3",
     "Vector3 + Vector3",
