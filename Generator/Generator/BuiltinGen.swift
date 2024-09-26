@@ -886,16 +886,16 @@ private let customBuiltinMethodImplementations: [MethodSignature: String] = [
     
     "Vector3.length": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L476-L481
-    return sqrt(x * x + y * y + z * z)    
+    return Double(sqrt(x * x + y * y + z * z))    
     """,
     
     "Vector3.length_squared": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L484-L489
-    return x * x + y * y + z * z
+    return Double(x * x + y * y + z * z)
     """,
     
     "Vector3.distance": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L292-L295
-    return (to - self).length()
+    return Double((to - self).length())
     """,
 ]
