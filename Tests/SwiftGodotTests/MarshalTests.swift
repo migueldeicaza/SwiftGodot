@@ -39,7 +39,7 @@ final class MarshalTests: GodotTestCase {
         let child = TestVariant()
 
         measure {
-            for _ in 0..<10000000 {
+            for _ in 0..<1_000_000 {
                 tv.addChild(node: child)
                 tv.removeChild(node: child)
             }
@@ -58,7 +58,7 @@ final class MarshalTests: GodotTestCase {
         let weight = 0.23
         
         measure {
-            for _ in 0..<10000000 {
+            for _ in 0..<1_000_000 {
                 let _ = a.cubicInterpolate(b: b, preA: preA, postB: preB, weight: weight)
             }
         }
@@ -68,7 +68,7 @@ final class MarshalTests: GodotTestCase {
         let randomValues = (0..<10).map { _ in Variant(Float.random(in: -1.0...1.0)) }
         
         measure {
-            for _ in 0..<1000000 {
+            for _ in 0..<100_000 {
                 let _ = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
             }
         }

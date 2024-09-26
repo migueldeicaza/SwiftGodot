@@ -3,6 +3,13 @@ import SwiftGodotTestability
 import XCTest
 
 final class MemoryLeakTests: GodotTestCase {
+    func checkLeaks(_ body: () -> Void) {
+        let before = Performance.getMonitor(.memoryStatic)
+        body()
+        let after = Performance.getMonitor(.memoryStatic)
+        
+        XCTAssertEqual(before, after, "Leaked \(after - before) bytes")
+    }
 
     // https://github.com/migueldeicaza/SwiftGodot/issues/513
     func test_513_leak1() {
@@ -18,17 +25,12 @@ final class MemoryLeakTests: GodotTestCase {
 
         // Warm-up the code path in case it performs any one-time permanent allocations.
         oneIteration(object: object)
-
-        let before = Performance.getMonitor(.memoryStatic)
-        let count = 1_000
-
-        for _ in 0 ..< count {
-            oneIteration(object: object)
+        
+        checkLeaks {
+            for _ in 0 ..< 1_000 {
+                oneIteration(object: object)
+            }
         }
-
-        let after = Performance.getMonitor(.memoryStatic)
-
-        XCTAssertEqual(before, after, "Leaked \(Int((after - before) / Double(count))) bytes per iteration.")
     }
 
     // https://github.com/migueldeicaza/SwiftGodot/issues/513
@@ -48,31 +50,20 @@ final class MemoryLeakTests: GodotTestCase {
         // Warm-up the code path in case it performs any one-time permanent allocations.
         oneIteration(bytes: bytes)
 
-        let before = Performance.getMonitor(.memoryStatic)
-        let count = 1_000
-
-        for _ in 0 ..< count {
-            oneIteration(bytes: bytes)
+        checkLeaks {
+            for _ in 0 ..< 1_000 {
+                oneIteration(bytes: bytes)
+            }
         }
-
-        let after = Performance.getMonitor(.memoryStatic)
-
-        XCTAssertEqual(before, after, "Leaked \(Int((after - before) / Double(count))) bytes per iteration.")
     }
   
     // https://github.com/migueldeicaza/SwiftGodot/issues/541
     func test_541_leak() {
-        let before = Performance.getMonitor(.memoryStatic)
-        
-        for _ in 0...10000000 {
-            autoreleasepool {
+        checkLeaks {
+            for _ in 0...10_000_000 {
                 let _ = Variant("daosdoasodasoda")
             }
         }
-        
-        let after = Performance.getMonitor(.memoryStatic)
-        
-        XCTAssertEqual(before, after, "Leaked \(Int(after - before))")
     }
   
     // https://github.com/migueldeicaza/SwiftGodot/issues/544
@@ -83,14 +74,49 @@ final class MemoryLeakTests: GodotTestCase {
         // https://docs.godotengine.org/en/stable/classes/class_string.html#class-string-method-left
         let methodName = StringName("left")
 
-        let before = Performance.getMonitor(.memoryStatic)
+        checkLeaks {
+            for _ in 0 ..< 2_000 {
+                let _ = variant.call(method: methodName, Variant(2))
+            }
+        }
+    }
+    
+    // https://github.com/migueldeicaza/SwiftGodot/issues/543
+    func test_543_leak() {
+        let string = "Hello, World!"
+        let variant = Variant(string)
+
+        checkLeaks {
+            for _ in 0 ..< 2000 {
+                _ = variant[0]
+            }
+        }
+    }
+    
+    func test_array_leaks() {
+        let array = GArray()
+        array.append(Variant("S"))
+        array.append(Variant("M"))
         
-        for _ in 0 ..< 2000 {
-            let _ = variant.call(method: methodName, Variant(2))
+        checkLeaks {
+            for _ in 0 ..< 1_000 {
+                array[0] = Variant("T")
+                _ = array[1]
+            }
         }
         
-        let after = Performance.getMonitor(.memoryStatic)
-
-        XCTAssertEqual(before, after, "Leaked \(Int(after - before)) bytes")
+        XCTAssertEqual(array[0], Variant("T"))
+        
+        let variant = Variant(array)
+        
+        checkLeaks {
+            for _ in 0 ..< 1_000 {
+                variant[0] = Variant("U")
+                _ = variant[1]
+                variant[1] = Variant("K")
+            }
+        }
+        
+        XCTAssertEqual(variant[0], Variant("U"))
     }
 }
