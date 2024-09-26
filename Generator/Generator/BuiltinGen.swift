@@ -878,9 +878,9 @@ private let customBuiltinMethodImplementations: [MethodSignature: String] = [
     "Vector3.cross": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L197-L204
     return Vector3(
-        x: (y * p_with.z) - (z * with.y),
-        y: (z * p_with.x) - (x * with.z),
-        z: (x * p_with.y) - (y * with.x)
+        x: (y * with.z) - (z * with.y),
+        y: (z * with.x) - (x * with.z),
+        z: (x * with.y) - (y * with.x)
     )
     """,
     
