@@ -841,7 +841,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     }
 }
 
+// MARK: - Custom operators impl
 private let customBuiltinOperatorImplementations: [OperatorSignature: String] = [
+    // MARK: Vector3
     "Vector3 * Vector3": """
     return Vector3(x: lhs.x * rhs.x, y: lhs.y * rhs.y, z: lhs.z * rhs.z)
     """,
@@ -869,7 +871,9 @@ private let customBuiltinOperatorImplementations: [OperatorSignature: String] = 
     """,
 ]
 
+// MARK: - Custom methods impl
 private let customBuiltinMethodImplementations: [MethodSignature: String] = [
+    // MARK: Vector3
     "Vector3.dot": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L206-L208
     return Double(x * with.x + y * with.y + z * with.z)        
