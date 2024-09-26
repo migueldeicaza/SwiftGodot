@@ -3,12 +3,25 @@ import SwiftGodotTestability
 import XCTest
 
 final class MemoryLeakTests: GodotTestCase {
-    func checkLeaks(_ body: () -> Void) {
+    /// Check that `body` doesn't leak. Or ensure that something is leaking, if `useUnoReverseCard` is true
+    func checkLeaks(useUnoReverseCard: Bool = false, _ body: () -> Void) {
         let before = Performance.getMonitor(.memoryStatic)
         body()
         let after = Performance.getMonitor(.memoryStatic)
         
-        XCTAssertEqual(before, after, "Leaked \(after - before) bytes")
+        if useUnoReverseCard {
+            XCTAssertNotEqual(before, after, "It should leak!")
+        } else {
+            XCTAssertEqual(before, after, "Leaked \(after - before) bytes")
+        }
+    }
+    
+    func testThatItLeaksIndeed() {
+        let array = GArray()
+        
+        checkLeaks(useUnoReverseCard: true) {
+            array.append(Variant(10))
+        }
     }
 
     // https://github.com/migueldeicaza/SwiftGodot/issues/513
@@ -99,6 +112,8 @@ final class MemoryLeakTests: GodotTestCase {
         array.append(Variant("M"))
         
         checkLeaks {
+            XCTAssertEqual(array[0], Variant("S"))
+            
             for _ in 0 ..< 1_000 {
                 array[0] = Variant("T")
                 _ = array[1]
@@ -110,11 +125,14 @@ final class MemoryLeakTests: GodotTestCase {
         let variant = Variant(array)
         
         checkLeaks {
+            XCTAssertEqual(variant[0], Variant("T"))
+            
             for _ in 0 ..< 1_000 {
                 variant[0] = Variant("U")
-                _ = variant[1]
                 variant[1] = Variant("K")
             }
+            
+            XCTAssertEqual(variant[2], Variant("U"))
         }
         
         XCTAssertEqual(variant[0], Variant("U"))
