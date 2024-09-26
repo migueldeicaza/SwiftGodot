@@ -38,6 +38,5 @@ final class Vector3Tests: GodotTestCase {
         XCTAssertTrue (value.x.isNaN)
         XCTAssertTrue (value.y.isNaN)
         XCTAssertTrue (value.z.isNaN)
-    }
-    
+    }        
 }

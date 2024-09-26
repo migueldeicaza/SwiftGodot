@@ -287,6 +287,46 @@ let skipOperators: [String:[(String,String)]] = [
     "StringName": [("==", "StringName")]
 ]
 
+private struct OperatorSignature: Hashable, ExpressibleByStringLiteral {
+    let name: String
+    let lhs: String
+    let rhs: String
+    
+    init(name: String, lhs: String, rhs: String) {
+        self.name = name
+        self.lhs = lhs
+        self.rhs = rhs
+    }
+    
+    init(stringLiteral value: StringLiteralType) {
+        let components = value.split(separator: " ")
+        
+        precondition(components.count == 3)
+        
+        lhs = String(components[0])
+        name = String(components[1])
+        rhs = String(components[2])
+    }
+}
+
+private struct MethodSignature: Hashable, ExpressibleByStringLiteral {
+    let typeName: String
+    let methodName: String
+    
+    init(typeName: String, methodName: String) {
+        self.typeName = typeName
+        self.methodName = methodName
+    }
+    
+    init(stringLiteral value: StringLiteralType) {
+        let components = value.split(separator: ".")
+        
+        precondition(components.count == 2)
+        typeName = String(components[0])
+        methodName = String(components[1])
+    }
+}
+
 /// - Parameters:
 ///   - operators: the array of operators
 ///   - godotTypeName: the type for which we are generating operators
@@ -321,10 +361,21 @@ func generateBuiltinOperators (_ p: Printer,
             }
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
+            
+            let lhsTypeName = typeName
+            let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
+                        
+            let customImplementation = customBuiltinOperatorImplementations[OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName)]
+            
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
             }
-            p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
+            
+            p ("public static func \(swiftOperator) (lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
+                if customImplementation != nil {
+                    p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                }
+                
                 let ptrResult: String
                 if op.returnType == "String" && mapStringToSwift {
                     p ("let result = GString ()")
@@ -351,6 +402,12 @@ func generateBuiltinOperators (_ p: Printer,
                     p ("return result.description")
                 } else {
                     p ("return result")
+                }
+                
+                if let customImplementation {
+                    p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                    p(customImplementation)
+                    p("#endif")
                 }
             }
         }
@@ -422,8 +479,22 @@ func generateBuiltinMethods (_ p: Printer,
         } else {
             keyword = ""
         }
-        p ("public\(keyword) func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
+        
+        let methodName = escapeSwift(snakeToCamel(m.name))
+        let customImplementation = customBuiltinMethodImplementations[MethodSignature(typeName: bc.name, methodName: methodName)]
+        
+        p ("public\(keyword) func \(methodName)(\(args))\(retSig)") {
+            if customImplementation != nil {
+                p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
+            }
+            
             generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments, kind: .methodCall)
+            
+            if let customImplementation {
+                p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                p(customImplementation)
+                p("#endif")
+            }
         }
     }
     if bc.isKeyed {
@@ -769,3 +840,66 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
     }
 }
+
+// MARK: - Custom operators impl
+private let customBuiltinOperatorImplementations: [OperatorSignature: String] = [
+    // MARK: Vector3
+    "Vector3 * Vector3": """
+    return Vector3(x: lhs.x * rhs.x, y: lhs.y * rhs.y, z: lhs.z * rhs.z)
+    """,
+    
+    "Vector3 / Vector3": """
+    return Vector3(x: lhs.x / rhs.x, y: lhs.y / rhs.y, z: lhs.z / rhs.z)
+    """,
+    
+    "Vector3 + Vector3": """
+    return Vector3(x: lhs.x + rhs.x, y: lhs.y + rhs.y, z: lhs.z + rhs.z)
+    """,
+    
+    "Vector3 - Vector3": """
+    return Vector3(x: lhs.x - rhs.x, y: lhs.y - rhs.y, z: lhs.z - rhs.z)
+    """,
+        
+    "Vector3 * Double": """
+    let rhs = Float(rhs)
+    return Vector3(x: lhs.x * rhs, y: lhs.y * rhs, z: lhs.z * rhs)
+    """,
+    
+    "Vector3 / Double": """
+    let rhs = Float(rhs)
+    return Vector3(x: lhs.x / rhs, y: lhs.y / rhs, z: lhs.z / rhs)
+    """,
+]
+
+// MARK: - Custom methods impl
+private let customBuiltinMethodImplementations: [MethodSignature: String] = [
+    // MARK: Vector3
+    "Vector3.dot": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L206-L208
+    return Double(x * with.x + y * with.y + z * with.z)        
+    """,
+    
+    "Vector3.cross": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L197-L204
+    return Vector3(
+        x: (y * with.z) - (z * with.y),
+        y: (z * with.x) - (x * with.z),
+        z: (x * with.y) - (y * with.x)
+    )
+    """,
+    
+    "Vector3.length": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L476-L481
+    return Double(sqrt(x * x + y * y + z * z))    
+    """,
+    
+    "Vector3.lengthSquared": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L484-L489
+    return Double(x * x + y * y + z * z)
+    """,
+    
+    "Vector3.distance": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L292-L295
+    return Double((to - self).length())
+    """,
+]
