@@ -381,7 +381,8 @@ class GodotEncoder: Encoder {
 
 
 final class EncodingTests: GodotTestCase {
-    func testEncoding() {
+    // https://github.com/migueldeicaza/SwiftGodot/issues/531
+    func test_531_crash() {
         let g = GodotEncoder()
         let foon = FooN(myInt: 9, myText: "nine", myFoo: [
             Foo(myInt: 10, myText: "Nested1", myIntArray: [1,1,1]),
