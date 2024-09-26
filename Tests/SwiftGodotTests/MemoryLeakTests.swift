@@ -132,7 +132,7 @@ final class MemoryLeakTests: GodotTestCase {
                 variant[1] = Variant("K")
             }
             
-            XCTAssertEqual(variant[2], Variant("U"))
+            XCTAssertEqual(variant[1], Variant("K"))
         }
         
         XCTAssertEqual(variant[0], Variant("U"))

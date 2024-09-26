@@ -388,6 +388,6 @@ final class EncodingTests: GodotTestCase {
             Foo(myInt: 30, myText: "Nested2", myIntArray: [2,2,2])])
         try? foon.encode (to:g)
         
-        print(g.data)
+        print(g.data.description)
     }
 }
