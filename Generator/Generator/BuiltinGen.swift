@@ -893,7 +893,7 @@ private let customBuiltinMethodImplementations: [MethodSignature: String] = [
     return Double(sqrt(x * x + y * y + z * z))    
     """,
     
-    "Vector3.length_squared": """
+    "Vector3.lengthSquared": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L484-L489
     return Double(x * x + y * y + z * z)
     """,
