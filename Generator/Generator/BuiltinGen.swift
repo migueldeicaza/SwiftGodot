@@ -508,28 +508,30 @@ func generateBuiltinMethods (_ p: Printer,
         p.staticVar (visibility: "private ", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
-        p ("public subscript (key: Variant) -> Variant?") {
-            p ("get") {
-                p ("let keyCopy = key")
-                p ("var result = Variant.zero")
-                p ("if Self.keyed_checker (&content, &keyCopy.content) != 0") {
-                    p ("Self.keyed_getter (&content, &keyCopy.content, &result)")
-                    p ("return Variant(copying: result)")
-                }
-                p ("else") {
-                    p ("return nil")
+        p("""
+        public subscript(key: Variant) -> Variant? {
+            get {
+                var result = Variant.zero
+                if Self.keyed_checker(&content, &key.content) != 0 {
+                    Self.keyed_getter (&content, &key.content, &result)
+                    // Returns unowned handle
+                    return Variant(takingOver: result)
+                } else {
+                    return nil
                 }
             }
-            p ("set") {
-                p ("let keyCopy = key")
-                p ("if let newCopy = newValue") {
-                    p ("Self.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
-                }
-                p ("else") {
-                    p ("Self.keyed_setter (&content, &keyCopy.content, nil)")
-                }
+        
+            set {                
+                if let newValue {
+                    Self.keyed_setter(&content, &key.content, &newValue.content)
+                } else {                    
+                    var nilContent = Variant.zero
+                    // nil will cause a crash, needs a pointer to Nil Variant content instead
+                    Self.keyed_setter(&content, &key.content, &nilContent)
+                }                
             }
         }
+        """)        
     }
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))

@@ -273,7 +273,8 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             if valid == 0 || oob != 0 {
                 return nil
             }
-            return Variant(copying: _result)
+                        
+            return Variant(takingOver: _result)
         }
         set {
             guard let newValue else {
