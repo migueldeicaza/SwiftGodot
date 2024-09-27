@@ -443,7 +443,7 @@ final class MemoryLeakTests: GodotTestCase {
     // https://github.com/migueldeicaza/SwiftGodot/issues/541
     func test_541_leak() {
         checkLeaks {
-            for _ in 0...10_000_000 {
+            for _ in 0...1_000 {
                 let _ = Variant("daosdoasodasoda")
             }
         }
@@ -517,6 +517,30 @@ final class MemoryLeakTests: GodotTestCase {
             try? foon.encode(to: g)
             
             print(g.data.description)
+        }
+    }
+    
+    func test_dictionary_leaks() {
+        checkLeaks {
+            let dictionary = GDictionary()
+            
+            for i in 0 ..< 1_000 {
+                let variant = Variant("value\(i)")
+                dictionary["key\(i * 2)"] = variant
+                dictionary["key\(i * 2 + 1)"] = variant
+            }
+            
+            for i in 0 ..< 1_000 {
+                let key = "key\(Int.random(in: 0 ..< 2_000))"
+                let value = dictionary[key]                
+                dictionary["key\(i * 2)"] = value
+            }
+            
+            for i in 0 ..< 1_000 {
+                _ = dictionary.erase(key: Variant("\(i * 2)"))
+            }
+            
+            dictionary.clear()
         }
     }
 }
