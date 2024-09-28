@@ -733,16 +733,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 // hardcoding the constructor1 here, it should
                 // really produce this when it matches the kind
                 // directly to be the one that takes the same
-                // parameter
-                p ("// Used to construct objects on virtual proxies")
-                p ("public required init (content: ContentType)") {
-                    p ("var copy = content")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &copy)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("\(typeName).constructor1 (&self.content, &args)")
+                // parameter                
+                p("""
+                // Used to construct objects on virtual proxies
+                public required init(content proxyContent: ContentType) {
+                    withUnsafePointer(to: proxyContent) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            \(typeName).constructor1(&content, pArgs)
+                        }
                     }
                 }
+                """)
+                
                 p ("// Used to construct objects when the underlying built-in's ref count has already been incremented for me")
                 p ("public required init(alreadyOwnedContent content: ContentType)") {
                     p ("self.content = content")
