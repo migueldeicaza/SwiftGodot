@@ -231,7 +231,11 @@ func methodGenNew(_ p: Printer, method: MethodDefinition, className: String, cde
                 fatalError ("If the returnType is not empty, we should have a godotReturnType")
             }
             if method.isVararg {
-                return "var _result: Variant.ContentType = Variant.zero"
+                if godotReturnType == "String" {
+                    return "let _result = GString()"
+                } else {
+                    return "var _result: Variant.ContentType = Variant.zero"
+                }
             } else if godotReturnType.starts(with: "typedarray::") {
                 let (storage, initialize) = getBuiltinStorage ("Array")
                 return "var _result: \(storage)\(initialize)"
@@ -270,7 +274,11 @@ func methodGenNew(_ p: Printer, method: MethodDefinition, className: String, cde
             guard let godotReturnType else { fatalError("godotReturnType is nil!") }
 
             if method.isVararg {
-                ptrResult = "&_result"
+                if godotReturnType == "String" {
+                    ptrResult = "&_result.content"
+                } else {
+                    ptrResult = "&_result"
+                }
             } else if argTypeNeedsCopy(godotType: godotReturnType) {
                 let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
                 
@@ -379,11 +387,11 @@ func methodGenNew(_ p: Printer, method: MethodDefinition, className: String, cde
         guard returnType != "" else { return "" }
         if method.isVararg {
             if returnType == "Variant" {
-                return "return Variant(copying: _result)"
+                return "return Variant(takingOver: _result)"
             } else if returnType == "GodotError" {
                 return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {
-                return "return GString(Variant(copying: _result))?.description ?? \"\""
+                return "return _result.description"
             } else {
                 fatalError("Do not support this return type = \(returnType)")
             }
@@ -767,7 +775,11 @@ func methodGenLegacy(_ p: Printer, method: MethodDefinition, className: String, 
             guard let godotReturnType else { fatalError("godotReturnType is nil!") }
 
             if method.isVararg {
-                ptrResult = "&_result"
+                if godotReturnType == "String" {
+                    ptrResult = "&_result.content"
+                } else {
+                    ptrResult = "&_result"
+                }
             } else if argTypeNeedsCopy(godotType: godotReturnType) {
                 let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
                 
@@ -848,11 +860,11 @@ func methodGenLegacy(_ p: Printer, method: MethodDefinition, className: String, 
         guard returnType != "" else { return "" }
         if method.isVararg {
             if returnType == "Variant" {
-                return "return Variant(copying: _result)"
+                return "return Variant(takingOver: _result)"
             } else if returnType == "GodotError" {
                 return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {
-                return "return GString(Variant(copying: _result))?.description ?? \"\""
+                return "return _result.description"
             } else {
                 fatalError("Do not support this return type = \(returnType)")
             }

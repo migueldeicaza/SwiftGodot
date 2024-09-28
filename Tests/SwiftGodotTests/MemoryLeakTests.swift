@@ -508,6 +508,95 @@ final class MemoryLeakTests: GodotTestCase {
         XCTAssertEqual(variant[0], Variant("U"))
     }
     
+    func test_emit_signal_leak() {
+        let object = Object()
+        let signal = SignalWithNoArguments("some_random_name")
+        
+        checkLeaks {
+            for _ in 0 ..< 200 {
+                _ = object.emit(signal: signal)
+            }
+        }
+    }
+    
+    func test_gstring_string_variant_leak() {
+        let gstrFoo = GString("Foo")
+        
+        checkLeaks {
+            for _ in 0 ..< 200 {
+                let strFoo = String(gstrFoo)
+                let varFoo = Variant(gstrFoo)
+                let strFoo0 = varFoo.description
+                guard let gstrFoo0 = GString(varFoo) else {
+                    XCTFail()
+                    
+                    return
+                }
+                let strFoo1 = String(gstrFoo0)
+            }
+        }
+        
+        checkLeaks {
+            for _ in 0 ..< 200 {
+                let gstrBar = GString("Bar")
+                
+                let strBar = String(gstrBar)
+                let varBar = Variant(gstrBar)
+                let strBar0 = varBar.description
+                guard let gstrBar0 = GString(varBar) else {
+                    XCTFail()
+                    
+                    return
+                }
+                let strBar1 = String(gstrBar0)
+            }
+        }
+    }
+    
+    // https://github.com/migueldeicaza/SwiftGodot/issues/551
+    func test_551_leak() {
+        checkLeaks {
+            for i in 0 ..< 200 {
+                let str = GD.str(arg1: Variant(i))
+                XCTAssertEqual("\(i)", str)
+            }
+        }
+    }
+    
+    // https://github.com/migueldeicaza/SwiftGodot/issues/552
+    func test_552_leak() {
+        checkLeaks {
+            for _ in 0 ..< 200 {
+                let object = Object()
+                let methodName = StringName("get_method_list")
+                let methodList = object.call(method: methodName)
+            }
+        }
+    }
+    
+    func test_godot_string_description_leak() {
+        checkLeaks {
+            let string = GString("A")
+            for _ in 0 ..< 100 {
+                print(string.description)
+            }
+        }
+    }
+    
+    func test_godot_string_from_variant_leak() {
+        let variant = Variant("A")
+        checkLeaks {
+            for _ in 0 ..< 100 {
+                guard let gstring = GString(variant) else {
+                    XCTFail()
+                    break
+                }
+                
+                print(gstring.description)
+            }
+        }
+    }
+    
     func test_531_crash_or_leak() {
         checkLeaks {
             let g = GodotEncoder()

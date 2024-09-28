@@ -607,33 +607,44 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         
         p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
             if bc.name == "String" {
-                p ("public required init (_ str: String)") {
-                    p ("gi.string_new_with_utf8_chars (&content, str)")
+                p("""
+                public required init(_ string: String) {
+                    gi.string_new_with_utf8_chars(&content, string)
                 }
-                p ("// ExpressibleByStringLiteral conformace")
-                p ("public required init (stringLiteral value: String)") {
-                    p ("gi.string_new_with_utf8_chars (&content, value)")
+                """)
+                
+                p("""
+                // ExpressibleByStringLiteral conformance
+                public required init(stringLiteral value: String) {
+                    gi.string_new_with_utf8_chars(&content, value)
                 }
+                """)
             }
             if bc.name == "NodePath"  {
-                p ("// ExpressibleByStringLiteral conformace")
-                p ("public required init (stringLiteral value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("NodePath.constructor2 (&content, &args)")
+                p("""
+                /// ExpressibleByStringLiteral conformance
+                public required init(stringLiteral value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            NodePath.constructor2(&content, pArgs)
+                        }
                     }
                 }
-                p ("// LosslessStringConvertible conformance)")
-                p ("public required init (_ value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("NodePath.constructor2 (&content, &args)")
+                """)
+                
+                p("""
+                /// LosslessStringConvertible conformance
+                public required init(_ value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            NodePath.constructor2(&content, pArgs)
+                        }
                     }
                 }
+                """)
+                
                 p ("/// Produces a string representation of this NodePath")
                 p ("public var description: String") {
                     p ("let sub = getSubnameCount () > 0 ? getConcatenatedSubnames ().description : \"\"")
@@ -646,30 +657,37 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 // really produce this when it matches the kind
                 // directly to be the one that takes a StringName
                 // parameter
-                p ("public init (fromPtr: UnsafeRawPointer?)") {
-                    p ("var args: [UnsafeRawPointer?] = [")
-                    p ("    fromPtr,")
-                    p ("]")
-                    p ("StringName.constructor1 (&content, &args)")
-                }
-                p ("// ExpressibleByStringLiteral conformace")
-                p ("public required init (stringLiteral value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){
-                        p ("args.append (ptr)")
-                        p ("StringName.constructor2 (&content, &args)")
+                p("""
+                public init(fromPtr ptr: UnsafeRawPointer?) {
+                    withUnsafePointer(to: ptr) { pArgs in
+                        StringName.constructor1(&content, pArgs) 
                     }
                 }
-                p ("// LosslessStringConvertible conformance)")
-                p ("public required init (_ value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){
-                        p ("args.append (ptr)")
-                        p ("StringName.constructor2 (&content, &args)")
+                """)
+                
+                p("""
+                /// ExpressibleByStringLiteral conformace
+                public required init(stringLiteral value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in 
+                        withUnsafePointer(to: pContent) { pArgs in
+                            StringName.constructor2(&content, pArgs)
+                        }
                     }
                 }
+                """)
+                
+                p("""
+                /// LosslessStringConvertible conformance 
+                public required init(_ value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            StringName.constructor2(&content, pArgs)
+                        }
+                    }
+                }
+                """)
             }
             if bc.name == "Callable" {
                 p ("/// Creates a Callable instance from a Swift function")
@@ -715,16 +733,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 // hardcoding the constructor1 here, it should
                 // really produce this when it matches the kind
                 // directly to be the one that takes the same
-                // parameter
-                p ("// Used to construct objects on virtual proxies")
-                p ("public required init (content: ContentType)") {
-                    p ("var copy = content")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &copy)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("\(typeName).constructor1 (&self.content, &args)")
+                // parameter                
+                p("""
+                // Used to construct objects on virtual proxies
+                public required init(content proxyContent: ContentType) {
+                    withUnsafePointer(to: proxyContent) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            \(typeName).constructor1(&content, pArgs)
+                        }
                     }
                 }
+                """)
+                
                 p ("// Used to construct objects when the underlying built-in's ref count has already been incremented for me")
                 p ("public required init(alreadyOwnedContent content: ContentType)") {
                     p ("self.content = content")
