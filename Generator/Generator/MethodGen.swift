@@ -379,7 +379,7 @@ func methodGenNew(_ p: Printer, method: MethodDefinition, className: String, cde
         guard returnType != "" else { return "" }
         if method.isVararg {
             if returnType == "Variant" {
-                return "return Variant(copying: _result)"
+                return "return Variant(takingOver: _result)"
             } else if returnType == "GodotError" {
                 return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {
@@ -848,7 +848,7 @@ func methodGenLegacy(_ p: Printer, method: MethodDefinition, className: String, 
         guard returnType != "" else { return "" }
         if method.isVararg {
             if returnType == "Variant" {
-                return "return Variant(copying: _result)"
+                return "return Variant(takingOver: _result)"
             } else if returnType == "GodotError" {
                 return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {

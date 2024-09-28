@@ -508,6 +508,28 @@ final class MemoryLeakTests: GodotTestCase {
         XCTAssertEqual(variant[0], Variant("U"))
     }
     
+    // https://github.com/migueldeicaza/SwiftGodot/issues/551
+    func test_551_leak() {
+        checkLeaks {
+            for _ in 0 ..< 200 {
+                // MethodGen "return "return GString(Variant(copying: _result))?.description ?? \"\""
+                _ = GD.str(arg1: Variant(2))
+            }
+        }
+    }
+    
+    // https://github.com/migueldeicaza/SwiftGodot/issues/552
+    func test_552_leak() {
+        checkLeaks {
+            for _ in 0 ..< 200 {
+                // MethodGen "return Variant(copying: _result)"
+                let object = Object()
+                let methodName = StringName("get_method_list")
+                let methodList = object.call(method: methodName)
+            }
+        }
+    }
+    
     func test_531_crash_or_leak() {
         checkLeaks {
             let g = GodotEncoder()
