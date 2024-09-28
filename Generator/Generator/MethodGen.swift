@@ -383,7 +383,7 @@ func methodGenNew(_ p: Printer, method: MethodDefinition, className: String, cde
             } else if returnType == "GodotError" {
                 return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {
-                return "return GString(Variant(copying: _result))?.description ?? \"\""
+                return "return GString(Variant(takingOver: _result))?.description ?? \"\""
             } else {
                 fatalError("Do not support this return type = \(returnType)")
             }
@@ -852,7 +852,7 @@ func methodGenLegacy(_ p: Printer, method: MethodDefinition, className: String, 
             } else if returnType == "GodotError" {
                 return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
             } else if returnType == "String" {
-                return "return GString(Variant(copying: _result))?.description ?? \"\""
+                return "return GString(Variant(takingOver: _result))?.description ?? \"\""
             } else {
                 fatalError("Do not support this return type = \(returnType)")
             }
