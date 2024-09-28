@@ -556,8 +556,9 @@ final class MemoryLeakTests: GodotTestCase {
     // https://github.com/migueldeicaza/SwiftGodot/issues/551
     func test_551_leak() {
         checkLeaks {
-            for _ in 0 ..< 200 {
-                let a = GD.str(arg1: Variant(2))
+            for i in 0 ..< 200 {
+                let str = GD.str(arg1: Variant(i))
+                XCTAssertEqual("\(i)", str)
             }
         }
     }
