@@ -74,110 +74,107 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
     }
 }
 
+protocol NonCriticalError: Error {
+    var explanation: String { get }
+}
+
+@discardableResult
+func performExplaniningNonCriticalErrors<T>(_ body: () throws -> T) -> T? {
+    do {
+        return try body()
+    } catch let error as NonCriticalError {
+        print(error.explanation)
+        return nil
+    } catch {
+        fatalError(error.localizedDescription)
+    }
+}
+
+enum MethodGenError: NonCriticalError {
+    case unsupportedArgument(className: String, methodName: String, argumentName: String, argumentTypeName: String, reason: String)
+    
+    var explanation: String {
+        switch self {
+        case let .unsupportedArgument(className, methodName, argumentName, typeName, reason):
+            return """
+            Skipping \(className).\(methodName)
+                Reason - \(reason)
+                    \(argumentName): \(typeName)
+            
+            """
+        }
+    }
+}
+
 struct MethodArgument {
     enum Translation {
         case direct
         case contentRef
         case objectRef
+        case typedArray(String)
         case string
+        case rawValue
     }
     
     let name: String
     let translation: Translation
     
-    init(from src: JGodotArgument) {
+    init(from src: JGodotArgument, className: String, methodName: String) throws {
+        func makeError(reason: String) -> MethodGenError {
+            MethodGenError.unsupportedArgument(className: className, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
+        }
+        
+        if src.type.contains("*") {
+            throw makeError(reason: "Unsupported pointer type")
+        }
+        
         self.name = godotArgumentToSwift(src.name)
         
-        if src.type == "String" && mapStringToSwift {
-            translation = .string
-        } else {
-            if isStructMap[src.type] == true {
-                translation = .direct
+        let tokens = src.type.split(separator: "::")
+        
+        switch tokens.count {
+        case 1:
+            if src.type == "String" && mapStringToSwift {
+                translation = .string
             } else {
-                if builtinSizes[src.type] != nil && src.type != "Object" {
-                    translation = .contentRef
+                if isStructMap[src.type] == true {
+                    translation = .direct
                 } else {
-                    translation = .objectRef
+                    if builtinSizes[src.type] != nil && src.type != "Object" {
+                        translation = .contentRef
+                    } else if classMap[src.type] != nil {
+                        translation = .objectRef
+                    } else {
+                        throw makeError(reason: "Unknown type")
+                    }
                 }
             }
+        case 2:
+            let prefix = tokens[0]
+            let name = tokens[1]
+            
+            switch prefix {
+            case "bitfield":
+                translation = .rawValue
+            case "enum":
+                translation = .rawValue
+            case "typedarray":
+                translation = .typedArray(String(name))
+            default:
+                throw makeError(reason: "Unknown prefix '\(prefix)'")
+            }
+        default:
+            throw makeError(reason: "Too many tokens separated by '::'")
         }
     }
 }
 
-func preparingArguments(_ p: Printer, arguments: [JGodotArgument], body: () -> Void) {
-    let arguments = arguments.map {
-        MethodArgument(from: $0)
+struct MethodReturnValue {
+    enum Translation {
+        case variant
     }
     
-    func withNestedUnsafe(currentIndex: Int = 0) {
-        if currentIndex >= arguments.count {
-            body()
-        } else {
-            let argument = arguments[currentIndex]
-            let accessor: String
-            
-            switch argument.translation {
-            case .contentRef:
-                accessor = "&\(argument.name).content"
-            case .string:
-                accessor = "&\(argument.name).content"
-                p("let \(argument.name) = GString(\(argument.name)")
-            case .direct:
-                accessor = argument.name
-            case .objectRef:
-                accessor = "&\(argument.name).handle"
-            }
-            
-            p("withUnsafePointer(to: \(accessor))", arg: " pArg\(currentIndex) in") {
-                withNestedUnsafe(currentIndex: currentIndex + 1)
-            }
-        }
-    }
-    
-    withNestedUnsafe()
-    /*
-     var firstArg: String? = nil
-     for arg in margs {
-         if args != "" { args += ", " }
-         var isRefOptional = false
-         if classMap [arg.type] != nil {
-             isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
-         }
-         
-         // Omit first argument label, if necessary
-         if firstArg == nil {
-             if shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name) {
-                 eliminate = "_ "
-             } else {
-                 eliminate = defaultArgumentLabel
-             }
-         } else {
-             eliminate = defaultArgumentLabel
-         }
-         firstArg = arg.name
-         args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
-         var reference = escapeSwift (snakeToCamel (arg.name))
-
-         if method.isVararg {
-             if isRefOptional {
-                 argSetup += "let copy_\(arg.name) = \(reference) == nil ? Variant() : Variant (\(reference)!)\n"
-             } else {
-                 argSetup += "let copy_\(arg.name) = Variant (\(reference))\n"
-             }
-         } else if arg.type == "String" {
-             argSetup += "let gstr_\(arg.name) = GString (\(reference))\n"
-         } else if argTypeNeedsCopy(godotType: arg.type) {
-             // Wrap in an Int
-             if arg.type.starts(with: "enum::") {
-                 reference = "Int64 (\(reference).rawValue)"
-             }
-             if isSmallInt (arg) {
-                 argSetup += "var copy_\(arg.name): Int = Int (\(reference))\n"
-             } else {
-                 argSetup += "var copy_\(arg.name) = \(reference)\n"
-             }
-         }
-     */
+    let translation: Translation
 }
 
 /// The current code generation for passing parameters is both inefficient, and technically unsafe. We don't need
@@ -203,7 +200,46 @@ func preparingArguments(_ p: Printer, arguments: [JGodotArgument], body: () -> V
 ///  - className: the name of the class where this is being generated
 ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
-func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodGenType, asSingleton: Bool) -> String? {
+func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodGenType, asSingleton: Bool) throws -> String? {
+    let arguments = try method.arguments.map { array in
+        try array.map { argument in
+            try MethodArgument(from: argument, className: className, methodName: method.name)
+        }
+    }
+    
+    func preparingArguments(arguments: [MethodArgument], body: () -> Void) {
+        func withNestedUnsafe(currentIndex: Int = 0) {
+            if currentIndex >= arguments.count {
+                body()
+            } else {
+                let argument = arguments[currentIndex]
+                let accessor: String
+                
+                switch argument.translation {
+                case .contentRef:
+                    accessor = "&\(argument.name).content"
+                case .string:
+                    accessor = "&\(argument.name).content"
+                    p("let \(argument.name) = GString(\(argument.name))")
+                case .direct:
+                    accessor = argument.name
+                case .objectRef:
+                    accessor = "&\(argument.name).handle"
+                case .rawValue:
+                    accessor = "\(argument.name).rawValue"
+                case .typedArray:
+                    accessor = "\(argument.name).array.content"
+                }
+                
+                p("withUnsafePointer(to: \(accessor))", arg: " pArg\(currentIndex) in") {
+                    withNestedUnsafe(currentIndex: currentIndex + 1)
+                }
+            }
+        }
+        
+        withNestedUnsafe()
+    }
+    
     var registerVirtualMethodName: String? = nil
     
     //let loc = "\(cdef.name).\(method.name)"
@@ -661,12 +697,12 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         }
     }
     p ("\(visibilityAttribute)\(staticAttribute) \(finalAttribute)func \(swiftMethodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
-        p("/*")
-        if let arguments = method.arguments, !arguments.isEmpty {
-            preparingArguments(p, arguments: arguments) {
+        p("#if false // WIP ")
+        if let arguments, !arguments.isEmpty {
+            preparingArguments(arguments: arguments) {
             }
         }
-        p("*/")
+        p("#endif")
         
         // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls
         

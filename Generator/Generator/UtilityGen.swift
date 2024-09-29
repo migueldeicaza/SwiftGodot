@@ -26,7 +26,7 @@ func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async 
                 continue
             }
             
-            _ = methodGen (p, method: method, className: "Godot", cdef: nil, usedMethods: emptyUsedMethods, kind: .utility, asSingleton: false)
+            _ = try? methodGen (p, method: method, className: "Godot", cdef: nil, usedMethods: emptyUsedMethods, kind: .utility, asSingleton: false)
         }
     }
 }

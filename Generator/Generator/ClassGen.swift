@@ -277,9 +277,11 @@ func generateMethods (_ p: Printer,
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
-    for method in methods {        
-        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
-            virtuals [method.name] = (virtualMethodName, method)
+    for method in methods {
+        performExplaniningNonCriticalErrors {
+            if let virtualMethodName = try methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
+                virtuals[method.name] = (virtualMethodName, method)
+            }
         }
     }
     
