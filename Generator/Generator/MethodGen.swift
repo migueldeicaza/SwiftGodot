@@ -74,6 +74,112 @@ func isRefParameterOptional (className: String, method: String, arg: String) -> 
     }
 }
 
+struct MethodArgument {
+    enum Translation {
+        case direct
+        case contentRef
+        case objectRef
+        case string
+    }
+    
+    let name: String
+    let translation: Translation
+    
+    init(from src: JGodotArgument) {
+        self.name = godotArgumentToSwift(src.name)
+        
+        if src.type == "String" && mapStringToSwift {
+            translation = .string
+        } else {
+            if isStructMap[src.type] == true {
+                translation = .direct
+            } else {
+                if builtinSizes[src.type] != nil && src.type != "Object" {
+                    translation = .contentRef
+                } else {
+                    translation = .objectRef
+                }
+            }
+        }
+    }
+}
+
+func preparingArguments(_ p: Printer, arguments: [JGodotArgument], body: () -> Void) {
+    let arguments = arguments.map {
+        MethodArgument(from: $0)
+    }
+    
+    func withNestedUnsafe(currentIndex: Int = 0) {
+        if currentIndex >= arguments.count {
+            body()
+        } else {
+            let argument = arguments[currentIndex]
+            let accessor: String
+            
+            switch argument.translation {
+            case .contentRef:
+                accessor = "&\(argument.name).content"
+            case .string:
+                accessor = "&\(argument.name).content"
+                p("let \(argument.name) = GString(\(argument.name)")
+            case .direct:
+                accessor = argument.name
+            case .objectRef:
+                accessor = "&\(argument.name).handle"
+            }
+            
+            p("withUnsafePointer(to: \(accessor))", arg: " pArg\(currentIndex) in") {
+                withNestedUnsafe(currentIndex: currentIndex + 1)
+            }
+        }
+    }
+    
+    withNestedUnsafe()
+    /*
+     var firstArg: String? = nil
+     for arg in margs {
+         if args != "" { args += ", " }
+         var isRefOptional = false
+         if classMap [arg.type] != nil {
+             isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
+         }
+         
+         // Omit first argument label, if necessary
+         if firstArg == nil {
+             if shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name) {
+                 eliminate = "_ "
+             } else {
+                 eliminate = defaultArgumentLabel
+             }
+         } else {
+             eliminate = defaultArgumentLabel
+         }
+         firstArg = arg.name
+         args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
+         var reference = escapeSwift (snakeToCamel (arg.name))
+
+         if method.isVararg {
+             if isRefOptional {
+                 argSetup += "let copy_\(arg.name) = \(reference) == nil ? Variant() : Variant (\(reference)!)\n"
+             } else {
+                 argSetup += "let copy_\(arg.name) = Variant (\(reference))\n"
+             }
+         } else if arg.type == "String" {
+             argSetup += "let gstr_\(arg.name) = GString (\(reference))\n"
+         } else if argTypeNeedsCopy(godotType: arg.type) {
+             // Wrap in an Int
+             if arg.type.starts(with: "enum::") {
+                 reference = "Int64 (\(reference).rawValue)"
+             }
+             if isSmallInt (arg) {
+                 argSetup += "var copy_\(arg.name): Int = Int (\(reference))\n"
+             } else {
+                 argSetup += "var copy_\(arg.name) = \(reference)\n"
+             }
+         }
+     */
+}
+
 /// The current code generation for passing parameters is both inefficient, and technically unsafe. We don't need
 /// to use nested invocations of withUnsafePointer to generate pointers to multiple arguments, but we can instead generate
 /// a helper version that generates multiple pointer in a single call. For example, if a function that we call using
@@ -125,13 +231,13 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         }
     }
     let bindName = "method_\(method.name)"
-    var visibility: String
-    var allEliminate: String
-    var finalp: String
+    var visibilityAttribute: String
+    var defaultArgumentLabel: String
+    var finalAttribute: String
     // Default method name
-    var methodName: String = godotMethodToSwift (method.name)
-    let instanceOrStatic = method.isStatic || asSingleton ? " static" : ""
-    var inline = ""
+    var swiftMethodName: String = godotMethodToSwift (method.name)
+    let staticAttribute = method.isStatic || asSingleton ? " static" : ""
+    var inlineAttribute = ""
     if let methodHash = method.optionalHash {
         let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
         assert (!method.isVirtual)
@@ -157,29 +263,29 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         
         // If this is an internal, and being reference by a property, hide it
         if usedMethods.contains (method.name) {
-            inline = "@inline(__always)"
+            inlineAttribute = "@inline(__always)"
             // Try to hide as much as possible, but we know that Godot child nodes will want to use these
             // (DirectionalLight3D and Light3D) rely on this.
-            visibility = method.name == "get_param" || method.name == "set_param" ? "internal" : "fileprivate"
-            allEliminate = "_ "
-            methodName = method.name
+            visibilityAttribute = method.name == "get_param" || method.name == "set_param" ? "internal" : "fileprivate"
+            defaultArgumentLabel = "_ "
+            swiftMethodName = method.name
         } else {
-            visibility = "public"
-            allEliminate = ""
+            visibilityAttribute = "public"
+            defaultArgumentLabel = ""
         }
-        if instanceOrStatic == "" {
-            finalp = "final "
+        if staticAttribute == "" {
+            finalAttribute = "final "
         } else {
-            finalp = ""
+            finalAttribute = ""
         }
     } else {
         assert (method.isVirtual)
         // virtual overwrittable method
-        finalp = ""
-        visibility = "@_documentation(visibility: public)\nopen"
-        allEliminate = ""
+        finalAttribute = ""
+        visibilityAttribute = "@_documentation(visibility: public)\nopen"
+        defaultArgumentLabel = ""
             
-        registerVirtualMethodName = methodName
+        registerVirtualMethodName = swiftMethodName
     }
     
     struct Builder {
@@ -396,7 +502,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     }
     
     var withUnsafeCallNestLevel = 0
-    var eliminate: String = allEliminate
+    var eliminate: String = defaultArgumentLabel
     if let margs = method.arguments {
         var firstArg: String? = nil
         for arg in margs {
@@ -411,10 +517,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 if shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name) {
                     eliminate = "_ "
                 } else {
-                    eliminate = allEliminate
+                    eliminate = defaultArgumentLabel
                 }
             } else {
-                eliminate = allEliminate
+                eliminate = defaultArgumentLabel
             }
             firstArg = arg.name
             args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
@@ -543,8 +649,8 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
     }
     
-    if inline != "" {
-        p (inline)
+    if inlineAttribute != "" {
+        p (inlineAttribute)
     }
     // Sadly, the parameters have no useful documentation
     doc (p, cdef, method.description)
@@ -554,7 +660,14 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             p ("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
         }
     }
-    p ("\(visibility)\(instanceOrStatic) \(finalp)func \(methodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
+    p ("\(visibilityAttribute)\(staticAttribute) \(finalAttribute)func \(swiftMethodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
+        p("/*")
+        if let arguments = method.arguments, !arguments.isEmpty {
+            preparingArguments(p, arguments: arguments) {
+            }
+        }
+        p("*/")
+        
         // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls
         
         if method.optionalHash == nil {
