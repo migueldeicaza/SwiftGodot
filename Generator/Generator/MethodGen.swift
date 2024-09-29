@@ -520,7 +520,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         }
     }
     
-    func getReturnResult() -> String {
+    func getReturnStatement() -> String {
         if returnType == "" {
             return ""
         }
@@ -685,7 +685,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         builder.call =
         """
         \(call_object_method_bind_v(hasArgs: args != "", ptrResult: getCallResultArgument()))
-        \(getReturnResult())
+        \(getReturnStatement())
         #else\n
         """
     } else if method.isVararg {
@@ -760,20 +760,20 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     p("gi.object_method_bind_ptrcall(\(argsList))")
                 }
                 
-                func callUtilityFunction(_ argumentsArgument: String, count: Int) {
+                func callUtilityFunction(_ argumentsArgument: String, countArgument: String) {
                     precondition(kind == .utilityFunctions)
                     
                     let argsList = [
                         getCallResultArgument(),
                         argumentsArgument,
-                        "\(count)"
+                        countArgument
                     ].joined(separator: ", ")
                     
                     p("method_\(method.name)(\(argsList))")
                 }
                                 
                 if let arguments, !arguments.isEmpty {
-                    p("#if true // WIP ")
+                    p("#if true // has arguments, non-variadic")
                     preparingArguments(arguments: arguments) {
                         let argsList = (0..<arguments.count)
                             .map {
@@ -786,12 +786,22 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                                 case .classMethods:
                                     callClassMethod("pArgs")
                                 case .utilityFunctions:
-                                    callUtilityFunction("pArgs", count: arguments.count)
+                                    callUtilityFunction("pArgs", countArgument: "\(arguments.count)")
                                 }
                             }
                         }
                     }
-                    p("fatalError()")
+                    p(getReturnStatement())
+                    p("#else")
+                } else {
+                    p("#if true // no arguments")
+                    switch kind {
+                    case .classMethods:
+                        callClassMethod("nil")
+                    case .utilityFunctions:
+                        callUtilityFunction("nil", countArgument: "0")
+                    }
+                    p(getReturnStatement())
                     p("#else")
                 }
             }
@@ -811,7 +821,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getCallResultArgument()))
             
             if returnType != "" {
-                p (getReturnResult())
+                p (getReturnStatement())
             }
             
             // Unwrap the nested calls to 'withUnsafePointer'
@@ -826,7 +836,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 p ("\n#endif")
             }
             
-            if !method.isVararg, let arguments, !arguments.isEmpty {
+            if !method.isVararg {
                 p("#endif")
             }
         }
