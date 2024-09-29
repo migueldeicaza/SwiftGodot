@@ -279,7 +279,7 @@ func generateMethods (_ p: Printer,
    
     for method in methods {
         performExplaniningNonCriticalErrors {
-            if let virtualMethodName = try methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
+            if let virtualMethodName = try methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .classMethods, asSingleton: asSingleton) {
                 virtuals[method.name] = (virtualMethodName, method)
             }
         }

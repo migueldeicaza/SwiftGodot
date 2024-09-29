@@ -6,8 +6,7 @@ func generateUnsafePointerHelpers(_ p: Printer) {
     let maxNestingDepth = 16
     
     for i in 1..<maxNestingDepth {
-        p(generateUnsafeRawPointersN(pointerCount: i))
-        p("")
+        generateUnsafeRawPointersN(p, pointerCount: i)
     }
     
     for i in 1..<maxNestingDepth {
@@ -26,14 +25,26 @@ func generateUnsafePointerHelpers(_ p: Printer) {
 /// }
 /// ```
 
-private func generateUnsafeRawPointersN(pointerCount count: Int) -> String {
-    let syntax = StructDeclSyntax(name: "UnsafeRawPointersN\(raw: count)") {
+private func generateUnsafeRawPointersN(_ p: Printer, pointerCount count: Int) {
+    p("struct UnsafeRawPointersN\(count)") {
         for i in 0..<count {
-            "let p\(raw: i): UnsafeRawPointer?"
+            p("let p\(i): UnsafeRawPointer?")
         }
     }
+    
+    p("extension UnsafeRawPointersN\(count)") {
+        let args = (0..<count)
+            .map {
+                "_ p\($0): UnsafeRawPointer?"
+            }
+            .joined(separator: ", ")
         
-    return syntax.formatted().description
+        p("init(\(args))") {
+            for i in 0..<count {
+                p("self.p\(i) = p\(i)")
+            }
+        }
+    }
 }
 
 

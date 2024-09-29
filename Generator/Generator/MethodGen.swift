@@ -20,9 +20,9 @@ extension String {
     }
 }
 
-enum MethodGenType {
-    case `class`
-    case `utility`
+enum MethodsGenerationKind {
+    case classMethods
+    case utilityFunctions
 }
 
 // To test the design, will use an external file later
@@ -43,7 +43,7 @@ func isReturnOptional (className: String, method: String) -> Bool {
 
 // To test the design, will use an external file later
 // determines whether the className/method/argument is an optional reference type
-func isRefParameterOptional (className: String, method: String, arg: String) -> Bool {
+func isMethodArgumentOptional (className: String, method: String, arg: String) -> Bool {
     switch className {
     case "Node":
         switch method {
@@ -110,10 +110,11 @@ struct MethodArgument {
     enum Translation {
         case direct
         case contentRef
-        case objectRef
+        case objectRef(isOptional: Bool)
         case typedArray(String)
         case string
         case rawValue
+        case opaquePointer
     }
     
     let name: String
@@ -124,47 +125,53 @@ struct MethodArgument {
             MethodGenError.unsupportedArgument(className: className, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
         }
         
-        if src.type.contains("*") {
-            throw makeError(reason: "Unsupported pointer type")
-        }
-        
         self.name = godotArgumentToSwift(src.name)
         
-        let tokens = src.type.split(separator: "::")
-        
-        switch tokens.count {
-        case 1:
-            if src.type == "String" && mapStringToSwift {
-                translation = .string
-            } else {
-                if isStructMap[src.type] == true {
-                    translation = .direct
+        if src.type.contains("*") {
+            translation = .opaquePointer
+        } else {
+            let tokens = src.type.split(separator: "::")
+            
+            switch tokens.count {
+            case 1:
+                if src.type == "String" && mapStringToSwift {
+                    translation = .string
                 } else {
-                    if builtinSizes[src.type] != nil && src.type != "Object" {
-                        translation = .contentRef
-                    } else if classMap[src.type] != nil {
-                        translation = .objectRef
+                    if isStructMap[src.type] == true {
+                        translation = .direct
                     } else {
-                        throw makeError(reason: "Unknown type")
+                        if builtinSizes[src.type] != nil && src.type != "Object" {
+                            translation = .contentRef
+                        } else if classMap[src.type] != nil {
+                            translation = .objectRef(
+                                isOptional: isMethodArgumentOptional(
+                                    className: className,
+                                    method: methodName,
+                                    arg: src.name
+                                )
+                            )
+                        } else {
+                            throw makeError(reason: "Unknown type")
+                        }
                     }
                 }
-            }
-        case 2:
-            let prefix = tokens[0]
-            let name = tokens[1]
-            
-            switch prefix {
-            case "bitfield":
-                translation = .rawValue
-            case "enum":
-                translation = .rawValue
-            case "typedarray":
-                translation = .typedArray(String(name))
+            case 2:
+                let prefix = tokens[0]
+                let name = tokens[1]
+                
+                switch prefix {
+                case "bitfield":
+                    translation = .rawValue
+                case "enum":
+                    translation = .rawValue
+                case "typedarray":
+                    translation = .typedArray(String(name))
+                default:
+                    throw makeError(reason: "Unknown prefix '\(prefix)'")
+                }
             default:
-                throw makeError(reason: "Unknown prefix '\(prefix)'")
+                throw makeError(reason: "Too many tokens separated by '::'")
             }
-        default:
-            throw makeError(reason: "Too many tokens separated by '::'")
         }
     }
 }
@@ -200,7 +207,7 @@ struct MethodReturnValue {
 ///  - className: the name of the class where this is being generated
 ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
-func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodGenType, asSingleton: Bool) throws -> String? {
+func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodsGenerationKind, asSingleton: Bool) throws -> String? {
     let arguments = try method.arguments.map { array in
         try array.map { argument in
             try MethodArgument(from: argument, className: className, methodName: method.name)
@@ -223,12 +230,18 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     p("let \(argument.name) = GString(\(argument.name))")
                 case .direct:
                     accessor = argument.name
-                case .objectRef:
-                    accessor = "&\(argument.name).handle"
+                case .objectRef(let isOptional):
+                    if isOptional {
+                        accessor = "\(argument.name)?.handle"
+                    } else {
+                        accessor = "&\(argument.name).handle"
+                    }
                 case .rawValue:
                     accessor = "\(argument.name).rawValue"
                 case .typedArray:
                     accessor = "\(argument.name).array.content"
+                case .opaquePointer:
+                    accessor = "\(argument.name)"
                 }
                 
                 p("withUnsafePointer(to: \(accessor))", arg: " pArg\(currentIndex) in") {
@@ -278,7 +291,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
         assert (!method.isVirtual)
         switch kind {
-        case .class:
+        case .classMethods:
             p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionMethodBindPtr") {
                 p ("let methodName = StringName (\"\(method.name)\")")
             
@@ -288,7 +301,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     }
                 }
             }
-        case .utility:
+        case .utilityFunctions:
             p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionPtrUtilityFunction") {
                 p ("let methodName = StringName (\"\(method.name)\")")
                 p ("return withUnsafePointer (to: &methodName.content)", arg: " ptr in") {
@@ -395,7 +408,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         (args != "") ? "&_args" : "nil"
     }
     
-    func getResultPtr() -> String {
+    func getCallResultArgument() -> String {
         let ptrResult: String
         if returnType != "" {
             guard let godotReturnType else { fatalError("godotReturnType is nil!") }
@@ -435,7 +448,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     /// which builds the argument list using variadic arguments.
     func call_object_method_bind_v(hasArgs: Bool, ptrResult: String) -> String {
         switch kind {
-        case .class:
+        case .classMethods:
             let instance = method.isStatic ? "nil" : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle)"
             let methodName = "\(className).method_\(method.name)"
             let methodArgs = builder.args.joined(separator: ", ")
@@ -473,7 +486,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 return "gi.object_method_bind_ptrcall_v(\([methodName, instance, ptrResult, methodArgs].joined(separator: ", ")))"
                 #endif
             }
-        case .utility:
+        case .utilityFunctions:
             let ptrArgs = hasArgs ? "_args" : "nil"
             let call_object_method_bind = if method.isVararg {
                 "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))"
@@ -491,14 +504,14 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     
     func call_object_method_bind(ptrArgs: String, ptrResult: String) -> String {
         switch kind {
-        case .class:
+        case .classMethods:
             let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
             if method.isVararg {
                 return "gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)"
             } else {
                 return "gi.object_method_bind_ptrcall (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))"
             }
-        case .utility:
+        case .utilityFunctions:
             if method.isVararg {
                 return "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))"
             } else {
@@ -545,7 +558,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             if args != "" { args += ", " }
             var isRefOptional = false
             if classMap [arg.type] != nil {
-                isRefOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
+                isRefOptional = isMethodArgumentOptional (className: className, method: method.name, arg: arg.name)
             }
             
             // Omit first argument label, if necessary
@@ -644,7 +657,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                         needAddress = ""
                         //isRefParameter = true
                         
-                        refParameterIsOptional = isRefParameterOptional (className: className, method: method.name, arg: arg.name)
+                        refParameterIsOptional = isMethodArgumentOptional (className: className, method: method.name, arg: arg.name)
                     }
                 }
             }
@@ -671,7 +684,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
         builder.call =
         """
-        \(call_object_method_bind_v(hasArgs: args != "", ptrResult: getResultPtr()))
+        \(call_object_method_bind_v(hasArgs: args != "", ptrResult: getCallResultArgument()))
         \(getReturnResult())
         #else\n
         """
@@ -697,13 +710,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
         }
     }
     p ("\(visibilityAttribute)\(staticAttribute) \(finalAttribute)func \(swiftMethodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
-        p("#if false // WIP ")
-        if let arguments, !arguments.isEmpty {
-            preparingArguments(arguments: arguments) {
-            }
-        }
-        p("#endif")
-        
         // We will change the nest level in the body after we print out the prefix of the nested withUnsafe calls
         
         if method.optionalHash == nil {
@@ -715,6 +721,79 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 p(returnTypeDecl())
             } else if (method.isVararg) {
                 p ("var _result: Variant.ContentType = Variant.zero")
+            }
+            
+            let instanceArg: String
+            if method.isStatic {
+                instanceArg = "nil"
+            } else {
+                let accessor: String
+                if asSingleton {
+                    accessor = "shared.handle"
+                } else {
+                    accessor = "handle"
+                }
+                instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
+            }
+            
+            func getMethodNameArgument() -> String {
+                precondition(kind == .classMethods)
+                
+                if staticAttribute.isEmpty {
+                    return "\(className).method_\(method.name)"
+                } else {
+                    return "method_\(method.name)"
+                }
+            }
+            
+            if !method.isVararg {
+                func callClassMethod(_ argumentsArgument: String) {
+                    precondition(kind == .classMethods)
+                    
+                    let argsList = [
+                        getMethodNameArgument(),
+                        instanceArg,
+                        argumentsArgument,
+                        getCallResultArgument()
+                    ].joined(separator: ", ")
+                    
+                    p("gi.object_method_bind_ptrcall(\(argsList))")
+                }
+                
+                func callUtilityFunction(_ argumentsArgument: String, count: Int) {
+                    precondition(kind == .utilityFunctions)
+                    
+                    let argsList = [
+                        getCallResultArgument(),
+                        argumentsArgument,
+                        "\(count)"
+                    ].joined(separator: ", ")
+                    
+                    p("method_\(method.name)(\(argsList))")
+                }
+                                
+                if let arguments, !arguments.isEmpty {
+                    p("#if true // WIP ")
+                    preparingArguments(arguments: arguments) {
+                        let argsList = (0..<arguments.count)
+                            .map {
+                                "pArg\($0)"
+                            }.joined(separator: ", ")
+                                                
+                        p("withUnsafePointer(to: UnsafeRawPointersN\(arguments.count)(\(argsList)))", arg: " pArgs in") {
+                            p("pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(arguments.count))", arg: " pArgs in") {
+                                switch kind {
+                                case .classMethods:
+                                    callClassMethod("pArgs")
+                                case .utilityFunctions:
+                                    callUtilityFunction("pArgs", count: arguments.count)
+                                }
+                            }
+                        }
+                    }
+                    p("fatalError()")
+                    p("#else")
+                }
             }
             
             if builder.setup != "" {
@@ -729,7 +808,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 p.indent += withUnsafeCallNestLevel
             }
 
-            p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getResultPtr()))
+            p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getCallResultArgument()))
             
             if returnType != "" {
                 p (getReturnResult())
@@ -745,6 +824,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
 // REFACTOR: just so we can see the two side-by-side
             if builder.setup != "" {
                 p ("\n#endif")
+            }
+            
+            if !method.isVararg, let arguments, !arguments.isEmpty {
+                p("#endif")
             }
         }
     }
