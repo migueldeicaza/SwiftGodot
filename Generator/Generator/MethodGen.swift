@@ -176,6 +176,65 @@ struct MethodArgument {
     }
 }
 
+func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> Void) {
+    func withNestedUnsafe(index: Int) {
+        if index >= arguments.count {
+            body()
+        } else {
+            let argument = arguments[index]
+            let accessor: String
+            
+            switch argument.translation {
+            case .contentRef:
+                accessor = "&\(argument.name).content"
+            case .string:
+                accessor = "&\(argument.name).content"
+                p("let \(argument.name) = GString(\(argument.name))")
+            case .direct:
+                accessor = argument.name
+            case .objectRef(let isOptional):
+                if isOptional {
+                    accessor = "\(argument.name)?.handle"
+                } else {
+                    accessor = "&\(argument.name).handle"
+                }
+            case .rawValue:
+                accessor = "\(argument.name).rawValue"
+            case .typedArray:
+                accessor = "\(argument.name).array.content"
+            case .opaquePointer:
+                accessor = "\(argument.name)"
+            }
+            
+            p("withUnsafePointer(to: \(accessor))", arg: " pArg\(index) in") {
+                withNestedUnsafe(index: index + 1)
+            }
+        }
+    }
+    
+    withNestedUnsafe(index: 0)
+}
+
+func preparingVariadicArguments(_ p: Printer, arguments: [JGodotArgument], body: () -> Void) {
+    func withNestedUnsafe(index: Int = 0) {
+        if index >= arguments.count {
+            body()
+        } else {
+            let argument = arguments[index]
+                        
+            if argument.type != "Variant" {
+                p("let \(argument.name) = Variant(\(argument.name))")
+            }
+            
+            p("withUnsafePointer(to: &\(argument.name).content)", arg: " pArg\(index) in") {
+                withNestedUnsafe(index: index + 1)
+            }
+        }
+    }
+    
+    withNestedUnsafe()
+}
+
 struct MethodReturnValue {
     enum Translation {
         case variant
@@ -208,49 +267,12 @@ struct MethodReturnValue {
 ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
 func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, kind: MethodsGenerationKind, asSingleton: Bool) throws -> String? {
-    let arguments = try method.arguments.map { array in
-        try array.map { argument in
-            try MethodArgument(from: argument, className: className, methodName: method.name)
-        }
-    }
     
-    func preparingArguments(arguments: [MethodArgument], body: () -> Void) {
-        func withNestedUnsafe(currentIndex: Int = 0) {
-            if currentIndex >= arguments.count {
-                body()
-            } else {
-                let argument = arguments[currentIndex]
-                let accessor: String
-                
-                switch argument.translation {
-                case .contentRef:
-                    accessor = "&\(argument.name).content"
-                case .string:
-                    accessor = "&\(argument.name).content"
-                    p("let \(argument.name) = GString(\(argument.name))")
-                case .direct:
-                    accessor = argument.name
-                case .objectRef(let isOptional):
-                    if isOptional {
-                        accessor = "\(argument.name)?.handle"
-                    } else {
-                        accessor = "&\(argument.name).handle"
-                    }
-                case .rawValue:
-                    accessor = "\(argument.name).rawValue"
-                case .typedArray:
-                    accessor = "\(argument.name).array.content"
-                case .opaquePointer:
-                    accessor = "\(argument.name)"
-                }
-                
-                p("withUnsafePointer(to: \(accessor))", arg: " pArg\(currentIndex) in") {
-                    withNestedUnsafe(currentIndex: currentIndex + 1)
-                }
-            }
-        }
-        
-        withNestedUnsafe()
+    let arguments = method.arguments ?? []
+    
+    // TODO: move down
+    let methodArguments = try arguments.map { argument in
+        try MethodArgument(from: argument, className: className, methodName: method.name)
     }
     
     var registerVirtualMethodName: String? = nil
@@ -772,28 +794,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     p("method_\(method.name)(\(argsList))")
                 }
                                 
-                if let arguments, !arguments.isEmpty {
-                    p("#if true // has arguments, non-variadic")
-                    preparingArguments(arguments: arguments) {
-                        let argsList = (0..<arguments.count)
-                            .map {
-                                "pArg\($0)"
-                            }.joined(separator: ", ")
-                                                
-                        p("withUnsafePointer(to: UnsafeRawPointersN\(arguments.count)(\(argsList)))", arg: " pArgs in") {
-                            p("pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(arguments.count))", arg: " pArgs in") {
-                                switch kind {
-                                case .classMethods:
-                                    callClassMethod("pArgs")
-                                case .utilityFunctions:
-                                    callUtilityFunction("pArgs", countArgument: "\(arguments.count)")
-                                }
-                            }
-                        }
-                    }
-                    p(getReturnStatement())
-                    p("#else")
-                } else {
+                if methodArguments.isEmpty {
                     p("#if true // no arguments")
                     switch kind {
                     case .classMethods:
@@ -803,6 +804,65 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     }
                     p(getReturnStatement())
                     p("#else")
+                } else {
+                    p("#if true // has arguments, non-variadic")
+                    preparingArguments(p, arguments: methodArguments) {
+                        let argsList = (0..<methodArguments.count)
+                            .map {
+                                "pArg\($0)"
+                            }.joined(separator: ", ")
+                        
+                        p("withUnsafePointer(to: UnsafeRawPointersN\(methodArguments.count)(\(argsList)))", arg: " pArgs in") {
+                            p("pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(methodArguments.count))", arg: " pArgs in") {
+                                switch kind {
+                                case .classMethods:
+                                    callClassMethod("pArgs")
+                                case .utilityFunctions:
+                                    callUtilityFunction("pArgs", countArgument: "\(methodArguments.count)")
+                                }
+                            }
+                        }
+                    }
+                    p(getReturnStatement())
+                    p("#else")
+                }
+            } else {
+                func callVarargClassMethod(_ argumentsArgument: String, _ countArgument: String) {
+                    precondition(kind == .classMethods)
+                    
+                    let argsList = [
+                        getMethodNameArgument(),
+                        instanceArg,
+                        argumentsArgument,
+                        countArgument,
+                        getCallResultArgument(),
+                        "nil"
+                    ].joined(separator: ", ")
+                    
+                    p("gi.object_method_bind_call(\(argsList))")
+                }
+                
+                func callVarargUtilityFunction(_ argumentsArgument: String, countArgument: String) {
+                    precondition(kind == .utilityFunctions)
+                    
+                    let argsList = [
+                        getCallResultArgument(),
+                        argumentsArgument,
+                        countArgument
+                    ].joined(separator: ", ")
+                    
+                    p("method_\(method.name)(\(argsList))")
+                }
+                
+                if methodArguments.isEmpty {
+                    p("#if false // variadic, no mandatory arguments")
+                    p("#endif")
+                } else {
+                    p("#if false // variadic, mandatory arguments")
+                    preparingVariadicArguments(p, arguments: arguments) {
+                        
+                    }
+                    p("#endif")
                 }
             }
             
