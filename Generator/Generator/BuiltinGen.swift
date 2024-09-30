@@ -174,22 +174,22 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            var (argPrepare, nestLevel, argsRef) = generateArgPrepare(isVararg: false, m.arguments ?? [], methodHasReturn: false)
-            if argPrepare != "" {
-                p (argPrepare)
-                if nestLevel > 0 {
-                    p.indent += nestLevel
-                }
+            
+            let arguments = (m.arguments ?? []).map {
+                // must not fail
+                try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
             }
             
-            // Call
-            p ("\(typeName).\(ptrName) (&\(ptr), \(argsRef))")
-            
-            // Unwrap the nested calls to 'withUnsafePointer'
-            while nestLevel > 0 {
-                nestLevel -= 1
-                p.indent -= 1
-                p ("}")
+            if arguments.isEmpty {
+                preparingArguments(p, arguments: arguments) {
+                    p ("\(typeName).\(ptrName)(&\(ptr), nil)")
+                }
+            } else {
+                preparingArguments(p, arguments: arguments) {
+                    aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
+                        p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
+                    }
+                }
             }
         }
     }
@@ -208,10 +208,10 @@ func generateMethodCall (_ p: Printer,
                          isVararg: Bool,
                          arguments: [JGodotArgument]?,
                          kind: MethodCallKind) {
-    let has_return = godotReturnType != nil
+    let hasReturnStatement = godotReturnType != nil
     
     let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
-    if has_return {
+    if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
             p ("let result = GString ()")
         } else {
@@ -223,16 +223,22 @@ func generateMethodCall (_ p: Printer,
         }
     }
     
-    var (argPrep, nestLevel, argsRef) = generateArgPrepare(isVararg: isVararg, arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
-    if argPrep != "" {
-        p (argPrep)
-        if nestLevel > 0 {
-            p.indent += nestLevel
-        }
+    let arguments = arguments ?? []
+    let methodArguments = arguments.map { argument in
+        // must never fail
+        try! MethodArgument(from: argument, typeName: typeName, methodName: methodToCall, options: .builtInClassOptions)
     }
+    
+//    var (argPrep, nestLevel, argsRef) = generateArgPrepare(isVararg: isVararg, arguments, methodHasReturn: (godotReturnType ?? "") != "")
+//    if argPrep != "" {
+//        p (argPrep)
+//        if nestLevel > 0 {
+//            p.indent += nestLevel
+//        }
+//    }
         
     let ptrResult: String
-    if has_return {
+    if hasReturnStatement {
         let isStruct = isStructMap [godotReturnType ?? ""] ?? false
         if isStruct {
             ptrResult = "&result"
@@ -243,6 +249,10 @@ func generateMethodCall (_ p: Printer,
         ptrResult = "nil"
     }
     
+    if isVararg {
+        
+    }
+    
     // Method calls pass the number of parameters to the method
     var argCount: String
     if isVararg {
@@ -250,35 +260,146 @@ func generateMethodCall (_ p: Printer,
         argCount = "Int32(args.count)"
     } else {
         // We know statically the number of arguments, harcode that
-        argCount = "\(arguments?.count ?? 0)"
+//        argCount = "\(arguments?.count ?? 0)"
     }
-    let numberOfArgs = kind == .methodCall ? ", \(argCount)" : ""
+//    let numberOfArgs = kind == .methodCall ? ", \(argCount)" : ""
     
-    if isStatic {
-            p ("\(typeName).\(methodToCall) (nil, \(argsRef), \(ptrResult)\(numberOfArgs))")
+//    if isStatic {
+//            p ("\(typeName).\(methodToCall) (nil, \(argsRef), \(ptrResult)\(numberOfArgs))")
+//    } else {
+//        if isStructMap [typeName] ?? false {
+//            p ("var mutSelfCopy = self")
+//            p ("withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in ")
+//            p ("    \(typeName).\(methodToCall) (ptr, \(argsRef), \(ptrResult)\(numberOfArgs))")
+//            p ("}")
+//        } else {
+//            p ("\(typeName).\(methodToCall) (&content, \(argsRef), \(ptrResult)\(numberOfArgs))")
+//        }
+//    }
+    
+    enum CountArgument {
+        case literal(Int)
+        case expression(String)
+    }
+    
+    func call(argsRef: String, count: CountArgument) -> String {
+        let countArg: String
+        
+        switch count {
+        case .literal(let literal):
+            countArg = "\(literal)"
+        case .expression(let expr):
+            countArg = "Int32(\(expr))"
+        }
+        
+        if isStatic {
+            return "\(typeName).\(methodToCall)(nil, \(argsRef), \(ptrResult), \(countArg))"
+        } else {
+            if isStructMap [typeName] ?? false {
+                return """
+                var mutSelfCopy = self
+                withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in
+                   \(typeName).\(methodToCall)(ptr, \(argsRef), \(ptrResult), \(countArg))
+                }
+                """
+            } else {
+                return "\(typeName).\(methodToCall)(&content, \(argsRef), \(ptrResult), \(countArg))"
+            }
+        }
+    }
+    
+    if !isVararg {
+        if methodArguments.isEmpty {
+            p(call(argsRef: "nil", count: .literal(0)))
+        } else {
+            preparingArguments(p, arguments: methodArguments) {
+                aggregatingPreparedArguments(p, argumentsCount: methodArguments.count) {
+                    p(call(argsRef: "pArgs", count: .literal(methodArguments.count)))
+                }
+            }
+        }
     } else {
-        if isStructMap [typeName] ?? false {
-            p ("var mutSelfCopy = self")
-            p ("withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in ")
-            p ("    \(typeName).\(methodToCall) (ptr, \(argsRef), \(ptrResult)\(numberOfArgs))")
-            p ("}")
+        if methodArguments.isEmpty {
+            // Right now there is only a single function that is variadic and doesn't have mandatory arguments
+            p("""
+            if arguments.isEmpty {
+                \(call(argsRef: "nil", count: .literal(0))) // no arguments
+            } else {
+                // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
+                withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
+                    // We use entire buffer so can initialize every element in the end. It's not
+                    // necessary for UnsafeRawPointer and other POD types (which Variant.ContentType also is)
+                    // but we'll do it for the sake of correctness
+                    defer { pArgsBuffer.deinitialize() }
+                    guard let pArgs = pArgsBuffer.baseAddress else {
+                        fatalError("pargsBuffer.baseAddress is nil")
+                    }
+                    // A temporary allocation containing `Variant.ContentType` of marshaled arguments
+                    withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
+                        defer { contentsBuffer.deinitialize() }
+                        guard let contentsPtr = contentsBuffer.baseAddress else {
+                            fatalError("contentsBuffer.baseAddress is nil")
+                        }
+
+                        for i in 0..<arguments.count {
+                            // Copy `content`s of the variadic `Variant`s into `contentBuffer`
+                            contentsBuffer.initializeElement(at: i, to: arguments[i].content)
+                            // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
+                            pArgsBuffer.initializeElement(at: i, to: contentsPtr + i)
+                        }
+
+                        \(call(argsRef: "pArgs", count: .expression("arguments.count")))
+                    }
+                }
+            }
+            """)
         } else {
-            p ("\(typeName).\(methodToCall) (&content, \(argsRef), \(ptrResult)\(numberOfArgs))")
+            preparingMandatoryVariadicArguments(p, arguments: arguments) {
+                p("// A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments")
+                p("withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: \(methodArguments.count) + arguments.count)", arg: " pArgsBuffer in") {
+                    p("""
+                    defer { pArgsBuffer.deinitialize() }
+                    guard let pArgs = pArgsBuffer.baseAddress else {
+                        fatalError("pArgsBuffer.baseAddress is nil")
+                    }
+                    """)
+                    for i in 0..<methodArguments.count {
+                        p("pArgsBuffer.initializeElement(at: \(i), to: pArg\(i))")
+                    }
+                    
+                    p("""
+                    if arguments.isEmpty {
+                        \(call(argsRef: "pArgs", count: .literal(arguments.count))) // no variadic arguments, just mandatory
+                    } else {
+                        // A temporary allocation containing `Variant.ContentType` of marshaled arguments
+                        withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
+                            defer { contentsBuffer.deinitialize() }
+                            guard let contentsPtr = contentsBuffer.baseAddress else {
+                                fatalError("contentsBuffer.baseAddress is nil")
+                            }
+                            
+                            for i in 0..<arguments.count {
+                                // Copy `content`s of the variadic `Variant`s into `contentBuffer`
+                                contentsBuffer.initializeElement(at: i, to: arguments[i].content)
+                                // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`                                        
+                                pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
+                            }
+                    
+                            \(call(argsRef: "pArgs", count: .expression("\(arguments.count) + arguments.count")))
+                        }
+                    }                            
+                    """)
+                }
+            }
         }
     }
-    if has_return {
-        // let cast = castGodotToSwift (m.returnType, "result")
+    
+    if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
-            p ("return result.description")
+            p("return result.description")
         } else {
-            p ("return result")
+            p("return result")
         }
-    }
-    // Unwrap the nested calls to 'withUnsafePointer'
-    while nestLevel > 0 {
-        nestLevel -= 1
-        p.indent -= 1
-        p ("}")
     }
 }
 
@@ -392,12 +513,24 @@ func generateBuiltinOperators (_ p: Printer,
                 } else {
                     ptrResult = "&result.content"
                 }
-                let rhsa = JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
-                let rhs = getArgRef (arg: rhsa)
-                let lhsa = JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil)
-                let lhs = getArgRef (arg: lhsa)
-                p (generateCopies([lhsa, rhsa]))
-                p ("\(typeName).\(ptrName) (\(lhs), \(rhs), \(ptrResult))")
+                let lhsa = try! MethodArgument(
+                    from: JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
+                    typeName: godotTypeName,
+                    methodName: "#operator\(swiftOperator)",
+                    options: .builtInClassOptions
+                )
+                
+                let rhsa = try! MethodArgument(
+                    from: JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil),
+                    typeName: godotTypeName,
+                    methodName: "#operator\(swiftOperator)",
+                    options: .builtInClassOptions
+                )
+                    
+                preparingArguments(p, arguments: [lhsa, rhsa]) {
+                    p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
+                }
+                
                 if op.returnType == "String" && mapStringToSwift {
                     p ("return result.description")
                 } else {

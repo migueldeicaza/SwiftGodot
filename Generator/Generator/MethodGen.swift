@@ -91,15 +91,15 @@ func performExplaniningNonCriticalErrors<T>(_ body: () throws -> T) -> T? {
 }
 
 enum MethodGenError: NonCriticalError {
-    case unsupportedArgument(className: String, methodName: String, argumentName: String, argumentTypeName: String, reason: String)
+    case unsupportedArgument(typeName: String, methodName: String, argumentName: String, argumentTypeName: String, reason: String)
     
     var explanation: String {
         switch self {
-        case let .unsupportedArgument(className, methodName, argumentName, typeName, reason):
+        case let .unsupportedArgument(typeName, methodName, argumentName, argumentTypeName, reason):
             return """
-            Skipping \(className).\(methodName)
+            Skipping \(typeName).\(methodName)
                 Reason - \(reason)
-                    \(argumentName): \(typeName)
+                    \(argumentName): \(argumentTypeName)
             
             """
         }
@@ -123,6 +123,9 @@ struct MethodArgument {
         /// Implicit GString -> String
         case string
         
+        /// Implicit Float -> Double
+        case double
+        
         /// enums and bitfields
         case rawValue
         
@@ -130,12 +133,40 @@ struct MethodArgument {
         case cPointer
     }
     
+    struct TranslationOptions: OptionSet {
+        let rawValue: UInt64
+        
+        static let floatToDouble = Self(rawValue: 1 << 0)
+        static let gStringToString = Self(rawValue: 1 << 1)
+        static let nonOptionalObjects = Self(rawValue: 1 << 2)
+        
+        static var builtInClassOptions: Self {
+            var result: Self = [.floatToDouble, nonOptionalObjects]
+            
+            if mapStringToSwift {
+                result.insert(.gStringToString)
+            }
+            
+            return result
+        }
+        
+        static var classOptions: Self {
+            var result: Self = []
+            
+            if mapStringToSwift {
+                result.insert(.gStringToString)
+            }
+            
+            return result
+        }
+    }
+    
     let name: String
     let translation: Translation
     
-    init(from src: JGodotArgument, className: String, methodName: String) throws {
+    init(from src: JGodotArgument, typeName: String, methodName: String, options: TranslationOptions) throws {
         func makeError(reason: String) -> MethodGenError {
-            MethodGenError.unsupportedArgument(className: className, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
+            MethodGenError.unsupportedArgument(typeName: typeName, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
         }
         
         self.name = godotArgumentToSwift(src.name)
@@ -147,22 +178,28 @@ struct MethodArgument {
             
             switch tokens.count {
             case 1:
-                if src.type == "String" && mapStringToSwift {
+                if options.contains(.gStringToString) && src.type == "String" {
                     translation = .string
+                } else if options.contains(.floatToDouble) && src.type == "float" {
+                    translation = .double
                 } else {
                     if isStructMap[src.type] == true {
                         translation = .direct
                     } else {
                         if builtinSizes[src.type] != nil && src.type != "Object" {
                             translation = .contentRef
-                        } else if classMap[src.type] != nil {
-                            translation = .objectRef(
-                                isOptional: isMethodArgumentOptional(
-                                    className: className,
-                                    method: methodName,
-                                    arg: src.name
+                        } else if classMap[src.type] != nil {                            
+                            if options.contains(.nonOptionalObjects) {
+                                translation = .objectRef(isOptional: false)
+                            } else {
+                                translation = .objectRef(
+                                    isOptional: isMethodArgumentOptional(
+                                        className: typeName,
+                                        method: methodName,
+                                        arg: src.name
+                                    )
                                 )
-                            )
+                            }
                         } else {
                             throw makeError(reason: "Unknown type")
                         }
@@ -199,17 +236,17 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
             
             switch argument.translation {
             case .contentRef:
-                accessor = "&\(argument.name).content"
+                accessor = "\(argument.name).content"
             case .string:
                 p("let \(argument.name) = GString(\(argument.name))")
-                accessor = "&\(argument.name).content"
+                accessor = "\(argument.name).content"
             case .direct:
                 accessor = argument.name
             case .objectRef(let isOptional):
                 if isOptional {
                     accessor = "\(argument.name)?.handle"
                 } else {
-                    accessor = "&\(argument.name).handle"
+                    accessor = "\(argument.name).handle"
                 }
             case .rawValue:
                 accessor = "\(argument.name).rawValue"
@@ -217,6 +254,9 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
                 accessor = "\(argument.name).array.content"
             case .cPointer:
                 accessor = "\(argument.name)"
+            case .double:
+                p("let \(argument.name) = Double(\(argument.name))")
+                accessor = argument.name
             }
             
             p("withUnsafePointer(to: \(accessor))", arg: " pArg\(index) in") {
@@ -297,9 +337,18 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
     
     let arguments = method.arguments ?? []
     
+    
+    let argumentTranslationOptions: MethodArgument.TranslationOptions
+    
+    if mapStringToSwift {
+        argumentTranslationOptions = .gStringToString
+    } else {
+        argumentTranslationOptions = []
+    }
+    
     // TODO: move down
     let methodArguments = try arguments.map { argument in
-        try MethodArgument(from: argument, className: className, methodName: method.name)
+        try MethodArgument(from: argument, typeName: className, methodName: method.name, options: argumentTranslationOptions)
     }
     
     var registerVirtualMethodName: String? = nil
@@ -898,11 +947,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                             return callVarargUtilityFunction(argsRef: argsRef, count: count)
                         }
                     }
-                    
-                    // Right now there is only a single function that is variadic and doesn't have mandatory arguments
+                                        
                     p("""
                     if arguments.isEmpty {
-                        \(call(argsRef: "nil", count: .literal(0))) // no variadic arguments, just mandatory
+                        \(call(argsRef: "nil", count: .literal(0))) // no arguments
                     } else {
                         // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
                         withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
@@ -924,10 +972,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                                     // Copy `content`s of the variadic `Variant`s into `contentBuffer`
                                     contentsBuffer.initializeElement(at: i, to: arguments[i].content)
                                     // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
-                                    pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
+                                    pArgsBuffer.initializeElement(at: i, to: contentsPtr + i)
                                 }
 
-                                \(call(argsRef: "pArgs", count: .expression("\(arguments.count) + arguments.count")))
+                                \(call(argsRef: "pArgs", count: .expression("arguments.count")))
                             }
                         }
                     }
