@@ -758,7 +758,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             }
             
             func getMethodNameArgument() -> String {
-                precondition(kind == .classMethods)
+                assert(kind == .classMethods)
                 
                 if staticAttribute.isEmpty {
                     return "\(className).method_\(method.name)"
@@ -769,7 +769,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
             
             if !method.isVararg {
                 func callClassMethod(argsRef: String) {
-                    precondition(kind == .classMethods)
+                    assert(kind == .classMethods)
                     
                     let argsList = [
                         getMethodNameArgument(),
@@ -782,7 +782,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
                 
                 func callUtilityFunction(argsRef: String, count: Int) {
-                    precondition(kind == .utilityFunctions)
+                    assert(kind == .utilityFunctions)
                     
                     let argsList = [
                         getCallResultArgument(),
@@ -826,7 +826,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
                 
                 func callVarargClassMethod(argsRef: String, count: CountArgument) -> String {
-                    precondition(kind == .classMethods)
+                    assert(kind == .classMethods)
                     
                     let countArg: String
                     
@@ -850,7 +850,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
                 
                 func callVarargUtilityFunction(argsRef: String, count: CountArgument) -> String {
-                    precondition(kind == .utilityFunctions)
+                    assert(kind == .utilityFunctions)
                     
                     let countArg: String
                     
