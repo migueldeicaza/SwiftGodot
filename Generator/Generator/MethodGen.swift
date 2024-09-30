@@ -114,7 +114,7 @@ struct MethodArgument {
         case typedArray(String)
         case string
         case rawValue
-        case opaquePointer
+        case specialPointer
     }
     
     let name: String
@@ -128,7 +128,7 @@ struct MethodArgument {
         self.name = godotArgumentToSwift(src.name)
         
         if src.type.contains("*") {
-            translation = .opaquePointer
+            translation = .specialPointer
         } else {
             let tokens = src.type.split(separator: "::")
             
@@ -202,7 +202,7 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
                 accessor = "\(argument.name).rawValue"
             case .typedArray:
                 accessor = "\(argument.name).array.content"
-            case .opaquePointer:
+            case .specialPointer:
                 accessor = "\(argument.name)"
             }
             
@@ -234,6 +234,19 @@ func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumen
     }
     
     withNestedUnsafe()
+}
+
+func aggregatingPreparedArguments(_ p: Printer, argumentsCount: Int, body: () -> Void) {
+    let argsList = (0..<argumentsCount)
+        .map {
+            "pArg\($0)"
+        }.joined(separator: ", ")
+    
+    p("withUnsafePointer(to: UnsafeRawPointersN\(argumentsCount)(\(argsList)))", arg: " pArgs in") {
+        p("pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(argumentsCount))", arg: " pArgs in") {
+            body()
+        }
+    }
 }
 
 struct MethodReturnValue {
@@ -802,19 +815,12 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     }
                 } else {
                     preparingArguments(p, arguments: methodArguments) {
-                        let argsList = (0..<methodArguments.count)
-                            .map {
-                                "pArg\($0)"
-                            }.joined(separator: ", ")
-                        
-                        p("withUnsafePointer(to: UnsafeRawPointersN\(methodArguments.count)(\(argsList)))", arg: " pArgs in") {
-                            p("pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: \(methodArguments.count))", arg: " pArgs in") {
-                                switch kind {
-                                case .classMethods:
-                                    callClassMethod(argsRef: "pArgs")
-                                case .utilityFunctions:
-                                    callUtilityFunction(argsRef: "pArgs", count: methodArguments.count)
-                                }
+                        aggregatingPreparedArguments(p, argumentsCount: methodArguments.count) {
+                            switch kind {
+                            case .classMethods:
+                                callClassMethod(argsRef: "pArgs")
+                            case .utilityFunctions:
+                                callUtilityFunction(argsRef: "pArgs", count: methodArguments.count)
                             }
                         }
                     }
