@@ -108,13 +108,26 @@ enum MethodGenError: NonCriticalError {
 
 struct MethodArgument {
     enum Translation {
+        /// e.g. Float, Vector3
         case direct
+        
+        /// e.g. GArray.content
         case contentRef
+        
+        /// e.g. Object.handle
         case objectRef(isOptional: Bool)
+        
+        /// e.g. ObjectCollection<Object>, VariantCollection<Float>
         case typedArray(String)
+        
+        /// Implicit GString -> String
         case string
+        
+        /// enums and bitfields
         case rawValue
-        case specialPointer
+        
+        /// C pointers, need special treatment in future
+        case cPointer
     }
     
     let name: String
@@ -128,7 +141,7 @@ struct MethodArgument {
         self.name = godotArgumentToSwift(src.name)
         
         if src.type.contains("*") {
-            translation = .specialPointer
+            translation = .cPointer
         } else {
             let tokens = src.type.split(separator: "::")
             
@@ -188,8 +201,8 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
             case .contentRef:
                 accessor = "&\(argument.name).content"
             case .string:
-                accessor = "&\(argument.name).content"
                 p("let \(argument.name) = GString(\(argument.name))")
+                accessor = "&\(argument.name).content"
             case .direct:
                 accessor = argument.name
             case .objectRef(let isOptional):
@@ -202,7 +215,7 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
                 accessor = "\(argument.name).rawValue"
             case .typedArray:
                 accessor = "\(argument.name).array.content"
-            case .specialPointer:
+            case .cPointer:
                 accessor = "\(argument.name)"
             }
             
