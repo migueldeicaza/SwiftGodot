@@ -221,12 +221,13 @@ func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumen
             body()
         } else {
             let argument = arguments[index]
+            let argumentName = godotArgumentToSwift(argument.name)
                         
             if argument.type != "Variant" {
-                p("let \(argument.name) = Variant(\(argument.name))")
+                p("let \(argumentName) = Variant(\(argumentName))")
             }
             
-            p("withUnsafePointer(to: &\(argument.name).content)", arg: " pArg\(index) in") {
+            p("withUnsafePointer(to: &\(argumentName).content)", arg: " pArg\(index) in") {
                 withNestedUnsafe(index: index + 1)
             }
         }
@@ -875,7 +876,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     return "method_\(method.name)(\(argsList))"
                 }
                 
-                p("#if false // variadic")
+                p("#if true // variadic")
                 if methodArguments.isEmpty {
                     func call(argsRef: String, count: CountArgument) -> String {
                         switch kind {
@@ -891,21 +892,31 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     if arguments.isEmpty {
                         \(call(argsRef: "nil", count: .literal(0))) // no variadic arguments, just mandatory
                     } else {
-                        // A temporary allocation containing `Variant.ContentType` of marshaled arguments
-                        withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
-                            defer { contentsBuffer.deinitialize() }
-                            guard let contentsPtr = contentsBuffer.baseAddress else {
-                                fatalError("contentsBuffer.baseAddress is nil")
+                        // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
+                        withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
+                            // We use entire buffer so can initialize every element in the end. It's not
+                            // necessary for UnsafeRawPointer and other POD types (which Variant.ContentType also is)
+                            // but we'll do it for the sake of correctness
+                            defer { pArgsBuffer.deinitialize() }
+                            guard let pArgs = pArgsBuffer.baseAddress else {
+                                fatalError("pargsBuffer.baseAddress is nil")
                             }
+                            // A temporary allocation containing `Variant.ContentType` of marshaled arguments
+                            withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
+                                defer { contentsBuffer.deinitialize() }
+                                guard let contentsPtr = contentsBuffer.baseAddress else {
+                                    fatalError("contentsBuffer.baseAddress is nil")
+                                }
 
-                            for i in 0..<arguments.count {
-                                // Copy `content`s of the variadic `Variant`s into `contentBuffer`
-                                contentsBuffer.initializeElement(at: i, to: arguments[i].content)
-                                // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
-                                pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
+                                for i in 0..<arguments.count {
+                                    // Copy `content`s of the variadic `Variant`s into `contentBuffer`
+                                    contentsBuffer.initializeElement(at: i, to: arguments[i].content)
+                                    // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
+                                    pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
+                                }
+
+                                \(call(argsRef: "pArgs", count: .expression("\(arguments.count) + arguments.count")))
                             }
-
-                            \(call(argsRef: "pArgs", count: .expression("\(arguments.count) + arguments.count")))
                         }
                     }
                     """)
@@ -959,7 +970,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     }
                     p(getReturnStatement())
                 }
-                p("#endif")
+                p("#else")
             }
             
             if builder.setup != "" {
@@ -992,9 +1003,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 p ("\n#endif")
             }
             
-            if !method.isVararg {
-                p("#endif")
-            }
+            p("#endif")
         }
     }
     return registerVirtualMethodName

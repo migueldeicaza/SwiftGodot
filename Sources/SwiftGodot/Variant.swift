@@ -117,6 +117,14 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         self.init(representable: value.toVariantRepresentable())
     }
     
+    convenience public init(_ value: (some VariantStorable)?) {
+        if let value {
+            self.init(value)
+        } else {
+            self.init()
+        }
+    }
+    
     private init<T: VariantRepresentable>(representable value: T) {
         let godotType = T.godotType
         
