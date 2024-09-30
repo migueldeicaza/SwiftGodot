@@ -76,11 +76,15 @@ final class MarshalTests: GodotTestCase {
     }
     
     func testVarargMethodsPerformance() {
-        let randomValues = (0..<10).map { _ in Variant(Float.random(in: -1.0...1.0)) }
+        let floats = (0..<10).map { _ in Float.random(in: -1.0...1.0) }
+        let randomValues = floats.map { Variant($0) }
+        
+        let max = Variant(floats.max()!)
         
         measure {
             for _ in 0..<100_000 {
-                let _ = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
+                let maxVariant = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
+                XCTAssertEqual(max, maxVariant)
             }
         }
     }
