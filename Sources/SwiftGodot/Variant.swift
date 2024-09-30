@@ -198,17 +198,17 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
                 gi.variant_call(&content, &method.content, ptr, 1, &result, &err)
             }
         } else if arguments.count > 1 {
-            // A temporary allocation containing pointers to internal payloads of argument variants
-            withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { argPtrsBufer in
+            // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
+            withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
                 // We use entire buffer so can initialize every element in the end. It's not
                 // necessary for UnsafeRawPointer and other POD types (which Variant.ContentType also is)
                 // but we'll do it for the sake of correctness
-                defer { argPtrsBufer.deinitialize() }
-                guard let argPtrsPtr = argPtrsBufer.baseAddress else {
+                defer { pArgsBuffer.deinitialize() }
+                guard let pArgs = pArgsBuffer.baseAddress else {
                     fatalError("pargsBuffer.baseAddress is nil")
                 }
                              
-                // A temporary allocation containing internal variant payloads
+                // A temporary allocation containing `Variant.ContentType` of marshaled arguments
                 withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
                     defer { contentsBuffer.deinitialize() }
                     guard let contentsPtr = contentsBuffer.baseAddress else {
@@ -216,14 +216,14 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
                     }
                     
                     for i in 0..<arguments.count {
-                        // Initialize internal payload at the index copying user-passed argument internal payload
+                        // Copy `content`s of the variadic `Variant`s into `contentBuffer`
                         contentsBuffer.initializeElement(at: i, to: arguments[i].content)
                         
-                        // Initialize pointer at the index to point at respective element in `contentsBuffer`
-                        argPtrsBufer.initializeElement(at: i, to: contentsPtr + i)
+                        // Initialize `pArgs` elements to point at respective contents of `contentsBuffer`
+                        pArgsBuffer.initializeElement(at: i, to: contentsPtr + i)
                     }
                     
-                    gi.variant_call(&content, &method.content, argPtrsPtr, Int64(arguments.count), &result, &err)
+                    gi.variant_call(&content, &method.content, pArgs, Int64(arguments.count), &result, &err)
                 }
             }
         } else {
