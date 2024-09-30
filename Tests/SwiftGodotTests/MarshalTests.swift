@@ -38,10 +38,21 @@ final class MarshalTests: GodotTestCase {
         let tv = TestVariant()
         let child = TestVariant()
 
+        let addChildName = StringName("add_child")
+        let removeChildName = StringName("remove_child")
+        let getChildCountName = StringName("get_child_count")
+        
         measure {
-            for _ in 0..<1_000_000 {
+            for _ in 0..<100_000 {
                 tv.addChild(node: child)
+                XCTAssertEqual(tv.getChildCount(), 1)
                 tv.removeChild(node: child)
+                XCTAssertEqual(tv.getChildCount(), 0)
+                
+                _ = tv.call(method: addChildName, Variant(child), Variant(false), Variant(Node.InternalMode.disabled.rawValue))
+                XCTAssertEqual(tv.call(method: getChildCountName), Variant(1))
+                _ = tv.call(method: removeChildName, Variant(child))
+                XCTAssertEqual(tv.call(method: getChildCountName), Variant(0))
             }
         }
     }

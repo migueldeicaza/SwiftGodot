@@ -794,17 +794,13 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                 }
                                 
                 if methodArguments.isEmpty {
-                    p("#if true // no arguments")
                     switch kind {
                     case .classMethods:
                         callClassMethod(argsRef: "nil")
                     case .utilityFunctions:
                         callUtilityFunction(argsRef: "nil", count: 0)
                     }
-                    p(getReturnStatement())
-                    p("#else")
                 } else {
-                    p("#if true // has arguments, non-variadic")
                     preparingArguments(p, arguments: methodArguments) {
                         let argsList = (0..<methodArguments.count)
                             .map {
@@ -822,8 +818,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                             }
                         }
                     }
-                    p(getReturnStatement())
-                    p("#else")
                 }
             } else {
                 enum CountArgument {
@@ -875,8 +869,7 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                     
                     return "method_\(method.name)(\(argsList))"
                 }
-                
-                p("#if true // variadic")
+                            
                 if methodArguments.isEmpty {
                     func call(argsRef: String, count: CountArgument) -> String {
                         switch kind {
@@ -920,7 +913,6 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                         }
                     }
                     """)
-                    p(getReturnStatement())
                 } else {
                     preparingMandatoryVariadicArguments(p, arguments: arguments) {
                         p("// A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments")
@@ -968,42 +960,10 @@ func methodGen (_ p: Printer, method: MethodDefinition, className: String, cdef:
                             """)
                         }
                     }
-                    p(getReturnStatement())
                 }
-                p("#else")
             }
             
-            if builder.setup != "" {
-                p(builder.setup)
-                p(builder.call)
-            }
-            
-            if argSetup != "" {
-                p (argSetup)
-            }
-            if withUnsafeCallNestLevel > 0 {
-                p.indent += withUnsafeCallNestLevel
-            }
-
-            p(call_object_method_bind(ptrArgs: getArgsPtr(), ptrResult: getCallResultArgument()))
-            
-            if returnType != "" {
-                p (getReturnStatement())
-            }
-            
-            // Unwrap the nested calls to 'withUnsafePointer'
-            while withUnsafeCallNestLevel > 0 {
-                withUnsafeCallNestLevel -= 1
-                p.indent -= 1
-                p ("}")
-            }
-            
-// REFACTOR: just so we can see the two side-by-side
-            if builder.setup != "" {
-                p ("\n#endif")
-            }
-            
-            p("#endif")
+            p(getReturnStatement())
         }
     }
     return registerVirtualMethodName
