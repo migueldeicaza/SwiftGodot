@@ -3,7 +3,7 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 @Godot
-private class TestVariant: Node {
+private class TestNode: Node {
     #signal("mySignal", arguments: ["age": Int.self, "name": String.self])
     var receivedInt: Int? = nil
     var receivedString: String? = nil
@@ -14,8 +14,8 @@ private class TestVariant: Node {
     }
     
     func probe () {
-        connect (signal: TestVariant.mySignal, to: self, method: "demo")
-        emit (signal: TestVariant.mySignal, 22, "Joey")
+        connect (signal: TestNode.mySignal, to: self, method: "demo")
+        emit (signal: TestNode.mySignal, 22, "Joey")
         
     }
 }
@@ -23,20 +23,20 @@ private class TestVariant: Node {
 final class MarshalTests: GodotTestCase {
     
     override static var godotSubclasses: [Wrapped.Type] {
-        return [TestVariant.self]
+        return [TestNode.self]
     }
 
     func testVarArgs() {
-        let tv = TestVariant()
+        let node = TestNode()
         
-        tv.probe ()
-        XCTAssertEqual (tv.receivedInt, 22, "Integers should have been the same")
-        XCTAssertEqual (tv.receivedString, "Joey", "Strings should have been the same")
+        node.probe ()
+        XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
+        XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
     }
     
     func testClassesMethodsPerformance() {
-        let tv = TestVariant()
-        let child = TestVariant()
+        let node = TestNode()
+        let child = TestNode()
 
         let addChildName = StringName("add_child")
         let removeChildName = StringName("remove_child")
@@ -44,15 +44,15 @@ final class MarshalTests: GodotTestCase {
         
         measure {
             for _ in 0..<100_000 {
-                tv.addChild(node: child)
-                XCTAssertEqual(tv.getChildCount(), 1)
-                tv.removeChild(node: child)
-                XCTAssertEqual(tv.getChildCount(), 0)
+                node.addChild(node: child)
+                XCTAssertEqual(node.getChildCount(), 1)
+                node.removeChild(node: child)
+                XCTAssertEqual(node.getChildCount(), 0)
                 
-                _ = tv.call(method: addChildName, Variant(child), Variant(false), Variant(Node.InternalMode.disabled.rawValue))
-                XCTAssertEqual(tv.call(method: getChildCountName), Variant(1))
-                _ = tv.call(method: removeChildName, Variant(child))
-                XCTAssertEqual(tv.call(method: getChildCountName), Variant(0))
+                _ = node.call(method: addChildName, Variant(child), Variant(false), Variant(Node.InternalMode.disabled.rawValue))
+                XCTAssertEqual(node.call(method: getChildCountName), Variant(1))
+                _ = node.call(method: removeChildName, Variant(child))
+                XCTAssertEqual(node.call(method: getChildCountName), Variant(0))
             }
         }
     }
