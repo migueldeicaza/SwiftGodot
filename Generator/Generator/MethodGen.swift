@@ -478,7 +478,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     }
     
     let bindName = "method_\(method.name)"
-    var visibilityAttribute: String
+    var visibilityAttribute: String?
     let omitAllArgumentLabels: Bool
     let finalAttribute: String?
     // Default method name
@@ -514,7 +514,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             inlineAttribute = "@inline(__always)"
             // Try to hide as much as possible, but we know that Godot child nodes will want to use these
             // (DirectionalLight3D and Light3D) rely on this.
-            visibilityAttribute = method.name == "get_param" || method.name == "set_param" ? "internal" : "fileprivate"
+            visibilityAttribute = method.name == "get_param" || method.name == "set_param" ? nil : "fileprivate"
             omitAllArgumentLabels = true
             swiftMethodName = method.name
         } else {
@@ -522,7 +522,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             visibilityAttribute = "public"
             omitAllArgumentLabels = false
         }
-        if staticAttribute == "" {
+        if staticAttribute == nil {
             finalAttribute = "final"
         } else {
             finalAttribute = nil
