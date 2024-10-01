@@ -27,7 +27,7 @@ func generateUtility(values: [JGodotUtilityFunction], outputDir: String?) async 
             }
             
             performExplaniningNonCriticalErrors {
-                _ = try methodGen (p, method: method, className: "Godot", cdef: nil, usedMethods: emptyUsedMethods, kind: .utilityFunctions, asSingleton: false)
+                _ = try generateMethod (p, method: method, className: "Godot", cdef: nil, usedMethods: emptyUsedMethods, generatedMethodKind: .utilityFunction, asSingleton: false)
             }
         }
     }
