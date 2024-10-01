@@ -43,6 +43,18 @@ class Printer {
         }
     }
     
+    func `if`(_ `if`: String, then: () -> Void, else: () -> Void) {
+        p("if \(`if`) {")
+        indent += 1
+        then()
+        indent -= 1
+        p("} else {")
+        indent += 1
+        `else`()
+        indent -= 1
+        p("}")
+    }
+    
     // Prints a variable definition
     func staticVar (visibility: String = "", name: String, type: String, block: () -> ()) {
         if generateResettableCache {

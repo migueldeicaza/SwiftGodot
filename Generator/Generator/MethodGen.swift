@@ -347,22 +347,27 @@ func generateMethodCall(_ p: Printer, isVariadic: Bool, arguments: [JGodotArgume
             """)
         } else {
             preparingMandatoryVariadicArguments(p, arguments: arguments) {
-                p("// A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments")
-                p("withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: \(methodArguments.count) + arguments.count)", arg: " pArgsBuffer in") {
-                    p("""
-                    defer { pArgsBuffer.deinitialize() }
-                    guard let pArgs = pArgsBuffer.baseAddress else {
-                        fatalError("pArgsBuffer.baseAddress is nil")
+                p.if(
+                "arguments.isEmpty",
+                then: {
+                    aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
+                        p(call("pArgs", .literal(arguments.count)))
                     }
-                    """)
-                    for i in 0..<methodArguments.count {
-                        p("pArgsBuffer.initializeElement(at: \(i), to: pArg\(i))")
-                    }
-                    
-                    p("""
-                    if arguments.isEmpty {
-                        \(call("pArgs", .literal(arguments.count))) // no variadic arguments, just mandatory
-                    } else {
+                },
+                else: {
+                    p("// A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments")
+                    p("withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: \(methodArguments.count) + arguments.count)", arg: " pArgsBuffer in") {
+                        p("""
+                        defer { pArgsBuffer.deinitialize() }
+                        guard let pArgs = pArgsBuffer.baseAddress else {
+                            fatalError("pArgsBuffer.baseAddress is nil")
+                        }
+                        """)
+                        for i in 0..<methodArguments.count {
+                            p("pArgsBuffer.initializeElement(at: \(i), to: pArg\(i))")
+                        }
+                        
+                        p("""
                         // A temporary allocation containing `Variant.ContentType` of marshaled arguments
                         withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
                             defer { contentsBuffer.deinitialize() }
@@ -376,12 +381,12 @@ func generateMethodCall(_ p: Printer, isVariadic: Bool, arguments: [JGodotArgume
                                 // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`                                        
                                 pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
                             }
-                    
+                        
                             \(call("pArgs", .expression("\(arguments.count) + arguments.count")))
-                        }
-                    }                            
-                    """)
-                }
+                        }                           
+                        """)
+                    }
+                })
             }
         }
     }
@@ -472,11 +477,12 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let bindName = "method_\(method.name)"
     var visibilityAttribute: String
     let omitAllArgumentLabels: Bool
-    var finalAttribute: String
+    let finalAttribute: String?
     // Default method name
     var swiftMethodName: String = godotMethodToSwift (method.name)
-    let staticAttribute = method.isStatic || asSingleton ? " static" : ""
-    var inlineAttribute = ""
+    let staticAttribute = method.isStatic || asSingleton ? "static" : nil
+    let inlineAttribute: String?
+    let documentationVisibilityAttribute: String?
     if let methodHash = method.optionalHash {
         let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
         assert (!method.isVirtual)
@@ -509,19 +515,26 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             omitAllArgumentLabels = true
             swiftMethodName = method.name
         } else {
+            inlineAttribute = nil
             visibilityAttribute = "public"
             omitAllArgumentLabels = false
         }
         if staticAttribute == "" {
-            finalAttribute = "final "
+            finalAttribute = "final"
         } else {
-            finalAttribute = ""
+            finalAttribute = nil
         }
+        
+        documentationVisibilityAttribute = nil
     } else {
-        assert (method.isVirtual)
+        assert(method.isVirtual)
+        
+        inlineAttribute = nil
         // virtual overwrittable method
-        finalAttribute = ""
-        visibilityAttribute = "@_documentation(visibility: public)\nopen"
+        finalAttribute = nil
+        documentationVisibilityAttribute = "@_documentation(visibility: public)"
+        visibilityAttribute = "open"
+
         omitAllArgumentLabels = false
             
         registerVirtualMethodName = swiftMethodName
@@ -531,7 +544,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let godotReturnType = method.returnValue?.type
     let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
     let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
-    let returnType = getGodotType (method.returnValue) + (returnOptional ? "?" : "")
+    let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
 
     /// returns appropriate declaration of the return type, used by the helper function.
     let frameworkType = godotReturnTypeIsReferenceType
@@ -664,27 +677,51 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         signatureArgs.append("_ arguments: Variant...")
     }
     
-    if inlineAttribute != "" {
-        p (inlineAttribute)
+    if let inlineAttribute {
+        p(inlineAttribute)
     }
     // Sadly, the parameters have no useful documentation
-    doc (p, cdef, method.description)
+    doc(p, cdef, method.description)
     // Generate the method entry point
-    if let classDiscardables = discardableResultList [className] {
+    if let classDiscardables = discardableResultList[className] {
         if classDiscardables.contains(method.name) == true {
-            p ("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
+            p("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
         }
     }
-    p ("\(visibilityAttribute)\(staticAttribute) \(finalAttribute)func \(swiftMethodName) (\(signatureArgs.joined(separator: ", ")))\(returnType != "" ? "-> " + returnType : "")") {
+    
+    if let documentationVisibilityAttribute {
+        p(documentationVisibilityAttribute)
+    }
+    
+    let declarationTokens = [
+        visibilityAttribute,
+        staticAttribute,
+        finalAttribute,
+        "func",
+        swiftMethodName
+    ]
+        .compactMap { $0 }
+        .joined(separator: " ")
+    
+    let argumentsList = signatureArgs.joined(separator: ", ")
+    
+    let returnClause: String
+    if returnType.isEmpty {
+        returnClause = ""
+    } else {
+        returnClause = " -> \(returnType)"
+    }
+    
+    p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
         if method.optionalHash == nil {
             if let godotReturnType {
-                p (makeDefaultReturn (godotType: godotReturnType))
+                p(makeDefaultReturn(godotType: godotReturnType))
             }
         } else {
             if returnType != "" {
                 p(returnTypeDecl())
             } else if (method.isVararg) {
-                p ("var _result: Variant.ContentType = Variant.zero")
+                p("var _result: Variant.ContentType = Variant.zero")
             }
             
             let instanceArg: String
@@ -703,7 +740,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             func getMethodNameArgument() -> String {
                 assert(generatedMethodKind == .classMethod)
                 
-                if staticAttribute.isEmpty {
+                if staticAttribute == nil {
                     return "\(className).method_\(method.name)"
                 } else {
                     return "method_\(method.name)"
