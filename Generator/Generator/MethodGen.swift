@@ -111,6 +111,7 @@ enum MethodGenError: NonCriticalError {
     }
 }
 
+/// Parsed `JGodotArgument` that derives what's the proper strategy for processing the argument and marshaling it
 struct MethodArgument {
     enum Translation {
         /// e.g. Float, Vector3
