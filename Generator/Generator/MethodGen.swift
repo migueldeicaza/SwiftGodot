@@ -146,11 +146,11 @@ struct MethodArgument {
         static let gStringToString = Self(rawValue: 1 << 1)
         static let nonOptionalObjects = Self(rawValue: 1 << 2)
         
-        // TODO: looks like this is dead code when it comes to current API?
+        // TODO: looks like this is dead code when it comes to current API? (isSmallInt seems redundant)
         static let smallIntToInt = Self(rawValue: 1 << 3)
         
         static var builtInClassOptions: Self {
-            var result: Self = [.floatToDouble, nonOptionalObjects]
+            var result: Self = [.floatToDouble, nonOptionalObjects, .smallIntToInt]
             
             if mapStringToSwift {
                 result.insert(.gStringToString)
