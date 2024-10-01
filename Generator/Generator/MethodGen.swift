@@ -461,7 +461,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         }
     
     if containsUnsupportedCPointerTypes {
-        print("Skipping \(className).\(method.name), unsupported c pointer type")
+        // TODO
+        // print("Skipping \(className).\(method.name), unsupported c pointer type")
         return nil
     }
     
@@ -479,19 +480,19 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         switch generatedMethodKind {
         case .classMethod:
             p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionMethodBindPtr") {
-                p ("let methodName = StringName (\"\(method.name)\")")
+                p ("let methodName = StringName(\"\(method.name)\")")
             
-                p ("return withUnsafePointer (to: &\(className).godotClassName.content)", arg: " classPtr in") {
-                    p ("withUnsafePointer (to: &methodName.content)", arg: " mnamePtr in") {
-                        p ("gi.classdb_get_method_bind (classPtr, mnamePtr, \(methodHash))!")
+                p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
+                    p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
+                        p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
                     }
                 }
             }
         case .utilityFunction:
             p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionPtrUtilityFunction") {
-                p ("let methodName = StringName (\"\(method.name)\")")
-                p ("return withUnsafePointer (to: &methodName.content)", arg: " ptr in") {
-                    p ("return gi.variant_get_ptr_utility_function (ptr, \(methodHash))!")
+                p ("let methodName = StringName(\"\(method.name)\")")
+                p ("return withUnsafePointer(to: &methodName.content)", arg: " ptr in") {
+                    p ("return gi.variant_get_ptr_utility_function(ptr, \(methodHash))!")
                 }
             }
         }
@@ -531,7 +532,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     }
     var builder = Builder()
     
-    var args = ""
+    var signatureArgs: [String] = []
     var argSetup = ""
     var varArgSetup = ""
     var varArgSetupInit = ""
@@ -541,7 +542,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     
         varArgSetup += "for idx in 0..<arguments.count {\n"
         varArgSetup += "    content [idx] = arguments [idx].content\n"
-        varArgSetup += "    _args.append (content.baseAddress! + idx)\n"
+        varArgSetup += "    _args.append(content.baseAddress! + idx)\n"
         varArgSetup += "}\n"
     }
     let godotReturnType = method.returnValue?.type
@@ -590,15 +591,11 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         return ""
     }
     
-    func getArgsPtr() -> String {
-        (args != "") ? "&_args" : "nil"
-    }
-    
     func getCallResultArgument() -> String {
         let ptrResult: String
         if returnType != "" {
             guard let godotReturnType else { fatalError("godotReturnType is nil!") }
-
+            
             if method.isVararg {
                 if godotReturnType == "String" {
                     ptrResult = "&_result.content"
@@ -628,82 +625,6 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             }
         }
         return ptrResult
-    }
-
-    /// this version inlines withArgPointers by calling `object_method_bind_call_v` or `gi.object_method_bind_ptrcall_v`
-    /// which builds the argument list using variadic arguments.
-    func call_object_method_bind_v(hasArgs: Bool, ptrResult: String) -> String {
-        switch generatedMethodKind {
-        case .classMethod:
-            let instance = method.isStatic ? "nil" : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle)"
-            let methodName = "\(className).method_\(method.name)"
-            let methodArgs = builder.args.joined(separator: ", ")
-                        
-            if method.isVararg {
-                // Large generics cause issues on Windows compiler, legacy approach is used
-                #if canImport(Darwin)
-                if hasArgs {
-                    let methodArgsCount = "GDExtensionInt(\(builder.args.count))"
-                    
-                    return """
-                    withUnsafeArgumentsPointer(\(methodArgs)) { args in 
-                        gi.object_method_bind_call(\([methodName, instance, "args", methodArgsCount, ptrResult, "nil"].joined(separator: ", ")))                        
-                    }
-                    """
-                } else {
-                    return "gi.object_method_bind_call(\([methodName, instance, "nil", "0", ptrResult, "nil"].joined(separator: ", ")))"
-                }
-                #else
-                return "gi.object_method_bind_call_v(\([methodName, instance, ptrResult, "nil", methodArgs].joined(separator: ", ")))"
-                #endif
-            } else {
-                // Large generics cause issues on Windows compiler, legacy approach is used
-                #if canImport(Darwin)
-                if hasArgs {
-                    return """
-                    withUnsafeArgumentsPointer(\(methodArgs)) { args in
-                        gi.object_method_bind_ptrcall(\([methodName, instance, "args", ptrResult].joined(separator: ", ")))
-                    }
-                    """
-                } else {
-                    return "gi.object_method_bind_ptrcall(\([methodName, instance, "nil", ptrResult].joined(separator: ", ")))"
-                }
-                #else
-                return "gi.object_method_bind_ptrcall_v(\([methodName, instance, ptrResult, methodArgs].joined(separator: ", ")))"
-                #endif
-            }
-        case .utilityFunction:
-            let ptrArgs = hasArgs ? "_args" : "nil"
-            let call_object_method_bind = if method.isVararg {
-                "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))"
-            } else {
-                "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))"
-            }
-            return
-                """
-                withArgPointers(\(builder.args.joined(separator: ", "))) { _args in
-                    \(call_object_method_bind)
-                }
-                """
-        }
-    }
-    
-    func call_object_method_bind(ptrArgs: String, ptrResult: String) -> String {
-        switch generatedMethodKind {
-        case .classMethod:
-            let instanceHandle = method.isStatic ? "nil, " : "UnsafeMutableRawPointer (mutating: \(asSingleton ? "shared." : "")handle), "
-            if method.isVararg {
-                return "gi.object_method_bind_call (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), Int64 (_args.count), \(ptrResult), nil)"
-            } else {
-                return "gi.object_method_bind_ptrcall (\(className).method_\(method.name), \(instanceHandle)\(ptrArgs), \(ptrResult))"
-            }
-        case .utilityFunction:
-            if method.isVararg {
-                return "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (_args.count))"
-            } else {
-                return "\(bindName) (\(ptrResult), \(ptrArgs), Int32 (\(method.arguments?.count ?? 0)))"
-            }
-        }
     }
     
     func getReturnStatement() -> String {
@@ -741,7 +662,6 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     if let margs = method.arguments {
         var firstArg: String? = nil
         for arg in margs {
-            if args != "" { args += ", " }
             var isRefOptional = false
             if classMap [arg.type] != nil {
                 isRefOptional = isMethodArgumentOptional (className: className, method: method.name, arg: arg.name)
@@ -758,7 +678,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 eliminate = defaultArgumentLabel
             }
             firstArg = arg.name
-            args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional)
+            signatureArgs.append(getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional))
             var reference = escapeSwift (snakeToCamel (arg.name))
 
             if method.isVararg {
@@ -782,8 +702,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             }
         }
         if method.isVararg {
-            if args != "" { args += ", "}
-            args += "_ arguments: Variant..."
+            signatureArgs.append("_ arguments: Variant...")
         }
         // generate a helper function, a la withUnsafePointers() above, which
         // combines extracting the parameters into pointers and packing them into the _args array.
@@ -868,16 +787,10 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         }
         argSetup += varArgSetupInit.indented(by: withUnsafeCallNestLevel)
         argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
-        builder.call =
-        """
-        \(call_object_method_bind_v(hasArgs: args != "", ptrResult: getCallResultArgument()))
-        \(getReturnStatement())
-        #else\n
-        """
     } else if method.isVararg {
         // No regular arguments, check if these are varargs
         if method.isVararg {
-            args = "_ arguments: Variant..."
+            signatureArgs.append("_ arguments: Variant...")
         }
         argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         argSetup += varArgSetupInit.indented(by: withUnsafeCallNestLevel)
@@ -895,7 +808,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             p ("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
         }
     }
-    p ("\(visibilityAttribute)\(staticAttribute) \(finalAttribute)func \(swiftMethodName) (\(args))\(returnType != "" ? "-> " + returnType : "")") {
+    p ("\(visibilityAttribute)\(staticAttribute) \(finalAttribute)func \(swiftMethodName) (\(signatureArgs.joined(separator: ", ")))\(returnType != "" ? "-> " + returnType : "")") {
         if method.optionalHash == nil {
             if let godotReturnType {
                 p (makeDefaultReturn (godotType: godotReturnType))
