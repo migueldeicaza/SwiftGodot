@@ -291,7 +291,7 @@ func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumen
                 p("let \(argumentName) = Variant(\(argumentName))")
             }
             
-            p("withUnsafePointer(to: &\(argumentName).content)", arg: " pArg\(index) in") {
+            p("withUnsafePointer(to: \(argumentName).content)", arg: " pArg\(index) in") {
                 withNestedUnsafe(index: index + 1)
             }
         }
