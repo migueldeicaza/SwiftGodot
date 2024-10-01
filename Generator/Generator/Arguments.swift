@@ -26,7 +26,7 @@ func isSmallInt(_ arg: JGodotArgument) -> Bool {
     }
 }
 
-func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
+func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
     
@@ -180,7 +180,10 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
             }
         }
     }
-    return "\(eliminate)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(isOptional ? "?" : "")\(def)"
+    
+    let prefix = omitLabel ? "_ " : ""
+    
+    return "\(prefix)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(isOptional ? "?" : "")\(def)"
 }
 
 func getArgRef (arg: JGodotArgument) -> String {

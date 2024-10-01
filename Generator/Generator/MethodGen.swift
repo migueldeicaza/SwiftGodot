@@ -471,7 +471,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     
     let bindName = "method_\(method.name)"
     var visibilityAttribute: String
-    var defaultArgumentLabel: String
+    let omitAllArgumentLabels: Bool
     var finalAttribute: String
     // Default method name
     var swiftMethodName: String = godotMethodToSwift (method.name)
@@ -506,11 +506,11 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             // Try to hide as much as possible, but we know that Godot child nodes will want to use these
             // (DirectionalLight3D and Light3D) rely on this.
             visibilityAttribute = method.name == "get_param" || method.name == "set_param" ? "internal" : "fileprivate"
-            defaultArgumentLabel = "_ "
+            omitAllArgumentLabels = true
             swiftMethodName = method.name
         } else {
             visibilityAttribute = "public"
-            defaultArgumentLabel = ""
+            omitAllArgumentLabels = false
         }
         if staticAttribute == "" {
             finalAttribute = "final "
@@ -522,7 +522,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         // virtual overwrittable method
         finalAttribute = ""
         visibilityAttribute = "@_documentation(visibility: public)\nopen"
-        defaultArgumentLabel = ""
+        omitAllArgumentLabels = false
             
         registerVirtualMethodName = swiftMethodName
     }
@@ -640,92 +640,28 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         }
     }
     
-    var withUnsafeCallNestLevel = 0
-    var eliminate: String = defaultArgumentLabel
-    if let margs = method.arguments {
-        var firstArg: String? = nil
-        for arg in margs {
-            var isRefOptional = false
-            if classMap [arg.type] != nil {
-                isRefOptional = isMethodArgumentOptional (className: className, method: method.name, arg: arg.name)
-            }
-            
-            // Omit first argument label, if necessary
-            if firstArg == nil {
-                if shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name) {
-                    eliminate = "_ "
-                } else {
-                    eliminate = defaultArgumentLabel
-                }
-            } else {
-                eliminate = defaultArgumentLabel
-            }
-            firstArg = arg.name
-            signatureArgs.append(getArgumentDeclaration(arg, eliminate: eliminate, isOptional: isRefOptional))
-            var reference = escapeSwift (snakeToCamel (arg.name))
-
-            if method.isVararg {
-                if isRefOptional {
-                } else {
-                }
-            } else if arg.type == "String" {
-            } else if argTypeNeedsCopy(godotType: arg.type) {
-                // Wrap in an Int
-                if arg.type.starts(with: "enum::") {
-                    reference = "Int64 (\(reference).rawValue)"
-                }
-                if isSmallInt (arg) {
-                } else {
-                }
-            }
+    for (index, arg) in arguments.enumerated() {
+        let isOptional: Bool
+        
+        if classMap [arg.type] != nil {
+            isOptional = isMethodArgumentOptional(className: className, method: method.name, arg: arg.name)
+        } else {
+            isOptional = false
         }
-        if method.isVararg {
-            signatureArgs.append("_ arguments: Variant...")
+        
+        let omitLabel: Bool
+        // Omit first argument label, if necessary
+        if index == 0 && !omitAllArgumentLabels {
+            omitLabel = shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name)
+        } else {
+            omitLabel = omitAllArgumentLabels
         }
-
-        for arg in margs {
-            var argref: String
-            var optstorage: String
-            //var isRefParameter = false
-            var refParameterIsOptional = false
-            if method.isVararg {
-                argref = "copy_\(arg.name)"
-                optstorage = ".content"
-            } else if arg.type == "String" {
-                argref = "gstr_\(arg.name)"
-                optstorage = ".content"
-            } else if argTypeNeedsCopy(godotType: arg.type) {
-                argref = "copy_\(arg.name)"
-                optstorage = ""
-            } else {
-                argref = escapeSwift (snakeToCamel (arg.name))
-                if isStructMap [arg.type] ?? false {
-                    optstorage = ""
-                } else {
-                    if builtinSizes [arg.type] != nil && arg.type != "Object" {
-                        optstorage = ".content"
-                    } else if arg.type.starts(with: "typedarray::") {
-                        optstorage = ".array.content"
-                    } else {
-                        // The next two are unused, because we set isRefParameter,
-                        // but for documentation/clarity purposes
-                        optstorage = ".handle"
-                        //isRefParameter = true
-                        
-                        refParameterIsOptional = isMethodArgumentOptional (className: className, method: method.name, arg: arg.name)
-                    }
-                }
-            }
-
-            if refParameterIsOptional || optstorage == ".handle" {
-                let ea = escapeSwift(argref)
-            }
-        }
-    } else if method.isVararg {
-        // No regular arguments, check if these are varargs
-        if method.isVararg {
-            signatureArgs.append("_ arguments: Variant...")
-        }
+        
+        signatureArgs.append(getArgumentDeclaration(arg, omitLabel: omitLabel, isOptional: isOptional))
+    }
+    
+    if method.isVararg {
+        signatureArgs.append("_ arguments: Variant...")
     }
     
     if inlineAttribute != "" {

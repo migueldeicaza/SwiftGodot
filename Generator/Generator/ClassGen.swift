@@ -535,7 +535,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 lambdaIgnore += ", "
                 lambdaFull += ", "
             }
-            args += getArgumentDeclaration(arg, eliminate: "_ ", isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: true, isOptional: false)
             let construct: String
             
             if let _ = classMap [arg.type] {

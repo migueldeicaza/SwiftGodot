@@ -102,7 +102,7 @@ func generateBuiltinCtors (_ p: Printer,
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: false, kind: .builtInField, isOptional: false)
         }
         
         if let desc = m.description, desc != "" {
@@ -452,13 +452,15 @@ func generateBuiltinMethods (_ p: Printer,
         }
         
         for arg in m.arguments ?? [] {
-            var eliminate: String = ""
+            let omitFirstLabel: Bool
             // Omit first argument label, if necessary
             if args.isEmpty, shouldOmitFirstArgLabel(typeName: typeName, methodName: m.name, argName: arg.name) {
-                eliminate = "_ "
+                omitFirstLabel = true
+            } else {
+                omitFirstLabel = false
             }
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: omitFirstLabel, isOptional: false)
         }
         if m.isVararg {
             if args != "" { args += ", " }
