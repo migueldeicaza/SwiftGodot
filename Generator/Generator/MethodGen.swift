@@ -930,185 +930,74 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 }
             }
             
-            if !method.isVararg {
-                func callClassMethod(argsRef: String) {
-                    assert(generatedMethodKind == .classMethod)
-                    
-                    let argsList = [
-                        getMethodNameArgument(),
-                        instanceArg,
-                        argsRef,
-                        getCallResultArgument()
-                    ].joined(separator: ", ")
-                    
-                    p("gi.object_method_bind_ptrcall(\(argsList))")
-                }
-                
-                func callUtilityFunction(argsRef: String, count: Int) {
-                    assert(generatedMethodKind == .utilityFunction)
-                    
-                    let argsList = [
-                        getCallResultArgument(),
-                        argsRef,
-                        "\(count)" // just a literal, no need to convert to Int32
-                    ].joined(separator: ", ")
-                    
-                    p("method_\(method.name)(\(argsList))")
-                }
-                                
-                if methodArguments.isEmpty {
+            generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
+                if method.isVararg {
                     switch generatedMethodKind {
                     case .classMethod:
-                        callClassMethod(argsRef: "nil")
+                        let countArg: String
+                        
+                        switch count {
+                        case .literal(let literal):
+                            countArg = "\(literal)"
+                        case .expression(let expr):
+                            countArg = "Int64(\(expr))"
+                        }
+                        
+                        let argsList = [
+                            getMethodNameArgument(),
+                            instanceArg,
+                            argsRef,
+                            countArg,
+                            getCallResultArgument(),
+                            "nil"
+                        ].joined(separator: ", ")
+                        
+                        return "gi.object_method_bind_call(\(argsList))"
                     case .utilityFunction:
-                        callUtilityFunction(argsRef: "nil", count: 0)
+                        let countArg: String
+                        
+                        switch count {
+                        case .literal(let literal):
+                            countArg = "\(literal)"
+                        case .expression(let expr):
+                            countArg = "Int32(\(expr))"
+                        }
+                        
+                        let argsList = [
+                            getCallResultArgument(),
+                            argsRef,
+                            countArg
+                        ].joined(separator: ", ")
+                        
+                        return "method_\(method.name)(\(argsList))"
                     }
                 } else {
-                    preparingArguments(p, arguments: methodArguments) {
-                        aggregatingPreparedArguments(p, argumentsCount: methodArguments.count) {
-                            switch generatedMethodKind {
-                            case .classMethod:
-                                callClassMethod(argsRef: "pArgs")
-                            case .utilityFunction:
-                                callUtilityFunction(argsRef: "pArgs", count: methodArguments.count)
-                            }
+                    switch generatedMethodKind {
+                    case .classMethod:
+                        guard case .literal = count else {
+                            fatalError("Literal is expected")
                         }
-                    }
-                }
-            } else {
-                func callVarargClassMethod(argsRef: String, count: MarshaledArgumentsCount) -> String {
-                    assert(generatedMethodKind == .classMethod)
-                    
-                    let countArg: String
-                    
-                    switch count {
-                    case .literal(let literal):
-                        countArg = "\(literal)"
-                    case .expression(let expr):
-                        countArg = "Int64(\(expr))"
-                    }
-                    
-                    let argsList = [
-                        getMethodNameArgument(),
-                        instanceArg,
-                        argsRef,
-                        countArg,
-                        getCallResultArgument(),
-                        "nil"
-                    ].joined(separator: ", ")
-                    
-                    return "gi.object_method_bind_call(\(argsList))"
-                }
-                
-                func callVarargUtilityFunction(argsRef: String, count: MarshaledArgumentsCount) -> String {
-                    assert(generatedMethodKind == .utilityFunction)
-                    
-                    let countArg: String
-                    
-                    switch count {
-                    case .literal(let literal):
-                        countArg = "\(literal)"
-                    case .expression(let expr):
-                        countArg = "Int32(\(expr))"
-                    }
-                    
-                    let argsList = [
-                        getCallResultArgument(),
-                        argsRef,
-                        countArg
-                    ].joined(separator: ", ")
-                    
-                    return "method_\(method.name)(\(argsList))"
-                }
-                            
-                if methodArguments.isEmpty {
-                    func call(argsRef: String, count: MarshaledArgumentsCount) -> String {
-                        switch generatedMethodKind {
-                        case .classMethod:
-                            return callVarargClassMethod(argsRef: argsRef, count: count)
-                        case .utilityFunction:
-                            return callVarargUtilityFunction(argsRef: argsRef, count: count)
+                        
+                        let argsList = [
+                            getMethodNameArgument(),
+                            instanceArg,
+                            argsRef,
+                            getCallResultArgument()
+                        ].joined(separator: ", ")
+                        
+                        return "gi.object_method_bind_ptrcall(\(argsList))"
+                    case .utilityFunction:
+                        guard case let .literal(count) = count else {
+                            fatalError("Literal is expected")
                         }
-                    }
-                                        
-                    p("""
-                    if arguments.isEmpty {
-                        \(call(argsRef: "nil", count: .literal(0))) // no arguments
-                    } else {
-                        // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
-                        withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
-                            // We use entire buffer so can initialize every element in the end. It's not
-                            // necessary for UnsafeRawPointer and other POD types (which Variant.ContentType also is)
-                            // but we'll do it for the sake of correctness
-                            defer { pArgsBuffer.deinitialize() }
-                            guard let pArgs = pArgsBuffer.baseAddress else {
-                                fatalError("pargsBuffer.baseAddress is nil")
-                            }
-                            // A temporary allocation containing `Variant.ContentType` of marshaled arguments
-                            withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
-                                defer { contentsBuffer.deinitialize() }
-                                guard let contentsPtr = contentsBuffer.baseAddress else {
-                                    fatalError("contentsBuffer.baseAddress is nil")
-                                }
-
-                                for i in 0..<arguments.count {
-                                    // Copy `content`s of the variadic `Variant`s into `contentBuffer`
-                                    contentsBuffer.initializeElement(at: i, to: arguments[i].content)
-                                    // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
-                                    pArgsBuffer.initializeElement(at: i, to: contentsPtr + i)
-                                }
-
-                                \(call(argsRef: "pArgs", count: .expression("arguments.count")))
-                            }
-                        }
-                    }
-                    """)
-                } else {
-                    preparingMandatoryVariadicArguments(p, arguments: arguments) {
-                        p("// A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments")
-                        p("withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: \(methodArguments.count) + arguments.count)", arg: " pArgsBuffer in") {
-                            p("""
-                            defer { pArgsBuffer.deinitialize() }
-                            guard let pArgs = pArgsBuffer.baseAddress else {
-                                fatalError("pArgsBuffer.baseAddress is nil")
-                            }
-                            """)
-                            for i in 0..<methodArguments.count {                                
-                                p("pArgsBuffer.initializeElement(at: \(i), to: pArg\(i))")
-                            }
-                                    
-                            func call(count: MarshaledArgumentsCount) -> String {
-                                switch generatedMethodKind {
-                                case .classMethod:
-                                    return callVarargClassMethod(argsRef: "pArgs", count: count)
-                                case .utilityFunction:
-                                    return callVarargUtilityFunction(argsRef: "pArgs", count: count)
-                                }
-                            }
-                            
-                            p("""
-                            if arguments.isEmpty {
-                                \(call(count: .literal(arguments.count))) // no variadic arguments, just mandatory
-                            } else {
-                                // A temporary allocation containing `Variant.ContentType` of marshaled arguments
-                                withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
-                                    defer { contentsBuffer.deinitialize() }
-                                    guard let contentsPtr = contentsBuffer.baseAddress else {
-                                        fatalError("contentsBuffer.baseAddress is nil")
-                                    }
-                                    
-                                    for i in 0..<arguments.count {
-                                        // Copy `content`s of the variadic `Variant`s into `contentBuffer`
-                                        contentsBuffer.initializeElement(at: i, to: arguments[i].content)
-                                        // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`                                        
-                                        pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
-                                    }
-                            
-                                    \(call(count: .expression("\(arguments.count) + arguments.count")))
-                                }
-                            }                            
-                            """)
-                        }
+                        
+                        let argsList = [
+                            getCallResultArgument(),
+                            argsRef,
+                            "\(count)" // just a literal, no need to convert to Int32
+                        ].joined(separator: ", ")
+                        
+                        return "method_\(method.name)(\(argsList))"
                     }
                 }
             }
