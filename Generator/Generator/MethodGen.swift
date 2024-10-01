@@ -128,9 +128,9 @@ struct MethodArgument {
         /// Implicit GString -> String
         case string
         
-        /// Implicit Float -> Double
-        case double
-        
+        /// Implicit Float -> Double, Implict small Int -> Int
+        case directPromoted(to: String)
+    
         /// enums and bitfields
         case rawValue
         
@@ -144,6 +144,7 @@ struct MethodArgument {
         static let floatToDouble = Self(rawValue: 1 << 0)
         static let gStringToString = Self(rawValue: 1 << 1)
         static let nonOptionalObjects = Self(rawValue: 1 << 2)
+        static let smallIntToInt = Self(rawValue: 1 << 3)
         
         static var builtInClassOptions: Self {
             var result: Self = [.floatToDouble, nonOptionalObjects]
@@ -186,7 +187,9 @@ struct MethodArgument {
                 if options.contains(.gStringToString) && src.type == "String" {
                     translation = .string
                 } else if options.contains(.floatToDouble) && src.type == "float" {
-                    translation = .double
+                    translation = .directPromoted(to: "Double")
+                } else if options.contains(.smallIntToInt) && isSmallInt(src) {
+                    translation = .directPromoted(to: "Int")
                 } else {
                     if isStructMap[src.type] == true {
                         translation = .direct
@@ -259,8 +262,8 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
                 accessor = "\(argument.name).array.content"
             case .cPointer:
                 accessor = "\(argument.name)"
-            case .double:
-                p("let \(argument.name) = Double(\(argument.name))")
+            case .directPromoted(let promotedType):
+                p("let \(argument.name) = \(promotedType)(\(argument.name))")
                 accessor = argument.name
             }
             
@@ -524,27 +527,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         registerVirtualMethodName = swiftMethodName
     }
     
-    struct Builder {
-        var setup = ""      // all variable copies and _result go here
-        var args: [String] = []
-        var call = ""       // call to helper goes here.
-        var result = ""     // return of _result goes here.
-    }
-    var builder = Builder()
-    
     var signatureArgs: [String] = []
-    var argSetup = ""
-    var varArgSetup = ""
-    var varArgSetupInit = ""
-    if method.isVararg {
-        varArgSetupInit = "\nlet content = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n" +
-        "defer { content.deallocate () }\n"
-    
-        varArgSetup += "for idx in 0..<arguments.count {\n"
-        varArgSetup += "    content [idx] = arguments [idx].content\n"
-        varArgSetup += "    _args.append(content.baseAddress! + idx)\n"
-        varArgSetup += "}\n"
-    }
     let godotReturnType = method.returnValue?.type
     let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
     let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
@@ -683,58 +666,26 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
 
             if method.isVararg {
                 if isRefOptional {
-                    argSetup += "let copy_\(arg.name) = \(reference) == nil ? Variant() : Variant (\(reference)!)\n"
                 } else {
-                    argSetup += "let copy_\(arg.name) = Variant (\(reference))\n"
                 }
             } else if arg.type == "String" {
-                argSetup += "let gstr_\(arg.name) = GString (\(reference))\n"
             } else if argTypeNeedsCopy(godotType: arg.type) {
                 // Wrap in an Int
                 if arg.type.starts(with: "enum::") {
                     reference = "Int64 (\(reference).rawValue)"
                 }
                 if isSmallInt (arg) {
-                    argSetup += "var copy_\(arg.name): Int = Int (\(reference))\n"
                 } else {
-                    argSetup += "var copy_\(arg.name) = \(reference)\n"
                 }
             }
         }
         if method.isVararg {
             signatureArgs.append("_ arguments: Variant...")
         }
-        // generate a helper function, a la withUnsafePointers() above, which
-        // combines extracting the parameters into pointers and packing them into the _args array.
-        // We can modularize this by creating functions that generate the return type and return
-        // statements.
 
-#if os(Windows)
-        // Workaround for: https://github.com/migueldeicaza/SwiftGodot/issues/299
-        builder.setup = "#if false\n\n"
-#else
-        if method.isVararg {
-            builder.setup = "#if false\n\n"
-        } else {
-            builder.setup = "#if true\n\n"
-        }
-#endif
-        builder.setup += argSetup
-        // Use implicit bridging to build _args array of type [UnsafeMutableRawPointer?]. This preserves the
-        // values of the parameters, because they are treated as inout parameters. Then cast to [UnsafeRawPointer?],
-        // because of how GDExtensionInterfaceObjectMethodBindPtrcall is declared:
-        // public typealias GDExtensionInterfaceObjectMethodBindPtrcall = @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
-        // UnsafePointer<GDExtensionConstTypePtr?>? is equivalent to UnsafePointer<UnsafeRawPointer?>? or [UnsafeRawPointer?].
-        argSetup += "var _args: [UnsafeRawPointer?] = []\n"
         for arg in margs {
-            // When we move from GString to String in the public API
-            //                if arg.type == "String" {
-            //                    argSetup += "stringToGodotHandle (\(arg.name))\n"
-            //                } else
-            //                {
             var argref: String
             var optstorage: String
-            var needAddress = "&"
             //var isRefParameter = false
             var refParameterIsOptional = false
             if method.isVararg {
@@ -759,42 +710,22 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                         // The next two are unused, because we set isRefParameter,
                         // but for documentation/clarity purposes
                         optstorage = ".handle"
-                        needAddress = ""
                         //isRefParameter = true
                         
                         refParameterIsOptional = isMethodArgumentOptional (className: className, method: method.name, arg: arg.name)
                     }
                 }
             }
-            // With Godot 4.1 we need to pass the address of the handle
-            let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
-            let retFromWith = returnType != "" ? "return " : ""
 
             if refParameterIsOptional || optstorage == ".handle" {
                 let ea = escapeSwift(argref)
-                let deref = refParameterIsOptional ? "?" : ""
-                let accessPar = refParameterIsOptional ? "\(ea) == nil ? nil : p\(withUnsafeCallNestLevel)" : "p\(withUnsafeCallNestLevel)"
-                argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ea)\(deref).handle) { p\(withUnsafeCallNestLevel) in\n\(prefix)_args.append (\(accessPar))\n"
-                withUnsafeCallNestLevel += 1
-                let handle_ref = "copy_\(arg.name)_handle"
-                builder.setup += "var \(handle_ref) = \(ea)\(deref).handle\n"
-                builder.args.append("&\(handle_ref)")
-            } else {
-                argSetup += "\(prefix)\(retFromWith)withUnsafePointer (to: \(needAddress)\(escapeSwift(argref))\(optstorage)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    _args.append (p\(withUnsafeCallNestLevel))\n"
-                withUnsafeCallNestLevel += 1
-                builder.args.append("\(needAddress)\(escapeSwift(argref))\(optstorage)")
             }
         }
-        argSetup += varArgSetupInit.indented(by: withUnsafeCallNestLevel)
-        argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
     } else if method.isVararg {
         // No regular arguments, check if these are varargs
         if method.isVararg {
             signatureArgs.append("_ arguments: Variant...")
         }
-        argSetup += "var _args: [UnsafeRawPointer?] = []\n"
-        argSetup += varArgSetupInit.indented(by: withUnsafeCallNestLevel)
-        argSetup += varArgSetup.indented(by: withUnsafeCallNestLevel)
     }
     
     if inlineAttribute != "" {

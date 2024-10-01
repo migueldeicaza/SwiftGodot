@@ -14,7 +14,7 @@ func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
 }
 
-func isSmallInt (_ arg: JGodotArgument) -> Bool {
+func isSmallInt(_ arg: JGodotArgument) -> Bool {
     if arg.type != "int" {
         return false
     }
