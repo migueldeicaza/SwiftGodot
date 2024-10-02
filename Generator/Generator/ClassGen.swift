@@ -277,9 +277,11 @@ func generateMethods (_ p: Printer,
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
-    for method in methods {        
-        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
-            virtuals [method.name] = (virtualMethodName, method)
+    for method in methods {
+        performExplaniningNonCriticalErrors {
+            if let virtualMethodName = try generateMethod (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, generatedMethodKind: .classMethod, asSingleton: asSingleton) {
+                virtuals[method.name] = (virtualMethodName, method)
+            }
         }
     }
     
@@ -533,7 +535,7 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 lambdaIgnore += ", "
                 lambdaFull += ", "
             }
-            args += getArgumentDeclaration(arg, eliminate: "_ ", isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: true, isOptional: false)
             let construct: String
             
             if let _ = classMap [arg.type] {

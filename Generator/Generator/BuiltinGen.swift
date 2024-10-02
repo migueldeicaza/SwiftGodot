@@ -102,7 +102,7 @@ func generateBuiltinCtors (_ p: Printer,
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: false, kind: .builtInField, isOptional: false)
         }
         
         if let desc = m.description, desc != "" {
@@ -174,30 +174,25 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            var (argPrepare, nestLevel, argsRef) = generateArgPrepare(isVararg: false, m.arguments ?? [], methodHasReturn: false)
-            if argPrepare != "" {
-                p (argPrepare)
-                if nestLevel > 0 {
-                    p.indent += nestLevel
-                }
+            
+            let arguments = (m.arguments ?? []).map {
+                // must not fail
+                try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
             }
             
-            // Call
-            p ("\(typeName).\(ptrName) (&\(ptr), \(argsRef))")
-            
-            // Unwrap the nested calls to 'withUnsafePointer'
-            while nestLevel > 0 {
-                nestLevel -= 1
-                p.indent -= 1
-                p ("}")
+            if arguments.isEmpty {
+                preparingArguments(p, arguments: arguments) {
+                    p ("\(typeName).\(ptrName)(&\(ptr), nil)")
+                }
+            } else {
+                preparingArguments(p, arguments: arguments) {
+                    aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
+                        p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
+                    }
+                }
             }
         }
     }
-}
-
-enum MethodCallKind {
-    case methodCall
-    case operatorCall
 }
 
 func generateMethodCall (_ p: Printer,
@@ -206,12 +201,11 @@ func generateMethodCall (_ p: Printer,
                          godotReturnType: String?,
                          isStatic: Bool,
                          isVararg: Bool,
-                         arguments: [JGodotArgument]?,
-                         kind: MethodCallKind) {
-    let has_return = godotReturnType != nil
+                         arguments: [JGodotArgument]) {
+    let hasReturnStatement = godotReturnType != nil
     
     let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
-    if has_return {
+    if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
             p ("let result = GString ()")
         } else {
@@ -223,16 +217,13 @@ func generateMethodCall (_ p: Printer,
         }
     }
     
-    var (argPrep, nestLevel, argsRef) = generateArgPrepare(isVararg: isVararg, arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
-    if argPrep != "" {
-        p (argPrep)
-        if nestLevel > 0 {
-            p.indent += nestLevel
-        }
+    let methodArguments = arguments.map { argument in
+        // must never fail
+        try! MethodArgument(from: argument, typeName: typeName, methodName: methodToCall, options: .builtInClassOptions)
     }
         
     let ptrResult: String
-    if has_return {
+    if hasReturnStatement {
         let isStruct = isStructMap [godotReturnType ?? ""] ?? false
         if isStruct {
             ptrResult = "&result"
@@ -243,42 +234,38 @@ func generateMethodCall (_ p: Printer,
         ptrResult = "nil"
     }
     
-    // Method calls pass the number of parameters to the method
-    var argCount: String
-    if isVararg {
-        // All the arguments that we accumulated, count dynamically
-        argCount = "Int32(args.count)"
-    } else {
-        // We know statically the number of arguments, harcode that
-        argCount = "\(arguments?.count ?? 0)"
+    generateMethodCall(p, isVariadic: isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
+        let countArg: String
+        
+        switch count {
+        case .literal(let literal):
+            countArg = "\(literal)"
+        case .expression(let expr):
+            countArg = "Int32(\(expr))"
+        }
+        
+        if isStatic {
+            return "\(typeName).\(methodToCall)(nil, \(argsRef), \(ptrResult), \(countArg))"
+        } else {
+            if isStructMap [typeName] ?? false {
+                return """
+                var mutSelfCopy = self
+                withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in
+                   \(typeName).\(methodToCall)(ptr, \(argsRef), \(ptrResult), \(countArg))
+                }
+                """
+            } else {
+                return "\(typeName).\(methodToCall)(&content, \(argsRef), \(ptrResult), \(countArg))"
+            }
+        }
     }
-    let numberOfArgs = kind == .methodCall ? ", \(argCount)" : ""
     
-    if isStatic {
-            p ("\(typeName).\(methodToCall) (nil, \(argsRef), \(ptrResult)\(numberOfArgs))")
-    } else {
-        if isStructMap [typeName] ?? false {
-            p ("var mutSelfCopy = self")
-            p ("withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in ")
-            p ("    \(typeName).\(methodToCall) (ptr, \(argsRef), \(ptrResult)\(numberOfArgs))")
-            p ("}")
-        } else {
-            p ("\(typeName).\(methodToCall) (&content, \(argsRef), \(ptrResult)\(numberOfArgs))")
-        }
-    }
-    if has_return {
-        // let cast = castGodotToSwift (m.returnType, "result")
+    if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
-            p ("return result.description")
+            p("return result.description")
         } else {
-            p ("return result")
+            p("return result")
         }
-    }
-    // Unwrap the nested calls to 'withUnsafePointer'
-    while nestLevel > 0 {
-        nestLevel -= 1
-        p.indent -= 1
-        p ("}")
     }
 }
 
@@ -392,12 +379,24 @@ func generateBuiltinOperators (_ p: Printer,
                 } else {
                     ptrResult = "&result.content"
                 }
-                let rhsa = JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
-                let rhs = getArgRef (arg: rhsa)
-                let lhsa = JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil)
-                let lhs = getArgRef (arg: lhsa)
-                p (generateCopies([lhsa, rhsa]))
-                p ("\(typeName).\(ptrName) (\(lhs), \(rhs), \(ptrResult))")
+                let lhsa = try! MethodArgument(
+                    from: JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
+                    typeName: godotTypeName,
+                    methodName: "#operator\(swiftOperator)",
+                    options: .builtInClassOptions
+                )
+                
+                let rhsa = try! MethodArgument(
+                    from: JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil),
+                    typeName: godotTypeName,
+                    methodName: "#operator\(swiftOperator)",
+                    options: .builtInClassOptions
+                )
+                    
+                preparingArguments(p, arguments: [lhsa, rhsa]) {
+                    p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
+                }
+                
                 if op.returnType == "String" && mapStringToSwift {
                     p ("return result.description")
                 } else {
@@ -453,13 +452,15 @@ func generateBuiltinMethods (_ p: Printer,
         }
         
         for arg in m.arguments ?? [] {
-            var eliminate: String = ""
+            let omitFirstLabel: Bool
             // Omit first argument label, if necessary
             if args.isEmpty, shouldOmitFirstArgLabel(typeName: typeName, methodName: m.name, argName: arg.name) {
-                eliminate = "_ "
+                omitFirstLabel = true
+            } else {
+                omitFirstLabel = false
             }
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: omitFirstLabel, isOptional: false)
         }
         if m.isVararg {
             if args != "" { args += ", " }
@@ -488,7 +489,7 @@ func generateBuiltinMethods (_ p: Printer,
                 p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
             }
             
-            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments, kind: .methodCall)
+            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
             
             if let customImplementation {
                 p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
