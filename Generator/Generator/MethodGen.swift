@@ -179,11 +179,22 @@ struct MethodArgument {
         }
         
         self.name = godotArgumentToSwift(src.name)
-        
+
+        // Splits a string that might contain '::' into either two, or a single element
+        func typeSplit (_ type: String) -> [String.SubSequence] {
+            if let r = type.range(of: "::") {
+                return [
+                    type[type.startIndex..<r.lowerBound],
+                    type[r.upperBound...]
+                ]
+            } else {
+                return [type [type.startIndex...]]
+            }
+        }
         if src.type.contains("*") {
             translation = .cPointer
         } else {
-            let tokens = src.type.split(separator: "::")
+            let tokens = typeSplit (src.type)
             
             switch tokens.count {
             case 1:
