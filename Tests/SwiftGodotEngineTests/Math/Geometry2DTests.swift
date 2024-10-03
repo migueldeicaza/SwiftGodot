@@ -554,12 +554,12 @@ final class Geometry2DTests: GodotTestCase {
         r = Geometry2D.clipPolylineWithPolygon (polyline: l, polygon: p)
         XCTAssertEqual (r.size (), 2, "There should be 2 resulting clipped lines.")
         XCTAssertEqual (r [safe: 0]?.size (), 3, "The resulting clipped line should have 3 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 160, y: 320))
+        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 121.412682, y: 225.038757))
         assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 122, y: 250))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 121.412682, y: 225.038757))
+        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 160, y: 320))
         XCTAssertEqual (r [safe: 1]?.size (), 2, "The resulting clipped line should have 2 vertices.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 53.07737, y: 116.143021))
-        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 55, y: 70))
+        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 55, y: 70))
+        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 53.07737, y: 116.143021))
     }
 
     func testConvexHull () {
