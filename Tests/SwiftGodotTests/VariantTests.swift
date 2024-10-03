@@ -19,6 +19,62 @@ final class VariantTests: GodotTestCase {
         XCTAssertEqual (unwrapped, testString)
     }
     
+    func testVariantCall() {
+        let string = "Hello Hello Hello Hello"
+        let variant = Variant(string)
+        
+        switch variant.call(method: "count", Variant("ello"), Variant(0), Variant(11)) {
+        case .success(let value):
+            guard let value = Int(value) else {
+                XCTFail("Expected \(Variant.GType.int.debugDescription), got \(value.gtype.debugDescription) instead")
+                return
+            }
+            XCTAssertEqual(value, 2, "ello appears twice in `\(string)` from index 0 to 11, got \(value) instead")
+        case .failure(let error):
+            XCTFail("\(error)")
+            return
+        }
+        
+        switch variant.call(method: "count", Variant("ello"), Variant(0), Variant(0)) {
+        case .success(let value):
+            guard let value = Int(value) else {
+                XCTFail("Expected \(Variant.GType.int.debugDescription), got \(value.gtype.debugDescription) instead")
+                return
+            }
+            XCTAssertEqual(value, 4, "ello appears twice in `\(string)`, got \(value) instead")
+        case .failure(let error):
+            XCTFail("\(error)")
+            return
+        }
+                        
+        // Check special treatment for a single argument case
+        switch variant.call(method: "ends_with", Variant("llo")) {
+        case .success(let value):
+            guard let value = Bool(value) else {
+                XCTFail("Expected \(Variant.GType.bool.debugDescription), got \(value.gtype.debugDescription) instead")
+                return
+            }
+            XCTAssertTrue(value, "`\(string)` ends with `llo`, got `false` instead")
+        case .failure(let error):
+            XCTFail("\(error)")
+            return
+        }
+        
+        // Check special treatment for a zero arguments case
+        switch variant.call(method: "is_empty") {
+        case .success(let value):
+            guard let value = Bool(value) else {
+                XCTFail("Expected \(Variant.GType.bool.debugDescription), got \(value.gtype.debugDescription) instead")
+                return
+            }
+            XCTAssertFalse(value, "`\(string)` is not empty, got `true` instead")
+        case .failure(let error):
+            XCTFail("\(error)")
+            return
+        }
+                              
+    }
+    
     func testInitVariantStorable () {
         var variant: Variant
         

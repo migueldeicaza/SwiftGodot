@@ -33,7 +33,7 @@ class Car: Node {
 class Car: Node {
     var vehicle_make: String = "Mazda"
 
-    func _mproxy_set_vehicle_make (args: [Variant]) -> Variant? {
+    func _mproxy_set_vehicle_make (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -45,12 +45,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_vehicle_make (args: [Variant]) -> Variant? {
+    func _mproxy_get_vehicle_make (args: borrowing Arguments) -> Variant? {
         return Variant (vehicle_make)
     }
     var vehicle_model: String = "RX7"
 
-    func _mproxy_set_vehicle_model (args: [Variant]) -> Variant? {
+    func _mproxy_set_vehicle_model (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -62,7 +62,7 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_vehicle_model (args: [Variant]) -> Variant? {
+    func _mproxy_get_vehicle_model (args: borrowing Arguments) -> Variant? {
         return Variant (vehicle_model)
     }
 
@@ -71,7 +71,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -119,7 +119,7 @@ class Car: Node {
 class Car: Node {
     var make: String = "Mazda"
 
-    func _mproxy_set_make (args: [Variant]) -> Variant? {
+    func _mproxy_set_make (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -131,12 +131,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_make (args: [Variant]) -> Variant? {
+    func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
         return Variant (make)
     }
     var model: String = "RX7"
 
-    func _mproxy_set_model (args: [Variant]) -> Variant? {
+    func _mproxy_set_model (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -148,7 +148,7 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_model (args: [Variant]) -> Variant? {
+    func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
         return Variant (model)
     }
 
@@ -157,7 +157,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -206,7 +206,7 @@ class Car: Node {
 class Car: Node {
     var vin: String = "00000000000000000"
 
-    func _mproxy_set_vin (args: [Variant]) -> Variant? {
+    func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -218,12 +218,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_vin (args: [Variant]) -> Variant? {
+    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
         return Variant (vin)
     }
     var year: Int = 1997
 
-    func _mproxy_set_year (args: [Variant]) -> Variant? {
+    func _mproxy_set_year (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -235,7 +235,7 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_year (args: [Variant]) -> Variant? {
+    func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
         return Variant (year)
     }
 
@@ -244,7 +244,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -292,7 +292,7 @@ class Car: Node {
 class Car: Node {
     var vin: String = "00000000000000000"
 
-    func _mproxy_set_vin (args: [Variant]) -> Variant? {
+    func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -304,12 +304,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_vin (args: [Variant]) -> Variant? {
+    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
         return Variant (vin)
     }
     var year: Int = 1997
 
-    func _mproxy_set_year (args: [Variant]) -> Variant? {
+    func _mproxy_set_year (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -321,7 +321,7 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_year (args: [Variant]) -> Variant? {
+    func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
         return Variant (year)
     }
 
@@ -330,7 +330,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -382,7 +382,7 @@ class Car: Node {
 class Car: Node {
     var vin: String = ""
 
-    func _mproxy_set_vin (args: [Variant]) -> Variant? {
+    func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -394,12 +394,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_vin (args: [Variant]) -> Variant? {
+    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
         return Variant (vin)
     }
     var year: Int = 1997
 
-    func _mproxy_set_year (args: [Variant]) -> Variant? {
+    func _mproxy_set_year (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -411,12 +411,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_year (args: [Variant]) -> Variant? {
+    func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
         return Variant (year)
     }
     var make: String = "HONDA"
 
-    func _mproxy_set_make (args: [Variant]) -> Variant? {
+    func _mproxy_set_make (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -428,12 +428,12 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_make (args: [Variant]) -> Variant? {
+    func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
         return Variant (make)
     }
     var model: String = "ACCORD"
 
-    func _mproxy_set_model (args: [Variant]) -> Variant? {
+    func _mproxy_set_model (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -445,7 +445,7 @@ class Car: Node {
     	return nil
     }
 
-    func _mproxy_get_model (args: [Variant]) -> Variant? {
+    func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
         return Variant (model)
     }
 
@@ -454,7 +454,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -524,11 +524,11 @@ class Car: Node {
 class Car: Node {
     var makes: VariantCollection<String> = ["Mazda"]
 
-    func _mproxy_get_makes(args: [Variant]) -> Variant? {
+    func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
     	return Variant(makes.array)
     }
 
-    func _mproxy_set_makes(args: [Variant]) -> Variant? {
+    func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -540,11 +540,11 @@ class Car: Node {
     }
     var model: VariantCollection<String> = ["RX7"]
 
-    func _mproxy_get_model(args: [Variant]) -> Variant? {
+    func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
     	return Variant(model.array)
     }
 
-    func _mproxy_set_model(args: [Variant]) -> Variant? {
+    func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -560,7 +560,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -609,11 +609,11 @@ class Car: Node {
 class Car: Node {
     var vins: VariantCollection<String> = ["00000000000000000"]
 
-    func _mproxy_get_vins(args: [Variant]) -> Variant? {
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
     	return Variant(vins.array)
     }
 
-    func _mproxy_set_vins(args: [Variant]) -> Variant? {
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -625,11 +625,11 @@ class Car: Node {
     }
     var years: VariantCollection<Int> = [1997]
 
-    func _mproxy_get_years(args: [Variant]) -> Variant? {
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
     	return Variant(years.array)
     }
 
-    func _mproxy_set_years(args: [Variant]) -> Variant? {
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -645,7 +645,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -693,11 +693,11 @@ class Car: Node {
 class Car: Node {
     var vins: VariantCollection<String> = ["00000000000000000"]
 
-    func _mproxy_get_vins(args: [Variant]) -> Variant? {
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
     	return Variant(vins.array)
     }
 
-    func _mproxy_set_vins(args: [Variant]) -> Variant? {
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -709,11 +709,11 @@ class Car: Node {
     }
     var years: VariantCollection<Int> = [1997]
 
-    func _mproxy_get_years(args: [Variant]) -> Variant? {
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
     	return Variant(years.array)
     }
 
-    func _mproxy_set_years(args: [Variant]) -> Variant? {
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -729,7 +729,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -781,11 +781,11 @@ class Car: Node {
 class Car: Node {
     var vins: VariantCollection<String> = [""]
 
-    func _mproxy_get_vins(args: [Variant]) -> Variant? {
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
     	return Variant(vins.array)
     }
 
-    func _mproxy_set_vins(args: [Variant]) -> Variant? {
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -797,11 +797,11 @@ class Car: Node {
     }
     var years: VariantCollection<Int> = [1997]
 
-    func _mproxy_get_years(args: [Variant]) -> Variant? {
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
     	return Variant(years.array)
     }
 
-    func _mproxy_set_years(args: [Variant]) -> Variant? {
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -813,11 +813,11 @@ class Car: Node {
     }
     var makes: VariantCollection<String> = ["HONDA"]
 
-    func _mproxy_get_makes(args: [Variant]) -> Variant? {
+    func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
     	return Variant(makes.array)
     }
 
-    func _mproxy_set_makes(args: [Variant]) -> Variant? {
+    func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -829,11 +829,11 @@ class Car: Node {
     }
     var models: VariantCollection<String> = ["ACCORD"]
 
-    func _mproxy_get_models(args: [Variant]) -> Variant? {
+    func _mproxy_get_models(args: borrowing Arguments) -> Variant? {
     	return Variant(models.array)
     }
 
-    func _mproxy_set_models(args: [Variant]) -> Variant? {
+    func _mproxy_set_models(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -849,7 +849,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -921,11 +921,11 @@ class Car: Node {
 class Car: Node {
     var makes: ObjectCollection<Node> = []
 
-    func _mproxy_get_makes(args: [Variant]) -> Variant? {
+    func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
     	return Variant(makes.array)
     }
 
-    func _mproxy_set_makes(args: [Variant]) -> Variant? {
+    func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -937,11 +937,11 @@ class Car: Node {
     }
     var model: ObjectCollection<Node> = []
 
-    func _mproxy_get_model(args: [Variant]) -> Variant? {
+    func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
     	return Variant(model.array)
     }
 
-    func _mproxy_set_model(args: [Variant]) -> Variant? {
+    func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -957,7 +957,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1005,11 +1005,11 @@ class Car: Node {
 class Car: Node {
     var vins: ObjectCollection<Node> = []
 
-    func _mproxy_get_vins(args: [Variant]) -> Variant? {
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
     	return Variant(vins.array)
     }
 
-    func _mproxy_set_vins(args: [Variant]) -> Variant? {
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1021,11 +1021,11 @@ class Car: Node {
     }
     var years: ObjectCollection<Node> = []
 
-    func _mproxy_get_years(args: [Variant]) -> Variant? {
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
     	return Variant(years.array)
     }
 
-    func _mproxy_set_years(args: [Variant]) -> Variant? {
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1041,7 +1041,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1089,11 +1089,11 @@ class Car: Node {
 class Car: Node {
     var vins: ObjectCollection<Node> = []
 
-    func _mproxy_get_vins(args: [Variant]) -> Variant? {
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
     	return Variant(vins.array)
     }
 
-    func _mproxy_set_vins(args: [Variant]) -> Variant? {
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1105,11 +1105,11 @@ class Car: Node {
     }
     var years: ObjectCollection<Node> = []
 
-    func _mproxy_get_years(args: [Variant]) -> Variant? {
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
     	return Variant(years.array)
     }
 
-    func _mproxy_set_years(args: [Variant]) -> Variant? {
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1125,7 +1125,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1177,11 +1177,11 @@ class Car: Node {
 class Car: Node {
     var vins: ObjectCollection<Node> = []
 
-    func _mproxy_get_vins(args: [Variant]) -> Variant? {
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
     	return Variant(vins.array)
     }
 
-    func _mproxy_set_vins(args: [Variant]) -> Variant? {
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1193,11 +1193,11 @@ class Car: Node {
     }
     var years: ObjectCollection<Node> = []
 
-    func _mproxy_get_years(args: [Variant]) -> Variant? {
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
     	return Variant(years.array)
     }
 
-    func _mproxy_set_years(args: [Variant]) -> Variant? {
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1209,11 +1209,11 @@ class Car: Node {
     }
     var makes: ObjectCollection<Node> = []
 
-    func _mproxy_get_makes(args: [Variant]) -> Variant? {
+    func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
     	return Variant(makes.array)
     }
 
-    func _mproxy_set_makes(args: [Variant]) -> Variant? {
+    func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1225,11 +1225,11 @@ class Car: Node {
     }
     var models: ObjectCollection<Node> = []
 
-    func _mproxy_get_models(args: [Variant]) -> Variant? {
+    func _mproxy_get_models(args: borrowing Arguments) -> Variant? {
     	return Variant(models.array)
     }
 
-    func _mproxy_set_models(args: [Variant]) -> Variant? {
+    func _mproxy_set_models(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1245,7 +1245,7 @@ class Car: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
@@ -1323,7 +1323,7 @@ class Garage: Node {
 class Garage: Node {
     var name: String = ""
 
-    func _mproxy_set_name (args: [Variant]) -> Variant? {
+    func _mproxy_set_name (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -1335,12 +1335,12 @@ class Garage: Node {
     	return nil
     }
 
-    func _mproxy_get_name (args: [Variant]) -> Variant? {
+    func _mproxy_get_name (args: borrowing Arguments) -> Variant? {
         return Variant (name)
     }
     var rating: Float = 0.0
 
-    func _mproxy_set_rating (args: [Variant]) -> Variant? {
+    func _mproxy_set_rating (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -1352,16 +1352,16 @@ class Garage: Node {
     	return nil
     }
 
-    func _mproxy_get_rating (args: [Variant]) -> Variant? {
+    func _mproxy_get_rating (args: borrowing Arguments) -> Variant? {
         return Variant (rating)
     }
     var reviews: VariantCollection<String> = []
 
-    func _mproxy_get_reviews(args: [Variant]) -> Variant? {
+    func _mproxy_get_reviews(args: borrowing Arguments) -> Variant? {
     	return Variant(reviews.array)
     }
 
-    func _mproxy_set_reviews(args: [Variant]) -> Variant? {
+    func _mproxy_set_reviews(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1373,11 +1373,11 @@ class Garage: Node {
     }
     var checkIns: ObjectCollection<CheckIn> = []
 
-    func _mproxy_get_checkIns(args: [Variant]) -> Variant? {
+    func _mproxy_get_checkIns(args: borrowing Arguments) -> Variant? {
     	return Variant(checkIns.array)
     }
 
-    func _mproxy_set_checkIns(args: [Variant]) -> Variant? {
+    func _mproxy_set_checkIns(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1389,7 +1389,7 @@ class Garage: Node {
     }
     var address: String = ""
 
-    func _mproxy_set_address (args: [Variant]) -> Variant? {
+    func _mproxy_set_address (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -1401,16 +1401,16 @@ class Garage: Node {
     	return nil
     }
 
-    func _mproxy_get_address (args: [Variant]) -> Variant? {
+    func _mproxy_get_address (args: borrowing Arguments) -> Variant? {
         return Variant (address)
     }
     var daysOfOperation: VariantCollection<String> = []
 
-    func _mproxy_get_daysOfOperation(args: [Variant]) -> Variant? {
+    func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> Variant? {
     	return Variant(daysOfOperation.array)
     }
 
-    func _mproxy_set_daysOfOperation(args: [Variant]) -> Variant? {
+    func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1422,11 +1422,11 @@ class Garage: Node {
     }
     var hours: VariantCollection<String> = []
 
-    func _mproxy_get_hours(args: [Variant]) -> Variant? {
+    func _mproxy_get_hours(args: borrowing Arguments) -> Variant? {
     	return Variant(hours.array)
     }
 
-    func _mproxy_set_hours(args: [Variant]) -> Variant? {
+    func _mproxy_set_hours(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1438,11 +1438,11 @@ class Garage: Node {
     }
     var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
 
-    func _mproxy_get_insuranceProvidersAccepted(args: [Variant]) -> Variant? {
+    func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
     	return Variant(insuranceProvidersAccepted.array)
     }
 
-    func _mproxy_set_insuranceProvidersAccepted(args: [Variant]) -> Variant? {
+    func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1458,7 +1458,7 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
@@ -1567,7 +1567,7 @@ class Garage: Node {
 class Garage: Node {
     var bar: Bool = false
 
-    func _mproxy_set_bar (args: [Variant]) -> Variant? {
+    func _mproxy_set_bar (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -1579,7 +1579,7 @@ class Garage: Node {
     	return nil
     }
 
-    func _mproxy_get_bar (args: [Variant]) -> Variant? {
+    func _mproxy_get_bar (args: borrowing Arguments) -> Variant? {
         return Variant (bar)
     }
 
@@ -1588,7 +1588,7 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
@@ -1626,7 +1626,7 @@ public class Issue353: Node {
 public class Issue353: Node {
     var prefix1_prefixed_bool: Bool = true
 
-    func _mproxy_set_prefix1_prefixed_bool (args: [Variant]) -> Variant? {
+    func _mproxy_set_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -1638,12 +1638,12 @@ public class Issue353: Node {
     	return nil
     }
 
-    func _mproxy_get_prefix1_prefixed_bool (args: [Variant]) -> Variant? {
+    func _mproxy_get_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
         return Variant (prefix1_prefixed_bool)
     }
     var non_prefixed_bool: Bool = true
 
-    func _mproxy_set_non_prefixed_bool (args: [Variant]) -> Variant? {
+    func _mproxy_set_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -1655,7 +1655,7 @@ public class Issue353: Node {
     	return nil
     }
 
-    func _mproxy_get_non_prefixed_bool (args: [Variant]) -> Variant? {
+    func _mproxy_get_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
         return Variant (non_prefixed_bool)
     }
 
@@ -1664,7 +1664,7 @@ public class Issue353: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)
@@ -1711,11 +1711,11 @@ class Garage: Node {
 class Garage: Node {
     var bar: VariantCollection<Bool> = [false]
 
-    func _mproxy_get_bar(args: [Variant]) -> Variant? {
+    func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
     	return Variant(bar.array)
     }
 
-    func _mproxy_set_bar(args: [Variant]) -> Variant? {
+    func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1731,7 +1731,7 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
@@ -1769,11 +1769,11 @@ public class Issue353: Node {
 public class Issue353: Node {
     var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
 
-    func _mproxy_get_prefix1_prefixed_bool(args: [Variant]) -> Variant? {
+    func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
     	return Variant(prefix1_prefixed_bool.array)
     }
 
-    func _mproxy_set_prefix1_prefixed_bool(args: [Variant]) -> Variant? {
+    func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1785,11 +1785,11 @@ public class Issue353: Node {
     }
     var non_prefixed_bool: VariantCollection<Bool> = [false]
 
-    func _mproxy_get_non_prefixed_bool(args: [Variant]) -> Variant? {
+    func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
     	return Variant(non_prefixed_bool.array)
     }
 
-    func _mproxy_set_non_prefixed_bool(args: [Variant]) -> Variant? {
+    func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first,
     		  let gArray = GArray(arg),
     		  gArray.isTyped(),
@@ -1805,7 +1805,7 @@ public class Issue353: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)

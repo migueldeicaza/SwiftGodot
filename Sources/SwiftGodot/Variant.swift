@@ -68,14 +68,15 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     static var zero: ContentType = (0, 0, 0)
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
-    init (fromContent: ContentType) {
-        var copy = fromContent
-        gi.variant_new_copy (&content, &copy)
+    init(copying otherContent: ContentType) {
+        withUnsafePointer(to: otherContent) { src in
+            gi.variant_new_copy(&content, src)
+        }
     }
-
-    /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
-    init (fromContentPtr: inout ContentType) {
-        gi.variant_new_copy (&content, &fromContentPtr)
+    
+    /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
+    init(takingOver other: ContentType) {
+        self.content = other
     }
 
     deinit {
@@ -105,16 +106,23 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     /// Creates a new Variant based on a copy of the reference variant passed in
     public init (_ other: Variant) {
-        var copy = other.content
         withUnsafeMutablePointer(to: &content) { selfPtr in
-            withUnsafeMutablePointer(to: &copy) { ptr in
-                gi.variant_new_copy (selfPtr, ptr)
+            withUnsafePointer(to: other.content) { ptr in
+                gi.variant_new_copy(selfPtr, ptr)
             }
         }
     }
     
     convenience public init(_ value: some VariantStorable) {
         self.init(representable: value.toVariantRepresentable())
+    }
+    
+    convenience public init(_ value: (some VariantStorable)?) {
+        if let value {
+            self.init(value)
+        } else {
+            self.init()
+        }
     }
     
     private init<T: VariantRepresentable>(representable value: T) {
@@ -146,14 +154,14 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
     
     ///
-    /// Attempts to cast the Variant into a GodotObject, if the variant contains a value of type `.object`, then
+    /// Attempts to cast the Variant into a SwiftGodot.Object, if the variant contains a value of type `.object`, then
     // this will return the object.  If the variant contains the nil value, or the content of the variant is not
     /// a `.object, the value `nil` is returned.
     ///
     /// - Parameter type: the desired type eg. `.asObject(Node.self)`
     /// - Returns: nil on error, or the type on success
     ///
-    public func asObject<T:GodotObject> (_ type: T.Type = T.self) -> T? {
+    public func asObject<T: Object> (_ type: T.Type = T.self) -> T? {
         guard gtype == .object else {
             return nil
         }
@@ -163,10 +171,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             return nil
         }
         let ret: T? = lookupObject(nativeHandle: value)
-        if let rc = ret as? RefCounted {
-            // When we pull out a refcounted out of a Variant, take a reference
-            rc.reference ()
-        }
         return ret
     }
     
@@ -188,27 +192,57 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     ///  - method: name of the method to invoke
     ///  - arguments: variable list of arguments to pass to the method
     /// - Returns: on success, the variant result, on error, the reason
-    public func call (method: StringName, _ arguments: Variant...) -> Result<Variant,CallErrorType> {
-        let copy_method = method
-        var _result: Variant.ContentType = Variant.zero
-        var _args: [UnsafeRawPointer?] = []
-        var copy_content = content
-        //return withUnsafePointer (to: &copy_method.content) { p0 in
-//            _args.append (p0)
+    public func call(method: StringName, _ arguments: Variant...) -> Result<Variant, CallErrorType> {
+        var result = Variant.zero
         
-        let content = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
-        defer { content.deallocate () }
-        for idx in 0..<arguments.count {
-            content [idx] = arguments [idx].content
-            _args.append (content.baseAddress! + idx)
+        // Shadow self.content, we just need a copy of it locally
+        var content = content
+        
+        var err = GDExtensionCallError()
+        
+        if arguments.count == 1 {
+            var argContent = arguments.first!.content
+            withUnsafePointer(to: &argContent) { ptr in
+                gi.variant_call(&content, &method.content, ptr, 1, &result, &err)
+            }
+        } else if arguments.count > 1 {
+            // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
+            withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
+                // We use entire buffer so can initialize every element in the end. It's not
+                // necessary for UnsafeRawPointer and other POD types (which Variant.ContentType also is)
+                // but we'll do it for the sake of correctness
+                defer { pArgsBuffer.deinitialize() }
+                guard let pArgs = pArgsBuffer.baseAddress else {
+                    fatalError("pargsBuffer.baseAddress is nil")
+                }
+                             
+                // A temporary allocation containing `Variant.ContentType` of marshaled arguments
+                withUnsafeTemporaryAllocation(of: Variant.ContentType.self, capacity: arguments.count) { contentsBuffer in
+                    defer { contentsBuffer.deinitialize() }
+                    guard let contentsPtr = contentsBuffer.baseAddress else {
+                        fatalError("contentsBuffer.baseAddress is nil")
+                    }
+                    
+                    for i in 0..<arguments.count {
+                        // Copy `content`s of the variadic `Variant`s into `contentBuffer`
+                        contentsBuffer.initializeElement(at: i, to: arguments[i].content)
+                        
+                        // Initialize `pArgs` elements to point at respective contents of `contentsBuffer`
+                        pArgsBuffer.initializeElement(at: i, to: contentsPtr + i)
+                    }
+                    
+                    gi.variant_call(&content, &method.content, pArgs, Int64(arguments.count), &result, &err)
+                }
+            }
+        } else {
+            gi.variant_call(&content, &method.content, nil, 0, &result, &err)
         }
-        var err = GDExtensionCallError ()
         
-        gi.variant_call (&copy_content, &copy_method.content, &_args, Int64(_args.count), &_result, &err)
         if err.error != GDEXTENSION_CALL_OK {
             return .failure(toCallErrorType(err.error))
         }
-        return .success(Variant (fromContent: _result))
+        
+        return .success(Variant(takingOver: result))
     }
     
     /// Errors raised by the variant subscript
@@ -247,7 +281,8 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             if valid == 0 || oob != 0 {
                 return nil
             }
-            return Variant(fromContent: _result)
+                        
+            return Variant(takingOver: _result)
         }
         set {
             guard let newValue else {
@@ -264,11 +299,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     
     /// Gets the name of a Variant type.
-    public static func typeName (_ type: GType) -> String {
-        var res = GStringRaw()
+    public static func typeName(_ type: GType) -> String {
+        let res = GString()
         gi.variant_get_type_name (GDExtensionVariantType (GDExtensionVariantType.RawValue(type.rawValue)), &res.content)
         let ret = GString.stringFromGStringPtr(ptr: &res.content)
-        GString.destructor (&res.content)
         return ret ?? ""
     }
 }

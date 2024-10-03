@@ -1,8 +1,13 @@
 # SwiftGodot
 
+[![SwiftPM compatible](https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat)](https://swift.org/package-manager)
+![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-333333.svg?style=flat)
+[![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmigueldeicaza%2FSwiftGodot%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/migueldeicaza/SwiftGodot)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?maxAge=2592000)](https://raw.githubusercontent.com/migueldeicaza/SwiftGodot/main/LICENSE)
+
 SwiftGodot provides Swift language bindings for the Godot 4.2 game
-engine using the new GDExtension system (for 4.1 compatibility, use
-the 4.1 branch).
+engine using the new [GDExtension](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html) system (for 4.1 compatibility, use
+the 4.1 branch, preview for upcoming 4.3 release is in the 4.3 branch).
 
 SwiftGodot can be used to either build an extension that can be added
 to an existing Godot project, where your code is providing services
@@ -32,6 +37,20 @@ https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b81
 * No game stutters caused by GC, unlike C#.
 
 * Learn more: [Swift Godot: Fixing the Multi-million dollar mistake](https://www.youtube.com/watch?v=tzt36EGKEZo)
+
+# Quickly Getting Started
+
+The [SwiftGodotKick](https://github.com/EstevanBR/SwiftGodotKick) project can create a skeleton template
+GDExtension with Swift, as well as a standalone SwiftGodotKit project that can be used to quickly
+iterate on your game on MacOS.
+
+# Supported Platforms
+
+Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS, or Windows platforms. It may be possible to target additional platforms, but testing for other platforms has not been completed and stability cannot be verified at this time.
+
+# Development Status
+
+SwiftGodot is built on the GDExtension framework, which is still in an [experimental](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html#differences-between-gdextension-and-c-modules) state, and consequently SwiftGodot is still in an experimental state. Compatibility may break in order to fix major bugs or include critical features. That being said, much of the Godot API surface has been implemented and SwiftGodot is suitable for use in small to mid size projects.
 
 # Consuming SwiftGodot
 
@@ -132,7 +151,7 @@ func setupScene (level: GDExtension.InitializationLevel) {
 }
 
 // Export our entry point to Godot:
-@_cdecl ("swift_entry_point")
+@_cdecl("swift_entry_point")
 public func swift_entry_point(
     interfacePtr: OpaquePointer?,
     libraryPtr: OpaquePointer?,
@@ -215,5 +234,8 @@ is a Node3D subclass.
 
 ## Community
 
-
 Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-2aqygohvb-stSRGEAN~c3awuMwtaqCAA)
+
+## Contributing
+
+Have a bug fix or feature request you'd like to see added? Consider contributing! Join our [community](#community) to get started.

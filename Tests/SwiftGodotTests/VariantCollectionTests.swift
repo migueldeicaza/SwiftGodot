@@ -35,7 +35,7 @@ final class VariantCollectionTests: GodotTestCase {
     func testArrayCanBeModifiedOutsideOfTheCollection() {
         let sut: VariantCollection<Int> = []
         
-        sut.array.append(value: Variant(222))
+        sut.array.append(Variant(222))
         
         XCTAssertEqual(sut.count, 1, "The collection count should be 1 after appending an element")
         XCTAssertEqual(sut[0], 222, "After 222 is appended to the \(GArray.self), the first value should be to 222")
@@ -45,6 +45,6 @@ final class VariantCollectionTests: GodotTestCase {
 private extension GArray {
     convenience init(_ elements: [Int]) {
         self.init(Int.self)
-        elements.forEach { append(value: Variant($0)) }
+        elements.forEach { append(Variant($0)) }
     }
 }

@@ -20,7 +20,7 @@ public struct GodotExport: PeerMacro {
         if isEnum {
             return
     """
-    func \(name) (args: [Variant]) -> Variant? {
+    func \(name) (args: borrowing Arguments) -> Variant? {
         return Variant (\(varName).rawValue)
     }
     """
@@ -29,7 +29,7 @@ public struct GodotExport: PeerMacro {
         if isOptional {
             return
     """
-    func \(name) (args: [Variant]) -> Variant? {
+    func \(name) (args: borrowing Arguments) -> Variant? {
         guard let result = \(varName) else { return nil }
         return Variant (result)
     }
@@ -37,7 +37,7 @@ public struct GodotExport: PeerMacro {
         } else {
             return
     """
-    func \(name) (args: [Variant]) -> Variant? {
+    func \(name) (args: borrowing Arguments) -> Variant? {
         return Variant (\(varName))
     }
     """
@@ -93,7 +93,7 @@ public struct GodotExport: PeerMacro {
     """
             }
         }
-        return "func \(name) (args: [Variant]) -> Variant? {\n\(body)\n\treturn nil\n}"
+        return "func \(name) (args: borrowing Arguments) -> Variant? {\n\(body)\n\treturn nil\n}"
     }
 
     
@@ -198,7 +198,7 @@ public struct GodotExport: PeerMacro {
 private extension GodotExport {
     private static func makeGArrayCollectionGetProxyAccessor(varName: String, elementTypeName: String) -> String {
 		"""
-		func _mproxy_get_\(varName)(args: [Variant]) -> Variant? {
+		func _mproxy_get_\(varName)(args: borrowing Arguments) -> Variant? {
 			return Variant(\(varName).array)
 		}
 		"""
@@ -206,7 +206,7 @@ private extension GodotExport {
     
     private static func makeGArrayCollectionSetProxyAccessor(varName: String, elementTypeName: String) -> String {
 		"""
-		func _mproxy_set_\(varName)(args: [Variant]) -> Variant? {
+		func _mproxy_set_\(varName)(args: borrowing Arguments) -> Variant? {
 			guard let arg = args.first,
 				  let gArray = GArray(arg),
 				  gArray.isTyped(),

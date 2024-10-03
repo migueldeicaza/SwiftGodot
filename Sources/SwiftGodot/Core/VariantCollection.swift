@@ -30,18 +30,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     }
     
     init (content: Int64) {
-        array = GArray (content: content)
-        
-        // Explanation: we already own this reference, and what we were doing here was
-        // creating a nested array that was taking a reference.
-        //
-        // I should add support to the generator to produce a GArray internal constructor
-        // that can take this existing reference, rather than calling the constructor that
-        // makes the copy.
-        var copy = content
-        // Array took a reference, we do not need to take it.
-        GArray.destructor (&copy)
-
+        array = GArray(alreadyOwnedContent: content)
     }
     
     /// Initializes the collection with an empty typed GArray

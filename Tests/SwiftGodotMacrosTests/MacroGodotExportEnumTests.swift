@@ -42,26 +42,26 @@ final class MacroGodotExportEnumTests: XCTestCase {
         class SomeNode: Node {
             var demo: Demo
 
-            func _mproxy_set_demo (args: [Variant]) -> Variant? {
+            func _mproxy_set_demo (args: borrowing Arguments) -> Variant? {
                 if let iv = Int (args [0]), let ev = Demo(rawValue: numericCast (iv)) {
                     self.demo = ev
                 }
             	return nil
             }
 
-            func _mproxy_get_demo (args: [Variant]) -> Variant? {
+            func _mproxy_get_demo (args: borrowing Arguments) -> Variant? {
                 return Variant (demo.rawValue)
             }
             var demo64: Demo64
 
-            func _mproxy_set_demo64 (args: [Variant]) -> Variant? {
+            func _mproxy_set_demo64 (args: borrowing Arguments) -> Variant? {
                 if let iv = Int (args [0]), let ev = Demo64(rawValue: numericCast (iv)) {
                     self.demo64 = ev
                 }
             	return nil
             }
 
-            func _mproxy_get_demo64 (args: [Variant]) -> Variant? {
+            func _mproxy_get_demo64 (args: borrowing Arguments) -> Variant? {
                 return Variant (demo64.rawValue)
             }
 
@@ -70,7 +70,7 @@ final class MacroGodotExportEnumTests: XCTestCase {
                 return _initializeClass
             }
 
-            private static var _initializeClass: Void = {
+            private static let _initializeClass: Void = {
                 let className = StringName("SomeNode")
                 assert(ClassDB.classExists(class: className))
                 let classInfo = ClassInfo<SomeNode> (name: className)

@@ -65,9 +65,16 @@ var targets: [Target] = [
         name: "Generator",
         dependencies: [
             "ExtensionApi",
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
         ],
         path: "Generator",
-        exclude: ["README.md"]),
+        exclude: ["README.md"],
+        swiftSettings: [
+            // Uncomment for using legacy array-based marshalling
+            //.define("LEGACY_MARSHALING")
+        ]
+    ),
     
     // This is a build-time plugin that invokes the generator and produces
     // the bindings that are compiled into SwiftGodot
@@ -120,14 +127,32 @@ targets.append(
 
 // libgodot is only available for macOS
 #if os(macOS)
+
+/// You might want to build your own libgodot, so you can step into it in the debugger when fixing failing tests. Here's how:
+///
+/// 1. Check out the appropriate branch of https://github.com/migueldeicaza/libgodot
+/// 2. Build with `scons platform=macos target=template_debug dev_build=yes library_type=shared_library`. The `target=template_debug` is important, because `target=editor` will get you a `TOOLS_ENABLED` build that breaks some test cases.
+/// 3. Use `scripts/make-libgodot.framework` to build an `xcframework` and put it at the root of your SwiftGodot work tree.
+/// 4. Change `#if true` to `#if false` below.
+///
+#if true
+let libgodot_tests = Target.binaryTarget(
+    name: "libgodot_tests",
+    url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",
+    checksum: "c8ddf62be6c00eacc36bd2dafe8d424c0b374833efe80546f6ee76bd27cee84e"
+)
+#else
+let libgodot_tests = Target .binaryTarget(
+    name: "libgodot_tests",
+    path: "libgodot.xcframework"
+)
+#endif
+
 targets.append(contentsOf: [
     // Godot runtime as a library
-    .binaryTarget(
-        name: "libgodot_tests",
-        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/v4.1.99/libgodot.xcframework.zip",
-        checksum: "c8ddf62be6c00eacc36bd2dafe8d424c0b374833efe80546f6ee76bd27cee84e"
-    ),
-    
+
+    libgodot_tests,
+
     // Base functionality for Godot runtime dependant tests
     .target(
         name: "SwiftGodotTestability",
@@ -163,7 +188,11 @@ targets.append(contentsOf: [
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
         //linkerSettings: linkerSettings,
-        plugins: swiftGodotPlugins),
+        swiftSettings: [
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS")
+        ],
+        plugins: swiftGodotPlugins
+    ),
     
     // General purpose cross-platform tests
     .testTarget(
@@ -184,8 +213,8 @@ let package = Package(
     ],
     products: products,
     dependencies: [
-        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
-        .package(url: "https://github.com/apple/swift-syntax", from: "510.0.1"),
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "510.0.1"),
     ],
     targets: targets
 )

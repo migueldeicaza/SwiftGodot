@@ -72,11 +72,11 @@ class SomeNode: Node {
 class SomeNode: Node {
 	var greetings: VariantCollection<String> = []
 
-	func _mproxy_get_greetings(args: [Variant]) -> Variant? {
+	func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
 		return Variant(greetings.array)
 	}
 
-	func _mproxy_set_greetings(args: [Variant]) -> Variant? {
+	func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 		guard let arg = args.first,
 			  let gArray = GArray(arg),
 			  gArray.isTyped(),
@@ -92,7 +92,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -123,11 +123,11 @@ class SomeNode: Node {
 
 var greetings: VariantCollection<String> = []
 
-func _mproxy_get_greetings(args: [Variant]) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
 	return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: [Variant]) -> Variant? {
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 	guard let arg = args.first,
 		  let gArray = GArray(arg),
 		  gArray.isTyped(),
@@ -152,11 +152,11 @@ func _mproxy_set_greetings(args: [Variant]) -> Variant? {
 
 var greetings: VariantCollection<String> = []
 
-func _mproxy_get_greetings(args: [Variant]) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
 	return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: [Variant]) -> Variant? {
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 	guard let arg = args.first,
 		  let gArray = GArray(arg),
 		  gArray.isTyped(),
@@ -181,11 +181,11 @@ func _mproxy_set_greetings(args: [Variant]) -> Variant? {
 
 let greetings: VariantCollection<String> = []
 
-func _mproxy_get_greetings(args: [Variant]) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
 	return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: [Variant]) -> Variant? {
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 	guard let arg = args.first,
 		  let gArray = GArray(arg),
 		  gArray.isTyped(),
@@ -225,7 +225,7 @@ class SomeNode: Node {
 class SomeNode: Node {
     var someArray: GArray = GArray()
 
-    func _mproxy_set_someArray (args: [Variant]) -> Variant? {
+    func _mproxy_set_someArray (args: borrowing Arguments) -> Variant? {
     	guard let arg = args.first else {
     		return nil
     	}
@@ -237,7 +237,7 @@ class SomeNode: Node {
     	return nil
     }
 
-    func _mproxy_get_someArray (args: [Variant]) -> Variant? {
+    func _mproxy_get_someArray (args: borrowing Arguments) -> Variant? {
         return Variant (someArray)
     }
 
@@ -246,7 +246,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -281,11 +281,11 @@ class SomeNode: Node {
 class SomeNode: Node {
 	var someNumbers: VariantCollection<Int> = []
 
-	func _mproxy_get_someNumbers(args: [Variant]) -> Variant? {
+	func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
 		return Variant(someNumbers.array)
 	}
 
-	func _mproxy_set_someNumbers(args: [Variant]) -> Variant? {
+	func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
 		guard let arg = args.first,
 			  let gArray = GArray(arg),
 			  gArray.isTyped(),
@@ -301,7 +301,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -337,11 +337,11 @@ class SomeNode: Node {
 class SomeNode: Node {
 	var someNumbers: VariantCollection<Int> = []
 
-	func _mproxy_get_someNumbers(args: [Variant]) -> Variant? {
+	func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
 		return Variant(someNumbers.array)
 	}
 
-	func _mproxy_set_someNumbers(args: [Variant]) -> Variant? {
+	func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
 		guard let arg = args.first,
 			  let gArray = GArray(arg),
 			  gArray.isTyped(),
@@ -353,11 +353,11 @@ class SomeNode: Node {
 	}
 	var someOtherNumbers: VariantCollection<Int> = []
 
-	func _mproxy_get_someOtherNumbers(args: [Variant]) -> Variant? {
+	func _mproxy_get_someOtherNumbers(args: borrowing Arguments) -> Variant? {
 		return Variant(someOtherNumbers.array)
 	}
 
-	func _mproxy_set_someOtherNumbers(args: [Variant]) -> Variant? {
+	func _mproxy_set_someOtherNumbers(args: borrowing Arguments) -> Variant? {
 		guard let arg = args.first,
 			  let gArray = GArray(arg),
 			  gArray.isTyped(),
@@ -373,7 +373,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
@@ -421,11 +421,11 @@ import SwiftGodot
 class ArrayTest: Node {
    var firstNames: VariantCollection<String> = ["Thelonius"]
 
-   func _mproxy_get_firstNames(args: [Variant]) -> Variant? {
+   func _mproxy_get_firstNames(args: borrowing Arguments) -> Variant? {
    	return Variant(firstNames.array)
    }
 
-   func _mproxy_set_firstNames(args: [Variant]) -> Variant? {
+   func _mproxy_set_firstNames(args: borrowing Arguments) -> Variant? {
    	guard let arg = args.first,
    		  let gArray = GArray(arg),
    		  gArray.isTyped(),
@@ -437,11 +437,11 @@ class ArrayTest: Node {
    }
    var lastNames: VariantCollection<String> = ["Monk"]
 
-   func _mproxy_get_lastNames(args: [Variant]) -> Variant? {
+   func _mproxy_get_lastNames(args: borrowing Arguments) -> Variant? {
    	return Variant(lastNames.array)
    }
 
-   func _mproxy_set_lastNames(args: [Variant]) -> Variant? {
+   func _mproxy_set_lastNames(args: borrowing Arguments) -> Variant? {
    	guard let arg = args.first,
    		  let gArray = GArray(arg),
    		  gArray.isTyped(),
@@ -457,7 +457,7 @@ class ArrayTest: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("ArrayTest")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<ArrayTest> (name: className)
@@ -497,11 +497,11 @@ class ArrayTest: Node {
 """
 var greetings: ObjectCollection<Node3D> = []
 
-func _mproxy_get_greetings(args: [Variant]) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
 	return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: [Variant]) -> Variant? {
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 	guard let arg = args.first,
 		  let gArray = GArray(arg),
 		  gArray.isTyped(),
@@ -530,11 +530,11 @@ class SomeNode: Node {
 class SomeNode: Node {
 	var greetings: ObjectCollection<Node3D> = []
 
-	func _mproxy_get_greetings(args: [Variant]) -> Variant? {
+	func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
 		return Variant(greetings.array)
 	}
 
-	func _mproxy_set_greetings(args: [Variant]) -> Variant? {
+	func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 		guard let arg = args.first,
 			  let gArray = GArray(arg),
 			  gArray.isTyped(),
@@ -550,7 +550,7 @@ class SomeNode: Node {
         return _initializeClass
     }
 
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)

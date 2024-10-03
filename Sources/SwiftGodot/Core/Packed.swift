@@ -10,7 +10,7 @@ extension PackedStringArray {
     public convenience init (_ values: [String]) {
         self.init ()
         for x in values {
-            append(value: x)
+            append(x)
         }
     }
     
@@ -22,6 +22,11 @@ extension PackedStringArray {
         set {
             set (index: Int64 (index), value: newValue)
         }
+    }
+    
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: String) {
+        append(value)
     }
 }
 
@@ -107,6 +112,11 @@ extension PackedByteArray {
             }
         }
     }
+    
+    /// Appends an element at the end of the array
+    public func append(_ value: UInt8) {
+        append(value: Int64(value))
+    }
 }
 
 extension PackedColorArray {
@@ -119,6 +129,10 @@ extension PackedColorArray {
         set {
             set (index: Int64 (index), value: newValue)
         }
+    }
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: Color) {
+        append(value)
     }
 }
 
@@ -148,6 +162,11 @@ extension PackedFloat32Array {
             }
         }
     }
+    
+    /// Appends an element at the end of the array
+    public func append(_ value: Float) {
+        append (value: Double (value))
+    }
 }
 
 extension PackedFloat64Array {
@@ -176,7 +195,11 @@ extension PackedFloat64Array {
             }
         }
     }
-
+    
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: Double) {
+        append(value)
+    }
 }
 
 extension PackedInt32Array {
@@ -204,6 +227,11 @@ extension PackedInt32Array {
                 }
             }
         }
+    }
+
+    /// Appends an element at the end of the array
+    public func append(_ value: Int32) {
+        append (value: Int64 (value))
     }
 }
 
@@ -233,6 +261,11 @@ extension PackedInt64Array {
             }
         }
     }
+
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: Int64) {
+        append(value)
+    }
 }
 
 extension PackedVector2Array {
@@ -246,6 +279,10 @@ extension PackedVector2Array {
             set (index: Int64 (index), value: newValue)
         }
     }
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: Vector2) {
+        append(value)
+    }
 }
 
 extension PackedVector3Array {
@@ -258,6 +295,10 @@ extension PackedVector3Array {
         set {
             set (index: Int64 (index), value: newValue)
         }
+    }
+    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
+    public func append(value: Vector3) {
+        append(value)
     }
 }
 

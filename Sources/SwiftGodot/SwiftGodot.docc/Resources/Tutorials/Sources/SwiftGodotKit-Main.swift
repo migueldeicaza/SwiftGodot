@@ -55,7 +55,7 @@ func registerTypes (level: GDExtension.InitializationLevel) {
     }
 }
 
-guard let projectPath = Bundle.module.path(forResource: "Project", ofType: nil) else {
+guard let projectPath = Bundle.main.path(forResource: "Project", ofType: nil) else {
     fatalError("Could not load resource path")
 }
 

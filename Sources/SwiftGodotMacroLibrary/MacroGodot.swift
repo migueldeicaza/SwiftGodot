@@ -416,7 +416,7 @@ class GodotMacroProcessor {
     func processType () throws -> String {
         ctor =
     """
-    private static var _initializeClass: Void = {
+    private static let _initializeClass: Void = {
         let className = StringName("\(className)")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<\(className)> (name: className)\n
