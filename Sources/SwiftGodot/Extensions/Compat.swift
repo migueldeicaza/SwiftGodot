@@ -7,7 +7,7 @@
 
 public extension Vector2 {
     @available(*, deprecated, message: "The method was renamed reflect(line:) by Godot")
-    public func reflect(n: Vector2)-> Vector2 {
+    func reflect(n: Vector2)-> Vector2 {
         reflect(line: n)
     }
 }

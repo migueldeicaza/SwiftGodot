@@ -224,7 +224,9 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         let rawPtr = godotGetProcAddrPtr (name)
         
         guard let rawPtr else {
-            fatalError("Can not load method \(name) from Godot's interface")
+            // Should be a fatalError, but we need to upgrade our libgodot for 4.3, and that will have to wait
+            print("Can not load method \(name) from Godot's interface")
+            return unsafeBitCast(rawPtr, to: T.self)
         }
         return unsafeBitCast(rawPtr, to: T.self)
 //        
