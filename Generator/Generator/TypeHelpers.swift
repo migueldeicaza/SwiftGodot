@@ -257,8 +257,10 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
                 return "UInt8"
             case .int8:
                 return "Int8"
+            case .char32:
+                return "Int32"
             default:
-                fatalError()
+                fatalError("Unknown meta for type \(t.type)")
             }
         } else {
             if kind == .builtInField {
@@ -436,9 +438,9 @@ func builtinTypecode (_ name: String) -> String {
     case "PackedStringArray":   return "GDEXTENSION_VARIANT_TYPE_PACKED_STRING_ARRAY"
     case "PackedVector2Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY"
     case "PackedVector3Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY"
+    case "PackedVector4Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY"
     case "PackedColorArray":    return "GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY"
     default:
-        fatalError()
+        fatalError("Unknown builtin Typecode: \(name)")
     }
 }
-
