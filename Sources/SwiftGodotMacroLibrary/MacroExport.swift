@@ -56,8 +56,8 @@ public struct GodotExport: PeerMacro {
         }
     """
         } else if typeName == "Variant" {
-			body = "\(varName) = args [0]"
-		} else if godotVariants [typeName] == nil {
+            body = "\(varName) = args [0]"
+        } else if godotVariants [typeName] == nil {
             let optBody = isOptional ? " else { \(varName) = nil }" : ""
             
             // The use of the local function dynamicCast here is such that the compiler
@@ -77,23 +77,23 @@ public struct GodotExport: PeerMacro {
             if isOptional {
                 body =
     """
-    	\(varName) = \(typeName) (args [0])
+        \(varName) = \(typeName) (args [0])
     """
             } else {
                 body =
     """
-    	guard let arg = args.first else {
-    		return nil
-    	}
-    	if let value = \(typeName) (arg) {
-    		self.\(varName) = value
-    	} else {
-    		GD.printErr ("Unable to set `\(varName)` value: ", arg)
-    	}
+        guard let arg = args.first else {
+            return nil
+        }
+        if let value = \(typeName) (arg) {
+            self.\(varName) = value
+        } else {
+            GD.printErr ("Unable to set `\(varName)` value: ", arg)
+        }
     """
             }
         }
-        return "func \(name) (args: borrowing Arguments) -> Variant? {\n\(body)\n\treturn nil\n}"
+        return "func \(name) (args: borrowing Arguments) -> Variant? {\n\(body)\n    return nil\n}"
     }
 
     
@@ -197,25 +197,25 @@ public struct GodotExport: PeerMacro {
 
 private extension GodotExport {
     private static func makeGArrayCollectionGetProxyAccessor(varName: String, elementTypeName: String) -> String {
-		"""
-		func _mproxy_get_\(varName)(args: borrowing Arguments) -> Variant? {
-			return Variant(\(varName).array)
-		}
-		"""
+        """
+        func _mproxy_get_\(varName)(args: borrowing Arguments) -> Variant? {
+            return Variant(\(varName).array)
+        }
+        """
     }
     
     private static func makeGArrayCollectionSetProxyAccessor(varName: String, elementTypeName: String) -> String {
-		"""
-		func _mproxy_set_\(varName)(args: borrowing Arguments) -> Variant? {
-			guard let arg = args.first,
-				  let gArray = GArray(arg),
-				  gArray.isTyped(),
-				  gArray.isSameTyped(array: GArray(\(elementTypeName).self)) else {
-				return nil
-			}
-			\(varName).array = gArray
-			return nil
-		}
-		"""
+        """
+        func _mproxy_set_\(varName)(args: borrowing Arguments) -> Variant? {
+            guard let arg = args.first,
+                  let gArray = GArray(arg),
+                  gArray.isTyped(),
+                  gArray.isSameTyped(array: GArray(\(elementTypeName).self)) else {
+                return nil
+            }
+            \(varName).array = gArray
+            return nil
+        }
+        """
     }
 }

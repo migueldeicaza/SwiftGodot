@@ -9,5 +9,5 @@
 
 // If our exported Collections conform to this protocol, then we can use the same Macro code while exporting them
 protocol GArrayCollection: Collection where Element: VariantStorable {
-	var array: GArray { set get }
+    var array: GArray { set get }
 }

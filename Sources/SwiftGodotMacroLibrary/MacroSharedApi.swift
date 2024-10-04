@@ -80,7 +80,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Callable does not support asynchronous or throwing functions"
         case .noSupportForOptionalEnums:
             "@Export(.enum) does not support optional values for the enumeration"
-		}
+        }
     }
     
     var diagnosticID: MessageID {
