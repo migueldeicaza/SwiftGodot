@@ -696,7 +696,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("public init(_ callback: @escaping (borrowing Arguments) -> Variant)") {
                     p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
-                
+
+#if false 
                 p ("/// Creates a Callable instance from a Swift function")
                 p ("/// - Parameter callback: the swift function that receives an array of Variant arguments, and returns an optional Variant")
                 p("""
@@ -705,6 +706,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("public init (_ callback: @escaping ([Variant])->Variant?)") {
                     p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
+#endif
             }
             if bc.hasDestructor {
                 p.staticVar (name: "destructor", type: "GDExtensionPtrDestructor") {
