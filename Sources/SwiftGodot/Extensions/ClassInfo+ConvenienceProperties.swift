@@ -33,7 +33,7 @@ public protocol Nameable {
 
 extension ClassInfo {
     /// A type alias referencing a class info function that can be registered.
-    public typealias ClassInfoFunction = (T) -> (borrowing Arguments) -> Variant?
+    public typealias ClassInfoFunction = (T) -> (borrowing Arguments) -> Variant
 
     /// A type alias referencing a registerable int enum.
     public typealias RegisteredIntEnum = CaseIterable & Nameable & RawRepresentable<Int>
@@ -43,7 +43,7 @@ extension ClassInfo {
     /// This can be used inside setter method to set a property in-class with a guaranteed argument value.
     ///
     /// ```swift
-    /// func setBubbleCount(args: borrowing Arguments) -> Variant? {
+    /// func setBubbleCount(args: borrowing Arguments) -> Variant {
     ///     withCheckedProperty(named: "bubbles", in: args) { argument in
     ///         self.bubbles = Int(argument) ?? 0
     ///     }
@@ -55,11 +55,12 @@ extension ClassInfo {
     /// - Parameter action: A closure that accepts a valid argument.
     public static func withCheckedProperty(named name: String,
                                            in arguments: borrowing Arguments,
-                                           perform action: (Variant) -> Void) -> Variant? {
-        guard let arg = arguments.first else {
+                                           perform action: (Variant) -> Void) -> Variant {
+        let arg = arguments.first
+        guard !arg.isNil else {
             GD.pushError("Expected argument for \(name), but got nil instead.")
             return nil
-        }
+        }        
         action(arg)
         return nil
     }

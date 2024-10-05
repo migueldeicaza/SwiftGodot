@@ -8,7 +8,7 @@
 extension GDictionary: CustomDebugStringConvertible, CustomStringConvertible {
     /// Convenience subscript that uses a String as the key to access the
     /// elements in the dictionary.   Merely wraps this on a Variant.
-    public subscript (key: String) -> Variant? {
+    public subscript (key: String) -> Variant {
         get {
             return self [Variant (key)]
         }
@@ -19,7 +19,7 @@ extension GDictionary: CustomDebugStringConvertible, CustomStringConvertible {
     
     /// Convenience subscript that uses a StringName as the key to access the
     /// elements in the dictionary.   Merely wraps this on a Variant.
-    public subscript (key: StringName) -> Variant? {
+    public subscript (key: StringName) -> Variant {
         get {
             return self [Variant (key)]
         }

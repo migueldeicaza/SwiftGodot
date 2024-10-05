@@ -157,6 +157,11 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible, Express
         return asObject(Object.self) == nil
     }
     
+    /// Returns true if the `Variant` contains Godot `Nil`
+    public var isNil: Bool {
+        content == Variant.zero
+    }
+    
     ///
     /// Attempts to cast the Variant into a SwiftGodot.Object, if the variant contains a value of type `.object`, then
     // this will return the object.  If the variant contains the nil value, or the content of the variant is not

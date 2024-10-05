@@ -5,21 +5,6 @@
 //  Created by Estevan Hernandez on 12/24/23.
 //
 
-private extension GDictionary {
-    func makeOrUnwrap<T: VariantStorable>(key: String) -> T? {
-        guard let variant = self[key] else {
-            GD.pushWarning("There was no Variant for key: \(key)")
-            return nil
-        }
-        guard let result = T.makeOrUnwrap(variant) else {
-            GD.pushWarning("\(T.self).makeOrUnwrap(\(variant)) was nil")
-            return nil
-        }
-
-        return result
-    }
-}
-
 extension PhysicsDirectSpaceState3D {
     /// Result from intersecting a ray
     public struct IntersectRayResult<T: Object> {
@@ -36,16 +21,17 @@ extension PhysicsDirectSpaceState3D {
         /// The shape index of the colliding shape.
         public let shape: Int
         /// The metadata value from the dictionary.
-        public let metadata: Variant?
+        public let metadata: Variant
         /// The face index at the intersection point.
         public let faceIndex: Int
 
         init?(_ dictionary: GDictionary) {
+            let collider = T.makeOrUnwrap(dictionary["collider"])
+            
             guard dictionary.isEmpty() == false,
                   let position: Vector3 = dictionary.makeOrUnwrap(key: "position"),
-                  let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),
-                  let colliderVariant = dictionary["collider"],
-                  let collider = T.makeOrUnwrap(colliderVariant),
+                  let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),                  
+                  let collider,
                   let colliderId: Int = dictionary.makeOrUnwrap(key: "collider_id"),
                   let rid: RID = dictionary.makeOrUnwrap(key: "rid"),
                   let shape: Int = dictionary.makeOrUnwrap(key: "shape"),

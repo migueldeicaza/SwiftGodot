@@ -70,7 +70,7 @@ class SwiftSprite: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-       GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"].description ?? "no type") \(dict2?["value"].description ?? "no value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
@@ -141,17 +141,17 @@ class SwiftSprite2: Sprite2D {
     // This callback style receives the arguments from Godot as an array of Variants, and returns a Variant
     // harder than using the macros above
     var food: String = "none"
-    func demoSetFavoriteFood (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
+    func demoSetFavoriteFood (args: borrowing Arguments) -> Variant {
+        guard args.count > 0 else {
             print ("Method registered taking one argument got none")
             return nil
         }
-        food = String (arg) ?? "The variant passed was not a string"
+        food = String (args.first) ?? "The variant passed was not a string"
         print ("The favorite food was set to: \(food)")
         return nil
     }
     
-    func demoGetFavoriteFood (args: borrowing Arguments) -> Variant? {
+    func demoGetFavoriteFood (args: borrowing Arguments) -> Variant {
         return Variant(food)
     }
 
@@ -162,7 +162,7 @@ class SwiftSprite2: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no value for type") \(dict2?["value"]?.description ?? "no value for value")")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"].description ?? "no value for type") \(dict2?["value"].description ?? "no value for value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {

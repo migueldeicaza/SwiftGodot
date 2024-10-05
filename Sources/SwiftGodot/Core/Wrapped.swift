@@ -559,21 +559,20 @@ func freeCallableWrapper(wrapperPtr: UnsafeMutableRawPointer?) {
 }
 
 struct CallableWrapper {
-    let function: (borrowing Arguments) -> Variant?
+    let function: (borrowing Arguments) -> Variant
         
     func invoke(arguments: borrowing Arguments, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
-        if let methodRet = function(arguments) {
-            retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
-        }
+        let methodRet = function(arguments)
+        retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
         err?.pointee.error = GDEXTENSION_CALL_OK
     }
     
-    @available(*, deprecated, message: "Use version taking `@escaping (borrowing Arguments) -> Variant?` instead.")    
-    static func callableVariantContent(wrapping function: @escaping ([Variant]) -> Variant?) -> Callable.ContentType {
+    @available(*, deprecated, message: "Use version taking `@escaping (borrowing Arguments) -> Variant` instead.")
+    static func callableVariantContent(wrapping function: @escaping ([Variant]) -> Variant) -> Callable.ContentType {
         callableVariantContent { (arguments: borrowing Arguments) in
             let array = Array(arguments)
             let result = function(array)
-            return result ?? Variant()
+            return result
         }
     }
     

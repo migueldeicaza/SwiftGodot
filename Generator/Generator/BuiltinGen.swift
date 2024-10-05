@@ -510,7 +510,7 @@ func generateBuiltinMethods (_ p: Printer,
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
-        public subscript(key: Variant) -> Variant? {
+        public subscript(key: Variant) -> Variant {
             get {
                 var result = Variant.zero
                 if Self.keyed_checker(&content, &key.content) != 0 {
@@ -523,13 +523,7 @@ func generateBuiltinMethods (_ p: Printer,
             }
         
             set {                
-                if let newValue {
-                    Self.keyed_setter(&content, &key.content, &newValue.content)
-                } else {                    
-                    var nilContent = Variant.zero
-                    // nil will cause a crash, needs a pointer to Nil Variant content instead
-                    Self.keyed_setter(&content, &key.content, &nilContent)
-                }                
+                Self.keyed_setter(&content, &key.content, &newValue.content)                
             }
         }
         """)        
@@ -702,7 +696,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p("""
                 @available(*, deprecated, message: "Use `init(_ callback: @escaping (borrowing Arguments) -> Variant)` instead.")
                 """)
-                p ("public init (_ callback: @escaping ([Variant])->Variant?)") {
+                p ("public init (_ callback: @escaping ([Variant]) -> Variant)") {
                     p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
             }

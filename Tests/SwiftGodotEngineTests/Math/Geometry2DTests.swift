@@ -214,7 +214,7 @@ final class Geometry2DTests: GodotTestCase {
         result = Geometry2D.makeAtlas (sizes: r)
         XCTAssertEqual (result.size (), 2)
         XCTAssertEqual (result ["size"], Variant (Vector2i (x: 2, y: 2)))
-        XCTAssertEqual (result ["points"]?.description, "[(0, 0)]")
+        XCTAssertEqual (result ["points"].description, "[(0, 0)]")
         
         r.clear ()
         result.clear ()
@@ -224,7 +224,7 @@ final class Geometry2DTests: GodotTestCase {
         r.pushBack (value: Vector2 (x: 7, y: 8))
         result = Geometry2D.makeAtlas (sizes: r)
         XCTAssertEqual (result.size (), 2)
-        XCTAssertEqual (PackedVector2Array (result ["points"] ?? Variant ())?.size (), r.size ())
+        XCTAssertEqual (PackedVector2Array (result ["points"])?.size (), r.size ())
     }
     
     func testPolygonIntersection () throws {

@@ -37,10 +37,8 @@ final class MacroGodotExportSubroupTests: XCTestCase {
 class Car: Node {
     var vin: String = ""
 
-    func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
+    func _mproxy_set_vin (args: borrowing Arguments) -> Variant {
+        let arg = args.first
         if let value = String (arg) {
             self.vin = value
         } else {
@@ -49,15 +47,13 @@ class Car: Node {
         return nil
     }
 
-    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_vin (args: borrowing Arguments) -> Variant {
         return Variant (vin)
     }
     var ymms_year: Int = 1998
 
-    func _mproxy_set_ymms_year (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
+    func _mproxy_set_ymms_year (args: borrowing Arguments) -> Variant {
+        let arg = args.first
         if let value = Int (arg) {
             self.ymms_year = value
         } else {
@@ -66,15 +62,13 @@ class Car: Node {
         return nil
     }
 
-    func _mproxy_get_ymms_year (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_year (args: borrowing Arguments) -> Variant {
         return Variant (ymms_year)
     }
     var ymms_make: String = "Honda"
 
-    func _mproxy_set_ymms_make (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
+    func _mproxy_set_ymms_make (args: borrowing Arguments) -> Variant {
+        let arg = args.first
         if let value = String (arg) {
             self.ymms_make = value
         } else {
@@ -83,15 +77,13 @@ class Car: Node {
         return nil
     }
 
-    func _mproxy_get_ymms_make (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_make (args: borrowing Arguments) -> Variant {
         return Variant (ymms_make)
     }
     var ymms_model: String = "Odyssey"
 
-    func _mproxy_set_ymms_model (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
+    func _mproxy_set_ymms_model (args: borrowing Arguments) -> Variant {
+        let arg = args.first
         if let value = String (arg) {
             self.ymms_model = value
         } else {
@@ -100,15 +92,13 @@ class Car: Node {
         return nil
     }
 
-    func _mproxy_get_ymms_model (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_model (args: borrowing Arguments) -> Variant {
         return Variant (ymms_model)
     }
     var ymms_series: String = "LX"
 
-    func _mproxy_set_ymms_series (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
+    func _mproxy_set_ymms_series (args: borrowing Arguments) -> Variant {
+        let arg = args.first
         if let value = String (arg) {
             self.ymms_series = value
         } else {
@@ -117,7 +107,7 @@ class Car: Node {
         return nil
     }
 
-    func _mproxy_get_ymms_series (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_series (args: borrowing Arguments) -> Variant {
         return Variant (ymms_series)
     }
 

@@ -51,7 +51,7 @@ class GodotEncoder: Encoder {
 
     func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
 
-        var container = GodotKeyedContainer<Key>(codingPath: codingPath, userInfo: userInfo)
+        let container = GodotKeyedContainer<Key>(codingPath: codingPath, userInfo: userInfo)
         self.container = container
         return KeyedEncodingContainer(container)
     }
@@ -61,7 +61,7 @@ class GodotEncoder: Encoder {
     }
 
     func encode(key codingKey: [CodingKey], value: Variant) {
-        let key = codingKey.map { $0.stringValue }.joined(separator: ".")
+        // let key = codingKey.map { $0.stringValue }.joined(separator: ".")
         fatalError()
         //dict [key] = value
     }
@@ -80,7 +80,7 @@ class GodotEncoder: Encoder {
 
     class GodotKeyedContainer<Key:CodingKey>: KeyedEncodingContainerProtocol, GodotEncodingContainer {
         func encodeNil(forKey key: Key) throws {
-            var container = self.nestedSingleValueContainer(forKey: key)
+            // var container = self.nestedSingleValueContainer(forKey: key)
             fatalError()
             //try container.encode(Variant())
         }
@@ -103,7 +103,7 @@ class GodotEncoder: Encoder {
         }
 
         func encode(_ value: String, forKey key: Key) throws {
-            var container = self.nestedSingleValueContainer(forKey: key)
+            let container = self.nestedSingleValueContainer(forKey: key)
             try container.encode(value)
             self.storage[key.stringValue] = container
         }
@@ -279,17 +279,17 @@ class GodotEncoder: Encoder {
     class GodotSingleValueContainer: SingleValueEncodingContainer, GodotEncodingContainer {
         func encode<T>(_ value: T) throws where T : Encodable {
             if value is Array<Any> {
-                var container = GodotUnkeyedContainer (codingPath: codingPath, userInfo: userInfo)
+                let container = GodotUnkeyedContainer (codingPath: codingPath, userInfo: userInfo)
                 try container.encode(value)
-                self.value = container.data
+                self.data = container.data
             } else if let i = value as? Int {
                 try self.encode(i)
             } else if let str = value as? String {
                 try self.encode(str)
             } else {
-                var nested = GodotEncoder()
+                let nested = GodotEncoder()
                 try value.encode(to: nested)
-                self.value = nested.container?.data
+                self.data = nested.container?.data ?? Variant()
             }
         }
 
@@ -299,11 +299,7 @@ class GodotEncoder: Encoder {
 
         var codingPath: [any CodingKey] = []
         var userInfo: [CodingUserInfoKey: Any]
-        var value: Variant?
-
-        var data: Variant {
-            value ?? Variant()
-        }
+        var data: Variant = nil
 
         init (codingPath: [any CodingKey], userInfo: [CodingUserInfoKey: Any]) {
             self.codingPath = codingPath
@@ -319,7 +315,7 @@ class GodotEncoder: Encoder {
         }
 
         func encode(_ value: String) throws {
-            self.value = Variant(value)
+            self.data = Variant(value)
         }
 
         func encode(_ value: Double) throws {
@@ -331,7 +327,7 @@ class GodotEncoder: Encoder {
         }
 
         func encode(_ value: Int) throws {
-            self.value = Variant(Int(value))
+            self.data = Variant(value)
         }
 
         func encode(_ value: Int8) throws {
@@ -524,15 +520,15 @@ final class MemoryLeakTests: GodotTestCase {
         
         checkLeaks {
             for _ in 0 ..< 200 {
-                let strFoo = String(gstrFoo)
+                let _ = String(gstrFoo)
                 let varFoo = Variant(gstrFoo)
-                let strFoo0 = varFoo.description
+                let _ = varFoo.description
                 guard let gstrFoo0 = GString(varFoo) else {
                     XCTFail()
                     
                     return
                 }
-                let strFoo1 = String(gstrFoo0)
+                let _ = String(gstrFoo0)
             }
         }
         
@@ -540,15 +536,15 @@ final class MemoryLeakTests: GodotTestCase {
             for _ in 0 ..< 200 {
                 let gstrBar = GString("Bar")
                 
-                let strBar = String(gstrBar)
+                let _ = String(gstrBar)
                 let varBar = Variant(gstrBar)
-                let strBar0 = varBar.description
+                let _ = varBar.description
                 guard let gstrBar0 = GString(varBar) else {
                     XCTFail()
                     
                     return
                 }
-                let strBar1 = String(gstrBar0)
+                let _ = String(gstrBar0)
             }
         }
     }
@@ -569,7 +565,7 @@ final class MemoryLeakTests: GodotTestCase {
             for _ in 0 ..< 200 {
                 let object = Object()
                 let methodName = StringName("get_method_list")
-                let methodList = object.call(method: methodName)
+                let _ = object.call(method: methodName)
             }
         }
     }
@@ -617,7 +613,7 @@ final class MemoryLeakTests: GodotTestCase {
         array.append(Variant(20))
         
         checkLeaks {
-            for i in 0 ..< 100 {
+            for _ in 0 ..< 100 {
                 XCTAssertEqual(variant[0], Variant(10))
                 XCTAssertEqual(variant[1], Variant(20))
                 XCTAssertEqual(variant[2], Variant())

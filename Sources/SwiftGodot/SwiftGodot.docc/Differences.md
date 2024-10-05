@@ -206,7 +206,7 @@ In SwiftGodot, you can create `Callable` instances by directly passing a Swift f
 and returns an optional `Variant` result, like this:
 
 ```swift
-func myCallback(args: borrowing Arguments)-> Variant? {
+func myCallback(args: borrowing Arguments) -> Variant {
 	print ("MyCallback invoked with \(args.count) arguments")
 	return nil
 }

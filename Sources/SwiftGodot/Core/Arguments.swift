@@ -7,20 +7,18 @@ public struct Arguments: ~Copyable {
             let pargs: UnsafePointer<UnsafeRawPointer?>
             let count: Int
             
-            var first: Variant? {
-                if count > 0 {
-                    return retrieveVariant(at: 0)
-                } else {
-                    return nil
-                }
+            var first: Variant {
+                retrieveVariant(at: 0)
             }
             
             /// Lazily reconstruct variant at `index`
             func retrieveVariant(at index: Int) -> Variant {
-                precondition(index >= 0 && index < count, "Index \(index) out of bounds")
-                
+                guard index >= 0 && index < count else {
+                    return nil
+                }
+                                
                 guard let ptr = pargs[index] else {
-                    return Variant()
+                    return nil
                 }
                 
                 return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
@@ -49,16 +47,16 @@ public struct Arguments: ~Copyable {
     /// The first argument.
     ///
     /// If the `Arguments` is empty, the value of this property is `nil`.
-    public var first: Variant? {
+    public var first: Variant {
         switch contents {
         case .unsafeGodotArgs(let contents):
-            if contents.count > 0 {
-                return contents.retrieveVariant(at: 0)
-            } else {
+            return contents.first
+        case .array(let array):
+            guard !array.isEmpty else {
                 return nil
             }
-        case .array(let array):
-            return array.first
+            
+            return array[0]
         }
     }
     
@@ -82,6 +80,10 @@ public struct Arguments: ~Copyable {
         get {
             switch contents {
             case .array(let array):
+                guard index >= 0 && index < array.count else {
+                    return nil
+                }
+                                
                 return array[index]
             case .unsafeGodotArgs(let args):
                 return args.retrieveVariant(at: index)

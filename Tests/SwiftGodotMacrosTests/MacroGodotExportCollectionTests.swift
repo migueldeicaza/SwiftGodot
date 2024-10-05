@@ -72,13 +72,13 @@ class SomeNode: Node {
 class SomeNode: Node {
     var greetings: VariantCollection<String> = []
 
-    func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_greetings(args: borrowing Arguments) -> Variant {
         return Variant(greetings.array)
     }
 
-    func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first,
-              let gArray = GArray(arg),
+    func _mproxy_set_greetings(args: borrowing Arguments) -> Variant {
+        let arg = args.first
+        guard let gArray = GArray(arg),
               gArray.isTyped(),
               gArray.isSameTyped(array: GArray(String.self)) else {
             return nil
@@ -123,13 +123,13 @@ class SomeNode: Node {
 
 var greetings: VariantCollection<String> = []
 
-func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant {
     return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-    guard let arg = args.first,
-          let gArray = GArray(arg),
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant {
+    let arg = args.first
+    guard let gArray = GArray(arg),
           gArray.isTyped(),
           gArray.isSameTyped(array: GArray(String.self)) else {
         return nil
@@ -152,13 +152,13 @@ func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 
 var greetings: VariantCollection<String> = []
 
-func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant {
     return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-    guard let arg = args.first,
-          let gArray = GArray(arg),
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant {
+    let arg = args.first
+    guard let gArray = GArray(arg),
           gArray.isTyped(),
           gArray.isSameTyped(array: GArray(String.self)) else {
         return nil
@@ -181,13 +181,13 @@ func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
 
 let greetings: VariantCollection<String> = []
 
-func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant {
     return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-    guard let arg = args.first,
-          let gArray = GArray(arg),
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant {
+    let arg = args.first
+    guard let gArray = GArray(arg),
           gArray.isTyped(),
           gArray.isSameTyped(array: GArray(String.self)) else {
         return nil
@@ -225,10 +225,8 @@ class SomeNode: Node {
 class SomeNode: Node {
     var someArray: GArray = GArray()
 
-    func _mproxy_set_someArray (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
+    func _mproxy_set_someArray (args: borrowing Arguments) -> Variant {
+        let arg = args.first
         if let value = GArray (arg) {
             self.someArray = value
         } else {
@@ -237,7 +235,7 @@ class SomeNode: Node {
         return nil
     }
 
-    func _mproxy_get_someArray (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_someArray (args: borrowing Arguments) -> Variant {
         return Variant (someArray)
     }
 
@@ -281,13 +279,13 @@ class SomeNode: Node {
 class SomeNode: Node {
     var someNumbers: VariantCollection<Int> = []
 
-    func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant {
         return Variant(someNumbers.array)
     }
 
-    func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first,
-              let gArray = GArray(arg),
+    func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant {
+        let arg = args.first
+        guard let gArray = GArray(arg),
               gArray.isTyped(),
               gArray.isSameTyped(array: GArray(Int.self)) else {
             return nil
@@ -337,13 +335,13 @@ class SomeNode: Node {
 class SomeNode: Node {
     var someNumbers: VariantCollection<Int> = []
 
-    func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant {
         return Variant(someNumbers.array)
     }
 
-    func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first,
-              let gArray = GArray(arg),
+    func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant {
+        let arg = args.first
+        guard let gArray = GArray(arg),
               gArray.isTyped(),
               gArray.isSameTyped(array: GArray(Int.self)) else {
             return nil
@@ -353,13 +351,13 @@ class SomeNode: Node {
     }
     var someOtherNumbers: VariantCollection<Int> = []
 
-    func _mproxy_get_someOtherNumbers(args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_someOtherNumbers(args: borrowing Arguments) -> Variant {
         return Variant(someOtherNumbers.array)
     }
 
-    func _mproxy_set_someOtherNumbers(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first,
-              let gArray = GArray(arg),
+    func _mproxy_set_someOtherNumbers(args: borrowing Arguments) -> Variant {
+        let arg = args.first
+        guard let gArray = GArray(arg),
               gArray.isTyped(),
               gArray.isSameTyped(array: GArray(Int.self)) else {
             return nil
@@ -421,13 +419,13 @@ import SwiftGodot
 class ArrayTest: Node {
    var firstNames: VariantCollection<String> = ["Thelonius"]
 
-   func _mproxy_get_firstNames(args: borrowing Arguments) -> Variant? {
+   func _mproxy_get_firstNames(args: borrowing Arguments) -> Variant {
        return Variant(firstNames.array)
    }
 
-   func _mproxy_set_firstNames(args: borrowing Arguments) -> Variant? {
-       guard let arg = args.first,
-             let gArray = GArray(arg),
+   func _mproxy_set_firstNames(args: borrowing Arguments) -> Variant {
+       let arg = args.first
+       guard let gArray = GArray(arg),
              gArray.isTyped(),
              gArray.isSameTyped(array: GArray(String.self)) else {
            return nil
@@ -437,13 +435,13 @@ class ArrayTest: Node {
    }
    var lastNames: VariantCollection<String> = ["Monk"]
 
-   func _mproxy_get_lastNames(args: borrowing Arguments) -> Variant? {
+   func _mproxy_get_lastNames(args: borrowing Arguments) -> Variant {
        return Variant(lastNames.array)
    }
 
-   func _mproxy_set_lastNames(args: borrowing Arguments) -> Variant? {
-       guard let arg = args.first,
-             let gArray = GArray(arg),
+   func _mproxy_set_lastNames(args: borrowing Arguments) -> Variant {
+       let arg = args.first
+       guard let gArray = GArray(arg),
              gArray.isTyped(),
              gArray.isSameTyped(array: GArray(String.self)) else {
            return nil
@@ -497,13 +495,13 @@ class ArrayTest: Node {
 """
 var greetings: ObjectCollection<Node3D> = []
 
-func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+func _mproxy_get_greetings(args: borrowing Arguments) -> Variant {
     return Variant(greetings.array)
 }
 
-func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-    guard let arg = args.first,
-          let gArray = GArray(arg),
+func _mproxy_set_greetings(args: borrowing Arguments) -> Variant {
+    let arg = args.first
+    guard let gArray = GArray(arg),
           gArray.isTyped(),
           gArray.isSameTyped(array: GArray(Node3D.self)) else {
         return nil
@@ -530,13 +528,13 @@ class SomeNode: Node {
 class SomeNode: Node {
     var greetings: ObjectCollection<Node3D> = []
 
-    func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_greetings(args: borrowing Arguments) -> Variant {
         return Variant(greetings.array)
     }
 
-    func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first,
-              let gArray = GArray(arg),
+    func _mproxy_set_greetings(args: borrowing Arguments) -> Variant {
+        let arg = args.first
+        guard let gArray = GArray(arg),
               gArray.isTyped(),
               gArray.isSameTyped(array: GArray(Node3D.self)) else {
             return nil
