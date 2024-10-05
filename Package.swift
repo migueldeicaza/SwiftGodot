@@ -15,10 +15,6 @@ import CompilerPluginSupport
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
     .library(
-        name: "SwiftGodot",
-        type: .dynamic,
-        targets: ["SwiftGodot"]),
-    .library(
         name: "SwiftGodotStatic",
         targets: ["SwiftGodot"]),
     .library(
@@ -29,6 +25,20 @@ var products: [Product] = [
         ]),
     .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
 ]
+
+#if os(Windows)
+products.append(
+    .library(
+        name: "SwiftGodot",
+        type: .static,
+        targets: ["SwiftGodot"]))
+#else
+products.append(
+    .library(
+        name: "SwiftGodot",
+        type: .dynamic,
+        targets: ["SwiftGodot"]))
+#endif
 
 // Macros aren't supported on Windows before 5.9.1 and this sample uses them
 #if !(os(Windows) && swift(<5.9.1))
