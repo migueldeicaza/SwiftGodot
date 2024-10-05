@@ -138,8 +138,8 @@ targets.append(
 #if true
 let libgodot_tests = Target.binaryTarget(
     name: "libgodot_tests",
-    url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/4.3.3/libgodot.xcframework.zip",
-    checksum: "13be8025ebbfcfd8a9dab6b7dcd3037bd52d566bbca79ea82879fe2eb2ee80e4"
+    url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/4.3.4/libgodot.xcframework.zip",
+    checksum: "865ea17ad3e20caab05b3beda35061f57143c4acf0e4ad2684ddafdcc6c4f199"
 )
 #else
 let libgodot_tests = Target .binaryTarget(

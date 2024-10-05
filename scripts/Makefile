@@ -9,6 +9,6 @@ package: libgodot.dylib
 	swift package compute-checksum libgodot.xcframework.zip
 
 libgodot.dylib:
-	install_name_tool -id libgodot.macos.template_debug.dev.arm64.dylib libgodot.macos.template_debug.dev.arm64.dylib
-	install_name_tool -id libgodot.macos.template_debug.dev.x86_64.dylib libgodot.macos.template_debug.dev.x86_64.dylib
+	install_name_tool -id @rpath/libgodot.dylib libgodot.macos.template_debug.dev.arm64.dylib
+	install_name_tool -id @rpath/libgodot.macos.template_debug.dev.x86_64.dylib libgodot.macos.template_debug.dev.x86_64.dylib
 	lipo -create -output libgodot.dylib libgodot.macos.template_debug.dev.x86_64.dylib libgodot.macos.template_debug.dev.arm64.dylib
