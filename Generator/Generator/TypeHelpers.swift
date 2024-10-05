@@ -257,6 +257,8 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
                 return "UInt8"
             case .int8:
                 return "Int8"
+            case .char32:
+                return "Int32"
             default:
                 fatalError()
             }
