@@ -42,7 +42,7 @@ public var experimentalDisableVariantUnref = false
 ///
 /// Modifications to a container will modify all references to it.
 
-public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
+public class Variant: Hashable, Equatable, CustomDebugStringConvertible, ExpressibleByNilLiteral {
     static var fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -64,7 +64,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }()
     
     typealias ContentType = (Int, Int, Int)
-    var content: ContentType = (0, 0, 0)
+    var content: ContentType = Variant.zero
     static var zero: ContentType = (0, 0, 0)
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
@@ -72,6 +72,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         withUnsafePointer(to: otherContent) { src in
             gi.variant_new_copy(&content, src)
         }
+    }
+    
+    public required convenience init(nilLiteral: ()) {
+        self.init()
     }
     
     /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
@@ -84,11 +88,11 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         gi.variant_destroy (&content)
     }
     
-    /// Creates an empty Variant, that represents the Godot type `nil`
-    public init () {
-        withUnsafeMutablePointer(to: &content) { ptr in
-            gi.variant_new_nil (ptr)
-        }
+    /// Creates a `Variant`, that represents the Godot `Nil`.
+    /// https://docs.godotengine.org/en/3.1/classes/class_nil.html
+    public init() {
+        // `content` initialization to `Variant.zero` is at the property declaration site
+        // Doesn't need any marshaling and works with assumption that `gi.variant_new_nil` doesn't have side effects in Godot.
     }
 
     /// Compares two variants, does this by delegating the comparison to Godot
@@ -270,7 +274,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     /// Variants that represent arrays can be indexed, this subscript allows you to fetch the individual elements of those arrays
     ///
-    public subscript (index: Int) -> Variant? {
+    public subscript (index: Int) -> Variant {
         get {
             var copy_content = content
             var _result: Variant.ContentType = Variant.zero
@@ -285,15 +289,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             return Variant(takingOver: _result)
         }
         set {
-            guard let newValue else {
-                return
-            }
-            var copy_content = content
-            var newV = newValue.content
             var valid: GDExtensionBool = 0
             var oob: GDExtensionBool = 0
 
-            gi.variant_set_indexed (&copy_content, Int64(index), &newV, &valid, &oob)
+            gi.variant_set_indexed (&content, Int64(index), &newValue.content, &valid, &oob)
         }
     }
     

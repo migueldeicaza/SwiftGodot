@@ -128,4 +128,14 @@ final class VariantTests: GodotTestCase {
         XCTAssertFalse (Variant (node) == Variant (Node ()))
     }
     
+    func testNilVariantContentAssumption() {
+        var lhs = Variant.zero
+        let rhs = Variant.zero
+        withUnsafeMutablePointer(to: &lhs) { dst in
+            gi.variant_new_nil(dst)
+        }
+        
+        XCTAssert(lhs == rhs)
+    }
+    
 }

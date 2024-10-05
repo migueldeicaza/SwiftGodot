@@ -609,6 +609,25 @@ final class MemoryLeakTests: GodotTestCase {
         }
     }
     
+    func test_array_as_variant_indexing() {
+        let array = GArray()
+        let variant = Variant(array)
+        
+        array.append(Variant(10))
+        array.append(Variant(20))
+        
+        checkLeaks {
+            for i in 0 ..< 100 {
+                XCTAssertEqual(variant[0], Variant(10))
+                XCTAssertEqual(variant[1], Variant(20))
+                XCTAssertEqual(variant[2], Variant())
+                XCTAssertEqual(variant[0], array[0])
+                XCTAssertEqual(variant[1], array[1])
+                XCTAssertEqual(variant[2], array[2])
+            }
+        }
+    }
+    
     func test_dictionary_leaks() {
         checkLeaks {
             let dictionary = GDictionary()
