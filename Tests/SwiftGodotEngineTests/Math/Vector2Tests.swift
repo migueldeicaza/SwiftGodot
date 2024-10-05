@@ -159,15 +159,15 @@ final class Vector2Tests: GodotTestCase {
         let vectorNonNormal: Vector2 = Vector2 (x: 5.4, y: 1.6)
         XCTAssertEqual (vector.bounce (n: vectorY), Vector2 (x: 1.2, y: -3.4), "Vector2 bounce on a plane with normal of the Y axis should.")
         assertApproxEqual (vector.bounce (n: vectorNormal), Vector2 (x: -2.85851197982345523329, y: 2.197477931904161412358), "Vector2 bounce with normal should return expected value.")
-        XCTAssertEqual (vector.reflect (n: vectorY), Vector2 (x: -1.2, y: 3.4), "Vector2 reflect on a plane with normal of the Y axis should.")
-        assertApproxEqual (vector.reflect (n: vectorNormal), Vector2 (x: 2.85851197982345523329, y: -2.197477931904161412358), "Vector2 reflect with normal should return expected value.")
+        XCTAssertEqual (vector.reflect (line: vectorY), Vector2 (x: -1.2, y: 3.4), "Vector2 reflect on a plane with normal of the Y axis should.")
+        assertApproxEqual (vector.reflect (line: vectorNormal), Vector2 (x: 2.85851197982345523329, y: -2.197477931904161412358), "Vector2 reflect with normal should return expected value.")
         XCTAssertEqual (vector.project (b: vectorY), Vector2 (x: 0, y: 3.4), "Vector2 projected on the Y axis should only give the Y component.")
         assertApproxEqual (vector.project (b: vectorNormal), Vector2 (x: 2.0292559899117276166, y: 0.60126103404791929382), "Vector2 projected on a normal should return expected value.")
         XCTAssertEqual (vector.slide (n: vectorY), Vector2 (x: 1.2, y: 0), "Vector2 slide on a plane with normal of the Y axis should set the Y to zero.")
         assertApproxEqual (vector.slide (n: vectorNormal), Vector2 (x: -0.8292559899117276166456, y: 2.798738965952080706179), "Vector2 slide with normal should return expected value.")
         // There's probably a better way to test these ones?
         assertApproxEqual (vector.bounce (n: vectorNonNormal), Vector2 (), "Vector2 bounce should return empty Vector2 with non-normalized input.")
-        assertApproxEqual (vector.reflect (n: vectorNonNormal), Vector2 (), "Vector2 reflect should return empty Vector2 with non-normalized input.")
+        assertApproxEqual (vector.reflect (line: vectorNonNormal), Vector2 (), "Vector2 reflect should return empty Vector2 with non-normalized input.")
         assertApproxEqual (vector.slide (n: vectorNonNormal), Vector2 (), "Vector2 slide should return empty Vector2 with non-normalized input.")
     }
 

@@ -502,6 +502,7 @@ private func godotArrayElementType(gType: String) -> String? {
         ".packedStringArray": "PackedStringArray",
         ".packedVector2Array": "PackedVector2Array",
         ".packedVector3Array": "PackedVector3Array",
+        ".packedVector4Array": "PackedVector4Array",
         ".packedColorArray": "PackedColorArray",
     ]
     return map[gType]

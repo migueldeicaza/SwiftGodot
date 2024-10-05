@@ -436,9 +436,10 @@ func builtinTypecode (_ name: String) -> String {
     case "PackedStringArray":   return "GDEXTENSION_VARIANT_TYPE_PACKED_STRING_ARRAY"
     case "PackedVector2Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY"
     case "PackedVector3Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY"
+    case "PackedVector4Array":  return "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY"
     case "PackedColorArray":    return "GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY"
     default:
-        fatalError()
+        fatalError("Missing handler for \(name)")
     }
 }
 

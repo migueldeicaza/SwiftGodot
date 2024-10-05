@@ -132,6 +132,8 @@ struct GodotInterface {
     
     let object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
     let object_destroy: GDExtensionInterfaceObjectDestroy
+    let object_has_script_method: GDExtensionInterfaceObjectHasScriptMethod
+    let object_call_script_method: GDExtensionInterfaceObjectCallScriptMethod
     
     // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
     @inline(__always)
@@ -208,6 +210,8 @@ struct GodotInterface {
     let packed_vector2_array_operator_index_const: GDExtensionInterfacePackedVector2ArrayOperatorIndexConst
     let packed_vector3_array_operator_index: GDExtensionInterfacePackedVector3ArrayOperatorIndex
     let packed_vector3_array_operator_index_const: GDExtensionInterfacePackedVector3ArrayOperatorIndexConst
+    let packed_vector4_array_operator_index: GDExtensionInterfacePackedVector4ArrayOperatorIndex
+    let packed_vector4_array_operator_index_const: GDExtensionInterfacePackedVector4ArrayOperatorIndexConst
 
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 }
@@ -262,6 +266,8 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         object_get_class_name: load ("object_get_class_name"),
         object_method_bind_ptrcall: load ("object_method_bind_ptrcall"),
         object_destroy: load ("object_destroy"),
+        object_has_script_method: load("object_has_script_method"),
+        object_call_script_method: load("object_call_script_method"),
         
         global_get_singleton: load ("global_get_singleton"),
         ref_get_object: load ("ref_get_object"),
@@ -313,6 +319,8 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         packed_vector2_array_operator_index_const: load ("packed_vector2_array_operator_index_const"),
         packed_vector3_array_operator_index: load ("packed_vector3_array_operator_index"),
         packed_vector3_array_operator_index_const: load ("packed_vector3_array_operator_index_const"),
+        packed_vector4_array_operator_index: load ("packed_vector4_array_operator_index"),
+        packed_vector4_array_operator_index_const: load ("packed_vector4_array_operator_index_const"),
 
         callable_custom_create: load ("callable_custom_create")
     )
