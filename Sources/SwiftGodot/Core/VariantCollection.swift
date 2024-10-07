@@ -24,9 +24,9 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
 
     /// Initializes the collection using an array literal, for example: `let variantCollection: VariantCollection<Int> = [0]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
-		array = elements.reduce(into: .init(Element.self)) {
+        array = elements.reduce(into: .init(Element.self)) {
             $0.append(Variant($1))
-		}
+        }
     }
     
     init (content: Int64) {

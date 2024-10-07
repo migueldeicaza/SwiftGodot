@@ -11,11 +11,11 @@ import SwiftGodot
 
 @Godot
 class Demo: Object {
-	@Export var demo: GArray = GArray()
+    @Export var demo: GArray = GArray()
 }
 
 @Godot
 class Demo2: Object {
-	@Export var demo: Variant = Variant()
+    @Export var demo: Variant = Variant()
 }
 

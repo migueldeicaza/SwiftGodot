@@ -33,15 +33,15 @@ public struct BindNode<Value: Node> {
     ) -> Value {
         get {
             if #available(macOS 13.3, iOS 16.4, tvOS 16.4, *) {
-				if let node = instance[keyPath: storageKeyPath].cachedNode {
-					return node as! Value
-				}
+                if let node = instance[keyPath: storageKeyPath].cachedNode {
+                    return node as! Value
+                }
 
-				if !instance[keyPath: storageKeyPath].path.isEmpty {
-					let nodePath = NodePath(from: instance[keyPath: storageKeyPath].path)
-					instance[keyPath: storageKeyPath].cachedNode = instance.getNode(path: nodePath)
-					return instance[keyPath: storageKeyPath].cachedNode as! Value
-				}
+                if !instance[keyPath: storageKeyPath].path.isEmpty {
+                    let nodePath = NodePath(from: instance[keyPath: storageKeyPath].path)
+                    instance[keyPath: storageKeyPath].cachedNode = instance.getNode(path: nodePath)
+                    return instance[keyPath: storageKeyPath].cachedNode as! Value
+                }
 
                 let name: String
                 let fullName = wrappedKeyPath.debugDescription
@@ -52,7 +52,7 @@ public struct BindNode<Value: Node> {
                 }
                 let nodePath = NodePath(from: name)
                 
-				instance[keyPath: storageKeyPath].cachedNode = instance.getNode(path: nodePath)
+                instance[keyPath: storageKeyPath].cachedNode = instance.getNode(path: nodePath)
                 return instance[keyPath: storageKeyPath].cachedNode as! Value
             } else {
                 fatalError ("BindNode is not supported with current swift, or older Mac")
@@ -74,7 +74,7 @@ public struct BindNode<Value: Node> {
             fatalError()
         }
     }
-	private var cachedNode: Node?
-	private var path: String
+    private var cachedNode: Node?
+    private var path: String
 }
 

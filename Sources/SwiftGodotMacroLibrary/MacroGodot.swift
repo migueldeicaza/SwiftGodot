@@ -80,7 +80,7 @@ class GodotMacroProcessor {
         
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
+        ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -125,7 +125,7 @@ class GodotMacroProcessor {
         let hint = propType == ".array" ? ".arrayType" : ".none"
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("\tlet \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
+        ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
         propertyDeclarations [key] = name
         return name
     }
@@ -193,15 +193,15 @@ class GodotMacroProcessor {
                 parameterName: pname
             )
             if funcArgs == "" {
-                funcArgs = "\tlet \(funcName)Args = [\n"
+                funcArgs = "    let \(funcName)Args = [\n"
             }
-            funcArgs.append ("\t\t\(propInfo),\n")
+            funcArgs.append ("        \(propInfo),\n")
         }
         if funcArgs != "" {
-            funcArgs.append ("\t]\n")
+            funcArgs.append ("    ]\n")
         }
         ctor.append (funcArgs)
-        ctor.append ("\tclassInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
+        ctor.append ("    classInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
     
     // Returns true if it used "tryCase"
@@ -306,9 +306,9 @@ class GodotMacroProcessor {
     
     """)
             
-            ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
-            ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
-            ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
+            ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
+            ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
+            ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
         }
         if usedTryCase {
             return true
@@ -404,9 +404,9 @@ class GodotMacroProcessor {
         usage: .default)\n
     """)
             
-            ctor.append("\tclassInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
-            ctor.append("\tclassInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
-            ctor.append("\tclassInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
+            ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
+            ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
+            ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
         }
     }
     
@@ -436,15 +436,15 @@ class GodotMacroProcessor {
                 previousSubgroupPrefix = macroExpansion.exportSubgroupPrefix ?? ""
                 processExportSubgroup(name: name, prefix: previousSubgroupPrefix ?? "")
             } else if let funcDecl = FunctionDeclSyntax(decl) {
-				try processFunction (funcDecl)
-			} else if let varDecl = VariableDeclSyntax(decl) {
-				if varDecl.isGArrayCollection {
+                try processFunction (funcDecl)
+            } else if let varDecl = VariableDeclSyntax(decl) {
+                if varDecl.isGArrayCollection {
                     try processGArrayCollectionVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
-				} else {
+                } else {
                     if try processVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix) {
                         needTrycase = true
                     }
-				}
+                }
             } else if let macroDecl = MacroExpansionDeclSyntax(decl) {
                 try classInitSignals(macroDecl)
             }
@@ -590,7 +590,7 @@ public struct GodotMacro: MemberMacro {
                 }
                 implementedOverridesDecl += "return super.implementedOverrides () + [\n"
                 for name in stringNames {
-                    implementedOverridesDecl.append("\t\(name),\n")
+                    implementedOverridesDecl.append("    \(name),\n")
                 }
                 implementedOverridesDecl.append("]\n}")
                 decls.append (DeclSyntax(extendedGraphemeClusterLiteral: implementedOverridesDecl))
