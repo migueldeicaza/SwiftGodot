@@ -148,6 +148,15 @@ if singleFile {
     try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
 }
 
+//#if os(Windows)
+//// Because we generate too many symbols for Windows to be able to compile the library
+//// we eliminate some rare classes from the build.   This is a temporary hack to unblock
+//// people while I split SwiftGodot into smaller chunks.
+//skipList.insert("RenderingServer")
+//skipList.insert("WebXRInterface")
+//skipList.insert("OpenXRInterface")
+//#endif
+
 let semaphore = DispatchSemaphore(value: 0)
 let _ = Task {
     let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")

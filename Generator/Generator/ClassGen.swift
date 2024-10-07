@@ -462,9 +462,11 @@ func generateProperties (_ p: Printer,
 }
 
 #if false
-var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer", "AudioStreamPlayer", "PackedScene", "PathFollow2D", "InputEvent", "ClassDB", "AnimatedSprite2D", "Input", "CollisionShape2D", "SpriteFrames", "RigidBody2D" ]
+var okList: Set<String> = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer", "AudioStreamPlayer", "PackedScene", "PathFollow2D", "InputEvent", "ClassDB", "AnimatedSprite2D", "Input", "CollisionShape2D", "SpriteFrames", "RigidBody2D" ]
+var skipList = Set<String>()
 #else
-var okList: [String] = []
+var okList = Set<String>()
+var skipList = Set<String>()
 #endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) async {
@@ -730,7 +732,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
 
         // Remove code that we did not want generated
-        if okList.count > 0 && !okList.contains (cdef.name) {
+        if skipList.contains (cdef.name) || (okList.count > 0 && !okList.contains (cdef.name)) {
             p.result = oResult
         }
     }
@@ -742,7 +744,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
                 print ("Internal error: in processClass \(cdef.name)")
                 continue
             }
-            if okList.count == 0 || okList.contains (cdef.name) {
+            if !skipList.contains (cdef.name) && (okList.count == 0 || okList.contains (cdef.name)) {
                 generateVirtualProxy(p, cdef: cdef, methodName: methodName, method: methodDef)
             }
         }
