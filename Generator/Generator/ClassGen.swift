@@ -19,6 +19,8 @@ var typeToChildren: [String:[String]] = [:]
 
 func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
     switch godotType {
+    case "Variant":
+        return "nil"
     case "int":
         return "0"
     case "float":
@@ -154,7 +156,12 @@ func generateVirtualProxy (_ p: Printer,
             p ("\(call)")
         }
         if let ret = method.returnValue {
-            if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "bitfield::"){
+            if ret.type == "Variant" {
+                p("""
+                retPtr!.storeBytes(of: ret.content, as: Variant.ContentType.self)
+                ret?.content = Variant.zero
+                """)
+            } else if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
             } else if ret.type.starts(with: "enum::") {
                 p ("retPtr!.storeBytes (of: Int32 (ret.rawValue), as: Int32.self)")
@@ -414,7 +421,7 @@ func generateProperties (_ p: Printer,
         let godotReturnType = method.returnValue?.type
         let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
 
-        let propertyOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: property.getter)
+        let propertyOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: property.getter)
         
         // Lookup the type from the method, not the property,
         // sometimes the method is a GString, but the property is a StringName
@@ -538,12 +545,12 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 lambdaIgnore += ", "
                 lambdaFull += ", "
             }
-            args += getArgumentDeclaration(arg, omitLabel: true, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: true, isOptional: arg.type == "Variant")
             let construct: String
             
             if let _ = classMap [arg.type] {
                 argUnwrap += "var ptr_\(argIdx): UnsafeMutableRawPointer?\n"
-                argUnwrap += "args [\(argIdx)].toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
+                argUnwrap += "args [\(argIdx)]!.toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
                 let handleResolver: String
                 if hasSubclasses.contains(cdef.name) {
                     // If the type we are bubbling up has subclasses, we want to create the most
@@ -555,11 +562,11 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 
                 construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(handleResolver)\(arg.type) (nativeHandle: ptr_\(argIdx)!)"
             } else if arg.type == "String" {
-                    construct = "\(mapTypeName(arg.type)) (args [\(argIdx)])!.description"
+                    construct = "\(mapTypeName(arg.type)) (args [\(argIdx)]!)!.description"
             } else if arg.type == "Variant" {
                 construct = "args [\(argIdx)]"
             } else {
-                construct = "\(getGodotType(arg)) (args [\(argIdx)])!"
+                construct = "\(getGodotType(arg)) (args [\(argIdx)]!)!"
             }
             argUnwrap += "let arg_\(argIdx) = \(construct)\n"
             callArgs += "arg_\(argIdx)"

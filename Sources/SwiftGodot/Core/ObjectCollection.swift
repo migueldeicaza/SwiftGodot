@@ -51,9 +51,10 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     
     func initType () {
         let name = StringName()
-        let variant = Variant()
-
-        gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
+        
+        withUnsafePointer(to: Variant.zero) { pNilVariantContent in
+            gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, pNilVariantContent)
+        }
     }
     
     /// Initializes the collection with an empty typed GArray
@@ -81,12 +82,12 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     
     // If I make this optional, I am told I need to implement an internal _read method
     /// Accesses the element at the specified position.
-    public subscript (index: Index) -> Element {
+    public subscript (index: Index) -> Element? {
         get {
-            toStrong (array [index])
+            array[index].map { toStrong($0) }
         }
         set {
-            array [index] = Variant (newValue)
+            array[index] = Variant(newValue)
         }
     }
     
@@ -190,22 +191,22 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: Calling this function is not the same as writing `array[0]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func front ()-> Element {
-        toStrong (array.front ())
+    public final func front () -> Element? {
+        array.front().map { toStrong($0) }
     }
     
     /// Returns the last element of the array. Prints an error and returns `null` if the array is empty.
     ///
     /// > Note: Calling this function is not the same as writing `array[-1]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func back ()-> Element {
-        toStrong (array.back ())
+    public final func back () -> Element? {
+        array.back().map { toStrong($0) }
     }
     
     /// Returns a random value from the target array. Prints an error and returns `null` if the array is empty.
     ///
-    public final func pickRandom ()-> Element {
-        toStrong (array.pickRandom())
+    public final func pickRandom () -> Element? {
+        array.pickRandom().map { toStrong($0) }
     }
 
     
@@ -233,24 +234,24 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
-    public final func popBack ()-> Element {
-        toStrong (array.popBack())
+    public final func popBack() -> Element? {
+        array.popBack().map { toStrong($0) }
     }
     
     /// Removes and returns the first element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popBack()``.
     ///
     /// > Note: On large arrays, this method is much slower than ``popBack()`` as it will reindex all the array's elements every time it's called. The larger the array, the slower ``popFront()`` will be.
     ///
-    public final func popFront ()-> Element {
-        toStrong (array.popFront())
+    public final func popFront() -> Element? {
+        array.popFront().map { toStrong($0) }
     }
     
     /// Removes and returns the element of the array at index `position`. If negative, `position` is considered relative to the end of the array. Leaves the array untouched and returns `null` if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
     ///
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     ///
-    public final func popAt (position: Int64)-> Element {
-        toStrong (array.popAt (position: position))
+    public final func popAt (position: Int64) -> Element? {
+        array.popAt(position: position).map { toStrong($0) }
     }
     
     /// Sorts the array.
@@ -322,7 +323,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Returns the script associated with a typed array tied to a class name.
-    public final func getTypedScript ()-> Variant {
+    public final func getTypedScript () -> Variant? {
         array.getTypedScript()
     }
         

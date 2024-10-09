@@ -64,31 +64,28 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }()
     
     typealias ContentType = (Int, Int, Int)
-    var content: ContentType = (0, 0, 0)
+    var content: ContentType = Variant.zero
     static var zero: ContentType = (0, 0, 0)
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
-    init(copying otherContent: ContentType) {
+    init?(copying otherContent: ContentType) {
+        if otherContent == Variant.zero { return nil }
+        
         withUnsafePointer(to: otherContent) { src in
             gi.variant_new_copy(&content, src)
         }
     }
     
     /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
-    init(takingOver other: ContentType) {
-        self.content = other
+    init?(takingOver otherContent: ContentType) {
+        if otherContent == Variant.zero { return nil }
+        
+        self.content = otherContent
     }
 
     deinit {
         if experimentalDisableVariantUnref { return }
-        gi.variant_destroy (&content)
-    }
-    
-    /// Creates an empty Variant, that represents the Godot type `nil`
-    public init () {
-        withUnsafeMutablePointer(to: &content) { ptr in
-            gi.variant_new_nil (ptr)
-        }
+        gi.variant_destroy(&content)
     }
 
     /// Compares two variants, does this by delegating the comparison to Godot
@@ -105,7 +102,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
     
     /// Creates a new Variant based on a copy of the reference variant passed in
-    public init (_ other: Variant) {
+    public init(_ other: Variant) {
         withUnsafeMutablePointer(to: &content) { selfPtr in
             withUnsafePointer(to: other.content) { ptr in
                 gi.variant_new_copy(selfPtr, ptr)
@@ -115,14 +112,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     convenience public init(_ value: some VariantStorable) {
         self.init(representable: value.toVariantRepresentable())
-    }
-    
-    convenience public init(_ value: (some VariantStorable)?) {
-        if let value {
-            self.init(value)
-        } else {
-            self.init()
-        }
     }
     
     private init<T: VariantRepresentable>(representable value: T) {
@@ -165,9 +154,9 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         guard gtype == .object else {
             return nil
         }
-        var value: UnsafeRawPointer = UnsafeRawPointer(bitPattern: 1)!
+        var value: UnsafeRawPointer?
         toType(.object, dest: &value)
-        if value == UnsafeRawPointer(bitPattern: 0) {
+        guard let value else {
             return nil
         }
         let ret: T? = lookupObject(nativeHandle: value)
@@ -192,7 +181,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     ///  - method: name of the method to invoke
     ///  - arguments: variable list of arguments to pass to the method
     /// - Returns: on success, the variant result, on error, the reason
-    public func call(method: StringName, _ arguments: Variant...) -> Result<Variant, CallErrorType> {
+    public func call(method: StringName, _ arguments: Variant?...) -> Result<Variant?, CallErrorType> {
         var result = Variant.zero
         
         // Shadow self.content, we just need a copy of it locally
@@ -304,5 +293,32 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         gi.variant_get_type_name (GDExtensionVariantType (GDExtensionVariantType.RawValue(type.rawValue)), &res.content)
         let ret = GString.stringFromGStringPtr(ptr: &res.content)
         return ret ?? ""
+    }
+}
+
+extension Optional where Wrapped == Variant {
+    var content: Variant.ContentType {
+        if let wrapped = self {
+            return wrapped.content
+        } else {
+            return Variant.zero
+        }
+    }
+}
+
+extension Optional: VariantStorable where Wrapped: VariantStorable {
+    public typealias Representable = Wrapped.Representable
+    
+    public func toVariantRepresentable() -> Wrapped.Representable {
+        // It's not needed and is just an internal implementation leaking into the public API
+        fatalError()
+    }
+    
+    public init?(_ variant: Variant) {
+        if let wrapped = Wrapped(variant) {
+            self = .some(wrapped)
+        } else {
+            return nil
+        }
     }
 }

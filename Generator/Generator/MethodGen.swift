@@ -117,6 +117,9 @@ struct MethodArgument {
         /// e.g. Float, Vector3
         case direct
         
+        /// e.g. Godot Variant to Swift Variant?
+        case variant
+        
         /// e.g. GArray.content
         case contentRef
         
@@ -198,7 +201,9 @@ struct MethodArgument {
             
             switch tokens.count {
             case 1:
-                if options.contains(.gStringToString) && src.type == "String" {
+                if src.type == "Variant" {
+                    translation = .variant
+                } else if options.contains(.gStringToString) && src.type == "String" {
                     translation = .string
                 } else if options.contains(.floatToDouble) && src.type == "float" {
                     translation = .directPromoted(to: "Double")
@@ -257,6 +262,8 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
             let accessor: String
             
             switch argument.translation {
+            case .variant:
+                accessor = "\(argument.name).content"
             case .contentRef:
                 accessor = "\(argument.name).content"
             case .string:
@@ -419,14 +426,6 @@ func aggregatingPreparedArguments(_ p: Printer, argumentsCount: Int, body: () ->
     }
 }
 
-struct MethodReturnValue {
-    enum Translation {
-        case variant
-    }
-    
-    let translation: Translation
-}
-
 /// The current code generation for passing parameters is both inefficient, and technically unsafe. We don't need
 /// to use nested invocations of withUnsafePointer to generate pointers to multiple arguments, but we can instead generate
 /// a helper version that generates multiple pointer in a single call. For example, if a function that we call using
@@ -557,7 +556,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     var signatureArgs: [String] = []
     let godotReturnType = method.returnValue?.type
     let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
-    let returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
+    let returnOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
     let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
 
     /// returns appropriate declaration of the return type, used by the helper function.
@@ -583,7 +582,9 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                     // frameworkType = true
                     return "var _result = UnsafeRawPointer (bitPattern: 0)"
                 } else {
-                    if godotReturnType.starts(with: "enum::") {
+                    if godotReturnType == "Variant" {
+                        return "var _result: Variant.ContentType = Variant.zero"
+                    } else if godotReturnType.starts(with: "enum::") {
                         return "var _result: Int64 = 0 // to avoid packed enums on the stack"
                     } else {
                         
@@ -617,7 +618,9 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 
                 ptrResult = isClass ? "&_result.content" : "&_result"
             } else {
-                if godotReturnType.starts (with: "typedarray::") {
+                if godotReturnType == "Variant" {
+                    ptrResult = "&_result"
+                } else if godotReturnType.starts (with: "typedarray::") {
                     ptrResult = "&_result"
                 } else if frameworkType {
                     ptrResult = "&_result"
@@ -643,15 +646,27 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         }
         guard returnType != "" else { return "" }
         if method.isVararg {
-            if returnType == "Variant" {
+            if returnType == "Variant?" {
                 return "return Variant(takingOver: _result)"
             } else if returnType == "GodotError" {
-                return "return GodotError(rawValue: Int64(Variant(copying: _result))!)!"
+                return "fatalError()"
+//                return """
+//                guard 
+//                    let variant = Variant(copying: _result)
+//                    // let errorCode = Int64(variant)
+//                } else {
+//                    return .ok
+//                }
+//                fatalError()
+//                //return GodotError(rawValue: errorCode)!
+//                """
             } else if returnType == "String" {
                 return "return _result.description"
             } else {
                 fatalError("Do not support this return type = \(returnType)")
             }
+        } else if returnType == "Variant?" {
+            return "return Variant(takingOver: _result)"
         } else if frameworkType {
             //print ("OBJ RETURN: \(className) \(method.name)")
             return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result)!"
@@ -670,10 +685,14 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     for (index, arg) in arguments.enumerated() {
         let isOptional: Bool
         
-        if classMap [arg.type] != nil {
-            isOptional = isMethodArgumentOptional(className: className, method: method.name, arg: arg.name)
+        if arg.type == "Variant" {
+            isOptional = true
         } else {
-            isOptional = false
+            if classMap [arg.type] != nil {
+                isOptional = isMethodArgumentOptional(className: className, method: method.name, arg: arg.name)
+            } else {
+                isOptional = false
+            }
         }
         
         let omitLabel: Bool
@@ -688,7 +707,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     }
     
     if method.isVararg {
-        signatureArgs.append("_ arguments: Variant...")
+        signatureArgs.append("_ arguments: Variant?...")
     }
     
     if let inlineAttribute {

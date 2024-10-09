@@ -51,7 +51,7 @@ public struct GodotExport: PeerMacro {
         if isEnum {
             body =
     """
-        if let iv = Int (args [0]), let ev = \(typeName)(rawValue: numericCast (iv)) {
+        if let iv = Int (args [0]!), let ev = \(typeName)(rawValue: numericCast (iv)) {
             self.\(varName) = ev
         }
     """
@@ -67,7 +67,7 @@ public struct GodotExport: PeerMacro {
     """
         func dynamicCast<T, U>(_ value: T, as type: U.Type) -> U? { value as? U }
         let oldRef = dynamicCast (\(varName), as: RefCounted.self)
-        if let res: \(typeName) = args [0].asObject () {
+        if let res: \(typeName) = args [0]!.asObject () {
             dynamicCast (res, as: RefCounted.self)?.reference()
             self.\(varName) = res
         }\(optBody)
@@ -77,15 +77,22 @@ public struct GodotExport: PeerMacro {
             if isOptional {
                 body =
     """
-        \(varName) = \(typeName) (args [0])
+        \(varName) = \(typeName) (args [0]!)
     """
             } else {
                 body =
     """
         guard let arg = args.first else {
+            GD.printErr("Unable to set `\(varName)`, no arguments")
             return nil
         }
-        if let value = \(typeName) (arg) {
+    
+        guard let variant = arg else {
+            GD.printErr("Unable to set `\(varName)` to nil")
+            return nil
+        }
+    
+        if let value = \(typeName)(variant) {
             self.\(varName) = value
         } else {
             GD.printErr ("Unable to set `\(varName)` value: ", arg)

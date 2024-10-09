@@ -52,15 +52,15 @@ public struct GodotCallable: PeerMacro {
             }
             
             if ptype == "Variant" {
-                genMethod.append ("args [\(argc)]")
+                genMethod.append ("args [\(argc)]!")
             } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
-                genMethod.append ("GArray (args [\(argc)])!.compactMap(\(elementType).makeOrUnwrap)")
+                genMethod.append ("GArray (args [\(argc)]!)!.compactMap(\(elementType).makeOrUnwrap)")
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
+                genMethod.append ("GArray(args[\(argc)]!)!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
             } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
+                genMethod.append ("GArray(args[\(argc)]!)!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
             } else {
-                genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
+                genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)]!)!")
             }
             
             argc += 1

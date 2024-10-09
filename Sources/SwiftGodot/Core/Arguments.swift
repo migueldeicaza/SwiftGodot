@@ -7,7 +7,7 @@ public struct Arguments: ~Copyable {
             let pargs: UnsafePointer<UnsafeRawPointer?>
             let count: Int
             
-            var first: Variant? {
+            var first: Variant?? {
                 if count > 0 {
                     return retrieveVariant(at: 0)
                 } else {
@@ -16,11 +16,11 @@ public struct Arguments: ~Copyable {
             }
             
             /// Lazily reconstruct variant at `index`
-            func retrieveVariant(at index: Int) -> Variant {
+            func retrieveVariant(at index: Int) -> Variant? {
                 precondition(index >= 0 && index < count, "Index \(index) out of bounds")
                 
                 guard let ptr = pargs[index] else {
-                    return Variant()
+                    return nil
                 }
                 
                 return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
@@ -28,7 +28,7 @@ public struct Arguments: ~Copyable {
         }
         /// User constructed and passed an array, reuse it
         /// It's also cheap to use in a case with no arguments, Swift array impl will just hold a null pointer inside.
-        case array([Variant])
+        case array([Variant?])
         
         /// Godot passed internally managed buffer, retrieve values lazily
         case unsafeGodotArgs(UnsafeGodotArgs)
@@ -49,7 +49,7 @@ public struct Arguments: ~Copyable {
     /// The first argument.
     ///
     /// If the `Arguments` is empty, the value of this property is `nil`.
-    public var first: Variant? {
+    public var first: Variant?? {
         switch contents {
         case .unsafeGodotArgs(let contents):
             if contents.count > 0 {
@@ -62,7 +62,7 @@ public struct Arguments: ~Copyable {
         }
     }
     
-    init(from array: [Variant]) {
+    init(from array: [Variant?]) {
         contents = .array(array)
     }
     
@@ -78,7 +78,7 @@ public struct Arguments: ~Copyable {
         contents = .array([])
     }
     
-    public subscript(_ index: Int) -> Variant {
+    public subscript(_ index: Int) -> Variant? {
         get {
             switch contents {
             case .array(let array):
@@ -97,11 +97,11 @@ func withArguments<T>(pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, _ b
     return result
 }
 
-func withArguments<T>(from array: [Variant], _ body: (borrowing Arguments) -> T) -> T {
+func withArguments<T>(from array: [Variant?], _ body: (borrowing Arguments) -> T) -> T {
     body(Arguments(from: array))
 }
 
-public extension Array where Element == Variant {
+public extension Array where Element == Variant? {
     init(_ args: borrowing Arguments) {
         switch args.contents {
         case .array(let array):
