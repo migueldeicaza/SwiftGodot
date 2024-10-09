@@ -15,7 +15,7 @@ struct FooN: Codable {
 }
 
 protocol GodotEncodingContainer {
-    var data: Variant { get }
+    var data: Variant? { get }
 }
 
 extension Vector2: Codable {
@@ -89,11 +89,12 @@ class GodotEncoder: Encoder {
         var userInfo: [CodingUserInfoKey: Any]
         var storage: [String:GodotEncodingContainer] = [:]
 
-        var data: Variant {
+        var data: Variant? {
             let dict = GDictionary()
             for (k,v) in storage {
-                dict[k] = Variant(v.data)
+                dict[k] = v.data
             }
+            
             return Variant(dict)
         }
 
@@ -154,7 +155,7 @@ class GodotEncoder: Encoder {
 
         var storage = GArray()
 
-        var data: Variant {
+        var data: Variant? {
             return Variant(storage)
         }
 
@@ -301,8 +302,8 @@ class GodotEncoder: Encoder {
         var userInfo: [CodingUserInfoKey: Any]
         var value: Variant?
 
-        var data: Variant {
-            value ?? Variant()
+        var data: Variant? {
+            value
         }
 
         init (codingPath: [any CodingKey], userInfo: [CodingUserInfoKey: Any]) {
@@ -399,7 +400,7 @@ final class MemoryLeakTests: GodotTestCase {
         func oneIteration(object: Object) {
             let list = object.getPropertyList()
             let it = list.makeIterator()
-            for prop: GDictionary in it {
+            for prop: GDictionary? in it {
                 _ = prop
             }
         }
@@ -605,7 +606,7 @@ final class MemoryLeakTests: GodotTestCase {
                 Foo(myInt: 30, myText: "Nested2", myIntArray: [2,2,2])])
             try? foon.encode(to: g)
             
-            print(g.data.description)
+            print(g.data?.description ?? "nil")
         }
     }
     

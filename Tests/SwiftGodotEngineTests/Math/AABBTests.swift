@@ -106,12 +106,12 @@ final class AABBTests: GodotTestCase {
         XCTAssertTrue (aabbBig.intersectsPlane (Plane (normal: Vector3 (x: 0, y: -1, z: 0), d: -4)), "intersectsPlane() should return the expected result.")
         XCTAssertFalse (aabbBig.intersectsPlane (Plane (normal: Vector3 (x: 0, y: 1, z: 0), d: 200)), "intersectsPlane() should return the expected result.")
         
-        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 1, y: 3, z: 0), to: Vector3 (x: 0, y: 3, z: 0)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result.")
-        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 3, z: 0), to: Vector3 (x: 0, y: -300, z: 0)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result.")
-        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: -50, y: 3, z: -50), to: Vector3 (x: 50, y: 3, z: 50)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result.")
-        XCTAssertEqual (aabbBig.intersectsSegment (from: Vector3 (x: -50, y: 25, z: -50), to: Vector3 (x: 50, y: 25, z: 50)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result.")
-        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 3, z: 0), to: Vector3 (x: 0, y: 3, z: 0)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result with segment of length 0.")
-        XCTAssertEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 300, z: 0), to: Vector3 (x: 0, y: 300, z: 0)).gtype, Variant.GType.nil, "intersectsSegment() should return the expected result with segment of length 0.")
+        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 1, y: 3, z: 0), to: Vector3 (x: 0, y: 3, z: 0))?.gtype, nil, "intersectsSegment() should return the expected result.")
+        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 3, z: 0), to: Vector3 (x: 0, y: -300, z: 0))?.gtype, nil, "intersectsSegment() should return the expected result.")
+        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: -50, y: 3, z: -50), to: Vector3 (x: 50, y: 3, z: 50))?.gtype, nil, "intersectsSegment() should return the expected result.")
+        XCTAssertEqual (aabbBig.intersectsSegment (from: Vector3 (x: -50, y: 25, z: -50), to: Vector3 (x: 50, y: 25, z: 50))?.gtype, nil, "intersectsSegment() should return the expected result.")
+        XCTAssertNotEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 3, z: 0), to: Vector3 (x: 0, y: 3, z: 0))?.gtype, nil, "intersectsSegment() should return the expected result with segment of length 0.")
+        XCTAssertEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 300, z: 0), to: Vector3 (x: 0, y: 300, z: 0))?.gtype, nil, "intersectsSegment() should return the expected result with segment of length 0.")
     }
     
     func testMerging () {

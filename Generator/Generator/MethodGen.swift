@@ -649,17 +649,17 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             if returnType == "Variant?" {
                 return "return Variant(takingOver: _result)"
             } else if returnType == "GodotError" {
-                return "fatalError()"
-//                return """
-//                guard 
-//                    let variant = Variant(copying: _result)
-//                    // let errorCode = Int64(variant)
-//                } else {
-//                    return .ok
-//                }
-//                fatalError()
-//                //return GodotError(rawValue: errorCode)!
-//                """
+                return """
+                guard let variant = Variant(copying: _result) else {
+                    return .ok
+                }
+                
+                guard let errorCode = Int(variant) else {
+                    return .ok
+                }
+                
+                return GodotError(rawValue: Int64(errorCode))!                
+                """
             } else if returnType == "String" {
                 return "return _result.description"
             } else {

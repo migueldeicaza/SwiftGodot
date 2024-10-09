@@ -227,9 +227,16 @@ class SomeNode: Node {
 
     func _mproxy_set_someArray (args: borrowing Arguments) -> Variant? {
         guard let arg = args.first else {
+            GD.printErr("Unable to set `someArray`, no arguments")
             return nil
         }
-        if let value = GArray (arg) {
+
+        guard let variant = arg else {
+            GD.printErr("Unable to set `someArray` to nil")
+            return nil
+        }
+
+        if let value = GArray(variant) {
             self.someArray = value
         } else {
             GD.printErr ("Unable to set `someArray` value: ", arg)
