@@ -295,14 +295,22 @@ final class MacroGodotExportCollectionTests: XCTestCase {
             expandedSource: """
             class SomeNode: Node {
                 var someNumbers: VariantCollection<Int> = []
-
+            
                 func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
                     return Variant(someNumbers.array)
                 }
 
                 func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `someNumbers`, no arguments")
+                        return nil
+                    }
+
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `someNumbers`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Int.self)) else {
                         return nil
@@ -310,7 +318,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                     someNumbers.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
@@ -354,8 +362,16 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 }
 
                 func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `someNumbers`, no arguments")
+                        return nil
+                    }
+
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `someNumbers`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Int.self)) else {
                         return nil
@@ -370,8 +386,16 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 }
 
                 func _mproxy_set_someOtherNumbers(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `someOtherNumbers`, no arguments")
+                        return nil
+                    }
+
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `someOtherNumbers`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Int.self)) else {
                         return nil
@@ -379,7 +403,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                     someOtherNumbers.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
@@ -436,8 +460,16 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                }
 
                func _mproxy_set_firstNames(args: borrowing Arguments) -> Variant? {
-                   guard let arg = args.first,
-                         let gArray = GArray(arg),
+                   guard let arg = args.first else {
+                       GD.printErr("Unable to set `firstNames`, no arguments")
+                       return nil
+                   }
+
+                   guard let variant = arg else {
+                       GD.printErr("Unable to set `firstNames`, argument is `nil`")
+                       return nil
+                   }
+                   guard let gArray = GArray(variant),
                          gArray.isTyped(),
                          gArray.isSameTyped(array: GArray(String.self)) else {
                        return nil
@@ -452,8 +484,16 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                }
 
                func _mproxy_set_lastNames(args: borrowing Arguments) -> Variant? {
-                   guard let arg = args.first,
-                         let gArray = GArray(arg),
+                   guard let arg = args.first else {
+                       GD.printErr("Unable to set `lastNames`, no arguments")
+                       return nil
+                   }
+
+                   guard let variant = arg else {
+                       GD.printErr("Unable to set `lastNames`, argument is `nil`")
+                       return nil
+                   }
+                   guard let gArray = GArray(variant),
                          gArray.isTyped(),
                          gArray.isSameTyped(array: GArray(String.self)) else {
                        return nil
@@ -499,84 +539,95 @@ final class MacroGodotExportCollectionTests: XCTestCase {
     }
     
     func testExportObjectCollection() throws {
-        assertMacroExpansion(
-"""
-@Export var greetings: ObjectCollection<Node3D> = []
-""",
-            expandedSource:
-"""
-var greetings: ObjectCollection<Node3D> = []
+        assertMacroExpansion("""
+            @Export var greetings: ObjectCollection<Node3D> = []
+            """,
+            expandedSource: """
+            var greetings: ObjectCollection<Node3D> = []
 
-func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
-    return Variant(greetings.array)
-}
+            func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+                return Variant(greetings.array)
+            }
 
-func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-    guard let arg = args.first,
-          let gArray = GArray(arg),
-          gArray.isTyped(),
-          gArray.isSameTyped(array: GArray(Node3D.self)) else {
-        return nil
-    }
-    greetings.array = gArray
-    return nil
-}
-""",
+            func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
+                guard let arg = args.first else {
+                    GD.printErr("Unable to set `greetings`, no arguments")
+                    return nil
+                }
+
+                guard let variant = arg else {
+                    GD.printErr("Unable to set `greetings`, argument is `nil`")
+                    return nil
+                }
+                guard let gArray = GArray(variant),
+                      gArray.isTyped(),
+                      gArray.isSameTyped(array: GArray(Node3D.self)) else {
+                    return nil
+                }
+                greetings.array = gArray
+                return nil
+            }
+            """,
             macros: testMacros
         )
     }
     
     func testGodotExportObjectCollection() throws {
-        assertMacroExpansion(
-"""
-@Godot
-class SomeNode: Node {
-    @Export var greetings: ObjectCollection<Node3D> = []
-}
-""",
-            expandedSource:
-"""
+        assertMacroExpansion("""
+            @Godot
+            class SomeNode: Node {
+                @Export var greetings: ObjectCollection<Node3D> = []
+            }
+            """,
+            expandedSource: """
+            class SomeNode: Node {
+                var greetings: ObjectCollection<Node3D> = []
 
-class SomeNode: Node {
-    var greetings: ObjectCollection<Node3D> = []
+                func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
+                    return Variant(greetings.array)
+                }
 
-    func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
-        return Variant(greetings.array)
-    }
+                func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `greetings`, no arguments")
+                        return nil
+                    }
 
-    func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first,
-              let gArray = GArray(arg),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(Node3D.self)) else {
-            return nil
-        }
-        greetings.array = gArray
-        return nil
-    }
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `greetings`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
+                          gArray.isTyped(),
+                          gArray.isSameTyped(array: GArray(Node3D.self)) else {
+                        return nil
+                    }
+                    greetings.array = gArray
+                    return nil
+                }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
 
-    private static let _initializeClass: Void = {
-        let className = StringName("SomeNode")
-        assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<SomeNode> (name: className)
-        let _pgreetings = PropInfo (
-            propertyType: .array,
-            propertyName: "greetings",
-            className: StringName("Array[Node3D]"),
-            hint: .arrayType,
-            hintStr: "Node3D",
-            usage: .default)
-        classInfo.registerMethod (name: "get_greetings", flags: .default, returnValue: _pgreetings, arguments: [], function: SomeNode._mproxy_get_greetings)
-        classInfo.registerMethod (name: "set_greetings", flags: .default, returnValue: nil, arguments: [_pgreetings], function: SomeNode._mproxy_set_greetings)
-        classInfo.registerProperty (_pgreetings, getter: "get_greetings", setter: "set_greetings")
-    } ()
-}
-""",
+                private static let _initializeClass: Void = {
+                    let className = StringName("SomeNode")
+                    assert(ClassDB.classExists(class: className))
+                    let classInfo = ClassInfo<SomeNode> (name: className)
+                    let _pgreetings = PropInfo (
+                        propertyType: .array,
+                        propertyName: "greetings",
+                        className: StringName("Array[Node3D]"),
+                        hint: .arrayType,
+                        hintStr: "Node3D",
+                        usage: .default)
+                    classInfo.registerMethod (name: "get_greetings", flags: .default, returnValue: _pgreetings, arguments: [], function: SomeNode._mproxy_get_greetings)
+                    classInfo.registerMethod (name: "set_greetings", flags: .default, returnValue: nil, arguments: [_pgreetings], function: SomeNode._mproxy_set_greetings)
+                    classInfo.registerProperty (_pgreetings, getter: "get_greetings", setter: "set_greetings")
+                } ()
+            }
+            """,
             macros: testMacros
         )
     }

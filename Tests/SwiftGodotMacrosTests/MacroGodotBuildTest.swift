@@ -12,9 +12,7 @@ import SwiftGodot
 @Godot
 class Demo1: Object {
     @Export var demo: GArray = GArray()
-    
     @Export var greetings: VariantCollection<String> = []
-    
     @Export var servers: ObjectCollection<AudioServer> = []
 }
 
@@ -60,4 +58,32 @@ class Demo6: Node {
 @Godot
 class Demo7: Node {
     @Export var someArray: GArray = GArray()
+    @Export var someNumbers: VariantCollection<Int> = []
+}
+
+@Godot
+class Demo8: Node {
+    @Export var someNumbers: VariantCollection<Int> = []
+    @Export var someOtherNumbers: VariantCollection<Int> = []
+}
+
+@Godot
+class Demo9: Node {
+    @Export var someNumbers: VariantCollection<Int> = []
+}
+
+@Godot
+class Demo10: Node {
+   @Export var firstNames: VariantCollection<String> = ["Thelonius"]
+   @Export var lastNames: VariantCollection<String> = ["Monk"]
+}
+
+@Godot
+class Demo11: Node {
+    @Export var greetings: ObjectCollection<Node3D> = []
+}
+
+@Godot
+class Demo12: Node {
+    @Export var greetings: ObjectCollection<Node3D> = []
 }
