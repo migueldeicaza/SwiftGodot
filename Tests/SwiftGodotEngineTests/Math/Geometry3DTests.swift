@@ -16,18 +16,18 @@ final class Geometry3DTests: GodotTestCase {
         let extents: Vector3 = Vector3 (x: 5, y: 5, z: 20)
         let box = Geometry3D.buildBoxPlanes (extents: extents)
         XCTAssertEqual (box.size (), 6)
-        XCTAssertEqual (extents.x, box [safe: 0]?.d)
-        XCTAssertEqual (box [safe: 0]?.normal, Vector3 (x: 1, y: 0, z: 0))
-        XCTAssertEqual (extents.x, box [safe: 1]?.d)
-        XCTAssertEqual (box [safe: 1]?.normal, Vector3 (x: -1, y: 0, z: 0))
-        XCTAssertEqual (extents.y, box [safe: 2]?.d)
-        XCTAssertEqual (box [safe: 2]?.normal, Vector3 (x: 0, y: 1, z: 0))
-        XCTAssertEqual (extents.y, box [safe: 3]?.d)
-        XCTAssertEqual (box [safe: 3]?.normal, Vector3 (x: 0, y: -1, z: 0))
-        XCTAssertEqual (extents.z, box [safe: 4]?.d)
-        XCTAssertEqual (box [safe: 4]?.normal, Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertEqual (extents.z, box [safe: 5]?.d)
-        XCTAssertEqual (box [safe: 5]?.normal, Vector3 (x: 0, y: 0, z: -1))
+        XCTAssertEqual (extents.x, box [safe: 0]??.d)
+        XCTAssertEqual (box [safe: 0]??.normal, Vector3 (x: 1, y: 0, z: 0))
+        XCTAssertEqual (extents.x, box [safe: 1]??.d)
+        XCTAssertEqual (box [safe: 1]??.normal, Vector3 (x: -1, y: 0, z: 0))
+        XCTAssertEqual (extents.y, box [safe: 2]??.d)
+        XCTAssertEqual (box [safe: 2]??.normal, Vector3 (x: 0, y: 1, z: 0))
+        XCTAssertEqual (extents.y, box [safe: 3]??.d)
+        XCTAssertEqual (box [safe: 3]??.normal, Vector3 (x: 0, y: -1, z: 0))
+        XCTAssertEqual (extents.z, box [safe: 4]??.d)
+        XCTAssertEqual (box [safe: 4]??.normal, Vector3 (x: 0, y: 0, z: 1))
+        XCTAssertEqual (extents.z, box [safe: 5]??.d)
+        XCTAssertEqual (box [safe: 5]??.normal, Vector3 (x: 0, y: 0, z: -1))
     }
 
     func testBuildCapsulePlanes () {
@@ -69,14 +69,14 @@ final class Geometry3DTests: GodotTestCase {
     }
 
     func testDoesRayIntersectTriangle () {
-        var result: Variant
+        var result: Variant?
         result = Geometry3D.rayIntersectsTriangle (from: Vector3 (x: 0, y: 1, z: 1), dir: Vector3 (x: 0, y: 0, z: -10), a: Vector3 (x: 0, y: 3, z: 0), b: Vector3 (x: -3, y: 0, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result.gtype, .vector3)
-        XCTAssertEqual (Vector3 (result), Vector3 (x: 0, y: 1, z: 0))
+        XCTAssertEqual (result?.gtype, .vector3)
+        XCTAssertEqual (result.map { Vector3($0) }, Vector3 (x: 0, y: 1, z: 0))
         result = Geometry3D.rayIntersectsTriangle (from: Vector3 (x: 5, y: 10, z: 1), dir: Vector3 (x: 0, y: 0, z: -10), a: Vector3 (x: 0, y: 3, z: 0), b: Vector3 (x: -3, y: 0, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result.gtype, .nil)
+        XCTAssertEqual (result, nil)
         result = Geometry3D.rayIntersectsTriangle (from: Vector3 (x: 0, y: 1, z: 1), dir: Vector3 (x: 0, y: 0, z: 10), a: Vector3 (x: 0, y: 3, z: 0), b: Vector3 (x: -3, y: 0, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result.gtype, .nil)
+        XCTAssertEqual (result, nil)
     }
 
     func testDoesSegmentIntersectConvex () {
@@ -109,13 +109,13 @@ final class Geometry3DTests: GodotTestCase {
     }
 
     func testSegmentIntersectsTriangle () {
-        var result: Variant
+        var result: Variant?
         result = Geometry3D.segmentIntersectsTriangle (from: Vector3 (x: 1, y: 1, z: 1), to: Vector3 (x: -1, y: -1, z: -1), a: Vector3 (x: -3, y: 0, z: 0), b: Vector3 (x: 0, y: 3, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result.gtype, .vector3)
+        XCTAssertEqual (result?.gtype, .vector3)
         result = Geometry3D.segmentIntersectsTriangle (from: Vector3 (x: 1, y: 1, z: 1), to: Vector3 (x: 3, y: 0, z: 0), a: Vector3 (x: -3, y: 0, z: 0), b: Vector3 (x: 0, y: 3, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result.gtype, .vector3)
+        XCTAssertEqual (result?.gtype, .vector3)
         result = Geometry3D.segmentIntersectsTriangle (from: Vector3 (x: 1, y: 1, z: 1), to: Vector3 (x: 10, y: -1, z: -1), a: Vector3 (x: -3, y: 0, z: 0), b: Vector3 (x: 0, y: 3, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result.gtype, .nil)
+        XCTAssertEqual (result, nil)
     }
     
 }

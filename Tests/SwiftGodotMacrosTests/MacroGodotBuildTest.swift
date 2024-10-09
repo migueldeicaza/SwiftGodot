@@ -16,6 +16,6 @@ class Demo: Object {
 
 @Godot
 class Demo2: Object {
-    @Export var demo: Variant = Variant()
+    @Export var demo: Variant? = nil
 }
 
