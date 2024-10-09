@@ -66,23 +66,35 @@ final class PlaneTests: GodotTestCase {
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 2)
         let zFacingPlane: Plane = Plane (a: 0, b: 0, c: 1, d: 3)
         
-        var varOut: Variant
+        var varOut: Variant?
         var vecOut: Vector3?
         
         varOut = xFacingPlane.intersect3 (b: yFacingPlane, c: zFacingPlane)
-        vecOut = Vector3 (varOut)
-        XCTAssertEqual (varOut.gtype, .vector3, "intersect3() should return the expected result.")
-        XCTAssertEqual (vecOut, Vector3 (x: 1, y: 2, z: 3), "intersect3() should return the expected result.")
-        
+        if let varOut {
+            vecOut = Vector3 (varOut)
+            XCTAssertEqual (varOut.gtype, .vector3, "intersect3() should return the expected result.")
+            XCTAssertEqual (vecOut, Vector3 (x: 1, y: 2, z: 3), "intersect3() should return the expected result.")
+        } else {
+            XCTFail()
+        }
+                
         varOut = xFacingPlane.intersectsRay (from: Vector3 (x: 0, y: 1, z: 1), dir: Vector3 (x: 2, y: 0, z: 0))
-        vecOut = Vector3 (varOut)
-        XCTAssertEqual (varOut.gtype, .vector3, "intersectsRay() should return the expected result.")
-        XCTAssertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsRay() should return the expected result.")
+        if let varOut {
+            vecOut = Vector3 (varOut)
+            XCTAssertEqual (varOut.gtype, .vector3, "intersectsRay() should return the expected result.")
+            XCTAssertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsRay() should return the expected result.")
+        } else {
+            XCTFail()
+        }
         
         varOut = xFacingPlane.intersectsSegment (from: Vector3 (x: 0, y: 1, z: 1), to: Vector3 (x: 2, y: 1, z: 1))
-        vecOut = Vector3 (varOut)
-        XCTAssertEqual (varOut.gtype, .vector3, "intersectsSegment() should return the expected result.")
-        XCTAssertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsSegment() should return the expected result.")
+        if let varOut {
+            vecOut = Vector3 (varOut)
+            XCTAssertEqual (varOut.gtype, .vector3, "intersectsSegment() should return the expected result.")
+            XCTAssertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsSegment() should return the expected result.")
+        } else {
+            XCTFail()
+        }
     }
     
     func testFiniteNumberChecks () {

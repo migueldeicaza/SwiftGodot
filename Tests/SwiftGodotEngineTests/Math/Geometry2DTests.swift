@@ -89,49 +89,49 @@ final class Geometry2DTests: GodotTestCase {
     }
 
     func testLineIntersection () {
-        var r: Variant
+        var r: Variant?
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: 2, y: 0), dirA: Vector2 (x: 0, y: 1), fromB: Vector2 (x: 0, y: 2), dirB: Vector2 (x: 1, y: 0))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 2, y: 2))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 2, y: 2))
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: -1, y: 1), dirA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 4, y: 1), dirB: Vector2 (x: -1, y: -1))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 1.5, y: -1.5))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 1.5, y: -1.5))
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: -1, y: 0), dirA: Vector2 (x: -1, y: -1), fromB: Vector2 (x: 1, y: 0), dirB: Vector2 (x: 1, y: -1))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 1))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 1))
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: -1, y: 1), dirA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 0, y: 1), dirB: Vector2 (x: 1, y: -1))
-        XCTAssertEqual (r.gtype, .nil, "Parallel lines should not intersect.")
+        XCTAssertEqual (r, nil, "Parallel lines should not intersect.")
     }
 
     func testSegmentIntersection () {
-        var r: Variant
+        var r: Variant?
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 1, y: 1), toB: Vector2 (x: -1, y: -1))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 0))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 1, y: 1), toB: Vector2 (x: 0.1, y: 0.1))
-        XCTAssertEqual (r.gtype, .nil)
+        XCTAssertEqual (r, nil)
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 0.1, y: 0.1), toB: Vector2 (x: 1, y: 1))
-        XCTAssertEqual (r.gtype, .nil)
+        XCTAssertEqual (r, nil)
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 0, y: 1), toB: Vector2 (x: 2, y: -1))
-        XCTAssertEqual (r.gtype, .nil, "Parallel segments should not intersect.")
+        XCTAssertEqual (r, nil, "Parallel segments should not intersect.")
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: 1, y: 2), toA: Vector2 (x: 3, y: 2), fromB: Vector2 (x: 0, y: 2), toB: Vector2 (x: -2, y: 2))
-        XCTAssertEqual (r.gtype, .nil,"Non-overlapping collinear segments should not intersect.")
+        XCTAssertEqual (r, nil,"Non-overlapping collinear segments should not intersect.")
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: 0, y: 0), toA: Vector2 (x: 0, y: 1), fromB: Vector2 (x: 0, y: 0), toB: Vector2 (x: 1, y: 0))
-        XCTAssertEqual (r.gtype, .vector2, "Touching segments should intersect.")
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 0))
+        XCTAssertEqual (r?.gtype, .vector2, "Touching segments should intersect.")
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: 0, y: 1), toA: Vector2 (x: 0, y: 0), fromB: Vector2 (x: 0, y: 0), toB: Vector2 (x: 1, y: 0))
-        XCTAssertEqual (r.gtype, .vector2, "Touching segments should intersect.")
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 0))
+        XCTAssertEqual (r?.gtype, .vector2, "Touching segments should intersect.")
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
     }
     
     func testSegmentIntersectionWithCircle () {
@@ -224,7 +224,7 @@ final class Geometry2DTests: GodotTestCase {
         r.pushBack (value: Vector2 (x: 7, y: 8))
         result = Geometry2D.makeAtlas (sizes: r)
         XCTAssertEqual (result.size (), 2)
-        XCTAssertEqual (PackedVector2Array (result ["points"] ?? Variant ())?.size (), r.size ())
+        XCTAssertEqual (result["points"].map { PackedVector2Array($0)?.size() }, r.size())
     }
     
     func testPolygonIntersection () throws {
@@ -251,10 +251,10 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 200, y: 90))
         r = Geometry2D.intersectPolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 1, "The polygons should intersect each other with 1 resulting intersection polygon.")
-        XCTAssertEqual (r [safe: 0]?.size (), 3, "The resulting intersection polygon should have 3 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 86.52174, y: 191.30436))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 50, y: 100))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 160.52632, y: 92.63157))
+        XCTAssertEqual (r [safe: 0]??.size (), 3, "The resulting intersection polygon should have 3 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 86.52174, y: 191.30436))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 50, y: 100))
+        assertApproxEqual (r [safe: 0]??[safe: 2], Vector2 (x: 160.52632, y: 92.63157))
         
         // Intersection with one polygon being completely inside the other polygon
         b.clear ()
@@ -263,10 +263,10 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 150, y: 50))
         r = Geometry2D.intersectPolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 1, "The polygons should intersect each other with 1 resulting intersection polygon.")
-        XCTAssertEqual (r [safe: 0]?.size (), 3, "The resulting intersection polygon should have 3 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], b [0])
-        assertApproxEqual (r [safe: 0]?[safe: 1], b [1])
-        assertApproxEqual (r [safe: 0]?[safe: 2], b [2])
+        XCTAssertEqual (r [safe: 0]??.size (), 3, "The resulting intersection polygon should have 3 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], b [0])
+        assertApproxEqual (r [safe: 0]??[safe: 1], b [1])
+        assertApproxEqual (r [safe: 0]??[safe: 2], b [2])
                 
         // No intersection with 2 non-empty polygons
         b.clear ()
@@ -290,16 +290,16 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 160, y: 50))
         r = Geometry2D.intersectPolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "The polygons should intersect each other with 2 resulting intersection polygons.")
-        XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting intersection polygon should have 4 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 70, y: 105))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 115, y: 55))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 112.894737, y: 51.63158))
-        assertApproxEqual (r [safe: 0]?[safe: 3], Vector2 (x: 159.509537, y: 50.299728))
+        XCTAssertEqual (r [safe: 0]??.size (), 4, "The resulting intersection polygon should have 4 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 70, y: 105))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 115, y: 55))
+        assertApproxEqual (r [safe: 0]??[safe: 2], Vector2 (x: 112.894737, y: 51.63158))
+        assertApproxEqual (r [safe: 0]??[safe: 3], Vector2 (x: 159.509537, y: 50.299728))
         
-        XCTAssertEqual (r [safe: 1]?.size (), 3, "The intersection polygon should have 3 vertices.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 119.692307, y: 29.846149))
-        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 107.706421, y: 43.33028))
-        assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 90, y: 15))
+        XCTAssertEqual (r [safe: 1]??.size (), 3, "The intersection polygon should have 3 vertices.")
+        assertApproxEqual (r [safe: 1]??[safe: 0], Vector2 (x: 119.692307, y: 29.846149))
+        assertApproxEqual (r [safe: 1]??[safe: 1], Vector2 (x: 107.706421, y: 43.33028))
+        assertApproxEqual (r [safe: 1]??[safe: 2], Vector2 (x: 90, y: 15))
     }
     
     func testMergePolygons () {
@@ -319,11 +319,11 @@ final class Geometry2DTests: GodotTestCase {
         // One polygon is empty
         r = Geometry2D.mergePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 1, "One polygon is non-empty. There should be 1 resulting merged polygon.")
-        XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting merged polygon should have 4 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], a [0])
-        assertApproxEqual (r [safe: 0]?[safe: 1], a [1])
-        assertApproxEqual (r [safe: 0]?[safe: 2], a [2])
-        assertApproxEqual (r [safe: 0]?[safe: 3], a [3])
+        XCTAssertEqual (r [safe: 0]??.size (), 4, "The resulting merged polygon should have 4 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], a [0])
+        assertApproxEqual (r [safe: 0]??[safe: 1], a [1])
+        assertApproxEqual (r [safe: 0]??[safe: 2], a [2])
+        assertApproxEqual (r [safe: 0]??[safe: 3], a [3])
         
         // Basic merge with 2 polygons
         b.pushBack (value: Vector2 (x: 180, y: 190))
@@ -331,14 +331,14 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 160, y: 80))
         r = Geometry2D.mergePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 1, "The merged polygons should result in 1 polygon.")
-        XCTAssertEqual (r [safe: 0]?.size (), 7, "The resulting merged polygon should have 7 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 174.791077, y: 161.350967))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 225, y: 180))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 160, y: 230))
-        assertApproxEqual (r [safe: 0]?[safe: 3], Vector2 (x: 20, y: 212))
-        assertApproxEqual (r [safe: 0]?[safe: 4], Vector2 (x: 50, y: 115))
-        assertApproxEqual (r [safe: 0]?[safe: 5], Vector2 (x: 81.911758, y: 126.852943))
-        assertApproxEqual (r [safe: 0]?[safe: 6], Vector2 (x: 160, y: 80))
+        XCTAssertEqual (r [safe: 0]??.size (), 7, "The resulting merged polygon should have 7 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 174.791077, y: 161.350967))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 225, y: 180))
+        assertApproxEqual (r [safe: 0]??[safe: 2], Vector2 (x: 160, y: 230))
+        assertApproxEqual (r [safe: 0]??[safe: 3], Vector2 (x: 20, y: 212))
+        assertApproxEqual (r [safe: 0]??[safe: 4], Vector2 (x: 50, y: 115))
+        assertApproxEqual (r [safe: 0]??[safe: 5], Vector2 (x: 81.911758, y: 126.852943))
+        assertApproxEqual (r [safe: 0]??[safe: 6], Vector2 (x: 160, y: 80))
         
         // Merge with 2 resulting merged polygons (outline and hole)
         b.clear ()
@@ -348,22 +348,32 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 160, y: 80))
         r = Geometry2D.mergePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "The merged polygons should result in 2 polygons.")
+                
+        if let polygon = r[safe: 0] {
+            XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: polygon ?? PackedVector2Array ()), "The merged polygon (outline) should be counter-clockwise.")
+        } else {
+            XCTFail()
+        }
+                
+        XCTAssertEqual (r [safe: 0]??.size (), 7, "The resulting merged polygon (outline) should have 7 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 174.791077, y: 161.350967))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 225, y: 180))
+        assertApproxEqual (r [safe: 0]??[safe: 2], Vector2 (x: 160, y: 230))
+        assertApproxEqual (r [safe: 0]??[safe: 3], Vector2 (x: 20, y: 212))
+        assertApproxEqual (r [safe: 0]??[safe: 4], Vector2 (x: 50, y: 115))
+        assertApproxEqual (r [safe: 0]??[safe: 5], Vector2 (x: 81.911758, y: 126.852943))
+        assertApproxEqual (r [safe: 0]??[safe: 6], Vector2 (x: 160, y: 80))
         
-        XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: r [safe: 0] ?? PackedVector2Array ()), "The merged polygon (outline) should be counter-clockwise.")
-        XCTAssertEqual (r [safe: 0]?.size (), 7, "The resulting merged polygon (outline) should have 7 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 174.791077, y: 161.350967))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 225, y: 180))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 160, y: 230))
-        assertApproxEqual (r [safe: 0]?[safe: 3], Vector2 (x: 20, y: 212))
-        assertApproxEqual (r [safe: 0]?[safe: 4], Vector2 (x: 50, y: 115))
-        assertApproxEqual (r [safe: 0]?[safe: 5], Vector2 (x: 81.911758, y: 126.852943))
-        assertApproxEqual (r [safe: 0]?[safe: 6], Vector2 (x: 160, y: 80))
+        if let polygon = r[safe: 1] {
+            XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: polygon ?? PackedVector2Array ()), "The resulting merged polygon (hole) should be clockwise.")
+        } else {
+            XCTFail()
+        }
         
-        XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: r [safe: 1] ?? PackedVector2Array ()), "The resulting merged polygon (hole) should be clockwise.")
-        XCTAssertEqual (r [safe: 1]?.size (), 3, "The resulting merged polygon (hole) should have 3 vertices.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 98.083069, y: 132.859421))
-        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 158.689453, y: 155.370377))
-        assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 140, y: 125))
+        XCTAssertEqual (r [safe: 1]??.size (), 3, "The resulting merged polygon (hole) should have 3 vertices.")
+        assertApproxEqual (r [safe: 1]??[safe: 0], Vector2 (x: 98.083069, y: 132.859421))
+        assertApproxEqual (r [safe: 1]??[safe: 1], Vector2 (x: 158.689453, y: 155.370377))
+        assertApproxEqual (r [safe: 1]??[safe: 2], Vector2 (x: 140, y: 125))
     }
 
     func testClipPolygons () {
@@ -387,10 +397,10 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 25, y: 80))
         r = Geometry2D.clipPolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 1, "The clipped polygons should result in 1 polygon.")
-        XCTAssertEqual (r [safe: 0]?.size (), 3, "The resulting clipped polygon should have 3 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 100.102173, y: 222.298843))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 20, y: 212))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 47.588089, y: 122.798492))
+        XCTAssertEqual (r [safe: 0]??.size (), 3, "The resulting clipped polygon should have 3 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 100.102173, y: 222.298843))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 20, y: 212))
+        assertApproxEqual (r [safe: 0]??[safe: 2], Vector2 (x: 47.588089, y: 122.798492))
         
         // Polygon b completely overlaps polygon a
         b.clear ()
@@ -408,17 +418,28 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 80, y: 140))
         r = Geometry2D.clipPolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "Polygon 'a' completely overlaps polygon 'b'. This should result in 2 clipped polygons.")
-        XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting clipped polygon should have 4 vertices.")
-        XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: r [safe: 0] ?? PackedVector2Array ()), "The resulting clipped polygon (outline) should be counter-clockwise.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], a [0])
-        assertApproxEqual (r [safe: 0]?[safe: 1], a [1])
-        assertApproxEqual (r [safe: 0]?[safe: 2], a [2])
-        assertApproxEqual (r [safe: 0]?[safe: 3], a [3])
-        XCTAssertEqual (r [safe: 1]?.size (), 3, "The resulting clipped polygon should have 3 vertices.")
-        XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: r [safe: 1] ?? PackedVector2Array ()), "The resulting clipped polygon (hole) should be clockwise.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], b [1])
-        assertApproxEqual (r [safe: 1]?[safe: 1], b [0])
-        assertApproxEqual (r [safe: 1]?[safe: 2], b [2])
+        XCTAssertEqual (r [safe: 0]??.size (), 4, "The resulting clipped polygon should have 4 vertices.")
+        
+        if let polygon = r[safe: 0] {
+            XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: polygon ?? PackedVector2Array ()), "The resulting clipped polygon (outline) should be counter-clockwise.")
+        } else {
+            XCTFail()
+        }
+        
+        assertApproxEqual (r [safe: 0]??[safe: 0], a [0])
+        assertApproxEqual (r [safe: 0]??[safe: 1], a [1])
+        assertApproxEqual (r [safe: 0]??[safe: 2], a [2])
+        assertApproxEqual (r [safe: 0]??[safe: 3], a [3])
+        XCTAssertEqual (r [safe: 1]??.size (), 3, "The resulting clipped polygon should have 3 vertices.")
+        
+        if let polygon = r[safe: 1] {
+            XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: polygon ?? PackedVector2Array ()), "The resulting clipped polygon (hole) should be clockwise.")
+        } else {
+            XCTFail()
+        }
+        assertApproxEqual (r [safe: 1]??[safe: 0], b [1])
+        assertApproxEqual (r [safe: 1]??[safe: 1], b [0])
+        assertApproxEqual (r [safe: 1]??[safe: 2], b [2])
     }
     
     func testExcludePolygons () {
@@ -438,11 +459,11 @@ final class Geometry2DTests: GodotTestCase {
         // One polygon is empty
         r = Geometry2D.excludePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 1, "One polygon is non-empty. There should be 1 resulting excluded polygon.")
-        XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting excluded polygon should have 4 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], a [0])
-        assertApproxEqual (r [safe: 0]?[safe: 1], a [1])
-        assertApproxEqual (r [safe: 0]?[safe: 2], a [2])
-        assertApproxEqual (r [safe: 0]?[safe: 3], a [3])
+        XCTAssertEqual (r [safe: 0]??.size (), 4, "The resulting excluded polygon should have 4 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], a [0])
+        assertApproxEqual (r [safe: 0]??[safe: 1], a [1])
+        assertApproxEqual (r [safe: 0]??[safe: 2], a [2])
+        assertApproxEqual (r [safe: 0]??[safe: 3], a [3])
         
         // Exclude with 2 resulting polygons (outline and hole)
         b.pushBack (value: Vector2 (x: 140, y: 160))
@@ -451,18 +472,28 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 60, y: 140))
         r = Geometry2D.excludePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "There should be 2 resulting excluded polygons (outline and hole).")
-        XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting excluded polygon should have 4 vertices.")
-        XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: r [safe: 0] ?? PackedVector2Array ()), "The resulting excluded polygon (outline) should be counter-clockwise.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], a [0])
-        assertApproxEqual (r [safe: 0]?[safe: 1], a [1])
-        assertApproxEqual (r [safe: 0]?[safe: 2], a [2])
-        assertApproxEqual (r [safe: 0]?[safe: 3], a [3])
-        XCTAssertEqual (r [safe: 1]?.size (), 4, "The resulting excluded polygon should have 4 vertices.")
-        XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: r [safe: 1] ?? PackedVector2Array ()), "The resulting excluded polygon (hole) should be clockwise.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 40, y: 200))
-        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 150, y: 220))
-        assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 140, y: 160))
-        assertApproxEqual (r [safe: 1]?[safe: 3], Vector2 (x: 60, y: 140))
+        
+        XCTAssertEqual (r [safe: 0]??.size (), 4, "The resulting excluded polygon should have 4 vertices.")
+        if let polygon = r[safe: 0] {
+            XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: polygon ?? PackedVector2Array ()), "The resulting excluded polygon (outline) should be counter-clockwise.")
+        } else {
+            XCTFail()
+        }
+        assertApproxEqual (r [safe: 0]??[safe: 0], a [0])
+        assertApproxEqual (r [safe: 0]??[safe: 1], a [1])
+        assertApproxEqual (r [safe: 0]??[safe: 2], a [2])
+        assertApproxEqual (r [safe: 0]??[safe: 3], a [3])
+        XCTAssertEqual (r [safe: 1]??.size (), 4, "The resulting excluded polygon should have 4 vertices.")
+        if let polygon = r[safe: 1] {
+            XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: polygon ?? PackedVector2Array ()), "The resulting excluded polygon (hole) should be clockwise.")
+        } else {
+            XCTFail()
+        }
+        
+        assertApproxEqual (r [safe: 1]??[safe: 0], Vector2 (x: 40, y: 200))
+        assertApproxEqual (r [safe: 1]??[safe: 1], Vector2 (x: 150, y: 220))
+        assertApproxEqual (r [safe: 1]??[safe: 2], Vector2 (x: 140, y: 160))
+        assertApproxEqual (r [safe: 1]??[safe: 3], Vector2 (x: 60, y: 140))
     }
 
     func testIntersectPolylineWithPolygon () {
@@ -489,9 +520,9 @@ final class Geometry2DTests: GodotTestCase {
         // Basic intersection with 1 resulting intersection line
         r = Geometry2D.intersectPolylineWithPolygon (polyline: l, polygon: p)
         XCTAssertEqual (r.size (), 1, "There should be 1 resulting intersection line.")
-        XCTAssertEqual (r [safe: 0]?.size (), 2, "The resulting intersection line should have 2 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 105.711609, y: 135.692886))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 116.805809, y: 224.446457))
+        XCTAssertEqual (r [safe: 0]??.size (), 2, "The resulting intersection line should have 2 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 105.711609, y: 135.692886))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 116.805809, y: 224.446457))
         
         // Complex intersection with 2 resulting intersection lines
         l.clear ()
@@ -503,14 +534,14 @@ final class Geometry2DTests: GodotTestCase {
         l.pushBack (value: Vector2 (x: 15, y: 155))
         r = Geometry2D.intersectPolylineWithPolygon (polyline: l, polygon: p)
         XCTAssertEqual (r.size (), 2, "There should be 2 resulting intersection lines.")
-        XCTAssertEqual (r [safe: 0]?.size (), 2, "The resulting intersection line should have 2 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 129.804565, y: 144.641693))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 171.527084, y: 221.132996))
-        XCTAssertEqual (r [safe: 1]?.size (), 4, "The resulting intersection line should have 4 vertices.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 83.15609, y: 220.120087))
-        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 57, y: 200))
-        assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 50, y: 170))
-        assertApproxEqual (r [safe: 1]?[safe: 3], Vector2 (x: 34.980492, y: 163.563065))
+        XCTAssertEqual (r [safe: 0]??.size (), 2, "The resulting intersection line should have 2 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 129.804565, y: 144.641693))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 171.527084, y: 221.132996))
+        XCTAssertEqual (r [safe: 1]??.size (), 4, "The resulting intersection line should have 4 vertices.")
+        assertApproxEqual (r [safe: 1]??[safe: 0], Vector2 (x: 83.15609, y: 220.120087))
+        assertApproxEqual (r [safe: 1]??[safe: 1], Vector2 (x: 57, y: 200))
+        assertApproxEqual (r [safe: 1]??[safe: 2], Vector2 (x: 50, y: 170))
+        assertApproxEqual (r [safe: 1]??[safe: 3], Vector2 (x: 34.980492, y: 163.563065))
     }
 
     func testClipPolylineWithPolygon () {
@@ -533,16 +564,16 @@ final class Geometry2DTests: GodotTestCase {
         // Polygon is empty and line is non-empty
         r = Geometry2D.clipPolylineWithPolygon (polyline: l, polygon: PackedVector2Array ())
         XCTAssertEqual (r.size (), 1, "There should be 1 resulting clipped line.")
-        XCTAssertEqual (r [safe: 0]?.size (), 2, "The resulting clipped line should have 2 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], l [0])
-        assertApproxEqual (r [safe: 0]?[safe: 1], l [1])
+        XCTAssertEqual (r [safe: 0]??.size (), 2, "The resulting clipped line should have 2 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], l [0])
+        assertApproxEqual (r [safe: 0]??[safe: 1], l [1])
         
         // Basic clip with 1 resulting clipped line
         r = Geometry2D.clipPolylineWithPolygon (polyline: l, polygon: p)
         XCTAssertEqual (r.size (), 1, "There should be 1 resulting clipped line.")
-        XCTAssertEqual (r [safe: 0]?.size (), 2, "The resulting clipped line should have 2 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 111.908401, y: 223.816803))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 160, y: 320))
+        XCTAssertEqual (r [safe: 0]??.size (), 2, "The resulting clipped line should have 2 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 111.908401, y: 223.816803))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 160, y: 320))
         
         // Complex clip with 2 resulting clipped lines
         l.clear ()
@@ -553,13 +584,13 @@ final class Geometry2DTests: GodotTestCase {
         l.pushBack (value: Vector2 (x: 160, y: 320))
         r = Geometry2D.clipPolylineWithPolygon (polyline: l, polygon: p)
         XCTAssertEqual (r.size (), 2, "There should be 2 resulting clipped lines.")
-        XCTAssertEqual (r [safe: 0]?.size (), 3, "The resulting clipped line should have 3 vertices.")
-        assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 121.412682, y: 225.038757))
-        assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 122, y: 250))
-        assertApproxEqual (r [safe: 0]?[safe: 2], Vector2 (x: 160, y: 320))
-        XCTAssertEqual (r [safe: 1]?.size (), 2, "The resulting clipped line should have 2 vertices.")
-        assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 55, y: 70))
-        assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 53.07737, y: 116.143021))
+        XCTAssertEqual (r [safe: 0]??.size (), 3, "The resulting clipped line should have 3 vertices.")
+        assertApproxEqual (r [safe: 0]??[safe: 0], Vector2 (x: 121.412682, y: 225.038757))
+        assertApproxEqual (r [safe: 0]??[safe: 1], Vector2 (x: 122, y: 250))
+        assertApproxEqual (r [safe: 0]??[safe: 2], Vector2 (x: 160, y: 320))
+        XCTAssertEqual (r [safe: 1]??.size (), 2, "The resulting clipped line should have 2 vertices.")
+        assertApproxEqual (r [safe: 1]??[safe: 0], Vector2 (x: 55, y: 70))
+        assertApproxEqual (r [safe: 1]??[safe: 1], Vector2 (x: 53.07737, y: 116.143021))
     }
 
     func testConvexHull () {

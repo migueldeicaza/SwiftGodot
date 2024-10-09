@@ -56,8 +56,8 @@ class GodotEncoder: Encoder {
         return KeyedEncodingContainer(container)
     }
 
-    var data: Variant {
-        return container?.data ?? Variant()
+    var data: Variant? {
+        return container?.data
     }
 
     func encode(key codingKey: [CodingKey], value: Variant) {
