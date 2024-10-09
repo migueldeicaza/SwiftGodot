@@ -112,7 +112,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
         )
     }
     
-    func testExportArrayStringMacro() {
+    func testExportArrayStringMacro() {        
         assertMacroExpansion("""
             @Export var greetings: VariantCollection<String> = []
             """,
@@ -124,8 +124,16 @@ final class MacroGodotExportCollectionTests: XCTestCase {
             }
 
             func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-                guard let arg = args.first,
-                      let gArray = GArray(arg),
+                guard let arg = args.first else {
+                    GD.printErr("Unable to set `greetings`, no arguments")
+                    return nil
+                }
+
+                guard let variant = arg else {
+                    GD.printErr("Unable to set `greetings`, argument is `nil`")
+                    return nil
+                }
+                guard let gArray = GArray(variant),
                       gArray.isTyped(),
                       gArray.isSameTyped(array: GArray(String.self)) else {
                     return nil
@@ -144,14 +152,22 @@ final class MacroGodotExportCollectionTests: XCTestCase {
             """,
             expandedSource: """
             var greetings: VariantCollection<String> = []
-
+            
             func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                 return Variant(greetings.array)
             }
 
             func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-                guard let arg = args.first,
-                      let gArray = GArray(arg),
+                guard let arg = args.first else {
+                    GD.printErr("Unable to set `greetings`, no arguments")
+                    return nil
+                }
+
+                guard let variant = arg else {
+                    GD.printErr("Unable to set `greetings`, argument is `nil`")
+                    return nil
+                }
+                guard let gArray = GArray(variant),
                       gArray.isTyped(),
                       gArray.isSameTyped(array: GArray(String.self)) else {
                     return nil
@@ -176,8 +192,16 @@ final class MacroGodotExportCollectionTests: XCTestCase {
             }
 
             func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-                guard let arg = args.first,
-                      let gArray = GArray(arg),
+                guard let arg = args.first else {
+                    GD.printErr("Unable to set `greetings`, no arguments")
+                    return nil
+                }
+
+                guard let variant = arg else {
+                    GD.printErr("Unable to set `greetings`, argument is `nil`")
+                    return nil
+                }
+                guard let gArray = GArray(variant),
                       gArray.isTyped(),
                       gArray.isSameTyped(array: GArray(String.self)) else {
                     return nil
@@ -219,7 +243,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                     }
 
                     guard let variant = arg else {
-                        GD.printErr("Unable to set `someArray` to nil")
+                        GD.printErr("Unable to set `someArray`, argument is nil")
                         return nil
                     }
 

@@ -52,7 +52,12 @@ class Demo5: Node {
 }
 
 @Godot
-class SomeNode: Node {
+class Demo6: Node {
     @Export
     var greetings: VariantCollection<String> = []
+}
+
+@Godot
+class Demo7: Node {
+    @Export var someArray: GArray = GArray()
 }
