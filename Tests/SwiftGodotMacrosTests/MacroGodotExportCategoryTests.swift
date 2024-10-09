@@ -18,89 +18,87 @@ final class MacroGodotExportGroupTests: XCTestCase {
     ]
     
     func testGodotExportGroupWithPrefix() {
-        assertMacroExpansion(
-"""
-@Godot
-class Car: Node {
-    #exportGroup("Vehicle", prefix: "vehicle_")
-    @Export var vehicle_make: String = "Mazda"
-    @Export var vehicle_model: String = "RX7"
-}
-""",
-            expandedSource:
-"""
-
-class Car: Node {
-    var vehicle_make: String = "Mazda"
-
-    func _mproxy_set_vehicle_make (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
+        let source = """
+        @Godot
+        class Car: Node {
+            #exportGroup("Vehicle", prefix: "vehicle_")
+            @Export var vehicle_make: String = "Mazda"
+            @Export var vehicle_model: String = "RX7"
         }
-        if let value = String (arg) {
-            self.vehicle_make = value
-        } else {
-            GD.printErr ("Unable to set `vehicle_make` value: ", arg)
+        """
+        
+        let expandedSource = """
+        class Car: Node {
+            var vehicle_make: String = "Mazda"
+
+            func _mproxy_set_vehicle_make (args: borrowing Arguments) -> Variant? {
+                guard let arg = args.first else {
+                    return nil
+                }
+                if let value = String (arg) {
+                    self.vehicle_make = value
+                } else {
+                    GD.printErr ("Unable to set `vehicle_make` value: ", arg)
+                }
+                return nil
+            }
+
+            func _mproxy_get_vehicle_make (args: borrowing Arguments) -> Variant? {
+                return Variant (vehicle_make)
+            }
+            var vehicle_model: String = "RX7"
+
+            func _mproxy_set_vehicle_model (args: borrowing Arguments) -> Variant? {
+                guard let arg = args.first else {
+                    return nil
+                }
+                if let value = String (arg) {
+                    self.vehicle_model = value
+                } else {
+                    GD.printErr ("Unable to set `vehicle_model` value: ", arg)
+                }
+                return nil
+            }
+
+            func _mproxy_get_vehicle_model (args: borrowing Arguments) -> Variant? {
+                return Variant (vehicle_model)
+            }
+
+            override open class var classInitializer: Void {
+                let _ = super.classInitializer
+                return _initializeClass
+            }
+
+            private static let _initializeClass: Void = {
+                let className = StringName("Car")
+                assert(ClassDB.classExists(class: className))
+                let classInfo = ClassInfo<Car> (name: className)
+                classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
+                let _pvehicle_make = PropInfo (
+                    propertyType: .string,
+                    propertyName: "vehicle_make",
+                    className: className,
+                    hint: .none,
+                    hintStr: "",
+                    usage: .default)
+                classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pvehicle_make, arguments: [], function: Car._mproxy_get_vehicle_make)
+                classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pvehicle_make], function: Car._mproxy_set_vehicle_make)
+                classInfo.registerProperty (_pvehicle_make, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
+                let _pvehicle_model = PropInfo (
+                    propertyType: .string,
+                    propertyName: "vehicle_model",
+                    className: className,
+                    hint: .none,
+                    hintStr: "",
+                    usage: .default)
+                classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pvehicle_model, arguments: [], function: Car._mproxy_get_vehicle_model)
+                classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pvehicle_model], function: Car._mproxy_set_vehicle_model)
+                classInfo.registerProperty (_pvehicle_model, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
+            } ()
         }
-        return nil
-    }
-
-    func _mproxy_get_vehicle_make (args: borrowing Arguments) -> Variant? {
-        return Variant (vehicle_make)
-    }
-    var vehicle_model: String = "RX7"
-
-    func _mproxy_set_vehicle_model (args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            return nil
-        }
-        if let value = String (arg) {
-            self.vehicle_model = value
-        } else {
-            GD.printErr ("Unable to set `vehicle_model` value: ", arg)
-        }
-        return nil
-    }
-
-    func _mproxy_get_vehicle_model (args: borrowing Arguments) -> Variant? {
-        return Variant (vehicle_model)
-    }
-
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
-    private static let _initializeClass: Void = {
-        let className = StringName("Car")
-        assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "vehicle_")
-        let _pvehicle_make = PropInfo (
-            propertyType: .string,
-            propertyName: "vehicle_make",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pvehicle_make, arguments: [], function: Car._mproxy_get_vehicle_make)
-        classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pvehicle_make], function: Car._mproxy_set_vehicle_make)
-        classInfo.registerProperty (_pvehicle_make, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
-        let _pvehicle_model = PropInfo (
-            propertyType: .string,
-            propertyName: "vehicle_model",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pvehicle_model, arguments: [], function: Car._mproxy_get_vehicle_model)
-        classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pvehicle_model], function: Car._mproxy_set_vehicle_model)
-        classInfo.registerProperty (_pvehicle_model, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
-    } ()
-}
-""",
-        macros: testMacros
-        )
+        """
+        
+        assertMacroExpansion(source, expandedSource: expandedSource, macros: testMacros)
     }
     
     func testGodotExportGroupProducesPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {

@@ -10,8 +10,12 @@ import Foundation
 import SwiftGodot
 
 @Godot
-class Demo: Object {
+class Demo1: Object {
     @Export var demo: GArray = GArray()
+    
+    @Export var greetings: VariantCollection<String> = []
+    
+    @Export var servers: ObjectCollection<AudioServer> = []
 }
 
 @Godot
@@ -19,3 +23,36 @@ class Demo2: Object {
     @Export var demo: Variant? = nil
 }
 
+enum Demo3: Int, CaseIterable {
+    case first
+}
+enum Demo4: Int64, CaseIterable {
+    case first
+    case second
+}
+
+@Godot
+class Demo5: Node {
+    @Export(.enum) var foo: Demo3
+    @Export(.enum) var bar: Demo4
+    
+    required init() {
+        foo = .first
+        bar = .second
+        
+        super.init()
+    }
+    
+    required init(nativeHandle: UnsafeRawPointer) {
+        foo = .first
+        bar = .second
+        
+        super.init(nativeHandle: nativeHandle)
+    }
+}
+
+@Godot
+class SomeNode: Node {
+    @Export
+    var greetings: VariantCollection<String> = []
+}
