@@ -173,6 +173,6 @@ final class Demo21: Node {
 class SomeNode: Node {
     @Callable
     func printNames(of nodes: ObjectCollection<Node>) {
-        nodes.forEach { print($0.name) }
+        nodes.forEach { print($0?.name ?? "") }
     }
 }

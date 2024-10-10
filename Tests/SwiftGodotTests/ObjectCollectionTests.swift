@@ -16,7 +16,7 @@ final class ObjectCollectionTests: GodotTestCase {
         let sut: ObjectCollection<Node> = []
         let node = Node()
         
-        sut.append(value: node)
+        sut.append(node)
         
         XCTAssertEqual(sut.count, 1, "The collection should have one element after one element has been appended")
         XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) behind the collection should have one element after one element has been appended")

@@ -54,11 +54,83 @@ public struct GodotCallable: PeerMacro {
             if ptype == "Variant" {
                 genMethod.append ("args [\(argc)]!")
             } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
+                genMethod += """
+                guard let arg = args.first else {
+                    GD.printErr("Unable to call `\(funcName)`, no arguments")
+                    return nil
+                }
+                
+                guard let variant = arg else {
+                    GD.printErr("Unable to call `\(funcName)`, argument is nil")
+                    return nil
+                }
+                
+                guard let array = GArray(variant) else {
+                    GD.printErr("Unable to call `\(funcName)`, argument is not `GArray`")
+                    return nil
+                }
+                
+                var result: [\(elementType)] = []
+                result.reserveCapacity(array.count)
+                for element in array {        
+                    guard let element = \(elementType).makeOrUnwrap(element) else {
+                        GD.printErr("Unable to call `\(funcName)`, array contains unexpected \\(element?.description ?? "nil")")
+                        return nil
+                    }
+                
+                    result.append(element)
+                }
+                """
                 genMethod.append ("GArray (args [\(argc)]!)!.compactMap(\(elementType).makeOrUnwrap)")
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)]!)!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
+                genMethod += """
+                guard let arg = args.first else {
+                    GD.printErr("Unable to call `\(funcName)`, no arguments")
+                    return nil
+                }
+                
+                guard let variant = arg else {
+                    GD.printErr("Unable to call `\(funcName)`, argument is nil")
+                    return nil
+                }
+                
+                guard let array = GArray(variant) else {
+                    GD.printErr("Unable to call `\(funcName)`, argument is not `GArray`")
+                    return nil
+                }
+                
+                let result = VariantCollection<\(elementType)>()
+                for element in array {        
+                    guard let element = \(elementType).makeOrUnwrap(element) else {
+                        GD.printErr("Unable to call `\(funcName)`, array contains unexpected \\(element?.description ?? "nil")")
+                        return nil
+                    }
+                
+                    result.append(element)
+                }
+                """
             } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)]!)!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
+                genMethod += """
+                guard let arg = args.first else {
+                    GD.printErr("Unable to call `\(funcName)`, no arguments")
+                    return nil
+                }
+                
+                guard let variant = arg else {
+                    GD.printErr("Unable to call `\(funcName)`, argument is nil")
+                    return nil
+                }
+                
+                guard let array = GArray(variant) else {
+                    GD.printErr("Unable to call `\(funcName)`, argument is not `GArray`")
+                    return nil
+                }
+                
+                let result = ObjectCollection<\(elementType)>()
+                for element in array {                    
+                    result.append(\(ptype).makeOrUnwrap(element))
+                }
+                """
             } else {
                 genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)]!)!")
             }

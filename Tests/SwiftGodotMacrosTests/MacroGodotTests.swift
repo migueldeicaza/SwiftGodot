@@ -520,7 +520,7 @@ final class MacroGodotTests: MacroGodotTestCase {
     }
     
     func testGodotMacroWithCallableFuncsWithArrayParam() {
-        assertExpansion(
+        assertExpansion(generateNew: true,
             of: """
             @Godot
             class MultiplierNode: Node {
