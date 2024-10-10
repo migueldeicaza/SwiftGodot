@@ -10,11 +10,13 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 import SwiftGodotMacroLibrary
 
-final class MacroGodotExportCollectionTests: XCTestCase {
-    let testMacros: [String: Macro.Type] = [
-        "Godot": GodotMacro.self,
-        "Export": GodotExport.self,
-    ]
+final class MacroGodotExportCollectionTests: MacroGodotTestCase {
+    override class var macros: [String: Macro.Type] {
+        [
+            "Godot": GodotMacro.self,
+            "Export": GodotExport.self,
+        ]
+    }
     
     func testExportArrayStringGodotMacroFails() {
         assertMacroExpansion("""
@@ -32,7 +34,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 .init(message: "@Export attribute can not be applied to Array types, use a VariantCollection, or an ObjectCollection instead", line: 3, column: 5),
                 .init(message: "@Export attribute can not be applied to Array types, use a VariantCollection, or an ObjectCollection instead", line: 1, column: 1)
             ],
-            macros: testMacros
+             macros: Self.macros
         )
     }
     
@@ -47,7 +49,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
             diagnostics: [
                 .init(message: "@Export attribute can not be applied to Array types, use a VariantCollection, or an ObjectCollection instead", line: 1, column: 1)
             ],
-            macros: testMacros
+            macros: Self.macros
         )
     }
 
@@ -108,7 +110,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 } ()
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -142,7 +144,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 return nil
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -176,7 +178,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 return nil
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -210,7 +212,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 return nil
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -221,7 +223,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
             diagnostics: [
                 .init(message: "@Export optional Collections are not supported", line: 1, column: 1)
             ],
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -281,7 +283,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 } ()
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -341,7 +343,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 } ()
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
 
@@ -436,7 +438,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 } ()
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -534,7 +536,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 } ()
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -568,7 +570,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 return nil
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
     
@@ -628,7 +630,7 @@ final class MacroGodotExportCollectionTests: XCTestCase {
                 } ()
             }
             """,
-            macros: testMacros
+            macros: Self.macros
         )
     }
 }

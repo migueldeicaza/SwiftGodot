@@ -15,14 +15,24 @@ public extension RefCounted {
     }
 }
 
-extension Object {
-    /// Retain this object if it's `RefCounted`
-    final func retainIfRefCounted() {
-        (self as? RefCounted)?.reference()
+/// Do not call, needed for Macros
+public func _referenceIfRefCounted<T>(_ value: T?) {
+    guard let value else {
+        return
     }
     
-    /// Release this object if it's `RefCounted`
-    final func releaseIfRefCounted() {
-        (self as? RefCounted)?.unreference()
+    if let refCounted = value as? RefCounted {
+        refCounted.reference()
+    }
+}
+
+/// Do not call, needed for Macros
+public func _unreferenceIfRefCounted<T>(_ value: T?) {
+    guard let value else {
+        return
+    }
+    
+    if let refCounted = value as? RefCounted {
+        refCounted.unreference()
     }
 }

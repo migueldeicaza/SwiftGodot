@@ -85,7 +85,7 @@ public struct GodotExport: PeerMacro {
                     }
                 
                     guard let variant = arg else {
-                        \(varName)?.releaseIfRefCounted()
+                        _unreferenceIfRefCounted(\(varName))                        
                         \(varName) = nil
                         return nil
                     }
@@ -94,9 +94,9 @@ public struct GodotExport: PeerMacro {
                         GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
                         return nil
                     }
-                
-                    newValue.retainIfRefCounted()
-                    \(varName).releaseIfRefCounted()
+                                    
+                    _referenceIfRefCounted(newValue)
+                    _unreferenceIfRefCounted(\(varName))                    
                 
                     \(varName) = newValue
                 """
@@ -117,8 +117,8 @@ public struct GodotExport: PeerMacro {
                         return nil
                     }
                 
-                    newValue.retainIfRefCounted()
-                    \(varName).releaseIfRefCounted()
+                    _referenceIfRefCounted(newValue)
+                    _unreferenceIfRefCounted(\(varName))  
                 
                     \(varName) = newValue
                 """
