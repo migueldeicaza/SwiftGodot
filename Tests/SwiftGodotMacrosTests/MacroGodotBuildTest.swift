@@ -87,3 +87,43 @@ class Demo11: Node {
 class Demo12: Node {
     @Export var greetings: ObjectCollection<Node3D> = []
 }
+
+@Godot
+class Demo13: Node {
+    #exportGroup("Vehicle")
+    @Export var makes: ObjectCollection<Node> = []
+    @Export var model: ObjectCollection<Node> = []
+}
+
+@Godot
+class Demo14: Node {
+    @Export var vins: ObjectCollection<Node> = []
+    #exportGroup("YMMS")
+    @Export var years: ObjectCollection<Node> = []
+}
+
+@Godot
+class Demo15: Node {
+    #exportGroup("VIN")
+    @Export var vins: ObjectCollection<Node> = []
+    #exportGroup("YMM")
+    @Export var years: ObjectCollection<Node> = []
+    @Export var makes: ObjectCollection<Node> = []
+    @Export var models: ObjectCollection<Node> = []
+    
+}
+
+@Godot
+class Demo16: Node {
+    #exportGroup("Front Page")
+    @Export var demoName: String = ""
+    @Export var rating: Float = 0.0
+    #exportGroup("More Details")
+    @Export var reviews: VariantCollection<String> = []
+    @Export var checkIns: ObjectCollection<Object> = []
+    @Export var address: String = ""
+    #exportGroup("Hours and Insurance")
+    @Export var daysOfOperation: VariantCollection<String> = []
+    @Export var hours: VariantCollection<String> = []
+    @Export var insuranceProvidersAccepted: ObjectCollection<Object> = []
+}

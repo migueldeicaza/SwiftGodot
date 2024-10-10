@@ -790,18 +790,26 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 #exportGroup("Pointless")
             }
             """,
-            into:
-            """
+            into: """
+            
             class Car: Node {
                 var vins: VariantCollection<String> = ["00000000000000000"]
-
+            
                 func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
                     return Variant(vins.array)
                 }
-
+            
                 func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `vins`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vins`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -810,14 +818,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var years: VariantCollection<Int> = [1997]
-
+            
                 func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
                     return Variant(years.array)
                 }
-
+            
                 func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `years`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `years`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Int.self)) else {
                         return nil
@@ -825,12 +841,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     years.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -877,16 +893,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vins: VariantCollection<String> = [""]
-
+            
                 func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
                     return Variant(vins.array)
                 }
-
+            
                 func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `vins`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vins`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -895,14 +920,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var years: VariantCollection<Int> = [1997]
-
+            
                 func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
                     return Variant(years.array)
                 }
-
+            
                 func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `years`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `years`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Int.self)) else {
                         return nil
@@ -911,14 +944,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var makes: VariantCollection<String> = ["HONDA"]
-
+            
                 func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
                     return Variant(makes.array)
                 }
-
+            
                 func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `makes`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `makes`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -927,14 +968,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var models: VariantCollection<String> = ["ACCORD"]
-
+            
                 func _mproxy_get_models(args: borrowing Arguments) -> Variant? {
                     return Variant(models.array)
                 }
-
+            
                 func _mproxy_set_models(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `models`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `models`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -942,12 +991,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     models.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -1014,16 +1063,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var makes: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
                     return Variant(makes.array)
                 }
-
+            
                 func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `makes`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `makes`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1032,14 +1090,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var model: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
                     return Variant(model.array)
                 }
-
+            
                 func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `model`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `model`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1047,12 +1113,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     model.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -1095,16 +1161,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vins: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
                     return Variant(vins.array)
                 }
-
+            
                 func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `vins`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vins`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1113,14 +1188,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var years: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
                     return Variant(years.array)
                 }
-
+            
                 func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `years`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `years`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1128,12 +1211,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     years.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -1261,16 +1344,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vins: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
                     return Variant(vins.array)
                 }
-
+            
                 func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `vins`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vins`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1279,14 +1371,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var years: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
                     return Variant(years.array)
                 }
-
+            
                 func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `years`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `years`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1295,14 +1395,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var makes: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
                     return Variant(makes.array)
                 }
-
+            
                 func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `makes`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `makes`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1311,14 +1419,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var models: ObjectCollection<Node> = []
-
+            
                 func _mproxy_get_models(args: borrowing Arguments) -> Variant? {
                     return Variant(models.array)
                 }
-
+            
                 func _mproxy_set_models(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `models`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `models`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Node.self)) else {
                         return nil
@@ -1326,12 +1442,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     models.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -1403,52 +1519,74 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 @Export var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
             }
             """,
-            into:
-            """
+            into: """
+            
             class Garage: Node {
                 var name: String = ""
-
+            
                 func _mproxy_set_name (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `name`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `name`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.name = value
                     } else {
                         GD.printErr ("Unable to set `name` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_name (args: borrowing Arguments) -> Variant? {
                     return Variant (name)
                 }
                 var rating: Float = 0.0
-
+            
                 func _mproxy_set_rating (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `rating`, no arguments")
                         return nil
                     }
-                    if let value = Float (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `rating`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Float(variant) {
                         self.rating = value
                     } else {
                         GD.printErr ("Unable to set `rating` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_rating (args: borrowing Arguments) -> Variant? {
                     return Variant (rating)
                 }
                 var reviews: VariantCollection<String> = []
-
+            
                 func _mproxy_get_reviews(args: borrowing Arguments) -> Variant? {
                     return Variant(reviews.array)
                 }
-
+            
                 func _mproxy_set_reviews(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `reviews`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `reviews`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -1457,14 +1595,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var checkIns: ObjectCollection<CheckIn> = []
-
+            
                 func _mproxy_get_checkIns(args: borrowing Arguments) -> Variant? {
                     return Variant(checkIns.array)
                 }
-
+            
                 func _mproxy_set_checkIns(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `checkIns`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `checkIns`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(CheckIn.self)) else {
                         return nil
@@ -1473,31 +1619,46 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var address: String = ""
-
+            
                 func _mproxy_set_address (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `address`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `address`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.address = value
                     } else {
                         GD.printErr ("Unable to set `address` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_address (args: borrowing Arguments) -> Variant? {
                     return Variant (address)
                 }
                 var daysOfOperation: VariantCollection<String> = []
-
+            
                 func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> Variant? {
                     return Variant(daysOfOperation.array)
                 }
-
+            
                 func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `daysOfOperation`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `daysOfOperation`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -1506,14 +1667,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var hours: VariantCollection<String> = []
-
+            
                 func _mproxy_get_hours(args: borrowing Arguments) -> Variant? {
                     return Variant(hours.array)
                 }
-
+            
                 func _mproxy_set_hours(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `hours`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `hours`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -1522,14 +1691,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
-
+            
                 func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
                     return Variant(insuranceProvidersAccepted.array)
                 }
-
+            
                 func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `insuranceProvidersAccepted`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `insuranceProvidersAccepted`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(InsuranceProvider.self)) else {
                         return nil
@@ -1537,12 +1714,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     insuranceProvidersAccepted.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Garage")
                     assert(ClassDB.classExists(class: className))
@@ -1646,30 +1823,38 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Garage: Node {
                 var bar: Bool = false
-
+            
                 func _mproxy_set_bar (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `bar`, no arguments")
                         return nil
                     }
-                    if let value = Bool (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `bar`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Bool(variant) {
                         self.bar = value
                     } else {
                         GD.printErr ("Unable to set `bar` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_bar (args: borrowing Arguments) -> Variant? {
                     return Variant (bar)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Garage")
                     assert(ClassDB.classExists(class: className))
@@ -1702,47 +1887,62 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             public class Issue353: Node {
                 var prefix1_prefixed_bool: Bool = true
-
+            
                 func _mproxy_set_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `prefix1_prefixed_bool`, no arguments")
                         return nil
                     }
-                    if let value = Bool (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `prefix1_prefixed_bool`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Bool(variant) {
                         self.prefix1_prefixed_bool = value
                     } else {
                         GD.printErr ("Unable to set `prefix1_prefixed_bool` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
                     return Variant (prefix1_prefixed_bool)
                 }
                 var non_prefixed_bool: Bool = true
-
+            
                 func _mproxy_set_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `non_prefixed_bool`, no arguments")
                         return nil
                     }
-                    if let value = Bool (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `non_prefixed_bool`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Bool(variant) {
                         self.non_prefixed_bool = value
                     } else {
                         GD.printErr ("Unable to set `non_prefixed_bool` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
                     return Variant (non_prefixed_bool)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Issue353")
                     assert(ClassDB.classExists(class: className))
@@ -1784,16 +1984,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Garage: Node {
                 var bar: VariantCollection<Bool> = [false]
-
+            
                 func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
                     return Variant(bar.array)
                 }
-
+            
                 func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `bar`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `bar`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Bool.self)) else {
                         return nil
@@ -1801,12 +2010,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     bar.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Garage")
                     assert(ClassDB.classExists(class: className))
@@ -1839,16 +2048,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             public class Issue353: Node {
                 var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
-
+            
                 func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
                     return Variant(prefix1_prefixed_bool.array)
                 }
-
+            
                 func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `prefix1_prefixed_bool`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `prefix1_prefixed_bool`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Bool.self)) else {
                         return nil
@@ -1857,14 +2075,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var non_prefixed_bool: VariantCollection<Bool> = [false]
-
+            
                 func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
                     return Variant(non_prefixed_bool.array)
                 }
-
+            
                 func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `non_prefixed_bool`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `non_prefixed_bool`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Bool.self)) else {
                         return nil
@@ -1872,12 +2098,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     non_prefixed_bool.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Issue353")
                     assert(ClassDB.classExists(class: className))
