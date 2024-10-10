@@ -157,3 +157,14 @@ final class Demo20: Node {
 final class Demo21: Node {
     @Export var data: Demo19? = nil
 }
+
+@Godot class Demo22: Node {
+    #exportGroup("Vehicle")
+    #exportSubgroup("VIN")
+    @Export var vin: String = ""
+    #exportSubgroup("YMMS", prefix: "ymms_")
+    @Export var ymms_year: Int = 1998
+    @Export var ymms_make: String = "Honda"
+    @Export var ymms_model: String = "Odyssey"
+    @Export var ymms_series: String = "LX"
+}
