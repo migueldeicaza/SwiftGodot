@@ -404,8 +404,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                     integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
                 }
             
-                func _mproxy_square (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = square (GArray(args[0])!.reduce(into: VariantCollection<Int>()) {
+                func _mproxy_square (args: borrowing Arguments) -> Variant? {
+                    let result = square (GArray(args[0]!)!.reduce(into: VariantCollection<Int>()) {
                             $0.append(Int.makeOrUnwrap($1)!)
                         })
                     return Variant (result)
@@ -445,22 +445,23 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class SomeNode: Node {
                 func getNodeCollection() -> ObjectCollection<Node> {
                     let result: ObjectCollection<Node> = [Node(), Node()]
                     return result
                 }
-
-                func _mproxy_getNodeCollection (args: borrowing Arguments) -> SwiftGodot.Variant? {
+            
+                func _mproxy_getNodeCollection (args: borrowing Arguments) -> Variant? {
                     let result = getNodeCollection ()
                     return Variant (result)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
@@ -485,13 +486,14 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class SomeNode: Node {
                 func printNames(of nodes: ObjectCollection<Node>) {
                     nodes.forEach { print($0.name) }
                 }
             
-                func _mproxy_printNames (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    printNames (of: GArray(args[0])!.reduce(into: ObjectCollection<Node>()) {
+                func _mproxy_printNames (args: borrowing Arguments) -> Variant? {
+                    printNames (of: GArray(args[0]!)!.reduce(into: ObjectCollection<Node>()) {
                             $0.append(Node.makeOrUnwrap($1)!)
                         })
                     return nil

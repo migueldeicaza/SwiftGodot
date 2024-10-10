@@ -168,3 +168,11 @@ final class Demo21: Node {
     @Export var ymms_model: String = "Odyssey"
     @Export var ymms_series: String = "LX"
 }
+
+@Godot
+class SomeNode: Node {
+    @Callable
+    func printNames(of nodes: ObjectCollection<Node>) {
+        nodes.forEach { print($0.name) }
+    }
+}
