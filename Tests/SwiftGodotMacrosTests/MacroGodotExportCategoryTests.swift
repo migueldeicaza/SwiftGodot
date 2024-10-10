@@ -227,47 +227,62 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vin: String = "00000000000000000"
-
+            
                 func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `vin`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vin`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.vin = value
                     } else {
                         GD.printErr ("Unable to set `vin` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
                     return Variant (vin)
                 }
                 var year: Int = 1997
-
+            
                 func _mproxy_set_year (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `year`, no arguments")
                         return nil
                     }
-                    if let value = Int (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `year`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Int(variant) {
                         self.year = value
                     } else {
                         GD.printErr ("Unable to set `year` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
                     return Variant (year)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -296,7 +311,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 } ()
             }
             """
-        )
+        )        
     }
     
     func testGodotExportGroupProducesPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
@@ -310,47 +325,62 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vin: String = "00000000000000000"
-
+            
                 func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `vin`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vin`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.vin = value
                     } else {
                         GD.printErr ("Unable to set `vin` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
                     return Variant (vin)
                 }
                 var year: Int = 1997
-
+            
                 func _mproxy_set_year (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `year`, no arguments")
                         return nil
                     }
-                    if let value = Int (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `year`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Int(variant) {
                         self.year = value
                     } else {
                         GD.printErr ("Unable to set `year` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
                     return Variant (year)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -397,81 +427,110 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vin: String = ""
-
+            
                 func _mproxy_set_vin (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `vin`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vin`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.vin = value
                     } else {
                         GD.printErr ("Unable to set `vin` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
                     return Variant (vin)
                 }
                 var year: Int = 1997
-
+            
                 func _mproxy_set_year (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `year`, no arguments")
                         return nil
                     }
-                    if let value = Int (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `year`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = Int(variant) {
                         self.year = value
                     } else {
                         GD.printErr ("Unable to set `year` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
                     return Variant (year)
                 }
                 var make: String = "HONDA"
-
+            
                 func _mproxy_set_make (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `make`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `make`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.make = value
                     } else {
                         GD.printErr ("Unable to set `make` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
                     return Variant (make)
                 }
                 var model: String = "ACCORD"
-
+            
                 func _mproxy_set_model (args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `model`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `model`, argument is nil")
+                        return nil
+                    }
+            
+                    if let value = String(variant) {
                         self.model = value
                     } else {
                         GD.printErr ("Unable to set `model` value: ", arg)
                     }
                     return nil
                 }
-
+            
                 func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
                     return Variant (model)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
@@ -530,76 +589,93 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             of: """
             @Godot
             class Car: Node {
-                #exportGroup("Vehicle")
-                @Export var makes: VariantCollection<String> = ["Mazda"]
-                @Export var model: VariantCollection<String> = ["RX7"]
+                @Export var vins: VariantCollection<String> = ["00000000000000000"]
+                #exportGroup("YMMS")
+                @Export var years: VariantCollection<Int> = [1997]
             }
             """,
             into: """
+            
             class Car: Node {
-                var makes: VariantCollection<String> = ["Mazda"]
-
-                func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
-                    return Variant(makes.array)
+                var vins: VariantCollection<String> = ["00000000000000000"]
+            
+                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                    return Variant(vins.array)
                 }
-
-                func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+            
+                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `vins`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vins`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
                     }
-                    makes.array = gArray
+                    vins.array = gArray
                     return nil
                 }
-                var model: VariantCollection<String> = ["RX7"]
-
-                func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
-                    return Variant(model.array)
+                var years: VariantCollection<Int> = [1997]
+            
+                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                    return Variant(years.array)
                 }
-
-                func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
-                          gArray.isTyped(),
-                          gArray.isSameTyped(array: GArray(String.self)) else {
+            
+                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `years`, no arguments")
                         return nil
                     }
-                    model.array = gArray
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `years`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
+                          gArray.isTyped(),
+                          gArray.isSameTyped(array: GArray(Int.self)) else {
+                        return nil
+                    }
+                    years.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<Car> (name: className)
-                    classInfo.addPropertyGroup(name: "Vehicle", prefix: "")
-                    let _pmakes = PropInfo (
+                    let _pvins = PropInfo (
                         propertyType: .array,
-                        propertyName: "makes",
+                        propertyName: "vins",
                         className: StringName("Array[String]"),
                         hint: .arrayType,
                         hintStr: "String",
                         usage: .default)
-                    classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
-                    classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
-                    classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
-                    let _pmodel = PropInfo (
+                    classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
+                    classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
+                    classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
+                    classInfo.addPropertyGroup(name: "YMMS", prefix: "")
+                    let _pyears = PropInfo (
                         propertyType: .array,
-                        propertyName: "model",
-                        className: StringName("Array[String]"),
+                        propertyName: "years",
+                        className: StringName("Array[int]"),
                         hint: .arrayType,
-                        hintStr: "String",
+                        hintStr: "int",
                         usage: .default)
-                    classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-                    classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-                    classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
+                    classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
+                    classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
+                    classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
                 } ()
             }
             """
@@ -617,16 +693,25 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class Car: Node {
                 var vins: VariantCollection<String> = ["00000000000000000"]
-
+            
                 func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
                     return Variant(vins.array)
                 }
-
+            
                 func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `vins`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `vins`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(String.self)) else {
                         return nil
@@ -635,14 +720,22 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
                 var years: VariantCollection<Int> = [1997]
-
+            
                 func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
                     return Variant(years.array)
                 }
-
+            
                 func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
-                    guard let arg = args.first,
-                          let gArray = GArray(arg),
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `years`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `years`, argument is `nil`")
+                        return nil
+                    }
+                    guard let gArray = GArray(variant),
                           gArray.isTyped(),
                           gArray.isSameTyped(array: GArray(Int.self)) else {
                         return nil
@@ -650,12 +743,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     years.array = gArray
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
