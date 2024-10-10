@@ -160,7 +160,7 @@ public struct GodotExport: PeerMacro {
                         return nil
                     }
                     
-                    \(varName) = newValue                    
+                    \(varName) = newValue
                 """
             }
         }

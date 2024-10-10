@@ -1,3 +1,21 @@
+/// A type representing expected errors that can happen during parsing `Arguments` in the call-site
+public enum ArgumentRetrievalError: Error, CustomStringConvertible {
+    case notEnoughArguments
+    case mismatchingArrayElementType(expected: String, actual: String)
+    case mismatchingType(expected: String, actual: String)
+    
+    public var description: String {
+        switch self {
+        case .notEnoughArguments:
+            return "Not enough arguments were provided"
+        case .mismatchingType(let expected, let actual):
+            return "Mismatching type, got `\(actual)` instead of `\(expected)`"
+        case .mismatchingArrayElementType(expected: let expected, actual: let actual):
+            return "Array got an element of unexpected type, got `\(actual)` instead of `\(expected)`"
+        }
+    }
+}
+
 /// A lightweight non-copyable storage for arguments marshalled to implementations where a sequence of `Variant`s is expected.
 /// If you need a copy of `Variant`s inside, you can construct an array using `Array.init(_ args: borrowing Arguments)`
 /// Elements can be accessed using subscript operator.
@@ -87,6 +105,91 @@ public struct Arguments: ~Copyable {
                 return args.retrieveVariant(at: index)
             }
         }
+    }
+    
+    public func retrieveArray<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
+        guard let arg = first else {
+            throw ArgumentRetrievalError.notEnoughArguments
+        }
+        
+        guard let variant = arg else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
+        }
+        
+        guard let array = GArray(variant) else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+        }
+        
+        var result: [T] = []
+        result.reserveCapacity(array.count)
+        for element in array {
+            guard let element else {
+                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: "nil")
+            }
+            
+            guard let element = T.makeOrUnwrap(element) else {
+                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: element.gtype.debugDescription)
+            }
+        
+            result.append(element)
+        }
+        return result
+    }
+    
+    public func retrieveVariantCollection<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> VariantCollection<T> {
+        guard let arg = first else {
+            throw ArgumentRetrievalError.notEnoughArguments
+        }
+        
+        guard let variant = arg else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
+        }
+        
+        guard let array = GArray(variant) else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+        }
+        
+        let result = VariantCollection<T>()
+        for element in array {
+            guard let element else {
+                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: "nil")
+            }
+            
+            guard let element = T.makeOrUnwrap(element) else {
+                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: element.gtype.debugDescription)
+            }
+        
+            result.append(element)
+        }
+        return result
+    }
+    
+    public func retrieveObjectCollection<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> ObjectCollection<T> {
+        guard let arg = first else {
+            throw ArgumentRetrievalError.notEnoughArguments
+        }
+        
+        guard let variant = arg else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
+        }
+        
+        guard let array = GArray(variant) else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+        }
+        
+        let result = ObjectCollection<T>()
+        for element in array {
+            if let element {
+                guard let element = T.makeOrUnwrap(element) else {
+                    throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: element.gtype.debugDescription)
+                }
+            
+                result.append(element)
+            } else {
+                result.append(nil)
+            }            
+        }
+        return result
     }
 }
 

@@ -113,7 +113,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     }
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
-    public final func append (value: Element) {
+    public final func append (_ value: Element) {
         array.append (Variant(value))
     }
     

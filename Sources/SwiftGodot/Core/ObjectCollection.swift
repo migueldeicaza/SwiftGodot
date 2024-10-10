@@ -141,8 +141,8 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
-    public final func append (_ value: Element) {
-        array.append (Variant (value))
+    public final func append (_ value: Element?) {
+        array.append(value.map { Variant($0) })        
     }
     
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
