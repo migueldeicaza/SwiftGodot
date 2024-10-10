@@ -183,10 +183,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
     }
     
     func testExportConstantGenericArrayStringMacro() {
-        assertMacroExpansion("""
+        assertExpansion(
+            of: """
             @Export let greetings: VariantCollection<String> = []
             """,
-            expandedSource: """
+            into: """
             let greetings: VariantCollection<String> = []
 
             func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
@@ -211,8 +212,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                 greetings.array = gArray
                 return nil
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
     
@@ -228,44 +228,47 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
     }
     
     func testExportGArray() {
-        assertMacroExpansion("""
+        assertExpansion(
+            of: """
             @Godot
             class SomeNode: Node {
                 @Export var someArray: GArray = GArray()
             }
             """,
-            expandedSource: """
+            into: """
+            
             class SomeNode: Node {
                 var someArray: GArray = GArray()
-
-                func _mproxy_set_someArray (args: borrowing Arguments) -> Variant? {
+            
+                func _mproxy_set_someArray(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `someArray`, no arguments")
                         return nil
                     }
-
+            
                     guard let variant = arg else {
                         GD.printErr("Unable to set `someArray`, argument is nil")
                         return nil
                     }
-
-                    if let value = GArray(variant) {
-                        self.someArray = value
-                    } else {
-                        GD.printErr ("Unable to set `someArray` value: ", arg)
+            
+                    guard let newValue = GArray(variant) else {
+                        GD.printErr("Unable to set `someArray`, argument is not GArray")
+                        return nil
                     }
+            
+                    someArray = newValue
                     return nil
                 }
-
+            
                 func _mproxy_get_someArray (args: borrowing Arguments) -> Variant? {
                     return Variant (someArray)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
@@ -282,19 +285,18 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                     classInfo.registerProperty (_psomeArray, getter: "_mproxy_get_someArray", setter: "_mproxy_set_someArray")
                 } ()
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
     
     func testExportArrayIntGodotMacro() {
-        assertMacroExpansion("""
+        assertExpansion(of: """
             @Godot
             class SomeNode: Node {
                 @Export var someNumbers: VariantCollection<Int> = []
             }
             """,
-            expandedSource: """
+            into: """
             class SomeNode: Node {
                 var someNumbers: VariantCollection<Int> = []
             
@@ -342,20 +344,20 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                     classInfo.registerProperty (_psomeNumbers, getter: "get_some_numbers", setter: "set_some_numbers")
                 } ()
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
 
     func testExportArraysIntGodotMacro() throws {
-        assertMacroExpansion("""
+        assertExpansion(
+            of: """
             @Godot
             class SomeNode: Node {
                 @Export var someNumbers: VariantCollection<Int> = []
                 @Export var someOtherNumbers: VariantCollection<Int> = []
             }
             """,
-            expandedSource: """
+            into: """
             class SomeNode: Node {
                 var someNumbers: VariantCollection<Int> = []
 
@@ -437,13 +439,13 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                     classInfo.registerProperty (_psomeOtherNumbers, getter: "get_some_other_numbers", setter: "set_some_other_numbers")
                 } ()
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
     
     func testGodotExportTwoStringArrays() throws {
-        assertMacroExpansion("""
+        assertExpansion(
+            of: """
             import SwiftGodot
 
             @Godot
@@ -452,7 +454,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                @Export var lastNames: VariantCollection<String> = ["Monk"]
             }
             """,
-            expandedSource: """
+            into: """
             import SwiftGodot
             class ArrayTest: Node {
                var firstNames: VariantCollection<String> = ["Thelonius"]
@@ -535,16 +537,16 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                     classInfo.registerProperty (_plastNames, getter: "get_last_names", setter: "set_last_names")
                 } ()
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
     
     func testExportObjectCollection() throws {
-        assertMacroExpansion("""
+        assertExpansion(
+            of: """
             @Export var greetings: ObjectCollection<Node3D> = []
             """,
-            expandedSource: """
+            into: """
             var greetings: ObjectCollection<Node3D> = []
 
             func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
@@ -569,19 +571,19 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                 greetings.array = gArray
                 return nil
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
     
     func testGodotExportObjectCollection() throws {
-        assertMacroExpansion("""
+        assertExpansion(
+            of: """
             @Godot
             class SomeNode: Node {
                 @Export var greetings: ObjectCollection<Node3D> = []
             }
             """,
-            expandedSource: """
+            into: """
             class SomeNode: Node {
                 var greetings: ObjectCollection<Node3D> = []
 
@@ -629,8 +631,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                     classInfo.registerProperty (_pgreetings, getter: "get_greetings", setter: "set_greetings")
                 } ()
             }
-            """,
-            macros: Self.macros
+            """
         )
     }
 }
