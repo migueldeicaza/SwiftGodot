@@ -14,3 +14,15 @@ public extension RefCounted {
         }
     }
 }
+
+extension Object {
+    /// Retain this object if it's `RefCounted`
+    final func retainIfRefCounted() {
+        (self as? RefCounted)?.reference()
+    }
+    
+    /// Release this object if it's `RefCounted`
+    final func releaseIfRefCounted() {
+        (self as? RefCounted)?.unreference()
+    }
+}

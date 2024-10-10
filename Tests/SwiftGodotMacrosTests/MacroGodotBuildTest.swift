@@ -144,3 +144,16 @@ public class Demo17: Node {
     }
     @Callable func queue(_ podcast: Object, after preceedingPodcast: Object) {}
 }
+
+@Godot
+final class Demo19: Resource {}
+
+@Godot
+final class Demo20: Node {
+    @Export var data: Demo19 = Demo19()
+}
+
+@Godot
+final class Demo21: Node {
+    @Export var data: Demo19? = nil
+}

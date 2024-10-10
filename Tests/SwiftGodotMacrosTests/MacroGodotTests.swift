@@ -184,8 +184,6 @@ final class MacroGodotTests: MacroGodotTestCase {
     }
     
     func testGodotMacroWithCallableFuncWithObjectParams() {
-        // Note when editing: Xcode loves to change all indentation to be consistent as either tabs or spaces, but the macro expansion produces a mix.
-        // I had to set Settings->Text Editing->Tab Key to "Inserts a Tab Character" in order to resolve this.
         assertExpansion(
             of: """
             @Godot class Castro: Node {
@@ -199,41 +197,41 @@ final class MacroGodotTests: MacroGodotTestCase {
             into: """
             class Castro: Node {
                 func deleteEpisode() {}
-
-                func _mproxy_deleteEpisode (args: borrowing Arguments) -> SwiftGodot.Variant? {
+            
+                func _mproxy_deleteEpisode (args: borrowing Arguments) -> Variant? {
                     deleteEpisode ()
                     return nil
                 }
                 func subscribe(podcast: Podcast) {}
-
-                func _mproxy_subscribe (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    subscribe (podcast: Podcast.makeOrUnwrap (args [0])!)
+            
+                func _mproxy_subscribe (args: borrowing Arguments) -> Variant? {
+                    subscribe (podcast: Podcast.makeOrUnwrap (args [0]!)!)
                     return nil
                 }
                 func removeSilences(from: Variant) {}
-
-                func _mproxy_removeSilences (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    removeSilences (from: args [0])
+            
+                func _mproxy_removeSilences (args: borrowing Arguments) -> Variant? {
+                    removeSilences (from: args [0]!)
                     return nil
                 }
                 func getLatestEpisode(podcast: Podcast) -> Episode {}
-
-                func _mproxy_getLatestEpisode (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = getLatestEpisode (podcast: Podcast.makeOrUnwrap (args [0])!)
+            
+                func _mproxy_getLatestEpisode (args: borrowing Arguments) -> Variant? {
+                    let result = getLatestEpisode (podcast: Podcast.makeOrUnwrap (args [0]!)!)
                     return Variant (result)
                 }
                 func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
-
-                func _mproxy_queue (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    queue (Podcast.makeOrUnwrap (args [0])!, after: Podcast.makeOrUnwrap (args [1])!)
+            
+                func _mproxy_queue (args: borrowing Arguments) -> Variant? {
+                    queue (Podcast.makeOrUnwrap (args [0]!)!, after: Podcast.makeOrUnwrap (args [1]!)!)
                     return nil
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("Castro")
                     assert(ClassDB.classExists(class: className))
@@ -278,13 +276,14 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             final class MyData: Resource {
-
+            
                 override public class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("MyData")
                     assert(ClassDB.classExists(class: className))
@@ -292,29 +291,29 @@ final class MacroGodotTests: MacroGodotTestCase {
                 } ()}
             final class MyClass: Node {
                 var data: MyData = .init()
-
+            
                 func _mproxy_set_data (args: borrowing Arguments) -> Variant? {
                     func dynamicCast<T, U>(_ value: T, as type: U.Type) -> U? {
                         value as? U
                     }
                     let oldRef = dynamicCast (data, as: RefCounted.self)
-                    if let res: MyData = args [0].asObject () {
+                    if let res: MyData = args [0]!.asObject () {
                         dynamicCast (res, as: RefCounted.self)?.reference()
                         self.data = res
                     }
                     oldRef?.unreference()
                     return nil
                 }
-
+            
                 func _mproxy_get_data (args: borrowing Arguments) -> Variant? {
                     return Variant (data)
                 }
-
+            
                 override public class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("MyClass")
                     assert(ClassDB.classExists(class: className))
