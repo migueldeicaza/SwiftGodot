@@ -49,12 +49,29 @@ public struct GodotExport: PeerMacro {
         var body: String = ""
 
         if isEnum {
-            body =
-    """
-        if let iv = Int (args [0]!), let ev = \(typeName)(rawValue: numericCast (iv)) {
-            self.\(varName) = ev
-        }
-    """
+            body = """
+                guard let arg = args.first else {
+                    GD.printErr("Unable to set `\(varName)`, no arguments")
+                    return nil
+                }
+            
+                guard let variant = arg else {
+                    GD.printErr("Unable to set `\(varName)`, argument is nil")
+                    return nil
+                }
+            
+                guard let int = Int(variant) else {
+                    GD.printErr("Unable to set `\(varName)`, argument is not int")
+                    return nil
+                }
+            
+                guard let newValue = \(typeName)(rawValue: \(typeName).RawValue(int)) else {
+                    GD.printErr("Unable to set `\(varName)`, \\(int) is not a valid \(typeName) rawValue")
+                    return nil
+                }
+            
+                self.\(varName) = newValue
+            """
         } else if typeName == "Variant" {
             body = "\(varName) = args [0]"
         } else if godotVariants [typeName] == nil {

@@ -19,7 +19,7 @@ import AppKit
 func indentCodeLiteral(_ code: String) -> String {
     code
         .components(separatedBy: .newlines)
-        .map { "    " + $0 } // 4 spaces
+        .map { "    " + $0.replacingOccurrences(of: "\\", with: "\\\\") } // 4 spaces
         .joined(separator: "\n")
 }
 
