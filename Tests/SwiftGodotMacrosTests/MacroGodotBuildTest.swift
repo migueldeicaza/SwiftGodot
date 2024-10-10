@@ -127,3 +127,10 @@ class Demo16: Node {
     @Export var hours: VariantCollection<String> = []
     @Export var insuranceProvidersAccepted: ObjectCollection<Object> = []
 }
+
+@Godot
+public class Demo17: Node {
+    #exportGroup("Group With a Prefix", prefix: "prefix1")
+    @Export var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
+    @Export var non_prefixed_bool: VariantCollection<Bool> = [false]
+}
