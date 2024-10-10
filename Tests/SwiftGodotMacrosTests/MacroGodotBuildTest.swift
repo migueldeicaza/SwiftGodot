@@ -134,3 +134,13 @@ public class Demo17: Node {
     @Export var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
     @Export var non_prefixed_bool: VariantCollection<Bool> = [false]
 }
+
+@Godot class Demo18: Node {
+    @Callable func deleteEpisode() {}
+    @Callable func subscribe(podcast: Object) {}
+    @Callable func removeSilences(from: Variant) {}
+    @Callable func getLatestEpisode(podcast: Object) -> Object {
+        return Object()
+    }
+    @Callable func queue(_ podcast: Object, after preceedingPodcast: Object) {}
+}
