@@ -292,16 +292,26 @@ final class MacroGodotTests: MacroGodotTestCase {
             final class MyClass: Node {
                 var data: MyData = .init()
             
-                func _mproxy_set_data (args: borrowing Arguments) -> Variant? {
-                    func dynamicCast<T, U>(_ value: T, as type: U.Type) -> U? {
-                        value as? U
+                func _mproxy_set_data(args: borrowing Arguments) -> Variant? {
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `data`, no arguments")
+                        return nil
                     }
-                    let oldRef = dynamicCast (data, as: RefCounted.self)
-                    if let res: MyData = args [0]!.asObject () {
-                        dynamicCast (res, as: RefCounted.self)?.reference()
-                        self.data = res
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `data`, argument is nil")
+                        return nil
                     }
-                    oldRef?.unreference()
+            
+                    guard let newValue = variant.asObject(MyData.self) else {
+                        GD.printErr("Unable to set `data`, argument is not MyData")
+                        return nil
+                    }
+            
+                    _referenceIfRefCounted(newValue)
+                    _unreferenceIfRefCounted(data)
+            
+                    data = newValue
                     return nil
                 }
             
@@ -347,22 +357,23 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class SomeNode: Node {
                 func getIntegerCollection() -> VariantCollection<Int> {
                     let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
                     return result
                 }
-
-                func _mproxy_getIntegerCollection (args: borrowing Arguments) -> SwiftGodot.Variant? {
+            
+                func _mproxy_getIntegerCollection (args: borrowing Arguments) -> Variant? {
                     let result = getIntegerCollection ()
                     return Variant (result)
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
