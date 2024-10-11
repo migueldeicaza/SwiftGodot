@@ -84,7 +84,7 @@ components:
 * Your Swift code: this is where you bring the magic
 * A `.gdextension` file that describes where to find the requires
   Swift library assets
-* Some Swift registation code and bootstrap code
+* Some Swift registration code and bootstrap code
 * Importing your extension into your project
 
 ## Your Swift Code
