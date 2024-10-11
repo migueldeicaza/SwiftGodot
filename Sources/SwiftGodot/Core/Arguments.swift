@@ -1,17 +1,20 @@
 /// A type representing expected errors that can happen during parsing `Arguments` in the call-site
 public enum ArgumentRetrievalError: Error, CustomStringConvertible {
-    case notEnoughArguments
+    case indexOutOfBounds(index: Int, count: Int)
     case mismatchingArrayElementType(expected: String, actual: String)
     case mismatchingType(expected: String, actual: String)
+    case invalidRawValue(value: String, typeName: String)
     
     public var description: String {
         switch self {
-        case .notEnoughArguments:
-            return "Not enough arguments were provided"
+        case .indexOutOfBounds(let index, let count):
+            return "Can't retrieve argument at index \(index), arguments count is \(count)"
         case .mismatchingType(let expected, let actual):
             return "Mismatching type, got `\(actual)` instead of `\(expected)`"
         case .mismatchingArrayElementType(expected: let expected, actual: let actual):
             return "Array got an element of unexpected type, got `\(actual)` instead of `\(expected)`"
+        case .invalidRawValue(let value, let typeName):
+            return "`\(typeName)` doesn't have a value represented by `\(value)"
         }
     }
 }
@@ -26,22 +29,20 @@ public struct Arguments: ~Copyable {
             let count: Int
             
             var first: Variant?? {
-                if count > 0 {
-                    return retrieveVariant(at: 0)
-                } else {
-                    return nil
-                }
+                try? argument(at: 0)
             }
             
-            /// Lazily reconstruct variant at `index`
-            func retrieveVariant(at index: Int) -> Variant? {
-                precondition(index >= 0 && index < count, "Index \(index) out of bounds")
-                
-                guard let ptr = pargs[index] else {
-                    return nil
+            /// Lazily reconstruct variant at `index`, throws an error if index is out ouf bounds
+            func argument(at index: Int) throws -> Variant? {
+                if index >= 0 && index < count {
+                    guard let ptr = pargs[index] else {
+                        return nil
+                    }
+                    
+                    return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
+                } else {
+                    throw ArgumentRetrievalError.indexOutOfBounds(index: index, count: count)
                 }
-                
-                return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
             }
         }
         /// User constructed and passed an array, reuse it
@@ -65,16 +66,13 @@ public struct Arguments: ~Copyable {
     }
     
     /// The first argument.
-    ///
-    /// If the `Arguments` is empty, the value of this property is `nil`.
+    /// This type is double optional like in `[Int?].first`
+    /// `.some(.none)` means, that there is first argument and it's `nil`
+    /// `.none` means that there is no arguments at all
     public var first: Variant?? {
         switch contents {
         case .unsafeGodotArgs(let contents):
-            if contents.count > 0 {
-                return contents.retrieveVariant(at: 0)
-            } else {
-                return nil
-            }
+            return try? contents.argument(at: 0)
         case .array(let array):
             return array.first
         }
@@ -96,21 +94,116 @@ public struct Arguments: ~Copyable {
         contents = .array([])
     }
     
+    /// Subscript operator to allow expressions like `arguments[2]`.
+    /// This implementation will crash in case out-of-bounds access, just like `Swift.Array`.
     public subscript(_ index: Int) -> Variant? {
         get {
             switch contents {
             case .array(let array):
                 return array[index]
             case .unsafeGodotArgs(let args):
-                return args.retrieveVariant(at: index)
+                do {
+                    return try args.argument(at: index)
+                } catch let error as ArgumentRetrievalError {
+                    fatalError(error.description)
+                } catch {
+                    fatalError(error.localizedDescription)
+                }
             }
         }
     }
     
-    public func retrieveArray<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
-        guard let arg = first else {
-            throw ArgumentRetrievalError.notEnoughArguments
+    /// Returns `Variant` or `nil` argument at  `index`.
+    ///
+    /// Throws an error if `index` is out of bounds.
+    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    public func argument(at index: Int) throws -> Variant? {
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                return array[index]
+            } else {
+                throw ArgumentRetrievalError.indexOutOfBounds(index: index, count: array.count)
+            }
+        case .unsafeGodotArgs(let unsafeGodotArgs):
+            return try unsafeGodotArgs.argument(at: index)
         }
+    }
+    
+    /// Returns `T?` value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is not `nil` but wraps a type other than `T`
+    /// - `index` is out of bounds.
+    public func optionlArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
+        let arg = try argument(at: index)
+        
+        if let variant = arg {
+            guard let result = T(variant) else {
+                throw ArgumentRetrievalError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+            }
+            
+            return result
+        } else {
+            return nil
+        }
+    }
+        
+    /// Returns `T` value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` contains a type other than `T`
+    /// - `index` is out of bounds.
+    public func argument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T {
+        let arg = try argument(at: index)
+        
+        guard let variant = arg else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "\(T.self)", actual: "nil")
+        }
+        
+        guard let result = T(variant) else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+        }
+        
+        return result
+    }
+    
+    /// Returns a `enum` or `OptionSet` `T` value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` wraps a type other than `Int`
+    /// - `index` is out of bounds.
+    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
+    public func rawRepresentableArgument<T: RawRepresentable>(ofType type: T.Type = T.self, at index: Int) throws -> T where T.RawValue: BinaryInteger {
+        let arg = try argument(at: index)
+        
+        guard let variant = arg else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "int", actual: "nil")
+        }
+        
+        guard let rawValue = Int(variant) else {
+            throw ArgumentRetrievalError.mismatchingType(expected: "int", actual: variant.gtype.debugDescription)
+        }
+        
+        guard let result = T(rawValue: T.RawValue(rawValue)) else {
+            throw ArgumentRetrievalError.invalidRawValue(value: "\(rawValue)", typeName: "\(T.self)")
+        }
+        
+        return result
+    }
+    
+    /// Returns `[T]` value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` wraps a type other than `Int`
+    /// - `index` is out of bounds.
+    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
+    public func arrayArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
+        let arg = try argument(at: index)
         
         guard let variant = arg else {
             throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
@@ -136,10 +229,16 @@ public struct Arguments: ~Copyable {
         return result
     }
     
-    public func retrieveVariantCollection<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> VariantCollection<T> {
-        guard let arg = first else {
-            throw ArgumentRetrievalError.notEnoughArguments
-        }
+    /// Returns `VariantCollection<T>` (aka `TypedArray` of builtin Godot class) value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` wraps a type other than `GArray`
+    /// - `index` is out of bounds.
+    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
+    /// - Passed argument is `GArray`, but contains a type other than `T` or is `nil`
+    public func variantCollectionArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> VariantCollection<T> {
+        let arg = try argument(at: index)
         
         guard let variant = arg else {
             throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
@@ -164,10 +263,8 @@ public struct Arguments: ~Copyable {
         return result
     }
     
-    public func retrieveObjectCollection<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> ObjectCollection<T> {
-        guard let arg = first else {
-            throw ArgumentRetrievalError.notEnoughArguments
-        }
+    public func objectCollectionArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> ObjectCollection<T> {
+        let arg = try argument(at: index)
         
         guard let variant = arg else {
             throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
@@ -210,8 +307,9 @@ public extension Array where Element == Variant? {
         case .array(let array):
             self = array
         case .unsafeGodotArgs(let args):
-            self = (0..<args.count).map { i in
-                args.retrieveVariant(at: i)
+            self = (0..<args.count).map { index in
+                // OOB should never happen in this scenaro
+                try! args.argument(at: index)
             }
         }
     }
