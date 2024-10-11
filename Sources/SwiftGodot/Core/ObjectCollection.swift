@@ -35,6 +35,40 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
         GArray.destructor (&copy)
     }
     
+    /// Initializes the collection from an existing `GArray`.
+    ///
+    /// If `array` is already properly typed - just wraps it.
+    /// If it's not properly typed - promotes it to typed.
+    ///
+    /// Fails if:
+    /// - `array` is typed to other than `T`.
+    /// - `array` is not typed, and contains an element, other than `T?`
+    public init?(_ array: GArray) {
+        // TODO: (es) I have a strong feeling that type-check of the elements can be done in a better way.
+        
+        if array.isTyped() {
+            if array.getTypedBuiltin() != Variant.GType.object.rawValue {
+                return nil
+            }
+        }
+        
+        let newArray = GArray(Element.self)
+        
+        for element in array {
+            if let element {
+                guard element.asObject(Element.self) != nil else {
+                    return nil
+                }
+                
+                newArray.append(element)
+            } else {
+                newArray.append(element)
+            }
+        }
+        
+        self.array = newArray
+    }
+    
     /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
         array = elements.reduce(into: .init(Element.self)) {

@@ -38,6 +38,42 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
         array = GArray (Element.self)
     }
     
+    /// Initializes the collection from an existing `GArray`.
+    ///
+    /// If `array` is already properly typed - just wraps it.
+    /// If it's not properly typed - promotes it to typed.
+    ///
+    /// Fails if:
+    /// - `array` is typed to other than `T`.
+    /// - `array` is not typed, and contains an element, other than `T`
+    public init?(_ array: GArray) {
+        if array.isTyped() {
+            if array.getTypedBuiltin() != Element.Representable.godotType.rawValue {
+                return nil
+            } else if !array.getTypedClassName().isEmpty() {
+                return nil
+            } else {
+                self.array = array
+            }
+        } else {
+            let newArray = GArray(Element.self)
+            
+            for element in array {
+                guard let element else {
+                    return nil
+                }
+                
+                guard element.gtype == Element.Representable.godotType else {
+                    return nil
+                }
+                
+                newArray.append(element)
+            }
+            
+            self.array = newArray
+        }
+    }
+    
     /// Creates a new instance from the given variant if it contains a GArray
     public required init? (_ variant: Variant) {
         if let array = GArray (variant) {

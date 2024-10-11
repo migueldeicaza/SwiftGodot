@@ -1,7 +1,7 @@
 /// A type representing expected errors that can happen during parsing `Arguments` in the call-site
-public enum ArgumentRetrievalError: Error, CustomStringConvertible {
+public enum ArgumentAccessError: Error, CustomStringConvertible {
     case indexOutOfBounds(index: Int, count: Int)
-    case mismatchingArrayElementType(expected: String, actual: String)
+    case mismatchingArrayElementType
     case mismatchingType(expected: String, actual: String)
     case invalidRawValue(value: String, typeName: String)
     
@@ -11,8 +11,8 @@ public enum ArgumentRetrievalError: Error, CustomStringConvertible {
             return "Can't retrieve argument at index \(index), arguments count is \(count)"
         case .mismatchingType(let expected, let actual):
             return "Mismatching type, got `\(actual)` instead of `\(expected)`"
-        case .mismatchingArrayElementType(expected: let expected, actual: let actual):
-            return "Array got an element of unexpected type, got `\(actual)` instead of `\(expected)`"
+        case .mismatchingArrayElementType:
+            return "Array got an element of unexpected type"
         case .invalidRawValue(let value, let typeName):
             return "`\(typeName)` doesn't have a value represented by `\(value)"
         }
@@ -41,7 +41,7 @@ public struct Arguments: ~Copyable {
                     
                     return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
                 } else {
-                    throw ArgumentRetrievalError.indexOutOfBounds(index: index, count: count)
+                    throw ArgumentAccessError.indexOutOfBounds(index: index, count: count)
                 }
             }
         }
@@ -104,7 +104,7 @@ public struct Arguments: ~Copyable {
             case .unsafeGodotArgs(let args):
                 do {
                     return try args.argument(at: index)
-                } catch let error as ArgumentRetrievalError {
+                } catch let error as ArgumentAccessError {
                     fatalError(error.description)
                 } catch {
                     fatalError(error.localizedDescription)
@@ -124,7 +124,7 @@ public struct Arguments: ~Copyable {
             if index >= 0 && index < array.count {
                 return array[index]
             } else {
-                throw ArgumentRetrievalError.indexOutOfBounds(index: index, count: array.count)
+                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
             }
         case .unsafeGodotArgs(let unsafeGodotArgs):
             return try unsafeGodotArgs.argument(at: index)
@@ -141,7 +141,7 @@ public struct Arguments: ~Copyable {
         
         if let variant = arg {
             guard let result = T(variant) else {
-                throw ArgumentRetrievalError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
             }
             
             return result
@@ -160,11 +160,11 @@ public struct Arguments: ~Copyable {
         let arg = try argument(at: index)
         
         guard let variant = arg else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "\(T.self)", actual: "nil")
+            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: "nil")
         }
         
         guard let result = T(variant) else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
         }
         
         return result
@@ -181,15 +181,15 @@ public struct Arguments: ~Copyable {
         let arg = try argument(at: index)
         
         guard let variant = arg else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "int", actual: "nil")
+            throw ArgumentAccessError.mismatchingType(expected: "int", actual: "nil")
         }
         
         guard let rawValue = Int(variant) else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "int", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "int", actual: variant.gtype.debugDescription)
         }
         
         guard let result = T(rawValue: T.RawValue(rawValue)) else {
-            throw ArgumentRetrievalError.invalidRawValue(value: "\(rawValue)", typeName: "\(T.self)")
+            throw ArgumentAccessError.invalidRawValue(value: "\(rawValue)", typeName: "\(T.self)")
         }
         
         return result
@@ -206,22 +206,22 @@ public struct Arguments: ~Copyable {
         let arg = try argument(at: index)
         
         guard let variant = arg else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
         }
         
         var result: [T] = []
         result.reserveCapacity(array.count)
         for element in array {
             guard let element else {
-                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: "nil")
+                throw ArgumentAccessError.mismatchingArrayElementType
             }
             
             guard let element = T.makeOrUnwrap(element) else {
-                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: element.gtype.debugDescription)
+                throw ArgumentAccessError.mismatchingArrayElementType
             }
         
             result.append(element)
@@ -241,51 +241,46 @@ public struct Arguments: ~Copyable {
         let arg = try argument(at: index)
         
         guard let variant = arg else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
         }
         
-        let result = VariantCollection<T>()
-        for element in array {
-            guard let element else {
-                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: "nil")
-            }
-            
-            guard let element = T.makeOrUnwrap(element) else {
-                throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: element.gtype.debugDescription)
-            }
-        
-            result.append(element)
+        guard let result = VariantCollection<T>(array) else {
+            throw ArgumentAccessError.mismatchingArrayElementType
         }
+        
         return result
     }
     
+    /// Returns `ObjectCollection<T>` (aka `TypedArray` of `Object`-inherited classes) value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` wraps a type other than `GArray`
+    /// - `index` is out of bounds.
+    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
+    /// - Passed argument is `GArray`, but contains a type other than `T`
+    ///
+    /// Note:
+    /// Unlike `VariantCollection`, Godot allows `nil` elements in this case.
     public func objectCollectionArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> ObjectCollection<T> {
         let arg = try argument(at: index)
         
         guard let variant = arg else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: "nil")
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentRetrievalError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
         }
         
-        let result = ObjectCollection<T>()
-        for element in array {
-            if let element {
-                guard let element = T.makeOrUnwrap(element) else {
-                    throw ArgumentRetrievalError.mismatchingArrayElementType(expected: "\(T.self)", actual: element.gtype.debugDescription)
-                }
-            
-                result.append(element)
-            } else {
-                result.append(nil)
-            }            
+        guard let result = ObjectCollection<T>(array) else {
+            throw ArgumentAccessError.mismatchingArrayElementType
         }
+        
         return result
     }
 }
