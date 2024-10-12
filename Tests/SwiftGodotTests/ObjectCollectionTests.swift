@@ -24,7 +24,7 @@ final class ObjectCollectionTests: GodotTestCase {
             XCTFail()
             return
         }
-        XCTAssertEqual(node, Node.makeOrUnwrap(variant), "The first element in the \(GArray.self) should hold the appended node")
+        XCTAssertEqual(node, Node.unwrap(from: variant), "The first element in the \(GArray.self) should hold the appended node")
         XCTAssertEqual(node, sut[0], "The first element in the collection should equal the appended node")
     }
 
@@ -38,7 +38,7 @@ final class ObjectCollectionTests: GodotTestCase {
             XCTFail()
             return
         }
-        XCTAssertEqual(Node.makeOrUnwrap(variant), node, "The first element in the \(GArray.self) should be the node passed to init")
+        XCTAssertEqual(Node.unwrap(from: variant), node, "The first element in the \(GArray.self) should be the node passed to init")
         XCTAssertEqual(sut[0], node, "The first element in the collection should be the node passed to init")
     }
 
@@ -57,7 +57,7 @@ final class ObjectCollectionTests: GodotTestCase {
             XCTFail()
             return
         }
-        XCTAssertEqual(Node.makeOrUnwrap(variant), otherNode, "The first element in the \(GArray.self) should hold the new node")
+        XCTAssertEqual(Node.unwrap(from: variant), otherNode, "The first element in the \(GArray.self) should hold the new node")
         XCTAssertEqual(sut[0], otherNode, "The first element in the collection should be the new node")
     }
     
