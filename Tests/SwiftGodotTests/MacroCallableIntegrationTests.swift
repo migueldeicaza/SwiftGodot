@@ -135,7 +135,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         array.append(nil)
         array.append(Variant(3))
         array.append(nil)
-        array.append(Variant(4)) // this one causes the failure
+        array.append(Variant(4))
         
         // Fails, prints into console and returns nil due to typed builtin array not allowing nils
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), nil)
