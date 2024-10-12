@@ -143,18 +143,27 @@ func hasSignalAttribute (_ attrs: AttributeListSyntax?) -> Bool {
     hasAttribute ("signal", attrs)
 }
 
-func getTypeName (_ parameter: FunctionParameterSyntax) -> String? {
-    guard [
-        parameter.isSwiftArray,
-        parameter.isObjectCollection,
-        parameter.isVariantCollection
-    ].allSatisfy ({ $0 == false }) else {
+func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
+    guard !parameter.isVariantCollection,
+          !parameter.isSwiftArray,
+          !parameter.isObjectCollection else {
         return "GArray"
     }
-    guard let typeName = parameter.type.as (IdentifierTypeSyntax.self)?.name.text else {
+    
+    if let typeName = parameter.type.as (IdentifierTypeSyntax.self)?.name.text {
+        // `TypeName`
+        return typeName
+    } else if let optionalWrappedType = parameter.type.as(OptionalTypeSyntax.self)?.wrappedType {
+        // `TypeName?`
+        // only `Variant?` is supported now
+        if optionalWrappedType.as(IdentifierTypeSyntax.self)?.name.text == "Variant" {
+            return "Variant?"
+        } else {
+            return nil
+        }
+    } else {
         return nil
     }
-    return typeName
 }
 
 func getParamName(_ parameter: FunctionParameterSyntax) -> String {

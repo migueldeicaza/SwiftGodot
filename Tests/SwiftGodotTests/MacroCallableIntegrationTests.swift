@@ -22,7 +22,7 @@ fileprivate class TestObject: Object {
     }
     
     @Callable
-    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: GArray, variant: Variant) -> Int {
+    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: GArray, variant: Variant?) -> Int? {
         return builtins.count + objects.count + array.count
     }
 }

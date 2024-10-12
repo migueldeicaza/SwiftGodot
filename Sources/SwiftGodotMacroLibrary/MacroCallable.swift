@@ -41,6 +41,11 @@ public struct GodotCallable: PeerMacro {
                         let arg\(index): Variant = try arguments.variantArgument(at: \(index))
                 
                 """
+            } else if ptype == "Variant?" {
+                body += """
+                        let arg\(index): Variant? = try arguments.optionalVariantArgument(at: \(index))
+                
+                """
             } else if parameter.isSwiftArray, let elementType = parameter.arrayElementTypeName {
                 body += """
                         let arg\(index): [\(elementType)] = try arguments.arrayArgument(ofType: \(elementType).self, at: \(index))
