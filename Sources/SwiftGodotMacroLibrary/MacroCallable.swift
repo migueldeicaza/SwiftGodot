@@ -93,12 +93,13 @@ public struct GodotCallable: PeerMacro {
         
         body += """
         \(indentation)    \(resultDeclOrNothing)\(funcName)(\(callArgs))
+        
         """
         
         if retProp != nil {
             if isReturnedTypeOptional {
                 body += """
-                        guard let result else { return nil }
+                \(indentation)    guard let result else { return nil }
                 
                 """
             }
@@ -107,9 +108,9 @@ public struct GodotCallable: PeerMacro {
                 body += """
                 \(indentation)    return Variant(
                 \(indentation)        result.reduce(into: GArray(\(elementType).self)) { array, element in
-                \(indentation)            array.append(Variant(element)) 
+                \(indentation)            array.append(Variant(element))
                 \(indentation)        }
-                \(indentation)    )    
+                \(indentation)    )
                 
                 """
             } else {

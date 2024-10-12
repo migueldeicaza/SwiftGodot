@@ -198,33 +198,71 @@ final class MacroGodotTests: MacroGodotTestCase {
             class Castro: Node {
                 func deleteEpisode() {}
             
-                func _mproxy_deleteEpisode (args: borrowing Arguments) -> Variant? {
-                    deleteEpisode ()
+                func _mproxy_deleteEpisode(arguments: borrowing Arguments) -> Variant? {
+                    deleteEpisode()
                     return nil
                 }
                 func subscribe(podcast: Podcast) {}
             
-                func _mproxy_subscribe (args: borrowing Arguments) -> Variant? {
-                    subscribe (podcast: Podcast.makeOrUnwrap (args [0]!)!)
-                    return nil
+                func _mproxy_subscribe(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
+                        subscribe(podcast: arg0)
+                        return nil
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `subscribe`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
                 func removeSilences(from: Variant) {}
             
-                func _mproxy_removeSilences (args: borrowing Arguments) -> Variant? {
-                    removeSilences (from: args [0]!)
-                    return nil
+                func _mproxy_removeSilences(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Variant = try arguments.variantArgument(at: 0)
+                        removeSilences(from: arg0)
+                        return nil
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `removeSilences`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
                 func getLatestEpisode(podcast: Podcast) -> Episode {}
             
-                func _mproxy_getLatestEpisode (args: borrowing Arguments) -> Variant? {
-                    let result = getLatestEpisode (podcast: Podcast.makeOrUnwrap (args [0]!)!)
-                    return Variant (result)
+                func _mproxy_getLatestEpisode(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
+                        let result = getLatestEpisode(podcast: arg0)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `getLatestEpisode`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
                 func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
             
-                func _mproxy_queue (args: borrowing Arguments) -> Variant? {
-                    queue (Podcast.makeOrUnwrap (args [0]!)!, after: Podcast.makeOrUnwrap (args [1]!)!)
-                    return nil
+                func _mproxy_queue(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
+                        let arg1: Podcast = try arguments.argument(ofType: Podcast.self, at: 1)
+                        queue(arg0, after: arg1)
+                        return nil
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `queue`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
             
                 override open class var classInitializer: Void {
@@ -364,9 +402,10 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return result
                 }
             
-                func _mproxy_getIntegerCollection (args: borrowing Arguments) -> Variant? {
-                    let result = getIntegerCollection ()
-                    return Variant (result)
+                func _mproxy_getIntegerCollection(arguments: borrowing Arguments) -> Variant? {
+                    let result = getIntegerCollection()
+                    return Variant(result)
+            
                 }
             
                 override open class var classInitializer: Void {
@@ -404,11 +443,19 @@ final class MacroGodotTests: MacroGodotTestCase {
                     integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
                 }
             
-                func _mproxy_square (args: borrowing Arguments) -> Variant? {
-                    let result = square (GArray(args[0]!)!.reduce(into: VariantCollection<Int>()) {
-                            $0.append(Int.makeOrUnwrap($1)!)
-                        })
-                    return Variant (result)
+                func _mproxy_square(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: VariantCollection<Int> = try arguments.variantCollectionArgument(ofType: Int.self, at: 0)
+                        let result = square(arg0)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `square`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
             
                 override open class var classInitializer: Void {
@@ -452,9 +499,10 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return result
                 }
             
-                func _mproxy_getNodeCollection (args: borrowing Arguments) -> Variant? {
-                    let result = getNodeCollection ()
-                    return Variant (result)
+                func _mproxy_getNodeCollection(arguments: borrowing Arguments) -> Variant? {
+                    let result = getNodeCollection()
+                    return Variant(result)
+            
                 }
             
                 override open class var classInitializer: Void {
@@ -492,11 +540,18 @@ final class MacroGodotTests: MacroGodotTestCase {
                     nodes.forEach { print($0.name) }
                 }
             
-                func _mproxy_printNames (args: borrowing Arguments) -> Variant? {
-                    printNames (of: GArray(args[0]!)!.reduce(into: ObjectCollection<Node>()) {
-                            $0.append(Node.makeOrUnwrap($1)!)
-                        })
-                    return nil
+                func _mproxy_printNames(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: ObjectCollection<Node> = try arguments.objectCollectionArgument(ofType: Node.self, at: 0)
+                        printNames(of: arg0)
+                        return nil
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `printNames`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
             
                 override open class var classInitializer: Void {
@@ -520,7 +575,7 @@ final class MacroGodotTests: MacroGodotTestCase {
     }
     
     func testGodotMacroWithCallableFuncsWithArrayParam() {
-        assertExpansion(generateNew: true,
+        assertExpansion(
             of: """
             @Godot
             class MultiplierNode: Node {
@@ -531,14 +586,25 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class MultiplierNode: Node {
                 func multiply(_ integers: [Int]) -> Int {
                     integers.reduce(into: 1) { $0 *= $1 }
                 }
             
-                func _mproxy_multiply (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = multiply (GArray (args [0])!.compactMap(Int.makeOrUnwrap))
-                    return Variant (result)
+                func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: [Int] = try arguments.arrayArgument(ofType: Int.self, at: 0)
+                        let result = multiply(arg0)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `multiply`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
             
                 override open class var classInitializer: Void {
@@ -579,26 +645,33 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class CallableCollectionsNode: Node {
                 func get_ages() -> [Int] {
                     [1, 2, 3, 4]
                 }
             
-                func _mproxy_get_ages (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = get_ages ()
-                    return Variant ( result.reduce(into: GArray(Int.self)) {
-                            $0.append(Variant($1))
-                        })
+                func _mproxy_get_ages(arguments: borrowing Arguments) -> Variant? {
+                    let result = get_ages()
+                    return Variant(
+                        result.reduce(into: GArray(Int.self)) { array, element in
+                            array.append(Variant(element))
+                        }
+                    )
+            
                 }
                 func get_markers() -> [Marker3D] {
                     [.init(), .init(), .init()]
                 }
             
-                func _mproxy_get_markers (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = get_markers ()
-                    return Variant ( result.reduce(into: GArray(Marker3D.self)) {
-                            $0.append(Variant($1))
-                        })
+                func _mproxy_get_markers(arguments: borrowing Arguments) -> Variant? {
+                    let result = get_markers()
+                    return Variant(
+                        result.reduce(into: GArray(Marker3D.self)) { array, element in
+                            array.append(Variant(element))
+                        }
+                    )
+            
                 }
             
                 override open class var classInitializer: Void {
@@ -632,14 +705,25 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class MultiplierNode: Node {
                 func multiply(_ integers: Array<Int>) -> Int {
                     integers.reduce(into: 1) { $0 *= $1 }
                 }
             
-                func _mproxy_multiply (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = multiply (GArray (args [0])!.compactMap(Int.makeOrUnwrap))
-                    return Variant (result)
+                func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: [Int] = try arguments.arrayArgument(ofType: Int.self, at: 0)
+                        let result = multiply(arg0)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `multiply`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
             
                 override open class var classInitializer: Void {
@@ -680,26 +764,33 @@ final class MacroGodotTests: MacroGodotTestCase {
             }
             """,
             into: """
+            
             class CallableCollectionsNode: Node {
                 func get_ages() -> Array<Int> {
                     [1, 2, 3, 4]
                 }
             
-                func _mproxy_get_ages (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = get_ages ()
-                    return Variant ( result.reduce(into: GArray(Int.self)) {
-                            $0.append(Variant($1))
-                        })
+                func _mproxy_get_ages(arguments: borrowing Arguments) -> Variant? {
+                    let result = get_ages()
+                    return Variant(
+                        result.reduce(into: GArray(Int.self)) { array, element in
+                            array.append(Variant(element))
+                        }
+                    )
+            
                 }
                 func get_markers() -> Array<Marker3D> {
                     [.init(), .init(), .init()]
                 }
             
-                func _mproxy_get_markers (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = get_markers ()
-                    return Variant ( result.reduce(into: GArray(Marker3D.self)) {
-                            $0.append(Variant($1))
-                        })
+                func _mproxy_get_markers(arguments: borrowing Arguments) -> Variant? {
+                    let result = get_markers()
+                    return Variant(
+                        result.reduce(into: GArray(Marker3D.self)) { array, element in
+                            array.append(Variant(element))
+                        }
+                    )
+            
                 }
             
                 override open class var classInitializer: Void {
@@ -733,29 +824,62 @@ final class MacroGodotTests: MacroGodotTestCase {
             into: """
             class MathHelper: Node {
                 func multiply(_ a: Int, by b: Int) -> Int { a * b}
-
-                func _mproxy_multiply (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = multiply (Int.makeOrUnwrap (args [0])!, by: Int.makeOrUnwrap (args [1])!)
-                    return Variant (result)
+            
+                func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Int = try arguments.argument(ofType: Int.self, at: 0)
+                        let arg1: Int = try arguments.argument(ofType: Int.self, at: 1)
+                        let result = multiply(arg0, by: arg1)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `multiply`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
                 func divide(_ a: Float, by b: Float) -> Float { a / b }
-
-                func _mproxy_divide (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = divide (Float.makeOrUnwrap (args [0])!, by: Float.makeOrUnwrap (args [1])!)
-                    return Variant (result)
+            
+                func _mproxy_divide(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Float = try arguments.argument(ofType: Float.self, at: 0)
+                        let arg1: Float = try arguments.argument(ofType: Float.self, at: 1)
+                        let result = divide(arg0, by: arg1)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `divide`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
                 func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
-
-                func _mproxy_areBothTrue (args: borrowing Arguments) -> SwiftGodot.Variant? {
-                    let result = areBothTrue (Bool.makeOrUnwrap (args [0])!, and: Bool.makeOrUnwrap (args [1])!)
-                    return Variant (result)
+            
+                func _mproxy_areBothTrue(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Bool = try arguments.argument(ofType: Bool.self, at: 0)
+                        let arg1: Bool = try arguments.argument(ofType: Bool.self, at: 1)
+                        let result = areBothTrue(arg0, and: arg1)
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `areBothTrue`: \\(error.localizedDescription)")
+                        return nil
+                    }
                 }
-
+            
                 override open class var classInitializer: Void {
                     let _ = super.classInitializer
                     return _initializeClass
                 }
-
+            
                 private static let _initializeClass: Void = {
                     let className = StringName("MathHelper")
                     assert(ClassDB.classExists(class: className))
@@ -801,15 +925,23 @@ final class MacroGodotTests: MacroGodotTestCase {
             class Hi: Node {
                 var goodName: String = "Supertop"
             
-                func _mproxy_set_goodName (args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
+                        GD.printErr("Unable to set `goodName`, no arguments")
                         return nil
                     }
-                    if let value = String (arg) {
-                        self.goodName = value
-                    } else {
-                        GD.printErr ("Unable to set `goodName` value: ", arg)
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `goodName`, argument is nil")
+                        return nil
                     }
+            
+                    guard let newValue = String(variant) else {
+                        GD.printErr("Unable to set `goodName`, argument is not String")
+                        return nil
+                    }
+            
+                    goodName = newValue
                     return nil
                 }
             
