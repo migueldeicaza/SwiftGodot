@@ -192,7 +192,7 @@ public struct GodotExport: PeerMacro {
             type = optSyntax.wrappedType
         }
         
-        guard varDecl.isArray == false else {
+        guard varDecl.isSwiftArray == false else {
             let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresGArrayCollection)
             context.diagnose(classError)
             return []

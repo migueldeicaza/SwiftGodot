@@ -145,7 +145,7 @@ func hasSignalAttribute (_ attrs: AttributeListSyntax?) -> Bool {
 
 func getTypeName (_ parameter: FunctionParameterSyntax) -> String? {
     guard [
-        parameter.isArray,
+        parameter.isSwiftArray,
         parameter.isObjectCollection,
         parameter.isVariantCollection
     ].allSatisfy ({ $0 == false }) else {

@@ -6,7 +6,7 @@ final class VariantCollectionTests: GodotTestCase {
     func testAppendingElementStoresInArray() {
         let sut: VariantCollection<Int> = []
 
-        sut.append(value: 111)
+        sut.append(111)
         
         XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) behind the collection should have one element after one element has been appended")
         guard let variant = sut.array[0] else {

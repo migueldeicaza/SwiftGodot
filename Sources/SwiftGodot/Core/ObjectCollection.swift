@@ -179,6 +179,11 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
         array.append(value.map { Variant($0) })        
     }
     
+    @available(*, deprecated, renamed: "append(_:)", message: "Renamed for consistency with other array methods.")
+    public final func append (value: Element?) {
+        array.append(value.map { Variant($0) })
+    }
+    
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
     ///
     /// > Note: This method acts in-place and doesn't return a modified array.

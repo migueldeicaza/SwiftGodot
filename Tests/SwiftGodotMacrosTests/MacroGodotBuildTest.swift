@@ -175,4 +175,9 @@ class SomeNode: Node {
     func printNames(of nodes: ObjectCollection<Node>) {
         nodes.forEach { print($0?.name ?? "") }
     }
+    
+    @Callable
+    func printWhatever(of nodes: ObjectCollection<Node>, string: String, int: Int) {
+        nodes.forEach { print($0?.name ?? "") }
+    }
 }
