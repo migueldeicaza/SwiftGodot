@@ -225,10 +225,6 @@ extension PackedColorArray: ContentVariantRepresentable {
     public static var godotType: Variant.GType { .packedColorArray }
 }
 
-extension Nil: ContentVariantRepresentable {
-    public static var godotType: Variant.GType { .nil }
-}
-
 extension Object: VariantRepresentable {
     public typealias VariantContent = UnsafeRawPointer?
     public static var godotType: Variant.GType { .object }

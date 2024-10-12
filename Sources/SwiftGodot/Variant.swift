@@ -43,23 +43,28 @@ public var experimentalDisableVariantUnref = false
 /// Modifications to a container will modify all references to it.
 
 public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
-    static var fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
+    static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
-        for vtype in 0..<Variant.GType.max.rawValue {
-            let v = GDExtensionVariantType.RawValue (vtype == 0 ? 1 : vtype)
-            map.append (gi.get_variant_from_type_constructor (GDExtensionVariantType (v))!)
+        // stub for GDEXTENSION_VARIANT_TYPE_NIL
+        map.append({ _, _ in })
+        
+        for vtype in GDEXTENSION_VARIANT_TYPE_NIL.rawValue + 1 ..< GDEXTENSION_VARIANT_TYPE_VARIANT_MAX.rawValue {
+            map.append(gi.get_variant_from_type_constructor(GDExtensionVariantType(rawValue: vtype))!)
         }
         return map
     }()
     
-    static var toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
+    static let toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
         var map: [GDExtensionTypeFromVariantConstructorFunc] = []
         
-        for vtype in 0..<Variant.GType.max.rawValue {
-            let v = GDExtensionVariantType.RawValue (vtype == 0 ? 1 : vtype)
-            map.append (gi.get_variant_to_type_constructor (GDExtensionVariantType (v))!)
+        // stub for GDEXTENSION_VARIANT_TYPE_NIL
+        map.append({ _, _ in })
+        
+        for vtype in GDEXTENSION_VARIANT_TYPE_NIL.rawValue + 1 ..< GDEXTENSION_VARIANT_TYPE_VARIANT_MAX.rawValue {
+            map.append(gi.get_variant_to_type_constructor(GDExtensionVariantType(rawValue: vtype))!)
         }
+        
         return map
     }()
     
@@ -127,8 +132,13 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     
     /// This describes the type of the data wrapped by this variant
     public var gtype: GType {
-        var copy = content
-        return GType (rawValue: Int64 (gi.variant_get_type (&copy).rawValue)) ?? .nil
+        let rawValue = gi.variant_get_type(&content).rawValue
+        
+        guard let result = GType(rawValue: Int64(rawValue)) else {
+            fatalError("Unknown GType with raw value \(rawValue).")
+        }
+        
+        return result
     }
     
     func toType (_ type: GType, dest: UnsafeMutableRawPointer) {
@@ -137,7 +147,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         }
     }
     
-    /// Returns true if the variant is flagged as being an object (`gtype == .object`) and it has a nil pointer.
+    /// Returns true if the variant is not an object, or the object is missing from the lookup table
     public var isNull: Bool {
         return asObject(Object.self) == nil
     }

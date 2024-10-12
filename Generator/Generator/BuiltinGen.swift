@@ -856,6 +856,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     
     // First map structs and classes from the builtins
     for bc in values {
+        if bc.name == "Nil" { continue }
         switch bc.name {
             // We do not generate code for a few types, we will bridge those instead
         case "int", "float", "bool":
@@ -867,6 +868,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     
     for bc in values {
         switch bc.name {
+            // This one is ignored altogether. We've got `Optional` in Swift
+        case "Nil":
+            break
             // We do not generate code for a few types, we will bridge those instead
         case "int", "float", "bool":
             break
