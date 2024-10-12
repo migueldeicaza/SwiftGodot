@@ -28,6 +28,9 @@ public struct GodotCallable: PeerMacro {
         
         var callArgsList: [String] = []
         
+        // Is there are no arguments, there is no do-catch scope to sanitize arguments access
+        let indentation = parameters.isEmpty ? "" : "    "
+        
         for (index, parameter) in parameters.enumerated() {
             guard let ptype = getTypeName(parameter) else {
                 throw MacroError.typeName (parameter)
@@ -63,17 +66,17 @@ public struct GodotCallable: PeerMacro {
             let first = parameter.firstName.text
                         
             let labelOrNothing = first != "_" ? "\(first): " : ""
-            callArgsList.append("\(labelOrNothing)arg\(index))")
+            callArgsList.append("\(labelOrNothing)arg\(index)")
         }
         
         let callArgs = callArgsList.joined(separator: ", ")
         
         var retProp: String? = nil
-        var retOptional: Bool = false
+        var isReturnedTypeOptional: Bool = false
         
-        if let (retType, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = godotTypeToProp (typeName: retType)
-            retOptional = ro
+        if let (returnedTypeName, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
+            retProp = godotTypeToProp (typeName: returnedTypeName)
+            isReturnedTypeOptional = ro
         }
         
         if funcDecl.isReturnedTypeGArrayCollection {
@@ -89,49 +92,59 @@ public struct GodotCallable: PeerMacro {
         }
         
         body += """
-            \(resultDeclOrNothing)\(funcName)(\(callArgs))
+        \(indentation)    \(resultDeclOrNothing)\(funcName)(\(callArgs))
         """
         
         if retProp != nil {
-            if retOptional {
+            if isReturnedTypeOptional {
                 body += """
                         guard let result else { return nil }
                 
                 """
             }
             
-            if funcDecl.isReturnedTypeSwiftArray, let elementTypeName = funcDecl.returnedSwiftArrayElementType {
+            if funcDecl.isReturnedTypeSwiftArray, let elementType = funcDecl.returnedSwiftArrayElementType {
                 body += """
-                        return Variant(
-                            result.reduce(into: GArray(\(elementTypeName).self)) { array, element in
-                                array.append(Variant(element)) 
-                            }
-                        )                    
+                \(indentation)    return Variant(
+                \(indentation)        result.reduce(into: GArray(\(elementType).self)) { array, element in
+                \(indentation)            array.append(Variant(element)) 
+                \(indentation)        }
+                \(indentation)    )    
+                
                 """
             } else {
                 body += """
-                        return Variant(result)                    
+                \(indentation)    return Variant(result)  
+                  
                 """
             }
         } else {
             body += """
-                    return nil                
+            \(indentation)    return nil                
             """
         }
         
-        return """
-        func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
-            do {
-        \(body)        
-            } catch let error as ArgumentAccessError {
-                GD.printErr(error.description)
-            } catch {
-                GD.printErr("Error calling `\(funcName)`: \\(error.localizedDescription)")
+        if parameters.isEmpty {
+            return """
+            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+            \(body)                
             }
-        
-            return nil
+            """
+        } else {
+            return """
+            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+                do { // safe arguments access scope
+            \(body)        
+                } catch let error as ArgumentAccessError {
+                    GD.printErr(error.description)
+                    return nil
+                } catch {
+                    GD.printErr("Error calling `\(funcName)`: \\(error.localizedDescription)")
+                    return nil
+                }
+            }
+            """
         }
-        """
     }
     
     
