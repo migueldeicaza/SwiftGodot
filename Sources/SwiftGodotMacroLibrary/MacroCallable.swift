@@ -27,32 +27,42 @@ public struct GodotCallable: PeerMacro {
         
         if let (retType, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
             retProp = godotTypeToProp (typeName: retType)
+            genMethod += """
+                do {
+                    
+                } catch {
+                    GD.printErr("\\(error)")
+                    return nil
+                }
+            """
             genMethod.append ("    let result = \(funcName) (")
             retOptional = ro
         } else {
             genMethod.append ("    \(funcName) (")
         }
-        //     let result = computeGodot (String (args [0]), Int (args [1]))
         
         if funcDecl.returnTypeIsGArrayCollection {
             retProp = ".array"
         }
         
-        var argc = 0
-        for parameter in funcDecl.signature.parameterClause.parameters {
+        var argsList: [String] = []
+        
+        for (index, parameter) in funcDecl.signature.parameterClause.parameters.enumerated() {
             guard let ptype = getTypeName(parameter) else {
                 throw MacroError.typeName (parameter)
             }
             let first = parameter.firstName.text
-            if argc != 0 {
+            if index != 0 {
                 genMethod.append (", ")
             }
             if first != "_" {
                 genMethod.append ("\(first): ")
             }
             
+            
+            
             if ptype == "Variant" {
-                genMethod.append ("args [\(argc)]!")
+                genMethod.append ("args [\(index)]!")
             } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
                 genMethod += """
                 guard let arg = args.first else {
@@ -81,7 +91,7 @@ public struct GodotCallable: PeerMacro {
                     result.append(element)
                 }
                 """
-                genMethod.append ("GArray (args [\(argc)]!)!.compactMap(\(elementType).makeOrUnwrap)")
+                genMethod.append ("GArray (args [\(index)]!)!.compactMap(\(elementType).makeOrUnwrap)")
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
                 genMethod += """
                 guard let arg = args.first else {
@@ -132,10 +142,8 @@ public struct GodotCallable: PeerMacro {
                 }
                 """
             } else {
-                genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)]!)!")
+                genMethod.append ("\(ptype).makeOrUnwrap (args [\(index)]!)!")
             }
-            
-            argc += 1
         }
         
         genMethod.append (")\n")

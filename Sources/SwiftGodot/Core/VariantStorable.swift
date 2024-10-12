@@ -28,15 +28,25 @@ public protocol VariantStorable {
 extension VariantStorable {
     /// Unwraps an object from a variant. This is useful when you want one method to call that
     /// will return the unwrapped Variant, regardless of whether it is a SwiftGodot.Object or not.
+    @available(*, deprecated, renamed: "uwrap(from:)", message: "Renamed to better reflect the semantics")
     public static func makeOrUnwrap(_ variant: Variant) -> Self? {
-        guard variant.gtype != .object else {
-            return nil
-        }
+        return Self(variant)
+    }
+    
+    /// Unwraps an object from a variant. This is useful when you want one method to call that
+    /// will return the unwrapped Variant, regardless of whether it is a SwiftGodot.Object or not.
+    public static func unwrap(from variant: Variant) -> Self? {
         return Self(variant)
     }
 
     /// Unwraps an object from a variant.
+    @available(*, deprecated, renamed: "uwrap(from:)", message: "Renamed to better reflect the semantics")
     public static func makeOrUnwrap(_ variant: Variant) -> Self? where Self: Object {
+        return variant.asObject()
+    }
+    
+    /// Unwraps an object from a variant.
+    public static func unwrap(from variant: Variant) -> Self? where Self: Object {
         return variant.asObject()
     }
 }
