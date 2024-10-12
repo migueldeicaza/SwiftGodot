@@ -179,8 +179,9 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         variants.append(nil) // 4
         variants.append(Variant(RefCounted())) // 5
         variants.append(Variant("Foo")) // 6
+        variants.append(Variant(true)) // 7
         
         
-        XCTAssertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(6))
+        XCTAssertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(7))
     }
 }
