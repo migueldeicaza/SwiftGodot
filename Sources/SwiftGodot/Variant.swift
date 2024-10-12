@@ -310,8 +310,8 @@ extension Optional: VariantStorable where Wrapped: VariantStorable {
     public typealias Representable = Wrapped.Representable
     
     public func toVariantRepresentable() -> Wrapped.Representable {
-        // It's not needed and is just an internal implementation leaking into the public API
-        fatalError()
+        // It's not needed and is just a wrong abstraction of internal implementation leaking into the public API
+        fatalError("It's illegal to construct a `Variant` from `Variant?`, unwrap it or pass it as it is.")
     }
     
     public init?(_ variant: Variant) {
