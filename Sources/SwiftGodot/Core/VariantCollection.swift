@@ -41,7 +41,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// Initializes the collection from an existing `GArray`.
     ///
     /// If `array` is already properly typed - just wraps it.
-    /// If it's not properly typed - promotes it to typed.
+    /// If it's not typed - wraps a newly created `GArray` and copies each `Variant` from `array`, checking its type.
     ///
     /// Fails if:
     /// - `array` is typed to other than `T`.
