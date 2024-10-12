@@ -16,7 +16,7 @@ extension ObjectCollection: VariantStorable {
 
 /// This represents a typed array of one of the built-in types from Godot
 public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
-    public typealias ArrayLiteralElement = Element
+    public typealias ArrayLiteralElement = Element?
     
     /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
     /// In general you should not be modifying this property directly
@@ -71,15 +71,23 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     
     /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
-        array = elements.reduce(into: .init(Element.self)) {
-            $0.append(Variant($1))
+        array = elements.reduce(into: GArray(Element.self)) { array, element in
+            array.append(
+                element.map { object in // Object? -> Variant?
+                    Variant(object)
+                }
+            )
         }
     }
     
     /// Initializes the collection using an array
-    public init(_ elements: [Element]) {
-        array = elements.reduce(into: .init(Element.self)) {
-            $0.append(Variant($1))
+    public init(_ elements: [Element?]) {
+        array = elements.reduce(into: GArray(Element.self)) { array, element in
+            array.append(
+                element.map { object in // Object? -> Variant?
+                    Variant(object)
+                }
+            )
         }
     }
     
