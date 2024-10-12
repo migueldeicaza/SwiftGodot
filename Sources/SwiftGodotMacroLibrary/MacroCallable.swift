@@ -57,10 +57,6 @@ public struct GodotCallable: PeerMacro {
             
             let first = parameter.firstName.text
                         
-            if first != "_" {
-                genMethod.append ("\(first): ")
-            }
-            
             let labelOrNothing = first != "_" ? "\(first): " : ""
             
             if ptype == "Variant" {
@@ -93,14 +89,14 @@ public struct GodotCallable: PeerMacro {
         
         genMethod += """
                 )
+        
         """
         
         if retProp != nil {
             if retOptional {
                 genMethod += """
                         guard let result else { return nil }
-                        return result
-                    }
+                
                 """
             }
             
@@ -112,11 +108,13 @@ public struct GodotCallable: PeerMacro {
                             }
                         )
                     }
+                
                 """
             } else {
                 genMethod += """
                         return Variant(result)
                     }
+                
                 """
             }
         } else {
