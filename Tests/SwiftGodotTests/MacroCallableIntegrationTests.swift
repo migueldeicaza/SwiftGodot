@@ -20,6 +20,11 @@ fileprivate class TestObject: Object {
     func countBuiltins(_ builtins: VariantCollection<Int>) -> Int {
         return builtins.count
     }
+    
+    @Callable
+    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: GArray, variant: Variant) -> Int {
+        return builtins.count + objects.count + array.count
+    }
 }
 
 @Godot
@@ -158,5 +163,24 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         builtinsArray.append(3)
         
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+    }
+    
+    func testCountMixed() {
+        let testObject = TestObject()
+        
+        let builtins = GArray(Int.self)
+        builtins.append(Variant(1)) // 1
+        
+        let objects = ObjectCollection<RefCounted>()
+        objects.append(nil) // 2
+        objects.append(RefCounted()) // 3
+        
+        let variants = GArray()
+        variants.append(nil) // 4
+        variants.append(Variant(RefCounted())) // 5
+        variants.append(Variant("Foo")) // 6
+        
+        
+        XCTAssertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(6))
     }
 }
