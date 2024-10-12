@@ -15,7 +15,7 @@ import SwiftSyntaxMacros
 public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
         let funcName = funcDecl.name.text
-        var genMethod = "func _mproxy_\(funcName) (args: borrowing Arguments) -> Variant? {\n"
+        var genMethod = "func _mproxy_\(funcName) (arguments: borrowing Arguments) -> Variant? {\n"
         var retProp: String? = nil
         var retOptional: Bool = false
         
@@ -29,139 +29,113 @@ public struct GodotCallable: PeerMacro {
             retProp = godotTypeToProp (typeName: retType)
             genMethod += """
                 do {
-                    
-                } catch {
-                    GD.printErr("\\(error)")
-                    return nil
-                }
+                    let result = \(funcName)(
+            
             """
-            genMethod.append ("    let result = \(funcName) (")
             retOptional = ro
         } else {
-            genMethod.append ("    \(funcName) (")
+            genMethod += """
+                do {
+                    \(funcName)(         
+            
+            """
         }
         
         if funcDecl.returnTypeIsGArrayCollection {
             retProp = ".array"
         }
         
-        var argsList: [String] = []
+        let parameters = funcDecl.signature.parameterClause.parameters
+        let parameterCount = parameters.count
         
-        for (index, parameter) in funcDecl.signature.parameterClause.parameters.enumerated() {
+        for (index, parameter) in parameters.enumerated() {
             guard let ptype = getTypeName(parameter) else {
                 throw MacroError.typeName (parameter)
             }
+            
+            let commaOrNothing = index < parameterCount - 1 ? "," : ""
+            
             let first = parameter.firstName.text
-            if index != 0 {
-                genMethod.append (", ")
-            }
+                        
             if first != "_" {
                 genMethod.append ("\(first): ")
             }
             
-            
+            let labelOrNothing = first != "_" ? "\(first): " : ""
             
             if ptype == "Variant" {
-                genMethod.append ("args [\(index)]!")
+                genMethod += """
+                            \(labelOrNothing)try arguments.variantArgument(at: \(index))\(commaOrNothing)
+                
+                """
             } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
                 genMethod += """
-                guard let arg = args.first else {
-                    GD.printErr("Unable to call `\(funcName)`, no arguments")
-                    return nil
-                }
+                            \(labelOrNothing)try arguments.arrayArgument(ofType: \(elementType).self, at: \(index))\(commaOrNothing)
                 
-                guard let variant = arg else {
-                    GD.printErr("Unable to call `\(funcName)`, argument is nil")
-                    return nil
-                }
-                
-                guard let array = GArray(variant) else {
-                    GD.printErr("Unable to call `\(funcName)`, argument is not `GArray`")
-                    return nil
-                }
-                
-                var result: [\(elementType)] = []
-                result.reserveCapacity(array.count)
-                for element in array {        
-                    guard let element = \(elementType).makeOrUnwrap(element) else {
-                        GD.printErr("Unable to call `\(funcName)`, array contains unexpected \\(element?.description ?? "nil")")
-                        return nil
-                    }
-                
-                    result.append(element)
-                }
                 """
-                genMethod.append ("GArray (args [\(index)]!)!.compactMap(\(elementType).makeOrUnwrap)")
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
                 genMethod += """
-                guard let arg = args.first else {
-                    GD.printErr("Unable to call `\(funcName)`, no arguments")
-                    return nil
-                }
+                            \(labelOrNothing)try arguments.variantCollectionArgument(ofType: \(elementType).self, at: \(index))\(commaOrNothing)
                 
-                guard let variant = arg else {
-                    GD.printErr("Unable to call `\(funcName)`, argument is nil")
-                    return nil
-                }
-                
-                guard let array = GArray(variant) else {
-                    GD.printErr("Unable to call `\(funcName)`, argument is not `GArray`")
-                    return nil
-                }
-                
-                let result = VariantCollection<\(elementType)>()
-                for element in array {        
-                    guard let element = \(elementType).makeOrUnwrap(element) else {
-                        GD.printErr("Unable to call `\(funcName)`, array contains unexpected \\(element?.description ?? "nil")")
-                        return nil
-                    }
-                
-                    result.append(element)
-                }
                 """
             } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
                 genMethod += """
-                guard let arg = args.first else {
-                    GD.printErr("Unable to call `\(funcName)`, no arguments")
-                    return nil
-                }
+                            \(labelOrNothing)try arguments.objectCollectionArgument(ofType: \(elementType).self, at: \(index))\(commaOrNothing)
                 
-                guard let variant = arg else {
-                    GD.printErr("Unable to call `\(funcName)`, argument is nil")
-                    return nil
-                }
-                
-                guard let array = GArray(variant) else {
-                    GD.printErr("Unable to call `\(funcName)`, argument is not `GArray`")
-                    return nil
-                }
-                
-                let result = ObjectCollection<\(elementType)>()
-                for element in array {                    
-                    result.append(\(ptype).makeOrUnwrap(element))
-                }
                 """
             } else {
-                genMethod.append ("\(ptype).makeOrUnwrap (args [\(index)]!)!")
+                genMethod += """
+                            \(labelOrNothing)try arguments.argument(ofType: \(ptype).self, at: \(index))\(commaOrNothing)
+                
+                """
             }
         }
         
-        genMethod.append (")\n")
+        genMethod += """
+                )
+        """
+        
         if retProp != nil {
             if retOptional {
-                genMethod.append ("    guard let result else { return nil }\n")
+                genMethod += """
+                        guard let result else { return nil }
+                        return result
+                    }
+                """
             }
+            
             if funcDecl.returnTypeIsArray, let elementTypeName = funcDecl.arrayElementType {
-                genMethod.append ("    return Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(Variant($1)) })\n")
+                genMethod += """
+                        return Variant(
+                            result.reduce(into: GArray(\(elementTypeName).self)) { array, element in
+                                array.append(Variant(element)) 
+                            }
+                        )
+                    }
+                """
             } else {
-                genMethod.append ("    return Variant (result)\n")
+                genMethod += """
+                        return Variant(result)
+                    }
+                """
             }
         } else {
-            genMethod.append ("    return nil\n")
+            genMethod += """
+                    return nil
+                }
+            """
         }
-        if genMethod != "" {
-            genMethod.append("}\n")
+        
+        genMethod += """
+            } catch let error as ArgumentAccessError {
+                GD.printErr("\\(error.description)")
+            } catch {
+                GD.printErr("\\(error.localizedDescription)")
+            }
+            
+            return nil
         }
+        """
     
         return genMethod
     }
