@@ -181,7 +181,6 @@ var godotVariants = [
     "Callable": ".callable",
     "Color": ".color",
     "GDictionary": ".dictionary",
-    "Nil": ".nil",
     "NodePath": ".nodePath",
     "PackedByteArray": ".packedByteArray",
     "PackedColorArray": ".packedColorArray",
