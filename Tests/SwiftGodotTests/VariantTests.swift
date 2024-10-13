@@ -143,7 +143,7 @@ final class VariantTests: GodotTestCase {
         XCTAssertFalse (Variant (1) == Variant (2))
         XCTAssertTrue (Variant (Vector2 (x: 1, y: 2)) == Variant (Vector2 (x: 1, y: 2)))
         XCTAssertFalse (Variant (Vector2 (x: 1, y: 2)) == Variant (Vector2 (x: 1, y: 3)))
-        let node = Node ()
+        let node = Node()
         XCTAssertTrue (Variant (node) == Variant (node))
         XCTAssertFalse (Variant (node) == Variant (Node ()))
     }
