@@ -18,6 +18,10 @@ import Foundation
     let targetDirectory: URL
     let inXcode = false
 
+    /// Entry point for the builder.
+    ///
+    /// Extracts the arguments from the command line and
+    /// kicks off a build.
     static func main() async {
         let args = CommandLine.arguments
         guard args.count >= 4 else {
@@ -40,10 +44,11 @@ import Foundation
             targetDirectory: targetDirectoryURL
         )
 
-        await builder.build(inputs: args.dropFirst(4))
+        await builder.process(inputs: args.dropFirst(4))
     }
 
-    func buildDirectory(arch: String, platform: String, mode: String) -> URL? {
+    /// Returns the build directory for a given arch/platform/config.
+    func buildDirectory(arch: String, platform: String, config: String) -> URL? {
         guard !inXcode else { return nil }
 
         var u = outputDirectory
@@ -57,19 +62,24 @@ import Foundation
             }
         } while true
 
-        return u.appending(path: "\(arch)-\(platform)").appending(path: mode)
+        return u.appending(path: "\(arch)-\(platform)").appending(path: config)
     }
 
-    func builtPath(arch: String, platform: String, mode: String) -> URL? {
-        guard let url = buildDirectory(arch: arch, platform: platform, mode: mode) else { return nil }
+    /// Returns the path to the built library for a given arch/platform/config.
+    func libraryPath(arch: String, platform: String, mode: String) -> URL? {
+        guard let url = buildDirectory(arch: arch, platform: platform, config: mode) else { return nil }
         return url.appending(path: "lib\(targetName).dylib")
     }
 
+    /// The name of the target.
+    /// Assumed to be the name of the target directory.
+    // TODO: Is there a more authoritative way to get this? Maybe from the plugin context?
     var targetName: String {
         targetDirectory.lastPathComponent
     }
 
-    func build(inputs: Array<String>.SubSequence) async {
+    /// Process the input files.
+    func process(inputs: Array<String>.SubSequence) async {
         for file in inputs {
             let inputURL = URL(fileURLWithPath: file)
             let outputURL = outputDirectory.appending(path: inputURL.lastPathComponent).deletingPathExtension().appendingPathExtension("gdextension")
@@ -81,31 +91,26 @@ import Foundation
         }
     }
 
-    let sectionPattern: Regex = #/\s*\[(?<section>\w+)\]\s*/#
-    let assignmentPattern: Regex = #/\s*(?<key>\S+)\s*=\s*(?<value>\S*)\s*/#
-    let stringPattern: Regex = #/"(?<content>.*)"/#
-
+    /// Process a single input file.
     func process(_ inputURL: URL, outputURL: URL) async throws {
+        // read the input file
         let content = try await GodotConfigFile(inputURL)
 
-        let platforms = [
-            ("macos", ["arm64", "x86_64"], "apple-macosx")
-        ]
+        // insert the library paths
+        insertLibraryPaths(content)
 
-        for config in ["debug", "release"] {
-            for (key, archs, platform) in platforms {
-                for arch in archs {
-                    if let url = builtPath(arch: arch, platform: platform, mode: config) {
-                        content.set("\(key).\(config).\(arch)", url.path, section: "libraries")
-                    }
-                }
-            }
-        }
+        #if LOOK_FOR_EXPORT_KEY
+            // look for a special key in the input file, and
+            // if it's there, treat it as a path to write an additional
+            // copy of the output to
+            let outputPath = content.get("export", section: "swiftgodot")
 
-        let outputPath = content.get("output", section: "swiftgodot")
+        #endif
+
+        // strip our keys from the output
         content.remove(section: "swiftgodot")
 
-        #if APPEND_LOG
+        #if APPEND_LOG  // This is a hack to help debug the builder.
             var log = """
                      package: \(packageDirectory)
                      target: \(targetDirectory)
@@ -122,12 +127,40 @@ import Foundation
         #endif
 
         try await content.write(to: outputURL)
-        if let outputPath,
-            let containerURL = URL(string: outputPath, relativeTo: outputDirectory)
-        {
-            try FileManager.default.createDirectory(at: containerURL, withIntermediateDirectories: true)
-            let pathURL = containerURL.appending(path: outputURL.lastPathComponent)
-            try await content.write(to: pathURL)
+
+        #if LOOK_FOR_EXPORT_KEY
+            // The idea was that we could use an extra key in the
+            // input file to specify a location to export a copy of
+            // the generated gdextension file to.
+            // This would allow us to write it directly into the Godot project.
+            //
+            // Sadly, the SPM sandboxing of the build plugin stops us from
+            // doing this, so it's not really useful.
+
+            if let outputPath,
+                let containerURL = URL(string: outputPath, relativeTo: outputDirectory)
+            {
+                try FileManager.default.createDirectory(at: containerURL, withIntermediateDirectories: true)
+                let pathURL = containerURL.appending(path: outputURL.lastPathComponent)
+                try await content.write(to: pathURL)
+            }
+        #endif
+    }
+
+    /// Write the library keys into the config file.
+    func insertLibraryPaths(_ content: GodotConfigFile) {
+        let platforms = [
+            ("macos", ["arm64", "x86_64"], "apple-macosx")
+        ]
+
+        for config in ["debug", "release"] {
+            for (key, archs, platform) in platforms {
+                for arch in archs {
+                    if let url = libraryPath(arch: arch, platform: platform, mode: config) {
+                        content.set("\(key).\(config).\(arch)", url.path, section: "libraries")
+                    }
+                }
+            }
         }
     }
 }
