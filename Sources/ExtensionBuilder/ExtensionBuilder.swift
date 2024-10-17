@@ -3,6 +3,13 @@
 //  All code (c) 2024 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+// This is a big old hack right now.
+// See https://github.com/migueldeicaza/SwiftGodot/pull/577 for more discussion.
+//
+// If we decide that some version of this is worth keeping, I will obviously
+// clean it up and make it more robust, add tests, fill out the other platforms,
+// etc.
+
 import Foundation
 
 @main struct ExtensionBuilder {
@@ -79,47 +86,24 @@ import Foundation
     let stringPattern: Regex = #/"(?<content>.*)"/#
 
     func process(_ inputURL: URL, outputURL: URL) async throws {
-        var section = "_"
-        var values: [String: String] = [:]
-        var content: [String: [String: String]] = [:]
-        for try await line in inputURL.lines {
-            if let match = line.matches(of: sectionPattern).first {
-                if !values.isEmpty {
-                    content[section] = values
-                }
-                section = String(match.section)
-                values = [:]
-            } else if let match = line.matches(of: assignmentPattern).first {
-                values[String(match.key)] = String(match.value)
-            }
-        }
-        if !values.isEmpty {
-            content[section] = values
-        }
+        let content = try await GodotConfigFile(inputURL)
 
         let platforms = [
             ("macos", ["arm64", "x86_64"], "apple-macosx")
         ]
 
-        if content["libraries"] == nil {
-            content["libraries"] = [:]
-        }
-        if content["dependencies"] == nil {
-            content["dependencies"] = [:]
-        }
-
         for config in ["debug", "release"] {
             for (key, archs, platform) in platforms {
                 for arch in archs {
                     if let url = builtPath(arch: arch, platform: platform, mode: config) {
-                        content["libraries"]?["\(key).\(config).\(arch)"] = "\"\(url.path)\""
+                        content.set("\(key).\(config).\(arch)", url.path, section: "libraries")
                     }
                 }
             }
         }
 
-        let outputPath = content["swiftgodot"]?["export"]
-        content.removeValue(forKey: "swiftgodot")
+        let outputPath = content.get("output", section: "swiftgodot")
+        content.remove(section: "swiftgodot")
 
         #if APPEND_LOG
             var log = """
@@ -134,26 +118,16 @@ import Foundation
                 log += "\(e.key) = \(e.value)\n"
             }
 
-            content["swift"] = ["log": "\"\(log)\""]
+            content.set("log", log, section: "swiftgodot")
         #endif
 
-        var output: [String] = []
-        for (section, values) in content {
-            output.append("[\(section)]")
-            for (key, value) in values {
-                output.append("\(key) = \(value)")
-            }
-        }
-        let combined = output.joined(separator: "\n")
-
-        try combined.write(to: outputURL, atomically: true, encoding: .utf8)
-        if let op = outputPath,
-            let path = op.matches(of: stringPattern).first,
-            let containerURL = URL(string: String(path.content), relativeTo: outputDirectory)
+        try await content.write(to: outputURL)
+        if let outputPath,
+            let containerURL = URL(string: outputPath, relativeTo: outputDirectory)
         {
             try FileManager.default.createDirectory(at: containerURL, withIntermediateDirectories: true)
             let pathURL = containerURL.appending(path: outputURL.lastPathComponent)
-            try combined.write(to: pathURL, atomically: true, encoding: .utf8)
+            try await content.write(to: pathURL)
         }
     }
 }
