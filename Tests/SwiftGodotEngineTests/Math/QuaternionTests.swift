@@ -277,9 +277,9 @@ final class QuaternionTests: GodotTestCase {
         assertApproxEqual (kT.x, 0.0)
         assertApproxEqual (kT.y, -0.866025)
         assertApproxEqual (kT.z, -0.5)
-        XCTAssertEqual (iT.length (), 1)
-        XCTAssertEqual (jT.length (), 1)
-        XCTAssertEqual (kT.length (), 1)
+        assertApproxEqual (iT.length (), 1)
+        assertApproxEqual (jT.length (), 1)
+        assertApproxEqual (kT.length (), 1)
         
         // Easy to visualize: 30 deg about Y-axis.
         q = Quaternion (axis: Vector3 (x: 0.0, y: 1.0, z: 0.0), angle: Float (30).degreesToRadians)
