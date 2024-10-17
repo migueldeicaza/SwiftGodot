@@ -24,7 +24,7 @@ import Foundation
     /// kicks off a build.
     static func main() async {
         let args = CommandLine.arguments
-        guard args.count >= 4 else {
+        guard args.count >= 5 else {
             print(
                 """
                 Usage: builder <package-directory> <target-directory> <output-directory> <input.gdextension> {<input.gdextension> ...}
@@ -45,6 +45,7 @@ import Foundation
         )
 
         await builder.process(inputs: args.dropFirst(4))
+        print("blah")
     }
 
     /// Returns the build directory for a given arch/platform/config.
@@ -60,6 +61,7 @@ import Foundation
             if u.lastPathComponent == ".build" {
                 break
             }
+            print(u)
         } while true
 
         return u.appending(path: "\(arch)-\(platform)").appending(path: config)
@@ -93,6 +95,8 @@ import Foundation
 
     /// Process a single input file.
     func process(_ inputURL: URL, outputURL: URL) async throws {
+        print(inputURL)
+
         // read the input file
         let content = try await GodotConfigFile(inputURL)
 
