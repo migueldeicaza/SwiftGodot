@@ -6,8 +6,8 @@
 import Foundation
 import PackagePlugin
 
-/// Generates the API for the SwiftGodot from the Godot exported Json API
-@main struct SwiftCodeGeneratorPlugin: BuildToolPlugin {
+/// Takes `.gdswift` files and generates `.gdextension` files from them.
+@main struct ExtensionBuildingPlugin: BuildToolPlugin {
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
 
         guard let target = target.sourceModule else { return [] }
@@ -21,7 +21,7 @@ import PackagePlugin
         let outputFiles = inputFiles.map { genSourcesDir.appending("\($0.stem).gdextension") }
         commands.append(
             Command.buildCommand(
-                displayName: "Generating gdextension file",
+                displayName: "Generating .gdextension files",
                 executable: builder,
                 arguments: arguments,
                 inputFiles: inputFiles,
