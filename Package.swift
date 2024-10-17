@@ -178,8 +178,7 @@ targets.append(contentsOf: [
     // Base functionality for Godot runtime dependant tests
     .target(
         name: "SwiftGodotTestability",
-        dependencies: [
-            "EntryPointGenerator",
+        dependencies: [            
             "SwiftGodot",
             "libgodot_tests",
             "GDExtension"
