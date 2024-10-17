@@ -175,6 +175,30 @@ import SwiftGodot
 #initSwiftExtension(cdecl: "swift_entry_point", types: [SpinningCube.self])
 ```
 
+Also, you can use `EntryPointGeneratorPlugin` that will scan the target source files and generate entry point called `swift_entry_point` with `types` array mentioning all classes with `@Godot` macro attached. All you need is to add `plugins` entry in your `Package.swift` as below: 
+
+```
+let package = Package(
+    name: "MyFirstGame",
+    products: [
+        .library(name: "MyFirstGame", type: .dynamic, targets: ["MyFirstGame"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/migueldeicaza/SwiftGodot", branch: "main")
+    ],
+    targets: [
+        .target(
+            name: "MyFirstGame",
+            dependencies: ["SwiftGodot"],
+            // this plugin will generate a source file visible to compiler with '#initSwiftExtension(cdecl: "swift_entry_point", types: [SpinningCube.self])'
+            plugins: [
+                .plugin(name: "EntryPointGeneratorPlugin", package: "SwiftGodot")
+            ]
+        )
+    ],
+)
+```           
+
 ## Bundling Your Extension
 
 To make your extension available to Godot, you will need to 
