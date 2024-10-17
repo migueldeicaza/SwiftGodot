@@ -10,10 +10,10 @@ import ArgumentParser
 import SwiftSyntax
 import SwiftParser
 
-class GodotMacroSearchingVisitor: SyntaxVisitor {
-    var classes: [String] = []
+public class GodotMacroSearchingVisitor: SyntaxVisitor {
+    public var classes: [String] = []
     
-    override func visit(_ classDecl: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+    public override func visit(_ classDecl: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         // Check for attached macros (attributes)
         for attribute in classDecl.attributes {
             if let attributeSyntax = attribute.as(AttributeSyntax.self) {
@@ -48,7 +48,7 @@ struct EntryPointGenerator: ParsableCommand {
             let source = try String(contentsOf: URL(fileURLWithPath: file))
             let fileSyntax = Parser.parse(source: source)
             
-            _ = visitor.visit(fileSyntax)
+            visitor.walk(fileSyntax)
         }
         
         let names = visitor.classes

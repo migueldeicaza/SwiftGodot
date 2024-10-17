@@ -179,6 +179,7 @@ targets.append(contentsOf: [
     .target(
         name: "SwiftGodotTestability",
         dependencies: [
+            "EntryPointGenerator",
             "SwiftGodot",
             "libgodot_tests",
             "GDExtension"
