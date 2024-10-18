@@ -21,8 +21,9 @@ struct EntryPointGenerator: ParsableCommand {
     mutating func run() throws {
         let visitor = GodotMacroSearchingVisitor(viewMode: .all)
         
+        print("Scanning source files...")
         for file in sourceFiles {
-            print("Scanning \(file)...")
+            print("Scanning '\(file)'...")
             let source = try String(contentsOf: URL(fileURLWithPath: file))
             let fileSyntax = Parser.parse(source: source)
             
@@ -44,7 +45,7 @@ struct EntryPointGenerator: ParsableCommand {
         
         """
         
-        print("Writing \(outputFile)...")
+        print("Writing \(visitor.classes.count) to '\(outputFile)'...")
         let outputURL = URL(fileURLWithPath: outputFile)
         try source.write(to: outputURL, atomically: true, encoding: .utf8)
         print("Success! Entry point is `swift_entry_point`.")

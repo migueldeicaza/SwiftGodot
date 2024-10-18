@@ -18,7 +18,7 @@ public class GodotMacroSearchingVisitor: SyntaxVisitor {
                 let attributeName = attributeSyntax.attributeName.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 if attributeName == "Godot" {
                     let className = classDecl.name.text
-                    print("Found \(className) with @Godot macro.")
+                    print("Found '\(className)' with @Godot macro.")
                     classes.append(className)
                     break // Found the @Godot macro, no need to check further
                 }

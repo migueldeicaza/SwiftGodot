@@ -16,7 +16,7 @@ import PackagePlugin
         
         let generatorPath = try context.tool(named: "EntryPointGenerator").path
         
-        let output = context.pluginWorkDirectory.appending("EntryPoint.generated.swift")
+        let output = context.pluginWorkDirectory.appending("GeneratedSources", "EntryPoint.generated.swift")
         
         let inputFiles = sourceFiles.map(\.path)
         
