@@ -89,49 +89,49 @@ final class Geometry2DTests: GodotTestCase {
     }
 
     func testLineIntersection () {
-        var r: Variant
+        var r: Variant?
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: 2, y: 0), dirA: Vector2 (x: 0, y: 1), fromB: Vector2 (x: 0, y: 2), dirB: Vector2 (x: 1, y: 0))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 2, y: 2))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 2, y: 2))
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: -1, y: 1), dirA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 4, y: 1), dirB: Vector2 (x: -1, y: -1))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 1.5, y: -1.5))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 1.5, y: -1.5))
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: -1, y: 0), dirA: Vector2 (x: -1, y: -1), fromB: Vector2 (x: 1, y: 0), dirB: Vector2 (x: 1, y: -1))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 1))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 1))
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: -1, y: 1), dirA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 0, y: 1), dirB: Vector2 (x: 1, y: -1))
-        XCTAssertEqual (r.gtype, .nil, "Parallel lines should not intersect.")
+        XCTAssertEqual (r, nil, "Parallel lines should not intersect.")
     }
 
     func testSegmentIntersection () {
-        var r: Variant
+        var r: Variant?
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 1, y: 1), toB: Vector2 (x: -1, y: -1))
-        XCTAssertEqual (r.gtype, .vector2)
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 0))
+        XCTAssertEqual (r?.gtype, .vector2)
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 1, y: 1), toB: Vector2 (x: 0.1, y: 0.1))
-        XCTAssertEqual (r.gtype, .nil)
+        XCTAssertEqual (r, nil)
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 0.1, y: 0.1), toB: Vector2 (x: 1, y: 1))
-        XCTAssertEqual (r.gtype, .nil)
+        XCTAssertEqual (r, nil)
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 0, y: 1), toB: Vector2 (x: 2, y: -1))
-        XCTAssertEqual (r.gtype, .nil, "Parallel segments should not intersect.")
+        XCTAssertEqual (r, nil, "Parallel segments should not intersect.")
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: 1, y: 2), toA: Vector2 (x: 3, y: 2), fromB: Vector2 (x: 0, y: 2), toB: Vector2 (x: -2, y: 2))
-        XCTAssertEqual (r.gtype, .nil,"Non-overlapping collinear segments should not intersect.")
+        XCTAssertEqual (r, nil,"Non-overlapping collinear segments should not intersect.")
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: 0, y: 0), toA: Vector2 (x: 0, y: 1), fromB: Vector2 (x: 0, y: 0), toB: Vector2 (x: 1, y: 0))
-        XCTAssertEqual (r.gtype, .vector2, "Touching segments should intersect.")
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 0))
+        XCTAssertEqual (r?.gtype, .vector2, "Touching segments should intersect.")
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: 0, y: 1), toA: Vector2 (x: 0, y: 0), fromB: Vector2 (x: 0, y: 0), toB: Vector2 (x: 1, y: 0))
-        XCTAssertEqual (r.gtype, .vector2, "Touching segments should intersect.")
-        XCTAssertEqual (Vector2 (r), Vector2 (x: 0, y: 0))
+        XCTAssertEqual (r?.gtype, .vector2, "Touching segments should intersect.")
+        XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
     }
     
     func testSegmentIntersectionWithCircle () {
@@ -224,7 +224,7 @@ final class Geometry2DTests: GodotTestCase {
         r.pushBack (value: Vector2 (x: 7, y: 8))
         result = Geometry2D.makeAtlas (sizes: r)
         XCTAssertEqual (result.size (), 2)
-        XCTAssertEqual (PackedVector2Array (result ["points"] ?? Variant ())?.size (), r.size ())
+        XCTAssertEqual (result["points"].map { PackedVector2Array($0)?.size() }, r.size())
     }
     
     func testPolygonIntersection () throws {
@@ -348,8 +348,13 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 160, y: 80))
         r = Geometry2D.mergePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "The merged polygons should result in 2 polygons.")
-        
-        XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: r [safe: 0] ?? PackedVector2Array ()), "The merged polygon (outline) should be counter-clockwise.")
+                
+        if let polygon = r[safe: 0] {
+            XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: polygon), "The merged polygon (outline) should be counter-clockwise.")
+        } else {
+            XCTFail()
+        }
+                
         XCTAssertEqual (r [safe: 0]?.size (), 7, "The resulting merged polygon (outline) should have 7 vertices.")
         assertApproxEqual (r [safe: 0]?[safe: 0], Vector2 (x: 174.791077, y: 161.350967))
         assertApproxEqual (r [safe: 0]?[safe: 1], Vector2 (x: 225, y: 180))
@@ -359,7 +364,12 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 0]?[safe: 5], Vector2 (x: 81.911758, y: 126.852943))
         assertApproxEqual (r [safe: 0]?[safe: 6], Vector2 (x: 160, y: 80))
         
-        XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: r [safe: 1] ?? PackedVector2Array ()), "The resulting merged polygon (hole) should be clockwise.")
+        if let polygon = r[safe: 1] {
+            XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: polygon), "The resulting merged polygon (hole) should be clockwise.")
+        } else {
+            XCTFail()
+        }
+        
         XCTAssertEqual (r [safe: 1]?.size (), 3, "The resulting merged polygon (hole) should have 3 vertices.")
         assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 98.083069, y: 132.859421))
         assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 158.689453, y: 155.370377))
@@ -409,13 +419,24 @@ final class Geometry2DTests: GodotTestCase {
         r = Geometry2D.clipPolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "Polygon 'a' completely overlaps polygon 'b'. This should result in 2 clipped polygons.")
         XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting clipped polygon should have 4 vertices.")
-        XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: r [safe: 0] ?? PackedVector2Array ()), "The resulting clipped polygon (outline) should be counter-clockwise.")
+        
+        if let polygon = r[safe: 0] {
+            XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: polygon), "The resulting clipped polygon (outline) should be counter-clockwise.")
+        } else {
+            XCTFail()
+        }
+        
         assertApproxEqual (r [safe: 0]?[safe: 0], a [0])
         assertApproxEqual (r [safe: 0]?[safe: 1], a [1])
         assertApproxEqual (r [safe: 0]?[safe: 2], a [2])
         assertApproxEqual (r [safe: 0]?[safe: 3], a [3])
         XCTAssertEqual (r [safe: 1]?.size (), 3, "The resulting clipped polygon should have 3 vertices.")
-        XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: r [safe: 1] ?? PackedVector2Array ()), "The resulting clipped polygon (hole) should be clockwise.")
+        
+        if let polygon = r[safe: 1] {
+            XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: polygon), "The resulting clipped polygon (hole) should be clockwise.")
+        } else {
+            XCTFail()
+        }
         assertApproxEqual (r [safe: 1]?[safe: 0], b [1])
         assertApproxEqual (r [safe: 1]?[safe: 1], b [0])
         assertApproxEqual (r [safe: 1]?[safe: 2], b [2])
@@ -451,14 +472,24 @@ final class Geometry2DTests: GodotTestCase {
         b.pushBack (value: Vector2 (x: 60, y: 140))
         r = Geometry2D.excludePolygons (polygonA: a, polygonB: b)
         XCTAssertEqual (r.size (), 2, "There should be 2 resulting excluded polygons (outline and hole).")
+        
         XCTAssertEqual (r [safe: 0]?.size (), 4, "The resulting excluded polygon should have 4 vertices.")
-        XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: r [safe: 0] ?? PackedVector2Array ()), "The resulting excluded polygon (outline) should be counter-clockwise.")
+        if let polygon = r[safe: 0] {
+            XCTAssertTrue (!Geometry2D.isPolygonClockwise (polygon: polygon), "The resulting excluded polygon (outline) should be counter-clockwise.")
+        } else {
+            XCTFail()
+        }
         assertApproxEqual (r [safe: 0]?[safe: 0], a [0])
         assertApproxEqual (r [safe: 0]?[safe: 1], a [1])
         assertApproxEqual (r [safe: 0]?[safe: 2], a [2])
         assertApproxEqual (r [safe: 0]?[safe: 3], a [3])
         XCTAssertEqual (r [safe: 1]?.size (), 4, "The resulting excluded polygon should have 4 vertices.")
-        XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: r [safe: 1] ?? PackedVector2Array ()), "The resulting excluded polygon (hole) should be clockwise.")
+        if let polygon = r[safe: 1] {
+            XCTAssertTrue (Geometry2D.isPolygonClockwise (polygon: polygon), "The resulting excluded polygon (hole) should be clockwise.")
+        } else {
+            XCTFail()
+        }
+        
         assertApproxEqual (r [safe: 1]?[safe: 0], Vector2 (x: 40, y: 200))
         assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 150, y: 220))
         assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 140, y: 160))
