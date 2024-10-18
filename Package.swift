@@ -25,23 +25,25 @@ var products: [Product] = [
         name: "SwiftGodot",
         type: libraryType,
         targets: ["SwiftGodot"]),
+
     .library(
         name: "SwiftGodotStatic",
         targets: ["SwiftGodot"]),
+
     .library(
         name: "ExtensionApi",
         targets: [
             "ExtensionApi",
             "ExtensionApiJson",
         ]),
-    .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
+
+    .plugin(
+        name: "CodeGeneratorPlugin",
+        targets: ["CodeGeneratorPlugin"]),
+
     .plugin(
         name: "ExtensionBuilderPlugin",
         targets: ["ExtensionBuilderPlugin"]),
-
-    .plugin(
-        name: "ExtensionBuilderToolPlugin",
-        targets: ["ExtensionBuilderToolPlugin"]),
 ]
 
 // Macros aren't supported on Windows before 5.9.1 and this sample uses them
@@ -90,14 +92,6 @@ var targets: [Target] = [
         ]
     ),
 
-    // The extension builder takes one or more .gdswift files and produces
-    // corresponding .gdextension files with the built Swift library paths
-    // embedded in them.
-    .executableTarget(
-        name: "ExtensionBuilder",
-        dependencies: []
-    ),
-
     // This is a build-time plugin that invokes the generator and produces
     // the bindings that are compiled into SwiftGodot
     .plugin(
@@ -107,23 +101,14 @@ var targets: [Target] = [
     ),
 
     // This is a build-time plugin that can generate a .gdextension file
-    // for an extension, from a .gdswift file
+    // for one or more SwiftGodot library targets.
     .plugin(
         name: "ExtensionBuilderPlugin",
-        capability: .buildTool(),
-        dependencies: ["ExtensionBuilder"]
-    ),
-
-    // This is a build-time plugin that can generate a .gdextension file
-    // for an extension, from a .gdswift file
-    .plugin(
-        name: "ExtensionBuilderToolPlugin",
         capability: .command(
             intent: .custom(
                 verb: "make-extension",
                 description: "Generate a gdextension file for a SwiftGodot library."),
-            permissions: [.writeToPackageDirectory(reason: "To write the generated gdextension file.")]),
-        dependencies: ["ExtensionBuilder"]
+            permissions: [.writeToPackageDirectory(reason: "To write the generated gdextension file.")])
     ),
 
     // This allows the Swift code to call into the Godot bridge API (GDExtension)
@@ -139,11 +124,12 @@ var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
         // These are macros that can be used by third parties to simplify their
         // SwiftGodot development experience, these are used at compile time by
         // third party projects
-    .macro(name: "SwiftGodotMacroLibrary",
+        .macro(
+            name: "SwiftGodotMacroLibrary",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
-            .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ]),
         // This contains sample code showing how to use the SwiftGodot API
         .target(
@@ -159,11 +145,12 @@ var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
 #if !os(Windows)
     // Idea: -mark_dead_strippable_dylib
     targets.append(
-    .testTarget(name: "SwiftGodotMacrosTests",
+        .testTarget(
+            name: "SwiftGodotMacrosTests",
             dependencies: [
                 "SwiftGodotMacroLibrary",
                 "SwiftGodot",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]))
 #endif
 
@@ -201,14 +188,14 @@ var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
             dependencies: [
                 "SwiftGodot",
                 "libgodot_tests",
-            "GDExtension"
+                "GDExtension",
             ]),
 
         // General purpose runtime dependant tests
         .testTarget(
             name: "SwiftGodotTests",
             dependencies: [
-            "SwiftGodotTestability",
+                "SwiftGodotTestability"
             ]
         ),
 
@@ -216,7 +203,7 @@ var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
         .testTarget(
             name: "SwiftGodotEngineTests",
             dependencies: [
-            "SwiftGodotTestability",
+                "SwiftGodotTestability"
             ]
         ),
     ])
@@ -251,7 +238,7 @@ let package = Package(
     name: "SwiftGodot",
     platforms: [
         .macOS(.v13),
-        .iOS (.v15)
+        .iOS(.v15),
     ],
     products: products,
     dependencies: [

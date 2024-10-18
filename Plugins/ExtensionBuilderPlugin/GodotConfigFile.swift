@@ -4,12 +4,17 @@ import Foundation
 /// This probably exists somewhere already!
 class GodotConfigFile {
     static let sectionPattern: Regex = #/\s*\[(?<section>\w+)\]\s*/#
-    static let assignmentPattern: Regex = #/\s*(?<key>\S+)\s*=\s*(?<value>\S*)\s*/#
+    static let assignmentPattern: Regex = #/\s*(?<key>\S+)\s*=\s*(?<value>.*)\s*/#
     static let stringPattern: Regex = #/"(?<content>.*)"/#
 
     var content: [String: [String: String]]
     var sections: [String]
     var _encoded: String?
+
+    init() {
+        content = [:]
+        sections = []
+    }
 
     init(_ url: URL) async throws {
         var section = "_"
@@ -40,12 +45,30 @@ class GodotConfigFile {
     }
 
     /// Set a string value in a section.
-    func set(_ key: String, _ value: String, section: String) {
+    func set(_ key: String, raw: String, section: String) {
         if content[section] == nil {
             content[section] = [:]
+            sections.append(section)
         }
-        content[section]?[key] = "\"\(value)\""
+
+        content[section]?[key] = raw
         _encoded = nil
+    }
+
+    func set(_ key: String, _ value: String, section: String) {
+        set(key, raw: "\"\(value)\"", section: section)
+    }
+
+    func set(_ key: String, _ value: [String: String], section: String) {
+        var values: [String] = []
+        for (k, v) in value {
+            values.append("\"\(k)\": \"\(v)\"")
+        }
+        set(key, raw: "{ \(values.joined(separator: ",")) }", section: section)
+    }
+
+    func set<T>(_ key: String, _ value: T, section: String) where T: CustomStringConvertible {
+        set(key, raw: value.description, section: section)
     }
 
     /// Get a string value from a section.
@@ -61,20 +84,25 @@ class GodotConfigFile {
     /// Remove a section.
     func remove(section: String) {
         content.removeValue(forKey: section)
+        sections.removeAll { $0 == section }
         _encoded = nil
     }
 
     /// The string-encoded version of the file.
+    /// We write out the sections in the order they were added,
+    /// to preserve the rough order of the original file.
     var encoded: String {
         if _encoded == nil {
-            var output = ""
-            for (section, values) in content {
-                output.append("[\(section)]\n")
+            var chunks: [String] = []
+            for section in sections {
+                let values = content[section]!
+                var output = "[\(section)]\n"
                 for (key, value) in values {
                     output.append("\(key) = \(value)\n")
                 }
+                chunks.append(output)
             }
-            _encoded = output
+            _encoded = chunks.joined(separator: "\n")
         }
 
         return _encoded!
