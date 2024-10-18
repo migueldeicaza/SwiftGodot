@@ -19,11 +19,10 @@ import PackagePlugin
 
         // Iterate over the targets we've been asked to format.
         for target in targets {
-            // Skip any type of target that doesn't have source files.
-            // Note: We could choose to instead emit a warning or error here.
             guard let target = target.sourceModule, target.kind == .generic else { continue }
             let name = target.moduleName
 
+            // read existing settings or make stubs
             let url = URL(fileURLWithPath: context.package.directory.appending("\(name).gdextension").string)
             let settings: GodotConfigFile
             do {
@@ -34,40 +33,32 @@ import PackagePlugin
                 settings.set("entry_symbol", "swift_entry_point", section: "configuration")
             }
 
+            // build the target
             let result = try packageManager.build(
                 .target(name),
                 parameters: .init(configuration: .debug, logging: .concise, echoLogs: true)
             )
 
+            // extract the artifacts if the build succeeded
             if result.succeeded {
                 for artifact in result.builtArtifacts.filter({ $0.kind != .executable }) {
                     settings.set("macos.debug", artifact.path.string, section: "libraries")
-                    settings.set("macos.debug", ["SwiftGodot": ""], section: "dependencies")
                     settings.set("macos.release", artifact.path.string.replacing("debug", with: "release"), section: "libraries")
-                    settings.set("macos.release", ["SwiftGodot": ""], section: "dependencies")
+
+                    // TODO: add support for other platforms
+                    let libGodotPath = artifact.path.string.replacing(name, with: "SwiftGodot")
+
+                    settings.set("macos.debug", [libGodotPath: ""], section: "dependencies")
+                    settings.set("macos.release", [libGodotPath.replacing("debug", with: "release"): ""], section: "dependencies")
+
+                    // TODO: add correct dependencies for other platforms
+
                 }
             } else {
                 Diagnostics.warning("Couldn't build \(name).")
             }
 
             try await settings.write(to: url)
-            // var arguments = [context.package.directory, target.directory, context.package.directory]
-            // arguments.append(contentsOf: inputFiles)
-            // print(arguments)
-
-            // // Invoke `sometool` on the target directory, passing a configuration
-            // // file from the package directory.
-            // let sometoolExec = URL(fileURLWithPath: builder.string)
-            // let process = try Process.run(sometoolExec, arguments: arguments.map { $0.string })
-            // process.waitUntilExit()
-
-            // // Check whether the subprocess invocation was successful.
-            // if process.terminationReason == .exit && process.terminationStatus == 0 {
-            //     print("Exported gdextension file for \(target.name).")
-            // } else {
-            //     let problem = "\(process.terminationReason):\(process.terminationStatus)"
-            //     Diagnostics.error("Exported gdextension failed: \(problem)")
-            // }
         }
 
     }
