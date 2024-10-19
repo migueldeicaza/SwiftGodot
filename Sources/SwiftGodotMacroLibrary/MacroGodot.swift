@@ -122,7 +122,14 @@ class GodotMacroProcessor {
         }
         
         let name = "prop_\(propertyDeclarations.count)"
-        let hint = propType == ".array" ? ".arrayType" : ".none"
+        let hint: String
+        
+        if propType == ".array" && hintStr != "" {
+            hint = ".arrayType"
+        } else {
+            hint = ".none"
+        }
+        
         // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
         // and instead share all the Ints, all the Floats and so on.
         ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
