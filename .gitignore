@@ -2,6 +2,7 @@
 .godot/
 .DS_Store
 /.build
+/.index-build
 /Packages
 /*.xcodeproj
 xcuserdata/
