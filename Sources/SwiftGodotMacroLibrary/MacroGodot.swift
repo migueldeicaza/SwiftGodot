@@ -226,7 +226,7 @@ class GodotMacroProcessor {
         if let optSyntax = type.as (OptionalTypeSyntax.self) {
             type = optSyntax.wrappedType
         }
-        guard varDecl.isArray == false else {
+        guard varDecl.isSwiftArray == false else {
             throw GodotMacroError.requiresGArrayCollection
         }
         guard let typeName = type.as (IdentifierTypeSyntax.self)?.name.text else {

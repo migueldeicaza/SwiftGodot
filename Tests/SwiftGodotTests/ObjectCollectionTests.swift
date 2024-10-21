@@ -16,11 +16,15 @@ final class ObjectCollectionTests: GodotTestCase {
         let sut: ObjectCollection<Node> = []
         let node = Node()
         
-        sut.append(value: node)
+        sut.append(node)
         
         XCTAssertEqual(sut.count, 1, "The collection should have one element after one element has been appended")
         XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) behind the collection should have one element after one element has been appended")
-        XCTAssertEqual(node, Node.makeOrUnwrap(sut.array[0]), "The first element in the \(GArray.self) should hold the appended node")
+        guard let variant = sut.array[0] else {
+            XCTFail()
+            return
+        }
+        XCTAssertEqual(node, Node.unwrap(from: variant), "The first element in the \(GArray.self) should hold the appended node")
         XCTAssertEqual(node, sut[0], "The first element in the collection should equal the appended node")
     }
 
@@ -30,7 +34,11 @@ final class ObjectCollectionTests: GodotTestCase {
 
         XCTAssertEqual(sut.count, 1, "The collection should have one element after being initialized with a node")
         XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) behind the collection should have one element after being initialized with a node")
-        XCTAssertEqual(Node.makeOrUnwrap(sut.array[0]), node, "The first element in the \(GArray.self) should be the node passed to init")
+        guard let variant = sut.array[0] else {
+            XCTFail()
+            return
+        }
+        XCTAssertEqual(Node.unwrap(from: variant), node, "The first element in the \(GArray.self) should be the node passed to init")
         XCTAssertEqual(sut[0], node, "The first element in the collection should be the node passed to init")
     }
 
@@ -45,7 +53,11 @@ final class ObjectCollectionTests: GodotTestCase {
         XCTAssertEqual(sut.array, newArray, "The GArray should equal the new \(GArray.self)")
         XCTAssertEqual(sut.count, 1, "The collection count should be 1 after the \(GArray.self) with 0 elements is reassigned with a \(GArray.self) with 1 element")
         XCTAssertEqual(sut.array.count, 1, "The \(GArray.self) count should be 1 after the \(GArray.self) with 0 elements is reassigned with a \(GArray.self) with 1 element")
-        XCTAssertEqual(Node.makeOrUnwrap(sut.array[0]), otherNode, "The first element in the \(GArray.self) should hold the new node")
+        guard let variant = sut.array[0] else {
+            XCTFail()
+            return
+        }
+        XCTAssertEqual(Node.unwrap(from: variant), otherNode, "The first element in the \(GArray.self) should hold the new node")
         XCTAssertEqual(sut[0], otherNode, "The first element in the collection should be the new node")
     }
     

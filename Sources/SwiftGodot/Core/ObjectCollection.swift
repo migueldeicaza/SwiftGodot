@@ -16,7 +16,8 @@ extension ObjectCollection: VariantStorable {
 
 /// This represents a typed array of one of the built-in types from Godot
 public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
-    public typealias ArrayLiteralElement = Element
+    /// GDScript allows `nil`s in `Array[Object]`
+    public typealias ArrayLiteralElement = Element?
     
     /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
     /// In general you should not be modifying this property directly
@@ -35,25 +36,68 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
         GArray.destructor (&copy)
     }
     
+    /// Initializes the collection from an existing `GArray`.
+    ///
+    /// If `array` is already properly typed - just wraps it.
+    /// If it's not properly typed - promotes it to typed.
+    ///
+    /// Fails if:
+    /// - `array` is typed to other than `T`.
+    /// - `array` is not typed, and contains an element, other than `T?`
+    public init?(_ array: GArray) {
+        // TODO: (es) I have a strong feeling that type-check of the elements can be done in a better way.
+        
+        if array.isTyped() {
+            if array.getTypedBuiltin() != Variant.GType.object.rawValue {
+                return nil
+            }
+        }
+        
+        let newArray = GArray(Element.self)
+        
+        for element in array {
+            if let element {
+                guard element.asObject(Element.self) != nil else {
+                    return nil
+                }
+                
+                newArray.append(element)
+            } else {
+                newArray.append(element)
+            }
+        }
+        
+        self.array = newArray
+    }
+    
     /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
-        array = elements.reduce(into: .init(Element.self)) {
-            $0.append(Variant($1))
+        array = elements.reduce(into: GArray(Element.self)) { array, element in
+            array.append(
+                element.map { object in // Object? -> Variant?
+                    Variant(object)
+                }
+            )
         }
     }
     
     /// Initializes the collection using an array
-    public init(_ elements: [Element]) {
-        array = elements.reduce(into: .init(Element.self)) {
-            $0.append(Variant($1))
+    public init(_ elements: [Element?]) {
+        array = elements.reduce(into: GArray(Element.self)) { array, element in
+            array.append(
+                element.map { object in // Object? -> Variant?
+                    Variant(object)
+                }
+            )
         }
     }
     
     func initType () {
         let name = StringName()
-        let variant = Variant()
-
-        gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, &variant.content)
+        
+        withUnsafePointer(to: Variant.zero) { pNilVariantContent in
+            gi.array_set_typed (&array.content, GDExtensionVariantType (GDExtensionVariantType.RawValue(Variant.GType.object.rawValue)), &name.content, pNilVariantContent)
+        }
     }
     
     /// Initializes the collection with an empty typed GArray
@@ -71,22 +115,34 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
             return nil
         }
     }
-    
-    /// Converts a Variant to the strongly typed value T
-    func toStrong (_ v: Variant) -> Element {
-        var handle = UnsafeMutableRawPointer(bitPattern: 0)
-        v.toType(.object, dest: &handle)
-        return lookupObject(nativeHandle: handle!)!
+        
+    func unwrap(_ variant: Variant?) -> Element? {
+        guard let variant else {
+            return nil
+        }
+        
+        var handle: UnsafeMutableRawPointer? = nil
+        variant.toType(.object, dest: &handle)
+        
+        guard let handle = handle else {
+            fatalError("Could not unwrap variant as object.")
+        }
+        
+        return lookupObject(nativeHandle: handle)
     }
     
     // If I make this optional, I am told I need to implement an internal _read method
     /// Accesses the element at the specified position.
-    public subscript (index: Index) -> Element {
+    public subscript (index: Index) -> Element? {
         get {
-            toStrong (array [index])
+            guard let variant = array[index] else {
+                return nil
+            }
+            
+            return unwrap(variant)            
         }
         set {
-            array [index] = Variant (newValue)
+            array[index] = Variant(newValue)
         }
     }
     
@@ -140,8 +196,13 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
-    public final func append (value: Element) {
-        array.append (Variant (value))
+    public final func append (_ value: Element?) {
+        array.append(value.map { Variant($0) })        
+    }
+    
+    @available(*, deprecated, renamed: "append(_:)", message: "Renamed for consistency with other array methods.")
+    public final func append (value: Element?) {
+        array.append(value.map { Variant($0) })
     }
     
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
@@ -190,22 +251,22 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     ///
     /// > Note: Calling this function is not the same as writing `array[0]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func front ()-> Element {
-        toStrong (array.front ())
+    public final func front () -> Element? {
+        unwrap(array.front())
     }
     
     /// Returns the last element of the array. Prints an error and returns `null` if the array is empty.
     ///
     /// > Note: Calling this function is not the same as writing `array[-1]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     ///
-    public final func back ()-> Element {
-        toStrong (array.back ())
+    public final func back () -> Element? {
+        unwrap(array.back())
     }
     
     /// Returns a random value from the target array. Prints an error and returns `null` if the array is empty.
     ///
-    public final func pickRandom ()-> Element {
-        toStrong (array.pickRandom())
+    public final func pickRandom () -> Element? {
+        unwrap(array.pickRandom())
     }
 
     
@@ -233,24 +294,24 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
-    public final func popBack ()-> Element {
-        toStrong (array.popBack())
+    public final func popBack() -> Element? {
+        unwrap(array.popBack())
     }
     
     /// Removes and returns the first element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popBack()``.
     ///
     /// > Note: On large arrays, this method is much slower than ``popBack()`` as it will reindex all the array's elements every time it's called. The larger the array, the slower ``popFront()`` will be.
     ///
-    public final func popFront ()-> Element {
-        toStrong (array.popFront())
+    public final func popFront() -> Element? {
+        unwrap(array.popFront())
     }
     
     /// Removes and returns the element of the array at index `position`. If negative, `position` is considered relative to the end of the array. Leaves the array untouched and returns `null` if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
     ///
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     ///
-    public final func popAt (position: Int64)-> Element {
-        toStrong (array.popAt (position: position))
+    public final func popAt (position: Int64) -> Element? {
+        unwrap(array.popAt(position: position))        
     }
     
     /// Sorts the array.
@@ -322,7 +383,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     }
     
     /// Returns the script associated with a typed array tied to a class name.
-    public final func getTypedScript ()-> Variant {
+    public final func getTypedScript () -> Variant? {
         array.getTypedScript()
     }
         

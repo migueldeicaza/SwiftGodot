@@ -37,6 +37,11 @@ func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
     return nil
 }
 
+/// Those cases don't bring anything but confusion, we don't need to export them at all
+let droppedCases: Set<String> = [
+    "Variant.Type.TYPE_MAX"
+]
+
 func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], prefix: String?) {
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
@@ -101,6 +106,10 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             
             var debugLines: [String] = []
             for enumVal in enumDef.values {
+                if droppedCases.contains("\(enumDef.name).\(enumVal.name)") {
+                    continue
+                }
+                                
                 guard let name = getName (enumVal) else { continue }
                 let prefix: String
                 if used.contains(enumVal.value) {
@@ -111,6 +120,9 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 used.insert(enumVal.value)
                 doc (p, cdef, enumVal.description)
                 let enumName = escapeSwift(name)
+                if "\(enumDef.name).\(enumVal.name)" == "Variant.Type.TYPE_NIL" {
+                    p("/// This case resurfaces during internal bridging of some operators and you will never encounter it")
+                }
                 p ("\(prefix)case \(enumName) = \(enumVal.value) // \(enumVal.name)")
 
                 if prefix == "" {

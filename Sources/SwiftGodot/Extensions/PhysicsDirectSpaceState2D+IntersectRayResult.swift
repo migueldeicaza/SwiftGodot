@@ -6,13 +6,13 @@
 //
 
 private extension GDictionary {
-    func makeOrUnwrap<T: VariantStorable>(key: String) -> T? {
+    func unwrap<T: VariantStorable>(key: String) -> T? {
         guard let variant = self[key] else {
             GD.pushWarning("There was no Variant for key: \(key)")
             return nil
         }
-        guard let result = T.makeOrUnwrap(variant) else {
-            GD.pushWarning("\(T.self).makeOrUnwrap(\(variant)) was nil")
+        guard let result = T.unwrap(from: variant) else {
+            GD.pushWarning("\(T.self).unwrap(from: \(variant)) was nil")
             return nil
         }
 
@@ -40,13 +40,13 @@ extension PhysicsDirectSpaceState2D {
 
         init?(_ dictionary: GDictionary) {
             guard dictionary.isEmpty() == false,
-                  let position: Vector2 = dictionary.makeOrUnwrap(key: "position"),
-                  let normal: Vector2 = dictionary.makeOrUnwrap(key: "normal"),
+                  let position: Vector2 = dictionary.unwrap(key: "position"),
+                  let normal: Vector2 = dictionary.unwrap(key: "normal"),
                   let colliderVariant = dictionary["collider"],
-                  let collider = T.makeOrUnwrap(colliderVariant),
-                  let colliderId: Int = dictionary.makeOrUnwrap(key: "collider_id"),
-                  let rid: RID = dictionary.makeOrUnwrap(key: "rid"),
-                  let shape: Int = dictionary.makeOrUnwrap(key: "shape") else {
+                  let collider = T.unwrap(from: colliderVariant),
+                  let colliderId: Int = dictionary.unwrap(key: "collider_id"),
+                  let rid: RID = dictionary.unwrap(key: "rid"),
+                  let shape: Int = dictionary.unwrap(key: "shape") else {
                     return nil
                   }
             self.position = position

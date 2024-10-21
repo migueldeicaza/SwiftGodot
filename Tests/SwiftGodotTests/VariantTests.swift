@@ -25,6 +25,11 @@ final class VariantTests: GodotTestCase {
         
         switch variant.call(method: "count", Variant("ello"), Variant(0), Variant(11)) {
         case .success(let value):
+            guard let value else {
+                XCTFail()
+                return
+            }
+            
             guard let value = Int(value) else {
                 XCTFail("Expected \(Variant.GType.int.debugDescription), got \(value.gtype.debugDescription) instead")
                 return
@@ -37,6 +42,11 @@ final class VariantTests: GodotTestCase {
         
         switch variant.call(method: "count", Variant("ello"), Variant(0), Variant(0)) {
         case .success(let value):
+            guard let value else {
+                XCTFail()
+                return
+            }
+            
             guard let value = Int(value) else {
                 XCTFail("Expected \(Variant.GType.int.debugDescription), got \(value.gtype.debugDescription) instead")
                 return
@@ -50,6 +60,11 @@ final class VariantTests: GodotTestCase {
         // Check special treatment for a single argument case
         switch variant.call(method: "ends_with", Variant("llo")) {
         case .success(let value):
+            guard let value else {
+                XCTFail()
+                return
+            }
+            
             guard let value = Bool(value) else {
                 XCTFail("Expected \(Variant.GType.bool.debugDescription), got \(value.gtype.debugDescription) instead")
                 return
@@ -63,6 +78,11 @@ final class VariantTests: GodotTestCase {
         // Check special treatment for a zero arguments case
         switch variant.call(method: "is_empty") {
         case .success(let value):
+            guard let value else {
+                XCTFail()
+                return
+            }
+            
             guard let value = Bool(value) else {
                 XCTFail("Expected \(Variant.GType.bool.debugDescription), got \(value.gtype.debugDescription) instead")
                 return
@@ -123,7 +143,7 @@ final class VariantTests: GodotTestCase {
         XCTAssertFalse (Variant (1) == Variant (2))
         XCTAssertTrue (Variant (Vector2 (x: 1, y: 2)) == Variant (Vector2 (x: 1, y: 2)))
         XCTAssertFalse (Variant (Vector2 (x: 1, y: 2)) == Variant (Vector2 (x: 1, y: 3)))
-        let node = Node ()
+        let node = Node()
         XCTAssertTrue (Variant (node) == Variant (node))
         XCTAssertFalse (Variant (node) == Variant (Node ()))
     }

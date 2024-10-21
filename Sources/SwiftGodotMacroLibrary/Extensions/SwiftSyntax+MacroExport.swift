@@ -9,8 +9,8 @@ import SwiftSyntax
 
 extension VariableDeclSyntax {
     /// Returns `true` if type is either `[Element]` or `Array<Element>`
-    var isArray: Bool {
-        type?.isArray == true
+    var isSwiftArray: Bool {
+        type?.isSwiftArray == true
     }
     
     var isGArrayCollection: Bool {
@@ -99,7 +99,7 @@ private extension IdentifierTypeSyntax {
 }
 
 extension TypeSyntax {
-    var isArray: Bool {
+    var isSwiftArray: Bool {
         isSquareArray || isGenericArray
     }
     
@@ -183,21 +183,21 @@ private extension TypeSyntax {
 }
 
 extension FunctionDeclSyntax {
-    var returnTypeIsArray: Bool {
+    var isReturnedTypeSwiftArray: Bool {
         signature
             .returnClause?
             .type
-            .isArray == true
+            .isSwiftArray == true
     }
     
-    var arrayElementType: String? {
+    var returnedSwiftArrayElementType: String? {
         signature
             .returnClause?
             .type
             .arrayElementTypeName
     }
     
-    var returnTypeIsGArrayCollection: Bool {
+    var isReturnedTypeGArrayCollection: Bool {
         signature
             .returnClause?
             .type
@@ -206,8 +206,8 @@ extension FunctionDeclSyntax {
 }
 
 extension FunctionParameterSyntax {
-    var isArray: Bool {
-        type.isArray
+    var isSwiftArray: Bool {
+        type.isSwiftArray
     }
     
     var arrayElementTypeName: String? {

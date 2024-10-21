@@ -11,8 +11,8 @@ private extension GDictionary {
             GD.pushWarning("There was no Variant for key: \(key)")
             return nil
         }
-        guard let result = T.makeOrUnwrap(variant) else {
-            GD.pushWarning("\(T.self).makeOrUnwrap(\(variant)) was nil")
+        guard let result = T.unwrap(from: variant) else {
+            GD.pushWarning("\(T.self).unwrap(from: \(variant)) was nil")
             return nil
         }
 
@@ -45,7 +45,7 @@ extension PhysicsDirectSpaceState3D {
                   let position: Vector3 = dictionary.makeOrUnwrap(key: "position"),
                   let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),
                   let colliderVariant = dictionary["collider"],
-                  let collider = T.makeOrUnwrap(colliderVariant),
+                  let collider = T.unwrap(from: colliderVariant),
                   let colliderId: Int = dictionary.makeOrUnwrap(key: "collider_id"),
                   let rid: RID = dictionary.makeOrUnwrap(key: "rid"),
                   let shape: Int = dictionary.makeOrUnwrap(key: "shape"),
