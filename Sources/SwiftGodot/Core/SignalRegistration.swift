@@ -5,12 +5,28 @@
 //  Created by Padraig O Cinneide on 2023-10-18.
 //
 
+public struct SignalAdaptor {
+
+    let signal: StringName
+    let instance: Object
+
+    public init(signal: StringName, instance: Object) {
+        self.signal = signal
+        self.instance = instance
+    }
+
+    @discardableResult
+    public func connect(to: Object, method: String) -> GodotError {
+        return instance.connect(signal: signal, callable: .init(object: to, method: .init(method)))
+    }
+}
+
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the #signal macro instead of using this directly.
 public struct SignalWithNoArguments {
     public let name: StringName
-    public let arguments: [PropInfo] = [] // needed for registration in macro, but always []
-    
+    public let arguments: [PropInfo] = []  // needed for registration in macro, but always []
+
     public init(_ signalName: String) {
         name = StringName(signalName)
     }
@@ -21,7 +37,7 @@ public struct SignalWithNoArguments {
 public struct SignalWith1Argument<Argument: VariantStorable> {
     public let name: StringName
     public let arguments: [PropInfo]
-    
+
     public init(
         _ signalName: String,
         argument1Name: String? = nil
@@ -41,7 +57,7 @@ public struct SignalWith2Arguments<
 > {
     public let name: StringName
     public let arguments: [PropInfo]
-    
+
     public init(
         _ signalName: String,
         argument1Name: String? = nil,
@@ -103,7 +119,7 @@ public struct SignalWith4Arguments<
             PropInfo(propertyType: Argument1.self, propertyName: .init(argument1Name ?? "arg1")),
             PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
             PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
-            PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4"))
+            PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4")),
         ]
     }
 }
@@ -134,7 +150,7 @@ public struct SignalWith5Arguments<
             PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
             PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
             PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4")),
-            PropInfo(propertyType: Argument5.self, propertyName: .init(argument5Name ?? "arg5"))
+            PropInfo(propertyType: Argument5.self, propertyName: .init(argument5Name ?? "arg5")),
         ]
     }
 }
@@ -168,17 +184,17 @@ public struct SignalWith6Arguments<
             PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
             PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4")),
             PropInfo(propertyType: Argument5.self, propertyName: .init(argument5Name ?? "arg5")),
-            PropInfo(propertyType: Argument6.self, propertyName: .init(argument6Name ?? "arg6"))
+            PropInfo(propertyType: Argument6.self, propertyName: .init(argument6Name ?? "arg6")),
         ]
     }
 }
 
-public extension Object {
+extension Object {
     /// Emits a signal that was previously defined with the #signal macro.
     ///
     ///  - Example: emit(signal: Player.scored)
     @discardableResult
-    func emit(signal: SignalWithNoArguments) -> GodotError {
+    public func emit(signal: SignalWithNoArguments) -> GodotError {
         emitSignal(signal.name)
     }
 
@@ -189,7 +205,7 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(signal: SignalWithNoArguments, to target: some Object, method: String) -> GodotError {
+    public func connect(signal: SignalWithNoArguments, to target: some Object, method: String) -> GodotError {
         connect(signal: signal.name, callable: .init(object: target, method: .init(method)))
     }
 
@@ -197,7 +213,7 @@ public extension Object {
     /// The argument must match the type of the argument at that position in the signal.
     ///  - Example: emit(signal: Player.scored, 12)
     @discardableResult
-    func emit<A: VariantStorable>(signal: SignalWith1Argument<A>, _ argument: A) -> GodotError {
+    public func emit<A: VariantStorable>(signal: SignalWith1Argument<A>, _ argument: A) -> GodotError {
         emitSignal(signal.name, .init(argument))
     }
 
@@ -208,15 +224,15 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(signal: SignalWith1Argument<some Any>, to target: some Object, method: String) -> GodotError {
+    public func connect(signal: SignalWith1Argument<some Any>, to target: some Object, method: String) -> GodotError {
         connect(signal: signal.name, callable: .init(object: target, method: .init(method)))
     }
-    
+
     /// Emits a signal that was previously defined with the #signal macro.
     /// The argument must match the type of the argument at that position in the signal.
     ///  - Example: emit(signal: Player.scored, 12, "hooray")
     @discardableResult
-    func emit<A: VariantStorable, B: VariantStorable>(
+    public func emit<A: VariantStorable, B: VariantStorable>(
         signal: SignalWith2Arguments<A, B>,
         _ argument1: A,
         _ argument2: B
@@ -231,7 +247,7 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(signal: SignalWith2Arguments<some Any, some Any>, to target: some Object, method: String) -> GodotError {
+    public func connect(signal: SignalWith2Arguments<some Any, some Any>, to target: some Object, method: String) -> GodotError {
         connect(signal: signal.name, callable: .init(object: target, method: .init(method)))
     }
 
@@ -239,7 +255,7 @@ public extension Object {
     /// The argument must match the type of the argument at that position in the signal.
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self)
     @discardableResult
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable>(
+    public func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable>(
         signal: SignalWith3Arguments<A, B, C>,
         _ argument1: A,
         _ argument2: B,
@@ -255,7 +271,7 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(
+    public func connect(
         signal: SignalWith3Arguments<some Any, some Any, some Any>,
         to target: some Object,
         method: String
@@ -267,7 +283,7 @@ public extension Object {
     /// The argument must match the type of the argument at that position in the signal.
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self, 4)
     @discardableResult
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable>(
+    public func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable>(
         signal: SignalWith4Arguments<A, B, C, D>,
         _ argument1: A,
         _ argument2: B,
@@ -290,19 +306,19 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(
+    public func connect(
         signal: SignalWith4Arguments<some Any, some Any, some Any, some Any>,
         to target: some Object,
         method: String
     ) -> GodotError {
         connect(signal: signal.name, callable: .init(object: target, method: .init(method)))
     }
-    
+
     /// Emits a signal that was previously defined with the #signal macro.
     /// The argument must match the type of the argument at that position in the signal.
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self, 4, "another_one")
     @discardableResult
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable, E: VariantStorable>(
+    public func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable, E: VariantStorable>(
         signal: SignalWith5Arguments<A, B, C, D, E>,
         _ argument1: A,
         _ argument2: B,
@@ -327,19 +343,19 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(
+    public func connect(
         signal: SignalWith5Arguments<some Any, some Any, some Any, some Any, some Any>,
         to target: some Object,
         method: String
     ) -> GodotError {
         connect(signal: signal.name, callable: .init(object: target, method: .init(method)))
     }
-    
+
     /// Emits a signal that was previously defined with the #signal macro.
     /// The argument must match the type of the argument at that position in the signal.
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self, 4, reason)
     @discardableResult
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable, E: VariantStorable, F: VariantStorable>(
+    public func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable, E: VariantStorable, F: VariantStorable>(
         signal: SignalWith6Arguments<A, B, C, D, E, F>,
         _ argument1: A,
         _ argument2: B,
@@ -366,7 +382,7 @@ public extension Object {
     ///     - method: the name of a @Callable method defined on the `target` object.
     ///  - Example: connect(signal: Player.scored, to: self, method: "updateScore")
     @discardableResult
-    func connect(
+    public func connect(
         signal: SignalWith6Arguments<some Any, some Any, some Any, some Any, some Any, some Any>,
         to target: some Object,
         method: String
@@ -375,8 +391,8 @@ public extension Object {
     }
 }
 
-private extension PropInfo {
-    init(
+extension PropInfo {
+    fileprivate init(
         propertyType: (some VariantStorable).Type,
         propertyName: StringName
     ) {
