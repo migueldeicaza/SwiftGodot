@@ -375,8 +375,8 @@ public extension Object {
     }
 }
 
-private extension PropInfo {
-    init(
+extension PropInfo {
+    fileprivate init(
         propertyType: (some VariantStorable).Type,
         propertyName: StringName
     ) {

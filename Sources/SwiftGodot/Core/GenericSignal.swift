@@ -2,6 +2,20 @@
 //  Created by Sam Deane on 25/10/2024.
 //
 
+extension VariantStorable {
+    static func propInfo(name: String) -> PropInfo {
+        let gType = Self.Representable.godotType
+        return PropInfo(
+            propertyType: gType,
+            propertyName: StringName(name),
+            className: gType == .object ? StringName(String(describing: Self.self)) : "",
+            hint: .none,
+            hintStr: "",
+            usage: .default
+        )
+    }
+}
+
 /// Signal support.
 /// Use the ``GenericSignal/connect(flags:_:)`` method to connect to the signal on the container object,
 /// and ``GenericSignal/disconnect(_:)`` to drop the connection.
@@ -13,9 +27,32 @@
 public class GenericSignal<each T: VariantStorable> {
     var target: Object
     var signalName: StringName
-    public init(target: Object, signalName: StringName) {
+    public init(target: Object, signalName: String) {
         self.target = target
-        self.signalName = signalName
+        self.signalName = StringName(signalName)
+    }
+
+    /// Register this signal with the Godot runtime.
+    // TODO: the signal macro could probably pass in the argument names, so that we could register them as well
+    public static func register<C: Object>(_ signalName: String, info: ClassInfo<C>) {
+        let arguments = expandArguments(repeat (each T).self)
+        info.registerSignal(name: StringName(signalName), arguments: arguments)
+    }
+
+    /// Expand a list of argument types into a list of PropInfo objects
+    /// Note: it doesn't currently seem to be possible to constrain
+    /// the type of the pack expansion to be ``VariantStorable.Type``, but
+    /// we know that it always will be, so we can force cast it.
+    static func expandArguments<each ArgType>(_ type: repeat each ArgType) -> [PropInfo] {
+        var args = [PropInfo]()
+        var argC = 1
+        for arg in repeat each type {
+            let a = arg as! any VariantStorable.Type
+            args.append(a.propInfo(name: "arg\(argC)"))
+            argC += 1
+
+        }
+        return args
     }
 
     /// Connects the signal to the specified callback
@@ -26,7 +63,7 @@ public class GenericSignal<each T: VariantStorable> {
     /// - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).
     /// - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.
     ///
-    @discardableResult /* Signal1 */
+    @discardableResult
     public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Object {
         let signalProxy = SignalProxy()
         signalProxy.proxy = { args in
@@ -48,6 +85,17 @@ public class GenericSignal<each T: VariantStorable> {
     /// ``connect(flags:_:)``
     public func disconnect(_ token: Object) {
         target.disconnect(signal: signalName, callable: Callable(object: token, method: SignalProxy.proxyName))
+    }
+
+    /// Emit the signal (with required arguments, if there are any)
+    @discardableResult /* discardable per discardableList: Object, emit_signal */
+    public func emit(_ t: repeat each T) -> GodotError {
+        var args = [Variant(signalName)]
+        for arg in repeat each t {
+            args.append(Variant(arg))
+        }
+        let result = target.emitSignalWithArguments(args)
+        return GodotError(rawValue: Int64(result)!)!
     }
 
     /// You can await this property to wait for the signal to be emitted once.
