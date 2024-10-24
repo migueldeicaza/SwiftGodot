@@ -12,7 +12,7 @@ class ArgumentPopper {
         self.arguments = Array(arguments)
     }
 
-    func pop<T: VariantRepresentable>(as: T.Type) -> T? {
+    func pop<T: VariantStorable>(as: T.Type) -> T? {
         return T.init(arguments.removeFirst())
     }
 }
@@ -25,10 +25,10 @@ class ArgumentPopper {
 ///
 /// You can also await the ``Signal1/emitted`` property for waiting for a single emission of the signal.
 ///
-public class GenericSignal<each T: VariantRepresentable> {
+public class GenericSignal<each T: VariantStorable> {
     var target: Object
     var signalName: StringName
-    init(target: Object, signalName: StringName) {
+    public init(target: Object, signalName: StringName) {
         self.target = target
         self.signalName = signalName
     }
@@ -64,11 +64,6 @@ public class GenericSignal<each T: VariantRepresentable> {
     /// Disconnects a signal that was previously connected, the return value from calling ``connect(flags:_:)``
     public func disconnect(_ token: Object) {
         target.disconnect(signal: signalName, callable: Callable(object: token, method: SignalProxy.proxyName))
-    }
-
-    struct StubCallback {
-        var c: CheckedContinuation<Void, Never>
-        func resume(_ t: repeat each T) { c.resume() }
     }
 
     /// You can await this property to wait for the signal to be emitted once
