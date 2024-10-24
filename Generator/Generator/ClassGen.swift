@@ -511,6 +511,27 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) asy
     }
 }
 
+func getGenericSignalType(_ signal: JGodotSignal) -> String {
+    var argTypes: [String] = []
+    for arg in signal.arguments ?? [] {
+        let t = getGodotType(arg)
+        if t != "Variant" {
+            argTypes.append(t)
+        }
+    }
+
+    return "GenericSignal<\(argTypes.joined(separator: ", "))>"
+}
+
+func getGenericSignalLambdaArgs(_ signal: JGodotSignal) -> String {
+    var argNames: [String] = []
+    for arg in signal.arguments ?? [] {
+        argNames.append(escapeSwift(snakeToCamel(arg.name)))
+    }
+
+    return argNames.joined(separator: ", ")
+}
+
 func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) -> String {
     doc (p, cdef, "Signal support.\n")
     doc (p, cdef, "Use the ``\(name)/connect(flags:_:)`` method to connect to the signal on the container object, and ``\(name)/disconnect(_:)`` to drop the connection.\nYou can also await the ``\(name)/emitted`` property for waiting for a single emission of the signal.")
@@ -611,8 +632,8 @@ func generateSignals (_ p: Printer,
             parameterSignals.append (signal)
             
             sidx += 1
-            signalProxyType = "Signal\(sidx)"
-            lambdaSig = " " + generateSignalType (p, cdef, signal, signalProxyType) + " in"
+            signalProxyType = getGenericSignalType(signal)
+            lambdaSig = " \(getGenericSignalLambdaArgs(signal)) in"
         } else {
             signalProxyType = "SimpleSignal"
             lambdaSig = ""
