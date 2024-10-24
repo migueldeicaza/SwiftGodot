@@ -66,7 +66,10 @@ class SwiftSprite: Sprite2D {
         if x == nil {
             self.x = Rigid()
         }
-        let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
+        guard let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1)) else {
+            return
+        }
+        
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
@@ -146,19 +149,30 @@ class SwiftSprite2: Sprite2D {
             print ("Method registered taking one argument got none")
             return nil
         }
-        food = String (arg) ?? "The variant passed was not a string"
+        
+        guard let variant = arg else {
+            print ("Method registered taking an non-nil argument, got nil")
+            return nil
+        }
+        
+        food = String (variant) ?? "The variant passed was not a string"
         print ("The favorite food was set to: \(food)")
         return nil
     }
     
     func demoGetFavoriteFood (args: borrowing Arguments) -> Variant? {
-        return Variant(food)
+        let variant = Variant(food)
+        
+        return variant
     }
 
     override func _process (delta: Double) {
         time_passed += delta
+                
+        guard let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1)) else {
+            return
+        }
         
-        let imageVariant = ProjectSettings.getSetting(name: "shader_globals/heightmap", defaultValue: Variant(-1))
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)

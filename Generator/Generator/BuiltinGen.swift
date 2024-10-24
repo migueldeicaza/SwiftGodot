@@ -102,7 +102,7 @@ func generateBuiltinCtors (_ p: Printer,
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, omitLabel: false, kind: .builtInField, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: false, kind: .builtInField, isOptional: arg.type == "Variant")
         }
         
         if let desc = m.description, desc != "" {
@@ -208,6 +208,8 @@ func generateMethodCall (_ p: Printer,
     if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
             p ("let result = GString ()")
+        } else if godotReturnType == "Variant" {
+            p("var result = Variant.zero")
         } else {
             var declType = "var"
             if builtinGodotTypeNames [godotReturnType ?? ""] == .isClass {
@@ -224,11 +226,15 @@ func generateMethodCall (_ p: Printer,
         
     let ptrResult: String
     if hasReturnStatement {
-        let isStruct = isStructMap [godotReturnType ?? ""] ?? false
-        if isStruct {
+        if godotReturnType == "Variant" {
             ptrResult = "&result"
         } else {
-            ptrResult = "&result.content"
+            let isStruct = isStructMap [godotReturnType ?? ""] ?? false
+            if isStruct {
+                ptrResult = "&result"
+            } else {
+                ptrResult = "&result.content"
+            }
         }
     } else {
         ptrResult = "nil"
@@ -261,7 +267,9 @@ func generateMethodCall (_ p: Printer,
     }
     
     if hasReturnStatement {
-        if godotReturnType == "String" && mapStringToSwift {
+        if godotReturnType == "Variant" {
+            p("return Variant(takingOver: result)")
+        } else if godotReturnType == "String" && mapStringToSwift {
             p("return result.description")
         } else {
             p("return result")
@@ -435,7 +443,13 @@ func generateBuiltinMethods (_ p: Printer,
             continue
         }
         
-        let ret = getGodotType(SimpleType (type: m.returnType ?? ""), kind: .builtIn)
+        
+        let ret: String
+        if m.returnType == "Variant" {
+            ret = "Variant?"
+        } else {
+            ret = getGodotType(SimpleType (type: m.returnType ?? ""), kind: .builtIn)
+        }
         
         // TODO: problem caused by gobject_object being defined as "void", so it is not possible to create storage to that.
         if ret == "Object" {
@@ -460,11 +474,11 @@ func generateBuiltinMethods (_ p: Printer,
                 omitFirstLabel = false
             }
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, omitLabel: omitFirstLabel, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: omitFirstLabel, isOptional: arg.type == "Variant")
         }
         if m.isVararg {
             if args != "" { args += ", " }
-            args += "_ arguments: Variant..."
+            args += "_ arguments: Variant?..."
         }
         doc (p, bc, m.description)
         // Generate the method entry point
@@ -510,26 +524,29 @@ func generateBuiltinMethods (_ p: Printer,
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
-        public subscript(key: Variant) -> Variant? {
-            get {
-                var result = Variant.zero
-                if Self.keyed_checker(&content, &key.content) != 0 {
-                    Self.keyed_getter (&content, &key.content, &result)
-                    // Returns unowned handle
-                    return Variant(takingOver: result)
-                } else {
-                    return nil
-                }
+        public subscript(key: Variant?) -> Variant? {
+            get {                            
+                withUnsafePointer(to: key.content) { pKeyContent in
+                    if Self.keyed_checker(&content, pKeyContent) != 0 {
+                        var result = Variant.zero
+                        Self.keyed_getter (&content, pKeyContent, &result)
+                        // Returns unowned handle
+                        return Variant(takingOver: result)
+                    } else {
+                        return nil
+                    }
+                }                
             }
         
-            set {                
-                if let newValue {
-                    Self.keyed_setter(&content, &key.content, &newValue.content)
-                } else {                    
-                    var nilContent = Variant.zero
-                    // nil will cause a crash, needs a pointer to Nil Variant content instead
-                    Self.keyed_setter(&content, &key.content, &nilContent)
-                }                
+            set {
+                withUnsafePointer(to: key.content) { pKeyContent in
+                    if let newValue {
+                        Self.keyed_setter(&content, pKeyContent, &newValue.content)
+                    } else {                    
+                        var nilContent = Variant.zero
+                        Self.keyed_setter(&content, pKeyContent, &nilContent)
+                    }
+                }                                
             }
         }
         """)        
@@ -839,6 +856,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     
     // First map structs and classes from the builtins
     for bc in values {
+        if bc.name == "Nil" { continue }
         switch bc.name {
             // We do not generate code for a few types, we will bridge those instead
         case "int", "float", "bool":
@@ -850,6 +868,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     
     for bc in values {
         switch bc.name {
+            // This one is ignored altogether. We've got `Optional` in Swift
+        case "Nil":
+            break
             // We do not generate code for a few types, we will bridge those instead
         case "int", "float", "bool":
             break
