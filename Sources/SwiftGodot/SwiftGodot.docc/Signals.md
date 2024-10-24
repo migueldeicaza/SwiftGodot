@@ -260,7 +260,7 @@ object triggered that signal.  I will not pass any judgement on this, I merely
 want to empower you to get the job done.
 
 In those situations, you might still want to use the convenience emit method, over
-the ``emitSignal`` version.   But you will find that you can not just call the method
+the ``Object/emitSignal`` version.   But you will find that you can not just call the method
 with the signal name as you did before.
 
 In those cases, you will need to provide both the signal name, and the argument 

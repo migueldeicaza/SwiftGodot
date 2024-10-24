@@ -9,7 +9,7 @@ all:
 	echo    - sync: synchronizes the Macro system to the ../SwiftGodotBinary module
 
 build-docs:
-	GENERATE_DOCS=1 swift package \
+	GENERATE_DOCS=1 DOCC_HTML_DIR=/Users/miguel/cvs/swift-docc-render-artifact/dist swift package \
 		--allow-writing-to-directory $(ODOCS) \
 		generate-documentation \
 		--target SwiftGodot \

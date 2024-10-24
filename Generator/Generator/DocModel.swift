@@ -51,11 +51,13 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             for ed in def.enums ?? [] {
                 for vp in ed.values {
                     if vp.name == match {
-                        let name = dropMatchingPrefix(ed.name, vp.name)
-                        if local {
+                        let enumCasePrefix = ed.values.commonPrefix()
+                        let name = vp.name.dropPrefix(enumCasePrefix)
+                        //let name = dropMatchingPrefix(enumCasePrefix, vp.name)
+                        if local && false{
                             return ".\(escapeSwift (name))"
                         } else {
-                            return getGodotType(SimpleType (type: "enum::" + ed.name)) + "/" + escapeSwift (name)
+                            return getGodotType(SimpleType (type: "enum::" + ed.name)) + "/" + escapeSwift (snakeToCamel (name))
                         }
                     }
                 }
@@ -64,16 +66,24 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             if let cdef = def as? JGodotExtensionAPIClass {
                 for x in cdef.constants ?? [] {
                     if match == x.name {
-                        return "``\(snakeToCamel (x.name))``"
+                        return "\(snakeToCamel (x.name))"
+                    }
+                }
+            }
+
+            if let cdef = def as? JGodotBuiltinClass {
+                for x in cdef.constants ?? [] {
+                    if match == x.name {
+                        return "\(snakeToCamel (x.name))"
                     }
                 }
             }
             return nil
         }
-        
+
         if let cdef {
             if let result = lookInDef(def: cdef, match: String(txt), local: true) {
-                return result
+                return "``\(result)``"
             }
         }
         for ed in jsonApi.globalEnums {
@@ -93,9 +103,15 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             }
         }
         let (type, name) = splitAtLastDot(str: txt)
-        if type != "", let ldef = classMap [type] {
-            if let r = lookInDef(def: ldef, match: name, local: false) {
-                return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
+        if type != "" {
+            if let ldef = classMap [type] {
+                if let r = lookInDef(def: ldef, match: name, local: false) {
+                    return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
+                }
+            } else if let ldef = builtinMap[type] {
+                if let r = lookInDef(def: ldef, match: name, local: false) {
+                    return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
+                }
             }
         }
         
@@ -107,9 +123,9 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
     func typeSplit (txt: String.SubSequence) -> (String?, String) {
         if let dot = txt.firstIndex(of: ".") {
             let rest = String (txt [text.index(dot, offsetBy: 1)...])
-            return (String (txt [txt.startIndex..<dot]), rest)
+            let typeBare = txt [txt.startIndex..<dot]
+            return (mapTypeName(String(typeBare), rest)
         }
-        
         return (nil, String (txt))
     }
 
@@ -201,7 +217,6 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
         if inCodeBlock { continue }
         
         var mod = x
-        
         if #available(macOS 13.0, iOS 16.0, *) {
             // Replaces [params X] with `X`
             mod = mod.replacing(rxConstantParam, with: { x in
