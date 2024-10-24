@@ -33,7 +33,17 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
     }
-    
+
+    func testBuiltInSignals() {
+        let node = TestNode()
+        var signalReceived = false
+        node.ready.connect {
+            signalReceived = true
+        }
+        node.emitSignal("ready")
+        XCTAssertTrue (signalReceived, "ready signal should have been received")
+    }
+
     func testClassesMethodsPerformance() {
         let node = TestNode()
         let child = TestNode()

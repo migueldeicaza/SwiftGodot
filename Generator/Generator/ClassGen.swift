@@ -518,98 +518,11 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) asy
     }
 }
 
-func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal: JGodotSignal, _ name: String) -> String {
-    doc (p, cdef, "Signal support.\n")
-    doc (p, cdef, "Use the ``\(name)/connect(flags:_:)`` method to connect to the signal on the container object, and ``\(name)/disconnect(_:)`` to drop the connection.\nYou can also await the ``\(name)/emitted`` property for waiting for a single emission of the signal.")
-    
-    var lambdaFull = ""
-    p ("public class \(name)") {
-        p ("var target: Object")
-        p ("var signalName: StringName")
-        p ("init (target: Object, signalName: StringName)") {
-            p ("self.target = target")
-            p ("self.signalName = signalName")
-        }
-        doc (p, cdef, "Connects the signal to the specified callback\n\nTo disconnect, call the disconnect method, with the returned token on success\n - Parameters:\n  - callback: the method to invoke when this signal is raised\n  - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).\n - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.")
-        
-        p ("@discardableResult /* \(name) */")
-        var args = ""
-        var argUnwrap = ""
-        var callArgs = ""
-        var argIdx = 0
-        var lambdaIgnore = ""
-        for arg in signal.arguments ?? [] {
-            if args != "" {
-                args += ", "
-                callArgs += ", "
-                lambdaIgnore += ", "
-                lambdaFull += ", "
-            }
-            args += getArgumentDeclaration(arg, omitLabel: true, isOptional: arg.type == "Variant")
-            let construct: String
-            
-            if let _ = classMap [arg.type] {
-                argUnwrap += "var ptr_\(argIdx): UnsafeMutableRawPointer?\n"
-                argUnwrap += "args [\(argIdx)]!.toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
-                let handleResolver: String
-                if hasSubclasses.contains(cdef.name) {
-                    // If the type we are bubbling up has subclasses, we want to create the most
-                    // derived type if possible, so we perform the longer lookup
-                    handleResolver = "lookupObject (nativeHandle: ptr_\(argIdx)!) ?? "
-                } else {
-                    handleResolver = ""
-                }
-                
-                construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(handleResolver)\(arg.type) (nativeHandle: ptr_\(argIdx)!)"
-            } else if arg.type == "String" {
-                    construct = "\(mapTypeName(arg.type)) (args [\(argIdx)]!)!.description"
-            } else if arg.type == "Variant" {
-                construct = "args [\(argIdx)]"
-            } else {
-                construct = "\(getGodotType(arg)) (args [\(argIdx)]!)!"
-            }
-            argUnwrap += "let arg_\(argIdx) = \(construct)\n"
-            callArgs += "arg_\(argIdx)"
-            lambdaIgnore += "_"
-            lambdaFull += escapeSwift (snakeToCamel (arg.name))
-            argIdx += 1
-        }
-        p ("public func connect (flags: Object.ConnectFlags = [], _ callback: @escaping (\(args)) -> ()) -> Object") {
-            p ("let signalProxy = SignalProxy()")
-            p ("signalProxy.proxy = ") {
-                p ("args in")
-                p (argUnwrap)
-                p ("callback (\(callArgs))")
-            }
-            p ("let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)")
-            p ("let r = target.connect(signal: signalName, callable: callable, flags: UInt32 (flags.rawValue))")
-            p ("if r != .ok { print (\"Warning, error connecting to signal, code: \\(r)\") }")
-            p ("return signalProxy")
-        }
-
-        doc (p, cdef, "Disconnects a signal that was previously connected, the return value from calling ``connect(flags:_:)``")
-        p ("public func disconnect (_ token: Object)") {
-            p ("target.disconnect(signal: signalName, callable: Callable (object: token, method: SignalProxy.proxyName))")
-        }
-        doc (p, cdef, "You can await this property to wait for the signal to be emitted once")
-        p ("public var emitted: Void "){
-            p ("get async") {
-                p ("await withCheckedContinuation") {
-                    p ("c in")
-                    p ("connect (flags: .oneShot) { \(lambdaIgnore) in c.resume () }")
-                }
-            }
-        }
-    }
-    return lambdaFull
-}
-
 func generateSignals (_ p: Printer,
                       cdef: JGodotExtensionAPIClass,
                       signals: [JGodotSignal]) {
     p ("// Signals ")
     var parameterSignals: [JGodotSignal] = []
-    var sidx = 0
     
     for signal in signals {
         let signalProxyType: String
@@ -617,11 +530,10 @@ func generateSignals (_ p: Printer,
         if signal.arguments != nil {
             parameterSignals.append (signal)
             
-            sidx += 1
-            signalProxyType = "Signal\(sidx)"
-            lambdaSig = " " + generateSignalType (p, cdef, signal, signalProxyType) + " in"
+            signalProxyType = getGenericSignalType(signal)
+            lambdaSig = " \(getGenericSignalLambdaArgs(signal)) in"
         } else {
-            signalProxyType = "SimpleSignal"
+            signalProxyType = "GenericSignal< /* no args */ >"
             lambdaSig = ""
         }
         let signalName = godotMethodToSwift (signal.name)
@@ -637,6 +549,30 @@ func generateSignals (_ p: Printer,
         p ("public var \(signalName): \(signalProxyType) { \(signalProxyType) (target: self, signalName: \"\(signal.name)\") }")
         p ("")
     }
+}
+
+/// Return the type of a signal's parameters.
+func getGenericSignalType(_ signal: JGodotSignal) -> String {
+    var argTypes: [String] = []
+    for signalArgument in signal.arguments ?? [] {
+        let godotType = getGodotType(signalArgument)
+        if !godotType.isEmpty && godotType != "Variant" {
+            argTypes.append(godotType)
+        }
+    }
+                
+    return argTypes.isEmpty ? "GenericSignal< /* no args */ >" : "GenericSignal<\(argTypes.joined(separator: ", "))>"
+ }
+        
+/// Return the names of a signal's parameters,
+/// for use in documenting the corresponding lambda.
+func getGenericSignalLambdaArgs(_ signal: JGodotSignal) -> String {
+    var argNames: [String] = []
+    for signalArgument in signal.arguments ?? [] {
+        argNames.append(escapeSwift(snakeToCamel(signalArgument.name)))
+    }
+
+    return argNames.joined(separator: ", ")
 }
 
 func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, signals: [JGodotSignal]?) {
