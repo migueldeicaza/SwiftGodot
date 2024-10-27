@@ -124,7 +124,7 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
         if let dot = txt.firstIndex(of: ".") {
             let rest = String (txt [text.index(dot, offsetBy: 1)...])
             let typeBare = txt [txt.startIndex..<dot]
-            return (mapTypeName(String(typeBare), rest)
+            return (mapTypeName(String(typeBare)), rest)
         }
         return (nil, String (txt))
     }
