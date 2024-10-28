@@ -406,7 +406,7 @@ final class MacroGodotTests: XCTestCase {
                 
                     func _mproxy_square (args: borrowing Arguments) -> SwiftGodot.Variant? {
                         let result = square (GArray(args[0])!.reduce(into: VariantCollection<Int>()) {
-                                $0.append(Int.makeOrUnwrap($1)!)
+                                $0.append(value: Int.makeOrUnwrap($1)!)
                             })
                         return Variant (result)
                     }
@@ -497,7 +497,7 @@ final class MacroGodotTests: XCTestCase {
                 
                     func _mproxy_printNames (args: borrowing Arguments) -> SwiftGodot.Variant? {
                         printNames (of: GArray(args[0])!.reduce(into: ObjectCollection<Node>()) {
-                                $0.append(Node.makeOrUnwrap($1)!)
+                                $0.append(value: Node.makeOrUnwrap($1)!)
                             })
                         return nil
                     }

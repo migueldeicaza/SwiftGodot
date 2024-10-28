@@ -19,3 +19,12 @@ class Demo2: Object {
     @Export var demo: Variant = Variant()
 }
 
+@Godot
+class Demo3: Object {
+    @Callable func demo(options: VariantCollection<String>) {}
+}
+
+@Godot
+class Demo4: Object {
+    @Callable func demo(options: ObjectCollection<Node>) {}
+}
