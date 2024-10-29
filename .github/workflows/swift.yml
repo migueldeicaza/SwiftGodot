@@ -28,8 +28,7 @@ jobs:
     - name: Build
       run: swift build -v
     - name: Run tests
-      run: swift test -v
-
+      run: set -o pipefail && swift test -v --xunit-output test-results.xml
   build-windows:
     runs-on: windows-latest
     steps:
