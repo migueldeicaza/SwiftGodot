@@ -72,6 +72,7 @@ var targets: [Target] = [
     .target(
         name: "ExtensionApiJson",
         path: "Sources/ExtensionApi",
+        exclude: ["ApiJsonModel.swift", "ApiJsonModel+Extra.swift"],
         sources: ["ExtensionApiJson.swift"],
         resources: [.process("extension_api.json")]),
     
