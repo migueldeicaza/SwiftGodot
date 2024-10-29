@@ -29,6 +29,11 @@ jobs:
       run: swift build -v
     - name: Run tests
       run: set -o pipefail && swift test -v --xunit-output test-results.xml
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: test-results.xml
   build-windows:
     runs-on: windows-latest
     steps:
