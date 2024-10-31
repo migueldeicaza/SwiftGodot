@@ -9,61 +9,38 @@ import XCTest
 
 @testable import SwiftGodot
 
-class __GodotTestRunner: XCTestCase {
-    static var failureCount = 0
-
-    func testAAAARunEverythingInGodot() {
-        XCTAssert(Self.failureCount == 0, "Some tests failed when running in Godot")
-    }
-
-    override func run() {
-        if !GodotRuntime.isInitialized {
-            GodotRuntime.run {
-                let allTests = XCTestSuite.default
-                let suite = XCTestSuite(name: "All Tests In Godot")
-                for test in allTests.tests {
-                    suite.addTest(test)
-                }
-                suite.run()
-                GodotRuntime.stop()
-                Self.failureCount = suite.testRun!.totalFailureCount
-            }
-            super.run()
-        }
-    }
-}
-
+/// Base class for all test cases that run in the Godot runtime.
 open class GodotTestCase: XCTestCase {
     override open func run() {
+        // We will be run twice - once in the normal XCTest runtime,
+        // and once in the Godot runtime. We only want to actually
+        // run the tests in the Godot runtime.
         if GodotRuntime.isRunning {
             super.run()
         }
-    }
-
-    open override var name: String {
-        var name = super.name
-        if GodotRuntime.isRunning {
-            name.replace("-[", with: "-[Godot.")
-            return "Godot." + super.name
-        }
-        return name
     }
 
     override open class func setUp() {
         if GodotRuntime.isRunning {
-            godotSetUp()
+            // register any types that are needed for the tests
+            for subclass in godotSubclasses {
+                register(type: subclass)
+            }
         }
     }
 
     override open class func tearDown() {
         if GodotRuntime.isRunning {
-            godotTearDown()
+            // unregister any types that were registered for the tests
+            for subclass in godotSubclasses {
+                unregister(type: subclass)
+            }
         }
     }
 
     override open func tearDown() async throws {
         if GodotRuntime.isRunning {
-            // Cleaning up test objects
+            // clean up test objects
             let liveObjects: [Wrapped] = Array(liveFrameworkObjects.values) + Array(liveSubtypedObjects.values)
             for liveObject in liveObjects {
                 switch liveObject {
@@ -80,29 +57,21 @@ open class GodotTestCase: XCTestCase {
             liveFrameworkObjects.removeAll()
             liveSubtypedObjects.removeAll()
 
-            // Waiting for queueFree to take effect
+            // waiting for queueFree to take effect
             let scene = try GodotRuntime.getScene()
             await scene.processFrame.emitted
         }
     }
 
+    /// List of types that need to be registered in the Godot runtime.
+    /// Subclasses should override this to return the types they need.
     open class var godotSubclasses: [Wrapped.Type] {
         return []
     }
 
-    open class func godotSetUp() {
-        for subclass in godotSubclasses {
-            register(type: subclass)
-        }
-    }
-
-    open class func godotTearDown() {
-        for subclass in godotSubclasses {
-            unregister(type: subclass)
-        }
-    }
 }
 
+/// Godot testing support.
 extension GodotTestCase {
 
     /// Asserts approximate equality of two floating point values based on `Math::is_equal_approx` implementation in Godot
