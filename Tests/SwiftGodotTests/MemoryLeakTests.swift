@@ -575,15 +575,17 @@ final class MemoryLeakTests: GodotTestCase {
     }
     
     func test_godot_string_description_leak() {
+        var buffer: String = ""
         checkLeaks {
             let string = GString("A")
-            for _ in 0 ..< 100 {
-                print(string.description)
+            for _ in 0..<100 {
+                buffer += string.description
             }
         }
     }
     
     func test_godot_string_from_variant_leak() {
+        var buffer: String = ""
         let variant = Variant("A")
         checkLeaks {
             for _ in 0 ..< 100 {
@@ -592,12 +594,13 @@ final class MemoryLeakTests: GodotTestCase {
                     break
                 }
                 
-                print(gstring.description)
+                buffer += gstring.description
             }
         }
     }
     
     func test_531_crash_or_leak() {
+        var buffer: String = ""
         checkLeaks {
             let g = GodotEncoder()
             let foon = FooN(myInt: 9, myText: "nine", myFoo: [
@@ -605,7 +608,7 @@ final class MemoryLeakTests: GodotTestCase {
                 Foo(myInt: 30, myText: "Nested2", myIntArray: [2,2,2])])
             try? foon.encode(to: g)
             
-            print(g.data.description)
+            buffer += g.data.description
         }
     }
     
