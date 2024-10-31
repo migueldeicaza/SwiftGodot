@@ -25,10 +25,12 @@ jobs:
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: "16.0"
+    - name: Install XCPretty
+      run: gem install xcpretty
     - name: Build
-      run: swift build -v
+      run: swift build -v | xcpretty
     - name: Run tests (XCTest)
-      run: swift test --no-parallel --disable-swift-testing --verbose
+      run: swift test --no-parallel --disable-swift-testing --verbose | xcpretty
     - name: Run tests (Swift testing)
       run: swift test --no-parallel --disable-xctest --verbose
 
