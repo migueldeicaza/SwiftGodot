@@ -8,7 +8,6 @@ import XCTest
 final class AABBTests: GodotTestCase {
 
     func testConstructorMethods() {
-        XCTFail("deliberate failure")
         let aabb: AABB = AABB(position: Vector3(x: -1.5, y: 2, z: -2.5), size: Vector3(x: 4, y: 5, z: 6))
         let aabbCopy: AABB = AABB(from: aabb)
         XCTAssertEqual(aabb, aabbCopy, "AABBs created with the same dimensions but by different methods should be equal.")
