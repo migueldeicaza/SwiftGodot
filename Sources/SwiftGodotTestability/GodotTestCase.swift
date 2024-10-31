@@ -11,6 +11,11 @@ import XCTest
 
 /// Base class for all test cases that run in the Godot runtime.
 open class GodotTestCase: XCTestCase {
+    open override var testRunClass: AnyClass? {
+        // use a dummy run if the engine isn't running to avoid generating output
+        !GodotRuntime.isRunning ? DummyTestRun.self : super.testRunClass
+    }
+
     override open func run() {
         // We will be run twice - once in the normal XCTest runtime,
         // and once in the Godot runtime. We only want to actually
@@ -19,7 +24,7 @@ open class GodotTestCase: XCTestCase {
             super.run()
         }
     }
-
+    
     override open class func setUp() {
         if GodotRuntime.isRunning {
             // register any types that are needed for the tests
@@ -71,6 +76,32 @@ open class GodotTestCase: XCTestCase {
 
 }
 
+/// Test run which does nothing.
+/// We return one of these when a Godot test is run
+/// without the test engine running. This avoids having
+/// duplicate runs of the test appear in the output.
+open class DummyTestRun: XCTestCaseRun {
+    override init(test: XCTest) {
+        super.init(test: XCTestCase())
+    }
+    open override func start() {
+    }
+    open override func stop() {
+    }
+    open override func record(_ issue: XCTIssue) {
+    }
+    open override var hasBeenSkipped: Bool { true }
+    open override var hasSucceeded: Bool { false }
+    open override var skipCount: Int { 0 }
+    open override var failureCount: Int { 0 }
+    open override var executionCount: Int { 0 }
+    open override var testCaseCount: Int { 0 }
+    open override var unexpectedExceptionCount: Int { 0 }
+    open override var totalFailureCount: Int { 0 }
+
+    open override var totalDuration: TimeInterval { 0 }
+    open override var testDuration: TimeInterval { 0 }
+}
 /// Godot testing support.
 
 public extension GodotTestCase {
