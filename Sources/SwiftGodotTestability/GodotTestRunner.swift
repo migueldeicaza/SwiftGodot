@@ -93,6 +93,7 @@ class __GodotTestRunner: XCTestCase {
 
                 print("""
                     
+
                     Running Tests in Godot Engine
                     =============================
 
@@ -112,8 +113,10 @@ class __GodotTestRunner: XCTestCase {
 
                 print("""
                     
+
                     Done Godot Engine Tests
                     =======================
+                    
                     \(run.testCaseCount) tests run, \(run.totalFailureCount) failures.
 
 
@@ -127,6 +130,7 @@ class __GodotTestRunner: XCTestCase {
             }
 
             print("""
+                
                 
                 Engine Shut Down Done
                 =====================
