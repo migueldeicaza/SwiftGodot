@@ -131,7 +131,7 @@ class __GodotTestRunner: XCTestCase {
 
             print("""
                 
-                
+
                 Engine Shut Down Done
                 =====================
 
@@ -144,6 +144,8 @@ class __GodotTestRunner: XCTestCase {
 }
 
 extension XCTestSuite {
+    /// Does this suite contain Godot tests?
+    /// (we deliberately don't recurse into sub-suites here)
     var containsGodotTests: Bool {
         for test in tests {
             if test is GodotTestCase {
