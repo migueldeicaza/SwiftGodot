@@ -257,6 +257,8 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
                 return "UInt8"
             case .int8:
                 return "Int8"
+            case .char32:
+                return "Int32"
             default:
                 fatalError()
             }
@@ -308,6 +310,10 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         return "OpaquePointer?"
     case "Type":
         return "GType"
+    case "const void*":
+        return "OpaquePointer?"
+    case "AudioFrame*":
+        return "OpaquePointer?"
     default:
         if t.type == "Error" {
             return "GodotError"

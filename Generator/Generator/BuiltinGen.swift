@@ -102,7 +102,7 @@ func generateBuiltinCtors (_ p: Printer,
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: "", kind: .builtInField, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: false, kind: .builtInField, isOptional: false)
         }
         
         if let desc = m.description, desc != "" {
@@ -133,8 +133,7 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            let ptrArgs = (m.arguments != nil) ? "&args" : "nil"
-            
+                        
             // I used to have a nicer model, rather than everything having a
             // handle, I had a named handle, like "_godot_string"
             let ptr = isStruct ? "self" : "content"
@@ -154,7 +153,7 @@ func generateBuiltinCtors (_ p: Printer,
                 } else if bc.name == "Transform2D" && m.arguments == nil {
                     p ("self.x = Vector2 (x: 1, y: 0)")
                     p ("self.y = Vector2 (x: 0, y: 1)")
-                    p ("self.origin = Vector2 ()")                    
+                    p ("self.origin = Vector2 ()")
                 } else if bc.name == "Basis" && m.arguments == nil {
                     p ("self.x = Vector3 (x: 1, y: 0, z: 0)")
                     p ("self.y = Vector3 (x: 0, y: 1, z: 0)")
@@ -175,30 +174,25 @@ func generateBuiltinCtors (_ p: Printer,
                     return
                 }
             }
-            var (argPrepare, nestLevel) = generateArgPrepare(isVararg: false, m.arguments ?? [], methodHasReturn: false)
-            if argPrepare != "" {
-                p (argPrepare)
-                if nestLevel > 0 {
-                    p.indent += nestLevel
-                }
+            
+            let arguments = (m.arguments ?? []).map {
+                // must not fail
+                try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
             }
             
-            // Call
-            p ("\(typeName).\(ptrName) (&\(ptr), \(ptrArgs))")
-            
-            // Unwrap the nested calls to 'withUnsafePointer'
-            while nestLevel > 0 {
-                nestLevel -= 1
-                p.indent -= 1
-                p ("}")
+            if arguments.isEmpty {
+                preparingArguments(p, arguments: arguments) {
+                    p ("\(typeName).\(ptrName)(&\(ptr), nil)")
+                }
+            } else {
+                preparingArguments(p, arguments: arguments) {
+                    aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
+                        p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
+                    }
+                }
             }
         }
     }
-}
-
-enum MethodCallKind {
-    case methodCall
-    case operatorCall
 }
 
 func generateMethodCall (_ p: Printer,
@@ -207,12 +201,11 @@ func generateMethodCall (_ p: Printer,
                          godotReturnType: String?,
                          isStatic: Bool,
                          isVararg: Bool,
-                         arguments: [JGodotArgument]?,
-                         kind: MethodCallKind) {
-    let has_return = godotReturnType != nil
+                         arguments: [JGodotArgument]) {
+    let hasReturnStatement = godotReturnType != nil
     
     let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
-    if has_return {
+    if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
             p ("let result = GString ()")
         } else {
@@ -224,16 +217,13 @@ func generateMethodCall (_ p: Printer,
         }
     }
     
-    var (argPrep, nestLevel) = generateArgPrepare(isVararg: isVararg, arguments ?? [], methodHasReturn: (godotReturnType ?? "") != "")
-    if argPrep != "" {
-        p (argPrep)
-        if nestLevel > 0 {
-            p.indent += nestLevel
-        }
+    let methodArguments = arguments.map { argument in
+        // must never fail
+        try! MethodArgument(from: argument, typeName: typeName, methodName: methodToCall, options: .builtInClassOptions)
     }
-    let ptrArgs = (isVararg || (arguments?.count ?? 0) > 0) ? "&args" : "nil"
+        
     let ptrResult: String
-    if has_return {
+    if hasReturnStatement {
         let isStruct = isStructMap [godotReturnType ?? ""] ?? false
         if isStruct {
             ptrResult = "&result"
@@ -244,41 +234,38 @@ func generateMethodCall (_ p: Printer,
         ptrResult = "nil"
     }
     
-    // Method calls pass the number of parameters to the method
-    var argCount: String
-    if isVararg {
-        // All the arguments that we accumulated, count dynamically
-        argCount = "Int32(args.count)"
-    } else {
-        // We know statically the number of arguments, harcode that
-        argCount = "\(arguments?.count ?? 0)"
+    generateMethodCall(p, isVariadic: isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
+        let countArg: String
+        
+        switch count {
+        case .literal(let literal):
+            countArg = "\(literal)"
+        case .expression(let expr):
+            countArg = "Int32(\(expr))"
+        }
+        
+        if isStatic {
+            return "\(typeName).\(methodToCall)(nil, \(argsRef), \(ptrResult), \(countArg))"
+        } else {
+            if isStructMap [typeName] ?? false {
+                return """
+                var mutSelfCopy = self
+                withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in
+                   \(typeName).\(methodToCall)(ptr, \(argsRef), \(ptrResult), \(countArg))
+                }
+                """
+            } else {
+                return "\(typeName).\(methodToCall)(&content, \(argsRef), \(ptrResult), \(countArg))"
+            }
+        }
     }
-    let numberOfArgs = kind == .methodCall ? ", \(argCount)" : ""
     
-    if isStatic {
-            p ("\(typeName).\(methodToCall) (nil, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
-    } else {
-        if isStructMap [typeName] ?? false {
-            p ("withUnsafePointer (to: self) { ptr in ")
-            p ("    \(typeName).\(methodToCall) (UnsafeMutableRawPointer (mutating: ptr), \(ptrArgs), \(ptrResult)\(numberOfArgs))")
-            p ("}")
-        } else {
-            p ("\(typeName).\(methodToCall) (&content, \(ptrArgs), \(ptrResult)\(numberOfArgs))")
-        }
-    }
-    if has_return {
-        // let cast = castGodotToSwift (m.returnType, "result")
+    if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
-            p ("return result.description")
+            p("return result.description")
         } else {
-            p ("return result")
+            p("return result")
         }
-    }
-    // Unwrap the nested calls to 'withUnsafePointer'
-    while nestLevel > 0 {
-        nestLevel -= 1
-        p.indent -= 1
-        p ("}")
     }
 }
 
@@ -286,6 +273,46 @@ func generateMethodCall (_ p: Printer,
 let skipOperators: [String:[(String,String)]] = [
     "StringName": [("==", "StringName")]
 ]
+
+private struct OperatorSignature: Hashable, ExpressibleByStringLiteral {
+    let name: String
+    let lhs: String
+    let rhs: String
+    
+    init(name: String, lhs: String, rhs: String) {
+        self.name = name
+        self.lhs = lhs
+        self.rhs = rhs
+    }
+    
+    init(stringLiteral value: StringLiteralType) {
+        let components = value.split(separator: " ")
+        
+        precondition(components.count == 3)
+        
+        lhs = String(components[0])
+        name = String(components[1])
+        rhs = String(components[2])
+    }
+}
+
+private struct MethodSignature: Hashable, ExpressibleByStringLiteral {
+    let typeName: String
+    let methodName: String
+    
+    init(typeName: String, methodName: String) {
+        self.typeName = typeName
+        self.methodName = methodName
+    }
+    
+    init(stringLiteral value: StringLiteralType) {
+        let components = value.split(separator: ".")
+        
+        precondition(components.count == 2)
+        typeName = String(components[0])
+        methodName = String(components[1])
+    }
+}
 
 /// - Parameters:
 ///   - operators: the array of operators
@@ -321,10 +348,21 @@ func generateBuiltinOperators (_ p: Printer,
             }
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
+            
+            let lhsTypeName = typeName
+            let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
+                        
+            let customImplementation = customBuiltinOperatorImplementations[OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName)]
+            
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
             }
-            p ("public static func \(swiftOperator) (lhs: \(typeName), rhs: \(getGodotType(SimpleType(type: right), kind: .builtIn))) -> \(retType) "){
+            
+            p ("public static func \(swiftOperator) (lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
+                if customImplementation != nil {
+                    p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                }
+                
                 let ptrResult: String
                 if op.returnType == "String" && mapStringToSwift {
                     p ("let result = GString ()")
@@ -341,16 +379,34 @@ func generateBuiltinOperators (_ p: Printer,
                 } else {
                     ptrResult = "&result.content"
                 }
-                let rhsa = JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil)
-                let rhs = getArgRef (arg: rhsa)
-                let lhsa = JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil)
-                let lhs = getArgRef (arg: lhsa)
-                p (generateCopies([lhsa, rhsa]))
-                p ("\(typeName).\(ptrName) (\(lhs), \(rhs), \(ptrResult))")
+                let lhsa = try! MethodArgument(
+                    from: JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
+                    typeName: godotTypeName,
+                    methodName: "#operator\(swiftOperator)",
+                    options: .builtInClassOptions
+                )
+                
+                let rhsa = try! MethodArgument(
+                    from: JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil),
+                    typeName: godotTypeName,
+                    methodName: "#operator\(swiftOperator)",
+                    options: .builtInClassOptions
+                )
+                    
+                preparingArguments(p, arguments: [lhsa, rhsa]) {
+                    p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
+                }
+                
                 if op.returnType == "String" && mapStringToSwift {
                     p ("return result.description")
                 } else {
                     p ("return result")
+                }
+                
+                if let customImplementation {
+                    p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                    p(customImplementation)
+                    p("#endif")
                 }
             }
         }
@@ -396,13 +452,15 @@ func generateBuiltinMethods (_ p: Printer,
         }
         
         for arg in m.arguments ?? [] {
-            var eliminate: String = ""
+            let omitFirstLabel: Bool
             // Omit first argument label, if necessary
             if args.isEmpty, shouldOmitFirstArgLabel(typeName: typeName, methodName: m.name, argName: arg.name) {
-                eliminate = "_ "
+                omitFirstLabel = true
+            } else {
+                omitFirstLabel = false
             }
             if args != "" { args += ", " }
-            args += getArgumentDeclaration(arg, eliminate: eliminate, isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: omitFirstLabel, isOptional: false)
         }
         if m.isVararg {
             if args != "" { args += ", " }
@@ -422,8 +480,22 @@ func generateBuiltinMethods (_ p: Printer,
         } else {
             keyword = ""
         }
-        p ("public\(keyword) func \(escapeSwift (snakeToCamel(m.name))) (\(args))\(retSig)") {
-            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments, kind: .methodCall)
+        
+        let methodName = escapeSwift(snakeToCamel(m.name))
+        let customImplementation = customBuiltinMethodImplementations[MethodSignature(typeName: bc.name, methodName: methodName)]
+        
+        p ("public\(keyword) func \(methodName)(\(args))\(retSig)") {
+            if customImplementation != nil {
+                p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
+            }
+            
+            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
+            
+            if let customImplementation {
+                p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                p(customImplementation)
+                p("#endif")
+            }
         }
     }
     if bc.isKeyed {
@@ -437,28 +509,30 @@ func generateBuiltinMethods (_ p: Printer,
         p.staticVar (visibility: "private ", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
-        p ("public subscript (key: Variant) -> Variant?") {
-            p ("get") {
-                p ("let keyCopy = key")
-                p ("var result = Variant.zero")
-                p ("if Self.keyed_checker (&content, &keyCopy.content) != 0") {
-                    p ("Self.keyed_getter (&content, &keyCopy.content, &result)")
-                    p ("return Variant (fromContentPtr: &result)")
-                }
-                p ("else") {
-                    p ("return nil")
+        p("""
+        public subscript(key: Variant) -> Variant? {
+            get {
+                var result = Variant.zero
+                if Self.keyed_checker(&content, &key.content) != 0 {
+                    Self.keyed_getter (&content, &key.content, &result)
+                    // Returns unowned handle
+                    return Variant(takingOver: result)
+                } else {
+                    return nil
                 }
             }
-            p ("set") {
-                p ("let keyCopy = key")
-                p ("if let newCopy = newValue") {
-                    p ("Self.keyed_setter (&content, &keyCopy.content, &newCopy.content)")
-                }
-                p ("else") {
-                    p ("Self.keyed_setter (&content, &keyCopy.content, nil)")
-                }
+        
+            set {                
+                if let newValue {
+                    Self.keyed_setter(&content, &key.content, &newValue.content)
+                } else {                    
+                    var nilContent = Variant.zero
+                    // nil will cause a crash, needs a pointer to Nil Variant content instead
+                    Self.keyed_setter(&content, &key.content, &nilContent)
+                }                
             }
         }
+        """)        
     }
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
@@ -517,6 +591,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
         if bc.name.hasSuffix ("Array") {
             conformances.append ("Collection")
+            conformances.append ("RandomAccessCollection")
         }
         var proto = ""
         if conformances.count > 0 {
@@ -533,33 +608,44 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         
         p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
             if bc.name == "String" {
-                p ("public required init (_ str: String)") {
-                    p ("gi.string_new_with_utf8_chars (&content, str)")
+                p("""
+                public required init(_ string: String) {
+                    gi.string_new_with_utf8_chars(&content, string)
                 }
-                p ("// ExpressibleByStringLiteral conformace")
-                p ("public required init (stringLiteral value: String)") {
-                    p ("gi.string_new_with_utf8_chars (&content, value)")
+                """)
+                
+                p("""
+                // ExpressibleByStringLiteral conformance
+                public required init(stringLiteral value: String) {
+                    gi.string_new_with_utf8_chars(&content, value)
                 }
+                """)
             }
             if bc.name == "NodePath"  {
-                p ("// ExpressibleByStringLiteral conformace")
-                p ("public required init (stringLiteral value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("NodePath.constructor2 (&content, &args)")
+                p("""
+                /// ExpressibleByStringLiteral conformance
+                public required init(stringLiteral value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            NodePath.constructor2(&content, pArgs)
+                        }
                     }
                 }
-                p ("// LosslessStringConvertible conformance)")
-                p ("public required init (_ value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("NodePath.constructor2 (&content, &args)")
+                """)
+                
+                p("""
+                /// LosslessStringConvertible conformance
+                public required init(_ value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            NodePath.constructor2(&content, pArgs)
+                        }
                     }
                 }
+                """)
+                
                 p ("/// Produces a string representation of this NodePath")
                 p ("public var description: String") {
                     p ("let sub = getSubnameCount () > 0 ? getConcatenatedSubnames ().description : \"\"")
@@ -572,37 +658,55 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 // really produce this when it matches the kind
                 // directly to be the one that takes a StringName
                 // parameter
-                p ("public init (fromPtr: UnsafeRawPointer?)") {
-                    p ("var args: [UnsafeRawPointer?] = [")
-                    p ("    fromPtr,")
-                    p ("]")
-                    p ("StringName.constructor1 (&content, &args)")
-                }
-                p ("// ExpressibleByStringLiteral conformace")
-                p ("public required init (stringLiteral value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){
-                        p ("args.append (ptr)")
-                        p ("StringName.constructor2 (&content, &args)")
+                p("""
+                public init(fromPtr ptr: UnsafeRawPointer?) {
+                    withUnsafePointer(to: ptr) { pArgs in
+                        StringName.constructor1(&content, pArgs) 
                     }
                 }
-                p ("// LosslessStringConvertible conformance)")
-                p ("public required init (_ value: String)") {
-                    p ("let from = GString (value)")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &from.content)", arg: " ptr in"){
-                        p ("args.append (ptr)")
-                        p ("StringName.constructor2 (&content, &args)")
+                """)
+                
+                p("""
+                /// ExpressibleByStringLiteral conformace
+                public required init(stringLiteral value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in 
+                        withUnsafePointer(to: pContent) { pArgs in
+                            StringName.constructor2(&content, pArgs)
+                        }
                     }
                 }
+                """)
+                
+                p("""
+                /// LosslessStringConvertible conformance 
+                public required init(_ value: String) {
+                    let gstring = GString(value)
+                    withUnsafePointer(to: &gstring.content) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            StringName.constructor2(&content, pArgs)
+                        }
+                    }
+                }
+                """)
             }
             if bc.name == "Callable" {
                 p ("/// Creates a Callable instance from a Swift function")
-                p ("/// - Parameter callback: the swift function that receives an array of Variant arguments, and returns an optional Variant")
-                p ("public init (_ callback: @escaping ([Variant])->Variant?)") {
-                    p ("content = CallableWrapper.makeCallable (callback)")
+                p ("/// - Parameter callback: the swift function that receives `Arguments`, and returns a `Variant`")
+                p ("public init(_ callback: @escaping (borrowing Arguments) -> Variant)") {
+                    p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
+
+#if false 
+                p ("/// Creates a Callable instance from a Swift function")
+                p ("/// - Parameter callback: the swift function that receives an array of Variant arguments, and returns an optional Variant")
+                p("""
+                @available(*, deprecated, message: "Use `init(_ callback: @escaping (borrowing Arguments) -> Variant)` instead.")
+                """)
+                p ("public init (_ callback: @escaping ([Variant])->Variant?)") {
+                    p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
+                }
+#endif
             }
             if bc.hasDestructor {
                 p.staticVar (name: "destructor", type: "GDExtensionPtrDestructor") {
@@ -632,15 +736,21 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 // hardcoding the constructor1 here, it should
                 // really produce this when it matches the kind
                 // directly to be the one that takes the same
-                // parameter
-                p ("// Used to construct objects on virtual proxies")
-                p ("public required init (content: ContentType)") {
-                    p ("var copy = content")
-                    p ("var args: [UnsafeRawPointer?] = []")
-                    p ("withUnsafePointer (to: &copy)", arg: " ptr in") {
-                        p ("args.append (ptr)")
-                        p ("\(typeName).constructor1 (&self.content, &args)")
+                // parameter                
+                p("""
+                // Used to construct objects on virtual proxies
+                public required init(content proxyContent: ContentType) {
+                    withUnsafePointer(to: proxyContent) { pContent in
+                        withUnsafePointer(to: pContent) { pArgs in
+                            \(typeName).constructor1(&content, pArgs)
+                        }
                     }
+                }
+                """)
+                
+                p ("// Used to construct objects when the underlying built-in's ref count has already been incremented for me")
+                p ("public required init(alreadyOwnedContent content: ContentType)") {
+                    p ("self.content = content")
                 }
             }
            
@@ -719,6 +829,10 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("public func index(after i: Int) -> Int") {
                     p ("i+1")
                 }
+
+                p ("public func index(before i: Int) -> Int") {
+                    p ("return i-1")
+                }
             }
         }
     }
@@ -751,3 +865,66 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
     }
 }
+
+// MARK: - Custom operators impl
+private let customBuiltinOperatorImplementations: [OperatorSignature: String] = [
+    // MARK: Vector3
+    "Vector3 * Vector3": """
+    return Vector3(x: lhs.x * rhs.x, y: lhs.y * rhs.y, z: lhs.z * rhs.z)
+    """,
+    
+    "Vector3 / Vector3": """
+    return Vector3(x: lhs.x / rhs.x, y: lhs.y / rhs.y, z: lhs.z / rhs.z)
+    """,
+    
+    "Vector3 + Vector3": """
+    return Vector3(x: lhs.x + rhs.x, y: lhs.y + rhs.y, z: lhs.z + rhs.z)
+    """,
+    
+    "Vector3 - Vector3": """
+    return Vector3(x: lhs.x - rhs.x, y: lhs.y - rhs.y, z: lhs.z - rhs.z)
+    """,
+        
+    "Vector3 * Double": """
+    let rhs = Float(rhs)
+    return Vector3(x: lhs.x * rhs, y: lhs.y * rhs, z: lhs.z * rhs)
+    """,
+    
+    "Vector3 / Double": """
+    let rhs = Float(rhs)
+    return Vector3(x: lhs.x / rhs, y: lhs.y / rhs, z: lhs.z / rhs)
+    """,
+]
+
+// MARK: - Custom methods impl
+private let customBuiltinMethodImplementations: [MethodSignature: String] = [
+    // MARK: Vector3
+    "Vector3.dot": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L206-L208
+    return Double(x * with.x + y * with.y + z * with.z)        
+    """,
+    
+    "Vector3.cross": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L197-L204
+    return Vector3(
+        x: (y * with.z) - (z * with.y),
+        y: (z * with.x) - (x * with.z),
+        z: (x * with.y) - (y * with.x)
+    )
+    """,
+    
+    "Vector3.length": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L476-L481
+    return sqrt(Double(x * x + y * y + z * z))   
+    """,
+    
+    "Vector3.lengthSquared": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L484-L489
+    return Double(x * x + y * y + z * z)
+    """,
+    
+    "Vector3.distance": """
+    // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L292-L295
+    return Double((to - self).length())
+    """,
+]

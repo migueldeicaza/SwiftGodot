@@ -7,12 +7,14 @@
 
 import Foundation
 import ExtensionApi
+import SwiftSyntax
+import SwiftSyntaxBuilder
 
 func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
 }
 
-func isSmallInt (_ arg: JGodotArgument) -> Bool {
+func isSmallInt(_ arg: JGodotArgument) -> Bool {
     if arg.type != "int" {
         return false
     }
@@ -24,7 +26,7 @@ func isSmallInt (_ arg: JGodotArgument) -> Bool {
     }
 }
 
-func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
+func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
     
@@ -178,7 +180,10 @@ func getArgumentDeclaration (_ argument: JGodotArgument, eliminate: String, kind
             }
         }
     }
-    return "\(eliminate)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(isOptional ? "?" : "")\(def)"
+    
+    let prefix = omitLabel ? "_ " : ""
+    
+    return "\(prefix)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(isOptional ? "?" : "")\(def)"
 }
 
 func getArgRef (arg: JGodotArgument) -> String {
@@ -209,52 +214,4 @@ func getArgRef (arg: JGodotArgument) -> String {
     } else {
         return "\(needAddress)\(escapeSwift(argref))\(optstorage)"
     }
-}
-
-func generateCopies (_ args: [JGodotArgument]) -> String {
-    var body = ""
-    
-    for arg in args {
-        //if !isCoreType (name: arg.type) {
-        var reference = godotArgumentToSwift (arg.name)
-        
-        if isStructMap [arg.type] ?? false {
-            if arg.type == "float" {
-                reference = "Double (\(reference))"
-            }
-            body += "var copy_\(arg.name) = \(reference)\n"
-        } else if arg.type == "String" && mapStringToSwift {
-            body += "let gstr_\(arg.name) = GString (\(reference))\n"
-        }
-    }
-    return body
-}
-
-func generateArgPrepare (isVararg: Bool, _ args: [JGodotArgument], methodHasReturn: Bool) -> (String, Int) {
-    var body = ""
-    var withUnsafeCallNestLevel = 0
-    let retFromWith = methodHasReturn ? "return " : ""
-    
-    if isVararg || args.count > 0 {
-        body += generateCopies (args)
-        body += "var args: [UnsafeRawPointer?] = []\n"
-        if isVararg {
-            body += "let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)\n"
-            body += "defer { cptr.deallocate () }\n\n"
-        }
-        
-        for arg in args {
-            let prefix = String(repeating: " ", count: withUnsafeCallNestLevel * 4)
-            let ar = getArgRef(arg: arg)
-            body += "\(prefix)\(retFromWith)withUnsafePointer (to: \(ar)) { p\(withUnsafeCallNestLevel) in\n\(prefix)    args.append (p\(withUnsafeCallNestLevel))\n"
-            withUnsafeCallNestLevel += 1
-        }
-        if isVararg {
-            body += "for idx in 0..<arguments.count {\n"
-            body += "    cptr [idx] = arguments [idx].content\n"
-            body += "    args.append (cptr.baseAddress! + idx)\n"
-            body += "}\n"
-        }
-    }
-    return (body, withUnsafeCallNestLevel)
 }

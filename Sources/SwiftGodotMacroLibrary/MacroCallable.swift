@@ -15,10 +15,10 @@ import SwiftSyntaxMacros
 public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
         let funcName = funcDecl.name.text
-        var genMethod = "func _mproxy_\(funcName) (args: [SwiftGodot.Variant]) -> SwiftGodot.Variant? {\n"
+        var genMethod = "func _mproxy_\(funcName) (args: borrowing Arguments) -> SwiftGodot.Variant? {\n"
         var retProp: String? = nil
         var retOptional: Bool = false
-		
+        
         if let effects = funcDecl.signature.effectSpecifiers,
            effects.asyncSpecifier?.presence == .present ||
             effects.throwsSpecifier?.presence == .present {
@@ -27,10 +27,10 @@ public struct GodotCallable: PeerMacro {
         
         if let (retType, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
             retProp = godotTypeToProp (typeName: retType)
-            genMethod.append ("\tlet result = \(funcName) (")
+            genMethod.append ("    let result = \(funcName) (")
             retOptional = ro
         } else {
-            genMethod.append ("\t\(funcName) (")
+            genMethod.append ("    \(funcName) (")
         }
         //     let result = computeGodot (String (args [0]), Int (args [1]))
         
@@ -56,9 +56,9 @@ public struct GodotCallable: PeerMacro {
             } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
                 genMethod.append ("GArray (args [\(argc)])!.compactMap(\(elementType).makeOrUnwrap)")
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(value: \(elementType).makeOrUnwrap($1)!) }")
+                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
             } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(value: \(elementType).makeOrUnwrap($1)!) }")
+                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
             } else {
                 genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
             }
@@ -69,15 +69,15 @@ public struct GodotCallable: PeerMacro {
         genMethod.append (")\n")
         if retProp != nil {
             if retOptional {
-                genMethod.append ("\tguard let result else { return nil }\n")
+                genMethod.append ("    guard let result else { return nil }\n")
             }
             if funcDecl.returnTypeIsArray, let elementTypeName = funcDecl.arrayElementType {
-                genMethod.append ("\treturn Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(value: Variant($1)) })\n")
+                genMethod.append ("    return Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(Variant($1)) })\n")
             } else {
-                genMethod.append ("\treturn Variant (result)\n")
+                genMethod.append ("    return Variant (result)\n")
             }
         } else {
-            genMethod.append ("\treturn nil\n")
+            genMethod.append ("    return nil\n")
         }
         if genMethod != "" {
             genMethod.append("}\n")

@@ -40,6 +40,9 @@ Going in depth with SwiftGodot:
 - <doc:BindingNodes>
 - <doc:RunningInEditor>
 
+### Platform Integration
+
+- <doc:iOS>
 
 ### Godot Nodes
 

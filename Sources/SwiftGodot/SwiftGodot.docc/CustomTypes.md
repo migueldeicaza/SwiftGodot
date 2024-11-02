@@ -66,7 +66,7 @@ func setupScene (level: GDExtension.InitializationLevel) {
 
 /// This is the entry point referenced from the `.gdextension` file
 /// that you used to declare the Swift extension:
-@_cdecl ("swift_entry_point")
+@_cdecl("swift_entry_point")
 public func swift_entry_point(
     interfacePtr: OpaquePointer?,
     libraryPtr: OpaquePointer?,

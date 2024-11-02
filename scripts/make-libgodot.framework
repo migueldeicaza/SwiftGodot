@@ -1,10 +1,13 @@
-if test x$2 = x; then
-   echo usage is: make-libgodot.framework GODOT_DIR OUTPUT_DIR
+if test x$3 = x; then
+   echo usage is: make-libgodot.framework GODOT_DIR OUTPUT_DIR LIPO_DIR
    echo provide the base directory to where your LibGodot was built
+   echo the LIPO_DIR is the directory where you have a lipo-ed version of
+   echo libgodot for Mac
    exit 1
 fi
 DIR=$1
 ODIR=$2
+LIPODIR=$3
 rm -rf $ODIR/libgodot.xcframework
 tmp=/tmp/dir-$$
 mkdir $tmp
@@ -20,5 +23,5 @@ module libgodot {
 }
 EOF
 
-xcodebuild -create-xcframework -library $DIR/bin/libgodot.macos*.dylib -headers $tmp -output $ODIR/libgodot.xcframework
+xcodebuild -create-xcframework -library $LIPODIR/libgodot.dylib -headers $tmp -output $ODIR/libgodot.xcframework
 rm -rf /tmp/dir-$$

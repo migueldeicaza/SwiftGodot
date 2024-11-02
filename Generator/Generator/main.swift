@@ -10,9 +10,36 @@ import ExtensionApi
 
 var args = CommandLine.arguments
 
-let jsonFile = args.count > 1 ? args [1] : "/Users/miguel/cvs/SwiftGodot/Sources/ExtensionApi/extension_api.json"
-var generatorOutput = args.count > 2 ? args [2] : "/Users/miguel/cvs/SwiftGodot-DEBUG"
-var docRoot =  args.count > 3 ? args [3] : "/Users/miguel/cvs/godot-master/doc"
+var rootUrl: URL {
+    let url = URL(fileURLWithPath: #file) // SwiftGodot/Generator/Generator/main.swift
+        .deletingLastPathComponent() // SwiftGodot/Generator/Generator
+        .deletingLastPathComponent() // SwiftGodot/Generator
+        .deletingLastPathComponent() // SwiftGodot
+    return url
+}
+
+var defaultExtensionApiJsonUrl: URL {
+    rootUrl
+        .appendingPathComponent("Sources")
+        .appendingPathComponent("ExtensionApi")
+        .appendingPathComponent("extension_api.json")
+}
+
+var defaultGeneratorOutputlUrl: URL {
+    rootUrl
+        .appendingPathComponent("GeneratedForDebug")
+        .appendingPathComponent("Sources")
+}
+
+var defaultDocRootUrl: URL {
+    rootUrl
+        .appendingPathComponent("GeneratedForDebug")
+        .appendingPathComponent("Docs")
+}
+
+let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
+var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
+var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
 let outputDir = args.count > 2 ? args [2] : generatorOutput
 let generateResettableCache = false 
 
@@ -20,11 +47,16 @@ let generateResettableCache = false
 var singleFile = args.contains("--singlefile")
 
 if args.count < 2 {
-    print ("Usage is: generator path-to-extension-api output-directory doc-directory")
-    print ("- path-to-extensiona-ppi is the full path to extension_api.json from Godot")
-    print ("- output-directory is where the files will be placed")
-    print ("- doc-directory is the Godot documentation resides (godot/doc)")
-    print ("Running with Miguel's testing defaults")
+    print("""
+    Usage is: generator path-to-extension-api output-directory doc-directory
+    - path-to-extension-api is the full path to extension_api.json from Godot
+    - output-directory is where the files will be placed
+    - doc-directory is the Godot documentation resides (godot/doc)
+    Running with defaults:
+        path-to-extension-api = "\(jsonFile)"
+        output-directory = "\(outputDir)"
+        doc-directory = "\(docRoot)"
+    """)
 }
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
@@ -32,7 +64,12 @@ let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
 // Determines whether a built-in type is defined as a structure, this means:
 // that it has fields and does not have a "handle" pointer to the native object
-var isStructMap: [String:Bool] = [:]
+//
+// The map is agumented during the JSON file processing
+var isStructMap: [String:Bool] = [
+    "const void*": true,
+    "AudioFrame*": true
+]
 
 func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel (enumKey)
@@ -55,8 +92,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 }
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
-
-print ("Running with projectDir=$(projectDir) and output=\(outputDir)")
 
 // Maps from a the class name to its definition
 var classMap: [String:JGodotExtensionAPIClass] = [:]
@@ -113,15 +148,26 @@ if singleFile {
     try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
 }
 
+//#if os(Windows)
+//// Because we generate too many symbols for Windows to be able to compile the library
+//// we eliminate some rare classes from the build.   This is a temporary hack to unblock
+//// people while I split SwiftGodot into smaller chunks.
+//skipList.insert("RenderingServer")
+//skipList.insert("WebXRInterface")
+//skipList.insert("OpenXRInterface")
+//#endif
+
 let semaphore = DispatchSemaphore(value: 0)
 let _ = Task {
     let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
     coreDefPrinter.preamble()
+    generateUnsafePointerHelpers(coreDefPrinter)
     generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
     await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
     await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
     await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
     generateCtorPointers (coreDefPrinter)
+    generateNativeStructures (coreDefPrinter, values: jsonApi.nativeStructures)
     if let generatedBuiltinDir {
         coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
     }

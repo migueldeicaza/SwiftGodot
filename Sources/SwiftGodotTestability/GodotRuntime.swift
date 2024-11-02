@@ -5,6 +5,7 @@
 //  Created by Mikhail Tishin on 22.10.2023.
 //
 
+import Foundation
 import libgodot
 @testable import SwiftGodot
 
@@ -77,7 +78,12 @@ private extension GodotRuntime {
             }
         )
 
-        let args = ["SwiftGodotKit", "--headless"]
+        // Godot crashes in -[GodotApplicationDelegate applicationDidFinishLaunching:] if __CFBundleIdentifier isn't set.
+        // Terminal sets this automatically. Xcode does not.
+        // If it's set to something that isn't the main bundle ID, Godot hacks macOS into treating the process as an interactive Mac app, which is desirable.
+        setenv("__CFBundleIdentifier", "SwiftGodotKit", 0)
+
+        let args = ["SwiftGodotKit", "--headless", "--verbose"]
         withUnsafePtr (strings: args) { ptr in
             godot_main (Int32 (args.count), ptr)
         }

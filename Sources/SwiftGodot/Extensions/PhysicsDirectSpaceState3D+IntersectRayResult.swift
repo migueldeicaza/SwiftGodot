@@ -1,5 +1,5 @@
 //
-//  PhysicsDirectSpaceState3D+IntersectRayResult
+//  PhysicsDirectSpaceState3D+IntersectRayResult.swift
 //
 //
 //  Created by Estevan Hernandez on 12/24/23.

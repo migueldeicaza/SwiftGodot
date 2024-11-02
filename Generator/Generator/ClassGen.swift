@@ -202,19 +202,21 @@ func generateVirtualProxy (_ p: Printer,
 }
 
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
+// Notice that the type is looked up as the original Godot name, not
+// the mapped name (it is "Array", not "GArray"):
 let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
-    "GArray": ["append"],
+    "Array": ["resize"],
     "PackedByteArray": ["append", "push_back"],
-    "PackedColorArray": ["append", "push_back"],
-    "PackedFloat32Array": ["append", "push_back"],
-    "PackedFloat64Array": ["append", "push_back"],
-    "PackedInt32Array": ["append", "push_back"],
-    "PackedInt64Array": ["append", "push_back"],
-    "PackedStringArray": ["append", "push_back"],
-    "PackedVector2Array": ["append", "push_back"],
-    "PackedVector3Array": ["append", "push_back"],
-    "PackedVector4Array": ["append", "push_back"],
+    "PackedColorArray": ["append", "push_back", "resize"],
+    "PackedFloat32Array": ["append", "push_back", "resize"],
+    "PackedFloat64Array": ["append", "push_back", "resize"],
+    "PackedInt32Array": ["append", "push_back", "resize"],
+    "PackedInt64Array": ["append", "push_back", "resize"],
+    "PackedStringArray": ["append", "push_back", "resize"],
+    "PackedVector2Array": ["append", "push_back", "resize"],
+    "PackedVector3Array": ["append", "push_back", "resize"],
+    "PackedVector4Array": ["append", "push_back", "resize"],
     "CharacterBody2D": ["move_and_slide"],
     "CharacterBody3D": ["move_and_slide"],
     "RefCounted": ["reference", "unreference"]
@@ -240,7 +242,14 @@ let omittedMethodsList: [String: Set<String>] = [
 
 // Dictionary used to explicitly tell the generator to replace the first argument label with "_ "
 let omittedFirstArgLabelList: [String: Set<String>] = [
-    "GArray": ["append"]
+    "GArray": ["append"],
+    "PackedColorArray": ["append"],
+    "PackedFloat64Array": ["append"],
+    "PackedInt64Array": ["append"],
+    "PackedStringArray": ["append"],
+    "PackedVector2Array": ["append"],
+    "PackedVector3Array": ["append"],
+
 ]
 
 /// Determines if the first argument name should be replaced with an underscore.
@@ -269,9 +278,11 @@ func generateMethods (_ p: Printer,
     
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
-    for method in methods {        
-        if let virtualMethodName = methodGen (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, kind: .class, asSingleton: asSingleton) {
-            virtuals [method.name] = (virtualMethodName, method)
+    for method in methods {
+        performExplaniningNonCriticalErrors {
+            if let virtualMethodName = try generateMethod (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, generatedMethodKind: .classMethod, asSingleton: asSingleton) {
+                virtuals[method.name] = (virtualMethodName, method)
+            }
         }
     }
     
@@ -451,9 +462,11 @@ func generateProperties (_ p: Printer,
 }
 
 #if false
-var okList = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer", "AudioStreamPlayer", "PackedScene", "PathFollow2D", "InputEvent", "ClassDB", "AnimatedSprite2D", "Input", "CollisionShape2D", "SpriteFrames", "RigidBody2D" ]
+var okList: Set<String> = [ "RefCounted", "Node", "Sprite2D", "Node2D", "CanvasItem", "Object", "String", "StringName", "AStar2D", "Material", "Camera3D", "Node3D", "ProjectSettings", "MeshInstance3D", "BoxMesh", "SceneTree", "Window", "Label", "Timer", "AudioStreamPlayer", "PackedScene", "PathFollow2D", "InputEvent", "ClassDB", "AnimatedSprite2D", "Input", "CollisionShape2D", "SpriteFrames", "RigidBody2D" ]
+var skipList = Set<String>()
 #else
-var okList: [String] = []
+var okList = Set<String>()
+var skipList = Set<String>()
 #endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) async {
@@ -525,13 +538,22 @@ func generateSignalType (_ p: Printer, _ cdef: JGodotExtensionAPIClass, _ signal
                 lambdaIgnore += ", "
                 lambdaFull += ", "
             }
-            args += getArgumentDeclaration(arg, eliminate: "_ ", isOptional: false)
+            args += getArgumentDeclaration(arg, omitLabel: true, isOptional: false)
             let construct: String
             
             if let _ = classMap [arg.type] {
                 argUnwrap += "var ptr_\(argIdx): UnsafeMutableRawPointer?\n"
                 argUnwrap += "args [\(argIdx)].toType (Variant.GType.object, dest: &ptr_\(argIdx))\n"
-                construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(arg.type) (nativeHandle: ptr_\(argIdx)!)"
+                let handleResolver: String
+                if hasSubclasses.contains(cdef.name) {
+                    // If the type we are bubbling up has subclasses, we want to create the most
+                    // derived type if possible, so we perform the longer lookup
+                    handleResolver = "lookupObject (nativeHandle: ptr_\(argIdx)!) ?? "
+                } else {
+                    handleResolver = ""
+                }
+                
+                construct = "lookupLiveObject (handleAddress: ptr_\(argIdx)!) as? \(arg.type) ?? \(handleResolver)\(arg.type) (nativeHandle: ptr_\(argIdx)!)"
             } else if arg.type == "String" {
                     construct = "\(mapTypeName(arg.type)) (args [\(argIdx)])!.description"
             } else if arg.type == "Variant" {
@@ -643,18 +665,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     }
     
     let inherits = cdef.inherits ?? "Wrapped"
-    var conformances: [String] = []
-    if cdef.name == "Object" {
-        conformances.append("GodotObject")
-    }
-    var proto = ""
-    if conformances.count > 0 {
-        proto = ", " + conformances.joined(separator: ", ")
-    } else {
-        proto = ""
-    }
-    
-    let typeDecl = "open class \(cdef.name): \(inherits)\(proto)"
+    let typeDecl = "open class \(cdef.name): \(inherits)"
     
     var virtuals: [String: (String, JGodotClassMethod)] = [:]
     if cdef.brief_description == "" {
@@ -685,7 +696,18 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             }
         }
         p ("override open class var godotClassName: StringName { \"\(cdef.name)\" }")
-        
+
+        if cdef.name == "RefCounted" {
+            p ("public required init ()") {
+                p ("super.init ()")
+                p ("_ = initRef()")
+            }
+            p ("public required init(nativeHandle: UnsafeRawPointer)") {
+                p ("super.init (nativeHandle: nativeHandle)")
+                p ("reference()")
+                p ("ownsHandle = true")
+            }
+        }
         var referencedMethods = Set<String>()
         
         if let enums = cdef.enums {
@@ -710,7 +732,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
 
         // Remove code that we did not want generated
-        if okList.count > 0 && !okList.contains (cdef.name) {
+        if skipList.contains (cdef.name) || (okList.count > 0 && !okList.contains (cdef.name)) {
             p.result = oResult
         }
     }
@@ -722,7 +744,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
                 print ("Internal error: in processClass \(cdef.name)")
                 continue
             }
-            if okList.count == 0 || okList.contains (cdef.name) {
+            if !skipList.contains (cdef.name) && (okList.count == 0 || okList.contains (cdef.name)) {
                 generateVirtualProxy(p, cdef: cdef, methodName: methodName, method: methodDef)
             }
         }

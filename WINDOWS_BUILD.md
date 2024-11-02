@@ -22,6 +22,55 @@ The issue of shared libraries comes down to the extension name of
 shared libraries (you need to use `.dll` instead of `.dylib` or `.so`)
 when describing those in your extension file.
 
+You will also need to copy the swift standard library DLLs. The default installer adds them to 
+`C:/Users/[USER]/AppData/Local/Programs/Swift/Runtimes/[Swift Version]/usr/bin`
+
+Also add this section to your godot `.gdextension` after the `libraries` sections. This allows the dlls to copy automatically when exporting your project.
+
+```
+[dependencies]
+windows.debug = {
+    "res://bin/BlocksRuntime.dll" : "",
+    "res://bin/dispatch.dll" : "",
+    "res://bin/Foundation.dll" : "",
+    "res://bin/FoundationNetworking.dll" : "",
+    "res://bin/FoundationXML.dll" : "",
+    "res://bin/swiftCore.dll" : "",
+    "res://bin/swiftCRT.dll" : "",
+    "res://bin/swiftDispatch.dll" : "",
+    "res://bin/swiftDistributed.dll" : "",
+    "res://bin/swiftObservation.dll" : "",
+    "res://bin/swiftRegexBuilder.dll" : "",
+    "res://bin/swiftRemoteMirror.dll" : "",
+    "res://bin/swiftSwiftOnoneSupport.dll" : "",
+    "res://bin/swiftWinSDK.dll" : "",
+    "res://bin/swift_Concurrency.dll" : "",
+    "res://bin/swift_Differentiation.dll" : "",
+    "res://bin/swift_RegexParser.dll" : "",
+    "res://bin/swift_StringProcessing.dll" : "",
+}
+windows.release = {
+    "res://bin/BlocksRuntime.dll" : "",
+    "res://bin/dispatch.dll" : "",
+    "res://bin/Foundation.dll" : "",
+    "res://bin/FoundationNetworking.dll" : "",
+    "res://bin/FoundationXML.dll" : "",
+    "res://bin/swiftCore.dll" : "",
+    "res://bin/swiftCRT.dll" : "",
+    "res://bin/swiftDispatch.dll" : "",
+    "res://bin/swiftDistributed.dll" : "",
+    "res://bin/swiftObservation.dll" : "",
+    "res://bin/swiftRegexBuilder.dll" : "",
+    "res://bin/swiftRemoteMirror.dll" : "",
+    "res://bin/swiftSwiftOnoneSupport.dll" : "",
+    "res://bin/swiftWinSDK.dll" : "",
+    "res://bin/swift_Concurrency.dll" : "",
+    "res://bin/swift_Differentiation.dll" : "",
+    "res://bin/swift_RegexParser.dll" : "",
+    "res://bin/swift_StringProcessing.dll" : "",
+}
+
+```
 
 ## Building
 

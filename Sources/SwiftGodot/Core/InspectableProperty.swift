@@ -8,7 +8,7 @@
 /// A structure that houses a property that can be added to a Godot inspector.
 public struct InspectableProperty<T> {
     /// A typealias for the the method type used to register a property to Godot for inspectors.
-    public typealias RegisteredPropertyFunction = (T) -> ([Variant]) -> Variant?
+    public typealias RegisteredPropertyFunction = (T) -> (borrowing Arguments) -> Variant?
 
     /// The host object the property derives from.
     public let hostObject: T.Type

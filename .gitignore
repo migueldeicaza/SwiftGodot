@@ -14,3 +14,8 @@ build-docs.log
 *rej
 *orig
 \#*
+/libgodot.xcframework/
+Package.resolved
+/.vscode
+.swiftpm/xcode/xcshareddata/xcschemes
+GeneratedForDebug/

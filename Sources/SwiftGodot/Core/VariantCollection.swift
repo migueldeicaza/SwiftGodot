@@ -24,24 +24,13 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
 
     /// Initializes the collection using an array literal, for example: `let variantCollection: VariantCollection<Int> = [0]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
-		array = elements.reduce(into: .init(Element.self)) {
+        array = elements.reduce(into: .init(Element.self)) {
             $0.append(Variant($1))
-		}
+        }
     }
     
     init (content: Int64) {
-        array = GArray (content: content)
-        
-        // Explanation: we already own this reference, and what we were doing here was
-        // creating a nested array that was taking a reference.
-        //
-        // I should add support to the generator to produce a GArray internal constructor
-        // that can take this existing reference, rather than calling the constructor that
-        // makes the copy.
-        var copy = content
-        // Array took a reference, we do not need to take it.
-        GArray.destructor (&copy)
-
+        array = GArray(alreadyOwnedContent: content)
     }
     
     /// Initializes the collection with an empty typed GArray

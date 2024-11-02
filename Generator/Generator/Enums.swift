@@ -98,7 +98,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 }
                 return snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
             }
-            
+
             var debugLines: [String] = []
             for enumVal in enumDef.values {
                 guard let name = getName (enumVal) else { continue }
@@ -109,6 +109,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     prefix = ""
                 }
                 used.insert(enumVal.value)
+
                 doc (p, cdef, enumVal.description)
                 let enumName = escapeSwift(name)
                 p ("\(prefix)case \(enumName) = \(enumVal.value) // \(enumVal.name)")

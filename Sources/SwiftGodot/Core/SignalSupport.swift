@@ -29,7 +29,7 @@ public class SignalProxy: Object {
     } ()
     
     /// The code invoked when Godot invokes the `proxy` method on this object.
-    public typealias Proxy = ([Variant]) -> ()
+    public typealias Proxy = (borrowing Arguments) -> ()
     public var proxy: Proxy?
     
     public required init () {
@@ -41,7 +41,7 @@ public class SignalProxy: Object {
         super.init (nativeHandle: nativeHandle)
     }
     
-    func proxyFunc (args: [Variant]) -> Variant? {
+    func proxyFunc (args: borrowing Arguments) -> Variant? {
         proxy? (args)
         return nil
     }
