@@ -32,8 +32,10 @@ func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: A
     
     var def: String = ""
     if var dv = argument.defaultValue, dv != "" {
-        func dvMissing (_ kind: String) {
-            print ("Generator/default_value: no support for [\(kind)] = \(dv)")
+        func dvMissing(_ kind: String) {
+            #if WARN_MISSING
+                print("Generator/default_value: no support for [\(kind)] = \(dv)")
+            #endif
         }
         
         let argumentType = argument.type

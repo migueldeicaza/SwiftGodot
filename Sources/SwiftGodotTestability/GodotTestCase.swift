@@ -6,93 +6,103 @@
 //
 
 import XCTest
+
 @testable import SwiftGodot
 
+/// Base class for all test cases that run in the Godot runtime.
 open class GodotTestCase: XCTestCase {
-    
-    private static var testSuites: [XCTestSuite] = []
-    
-    override open class var defaultTestSuite: XCTestSuite {
-        let testSuite = super.defaultTestSuite
-        testSuites.append (testSuite)
-        return testSuite
+    open override var testRunClass: AnyClass? {
+        // use a dummy run if the engine isn't running to avoid generating output
+        !GodotRuntime.isRunning ? DummyTestRun.self : super.testRunClass
     }
-    
-    override open func run () {
+
+    override open func run() {
+        // We will be run twice - once in the normal XCTest runtime,
+        // and once in the Godot runtime. We only want to actually
+        // run the tests in the Godot runtime.
         if GodotRuntime.isRunning {
-            super.run ()
-        } else {
-            guard !GodotRuntime.isInitialized else { return }
-            GodotRuntime.run {
-                if !Self.testSuites.isEmpty {
-                    // Executing all test suites from the context
-                    for testSuite in Self.testSuites {
-                        testSuite.perform (XCTestSuiteRun (test: testSuite))
-                    }
-                } else {
-                    Self.godotSetUp ()
-                    // Executing single test method
-                    super.run ()
-                    Self.godotTearDown ()
-                }
-                
-                GodotRuntime.stop ()
-            }
+            super.run()
         }
     }
     
+    override open class func setUp() {
+        if GodotRuntime.isRunning {
+            // register any types that are needed for the tests
+            for subclass in godotSubclasses {
+                register(type: subclass)
+            }
+        }
+    }
+
+    override open class func tearDown() {
+        if GodotRuntime.isRunning {
+            // unregister any types that were registered for the tests
+            for subclass in godotSubclasses {
+                unregister(type: subclass)
+            }
+        }
+    }
+
+    override open func tearDown() async throws {
+        if GodotRuntime.isRunning {
+            // clean up test objects
+            let liveObjects: [Wrapped] = Array(liveFrameworkObjects.values) + Array(liveSubtypedObjects.values)
+            for liveObject in liveObjects {
+                switch liveObject {
+                case let node as Node:
+                    node.queueFree()
+                case let refCounted as RefCounted:
+                    refCounted._exp_unref()
+                case let object as Object:
+                    _ = object.call(method: "free")
+                default:
+                    print("Unable to free \(liveObject)")
+                }
+            }
+            liveFrameworkObjects.removeAll()
+            liveSubtypedObjects.removeAll()
+
+            // waiting for queueFree to take effect
+            let scene = try GodotRuntime.getScene()
+            await scene.processFrame.emitted
+        }
+    }
+
+    /// List of types that need to be registered in the Godot runtime.
+    /// Subclasses should override this to return the types they need.
     open class var godotSubclasses: [Wrapped.Type] {
         return []
     }
-    
-    open class func godotSetUp () {
-        for subclass in godotSubclasses {
-            register (type: subclass)
-        }
-    }
-    
-    open class func godotTearDown () {
-        for subclass in godotSubclasses {
-            unregister (type: subclass)
-        }
-    }
-    
-    override open class func setUp () {
-        if GodotRuntime.isRunning {
-            godotSetUp ()
-        }
-    }
-    
-    override open class func tearDown () {
-        if GodotRuntime.isRunning {
-            godotTearDown ()
-        }
-    }
-    
-    override open func tearDown () async throws {
-        // Cleaning up test objects
-        let liveObjects: [Wrapped] = Array (liveFrameworkObjects.values) + Array (liveSubtypedObjects.values)
-        for liveObject in liveObjects {
-            switch liveObject {
-            case let node as Node:
-                node.queueFree ()
-            case let refCounted as RefCounted:
-                refCounted._exp_unref ()
-            case let object as Object:
-                _ = object.call (method: "free")
-            default:
-                print ("Unable to free \(liveObject)")
-            }
-        }
-        liveFrameworkObjects.removeAll ()
-        liveSubtypedObjects.removeAll ()
-        
-        // Waiting for queueFree to take effect
-        let scene = try GodotRuntime.getScene ()
-        await scene.processFrame.emitted
-    }
-    
+
 }
+
+/// Test run which does nothing.
+/// We return one of these when a Godot test is run
+/// without the test engine running. This avoids having
+/// duplicate runs of the test appear in the output.
+open class DummyTestRun: XCTestCaseRun {
+    override init(test: XCTest) {
+        super.init(test: XCTestCase())
+    }
+    open override func start() {
+    }
+    open override func stop() {
+    }
+    open override func record(_ issue: XCTIssue) {
+    }
+    open override var hasBeenSkipped: Bool { true }
+    open override var hasSucceeded: Bool { false }
+    open override var skipCount: Int { 0 }
+    open override var failureCount: Int { 0 }
+    open override var executionCount: Int { 0 }
+    open override var testCaseCount: Int { 0 }
+    open override var unexpectedExceptionCount: Int { 0 }
+    open override var totalFailureCount: Int { 0 }
+
+    open override var totalDuration: TimeInterval { 0 }
+    open override var testDuration: TimeInterval { 0 }
+}
+/// Godot testing support.
 
 public extension GodotTestCase {
     

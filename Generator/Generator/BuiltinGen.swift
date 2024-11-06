@@ -936,7 +936,7 @@ private let customBuiltinMethodImplementations: [MethodSignature: String] = [
     
     "Vector3.length": """
     // https://github.com/godotengine/godot/blob/f7c567e2f56d6e63f4749387a67e5ea4903c4696/core/math/vector3.h#L476-L481
-    return Double(sqrt(x * x + y * y + z * z))    
+    return sqrt(Double(x * x + y * y + z * z))   
     """,
     
     "Vector3.lengthSquared": """

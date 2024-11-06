@@ -42,7 +42,7 @@ GArray:
 
 * ``VariantCollection`` that holds any ``Variant`` instances.
 
-* ``ObjectCollection`` that holds any ``SwiftGodot.Object`` instances.
+* ``ObjectCollection`` that holds any ``Object`` instances.
 
 ## GDScript Helper Functions
 

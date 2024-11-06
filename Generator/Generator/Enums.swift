@@ -103,7 +103,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 }
                 return snakeToCamel(enumVal.name.dropPrefix(enumCasePrefix))
             }
-            
+
             var debugLines: [String] = []
             for enumVal in enumDef.values {
                 if droppedCases.contains("\(enumDef.name).\(enumVal.name)") {
@@ -118,6 +118,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     prefix = ""
                 }
                 used.insert(enumVal.value)
+
                 doc (p, cdef, enumVal.description)
                 let enumName = escapeSwift(name)
                 if "\(enumDef.name).\(enumVal.name)" == "Variant.Type.TYPE_NIL" {
