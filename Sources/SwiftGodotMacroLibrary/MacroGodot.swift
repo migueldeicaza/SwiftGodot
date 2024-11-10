@@ -553,6 +553,7 @@ public struct GodotMacro: MemberMacro {
             return []
         }
         
+        
         let processor = GodotMacroProcessor(classDecl: classDecl)
         do {
             let classInit = try processor.processType()
