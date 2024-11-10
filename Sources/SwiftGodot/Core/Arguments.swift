@@ -107,7 +107,7 @@ public struct Arguments: ~Copyable {
                 } catch let error as ArgumentAccessError {
                     fatalError(error.description)
                 } catch {
-                    fatalError(error.localizedDescription)
+                    fatalError(error)
                 }
             }
         }
