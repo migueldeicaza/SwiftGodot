@@ -59,8 +59,8 @@ private extension GodotRuntime {
                 guard let godotGetProcAddr else {
                     return 0
                 }
-                let bit = unsafeBitCast (godotGetProcAddr, to: OpaquePointer.self)
-                setExtensionInterface (to: bit, library: OpaquePointer (libraryPtr!))
+                let interface = LibGodotExtensionInterface(library: libraryPtr, getProcAddrFun: godotGetProcAddr)
+                setExtensionInterface(interface: interface)
                 godotLibrary = OpaquePointer (libraryPtr)!
                 extensionInit?.pointee = GDExtensionInitialization (
                     minimum_initialization_level: GDEXTENSION_INITIALIZATION_CORE,
