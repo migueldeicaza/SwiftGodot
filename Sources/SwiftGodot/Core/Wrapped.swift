@@ -123,6 +123,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     deinit {
         if ownsHandle {
             if let handle {
+                guard extensionInterface.objectShouldDeinit(handle: handle) else { return }
 #if DEBUG_INSTANCES
                 let type = xmap[handle] ?? "unknown"
                 let txt = "DEINIT for object=\(type) handle=\(handle)"
@@ -169,6 +170,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             print ("deinit: we do not own this object, nothing to do: object=\(txt) handle=\(handle)")
 #endif
         }
+        extensionInterface.objectDeinited(object: self)
     }
     static var userTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: userTypeBindingCreate,
@@ -185,7 +187,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public var godotClassName: StringName {
         var sc: StringName.ContentType = StringName.zero
         
-        if gi.object_get_class_name (handle, library, &sc) != 0 {
+        if gi.object_get_class_name (handle, extensionInterface.getLibrary(), &sc) != 0 {
             let sn = StringName(content: sc)
             return sn
         }
@@ -236,6 +238,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public required init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
         ownsHandle = false
+        extensionInterface.objectInited(object: self)
 #if DEBUG_INSTANCES
         xmap [nativeHandle] = "\(self)"
         print ("Init Object From Handle: \(nativeHandle) -> \(self)")
@@ -267,6 +270,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
 #endif
         bindGodotInstance(instance: self, handle: handle)
         let _ = Self.classInitializer
+        extensionInterface.objectInited(object: self)
     }
     
     open class var godotClassName: StringName {
@@ -308,7 +312,7 @@ func bindGodotInstance(instance: some Wrapped, handle: UnsafeRawPointer) {
         }
     }
     
-    gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle), token, retain.toOpaque(), &callbacks)
+    gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle),  extensionInterface.getLibrary(), retain.toOpaque(), &callbacks)
 }
 
 var userTypes: [String:(UnsafeRawPointer)->Wrapped] = [:]
@@ -356,7 +360,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.class_userdata = retained.toOpaque()
     
     withUnsafePointer(to: &parent.content) { parentPtr in
-        gi.classdb_register_extension_class (library, &nameContent, parentPtr, &info)
+        gi.classdb_register_extension_class (extensionInterface.getLibrary(), &nameContent, parentPtr, &info)
     }
 }
 
@@ -378,7 +382,7 @@ public func unregister<T:Wrapped> (type: T.Type) {
     let name = StringName (typeStr)
     pd ("Unregistering \(typeStr)")
     withUnsafePointer (to: &name.content) { namePtr in
-        gi.classdb_unregister_extension_class (library, namePtr)
+        gi.classdb_unregister_extension_class (extensionInterface.getLibrary(), namePtr)
     }
 }
 
@@ -438,7 +442,7 @@ func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer) -> T? {
     }
     var className: String = ""
     var sc: StringName.ContentType = StringName.zero
-    if gi.object_get_class_name (nativeHandle, library, &sc) != 0 {
+    if gi.object_get_class_name (nativeHandle, extensionInterface.getLibrary(), &sc) != 0 {
         let sn = StringName(content: sc)
         className = String(sn)
     } else {
@@ -625,7 +629,7 @@ struct CallableWrapper {
         
         var cci = GDExtensionCallableCustomInfo(
             callable_userdata: wrapperPtr,
-            token: token,
+            token: extensionInterface.getLibrary(),
             object_id: 0,
             call_func: invokeWrappedCallable,
             is_valid_func: nil,
