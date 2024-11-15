@@ -238,6 +238,9 @@ func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
             mod = mod.replacing(rxEnumMethodMember, with: { x in
                 switch x.output.1 {
                 case "method":
+                    if x.output.2 == "Object._notification" {
+                        return "``Wrapper._notification(code:reverse)``"
+                    }
                     return "``\(convertMethod (x.output.2))``"
                 case "member":
                     // Same as method for now?

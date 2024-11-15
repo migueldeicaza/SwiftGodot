@@ -5,9 +5,9 @@
 [![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmigueldeicaza%2FSwiftGodot%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/migueldeicaza/SwiftGodot)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?maxAge=2592000)](https://raw.githubusercontent.com/migueldeicaza/SwiftGodot/main/LICENSE)
 
-SwiftGodot provides Swift language bindings for the Godot 4.2 game
+SwiftGodot provides Swift language bindings for the Godot 4.3 game
 engine using the new [GDExtension](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html) system (for 4.1 compatibility, use
-the 4.1 branch, preview for upcoming 4.3 release is in the 4.3 branch).
+the 4.1 branch, for 4.2 compatibility use the 4.2 branch).
 
 SwiftGodot can be used to either build an extension that can be added
 to an existing Godot project, where your code is providing services
