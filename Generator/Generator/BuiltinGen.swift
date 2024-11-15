@@ -710,7 +710,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if bc.name == "Callable" {
                 p ("/// Creates a Callable instance from a Swift function")
                 p ("/// - Parameter callback: the swift function that receives `Arguments`, and returns a `Variant`")
-                p ("public init(_ callback: @escaping (borrowing Arguments) -> Variant)") {
+                p ("public init(_ callback: @escaping (borrowing Arguments) -> Variant?)") {
                     p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
 

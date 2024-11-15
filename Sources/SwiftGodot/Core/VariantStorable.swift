@@ -41,8 +41,8 @@ extension VariantStorable {
 
     /// Unwraps an object from a variant.
     @available(*, deprecated, renamed: "unwrap(from:)", message: "Renamed to better reflect the semantics")
-    public static func makeOrUnwrap(_ variant: Variant) -> Self? where Self: Object {
-        return variant.asObject()
+    public static func makeOrUnwrap(_ variant: Variant?) -> Self? where Self: Object {
+        return variant?.asObject()
     }
     
     /// Unwraps an object from a variant.
