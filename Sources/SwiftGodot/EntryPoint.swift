@@ -5,63 +5,14 @@
 //
 //
 
-import GDExtension
-
-public protocol ExtensionInterface {
-
-    func variantShouldDeinit(content: GDExtensionVariantPtr) -> Bool
-
-    func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool
-
-    func objectInited(object: Wrapped)
-
-    func objectDeinited(object: Wrapped)
-
-    func getLibrary() -> GDExtensionClassLibraryPtr
-
-    func getProcAddr() -> GDExtensionInterfaceGetProcAddress
-
-}
-
-public class LibGodotExtensionInterface : ExtensionInterface {
-
-    /// If your application is crashing due to the Variant leak fixes, please
-    /// enable this flag, and provide me with a test case, so I can find that
-    /// pesky scenario.
-    public let experimentalDisableVariantUnref = false
-
-    private let library: GDExtensionClassLibraryPtr
-    private let getProcAddrFun: GDExtensionInterfaceGetProcAddress
-
-    public init(library: GDExtensionClassLibraryPtr, getProcAddrFun: GDExtensionInterfaceGetProcAddress) {
-        self.library = library
-        self.getProcAddrFun = getProcAddrFun
-    }
-
-    public func variantShouldDeinit(content: GDExtensionVariantPtr) -> Bool {
-        return !experimentalDisableVariantUnref
-    }
-
-    public func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool {
-        return true
-    }
-
-    public func objectInited(object: Wrapped) {}
-
-    public func objectDeinited(object: Wrapped) {}
-
-    public func getLibrary() -> GDExtensionClassLibraryPtr {
-        return library
-    }
-
-    public func getProcAddr() -> GDExtensionInterfaceGetProcAddress {
-        return getProcAddrFun
-    }
-
-}
+@_implementationOnly import GDExtension
 
 /// The pointer to the Godot Extension Interface
-var extensionInterface: ExtensionInterface!
+/// The library pointer we received at startup
+var library: GDExtensionClassLibraryPtr!
+var token: GDExtensionClassLibraryPtr! {
+    return library
+}
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
@@ -79,9 +30,13 @@ func loadFunctions (loader: GDExtensionInterfaceGetProcAddress) {
 /// operate.   It is only used when you use SwiftGodot embedded into an
 /// application - as opposed to using SwiftGodot purely as an extension
 ///
-public func setExtensionInterface (interface: ExtensionInterface) {
-    extensionInterface = interface
-    loadGodotInterface(interface.getProcAddr())
+public func setExtensionInterface (to: OpaquePointer?, library lib: OpaquePointer?) {
+    guard let to else {
+        print ("Expected a pointer to a GDExtensionInterfaceGetProcAddress")
+        return
+    }
+    loadGodotInterface(unsafeBitCast(to, to: GDExtensionInterfaceGetProcAddress.self))
+    library = GDExtensionClassLibraryPtr (lib)
 }
 
 // Extension initialization callback
@@ -417,15 +372,15 @@ public func initializeSwiftModule (
     initHook: @escaping (GDExtension.InitializationLevel)->(),
     deInitHook: @escaping (GDExtension.InitializationLevel)->())
 {
-    let getProcAddrFun = unsafeBitCast(godotGetProcAddrPtr, to: GDExtensionInterfaceGetProcAddress.self)
-    loadGodotInterface (getProcAddrFun)
+    loadGodotInterface (unsafeBitCast(godotGetProcAddrPtr, to: GDExtensionInterfaceGetProcAddress.self)
+    )
 
     // For now, we will only initialize the library once, so all of the SwiftGodot
     // modules are bundled together.   This is not optimal, see this bug 
     // with a description of what we should be doing:
     // https://github.com/migueldeicaza/SwiftGodot/issues/72
-    if extensionInterface == nil {
-        extensionInterface = LibGodotExtensionInterface(library: GDExtensionClassLibraryPtr(libraryPtr), getProcAddrFun: getProcAddrFun)
+    if library == nil {
+        library = GDExtensionClassLibraryPtr(libraryPtr)
     }
     extensionInitCallbacks [libraryPtr] = initHook
     extensionDeInitCallbacks [libraryPtr] = deInitHook

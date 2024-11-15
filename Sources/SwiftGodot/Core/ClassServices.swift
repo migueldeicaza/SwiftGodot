@@ -53,7 +53,7 @@ public class ClassInfo<T:Object> {
             propPtr [i] = prop.makeNativeStruct()
             i += 1
         }
-        gi.classdb_register_extension_class_signal (extensionInterface.getLibrary(), &self.name.content, &name.content, propPtr, GDExtensionInt(propInfo.count))
+        gi.classdb_register_extension_class_signal (library, &self.name.content, &name.content, propPtr, GDExtensionInt(propInfo.count))
         propPtr.deallocate()
     }
     
@@ -153,7 +153,7 @@ public class ClassInfo<T:Object> {
                 default_argument_count: 0,
                 default_arguments: nil) // GDExtensionVariantPtr)
                 withUnsafePointer(to: &self.name.content) { namePtr in
-                    gi.classdb_register_extension_class_method (extensionInterface.getLibrary(), namePtr, &info)
+                    gi.classdb_register_extension_class_method (library, namePtr, &info)
                 }
             }
         }
@@ -166,7 +166,7 @@ public class ClassInfo<T:Object> {
         let gname = GString(stringLiteral: name)
         let gprefix = GString(stringLiteral: prefix)
         
-        gi.classdb_register_extension_class_property_group (extensionInterface.getLibrary(), &self.name.content, &gname.content, &gprefix.content)
+        gi.classdb_register_extension_class_property_group (library, &self.name.content, &gname.content, &gprefix.content)
     }
     
     /// Starts a new property sub-group, all the properties declared after calling this method
@@ -175,7 +175,7 @@ public class ClassInfo<T:Object> {
         let gname = GString(stringLiteral: name)
         let gprefix = GString(stringLiteral: prefix)
         
-        gi.classdb_register_extension_class_property_subgroup (extensionInterface.getLibrary(), &self.name.content, &gname.content, &gprefix.content)
+        gi.classdb_register_extension_class_property_subgroup (library, &self.name.content, &gname.content, &gprefix.content)
     }
     
     /// Registers the property in the class with the information provided in `info`.
@@ -190,7 +190,7 @@ public class ClassInfo<T:Object> {
         var pinfo = GDExtensionPropertyInfo ()
         pinfo = info.makeNativeStruct()
         
-        gi.classdb_register_extension_class_property (extensionInterface.getLibrary(), &self.name.content, &pinfo, &setter.content, &getter.content)
+        gi.classdb_register_extension_class_property (library, &self.name.content, &pinfo, &setter.content, &getter.content)
     }
 }
 
