@@ -214,22 +214,23 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     ///  - method: the method to invoke on the target
     ///  - arguments: variable list of arguments
     /// - Returns: if there is an error, this function raises an error, otherwise, a Variant with the result is returned
-    public func callScript (method: StringName, _ arguments: Variant...) throws -> Variant {
+    public func callScript (method: StringName, _ arguments: Variant?...) throws -> Variant? {
         var args: [UnsafeRawPointer?] = []
         let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
         defer { cptr.deallocate () }
         
         for idx in 0..<arguments.count {
-            cptr [idx] = arguments [idx].content
+            cptr [idx] = arguments[idx].content
             args.append (cptr.baseAddress! + idx)
         }
-        let result: Variant = Variant()
+        var result = Variant.zero
         var error = GDExtensionCallError()
-        gi.object_call_script_method(&handle, &method.content, &args, Int64(args.count), &result.content, &error)
+        gi.object_call_script_method(&handle, &method.content, &args, Int64(args.count), &result, &error)
         if error.error != GDEXTENSION_CALL_OK {
             throw toCallErrorType(error.error)
         }
-        return result
+        
+        return Variant(takingOver: result)
     }
     
     /// For use by the framework, you should not need to call this.
@@ -611,15 +612,15 @@ struct CallableWrapper {
     }
     
     @available(*, deprecated, message: "Use version taking `@escaping (borrowing Arguments) -> Variant?` instead.")    
-    static func callableVariantContent(wrapping function: @escaping ([Variant]) -> Variant?) -> Callable.ContentType {
+    static func callableVariantContent(wrapping function: @escaping ([Variant?]) -> Variant?) -> Callable.ContentType {
         callableVariantContent { (arguments: borrowing Arguments) in
             let array = Array(arguments)
             let result = function(array)
-            return result ?? Variant()
+            return result
         }
     }
     
-    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant) -> Callable.ContentType {
+    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant?) -> Callable.ContentType {
         let wrapperPtr = UnsafeMutablePointer<Self>.allocate(capacity: 1)
         wrapperPtr.initialize(to: Self(function: function))
         

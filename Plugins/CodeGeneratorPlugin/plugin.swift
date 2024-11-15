@@ -59,7 +59,6 @@ let knownBuiltin = [
     "Color.swift",
     "core-defs.swift",
     "Dictionary.swift",
-    "Nil.swift",
     "NodePath.swift",
     "PackedByteArray.swift",
     "PackedColorArray.swift",

@@ -18,14 +18,14 @@ extension GArray {
             base: GArray(),
             type: Int32(T.Representable.godotType.rawValue),
             className: T.Representable.godotType == .object ? StringName("\(T.self)") : StringName(),
-            script: Variant()
+            script: nil
         )
     }
     
-    public subscript (index: Int) -> Variant {
+    public subscript (index: Int) -> Variant? {
         get {
             guard let ret = gi.array_operator_index (&content, Int64 (index)) else {
-                return Variant()
+                return nil
             }
             let ptr = ret.assumingMemoryBound(to: Variant.ContentType.self)
             
@@ -46,12 +46,9 @@ extension GArray {
             gi.variant_destroy(ptr)
             
             // We are giving array a copy of `newValue` Variant to manage
-            gi.variant_new_copy(ptr, &newValue.content)
+            withUnsafePointer(to: newValue.content) { src in
+                gi.variant_new_copy(ptr, src)
+            }
         }
-    }
-    
-    @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
-    public func append(value: Variant) {
-        append(value)
     }
 }

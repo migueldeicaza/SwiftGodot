@@ -15,9 +15,6 @@ import SwiftSyntaxMacros
 public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
         let funcName = funcDecl.name.text
-        var genMethod = "func _mproxy_\(funcName) (args: borrowing Arguments) -> SwiftGodot.Variant? {\n"
-        var retProp: String? = nil
-        var retOptional: Bool = false
         
         if let effects = funcDecl.signature.effectSpecifiers,
            effects.asyncSpecifier?.presence == .present ||
@@ -25,65 +22,135 @@ public struct GodotCallable: PeerMacro {
             throw GodotMacroError.unsupportedCallableEffect
         }
         
-        if let (retType, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = godotTypeToProp (typeName: retType)
-            genMethod.append ("    let result = \(funcName) (")
-            retOptional = ro
-        } else {
-            genMethod.append ("    \(funcName) (")
-        }
-        //     let result = computeGodot (String (args [0]), Int (args [1]))
+        var body = ""
         
-        if funcDecl.returnTypeIsGArrayCollection {
-            retProp = ".array"
-        }
+        let parameters = funcDecl.signature.parameterClause.parameters
         
-        var argc = 0
-        for parameter in funcDecl.signature.parameterClause.parameters {
+        var callArgsList: [String] = []
+        
+        // Is there are no arguments, there is no do-catch scope to sanitize arguments access
+        let indentation = parameters.isEmpty ? "" : "    "
+        
+        for (index, parameter) in parameters.enumerated() {
             guard let ptype = getTypeName(parameter) else {
                 throw MacroError.typeName (parameter)
             }
-            let first = parameter.firstName.text
-            if argc != 0 {
-                genMethod.append (", ")
-            }
-            if first != "_" {
-                genMethod.append ("\(first): ")
-            }
             
             if ptype == "Variant" {
-                genMethod.append ("args [\(argc)]")
-            } else if parameter.isArray, let elementType = parameter.arrayElementTypeName {
-                genMethod.append ("GArray (args [\(argc)])!.compactMap(\(elementType).makeOrUnwrap)")
+                body += """
+                        let arg\(index): Variant = try arguments.variantArgument(at: \(index))
+                
+                """
+            } else if ptype == "Variant?" {
+                body += """
+                        let arg\(index): Variant? = try arguments.optionalVariantArgument(at: \(index))
+                
+                """
+            } else if parameter.isSwiftArray, let elementType = parameter.arrayElementTypeName {
+                body += """
+                        let arg\(index): [\(elementType)] = try arguments.arrayArgument(ofType: \(elementType).self, at: \(index))
+                
+                """
             } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: VariantCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
+                body += """
+                        let arg\(index): VariantCollection<\(elementType)> = try arguments.variantCollectionArgument(ofType: \(elementType).self, at: \(index))
+                
+                """
             } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
-                genMethod.append ("GArray(args[\(argc)])!.reduce(into: ObjectCollection<\(elementType)>()) { $0.append(\(elementType).makeOrUnwrap($1)!) }")
+                body += """
+                        let arg\(index): ObjectCollection<\(elementType)> = try arguments.objectCollectionArgument(ofType: \(elementType).self, at: \(index))
+                
+                """
             } else {
-                genMethod.append ("\(ptype).makeOrUnwrap (args [\(argc)])!")
+                body += """
+                        let arg\(index): \(ptype) = try arguments.argument(ofType: \(ptype).self, at: \(index))
+                
+                """
             }
             
-            argc += 1
+            let first = parameter.firstName.text
+                        
+            let labelOrNothing = first != "_" ? "\(first): " : ""
+            callArgsList.append("\(labelOrNothing)arg\(index)")
         }
         
-        genMethod.append (")\n")
+        let callArgs = callArgsList.joined(separator: ", ")
+        
+        var retProp: String? = nil
+        var isReturnedTypeOptional: Bool = false
+        
+        if let (returnedTypeName, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
+            retProp = godotTypeToProp (typeName: returnedTypeName)
+            isReturnedTypeOptional = ro
+        }
+        
+        if funcDecl.isReturnedTypeGArrayCollection {
+            retProp = ".array"
+        }
+        
+        let resultDeclOrNothing: String
+        
+        if retProp == nil {
+            resultDeclOrNothing = ""
+        } else {
+            resultDeclOrNothing = "let result = "
+        }
+        
+        body += """
+        \(indentation)    \(resultDeclOrNothing)\(funcName)(\(callArgs))
+        
+        """
+        
         if retProp != nil {
-            if retOptional {
-                genMethod.append ("    guard let result else { return nil }\n")
+            if isReturnedTypeOptional {
+                body += """
+                \(indentation)    guard let result else { return nil }
+                
+                """
             }
-            if funcDecl.returnTypeIsArray, let elementTypeName = funcDecl.arrayElementType {
-                genMethod.append ("    return Variant ( result.reduce(into: GArray(\(elementTypeName).self)) { $0.append(Variant($1)) })\n")
+            
+            if funcDecl.isReturnedTypeSwiftArray, let elementType = funcDecl.returnedSwiftArrayElementType {
+                body += """
+                \(indentation)    return Variant(
+                \(indentation)        result.reduce(into: GArray(\(elementType).self)) { array, element in
+                \(indentation)            array.append(Variant(element))
+                \(indentation)        }
+                \(indentation)    )
+                
+                """
             } else {
-                genMethod.append ("    return Variant (result)\n")
+                body += """
+                \(indentation)    return Variant(result)  
+                  
+                """
             }
         } else {
-            genMethod.append ("    return nil\n")
+            body += """
+            \(indentation)    return nil                
+            """
         }
-        if genMethod != "" {
-            genMethod.append("}\n")
+        
+        if parameters.isEmpty {
+            return """
+            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+            \(body)                
+            }
+            """
+        } else {
+            return """
+            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+                do { // safe arguments access scope
+            \(body)        
+                } catch let error as ArgumentAccessError {
+                    GD.printErr(error.description)
+                    return nil
+                } catch {
+                    GD.printErr("Error calling `\(funcName)`: \\(error.localizedDescription)")
+                    return nil
+                }
+            }
+            """
         }
-    
-        return genMethod
     }
     
     

@@ -55,7 +55,7 @@ extension ClassInfo {
     /// - Parameter action: A closure that accepts a valid argument.
     public static func withCheckedProperty(named name: String,
                                            in arguments: borrowing Arguments,
-                                           perform action: (Variant) -> Void) -> Variant? {
+                                           perform action: (Variant?) -> Void) -> Variant? {
         guard let arg = arguments.first else {
             GD.pushError("Expected argument for \(name), but got nil instead.")
             return nil
