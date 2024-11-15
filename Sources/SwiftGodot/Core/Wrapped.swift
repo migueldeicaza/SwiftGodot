@@ -191,7 +191,16 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         return ""
     }
+
+    /// This method is posted by Godot, you can override this method and
+    /// be notified of interesting events, the values for this notification are declared on various
+    /// different types, like the constants in Object or Node.
+    ///
+    /// For example `Node.notificationProcess`
+    open func _notification(code: Int, reversed: Bool) {
+    }
     
+
     /// Checks if this object has a script with the given method.
     /// - Parameter method: StringName identifying the method.
     /// - Returns: `true` if the object has a script and that script has a method with the given name.
@@ -528,7 +537,9 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 }
 
 func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UInt8) {
-    //print ("SWIFT: Notification \(code) on \(ptr)")
+    guard let ptr else { return } 
+    let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
+    original._notification(code: Int(code), reversed: reversed != 0)
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
