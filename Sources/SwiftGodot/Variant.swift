@@ -7,6 +7,11 @@
 
 @_implementationOnly import GDExtension
 
+/// If your application is crashing due to the Variant leak fixes, please
+/// enable this flag, and provide me with a test case, so I can find that
+/// pesky scenario.
+public var experimentalDisableVariantUnref = false
+
 /// Variant objects box various Godot Objects, you create them with one of the
 /// constructors, and you can retrieve the contents using the various extension
 /// constructors that are declared on the various types that are wrapped.
@@ -84,10 +89,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     }
 
     deinit {
-        if !extensionInterface.variantShouldDeinit(content: &content) { return }
-        gi.variant_destroy(&content)
+        if experimentalDisableVariantUnref { return }
+        gi.variant_destroy (&content)
     }
-
+    
     /// Compares two variants, does this by delegating the comparison to Godot
     public static func == (lhs: Variant, rhs: Variant) -> Bool {
         var valid = GDExtensionBool (0)
