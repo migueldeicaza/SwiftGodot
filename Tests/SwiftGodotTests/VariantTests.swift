@@ -18,7 +18,12 @@ final class VariantTests: GodotTestCase {
         
         XCTAssertEqual (unwrapped, testString)
     }
-    
+
+    func testWrap() {
+        let x: Node? = Node()
+        let j = Variant(x)
+        
+    }
     func testVariantCall() {
         let string = "Hello Hello Hello Hello"
         let variant = Variant(string)
