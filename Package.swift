@@ -228,6 +228,23 @@ targets.append(contentsOf: [
     ),
 ])
 
+// This target contains “native” Swift covers of methods implemented in the engine. These native implementations avoid the overhead of calling through the Godot FFI.
+targets += [
+    .target(
+        name: "NativeCovers",
+        dependencies: ["SwiftGodot"]
+    )
+]
+
+// This product allows building of the `NativeCovers` target. It is not intended for production use.
+products += [
+    .library(
+        name: "NativeCovers",
+        type: libraryType,
+        targets: ["NativeCovers"]
+    )
+]
+
 let package = Package(
     name: "SwiftGodot",
     platforms: [
