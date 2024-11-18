@@ -44,6 +44,9 @@ The [SwiftGodotKick](https://github.com/EstevanBR/SwiftGodotKick) project can cr
 GDExtension with Swift, as well as a standalone SwiftGodotKit project that can be used to quickly
 iterate on your game on MacOS.
 
+## Swift 6 Considerations
+SwiftGodot is compatible with Swift 6. It can interact with Swift 6 libraries. However, there are some considerations to keep in mind when using Swift 6 with SwiftGodot. For more info see [Using the Swift 6 Compiler](). 
+
 # Supported Platforms
 
 Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS, or Windows platforms. It may be possible to target additional platforms, but testing for other platforms has not been completed and stability cannot be verified at this time.
