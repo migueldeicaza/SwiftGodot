@@ -360,7 +360,14 @@ func generateBuiltinOperators (_ p: Printer,
             let lhsTypeName = typeName
             let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
                         
-            let customImplementation = customBuiltinOperatorImplementations[OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName)]
+            let customImplementation: String? // = customBuiltinOperatorImplementations[OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName)]
+            
+            let key = SwiftCovers.Key(type: typeName, name: swiftOperator, parameterTypes: [lhsTypeName, rhsTypeName], returnType: retType)
+            if let body = swiftCovers.covers[key] {
+                customImplementation = body.description
+            } else {
+                customImplementation = nil
+            }
             
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
@@ -368,6 +375,7 @@ func generateBuiltinOperators (_ p: Printer,
             
             p ("public static func \(swiftOperator) (lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
                 if customImplementation != nil {
+                    
                     p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
                 }
                 

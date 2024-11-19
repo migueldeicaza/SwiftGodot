@@ -23,7 +23,7 @@ struct SwiftCovers {
         }
     }
 
-    var covers: [Key: CodeBlockSyntax] = [:]
+    var covers: [Key: String] = [:]
 
     /// Load the Swift source files from `sourceDir` and extract snippets usable as method implementations.
     init(sourceDir: URL) {
@@ -106,9 +106,7 @@ struct SwiftCovers {
             returnType: type
         )
 
-        print("found cover for \(key)")
-
-        covers[key] = body
+        covers[key] = fixCodeBlockIndentation(body)
 
         return true
     }
@@ -144,7 +142,7 @@ struct SwiftCovers {
         )
 
         print("found cover for \(key)")
-        covers[key] = body
+        covers[key] = fixCodeBlockIndentation(body)
         return true
     }
 
@@ -179,8 +177,15 @@ struct SwiftCovers {
         )
 
         print("found cover for \(key)")
-        covers[key] = body
+        covers[key] = fixCodeBlockIndentation(body)
         return true
+    }
+    
+    private func fixCodeBlockIndentation(_ block: CodeBlockSyntax) -> String {
+        var lines = block.description.split(separator: "\n")
+        let whitespace = lines.last!.prefix(while: { $0.isWhitespace } )
+        lines[0] = whitespace + "do " + lines[0]
+        return lines.joined(separator: "\n")
     }
 
 }
