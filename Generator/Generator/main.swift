@@ -37,6 +37,11 @@ var defaultDocRootUrl: URL {
         .appendingPathComponent("Docs")
 }
 
+var defaultSwiftCoversDirUrl: URL {
+    rootUrl
+        .appending(components: "Sources", "SwiftCovers")
+}
+
 let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
 let outputDir = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
 let docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
