@@ -209,7 +209,7 @@ targets.append(contentsOf: [
     // a better Swift experience
     .target(
         name: "SwiftGodot",
-        dependencies: ["GDExtension"],
+        dependencies: ["GDExtension", "CWrappers"],
         //linkerSettings: linkerSettings,
         swiftSettings: [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS")
@@ -229,16 +229,17 @@ targets.append(contentsOf: [
 ])
 
 // This target contains “native” Swift covers of methods implemented in the engine. These native implementations avoid the overhead of calling through the Godot FFI.
+// You don't normally need to build this target. `Generator` reads this target's source files and copies method implementations into the generated files.
 targets += [
     .target(
         name: "SwiftCovers",
-        dependencies: ["SwiftGodot", "CSwiftCovers"]
+        dependencies: ["SwiftGodot"]
     ),
 
-    .target(name: "CSwiftCovers"),
+    .target(name: "CWrappers"),
 ]
 
-// This product allows building of the `SwiftCovers` target. It is not intended for production use.
+// This product allows building of the `SwiftCovers` target. You shouldn't normally need to build this if you're just building a game with SwiftGodot. You may want to build it if you are editing the cover sources, so that you get IDE assistance.
 products += [
     .library(
         name: "SwiftCovers",
