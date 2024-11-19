@@ -180,6 +180,17 @@ func generateBuiltinCtors (_ p: Printer,
                 try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
             }
             
+            let parameterTypes = m.arguments?.map { arg in
+                getGodotType(SimpleType (type: arg.type), kind: .builtIn)
+            } ?? []
+            
+            let key = SwiftCovers.Key(type: typeName, name: "init", parameterTypes: parameterTypes, returnType: bc.name)
+            let customImplementation = swiftCovers.covers[key]?.description
+    
+            if customImplementation != nil {
+                p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
+            }
+            
             if arguments.isEmpty {
                 preparingArguments(p, arguments: arguments) {
                     p ("\(typeName).\(ptrName)(&\(ptr), nil)")
@@ -190,6 +201,12 @@ func generateBuiltinCtors (_ p: Printer,
                         p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
                     }
                 }
+            }
+            
+            if let customImplementation {
+                p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+                p(customImplementation)
+                p("#endif")
             }
         }
     }
