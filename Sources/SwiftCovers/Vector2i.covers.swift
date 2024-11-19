@@ -1,35 +1,6 @@
-@_implementationOnly import CSwiftCovers
-import SwiftGodot
-
-extension Swift.Comparable {
-    func clamped(min: Self, max: Self) -> Self {
-        return self < min ? min : self > max ? max : self
-    }
-}
-
-extension Swift.Int64 {
-    func checkIndex(max: Int64) -> Int64 {
-        assert(self >= 0)
-        assert(self <= max)
-        return self
-    }
-}
+@_spi(SwiftCovers) import SwiftGodot
 
 extension Vector2i {
-
-    var tuple: (Int32, Int32) { (x, y) }
-
-    private static func cCastToInt32(_ float: Float) -> Int32 {
-        return int32_for_float(float)
-    }
-
-    private static func cDivide(numerator: Int32, denominator: Int32) -> Int32 {
-        return int32_divide(numerator, denominator)
-    }
-
-    private static func cRemainder(numerator: Int32, denominator: Int32) -> Int32 {
-        return int32_remainder(numerator, denominator)
-    }
 
     public init(from: Vector2i) {
         self = from
@@ -45,22 +16,32 @@ extension Vector2i {
          ret
          */
 
-        self.init(x: Self.cCastToInt32(from.x), y: Self.cCastToInt32(from.y))
+        self.init(x: cCastToInt32(from.x), y: cCastToInt32(from.y))
     }
 
     public func aspect() -> Double {
         return Double(Float(x) / Float(y))
     }
 
-    public func maxAxisIndex() -> Int64 { (x < y ? Axis.y : .x).rawValue }
+    public func maxAxisIndex() -> Int64 {
+        return (x < y ? Axis.y : .x).rawValue
+    }
 
-    public func minAxisIndex() -> Int64 { (x < y ? Axis.x : .y).rawValue }
+    public func minAxisIndex() -> Int64 {
+        return (x < y ? Axis.x : .y).rawValue
+    }
 
-    public func distanceTo(_ to: Vector2i) -> Double { (to - self).length() }
+    public func distanceTo(_ to: Vector2i) -> Double {
+        return (to - self).length()
+    }
 
-    public func distanceSquaredTo(_ to: Vector2i) -> Double { Double((to - self).lengthSquared()) }
+    public func distanceSquaredTo(_ to: Vector2i) -> Double {
+        return Double((to - self).lengthSquared())
+    }
 
-    public func length() -> Double { Double(lengthSquared()).squareRoot() }
+    public func length() -> Double {
+        return Double(lengthSquared()).squareRoot()
+    }
 
     public func lengthSquared() -> Int64 {
         let x = Int64(x)
