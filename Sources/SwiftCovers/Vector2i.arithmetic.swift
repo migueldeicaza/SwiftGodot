@@ -1,4 +1,4 @@
-@_implementationOnly import CNativeCovers
+@_implementationOnly import CSwiftCovers
 import SwiftGodot
 
 extension Comparable {

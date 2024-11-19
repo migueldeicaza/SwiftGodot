@@ -1,0 +1,3 @@
+module CSwiftCovers {
+    header "CSwiftCovers.h"
+}
