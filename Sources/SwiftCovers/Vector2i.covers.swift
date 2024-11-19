@@ -17,11 +17,9 @@ extension Swift.Int64 {
 
 extension Vector2i {
 
-    public typealias Component = Int32
+    var tuple: (Int32, Int32) { (x, y) }
 
-    var tuple: (Component, Component) { (x, y) }
-
-    private static func cCastToComponent(_ float: Float) -> Int32 {
+    private static func cCastToInt32(_ float: Float) -> Int32 {
         return int32_for_float(float)
     }
 
@@ -47,7 +45,7 @@ extension Vector2i {
          ret
          */
 
-        self.init(x: Self.cCastToComponent(from.x), y: Self.cCastToComponent(from.y))
+        self.init(x: Self.cCastToInt32(from.x), y: Self.cCastToInt32(from.y))
     }
 
     public func aspect() -> Double {
@@ -75,10 +73,10 @@ extension Vector2i {
     }
 
     public func abs() -> Vector2i {
-        // This handles Component.min exactly the way C would.
+        // This handles Int32.min exactly the way C would.
         return Vector2i(
-            x: Component(truncatingIfNeeded: x.magnitude),
-            y: Component(truncatingIfNeeded: y.magnitude)
+            x: Int32(truncatingIfNeeded: x.magnitude),
+            y: Int32(truncatingIfNeeded: y.magnitude)
         )
     }
 
@@ -91,8 +89,8 @@ extension Vector2i {
 
     public func clampi(min: Int64, max: Int64) -> Vector2i {
         return Vector2i(
-            x: Component(truncatingIfNeeded: Int64(x).clamped(min: min, max: max)),
-            y: Component(truncatingIfNeeded: Int64(y).clamped(min: min, max: max))
+            x: Int32(truncatingIfNeeded: Int64(x).clamped(min: min, max: max)),
+            y: Int32(truncatingIfNeeded: Int64(y).clamped(min: min, max: max))
         )
     }
 
@@ -166,7 +164,7 @@ extension Vector2i {
          ret
          */
 
-        let rhs = Component(truncatingIfNeeded: rhs)
+        let rhs = Int32(truncatingIfNeeded: rhs)
         return Self(
             x: cDivide(numerator: lhs.x, denominator: rhs),
             y: cDivide(numerator: lhs.y, denominator: rhs)
@@ -186,7 +184,7 @@ extension Vector2i {
          ret
          */
 
-        let rhs = Component(truncatingIfNeeded: rhs)
+        let rhs = Int32(truncatingIfNeeded: rhs)
         return Self(
             x: cRemainder(numerator: lhs.x, denominator: rhs),
             y: cRemainder(numerator: lhs.y, denominator: rhs)
