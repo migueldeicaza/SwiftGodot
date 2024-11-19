@@ -63,6 +63,8 @@ if args.count < 2 {
     """)
 }
 
+let swiftCovers = SwiftCovers(sourceDir: defaultSwiftCoversDirUrl)
+
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 

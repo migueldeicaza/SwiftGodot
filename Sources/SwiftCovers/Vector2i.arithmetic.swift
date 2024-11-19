@@ -1,13 +1,13 @@
 @_implementationOnly import CSwiftCovers
 import SwiftGodot
 
-extension Comparable {
+extension Swift.Comparable {
     func clamped(min: Self, max: Self) -> Self {
         return self < min ? min : self > max ? max : self
     }
 }
 
-extension Int64 {
+extension Swift.Int64 {
     func checkIndex(max: Int64) -> Int64 {
         assert(self >= 0)
         assert(self <= max)
