@@ -359,15 +359,9 @@ func generateBuiltinOperators (_ p: Printer,
             
             let lhsTypeName = typeName
             let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
-                        
-            let customImplementation: String? // = customBuiltinOperatorImplementations[OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName)]
             
             let key = SwiftCovers.Key(type: typeName, name: swiftOperator, parameterTypes: [lhsTypeName, rhsTypeName], returnType: retType)
-            if let body = swiftCovers.covers[key] {
-                customImplementation = body.description
-            } else {
-                customImplementation = nil
-            }
+            let customImplementation = swiftCovers.covers[key]?.description
             
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
@@ -504,7 +498,13 @@ func generateBuiltinMethods (_ p: Printer,
         }
         
         let methodName = escapeSwift(snakeToCamel(m.name))
-        let customImplementation = customBuiltinMethodImplementations[MethodSignature(typeName: bc.name, methodName: methodName)]
+        
+        let parameterTypes = m.arguments?.map { arg in
+            getGodotType(SimpleType (type: arg.type), kind: .builtIn)
+        } ?? []
+        
+        let key = SwiftCovers.Key(type: typeName, name: methodName, parameterTypes: parameterTypes, returnType: ret)
+        let customImplementation = swiftCovers.covers[key]?.description
         
         p ("public\(keyword) func \(methodName)(\(args))\(retSig)") {
             if customImplementation != nil {
