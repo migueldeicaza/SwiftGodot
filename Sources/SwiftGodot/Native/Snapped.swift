@@ -14,6 +14,8 @@ extension Numeric where Self: BinaryFloatingPoint {
 }
 
 extension Numeric where Self: SignedInteger {
+    @_specialize(exported: true, kind: full, where Self == Int32)
+    @_specialize(exported: true, kind: full, where Self == Int64)
     public func snapped(step: Self) -> Self {
         return Self(Double(self).snapped(step: Double(step)))
     }
