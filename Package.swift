@@ -232,8 +232,10 @@ targets.append(contentsOf: [
 targets += [
     .target(
         name: "NativeCovers",
-        dependencies: ["SwiftGodot"]
-    )
+        dependencies: ["SwiftGodot", "CNativeCovers"]
+    ),
+
+    .target(name: "CNativeCovers"),
 ]
 
 // This product allows building of the `NativeCovers` target. It is not intended for production use.
