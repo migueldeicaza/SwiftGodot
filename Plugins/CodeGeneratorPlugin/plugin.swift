@@ -19,7 +19,11 @@ import PackagePlugin
         let generator: Path = try context.tool(named: "Generator").path
 
         let api = context.package.directory.appending(["Sources", "ExtensionApi", "extension_api.json"])
-        
+        let coverSourcesDir = context.package.directory.appending(["Sources", "SwiftCovers"])
+        let coverSources = try FileManager.default.contentsOfDirectory(atPath: coverSourcesDir.string).map {
+            coverSourcesDir.appending(subpath: $0)
+        }
+
         var arguments: [CustomStringConvertible] = [ api, genSourcesDir ]
         var outputFiles: [Path] = []
         #if os(Windows)
@@ -43,7 +47,7 @@ import PackagePlugin
             displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
             executable: generator,
             arguments: arguments,
-            inputFiles: [api],
+            inputFiles: coverSources + [api],
             outputFiles: outputFiles))
         #endif
         
