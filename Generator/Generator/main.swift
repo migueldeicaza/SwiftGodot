@@ -38,10 +38,9 @@ var defaultDocRootUrl: URL {
 }
 
 let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
-var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
-var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
-let outputDir = args.count > 2 ? args [2] : generatorOutput
-let generateResettableCache = false 
+let outputDir = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
+let docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
+let generateResettableCache = false
 
 // IF we want a single file, or one file per type
 var singleFile = args.contains("--singlefile")
