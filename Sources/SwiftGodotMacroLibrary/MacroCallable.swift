@@ -145,7 +145,7 @@ public struct GodotCallable: PeerMacro {
                     GD.printErr(error.description)
                     return nil
                 } catch {
-                    GD.printErr("Error calling `\(funcName)`: \\(error.localizedDescription)")
+                    GD.printErr("Error calling `\(funcName)`: \\(error)")
                     return nil
                 }
             }
