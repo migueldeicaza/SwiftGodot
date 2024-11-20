@@ -171,6 +171,11 @@ let libgodot_tests = Target .binaryTarget(
 )
 #endif
 
+let customBuiltinImplementationsSettings: [SwiftSetting] = [
+    // Comment this out to use engine methods for everything.
+    .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+]
+
 targets.append(contentsOf: [
     // Godot runtime as a library
 
@@ -190,7 +195,8 @@ targets.append(contentsOf: [
         name: "SwiftGodotTests",
         dependencies: [
             "SwiftGodotTestability",
-        ]
+        ],
+        swiftSettings: customBuiltinImplementationsSettings
     ),
     
     // Runtime dependant tests based on the engine tests from Godot's repository
@@ -211,9 +217,7 @@ targets.append(contentsOf: [
         name: "SwiftGodot",
         dependencies: ["GDExtension", "CWrappers"],
         //linkerSettings: linkerSettings,
-        swiftSettings: [
-            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS")
-        ],
+        swiftSettings: customBuiltinImplementationsSettings,
         plugins: swiftGodotPlugins
     ),
     
