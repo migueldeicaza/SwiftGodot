@@ -41,28 +41,51 @@ class __GodotTestRunner: XCTestCase {
         }
     }
 
+    private static let testNamePatternFromEnvironment: Regex? = ProcessInfo.processInfo
+        .environment["GodotTestPattern"]
+        .map { try! Regex($0) }
+
+    private static func testNamePatternFromEnvironmentMatches(_ test: XCTest) -> Bool {
+        guard let testNamePatternFromEnvironment else { return true }
+        // Convert name from e.g. "-[ColorTests testSaturation]" to "ColorTests/testSaturation".
+        let name = test.name
+            .replacingOccurrences(of: "-[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+            .replacingOccurrences(of: " ", with: "/")
+            return name.wholeMatch(of: testNamePatternFromEnvironment) != nil
+    }
+
     /// Extract all the godot tests from a tree of XCTest objects.
     /// This flattens the tree into a a suite containing only the suites
     /// with tests that are subclasses of GodotTestCase.
     /// Any suites that don't contain any Godot tests are skipped, since
     /// they will be run in the normal XCTest runtime.
     @discardableResult static func extractGodotTests(_ from: XCTest, into: XCTestSuite) -> Bool {
-        guard let suite = from as? XCTestSuite else { return false }
-        if suite.containsGodotTests {
-            into.addTest(suite)
-            return true
-        } else {
+        switch from {
+        case let suite as XCTestSuite:
+            if suite.containsGodotTests && testNamePatternFromEnvironmentMatches(suite) {
+                into.addTest(suite)
+                return true
+            }
+
             var hadTests = false
             for test in suite.tests {
-                if !extractGodotTests(test, into: into) {
-                    #if DEBUG_SKIPPING
-                    print("Skipped \(test.name) as it has no Godot tests")
-                    #endif
-                } else {
+                if extractGodotTests(test, into: into) {
                     hadTests = true
+                } else {
+                    #if DEBUG_SKIPPING
+                    print("Skipped \(test.name) as it has no Godot tests or is excluded by the environment test pattern")
+                    #endif
                 }
             }
             return hadTests
+
+        case let test:
+            if test is GodotTestCase && testNamePatternFromEnvironmentMatches(test) {
+                into.addTest(test)
+                return true
+            }
+            return false
         }
     }
 
