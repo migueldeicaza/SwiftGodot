@@ -568,8 +568,34 @@ func generateBuiltinMethods (_ p: Printer,
         }
         """)        
     }
-    if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
-        let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
+
+    generateBuiltinIndexedSubscript(p, bc, typeName)
+}
+
+private func generateBuiltinIndexedSubscript (
+    _ p: Printer,
+    _ bc: JGodotBuiltinClass,
+    _ typeName: String
+) {
+    guard
+        let returnType = bc.indexingReturnType,
+        !bc.isKeyed,
+        !bc.name.hasSuffix ("Array"),
+        bc.name != "String"
+    else { return }
+
+    let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
+
+    let key = SwiftCovers.Key(
+        type: typeName,
+        name: "subscript",
+        parameterTypes: ["Int64"],
+        returnType: godotType
+    )
+
+    p.ifCustomBuiltinImplementation(swiftCovers.covers[key]) {
+        p($0)
+    } else: {
         let variantType = builtinTypecode (bc.name)
         p.staticVar (visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
             p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")

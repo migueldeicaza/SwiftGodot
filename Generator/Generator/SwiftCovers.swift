@@ -82,11 +82,16 @@ struct SwiftCovers {
         if extractInitCover(from: member, of: type) {
             return
         }
+
+        if extractSubscriptCover(from: member, of: type) {
+            return
+        }
     }
 
     private mutating func extractInitCover(from member: MemberBlockItemSyntax, of type: String) -> Bool {
         guard
             let initer = member.decl.as(InitializerDeclSyntax.self),
+            initer.modifiers.map({ $0.name.tokenKind }) == [.keyword(.public)],
             initer.genericWhereClause == nil,
             initer.genericParameterClause == nil,
             case let signature = initer.signature,
@@ -95,9 +100,7 @@ struct SwiftCovers {
                 .compactMap({ $0.type.as(IdentifierTypeSyntax.self)?.name.text }),
             parameterTypes.count == signature.parameterClause.parameters.count,
             let body = initer.body
-        else {
-            return false
-        }
+        else { return false }
 
         let key = Key(
             type: type,
@@ -111,6 +114,29 @@ struct SwiftCovers {
         return true
     }
 
+    private mutating func extractSubscriptCover(from member: MemberBlockItemSyntax, of type: String) -> Bool {
+        guard
+            let subs = member.decl.as(SubscriptDeclSyntax.self),
+            subs.modifiers.map({ $0.name.tokenKind }) == [.keyword(.public)],
+            subs.genericWhereClause == nil,
+            subs.genericParameterClause == nil,
+            case let parameterTypes = subs.parameterClause.parameters
+                .compactMap({ $0.type.as(IdentifierTypeSyntax.self)?.name.text }),
+            parameterTypes.count == subs.parameterClause.parameters.count,
+            let returnType = subs.returnClause.type.as(IdentifierTypeSyntax.self)?.name.text
+        else { return false }
+
+        let key = Key(
+            type: type,
+            name: "subscript",
+            parameterTypes: parameterTypes,
+            returnType: returnType
+        )
+
+        covers[key] = subs.description
+        return true
+    }
+
     private mutating func extractFunctionCover(from function: FunctionDeclSyntax, of type: String) -> Bool {
         guard
             function.modifiers.map({ $0.name.tokenKind }) == [.keyword(.public)],
@@ -120,9 +146,7 @@ struct SwiftCovers {
                 .compactMap({ $0.type.as(IdentifierTypeSyntax.self)?.name.text }),
             parameterTypes.count == signature.parameterClause.parameters.count,
             let body = function.body
-        else {
-            return false
-        }
+        else { return false }
 
         let returnType: String
         if let returnTypeSx = signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
@@ -141,7 +165,6 @@ struct SwiftCovers {
             returnType: returnType
         )
 
-        print("found cover for \(key)")
         covers[key] = fixCodeBlockIndentation(body)
         return true
     }
@@ -155,9 +178,7 @@ struct SwiftCovers {
                 .compactMap({ $0.type.as(IdentifierTypeSyntax.self)?.name.text }),
             parameterTypes.count == signature.parameterClause.parameters.count,
             let body = function.body
-        else {
-            return false
-        }
+        else { return false }
 
         let returnType: String
         if let returnTypeSx = signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
@@ -176,12 +197,11 @@ struct SwiftCovers {
             returnType: returnType
         )
 
-        print("found cover for \(key)")
         covers[key] = fixCodeBlockIndentation(body)
         return true
     }
-    
-    private func fixCodeBlockIndentation(_ block: CodeBlockSyntax) -> String {
+
+    private func fixCodeBlockIndentation(_ block: some SyntaxProtocol) -> String {
         var lines = block.description.split(separator: "\n")
         let whitespace = lines.last!.prefix(while: { $0.isWhitespace } )
         lines[0] = whitespace + "do " + lines[0]
