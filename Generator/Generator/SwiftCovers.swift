@@ -39,7 +39,7 @@ struct SwiftCovers {
             return
         }
 
-        for url in urls {
+        for url in urls where url.pathExtension == "swift" {
             let source: String
             do {
                 source = try String(contentsOf: url, encoding: .utf8)

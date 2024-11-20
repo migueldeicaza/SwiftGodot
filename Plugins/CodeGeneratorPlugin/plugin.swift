@@ -20,9 +20,9 @@ import PackagePlugin
 
         let api = context.package.directory.appending(["Sources", "ExtensionApi", "extension_api.json"])
         let coverSourcesDir = context.package.directory.appending(["Sources", "SwiftCovers"])
-        let coverSources = try FileManager.default.contentsOfDirectory(atPath: coverSourcesDir.string).map {
-            coverSourcesDir.appending(subpath: $0)
-        }
+        let coverSources = try FileManager.default.contentsOfDirectory(atPath: coverSourcesDir.string)
+            .filter { $0.hasSuffix(".swift") }
+            .map { coverSourcesDir.appending(subpath: $0) }
 
         var arguments: [CustomStringConvertible] = [ api, genSourcesDir ]
         var outputFiles: [Path] = []
