@@ -115,97 +115,88 @@ func generateBuiltinCtors (_ p: Printer,
         }
         
         p ("\(visibility) init (\(args))") {
-            // Determine if we have a constructors whose sole job is to initialize the members
-            // of the struct, in that case, just do that, do not call into Godot.
-            if let margs = m.arguments, let members, margs.count == members.count {
-                var constructorMatchesFields = true
-                for x in 0..<margs.count {
-                    // This is so that we can match field `x` with `xAxis` in a few cases
-                    if !(margs [x].name.starts (with: members [x].name) && margs [x].type == members [x].type) {
-                        constructorMatchesFields = false
-                        break
-                    }
-                }
-                if constructorMatchesFields {
-                    for x in 0..<margs.count {
-                        p ("self.\(members [x].name) = \(escapeSwift (snakeToCamel (margs [x].name)))")
-                    }
-                    return
-                }
-            }
-                        
-            // I used to have a nicer model, rather than everything having a
-            // handle, I had a named handle, like "_godot_string"
-            let ptr = isStruct ? "self" : "content"
-
             let parameterTypes = m.arguments?.map { arg in
                 getGodotType(SimpleType (type: arg.type), kind: .builtIn)
             } ?? []
             let key = SwiftCovers.Key(type: typeName, name: "init", parameterTypes: parameterTypes, returnType: bc.name)
-            let customImplementation = swiftCovers.covers[key]?.description
+            p.ifCustomBuiltinImplementation(swiftCovers.covers[key]?.description) {
+                p($0)
+            } else: {
 
-            if customImplementation != nil {
-                p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
-            }
-
-            defer {
-                if let customImplementation {
-                    p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
-                    p(customImplementation)
-                    p("#endif")
-                }
-            }
-
-            // We need to initialize some variables before we call
-            if let members {
-                if bc.name == "Color" {
-                    p ("self.red = 0")
-                    p ("self.green = 0")
-                    p ("self.blue = 0")
-                    p ("self.alpha = 1")
-                } else if bc.name == "Quaternion" && m.arguments == nil {
-                    p ("self.x = 0")
-                    p ("self.y = 0")
-                    p ("self.z = 0")
-                    p ("self.w = 1")
-                } else if bc.name == "Transform2D" && m.arguments == nil {
-                    p ("self.x = Vector2 (x: 1, y: 0)")
-                    p ("self.y = Vector2 (x: 0, y: 1)")
-                    p ("self.origin = Vector2 ()")
-                } else if bc.name == "Basis" && m.arguments == nil {
-                    p ("self.x = Vector3 (x: 1, y: 0, z: 0)")
-                    p ("self.y = Vector3 (x: 0, y: 1, z: 0)")
-                    p ("self.z = Vector3 (x: 0, y: 0, z: 1)")
-                } else if bc.name == "Projection" && m.arguments == nil {
-                    p ("self.x = Vector4 (x: 1, y: 0, z: 0, w: 0)")
-                    p ("self.y = Vector4 (x: 0, y: 1, z: 0, w: 0)")
-                    p ("self.z = Vector4 (x: 0, y: 0, z: 1, w: 0)")
-                    p ("self.w = Vector4 (x: 0, y: 0, z: 0, w: 1)")
-                } else {
-                    for x in members {
-                        p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                // Determine if we have a constructors whose sole job is to initialize the members
+                // of the struct, in that case, just do that, do not call into Godot.
+                if let margs = m.arguments, let members, margs.count == members.count {
+                    var constructorMatchesFields = true
+                    for x in 0..<margs.count {
+                        // This is so that we can match field `x` with `xAxis` in a few cases
+                        if !(margs [x].name.starts (with: members [x].name) && margs [x].type == members [x].type) {
+                            constructorMatchesFields = false
+                            break
+                        }
+                    }
+                    if constructorMatchesFields {
+                        for x in 0..<margs.count {
+                            p ("self.\(members [x].name) = \(escapeSwift (snakeToCamel (margs [x].name)))")
+                        }
+                        return
                     }
                 }
-                // Another special case: empty constructors in generated structs (those we added fields for)
-                // we just keep the manual initialization and do not call the constructor
-                if m.arguments == nil {
-                    return
-                }
-            }
 
-            let arguments = (m.arguments ?? []).map {
-                // must not fail
-                try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
-            }
-            
-            if arguments.isEmpty {
-                preparingArguments(p, arguments: arguments) {
-                    p ("\(typeName).\(ptrName)(&\(ptr), nil)")
+                // I used to have a nicer model, rather than everything having a
+                // handle, I had a named handle, like "_godot_string"
+                let ptr = isStruct ? "self" : "content"
+
+                // We need to initialize some variables before we call
+                if let members {
+                    if bc.name == "Color" {
+                        p ("self.red = 0")
+                        p ("self.green = 0")
+                        p ("self.blue = 0")
+                        p ("self.alpha = 1")
+                    } else if bc.name == "Quaternion" && m.arguments == nil {
+                        p ("self.x = 0")
+                        p ("self.y = 0")
+                        p ("self.z = 0")
+                        p ("self.w = 1")
+                    } else if bc.name == "Transform2D" && m.arguments == nil {
+                        p ("self.x = Vector2 (x: 1, y: 0)")
+                        p ("self.y = Vector2 (x: 0, y: 1)")
+                        p ("self.origin = Vector2 ()")
+                    } else if bc.name == "Basis" && m.arguments == nil {
+                        p ("self.x = Vector3 (x: 1, y: 0, z: 0)")
+                        p ("self.y = Vector3 (x: 0, y: 1, z: 0)")
+                        p ("self.z = Vector3 (x: 0, y: 0, z: 1)")
+                    } else if bc.name == "Projection" && m.arguments == nil {
+                        p ("self.x = Vector4 (x: 1, y: 0, z: 0, w: 0)")
+                        p ("self.y = Vector4 (x: 0, y: 1, z: 0, w: 0)")
+                        p ("self.z = Vector4 (x: 0, y: 0, z: 1, w: 0)")
+                        p ("self.w = Vector4 (x: 0, y: 0, z: 0, w: 1)")
+                    } else {
+                        for x in members {
+                            p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                        }
+                    }
+                    // Another special case: empty constructors in generated structs (those we added fields for)
+                    // we just keep the manual initialization and do not call the constructor
+                    if m.arguments == nil {
+                        return
+                    }
                 }
-            } else {
-                preparingArguments(p, arguments: arguments) {
-                    aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
-                        p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
+
+                let arguments = (m.arguments ?? []).map {
+                    // must not fail
+                    try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
+                }
+
+                if arguments.isEmpty {
+                    preparingArguments(p, arguments: arguments) {
+                        p ("\(typeName).\(ptrName)(&\(ptr), nil)")
+                    }
+                } else {
+                    preparingArguments(p, arguments: arguments) {
+                        aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
+                            p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
+                        }
                     }
                 }
             }

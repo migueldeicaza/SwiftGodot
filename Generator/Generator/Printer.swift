@@ -88,6 +88,23 @@ class Printer {
         }
     }
 
+    /// Emit conditional compilation directives if needed.
+    ///
+    /// If `customImp` is nil, I just call `otherwise`.
+    ///
+    /// If `customImp` is **not** nil, I emit an `#if ... #else ... #endif` structure which compiles the output of `ifCustom` when `CUSTOM_BUILTIN_IMPLEMENTATIONS` is set, and compiles the output of `otherwise` when `CUSTOM_BUILTIN_IMPLEMENTATIONS` is not set.
+    func ifCustomBuiltinImplementation<T>(_ customImp: T?,  _ ifCustom: (T) -> (), else otherwise: () -> ()) {
+        if let customImp {
+            p ("#if CUSTOM_BUILTIN_IMPLEMENTATIONS")
+            ifCustom(customImp)
+            p ("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
+            otherwise()
+            p ("#endif // CUSTOM_BUILTIN_IMPLEMENTATIONS\n")
+        } else {
+            otherwise()
+        }
+    }
+
     // Prints a block, automatically indents the code in the closure
     func b (_ str: String, arg: String? = nil, suffix: String = "", block: () -> ()) {
         p (str + " {" + (arg ?? ""))
