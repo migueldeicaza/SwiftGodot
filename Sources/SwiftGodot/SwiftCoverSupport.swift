@@ -39,4 +39,15 @@ extension Vector2i {
     public var tuple: (Int32, Int32) { (x, y) }
 }
 
-internal var useSwiftCovers = true
+#if TESTABLE_SWIFT_COVERS
+
+/// If true (the default), use Swift cover implementations where available instead of calling Godot engine functions. You should only use this for testing covers. It is not intended for production use.
+@TaskLocal
+internal var useSwiftCovers: Bool = true
+
+#else
+@_spi(SwiftCovers)
+public let useSwiftCovers: Bool = {
+    preconditionFailure("useSwiftCovers is only available if compilation condition TESTABLE_SWIFT_COVERS is set.")
+}()
+#endif
