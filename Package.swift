@@ -19,6 +19,14 @@ libraryType = .static
 libraryType = .dynamic
 #endif
 
+let customBuiltinImplementationsSettings: [SwiftSetting] = [
+    // Comment this out to use engine methods for everything. If this is set, Swift cover implementations are used where available.
+    .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+
+    // Define this to generate code that can choose between a Swift cover and a Godot engine call at runtime. This is slower but allows easy testing that each Swift cover behaves exactly like the Godot engine function it replaces. This controls the behavior of the Generator build tool; there is no other good way to configure how Generator operates.
+    // .define("TESTABLE_SWIFT_COVERS"),
+]
+
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
     .library(
@@ -90,7 +98,7 @@ var targets: [Target] = [
         swiftSettings: [
             // Uncomment for using legacy array-based marshalling
             //.define("LEGACY_MARSHALING")
-        ]
+        ] + customBuiltinImplementationsSettings
     ),
     
     // This is a build-time plugin that invokes the generator and produces
@@ -170,11 +178,6 @@ let libgodot_tests = Target .binaryTarget(
     path: "libgodot.xcframework"
 )
 #endif
-
-let customBuiltinImplementationsSettings: [SwiftSetting] = [
-    // Comment this out to use engine methods for everything.
-    .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-]
 
 targets.append(contentsOf: [
     // Godot runtime as a library

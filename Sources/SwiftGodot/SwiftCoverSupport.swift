@@ -38,3 +38,5 @@ extension Vector2i {
     @inline(__always)
     public var tuple: (Int32, Int32) { (x, y) }
 }
+
+internal var useSwiftCovers = true

@@ -95,11 +95,19 @@ class Printer {
     /// If there is no cover for `key`, I just emit `otherwise()`.
     func useSwiftCoverIfAvailable(for key: SwiftCovers.Key, otherwise: () -> ()) {
         if let cover = swiftCovers.covers[key] {
+#if TESTABLE_SWIFT_COVERS
+            self.if("useSwiftCovers") {
+                p(cover)
+            } else: {
+                otherwise()
+            }
+#else
             p ("#if CUSTOM_BUILTIN_IMPLEMENTATIONS")
             p(cover)
             p ("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
             otherwise()
             p ("#endif // CUSTOM_BUILTIN_IMPLEMENTATIONS\n")
+#endif
         } else {
             otherwise()
         }

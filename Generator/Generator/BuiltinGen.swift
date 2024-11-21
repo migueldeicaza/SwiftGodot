@@ -169,8 +169,14 @@ func generateBuiltinCtors (_ p: Printer,
                         p ("self.z = Vector4 (x: 0, y: 0, z: 1, w: 0)")
                         p ("self.w = Vector4 (x: 0, y: 0, z: 0, w: 1)")
                     } else {
-                        for x in members {
-                            p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                        if args == "" {
+                            // This is the default initializer, so I must initialize each stored property.
+                            for x in members {
+                                p ("self.\(x.name) = \(MemberBuiltinJsonTypeToSwift(x.type)) ()")
+                            }
+                        } else {
+                            // This is some other initializer, so I can delegate to the default initializer to initialize my properties.
+                            p("self.init()")
                         }
                     }
                     // Another special case: empty constructors in generated structs (those we added fields for)
