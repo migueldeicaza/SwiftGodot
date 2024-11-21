@@ -119,10 +119,7 @@ func generateBuiltinCtors (_ p: Printer,
                 getGodotType(SimpleType (type: arg.type), kind: .builtIn)
             } ?? []
             let key = SwiftCovers.Key(type: typeName, name: "init", parameterTypes: parameterTypes, returnType: bc.name)
-            p.ifCustomBuiltinImplementation(swiftCovers.covers[key]?.description) {
-                p($0)
-            } else: {
-
+            p.useSwiftCoverIfAvailable(for: key) {
                 // Determine if we have a constructors whose sole job is to initialize the members
                 // of the struct, in that case, just do that, do not call into Godot.
                 if let margs = m.arguments, let members, margs.count == members.count {
@@ -369,63 +366,52 @@ func generateBuiltinOperators (_ p: Printer,
             let lhsTypeName = typeName
             let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
             
-            let key = SwiftCovers.Key(type: typeName, name: swiftOperator, parameterTypes: [lhsTypeName, rhsTypeName], returnType: retType)
-            let customImplementation = swiftCovers.covers[key]?.description
-            
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
             }
             
             p ("public static func \(swiftOperator) (lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
-                if customImplementation != nil {
-                    
-                    p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
-                }
-                
-                let ptrResult: String
-                if op.returnType == "String" && mapStringToSwift {
-                    p ("let result = GString ()")
-                } else {
-                    var declType: String = "var"
-                    if builtinGodotTypeNames [op.returnType] == .isClass {
-                        declType = "let"
+                let key = SwiftCovers.Key(type: typeName, name: swiftOperator, parameterTypes: [lhsTypeName, rhsTypeName], returnType: retType)
+                p.useSwiftCoverIfAvailable(for: key) {
+                    let ptrResult: String
+                    if op.returnType == "String" && mapStringToSwift {
+                        p ("let result = GString ()")
+                    } else {
+                        var declType: String = "var"
+                        if builtinGodotTypeNames [op.returnType] == .isClass {
+                            declType = "let"
+                        }
+                        p ("\(declType) result: \(retType) = \(retType)()")
                     }
-                    p ("\(declType) result: \(retType) = \(retType)()")
-                }
-                let isStruct = isStructMap [op.returnType] ?? false
-                if isStruct {
-                    ptrResult = "&result"
-                } else {
-                    ptrResult = "&result.content"
-                }
-                let lhsa = try! MethodArgument(
-                    from: JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
-                    typeName: godotTypeName,
-                    methodName: "#operator\(swiftOperator)",
-                    options: .builtInClassOptions
-                )
-                
-                let rhsa = try! MethodArgument(
-                    from: JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil),
-                    typeName: godotTypeName,
-                    methodName: "#operator\(swiftOperator)",
-                    options: .builtInClassOptions
-                )
-                    
-                preparingArguments(p, arguments: [lhsa, rhsa]) {
-                    p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
-                }
-                
-                if op.returnType == "String" && mapStringToSwift {
-                    p ("return result.description")
-                } else {
-                    p ("return result")
-                }
-                
-                if let customImplementation {
-                    p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
-                    p(customImplementation)
-                    p("#endif")
+                    let isStruct = isStructMap [op.returnType] ?? false
+                    if isStruct {
+                        ptrResult = "&result"
+                    } else {
+                        ptrResult = "&result.content"
+                    }
+                    let lhsa = try! MethodArgument(
+                        from: JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
+                        typeName: godotTypeName,
+                        methodName: "#operator\(swiftOperator)",
+                        options: .builtInClassOptions
+                    )
+
+                    let rhsa = try! MethodArgument(
+                        from: JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil),
+                        typeName: godotTypeName,
+                        methodName: "#operator\(swiftOperator)",
+                        options: .builtInClassOptions
+                    )
+
+                    preparingArguments(p, arguments: [lhsa, rhsa]) {
+                        p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
+                    }
+
+                    if op.returnType == "String" && mapStringToSwift {
+                        p ("return result.description")
+                    } else {
+                        p ("return result")
+                    }
                 }
             }
         }
@@ -512,20 +498,10 @@ func generateBuiltinMethods (_ p: Printer,
             getGodotType(SimpleType (type: arg.type), kind: .builtIn)
         } ?? []
         
-        let key = SwiftCovers.Key(type: typeName, name: methodName, parameterTypes: parameterTypes, returnType: ret)
-        let customImplementation = swiftCovers.covers[key]?.description
-        
         p ("public\(keyword) func \(methodName)(\(args))\(retSig)") {
-            if customImplementation != nil {
-                p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
-            }
-            
-            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
-            
-            if let customImplementation {
-                p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
-                p(customImplementation)
-                p("#endif")
+            let key = SwiftCovers.Key(type: typeName, name: methodName, parameterTypes: parameterTypes, returnType: ret)
+            p.useSwiftCoverIfAvailable(for: key) {
+                generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
             }
         }
     }
@@ -593,9 +569,7 @@ private func generateBuiltinIndexedSubscript (
         returnType: godotType
     )
 
-    p.ifCustomBuiltinImplementation(swiftCovers.covers[key]) {
-        p($0)
-    } else: {
+    p.useSwiftCoverIfAvailable(for: key) {
         let variantType = builtinTypecode (bc.name)
         p.staticVar (visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
             p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")

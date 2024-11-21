@@ -88,15 +88,15 @@ class Printer {
         }
     }
 
-    /// Emit conditional compilation directives if needed.
+    /// Emit conditional compilation directives and a Swift cover implementation, if there is a Swift cover implementation.
     ///
-    /// If `customImp` is nil, I just call `otherwise`.
+    /// If there is a cover for `key`, I emit an `#if ... #else ... #endif` structure which compiles `cover` when `CUSTOM_BUILTIN_IMPLEMENTATIONS` is set, and compiles the output of `otherwise` when `CUSTOM_BUILTIN_IMPLEMENTATIONS` is not set.
     ///
-    /// If `customImp` is **not** nil, I emit an `#if ... #else ... #endif` structure which compiles the output of `ifCustom` when `CUSTOM_BUILTIN_IMPLEMENTATIONS` is set, and compiles the output of `otherwise` when `CUSTOM_BUILTIN_IMPLEMENTATIONS` is not set.
-    func ifCustomBuiltinImplementation<T>(_ customImp: T?,  _ ifCustom: (T) -> (), else otherwise: () -> ()) {
-        if let customImp {
+    /// If there is no cover for `key`, I just emit `otherwise()`.
+    func useSwiftCoverIfAvailable(for key: SwiftCovers.Key, otherwise: () -> ()) {
+        if let cover = swiftCovers.covers[key] {
             p ("#if CUSTOM_BUILTIN_IMPLEMENTATIONS")
-            ifCustom(customImp)
+            p(cover)
             p ("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
             otherwise()
             p ("#endif // CUSTOM_BUILTIN_IMPLEMENTATIONS\n")
