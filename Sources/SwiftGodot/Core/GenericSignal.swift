@@ -67,11 +67,16 @@ public class GenericSignal<each T: VariantStorable> {
 
 }
 
-
 extension Arguments {
     enum UnpackError: Error {
+        /// The argument could not be coerced to the expected type.
         case typeMismatch
+
+        /// There are not enough arguments to unpack.
         case missingArgument
+
+        /// The argument was nil.
+        case nilArgument
     }
 
     /// Unpack an argument as a specific type.
@@ -81,8 +86,16 @@ extension Arguments {
         if index >= count {
             throw UnpackError.missingArgument
         }
+
         let argument = self[index]
         index += 1
+
+        // if the argument was nil, throw an error
+        guard let argument else {
+            throw UnpackError.nilArgument
+        }
+
+        // try to unpack the variant as the expected type
         let value: T?
         if argument.gtype == .object {
             value = T.Representable.godotType == .object ? argument.asObject(Object.self) as? T : nil
