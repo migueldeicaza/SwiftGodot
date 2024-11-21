@@ -52,7 +52,7 @@ class __GodotTestRunner: XCTestCase {
             .replacingOccurrences(of: "-[", with: "")
             .replacingOccurrences(of: "]", with: "")
             .replacingOccurrences(of: " ", with: "/")
-            return name.wholeMatch(of: testNamePatternFromEnvironment) != nil
+        return name.wholeMatch(of: testNamePatternFromEnvironment) != nil
     }
 
     /// Extract all the godot tests from a tree of XCTest objects.
