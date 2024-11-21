@@ -6,6 +6,9 @@
 /// - returns: `f`, cast to `int32_t`.
 static inline int32_t int32_for_float(float f) { return f; }
 
+/// - returns: `d`, cast to `int32_t`.
+static inline int32_t int32_for_double(double d) { return d; }
+
 /// - returns: `n / d`.
 static inline int32_t int32_divide(int32_t n, int32_t d) { return n / d; }
 
