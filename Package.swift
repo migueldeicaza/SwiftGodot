@@ -191,8 +191,10 @@ targets.append(contentsOf: [
             "SwiftGodot",
             "libgodot_tests",
             "GDExtension"
-        ]),
-    
+        ],
+        swiftSettings: customBuiltinImplementationsSettings
+    ),
+
     // General purpose runtime dependant tests
     .testTarget(
         name: "SwiftGodotTests",
