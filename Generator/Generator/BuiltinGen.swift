@@ -562,28 +562,37 @@ private func generateBuiltinIndexedSubscript (
 
     let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
 
-    let key = SwiftCovers.Key(
-        type: typeName,
-        name: "subscript",
-        parameterTypes: ["Int64"],
-        returnType: godotType
-    )
 
-    p.useSwiftCoverIfAvailable(for: key) {
-        let variantType = builtinTypecode (bc.name)
-        p.staticVar (visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
-            p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
-        }
-        p.staticVar (visibility: "private ", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
-            p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
-        }
-        p (" public subscript (index: Int64) -> \(godotType)") {
-            p ("mutating get") {
+
+    let variantType = builtinTypecode (bc.name)
+    p.staticVar (visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
+        p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
+    }
+    p.staticVar (visibility: "private ", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
+        p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
+    }
+    p (" public subscript (index: Int64) -> \(godotType)") {
+        p ("mutating get") {
+            let key = SwiftCovers.Key(
+                type: typeName,
+                name: "subscript.get",
+                parameterTypes: ["Int64"],
+                returnType: godotType
+            )
+            p.useSwiftCoverIfAvailable(for: key) {
                 p ("var result = \(godotType) ()")
                 p ("Self.indexed_getter (&self, index, &result)")
                 p ("return result")
             }
-            p ("set") {
+        }
+        p ("set") {
+            let key = SwiftCovers.Key(
+                type: typeName,
+                name: "subscript.set",
+                parameterTypes: ["Int64"],
+                returnType: godotType
+            )
+            p.useSwiftCoverIfAvailable(for: key) {
                 p ("var value = newValue")
                 p ("Self.indexed_setter (&self, index, &value)")
             }

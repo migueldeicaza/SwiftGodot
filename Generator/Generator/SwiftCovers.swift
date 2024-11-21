@@ -83,7 +83,7 @@ struct SwiftCovers {
             return
         }
 
-        if extractSubscriptCover(from: member, of: type) {
+        if extractSubscriptCovers(from: member, of: type) {
             return
         }
     }
@@ -114,7 +114,7 @@ struct SwiftCovers {
         return true
     }
 
-    private mutating func extractSubscriptCover(from member: MemberBlockItemSyntax, of type: String) -> Bool {
+    private mutating func extractSubscriptCovers(from member: MemberBlockItemSyntax, of type: String) -> Bool {
         guard
             let subs = member.decl.as(SubscriptDeclSyntax.self),
             subs.modifiers.map({ $0.name.tokenKind }) == [.keyword(.public)],
@@ -123,17 +123,32 @@ struct SwiftCovers {
             case let parameterTypes = subs.parameterClause.parameters
                 .compactMap({ $0.type.as(IdentifierTypeSyntax.self)?.name.text }),
             parameterTypes.count == subs.parameterClause.parameters.count,
-            let returnType = subs.returnClause.type.as(IdentifierTypeSyntax.self)?.name.text
+            let returnType = subs.returnClause.type.as(IdentifierTypeSyntax.self)?.name.text,
+            let accessorBlock = subs.accessorBlock
         else { return false }
 
-        let key = Key(
-            type: type,
-            name: "subscript",
-            parameterTypes: parameterTypes,
-            returnType: returnType
-        )
+        func record(_ cover: CodeBlockItemListSyntax, forAccessType accessType: String) {
+            let key = Key(
+                type: type,
+                name: "subscript.\(accessType)",
+                parameterTypes: parameterTypes,
+                returnType: returnType
+            )
 
-        covers[key] = subs.description
+            covers[key] = cover.description
+        }
+
+        switch accessorBlock.accessors {
+        case .accessors(let accessors):
+            for accessor in accessors {
+                if let body = accessor.body {
+                    record(body.statements, forAccessType: accessor.accessorSpecifier.text)
+                }
+            }
+        case .getter(let getter):
+            record(getter, forAccessType: "get")
+        }
+
         return true
     }
 
