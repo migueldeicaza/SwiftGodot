@@ -178,3 +178,33 @@ public extension GodotTestCase {
     }
     
 }
+
+extension GodotTestCase {
+
+    public func requireTestableSwiftCovers(filePath: StaticString = #filePath, line: UInt = #line) throws {
+#if !TESTABLE_SWIFT_COVERS
+        throw XCTSkip("This test requires the compilation condition TESTABLE_SWIFT_COVERS.", file: filePath, line: line)
+#endif
+    }
+
+    /**
+     * Check that a value is computed the same by a Swift cover and the Godot engine method it replaces.
+     */
+    public func checkCover(
+        filePath: StaticString = #filePath,
+        line: UInt = #line,
+        _ expression: () throws -> some Equatable
+    ) throws {
+        try requireTestableSwiftCovers(filePath: filePath, line: line)
+
+        let coverValue = try $useSwiftCovers.withValue(true) {
+            try expression()
+        }
+        let engineValue = try $useSwiftCovers.withValue(false) {
+            try expression()
+        }
+
+        XCTAssertEqual(coverValue, engineValue, file: #filePath, line: line)
+    }
+
+}
