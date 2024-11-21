@@ -37,8 +37,8 @@ jobs:
     steps:
       - uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-5.10-release
-          tag: 5.10-RELEASE
+          branch: swift-6.0.2-release
+          tag: 6.0.2-RELEASE
       - uses: actions/checkout@v4
       - name: Build
         run: swift build -v
