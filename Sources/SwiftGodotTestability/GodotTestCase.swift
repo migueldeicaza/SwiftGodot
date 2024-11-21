@@ -181,12 +181,6 @@ public extension GodotTestCase {
 
 extension GodotTestCase {
 
-    public func requireTestableSwiftCovers(filePath: StaticString = #filePath, line: UInt = #line) throws {
-#if !TESTABLE_SWIFT_COVERS
-        throw XCTSkip("This test requires the compilation condition TESTABLE_SWIFT_COVERS.", file: filePath, line: line)
-#endif
-    }
-
     /**
      * Check that a value is computed the same by a Swift cover and the Godot engine method it replaces.
      */
@@ -195,8 +189,7 @@ extension GodotTestCase {
         line: UInt = #line,
         _ expression: () throws -> some Equatable
     ) throws {
-        try requireTestableSwiftCovers(filePath: filePath, line: line)
-
+#if TESTABLE_SWIFT_COVERS
         let coverValue = try $useSwiftCovers.withValue(true) {
             try expression()
         }
@@ -204,7 +197,20 @@ extension GodotTestCase {
             try expression()
         }
 
+        // NaNs never compare equal, so first check for bytewise equality.
+        let bytewiseEqual = withUnsafeBytes(of: coverValue) { coverBytes in
+            withUnsafeBytes(of: engineValue) { engineBytes in
+                coverBytes.elementsEqual(engineBytes)
+            }
+        }
+
+        guard !bytewiseEqual else { return }
+
+        // Not bytewise-equal, but could still compare equal.
         XCTAssertEqual(coverValue, engineValue, file: #filePath, line: line)
+#else
+        throw XCTSkip("This test requires the compilation condition TESTABLE_SWIFT_COVERS.", file: filePath, line: line)
+#endif
     }
 
 }
