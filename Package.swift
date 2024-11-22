@@ -161,6 +161,85 @@ var targets: [Target] = [
     ),
 ]
 
+// Macro tests don't work on Windows yet
+#if !os(Windows)
+    // Idea: -mark_dead_strippable_dylib
+    targets.append(
+        .testTarget(
+            name: "SwiftGodotMacrosTests",
+            dependencies: [
+                "SwiftGodotMacroLibrary",
+                "SwiftGodot",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+            ],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ))
+#endif
+
+// libgodot is only available for macOS and testability runtime depends on it
+#if os(macOS)
+    /// You might want to build your own libgodot, so you can step into it in the debugger when fixing failing tests. Here's how:
+    ///
+    /// 1. Check out the appropriate branch of https://github.com/migueldeicaza/libgodot
+    /// 2. Build with `scons platform=macos target=template_debug dev_build=yes library_type=shared_library`. The `target=template_debug` is important, because `target=editor` will get you a `TOOLS_ENABLED` build that breaks some test cases.
+    /// 3. Use `scripts/make-libgodot.framework` to build an `xcframework` and put it at the root of your SwiftGodot work tree.
+    /// 4. Change `#if true` to `#if false` below.
+    ///
+    #if true
+        let libgodot_tests = Target.binaryTarget(
+            name: "libgodot_tests",
+            url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/4.3.5/libgodot.xcframework.zip",
+            checksum: "865ea17ad3e20caab05b3beda35061f57143c4acf0e4ad2684ddafdcc6c4f199"
+        )
+    #else
+        let libgodot_tests = Target.binaryTarget(
+            name: "libgodot_tests",
+            path: "libgodot.xcframework"
+        )
+    #endif
+
+    targets.append(contentsOf: [
+        // Godot runtime as a library
+
+        libgodot_tests,
+
+        // Base functionality for Godot runtime dependant tests
+        .target(
+            name: "SwiftGodotTestability",
+            dependencies: [
+                "SwiftGodot",
+                "libgodot_tests",
+                "GDExtension",
+            ],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+
+        // General purpose runtime dependant tests
+        .testTarget(
+            name: "SwiftGodotTests",
+            dependencies: [
+                "SwiftGodotTestability"
+            ],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+
+        // Runtime dependant tests based on the engine tests from Godot's repository
+        .testTarget(
+            name: "SwiftGodotEngineTests",
+            dependencies: [
+                "SwiftGodotTestability"
+            ],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+    ])
+
+    products.append(
+        .library(
+            name: "SwiftGodotTestability",
+            targets: ["SwiftGodotTestability"]))
+
+#endif
+
 let package = Package(
     name: "SwiftGodot",
     platforms: [
