@@ -25,8 +25,8 @@ import PackagePlugin
         var outputFiles: [URL] = []
         #if os(Windows)
             // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well
-            outputFiles.append(genSourcesDir.appending(subpath: "Generated.swift"))
-            arguments.append(context.package.directory.appending(subpath: "doc"))
+            outputFiles.append(genSourcesDir.appending(path: "Generated.swift"))
+            arguments.append(context.package.directoryURL.appending(path: "doc").path)
             arguments.append("--singlefile")
             commands.append(
                 Command.prebuildCommand(
