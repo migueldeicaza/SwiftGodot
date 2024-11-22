@@ -36,6 +36,15 @@ final class Vector2iTests: GodotTestCase {
         .max
     ]
 
+    static let testDoubles: [Double] = testInt64s.map { Double($0) } + [
+        -.infinity,
+        -1e100,
+        -0.0,
+        1e100,
+         .infinity,
+         .nan
+    ]
+
     static let testVectors: [Vector2i] = testInt32s.flatMap { y in
         testInt32s.map { x in
             Vector2i(x: x, y: y)
@@ -59,7 +68,7 @@ final class Vector2iTests: GodotTestCase {
     }
 
     func testNullaryCovers() throws {
-        // Methods of the form v.method().
+        // Methods of the form Vector2i.method().
 
         func checkMethod(
             _ method: (Vector2i) -> () -> some Equatable,
@@ -80,7 +89,7 @@ final class Vector2iTests: GodotTestCase {
     }
 
     func testUnaryCovers_Vector2i() throws {
-        // Methods of the form v.method(u) where u is also a Vector2i.
+        // Methods of the form Vector2i.method(Vector2i).
 
         func checkMethod(
             _ method: (Vector2i) -> (Vector2i) -> some Equatable,
@@ -169,7 +178,7 @@ final class Vector2iTests: GodotTestCase {
     }
 
     func testBinaryOperators_Vector2i_Vector2i() throws {
-        // Operators of the form v * u for two Vector2i.
+        // Operators of the form Vector2i * Vector2i.
 
         func checkOperator(
             _ op: (Vector2i, Vector2i) -> some Equatable,
@@ -197,6 +206,41 @@ final class Vector2iTests: GodotTestCase {
         // See https://github.com/godotengine/godot/issues/99518 for details.
         //
         // try checkOperator(%)
+    }
+
+    func testBinaryOperators_Vector2i_Int64() throws {
+        // Operators of the form Vector2i * Int64.
+
+        func checkOperator(
+            _ op: (Vector2i, Int64) -> some Equatable,
+            filePath: StaticString = #filePath, line: UInt = #line
+        ) throws {
+            for v in Self.testVectors {
+                for i in Self.testInt64s {
+                    try checkCover(filePath: filePath, line: line) { op(v, i) }
+                }
+            }
+        }
+
+        try checkOperator(*)
+        try checkOperator(/)
+        try checkOperator(%)
+    }
+
+    func testTimesInt64() throws {
+        for v in Self.testVectors {
+            for d in Self.testDoubles {
+                try checkCover { v * d }
+            }
+        }
+    }
+
+    func testDividedByInt64() throws {
+        for v in Self.testVectors {
+            for d in Self.testDoubles {
+                try checkCover { v / d }
+            }
+        }
     }
 
     func testOperatorUnaryMinus () {
