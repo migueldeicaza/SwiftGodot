@@ -202,10 +202,14 @@ final class Vector2iTests: GodotTestCase {
         try checkOperator(*)
         try checkOperator(/)
 
+        // try checkOperator(%)
+        //
         // The `Vector2i % Vector2i` operator is implemented incorrectly by Godot, for any gdextension that uses the ptrcall API. It performs `Vector2i / Vector2i` instead of what it's supposed to do.
+        //
         // See https://github.com/godotengine/godot/issues/99518 for details.
         //
-        // try checkOperator(%)
+        // Note that it isn't enough for the bug to be fixed in the Godot project. The libgodot project also needs to be fixed, because that's what SwiftGodot actually uses.
+        // https://github.com/migueldeicaza/libgodot
     }
 
     func testBinaryOperators_Vector2i_Int64() throws {
