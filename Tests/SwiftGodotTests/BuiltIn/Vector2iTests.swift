@@ -22,6 +22,20 @@ final class Vector2iTests: GodotTestCase {
         .max,
     ]
 
+    static let testInt64s: [Int64] = [
+        .min,
+        Int64(Int32.min) - 1,
+        Int64(Int32.min),
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        Int64(Int32.max),
+        Int64(Int32.max) + 1,
+        .max
+    ]
+
     static let testVectors: [Vector2i] = testInt32s.flatMap { y in
         testInt32s.map { x in
             Vector2i(x: x, y: y)
@@ -29,8 +43,8 @@ final class Vector2iTests: GodotTestCase {
     }
 
     func testInitFromVector2i() throws {
-        for y in Self.testInt32s {
-            try checkCover { Vector2i(from: Vector2i(x: 0, y: y)) }
+        for v in Self.testVectors {
+            try checkCover { Vector2i(from: v) }
         }
     }
 
@@ -44,46 +58,145 @@ final class Vector2iTests: GodotTestCase {
         }
     }
 
-    func testAspect() throws {
-        for v in Self.testVectors {
-            try checkCover { v.aspect() }
+    func testNullaryCovers() throws {
+        // Methods of the form v.method().
+
+        func checkMethod(
+            _ method: (Vector2i) -> () -> some Equatable,
+            filePath: StaticString = #filePath, line: UInt = #line
+        ) throws {
+            for v in Self.testVectors {
+                try checkCover(filePath: filePath, line: line) { method(v)() }
+            }
         }
+
+        try checkMethod(Vector2i.aspect)
+        try checkMethod(Vector2i.maxAxisIndex)
+        try checkMethod(Vector2i.minAxisIndex)
+        try checkMethod(Vector2i.length)
+        try checkMethod(Vector2i.lengthSquared)
+        try checkMethod(Vector2i.sign)
+        try checkMethod(Vector2i.abs)
     }
 
-    func testMaxAxisIndex() throws {
-        for v in Self.testVectors {
-            try checkCover { v.maxAxisIndex() }
+    func testUnaryCovers_Vector2i() throws {
+        // Methods of the form v.method(u) where u is also a Vector2i.
+
+        func checkMethod(
+            _ method: (Vector2i) -> (Vector2i) -> some Equatable,
+            filePath: StaticString = #filePath, line: UInt = #line
+        ) throws {
+            for v in Self.testVectors {
+                for u in Self.testVectors {
+                    try checkCover(filePath: filePath, line: line) { method(v)(u) }
+                }
+            }
         }
+
+        try checkMethod(Vector2i.distanceTo)
+        try checkMethod(Vector2i.distanceSquaredTo)
+        try checkMethod(Vector2i.min(with:))
+        try checkMethod(Vector2i.max(with:))
     }
 
-    func testMinAxisIndex() throws {
-        for v in Self.testVectors {
-            try checkCover { v.minAxisIndex() }
-        }
-    }
-
-    func testDistanceTo() throws {
+    func testClamp() throws {
         for v in Self.testVectors {
             for u in Self.testVectors {
-                try checkCover { v.distanceTo(u) }
+                for w in Self.testVectors {
+                    try checkCover { v.clamp(min: u, max: w) }
+                }
             }
         }
     }
 
-    func testDistanceSquaredTo() throws {
+    func testClampi() throws {
         for v in Self.testVectors {
-            for u in Self.testVectors {
-                try checkCover { v.distanceSquaredTo(u) }
+            for i in Self.testInt64s {
+                for j in Self.testInt64s {
+                    try checkCover { v.clampi(min: i, max: j) }
+                }
             }
         }
     }
 
-    func testPlus() throws {
+    func testSnappedi() throws {
         for v in Self.testVectors {
-            for u in Self.testVectors {
-                try checkCover { v + u }
+            for i in Self.testInt64s {
+                try checkCover { v.snappedi(step: i) }
             }
         }
+    }
+
+    func testMini() throws {
+        for v in Self.testVectors {
+            for i in Self.testInt64s {
+                try checkCover { v.mini(with: i) }
+            }
+        }
+    }
+
+    func testMaxi() throws {
+        for v in Self.testVectors {
+            for i in Self.testInt64s {
+                try checkCover { v.maxi(with: i) }
+            }
+        }
+    }
+
+    func testSubscriptGet() throws {
+        for v in Self.testVectors {
+            for i in Vector2i.Axis.allCases {
+                try checkCover {
+                    var v = v
+                    return v[i.rawValue]
+                }
+            }
+        }
+    }
+
+    func testSubscriptSet() throws {
+        for v in Self.testVectors {
+            for i in Vector2i.Axis.allCases {
+                for j in Self.testInt64s {
+                    try checkCover {
+                        var v = v
+                        v[i.rawValue] = j
+                        return v
+                    }
+                }
+            }
+        }
+    }
+
+    func testBinaryOperators_Vector2i_Vector2i() throws {
+        // Operators of the form v * u for two Vector2i.
+
+        func checkOperator(
+            _ op: (Vector2i, Vector2i) -> some Equatable,
+            filePath: StaticString = #filePath, line: UInt = #line
+        ) throws {
+            for v in Self.testVectors {
+                for u in Self.testVectors {
+                    try checkCover(filePath: filePath, line: line) { op(v, u) }
+                }
+            }
+        }
+
+        try checkOperator(==)
+        try checkOperator(!=)
+        try checkOperator(<)
+        try checkOperator(<=)
+        try checkOperator(>)
+        try checkOperator(>=)
+        try checkOperator(+)
+        try checkOperator(-)
+        try checkOperator(*)
+        try checkOperator(/)
+
+        // The `Vector2i % Vector2i` operator is implemented incorrectly by Godot, for any gdextension that uses the ptrcall API. It performs `Vector2i / Vector2i` instead of what it's supposed to do.
+        // See https://github.com/godotengine/godot/issues/99518 for details.
+        //
+        // try checkOperator(%)
     }
 
     func testOperatorUnaryMinus () {
