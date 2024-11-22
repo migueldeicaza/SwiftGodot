@@ -41,5 +41,9 @@ jobs:
           tag: 6.0.2-RELEASE
       - uses: actions/checkout@v4
       - name: Build
-        run: swift build -v
+        run: swift build --build-tests --quiet
+      - name: Run tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
+      - name: Run tests (Swift testing)
+        run: swift test --skip-build --no-parallel --disable-xctest
         
