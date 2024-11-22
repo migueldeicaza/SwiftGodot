@@ -46,6 +46,12 @@ extension Vector2i {
     public var tuple: (Int32, Int32) { (x, y) }
 }
 
+extension Vector3i {
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public var tuple: (Int32, Int32, Int32) { (x, y, z) }
+}
+
 @_spi(SwiftCovers)
 @inline(__always)
 public func sign(_ x: Float) -> Float {
