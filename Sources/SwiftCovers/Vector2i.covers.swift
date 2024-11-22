@@ -82,8 +82,8 @@ extension Vector2i {
     public func snappedi(step: Int64) -> Vector2i {
         let step = Double(Int32(truncatingIfNeeded: step))
         return Vector2i(
-            x: cCastToInt32(Double(x).snapped(step: Double(step))),
-            y: cCastToInt32(Double(y).snapped(step: Double(step)))
+            x: cCastToInt32(Double(x).snapped(step: step)),
+            y: cCastToInt32(Double(y).snapped(step: step))
         )
     }
 
