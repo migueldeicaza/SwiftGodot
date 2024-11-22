@@ -46,6 +46,12 @@ extension Vector2i {
     public var tuple: (Int32, Int32) { (x, y) }
 }
 
+@_spi(SwiftCovers)
+@inline(__always)
+public func sign(_ x: Float) -> Float {
+    return x == 0 ? 0 : (x > 0 ? 1.0 : -1.0)
+}
+
 #if TESTABLE_SWIFT_COVERS
 
 /// If true (the default), use Swift cover implementations where available instead of calling Godot engine functions. You should only use this for testing covers. It is not intended for production use.
