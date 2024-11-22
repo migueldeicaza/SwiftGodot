@@ -242,7 +242,8 @@ targets.append(contentsOf: [
 targets += [
     .target(
         name: "SwiftCovers",
-        dependencies: ["SwiftGodot"]
+        dependencies: ["SwiftGodot"],
+        exclude: ["README.md"]
     ),
 
     .target(name: "CWrappers"),
