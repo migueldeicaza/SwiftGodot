@@ -142,7 +142,7 @@ extension Vector2 {
         /// This epsilon should match the one used by Godot for consistency.
         let CMP_EPSILON = Double(0.00001)
         
-        var result = to - self
+        let result = to - self
         let newLen = result.length()
         return newLen <= delta || newLen < CMP_EPSILON ? to : self + result / newLen * delta
     }
