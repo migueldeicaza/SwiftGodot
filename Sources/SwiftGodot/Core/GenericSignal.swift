@@ -95,7 +95,9 @@ public class GenericSignal<each T: VariantStorable> {
             args.append(Variant(arg))
         }
         let result = target.emitSignalWithArguments(args)
-        return GodotError(rawValue: Int64(result)!)!
+        guard let result else { return .ok }
+        guard let errorCode = Int(result) else { return .ok }
+        return GodotError(rawValue: Int64(errorCode))!
     }
 
     /// You can await this property to wait for the signal to be emitted once.

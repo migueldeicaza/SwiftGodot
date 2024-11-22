@@ -6,7 +6,7 @@ extension Object {
     /// All input arguments must be marshaled into `Variant`s.
     /// The result is a `Variant` that must be unmarshaled into the expected type.
     @discardableResult /* discardable per discardableList: Object, emit_signal */
-    final func rawCall(_ p_method_bind: GDExtensionMethodBindPtr, arguments: [Variant]) -> Variant {
+    final func rawCall(_ p_method_bind: GDExtensionMethodBindPtr, arguments: [Variant]) -> Variant? {
         var _result: Variant.ContentType = Variant.zero
         // A temporary allocation containing pointers to `Variant.ContentType` of marshaled arguments
         withUnsafeTemporaryAllocation(of: UnsafeRawPointer?.self, capacity: arguments.count) { pArgsBuffer in
@@ -33,12 +33,12 @@ extension Object {
             }
         }
 
-        return Variant(copying: _result)
+        return Variant(takingOver: _result)
     }
 
     /// Non-variadic variation on the emitSignal method.
     /// Used by GenericSignal.
-    public final func emitSignalWithArguments(_ arguments: [Variant]) -> Variant {
+    public final func emitSignalWithArguments(_ arguments: [Variant]) -> Variant? {
         return rawCall(Object.method_emit_signal, arguments: arguments)
     }
 
