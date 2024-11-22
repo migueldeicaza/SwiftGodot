@@ -49,11 +49,6 @@ extension Vector2 {
         return result
     }
     
-    public func is_normalized() -> Bool {
-//        isEqualApprox(to: <#T##Vector2#>)
-        return false
-    }
-    
     public func distanceTo(_ to: Vector2) -> Double {
         return Double(sqrt((x - to.x) * (x - to.x) + (y - to.y) * (y - to.y)))
     }
