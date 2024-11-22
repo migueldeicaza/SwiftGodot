@@ -20,3 +20,5 @@ Package.resolved
 /.vscode
 .swiftpm/xcode/xcshareddata/xcschemes
 GeneratedForDebug/
+*.d
+*.swiftdeps
