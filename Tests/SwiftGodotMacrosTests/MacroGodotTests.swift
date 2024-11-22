@@ -213,7 +213,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `subscribe`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `subscribe`: \\(error)")
                         return nil
                     }
                 }
@@ -228,7 +228,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `removeSilences`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `removeSilences`: \\(error)")
                         return nil
                     }
                 }
@@ -244,7 +244,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `getLatestEpisode`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `getLatestEpisode`: \\(error)")
                         return nil
                     }
                 }
@@ -260,7 +260,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `queue`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `queue`: \\(error)")
                         return nil
                     }
                 }
@@ -453,7 +453,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `square`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `square`: \\(error)")
                         return nil
                     }
                 }
@@ -549,7 +549,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `printNames`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `printNames`: \\(error)")
                         return nil
                     }
                 }
@@ -602,7 +602,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `multiply`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `multiply`: \\(error)")
                         return nil
                     }
                 }
@@ -721,7 +721,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `multiply`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `multiply`: \\(error)")
                         return nil
                     }
                 }
@@ -836,7 +836,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `multiply`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `multiply`: \\(error)")
                         return nil
                     }
                 }
@@ -853,7 +853,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `divide`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `divide`: \\(error)")
                         return nil
                     }
                 }
@@ -870,7 +870,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         GD.printErr(error.description)
                         return nil
                     } catch {
-                        GD.printErr("Error calling `areBothTrue`: \\(error.localizedDescription)")
+                        GD.printErr("Error calling `areBothTrue`: \\(error)")
                         return nil
                     }
                 }

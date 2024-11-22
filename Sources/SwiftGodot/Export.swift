@@ -39,7 +39,7 @@ func additionalRegistations (name: StringName) {
 //                minfo.arguments_metadata = UnsafeMutablePointer (mutating: argMetaPtr.baseAddress)
 //                minfo.arguments_info = UnsafeMutablePointer (mutating: argInfoPtr.baseAddress)
 //                
-//                gi.classdb_register_extension_class_method (library, UnsafePointer(&name.content), &minfo)
+//                gi.classdb_register_extension_class_method (extensionInterface.getLibrary(), UnsafePointer(&name.content), &minfo)
 //            }
 //        }
 //    }
