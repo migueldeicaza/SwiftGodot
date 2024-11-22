@@ -69,19 +69,21 @@ extension Vector2i {
     }
 
     public func clampi(min: Int64, max: Int64) -> Vector2i {
+        let min = Int32(truncatingIfNeeded: min)
+        let max = Int32(truncatingIfNeeded: max)
         return Vector2i(
-            x: Int32(truncatingIfNeeded: Int64(x).clamped(min: min, max: max)),
-            y: Int32(truncatingIfNeeded: Int64(y).clamped(min: min, max: max))
+            x: x.clamped(min: min, max: max),
+            y: y.clamped(min: min, max: max)
         )
     }
 
     // snapped is special-cased.
 
     public func snappedi(step: Int64) -> Vector2i {
-        let step = Int32(truncatingIfNeeded: step)
+        let step = Double(Int32(truncatingIfNeeded: step))
         return Vector2i(
-            x: x.snapped(step: step),
-            y: y.snapped(step: step)
+            x: cCastToInt32(Double(x).snapped(step: Double(step))),
+            y: cCastToInt32(Double(y).snapped(step: Double(step)))
         )
     }
 
