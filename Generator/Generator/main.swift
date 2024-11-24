@@ -171,8 +171,8 @@ struct Generator {
         await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
         await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
-        generateCtorPointers (coreDefPrinter)
 
+        generateCtorPointers (coreDefPrinter)
         generateNativeStructures(coreDefPrinter, values: jsonApi.nativeStructures)
 
         if let generatedBuiltinDir {
