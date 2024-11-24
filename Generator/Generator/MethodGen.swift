@@ -210,7 +210,7 @@ struct MethodArgument {
                 } else if options.contains(.smallIntToInt) && isSmallInt(src) {
                     translation = .directPromoted(to: "Int")
                 } else {
-                    if isStructMap[src.type] == true {
+                    if isStruct(src.type) {
                         translation = .direct
                     } else {
                         if builtinSizes[src.type] != nil && src.type != "Object" {

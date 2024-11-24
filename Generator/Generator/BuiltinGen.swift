@@ -91,8 +91,8 @@ func generateBuiltinCtors (_ p: Printer,
                            typeEnum: String,
                            members: [JGodotArgument]?)
 {
-    let isStruct = isStructMap [typeName] ?? false
-    
+    let isStruct = isStruct(typeName)
+
     for m in ctors {
         var args = ""
         var visibility = "public"
@@ -229,7 +229,7 @@ func generateMethodCall (_ p: Printer,
         if godotReturnType == "Variant" {
             ptrResult = "&result"
         } else {
-            let isStruct = isStructMap [godotReturnType ?? ""] ?? false
+            let isStruct = isStruct(godotReturnType ?? "")
             if isStruct {
                 ptrResult = "&result"
             } else {
@@ -253,7 +253,7 @@ func generateMethodCall (_ p: Printer,
         if isStatic {
             return "\(typeName).\(methodToCall)(nil, \(argsRef), \(ptrResult), \(countArg))"
         } else {
-            if isStructMap [typeName] ?? false {
+            if isStruct(typeName) {
                 return """
                 var mutSelfCopy = self
                 withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in
@@ -381,8 +381,7 @@ func generateBuiltinOperators (_ p: Printer,
                     }
                     p ("\(declType) result: \(retType) = \(retType)()")
                 }
-                let isStruct = isStructMap [op.returnType] ?? false
-                if isStruct {
+                if isStruct(op.returnType) {
                     ptrResult = "&result"
                 } else {
                     ptrResult = "&result.content"

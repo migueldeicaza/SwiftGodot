@@ -62,15 +62,6 @@ if args.count < 2 {
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
-// Determines whether a built-in type is defined as a structure, this means:
-// that it has fields and does not have a "handle" pointer to the native object
-//
-// The map is agumented during the JSON file processing
-var isStructMap: [String:Bool] = [
-    "const void*": true,
-    "AudioFrame*": true
-]
-
 func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel (enumKey)
     if snake.lowercased().starts(with: enumName.lowercased()) {
@@ -109,15 +100,29 @@ for x in jsonApi.classes {
     }
 }
 
+fileprivate var structTypes: Set<String> = [
+    "const void*",
+    "AudioFrame*",
+    "Float",
+    "Int",
+    "float",
+    "int",
+    "Int32",
+    "Bool",
+    "bool",
+]
+
+/// - parameter type: A type name as found in `extension_api.json`.
+/// - returns: True if the type is represented in Swift as simple `struct` with fields (or as a built-in Swift type), not wrapping a handle (pointer) to a native Godot object.
+func isStruct(_ type: String) -> Bool { structTypes.contains(type) }
+
 var builtinMap: [String: JGodotBuiltinClass] = [:]
 
 for x in jsonApi.builtinClasses {
-    let value = x.members?.count ?? 0 > 0
-    isStructMap [String (x.name)] = value
-    builtinMap [x.name] = x
-}
-for x in ["Float", "Int", "float", "int", "Int32", "Bool", "bool"] {
-    isStructMap [x] = true
+    if x.members?.count ?? 0 > 0 {
+        structTypes.insert(x.name)
+    }
+    builtinMap[x.name] = x
 }
 
 let buildConfiguration: String = "float_64"
