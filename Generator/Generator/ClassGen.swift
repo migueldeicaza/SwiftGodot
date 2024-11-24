@@ -689,10 +689,12 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     }
 }
 
-func generateCtorPointers (_ p: Printer) {
-    p ("var godotFrameworkCtors = [")
-    for x in classMap.keys.sorted() {
-        p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
+extension Generator {
+    func generateCtorPointers (_ p: Printer) {
+        p ("var godotFrameworkCtors = [")
+        for x in classMap.keys.sorted() {
+            p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
+        }
+        p ("]")
     }
-    p ("]")
 }
