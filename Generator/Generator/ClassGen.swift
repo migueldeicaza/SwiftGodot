@@ -8,9 +8,6 @@
 import Foundation
 import ExtensionApi
 
-// Maps a typename to its toplevel Json element
-var tree: [String: JGodotExtensionAPIClass] = [:]
-
 var typeToChildren: [String:[String]] = [:]
 
 func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
@@ -477,8 +474,6 @@ func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) asy
     // Also a convenient hash to go from name to json
     // And track which types must be opened up
     for cdef in values {
-        tree [cdef.name] = cdef
-        
         let base = cdef.inherits ?? ""
         if base != "" {
             if var v = typeToChildren [cdef.name] {
