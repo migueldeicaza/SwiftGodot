@@ -65,7 +65,7 @@ func makeDefaultReturn (godotType: String) -> String {
 }
 
 func argTypeNeedsCopy (godotType: String) -> Bool {
-    if isStructMap [godotType] ?? false {
+    if isStruct(godotType) {
         return true
     }
     if godotType.starts(with: "enum::") {
@@ -161,7 +161,7 @@ func generateVirtualProxy (_ p: Printer,
                 retPtr!.storeBytes(of: ret.content, as: Variant.ContentType.self)
                 ret?.content = Variant.zero
                 """)
-            } else if isStructMap [ret.type] ?? false || isStructMap [virtRet ?? "NON_EXIDTENT"] ?? false || ret.type.starts(with: "bitfield::"){
+            } else if isStruct(ret.type) || isStruct(virtRet ?? "NON_EXISTENT") || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
             } else if ret.type.starts(with: "enum::") {
                 p ("retPtr!.storeBytes (of: Int32 (ret.rawValue), as: Int32.self)")
