@@ -162,24 +162,33 @@ if singleFile {
 //skipList.insert("OpenXRInterface")
 //#endif
 
+struct Generator {
+    func run() async throws {
+        let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
+        coreDefPrinter.preamble()
+        generateUnsafePointerHelpers(coreDefPrinter)
+        generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
+        await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
+        await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
+        await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
+        generateCtorPointers (coreDefPrinter)
+
+        generateNativeStructures(coreDefPrinter, values: jsonApi.nativeStructures)
+
+        if let generatedBuiltinDir {
+            coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
+        }
+
+        if singleFile {
+            await PrinterFactory.shared.save(outputDir + "/generated.swift")
+        }
+    }
+}
+
 let semaphore = DispatchSemaphore(value: 0)
 let _ = Task {
-    let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
-    coreDefPrinter.preamble()
-    generateUnsafePointerHelpers(coreDefPrinter)
-    generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
-    await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
-    await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
-    await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
-    generateCtorPointers (coreDefPrinter)
-    generateNativeStructures (coreDefPrinter, values: jsonApi.nativeStructures)
-    if let generatedBuiltinDir {
-        coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
-    }
-    
-    if singleFile {
-        await PrinterFactory.shared.save(outputDir + "/generated.swift")
-    }
+    let generator = Generator()
+    try! await generator.run()
     semaphore.signal()
 }
 semaphore.wait()
