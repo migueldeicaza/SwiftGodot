@@ -8,8 +8,6 @@
 import Foundation
 import ExtensionApi
 
-var typeToChildren: [String:[String]] = [:]
-
 func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
     switch godotType {
     case "Variant":
@@ -470,31 +468,6 @@ var skipList = Set<String>()
 #endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) async {
-    // TODO: no longer used, probably can remove
-    // Also a convenient hash to go from name to json
-    // And track which types must be opened up
-    for cdef in values {
-        let base = cdef.inherits ?? ""
-        if base != "" {
-            if var v = typeToChildren [cdef.name] {
-                v.append(cdef.inherits ?? "")
-            } else {
-                typeToChildren [cdef.name] = [cdef.inherits ?? ""]
-            }
-        }
-    }
-    
-    // Collect all the signals
-//    for cdef in values {
-//        if let signals = cdef.signals {
-//            for signal in signals {
-//                if signal.arguments! [0] == signal.arguments! [1] {
-//
-//                }
-//            }
-//        }
-//    }
-    
     await withTaskGroup(of: Void.self) { group in
         for cdef in values {
             group.addTask {
