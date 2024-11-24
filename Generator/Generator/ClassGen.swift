@@ -8,10 +8,6 @@
 import Foundation
 import ExtensionApi
 
-// Populated with the types loaded from the api.json, we assume they are all reference types
-// anything else is not
-var referenceTypes: [String:Bool] = [:]
-
 // Maps a typename to its toplevel Json element
 var tree: [String: JGodotExtensionAPIClass] = [:]
 
@@ -477,11 +473,6 @@ var skipList = Set<String>()
 #endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) async {
-    // TODO: duplicate, we can remove this and use classMap
-    // Assemble all the reference types, we use to test later
-    for cdef in values {
-        referenceTypes[cdef.name] = true
-    }
     // TODO: no longer used, probably can remove
     // Also a convenient hash to go from name to json
     // And track which types must be opened up
@@ -760,7 +751,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
 
 func generateCtorPointers (_ p: Printer) {
     p ("var godotFrameworkCtors = [")
-    for x in referenceTypes.keys.sorted() {
+    for x in classMap.keys.sorted() {
         p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
     }
     p ("]")
