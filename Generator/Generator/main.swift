@@ -127,14 +127,6 @@ for cs in jsonApi.builtinClassSizes {
         }
     }
 }
-var builtinMemberOffsets: [String: [JGodotMember]] = [:]
-for mo in jsonApi.builtinClassMemberOffsets {
-    if mo.buildConfiguration == buildConfiguration {
-        for c in mo.classes {
-            builtinMemberOffsets [c.name.rawValue] = c.members
-        }
-    }
-}
 
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
@@ -166,14 +158,34 @@ struct GeneratorCommand: AsyncParsableCommand {
     }
 }
 
+extension Array {
+    fileprivate func makeDictionary<Key: Hashable, Value>(
+        key: (Element) -> Key,
+        value: (Element) -> Value
+    ) -> [Key: Value] {
+        var answer = [Key: Value]()
+        for element in self {
+            answer[key(element)] = value(element)
+        }
+        return answer
+    }
+}
+
 struct Generator {
     let command: GeneratorCommand
+
+    let builtinMemberOffsets: [String: [JGodotMember]]
 
     var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
     var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
 
+
     init(command: GeneratorCommand) {
         self.command = command
+
+        builtinMemberOffsets = jsonApi.builtinClassMemberOffsets
+            .first { $0.buildConfiguration == buildConfiguration }?
+            .classes.makeDictionary(key: \.name.rawValue, value: \.members) ?? [:]
     }
 
     func makeFolders() throws {
