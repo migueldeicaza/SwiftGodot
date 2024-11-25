@@ -56,7 +56,7 @@ extension Generator {
             print ("WARNING: Enum, did not find a matching value in \(enumDef) for \(value)")
             return nil
         }
-        let t = enumDef.dropFirst(6)
+        let t = enumDef.dropFirst(6) // drop "enum::" prefix
         if let globalEnumDef = globalEnums [String (t)]  {
             return findEnumMatch(element: globalEnumDef)
         }
