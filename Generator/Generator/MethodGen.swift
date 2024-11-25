@@ -123,7 +123,7 @@ extension Generator {
             typeName: typeName,
             methodName: methodName,
             options: options,
-            builtinSizes: builtinSizes
+            generator: self
         )
     }
 }
@@ -198,7 +198,7 @@ struct MethodArgument {
         typeName: String,
         methodName: String,
         options: TranslationOptions,
-        builtinSizes: [String: Int]
+        generator: Generator
     ) throws {
         func makeError(reason: String) -> MethodGenError {
             MethodGenError.unsupportedArgument(typeName: typeName, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
@@ -236,7 +236,7 @@ struct MethodArgument {
                     if isStruct(src.type) {
                         translation = .direct
                     } else {
-                        if builtinSizes[src.type] != nil && src.type != "Object" {
+                        if generator.builtinSizes[src.type] != nil && src.type != "Object" {
                             translation = .contentRef
                         } else if classMap[src.type] != nil {                            
                             if options.contains(.nonOptionalObjects) {
