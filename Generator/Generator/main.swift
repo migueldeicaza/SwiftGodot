@@ -77,13 +77,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 
-// Maps from a the class name to its definition
-var classMap: [String:JGodotExtensionAPIClass] = [:]
-
-for x in jsonApi.classes {
-    classMap [x.name] = x
-}
-
 let buildConfiguration: String = "float_64"
 
 //#if os(Windows)
@@ -144,6 +137,9 @@ struct Generator {
     /// is more expensive than creating the wrapper directly.
     let hasSubclasses: Set<String>
 
+    /// Maps from a the class name to its definition
+    let classMap: [String:JGodotExtensionAPIClass]
+
     var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
     var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
 
@@ -184,6 +180,8 @@ struct Generator {
         builtinMap = jsonApi.builtinClasses.makeDictionary(key: \.name, value: \.self)
 
         hasSubclasses = Set(jsonApi.classes.lazy.compactMap { $0.inherits })
+
+        classMap = jsonApi.classes.makeDictionary(key: \.name, value: \.self)
     }
 
     func makeFolders() throws {

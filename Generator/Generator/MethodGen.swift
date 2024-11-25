@@ -238,7 +238,7 @@ struct MethodArgument {
                     } else {
                         if generator.builtinSizes[src.type] != nil && src.type != "Object" {
                             translation = .contentRef
-                        } else if classMap[src.type] != nil {                            
+                        } else if generator.classMap[src.type] != nil {                            
                             if options.contains(.nonOptionalObjects) {
                                 translation = .objectRef(isOptional: false)
                             } else {
