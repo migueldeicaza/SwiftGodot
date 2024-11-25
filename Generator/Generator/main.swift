@@ -93,31 +93,6 @@ for x in jsonApi.classes {
     }
 }
 
-fileprivate var structTypes: Set<String> = [
-    "const void*",
-    "AudioFrame*",
-    "Float",
-    "Int",
-    "float",
-    "int",
-    "Int32",
-    "Bool",
-    "bool",
-]
-
-/// - parameter type: A type name as found in `extension_api.json`.
-/// - returns: True if the type is represented in Swift as simple `struct` with fields (or as a built-in Swift type), not wrapping a handle (pointer) to a native Godot object.
-func isStruct(_ type: String) -> Bool { structTypes.contains(type) }
-
-var builtinMap: [String: JGodotBuiltinClass] = [:]
-
-for x in jsonApi.builtinClasses {
-    if x.members?.count ?? 0 > 0 {
-        structTypes.insert(x.name)
-    }
-    builtinMap[x.name] = x
-}
-
 let buildConfiguration: String = "float_64"
 
 //#if os(Windows)
@@ -168,10 +143,28 @@ struct Generator {
 
     let builtinMemberOffsets: [String: [JGodotMember]]
     let builtinSizes: [String: Int]
+    let builtinMap: [String: JGodotBuiltinClass]
 
     var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
     var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
 
+    let structTypes: Set<String>
+
+    private static let knownStructTypes: Set<String> = [
+        "const void*",
+        "AudioFrame*",
+        "Float",
+        "Int",
+        "float",
+        "int",
+        "Int32",
+        "Bool",
+        "bool",
+    ]
+
+    /// - parameter type: A type name as found in `extension_api.json`.
+    /// - returns: True if the type is represented in Swift as simple `struct` with fields (or as a built-in Swift type), not wrapping a handle (pointer) to a native Godot object.
+    func isStruct(_ type: String) -> Bool { structTypes.contains(type) }
 
     init(command: GeneratorCommand) {
         self.command = command
@@ -183,6 +176,15 @@ struct Generator {
         builtinSizes = jsonApi.builtinClassSizes
             .first { $0.buildConfiguration == buildConfiguration }?
             .sizes.makeDictionary(key: \.name, value: \.size) ?? [:]
+
+        structTypes = Self.knownStructTypes.union(
+            jsonApi.builtinClasses
+                .lazy
+                .filter { $0.members?.count ?? 0 > 0 }
+                .map(\.name)
+        )
+
+        builtinMap = jsonApi.builtinClasses.makeDictionary(key: \.name, value: \.self)
     }
 
     func makeFolders() throws {

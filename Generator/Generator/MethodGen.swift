@@ -233,7 +233,7 @@ struct MethodArgument {
                 } else if options.contains(.smallIntToInt) && isSmallInt(src) {
                     translation = .directPromoted(to: "Int")
                 } else {
-                    if isStruct(src.type) {
+                    if generator.isStruct(src.type) {
                         translation = .direct
                     } else {
                         if generator.builtinSizes[src.type] != nil && src.type != "Object" {
