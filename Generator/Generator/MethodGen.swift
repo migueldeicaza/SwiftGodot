@@ -938,15 +938,18 @@ private func makeDefaultReturn (godotType: String) -> String {
     return "return \(makeDefaultInit(godotType: godotType))"
 }
 
-private func argTypeNeedsCopy (godotType: String) -> Bool {
-    if isStruct(godotType) {
-        return true
+extension Generator {
+    private func argTypeNeedsCopy (godotType: String) -> Bool {
+        if isStruct(godotType) {
+            return true
+        }
+        if godotType.starts(with: "enum::") {
+            return true
+        }
+        if godotType.starts(with: "bitfield::") {
+            return true
+        }
+        return false
     }
-    if godotType.starts(with: "enum::") {
-        return true
-    }
-    if godotType.starts(with: "bitfield::") {
-        return true
-    }
-    return false
 }
+
