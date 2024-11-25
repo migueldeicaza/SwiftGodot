@@ -34,11 +34,6 @@ func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
     }
 }
 
-/// Returns true for the Built-in types that are generated as classes, rather than structures
-func isBuiltinClass (_ godotTypeName: String) -> Bool {
-    builtinClassStorage [godotTypeName] != nil
-}
-
 /// Given an enumeration name, and a value associated with it, returns the Swift
 /// enum value, or nil if it can not be found.
 /// Example type: "ArrowDirection", value: "0" would return ".up"
