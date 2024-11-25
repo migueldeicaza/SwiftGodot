@@ -14,18 +14,6 @@ func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
 }
 
-func isSmallInt(_ arg: JGodotArgument) -> Bool {
-    if arg.type != "int" {
-        return false
-    }
-    switch getGodotType(arg, kind: .classes) {
-    case "Int32", "UInt32", "Int16", "UInt16", "Int8", "UInt8":
-        return true
-    default:
-        return false
-    }
-}
-
 extension Generator {
     func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
         //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""

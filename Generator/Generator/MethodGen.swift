@@ -230,7 +230,7 @@ struct MethodArgument {
                     translation = .string
                 } else if options.contains(.floatToDouble) && src.type == "float" {
                     translation = .directPromoted(to: "Double")
-                } else if options.contains(.smallIntToInt) && isSmallInt(src) {
+                } else if options.contains(.smallIntToInt) && generator.isSmallInt(src) {
                     translation = .directPromoted(to: "Int")
                 } else {
                     if generator.isStruct(src.type) {
@@ -272,6 +272,20 @@ struct MethodArgument {
             default:
                 throw makeError(reason: "Too many tokens separated by '::'")
             }
+        }
+    }
+}
+
+extension Generator {
+    fileprivate func isSmallInt(_ arg: JGodotArgument) -> Bool {
+        if arg.type != "int" {
+            return false
+        }
+        switch getGodotType(arg, kind: .classes) {
+        case "Int32", "UInt32", "Int16", "UInt16", "Int8", "UInt8":
+            return true
+        default:
+            return false
         }
     }
 }
