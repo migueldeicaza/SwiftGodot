@@ -39,7 +39,6 @@ var defaultDocRootUrl: URL {
 }
 
 let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
-var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
 let generateResettableCache = false
 
 if args.count < 2 {
@@ -50,7 +49,6 @@ if args.count < 2 {
     - doc-directory is the Godot documentation resides (godot/doc)
     Running with defaults:
         path-to-extension-api = "\(jsonFile)"
-        doc-directory = "\(docRoot)"
     """)
 }
 
@@ -161,10 +159,6 @@ struct GeneratorCommand: AsyncParsableCommand {
         help: "Path to the folder in which to write generated Swift files. I will create this if it doesn't exist.",
         completion: .directory
     ) var outputDir: String = defaultGeneratorOutputlUrl.path
-
-    @Argument(
-        help: "Path to the top-level Godot documentation folder (the `doc` folder in the root of a Godot repository)."
-    ) var docRoot: String = defaultDocRootUrl.path
 
     mutating func run() async throws {
         let generator = Generator(command: self)
