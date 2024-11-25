@@ -75,8 +75,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
     return snake
 }
 
-var globalEnums: [String: JGodotGlobalEnumElement] = [:]
-
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
 //// we eliminate some rare classes from the build.   This is a temporary hack to unblock
@@ -120,6 +118,26 @@ extension Array {
     }
 }
 
+extension JGodotExtensionAPI {
+    func makeGlobalEnumMap() -> [String: JGodotGlobalEnumElement] {
+        var answer: [String: JGodotGlobalEnumElement] = [:]
+
+        for en in globalEnums {
+            answer[en.name] = en
+        }
+
+        for bc in builtinClasses {
+            guard let enums = bc.enums else { continue }
+            let prefix = bc.name + "."
+            for en in enums {
+                answer[prefix + en.name] = en
+            }
+        }
+
+        return answer
+    }
+}
+
 struct Generator {
     let command: GeneratorCommand
 
@@ -137,6 +155,8 @@ struct Generator {
 
     /// Maps from a the class name to its definition
     let classMap: [String:JGodotExtensionAPIClass]
+
+    let globalEnums: [String: JGodotGlobalEnumElement]
 
     var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
     var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
@@ -182,6 +202,8 @@ struct Generator {
         hasSubclasses = Set(jsonApi.classes.lazy.compactMap { $0.inherits })
 
         classMap = jsonApi.classes.makeDictionary(key: \.name, value: \.self)
+
+        globalEnums = jsonApi.makeGlobalEnumMap()
     }
 
     func makeFolders() throws {
@@ -200,7 +222,7 @@ struct Generator {
         coreDefPrinter.preamble()
         generateUnsafePointerHelpers(coreDefPrinter)
 
-        generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
+        generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums)
         await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
         await generateClasses (values: jsonApi.classes, outputDir: generatedDir)

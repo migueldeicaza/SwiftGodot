@@ -13,7 +13,7 @@ private let droppedCases: Set<String> = [
 ]
 
 extension Generator {
-    func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], prefix: String?) {
+    func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement]) {
         for enumDef in values {
             let isBitField = enumDef.isBitfield ?? false
 
@@ -118,9 +118,6 @@ extension Generator {
             if enumDef.name.starts (with: "Variant") {
                 p.indent -= 1
                 p ("}\n")
-            }
-            if let prefix {
-                globalEnums [prefix + enumDef.name] = enumDef
             }
         }
     }

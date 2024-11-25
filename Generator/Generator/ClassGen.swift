@@ -619,7 +619,7 @@ extension Generator {
             var referencedMethods = Set<String>()
 
             if let enums = cdef.enums {
-                generateEnums (p, cdef: cdef, values: enums, prefix: nil)
+                generateEnums (p, cdef: cdef, values: enums)
             }
 
             let oResult = p.result

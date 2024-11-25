@@ -808,7 +808,7 @@ extension Generator {
                 }
 
                 if let enums = bc.enums {
-                    generateEnums(p, cdef: bc, values: enums, prefix: bc.name + ".")
+                    generateEnums(p, cdef: bc, values: enums)
                 }
                 generateBuiltinCtors (p, bc, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: storedMembers)
 
