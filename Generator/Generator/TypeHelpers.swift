@@ -34,48 +34,50 @@ func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
     }
 }
 
-/// Given an enumeration name, and a value associated with it, returns the Swift
-/// enum value, or nil if it can not be found.
-/// Example type: "ArrowDirection", value: "0" would return ".up"
-func mapEnumValue (enumDef: String, value: String) -> String? {
-    func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
-        let enumCasePrefix = element.values.commonPrefix()
-        for evalue in element.values {
-            let ename = evalue.name
-            if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
-                continue
-                
-            }
+extension Generator {
+    /// Given an enumeration name, and a value associated with it, returns the Swift
+    /// enum value, or nil if it can not be found.
+    /// Example type: "ArrowDirection", value: "0" would return ".up"
+    func mapEnumValue (enumDef: String, value: String) -> String? {
+        func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
+            let enumCasePrefix = element.values.commonPrefix()
+            for evalue in element.values {
+                let ename = evalue.name
+                if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
+                    continue
 
-            if "\(evalue.value)" == value {
-                let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix))
-                return ".\(escapeSwift (name))"
+                }
+
+                if "\(evalue.value)" == value {
+                    let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix))
+                    return ".\(escapeSwift (name))"
+                }
+            }
+            print ("WARNING: Enum, did not find a matching value in \(enumDef) for \(value)")
+            return nil
+        }
+        let t = enumDef.dropFirst(6)
+        if let globalEnumDef = globalEnums [String (t)]  {
+            return findEnumMatch(element: globalEnumDef)
+        }
+        guard let p = t.firstIndex(of: ".") else {
+            print ("WARNING: Enum, not a global, and not a type: \(enumDef)")
+            return nil
+        }
+        let type = t [t.startIndex..<p]
+        let enumt = t [t.index(p, offsetBy: 1)...]
+        guard let x = classMap [String (type)] else {
+            print ("WARNING: Enum, could not find type \(type) for \(enumDef)")
+            return nil
+        }
+        for e in x.enums ?? [] {
+            if e.name == enumt {
+                return findEnumMatch(element: e)
             }
         }
-        print ("WARNING: Enum, did not find a matching value in \(enumDef) for \(value)")
+        print ("WARNING: Enum. did not find a matching value in \(enumDef) for \(value)")
         return nil
     }
-    let t = enumDef.dropFirst(6)
-    if let globalEnumDef = globalEnums [String (t)]  {
-        return findEnumMatch(element: globalEnumDef)
-    }
-    guard let p = t.firstIndex(of: ".") else {
-        print ("WARNING: Enum, not a global, and not a type: \(enumDef)")
-        return nil
-    }
-    let type = t [t.startIndex..<p]
-    let enumt = t [t.index(p, offsetBy: 1)...]
-    guard let x = classMap [String (type)] else {
-        print ("WARNING: Enum, could not find type \(type) for \(enumDef)")
-        return nil
-    }
-    for e in x.enums ?? [] {
-        if e.name == enumt {
-            return findEnumMatch(element: e)
-        }
-    }
-    print ("WARNING: Enum. did not find a matching value in \(enumDef) for \(value)")
-    return nil
 }
 
 func godotMethodToSwift (_ name: String) -> String {
