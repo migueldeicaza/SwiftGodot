@@ -39,13 +39,8 @@ var defaultDocRootUrl: URL {
 }
 
 let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
-var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
 var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
-let outputDir = args.count > 2 ? args [2] : generatorOutput
-let generateResettableCache = false 
-
-// IF we want a single file, or one file per type
-var singleFile = args.contains("--singlefile")
+let generateResettableCache = false
 
 if args.count < 2 {
     print("""
@@ -55,7 +50,6 @@ if args.count < 2 {
     - doc-directory is the Godot documentation resides (godot/doc)
     Running with defaults:
         path-to-extension-api = "\(jsonFile)"
-        output-directory = "\(outputDir)"
         doc-directory = "\(docRoot)"
     """)
 }
@@ -144,16 +138,6 @@ for mo in jsonApi.builtinClassMemberOffsets {
     }
 }
 
-let generatedBuiltinDir: String? = singleFile ? nil : (outputDir + "/generated-builtin/")
-let generatedDir: String? = singleFile ? nil : (outputDir + "/generated/")
-
-if singleFile {
-    try! FileManager.default.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
-} else if let generatedBuiltinDir, let generatedDir {
-    try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
-    try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
-}
-
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
 //// we eliminate some rare classes from the build.   This is a temporary hack to unblock
@@ -191,7 +175,25 @@ struct GeneratorCommand: AsyncParsableCommand {
 struct Generator {
     let command: GeneratorCommand
 
+    var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
+    var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
+
+    init(command: GeneratorCommand) {
+        self.command = command
+    }
+
+    func makeFolders() throws {
+        if command.singleFile {
+            try! FileManager.default.createDirectory(atPath: command.outputDir, withIntermediateDirectories: true)
+        } else if let generatedBuiltinDir, let generatedDir {
+            try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
+            try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
+        }
+    }
+
     func run() async throws {
+        try makeFolders()
+
         let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
         coreDefPrinter.preamble()
         generateUnsafePointerHelpers(coreDefPrinter)
@@ -207,8 +209,8 @@ struct Generator {
             coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
         }
 
-        if singleFile {
-            await PrinterFactory.shared.save(outputDir + "/generated.swift")
+        if command.singleFile {
+            await PrinterFactory.shared.save(command.outputDir + "/generated.swift")
         }
     }
 }
