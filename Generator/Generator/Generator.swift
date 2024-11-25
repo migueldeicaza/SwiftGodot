@@ -64,6 +64,11 @@ struct GeneratorCommand: AsyncParsableCommand {
         completion: .directory
     ) var outputDir: String = defaultGeneratorOutputlUrl.path
 
+    @Argument(
+        help: "Path to the Godot documentation root folder. Usually this is the doc folder at the top of a Godot repo.",
+        completion: .directory
+    ) var docDir: String = defaultDocRootUrl.path
+
     mutating func run() async throws {
         let generator = try Generator(command: self)
         try await generator.run()
