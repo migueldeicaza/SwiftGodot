@@ -167,8 +167,8 @@ struct Generator {
         let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
         coreDefPrinter.preamble()
         generateUnsafePointerHelpers(coreDefPrinter)
-        generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
 
+        generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
         await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
         await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
