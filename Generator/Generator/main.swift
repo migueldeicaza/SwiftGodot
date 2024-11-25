@@ -168,8 +168,8 @@ struct Generator {
         coreDefPrinter.preamble()
         generateUnsafePointerHelpers(coreDefPrinter)
         generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
-        await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
 
+        await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
         await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
         generateCtorPointers (coreDefPrinter)
