@@ -50,6 +50,7 @@ let generateResettableCache = false
 @main
 struct GeneratorCommand: AsyncParsableCommand {
     @Flag(
+        name: .customLong("singlefile"),
         help: "Generator all output to a single Swift file. Possibly useful on Windows."
     ) var singleFile = false
 
