@@ -165,11 +165,11 @@ struct Generator {
                 .map(\.name)
         )
 
-        builtinMap = jsonApi.builtinClasses.makeDictionary(key: \.name, value: \.self)
+        builtinMap = jsonApi.builtinClasses.makeDictionary(key: \.name, value: { $0 })
 
         hasSubclasses = Set(jsonApi.classes.lazy.compactMap { $0.inherits })
 
-        classMap = jsonApi.classes.makeDictionary(key: \.name, value: \.self)
+        classMap = jsonApi.classes.makeDictionary(key: \.name, value: { $0 })
 
         globalEnums = jsonApi.makeGlobalEnumMap()
     }
