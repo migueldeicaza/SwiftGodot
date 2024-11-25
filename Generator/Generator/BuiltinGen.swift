@@ -215,7 +215,7 @@ extension Generator {
 
         let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
         if hasReturnStatement {
-            if godotReturnType == "String" && mapStringToSwift {
+            if godotReturnType == "String" && Self.mapStringToSwift {
                 p ("let result = GString ()")
             } else if godotReturnType == "Variant" {
                 p("var result = Variant.zero")
@@ -278,7 +278,7 @@ extension Generator {
         if hasReturnStatement {
             if godotReturnType == "Variant" {
                 p("return Variant(takingOver: result)")
-            } else if godotReturnType == "String" && mapStringToSwift {
+            } else if godotReturnType == "String" && Self.mapStringToSwift {
                 p("return result.description")
             } else {
                 p("return result")
@@ -381,7 +381,7 @@ extension Generator {
                     }
 
                     let ptrResult: String
-                    if op.returnType == "String" && mapStringToSwift {
+                    if op.returnType == "String" && Self.mapStringToSwift {
                         p ("let result = GString ()")
                     } else {
                         var declType: String = "var"
@@ -413,7 +413,7 @@ extension Generator {
                         p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
                     }
 
-                    if op.returnType == "String" && mapStringToSwift {
+                    if op.returnType == "String" && Self.mapStringToSwift {
                         p ("return result.description")
                     } else {
                         p ("return result")
@@ -878,7 +878,7 @@ extension Generator {
             default:
                 let p: Printer = await PrinterFactory.shared.initPrinter(bc.name)
                 p.preamble()
-                $mapStringToSwift.withValue(bc.name != "String") {
+                Self.$mapStringToSwift.withValue(bc.name != "String") {
                     generateBuiltinClass (p: p, bc)
                 }
                 if let outputDir {

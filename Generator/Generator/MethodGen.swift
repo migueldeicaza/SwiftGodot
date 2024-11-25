@@ -172,7 +172,7 @@ struct MethodArgument {
         static var builtInClassOptions: Self {
             var result: Self = [.floatToDouble, nonOptionalObjects, .smallIntToInt]
             
-            if mapStringToSwift {
+            if Generator.mapStringToSwift {
                 result.insert(.gStringToString)
             }
             
@@ -182,7 +182,7 @@ struct MethodArgument {
         static var classOptions: Self {
             var result: Self = [.smallIntToInt]
             
-            if mapStringToSwift {
+            if Generator.mapStringToSwift {
                 result.insert(.gStringToString)
             }
             
@@ -502,7 +502,7 @@ extension Generator {
 
         let argumentTranslationOptions: MethodArgument.TranslationOptions
 
-        if mapStringToSwift {
+        if Self.mapStringToSwift {
             argumentTranslationOptions = .gStringToString
         } else {
             argumentTranslationOptions = []

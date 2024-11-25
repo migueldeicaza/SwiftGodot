@@ -223,8 +223,10 @@ enum ArgumentKind {
     case builtIn
 }
 
-@TaskLocal
-var mapStringToSwift = true
+extension Generator {
+    @TaskLocal
+    static var mapStringToSwift = true
+}
 
 extension Generator {
     /// Given a type definition with its metadata, and the context where the type is being
@@ -292,7 +294,7 @@ extension Generator {
         case "bool":
             return "Bool"
         case "String":
-            if mapStringToSwift {
+            if Self.mapStringToSwift {
                 return "String" // We are going to use Swift strings
             } else {
                 return "GString"
