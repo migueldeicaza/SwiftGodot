@@ -9,8 +9,6 @@ import ArgumentParser
 import ExtensionApi
 import Foundation
 
-var args = CommandLine.arguments
-
 var rootUrl: URL {
     let url = URL(fileURLWithPath: #file) // SwiftGodot/Generator/Generator/main.swift
         .deletingLastPathComponent() // SwiftGodot/Generator/Generator
@@ -38,22 +36,7 @@ var defaultDocRootUrl: URL {
         .appendingPathComponent("Docs")
 }
 
-let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
 let generateResettableCache = false
-
-if args.count < 2 {
-    print("""
-    Usage is: generator path-to-extension-api output-directory doc-directory
-    - path-to-extension-api is the full path to extension_api.json from Godot
-    - output-directory is where the files will be placed
-    - doc-directory is the Godot documentation resides (godot/doc)
-    Running with defaults:
-        path-to-extension-api = "\(jsonFile)"
-    """)
-}
-
-let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
-let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
@@ -80,7 +63,7 @@ struct GeneratorCommand: AsyncParsableCommand {
     ) var outputDir: String = defaultGeneratorOutputlUrl.path
 
     mutating func run() async throws {
-        let generator = Generator(command: self)
+        let generator = try Generator(command: self)
         try await generator.run()
     }
 }
@@ -120,6 +103,7 @@ extension JGodotExtensionAPI {
 
 struct Generator {
     let command: GeneratorCommand
+    let jsonApi: JGodotExtensionAPI
 
     let builtinMemberOffsets: [String: [JGodotMember]]
     let builtinSizes: [String: Int]
@@ -157,10 +141,13 @@ struct Generator {
     /// - returns: True if the type is represented in Swift as simple `struct` with fields (or as a built-in Swift type), not wrapping a handle (pointer) to a native Godot object.
     func isStruct(_ type: String) -> Bool { structTypes.contains(type) }
 
-    init(command: GeneratorCommand) {
+    init(command: GeneratorCommand) throws {
         let buildConfiguration: String = "float_64"
 
         self.command = command
+
+        let jsonData = try Data(url: URL(fileURLWithPath: command.jsonFile))
+        jsonApi = try JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
         builtinMemberOffsets = jsonApi.builtinClassMemberOffsets
             .first { $0.buildConfiguration == buildConfiguration }?
