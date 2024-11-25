@@ -302,3 +302,23 @@ extension Generator {
         p.indentStr = oIndent
     }
 }
+
+private func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
+    let snake = snakeToCamel (enumKey)
+    if snake.lowercased().starts(with: enumName.lowercased()) {
+        if snake.count == enumName.count {
+            return snake
+        }
+        let ret = String (snake [snake.index (snake.startIndex, offsetBy: enumName.count)...])
+        if let f = ret.first {
+            if f.isNumber {
+                return snake
+            }
+        }
+        if ret == "" {
+            return snake
+        }
+        return ret.first!.lowercased() + ret.dropFirst()
+    }
+    return snake
+}

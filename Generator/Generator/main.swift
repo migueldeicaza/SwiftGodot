@@ -55,26 +55,6 @@ if args.count < 2 {
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
-func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
-    let snake = snakeToCamel (enumKey)
-    if snake.lowercased().starts(with: enumName.lowercased()) {
-        if snake.count == enumName.count {
-            return snake
-        }
-        let ret = String (snake [snake.index (snake.startIndex, offsetBy: enumName.count)...])
-        if let f = ret.first {
-            if f.isNumber {
-                return snake
-            }
-        }
-        if ret == "" {
-            return snake
-        }
-        return ret.first!.lowercased() + ret.dropFirst()
-    }
-    return snake
-}
-
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
 //// we eliminate some rare classes from the build.   This is a temporary hack to unblock
