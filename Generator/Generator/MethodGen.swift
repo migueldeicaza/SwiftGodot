@@ -426,230 +426,239 @@ func aggregatingPreparedArguments(_ p: Printer, argumentsCount: Int, body: () ->
     }
 }
 
-/// The current code generation for passing parameters is both inefficient, and technically unsafe. We don't need
-/// to use nested invocations of withUnsafePointer to generate pointers to multiple arguments, but we can instead generate
-/// a helper version that generates multiple pointer in a single call. For example, if a function that we call using
-/// `gi.object_method_bind_ptrcall()` takes 2 arguments, we can generate the following generic helper:
-///
-/// ```
-/// func withUnsafePointers<T1, T2, ReturnType>(
-///     _ p1: UnsafePointer<T1>, _ p2: UnsafePointer<T2>,
-///     _ block: (UnsafePointer<T1>, UnsafePointer<T2>) -> ReturnType
-/// ) -> ReturnType {
-///     block(p1, p2)
-/// }
-/// ```
-/// This reduces the complexity of the generated code, and can be extended to an arbitrary number of parameters.
-///
-
-/// Generates a method definition
-/// - Parameters:
-///  - p: Our printer to generate the method
-///  - method: the definition to generate
-///  - className: the name of the class where this is being generated
-///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
-/// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
-func generateMethod(_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, generatedMethodKind: GeneratedMethodKind, asSingleton: Bool) throws -> String? {
+extension Generator {
+    /// The current code generation for passing parameters is both inefficient, and technically unsafe. We don't need
+    /// to use nested invocations of withUnsafePointer to generate pointers to multiple arguments, but we can instead generate
+    /// a helper version that generates multiple pointer in a single call. For example, if a function that we call using
+    /// `gi.object_method_bind_ptrcall()` takes 2 arguments, we can generate the following generic helper:
+    ///
+    /// ```
+    /// func withUnsafePointers<T1, T2, ReturnType>(
+    ///     _ p1: UnsafePointer<T1>, _ p2: UnsafePointer<T2>,
+    ///     _ block: (UnsafePointer<T1>, UnsafePointer<T2>) -> ReturnType
+    /// ) -> ReturnType {
+    ///     block(p1, p2)
+    /// }
+    /// ```
+    /// This reduces the complexity of the generated code, and can be extended to an arbitrary number of parameters.
+    ///
     
-    let arguments = method.arguments ?? []
-    
-    
-    let argumentTranslationOptions: MethodArgument.TranslationOptions
-    
-    if mapStringToSwift {
-        argumentTranslationOptions = .gStringToString
-    } else {
-        argumentTranslationOptions = []
-    }
-    
-    // TODO: move down
-    let methodArguments = try arguments.map { argument in
-        try MethodArgument(from: argument, typeName: className, methodName: method.name, options: argumentTranslationOptions)
-    }
-    
-    var registerVirtualMethodName: String? = nil
-    
-    let containsUnsupportedCPointerTypes = arguments
-        .filter { arg in arg.type.contains("*") }
-        .contains { arg in
-            switch arg.type {
-            case "const void*", "AudioFrame*":
-                // supported
-                return false
-            default:
-                return true
-            }
-        }
-    
-    if containsUnsupportedCPointerTypes {
-        // TODO
-        // print("Skipping \(className).\(method.name), unsupported c pointer type")
-        return nil
-    }
-    
-    let bindName = "method_\(method.name)"
-    var visibilityAttribute: String?
-    let omitAllArgumentLabels: Bool
-    let finalAttribute: String?
-    // Default method name
-    var swiftMethodName: String = godotMethodToSwift (method.name)
-    let staticAttribute = method.isStatic || asSingleton ? "static" : nil
-    let inlineAttribute: String?
-    let documentationVisibilityAttribute: String?
-    if let methodHash = method.optionalHash {
-        let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
-        assert (!method.isVirtual)
-        switch generatedMethodKind {
-        case .classMethod:
-            p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionMethodBindPtr") {
-                p ("let methodName = StringName(\"\(method.name)\")")
-            
-                p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
-                    p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
-                        p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
-                    }
-                }
-            }
-        case .utilityFunction:
-            p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionPtrUtilityFunction") {
-                p ("let methodName = StringName(\"\(method.name)\")")
-                p ("return withUnsafePointer(to: &methodName.content)", arg: " ptr in") {
-                    p ("return gi.variant_get_ptr_utility_function(ptr, \(methodHash))!")
-                }
-            }
-        }
+    /// Generates a method definition
+    /// - Parameters:
+    ///  - p: Our printer to generate the method
+    ///  - method: the definition to generate
+    ///  - className: the name of the class where this is being generated
+    ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
+    /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
+    func generateMethod(
+        _ p: Printer,
+        method: MethodDefinition,
+        className: String,
+        cdef: JClassInfo?,
+        usedMethods: Set<String>,
+        generatedMethodKind: GeneratedMethodKind,
+        asSingleton: Bool
+    ) throws -> String? {
         
-        // If this is an internal, and being reference by a property, hide it
-        if usedMethods.contains (method.name) {
-            inlineAttribute = "@inline(__always)"
-            // Try to hide as much as possible, but we know that Godot child nodes will want to use these
-            // (DirectionalLight3D and Light3D) rely on this.
-            visibilityAttribute = method.name == "get_param" || method.name == "set_param" ? nil : "fileprivate"
-            omitAllArgumentLabels = true
-            swiftMethodName = method.name
+        let arguments = method.arguments ?? []
+        
+        
+        let argumentTranslationOptions: MethodArgument.TranslationOptions
+        
+        if mapStringToSwift {
+            argumentTranslationOptions = .gStringToString
         } else {
-            inlineAttribute = nil
-            visibilityAttribute = "public"
-            omitAllArgumentLabels = false
-        }
-        if staticAttribute == nil {
-            finalAttribute = "final"
-        } else {
-            finalAttribute = nil
+            argumentTranslationOptions = []
         }
         
-        documentationVisibilityAttribute = nil
-    } else {
-        assert(method.isVirtual)
+        // TODO: move down
+        let methodArguments = try arguments.map { argument in
+            try MethodArgument(from: argument, typeName: className, methodName: method.name, options: argumentTranslationOptions)
+        }
         
-        inlineAttribute = nil
-        // virtual overwrittable method
-        finalAttribute = nil
-        documentationVisibilityAttribute = "@_documentation(visibility: public)"
-        visibilityAttribute = "open"
-
-        omitAllArgumentLabels = false
-            
-        registerVirtualMethodName = swiftMethodName
-    }
-    
-    var signatureArgs: [String] = []
-    let godotReturnType = method.returnValue?.type
-    let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
-    let returnOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
-    let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
-
-    /// returns appropriate declaration of the return type, used by the helper function.
-    let frameworkType = godotReturnTypeIsReferenceType
-    func returnTypeDecl() -> String {
-        if returnType != "" {
-            guard let godotReturnType else {
-                fatalError ("If the returnType is not empty, we should have a godotReturnType")
-            }
-            if method.isVararg {
-                if godotReturnType == "String" {
-                    return "let _result = GString()"
-                } else {
-                    return "var _result: Variant.ContentType = Variant.zero"
+        var registerVirtualMethodName: String? = nil
+        
+        let containsUnsupportedCPointerTypes = arguments
+            .filter { arg in arg.type.contains("*") }
+            .contains { arg in
+                switch arg.type {
+                case "const void*", "AudioFrame*":
+                    // supported
+                    return false
+                default:
+                    return true
                 }
-            } else if godotReturnType.starts(with: "typedarray::") {
-                let (storage, initialize) = getBuiltinStorage ("Array")
-                return "var _result: \(storage)\(initialize)"
-            } else if godotReturnType == "String" {
-                return "let _result = GString ()"
-            } else {
-                if godotReturnTypeIsReferenceType {
-                    // frameworkType = true
-                    return "var _result = UnsafeRawPointer (bitPattern: 0)"
-                } else {
-                    if godotReturnType == "Variant" {
-                        return "var _result: Variant.ContentType = Variant.zero"
-                    } else if godotReturnType.starts(with: "enum::") {
-                        return "var _result: Int64 = 0 // to avoid packed enums on the stack"
-                    } else {
-                        
-                        var declType: String = "let"
-                        if (argTypeNeedsCopy(godotType: godotReturnType)) {
-                            if builtinGodotTypeNames [godotReturnType] != .isClass {
-                                declType = "var"
-                            }
+            }
+        
+        if containsUnsupportedCPointerTypes {
+            // TODO
+            // print("Skipping \(className).\(method.name), unsupported c pointer type")
+            return nil
+        }
+        
+        let bindName = "method_\(method.name)"
+        var visibilityAttribute: String?
+        let omitAllArgumentLabels: Bool
+        let finalAttribute: String?
+        // Default method name
+        var swiftMethodName: String = godotMethodToSwift (method.name)
+        let staticAttribute = method.isStatic || asSingleton ? "static" : nil
+        let inlineAttribute: String?
+        let documentationVisibilityAttribute: String?
+        if let methodHash = method.optionalHash {
+            let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
+            assert (!method.isVirtual)
+            switch generatedMethodKind {
+            case .classMethod:
+                p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionMethodBindPtr") {
+                    p ("let methodName = StringName(\"\(method.name)\")")
+                    
+                    p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
+                        p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
+                            p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
                         }
-                        return "\(declType) _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType))"
+                    }
+                }
+            case .utilityFunction:
+                p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionPtrUtilityFunction") {
+                    p ("let methodName = StringName(\"\(method.name)\")")
+                    p ("return withUnsafePointer(to: &methodName.content)", arg: " ptr in") {
+                        p ("return gi.variant_get_ptr_utility_function(ptr, \(methodHash))!")
                     }
                 }
             }
-        }
-        return ""
-    }
-    
-    func getCallResultArgument() -> String {
-        let ptrResult: String
-        if returnType != "" {
-            guard let godotReturnType else { fatalError("godotReturnType is nil!") }
             
-            if method.isVararg {
-                if godotReturnType == "String" {
-                    ptrResult = "&_result.content"
-                } else {
-                    ptrResult = "&_result"
-                }
-            } else if argTypeNeedsCopy(godotType: godotReturnType) {
-                let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
-                
-                ptrResult = isClass ? "&_result.content" : "&_result"
+            // If this is an internal, and being reference by a property, hide it
+            if usedMethods.contains (method.name) {
+                inlineAttribute = "@inline(__always)"
+                // Try to hide as much as possible, but we know that Godot child nodes will want to use these
+                // (DirectionalLight3D and Light3D) rely on this.
+                visibilityAttribute = method.name == "get_param" || method.name == "set_param" ? nil : "fileprivate"
+                omitAllArgumentLabels = true
+                swiftMethodName = method.name
             } else {
-                if godotReturnType == "Variant" {
-                    ptrResult = "&_result"
-                } else if godotReturnType.starts (with: "typedarray::") {
-                    ptrResult = "&_result"
-                } else if frameworkType {
-                    ptrResult = "&_result"
-                } else if builtinSizes [godotReturnType] != nil {
-                    ptrResult = "&_result.content"
-                } else {
-                    ptrResult = "&_result.handle"
-                }
+                inlineAttribute = nil
+                visibilityAttribute = "public"
+                omitAllArgumentLabels = false
             }
+            if staticAttribute == nil {
+                finalAttribute = "final"
+            } else {
+                finalAttribute = nil
+            }
+            
+            documentationVisibilityAttribute = nil
         } else {
-            if method.isVararg {
-                ptrResult = "&_result"
-            } else {
-                ptrResult = "nil"
-            }
+            assert(method.isVirtual)
+            
+            inlineAttribute = nil
+            // virtual overwrittable method
+            finalAttribute = nil
+            documentationVisibilityAttribute = "@_documentation(visibility: public)"
+            visibilityAttribute = "open"
+            
+            omitAllArgumentLabels = false
+            
+            registerVirtualMethodName = swiftMethodName
         }
-        return ptrResult
-    }
-    
-    func getReturnStatement() -> String {
-        if returnType == "" {
+        
+        var signatureArgs: [String] = []
+        let godotReturnType = method.returnValue?.type
+        let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
+        let returnOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
+        let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
+        
+        /// returns appropriate declaration of the return type, used by the helper function.
+        let frameworkType = godotReturnTypeIsReferenceType
+        func returnTypeDecl() -> String {
+            if returnType != "" {
+                guard let godotReturnType else {
+                    fatalError ("If the returnType is not empty, we should have a godotReturnType")
+                }
+                if method.isVararg {
+                    if godotReturnType == "String" {
+                        return "let _result = GString()"
+                    } else {
+                        return "var _result: Variant.ContentType = Variant.zero"
+                    }
+                } else if godotReturnType.starts(with: "typedarray::") {
+                    let (storage, initialize) = getBuiltinStorage ("Array")
+                    return "var _result: \(storage)\(initialize)"
+                } else if godotReturnType == "String" {
+                    return "let _result = GString ()"
+                } else {
+                    if godotReturnTypeIsReferenceType {
+                        // frameworkType = true
+                        return "var _result = UnsafeRawPointer (bitPattern: 0)"
+                    } else {
+                        if godotReturnType == "Variant" {
+                            return "var _result: Variant.ContentType = Variant.zero"
+                        } else if godotReturnType.starts(with: "enum::") {
+                            return "var _result: Int64 = 0 // to avoid packed enums on the stack"
+                        } else {
+                            
+                            var declType: String = "let"
+                            if (argTypeNeedsCopy(godotType: godotReturnType)) {
+                                if builtinGodotTypeNames [godotReturnType] != .isClass {
+                                    declType = "var"
+                                }
+                            }
+                            return "\(declType) _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType))"
+                        }
+                    }
+                }
+            }
             return ""
         }
-        guard returnType != "" else { return "" }
-        if method.isVararg {
-            if returnType == "Variant?" {
-                return "return Variant(takingOver: _result)"
-            } else if returnType == "GodotError" {
-                return """
+        
+        func getCallResultArgument() -> String {
+            let ptrResult: String
+            if returnType != "" {
+                guard let godotReturnType else { fatalError("godotReturnType is nil!") }
+                
+                if method.isVararg {
+                    if godotReturnType == "String" {
+                        ptrResult = "&_result.content"
+                    } else {
+                        ptrResult = "&_result"
+                    }
+                } else if argTypeNeedsCopy(godotType: godotReturnType) {
+                    let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
+                    
+                    ptrResult = isClass ? "&_result.content" : "&_result"
+                } else {
+                    if godotReturnType == "Variant" {
+                        ptrResult = "&_result"
+                    } else if godotReturnType.starts (with: "typedarray::") {
+                        ptrResult = "&_result"
+                    } else if frameworkType {
+                        ptrResult = "&_result"
+                    } else if builtinSizes [godotReturnType] != nil {
+                        ptrResult = "&_result.content"
+                    } else {
+                        ptrResult = "&_result.handle"
+                    }
+                }
+            } else {
+                if method.isVararg {
+                    ptrResult = "&_result"
+                } else {
+                    ptrResult = "nil"
+                }
+            }
+            return ptrResult
+        }
+        
+        func getReturnStatement() -> String {
+            if returnType == "" {
+                return ""
+            }
+            guard returnType != "" else { return "" }
+            if method.isVararg {
+                if returnType == "Variant?" {
+                    return "return Variant(takingOver: _result)"
+                } else if returnType == "GodotError" {
+                    return """
                 guard let variant = Variant(copying: _result) else {
                     return .ok
                 }
@@ -660,202 +669,203 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 
                 return GodotError(rawValue: Int64(errorCode))!                
                 """
-            } else if returnType == "String" {
+                } else if returnType == "String" {
+                    return "return _result.description"
+                } else {
+                    fatalError("Do not support this return type = \(returnType)")
+                }
+            } else if returnType == "Variant?" {
+                return "return Variant(takingOver: _result)"
+            } else if frameworkType {
+                //print ("OBJ RETURN: \(className) \(method.name)")
+                return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result)!"
+            } else if godotReturnType?.starts(with: "typedarray::") ?? false {
+                let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
+                return "return \(defaultInit)"
+            } else if godotReturnType?.starts(with: "enum::") ?? false {
+                return "return \(returnType) (rawValue: _result)!"
+            } else if godotReturnType == "String" {
                 return "return _result.description"
             } else {
-                fatalError("Do not support this return type = \(returnType)")
-            }
-        } else if returnType == "Variant?" {
-            return "return Variant(takingOver: _result)"
-        } else if frameworkType {
-            //print ("OBJ RETURN: \(className) \(method.name)")
-            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result)!"
-        } else if godotReturnType?.starts(with: "typedarray::") ?? false {
-            let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
-            return "return \(defaultInit)"
-        } else if godotReturnType?.starts(with: "enum::") ?? false {
-            return "return \(returnType) (rawValue: _result)!"
-        } else if godotReturnType == "String" {
-            return "return _result.description"
-        } else {
-            return "return _result"
-        }
-    }
-    
-    for (index, arg) in arguments.enumerated() {
-        let isOptional: Bool
-        
-        if arg.type == "Variant" {
-            isOptional = true
-        } else {
-            if classMap [arg.type] != nil {
-                isOptional = isMethodArgumentOptional(className: className, method: method.name, arg: arg.name)
-            } else {
-                isOptional = false
+                return "return _result"
             }
         }
         
-        let omitLabel: Bool
-        // Omit first argument label, if necessary
-        if index == 0 && !omitAllArgumentLabels {
-            omitLabel = shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name)
-        } else {
-            omitLabel = omitAllArgumentLabels
-        }
-        
-        signatureArgs.append(getArgumentDeclaration(arg, omitLabel: omitLabel, isOptional: isOptional))
-    }
-    
-    if method.isVararg {
-        signatureArgs.append("_ arguments: Variant?...")
-    }
-    
-    if let inlineAttribute {
-        p(inlineAttribute)
-    }
-    // Sadly, the parameters have no useful documentation
-    doc(p, cdef, method.description)
-    // Generate the method entry point
-    if let classDiscardables = discardableResultList[className] {
-        if classDiscardables.contains(method.name) == true {
-            p("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
-        }
-    }
-    
-    if let documentationVisibilityAttribute {
-        p(documentationVisibilityAttribute)
-    }
-    
-    let declarationTokens = [
-        visibilityAttribute,
-        staticAttribute,
-        finalAttribute,
-        "func",
-        swiftMethodName
-    ]
-        .compactMap { $0 }
-        .joined(separator: " ")
-    
-    let argumentsList = signatureArgs.joined(separator: ", ")
-    
-    let returnClause: String
-    if returnType.isEmpty {
-        returnClause = ""
-    } else {
-        returnClause = " -> \(returnType)"
-    }
-    
-    p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
-        if method.optionalHash == nil {
-            if let godotReturnType {
-                p(makeDefaultReturn(godotType: godotReturnType))
-            }
-        } else {
-            if returnType != "" {
-                p(returnTypeDecl())
-            } else if (method.isVararg) {
-                p("var _result: Variant.ContentType = Variant.zero")
-            }
+        for (index, arg) in arguments.enumerated() {
+            let isOptional: Bool
             
-            let instanceArg: String
-            if method.isStatic {
-                instanceArg = "nil"
+            if arg.type == "Variant" {
+                isOptional = true
             } else {
-                let accessor: String
-                if asSingleton {
-                    accessor = "shared.handle"
+                if classMap [arg.type] != nil {
+                    isOptional = isMethodArgumentOptional(className: className, method: method.name, arg: arg.name)
                 } else {
-                    accessor = "handle"
+                    isOptional = false
                 }
-                instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
             }
             
-            func getMethodNameArgument() -> String {
-                assert(generatedMethodKind == .classMethod)
+            let omitLabel: Bool
+            // Omit first argument label, if necessary
+            if index == 0 && !omitAllArgumentLabels {
+                omitLabel = shouldOmitFirstArgLabel(typeName: className, methodName: method.name, argName: arg.name)
+            } else {
+                omitLabel = omitAllArgumentLabels
+            }
+            
+            signatureArgs.append(getArgumentDeclaration(arg, omitLabel: omitLabel, isOptional: isOptional))
+        }
+        
+        if method.isVararg {
+            signatureArgs.append("_ arguments: Variant?...")
+        }
+        
+        if let inlineAttribute {
+            p(inlineAttribute)
+        }
+        // Sadly, the parameters have no useful documentation
+        doc(p, cdef, method.description)
+        // Generate the method entry point
+        if let classDiscardables = discardableResultList[className] {
+            if classDiscardables.contains(method.name) == true {
+                p("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
+            }
+        }
+        
+        if let documentationVisibilityAttribute {
+            p(documentationVisibilityAttribute)
+        }
+        
+        let declarationTokens = [
+            visibilityAttribute,
+            staticAttribute,
+            finalAttribute,
+            "func",
+            swiftMethodName
+        ]
+            .compactMap { $0 }
+            .joined(separator: " ")
+        
+        let argumentsList = signatureArgs.joined(separator: ", ")
+        
+        let returnClause: String
+        if returnType.isEmpty {
+            returnClause = ""
+        } else {
+            returnClause = " -> \(returnType)"
+        }
+        
+        p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
+            if method.optionalHash == nil {
+                if let godotReturnType {
+                    p(makeDefaultReturn(godotType: godotReturnType))
+                }
+            } else {
+                if returnType != "" {
+                    p(returnTypeDecl())
+                } else if (method.isVararg) {
+                    p("var _result: Variant.ContentType = Variant.zero")
+                }
                 
-                if staticAttribute == nil {
-                    return "\(className).method_\(method.name)"
+                let instanceArg: String
+                if method.isStatic {
+                    instanceArg = "nil"
                 } else {
-                    return "method_\(method.name)"
-                }
-            }
-            
-            generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
-                if method.isVararg {
-                    switch generatedMethodKind {
-                    case .classMethod:
-                        let countArg: String
-                        
-                        switch count {
-                        case .literal(let literal):
-                            countArg = "\(literal)"
-                        case .expression(let expr):
-                            countArg = "Int64(\(expr))"
-                        }
-                        
-                        let argsList = [
-                            getMethodNameArgument(),
-                            instanceArg,
-                            argsRef,
-                            countArg,
-                            getCallResultArgument(),
-                            "nil"
-                        ].joined(separator: ", ")
-                        
-                        return "gi.object_method_bind_call(\(argsList))"
-                    case .utilityFunction:
-                        let countArg: String
-                        
-                        switch count {
-                        case .literal(let literal):
-                            countArg = "\(literal)"
-                        case .expression(let expr):
-                            countArg = "Int32(\(expr))"
-                        }
-                        
-                        let argsList = [
-                            getCallResultArgument(),
-                            argsRef,
-                            countArg
-                        ].joined(separator: ", ")
-                        
-                        return "method_\(method.name)(\(argsList))"
+                    let accessor: String
+                    if asSingleton {
+                        accessor = "shared.handle"
+                    } else {
+                        accessor = "handle"
                     }
-                } else {
-                    switch generatedMethodKind {
-                    case .classMethod:
-                        guard case .literal = count else {
-                            fatalError("Literal is expected")
-                        }
-                        
-                        let argsList = [
-                            getMethodNameArgument(),
-                            instanceArg,
-                            argsRef,
-                            getCallResultArgument()
-                        ].joined(separator: ", ")
-                        
-                        return "gi.object_method_bind_ptrcall(\(argsList))"
-                    case .utilityFunction:
-                        guard case let .literal(count) = count else {
-                            fatalError("Literal is expected")
-                        }
-                        
-                        let argsList = [
-                            getCallResultArgument(),
-                            argsRef,
-                            "\(count)" // just a literal, no need to convert to Int32
-                        ].joined(separator: ", ")
-                        
-                        return "method_\(method.name)(\(argsList))"
+                    instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
+                }
+                
+                func getMethodNameArgument() -> String {
+                    assert(generatedMethodKind == .classMethod)
+                    
+                    if staticAttribute == nil {
+                        return "\(className).method_\(method.name)"
+                    } else {
+                        return "method_\(method.name)"
                     }
                 }
+                
+                generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
+                    if method.isVararg {
+                        switch generatedMethodKind {
+                        case .classMethod:
+                            let countArg: String
+                            
+                            switch count {
+                            case .literal(let literal):
+                                countArg = "\(literal)"
+                            case .expression(let expr):
+                                countArg = "Int64(\(expr))"
+                            }
+                            
+                            let argsList = [
+                                getMethodNameArgument(),
+                                instanceArg,
+                                argsRef,
+                                countArg,
+                                getCallResultArgument(),
+                                "nil"
+                            ].joined(separator: ", ")
+                            
+                            return "gi.object_method_bind_call(\(argsList))"
+                        case .utilityFunction:
+                            let countArg: String
+                            
+                            switch count {
+                            case .literal(let literal):
+                                countArg = "\(literal)"
+                            case .expression(let expr):
+                                countArg = "Int32(\(expr))"
+                            }
+                            
+                            let argsList = [
+                                getCallResultArgument(),
+                                argsRef,
+                                countArg
+                            ].joined(separator: ", ")
+                            
+                            return "method_\(method.name)(\(argsList))"
+                        }
+                    } else {
+                        switch generatedMethodKind {
+                        case .classMethod:
+                            guard case .literal = count else {
+                                fatalError("Literal is expected")
+                            }
+                            
+                            let argsList = [
+                                getMethodNameArgument(),
+                                instanceArg,
+                                argsRef,
+                                getCallResultArgument()
+                            ].joined(separator: ", ")
+                            
+                            return "gi.object_method_bind_ptrcall(\(argsList))"
+                        case .utilityFunction:
+                            guard case let .literal(count) = count else {
+                                fatalError("Literal is expected")
+                            }
+                            
+                            let argsList = [
+                                getCallResultArgument(),
+                                argsRef,
+                                "\(count)" // just a literal, no need to convert to Int32
+                            ].joined(separator: ", ")
+                            
+                            return "method_\(method.name)(\(argsList))"
+                        }
+                    }
+                }
+                
+                p(getReturnStatement())
             }
-            
-            p(getReturnStatement())
         }
+        return registerVirtualMethodName
     }
-    return registerVirtualMethodName
 }
 
 private func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
