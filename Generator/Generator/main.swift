@@ -119,14 +119,6 @@ for x in jsonApi.builtinClasses {
 }
 
 let buildConfiguration: String = "float_64"
-var builtinSizes: [String: Int] = [:]
-for cs in jsonApi.builtinClassSizes {
-    if cs.buildConfiguration == buildConfiguration {
-        for c in cs.sizes {
-            builtinSizes [c.name] = c.size
-        }
-    }
-}
 
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
@@ -175,6 +167,7 @@ struct Generator {
     let command: GeneratorCommand
 
     let builtinMemberOffsets: [String: [JGodotMember]]
+    let builtinSizes: [String: Int]
 
     var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
     var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
@@ -186,6 +179,10 @@ struct Generator {
         builtinMemberOffsets = jsonApi.builtinClassMemberOffsets
             .first { $0.buildConfiguration == buildConfiguration }?
             .classes.makeDictionary(key: \.name.rawValue, value: \.members) ?? [:]
+
+        builtinSizes = jsonApi.builtinClassSizes
+            .first { $0.buildConfiguration == buildConfiguration }?
+            .sizes.makeDictionary(key: \.name, value: \.size) ?? [:]
     }
 
     func makeFolders() throws {

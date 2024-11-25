@@ -352,23 +352,25 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     }
 }
 
-/// Built-ins classes keep their data stored internally in a variable called
-/// "content", given a godotType name of those, this returns a pair
-/// containing the Swift-type that is used to store this, and a suitable initialization
-/// value for it.
-func getBuiltinStorage (_ name: String) -> (String, String) {
-    guard let size = builtinSizes [name] else {
-        fatalError()
-    }
-    switch size {
-    case 4, 0:
-        return ("Int32", " = 0")
-    case 8:
-        return ("Int64", " = 0")
-    case 16:
-        return ("(Int64, Int64)", " = (0, 0)")
-    default:
-        fatalError()
+extension Generator {
+    /// Built-ins classes keep their data stored internally in a variable called
+    /// "content", given a godotType name of those, this returns a pair
+    /// containing the Swift-type that is used to store this, and a suitable initialization
+    /// value for it.
+    func getBuiltinStorage (_ name: String) -> (String, String) {
+        guard let size = builtinSizes [name] else {
+            fatalError()
+        }
+        switch size {
+        case 4, 0:
+            return ("Int32", " = 0")
+        case 8:
+            return ("Int64", " = 0")
+        case 16:
+            return ("(Int64, Int64)", " = (0, 0)")
+        default:
+            fatalError()
+        }
     }
 }
 

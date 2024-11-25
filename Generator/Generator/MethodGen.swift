@@ -111,6 +111,23 @@ enum MethodGenError: NonCriticalError {
     }
 }
 
+extension Generator {
+    func methodArgument(
+        from src: JGodotArgument,
+        typeName: String,
+        methodName: String,
+        options: MethodArgument.TranslationOptions
+    ) throws -> MethodArgument {
+        return try .init(
+            from: src,
+            typeName: typeName,
+            methodName: methodName,
+            options: options,
+            builtinSizes: builtinSizes
+        )
+    }
+}
+
 /// Parsed `JGodotArgument` that derives what's the proper strategy for processing the argument and marshaling it
 struct MethodArgument {
     enum Translation {
@@ -176,7 +193,13 @@ struct MethodArgument {
     let name: String
     let translation: Translation
     
-    init(from src: JGodotArgument, typeName: String, methodName: String, options: TranslationOptions) throws {
+    init(
+        from src: JGodotArgument,
+        typeName: String,
+        methodName: String,
+        options: TranslationOptions,
+        builtinSizes: [String: Int]
+    ) throws {
         func makeError(reason: String) -> MethodGenError {
             MethodGenError.unsupportedArgument(typeName: typeName, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
         }
@@ -442,7 +465,7 @@ extension Generator {
     /// ```
     /// This reduces the complexity of the generated code, and can be extended to an arbitrary number of parameters.
     ///
-    
+
     /// Generates a method definition
     /// - Parameters:
     ///  - p: Our printer to generate the method
@@ -459,25 +482,25 @@ extension Generator {
         generatedMethodKind: GeneratedMethodKind,
         asSingleton: Bool
     ) throws -> String? {
-        
+
         let arguments = method.arguments ?? []
-        
-        
+
+
         let argumentTranslationOptions: MethodArgument.TranslationOptions
-        
+
         if mapStringToSwift {
             argumentTranslationOptions = .gStringToString
         } else {
             argumentTranslationOptions = []
         }
-        
+
         // TODO: move down
         let methodArguments = try arguments.map { argument in
-            try MethodArgument(from: argument, typeName: className, methodName: method.name, options: argumentTranslationOptions)
+            try methodArgument(from: argument, typeName: className, methodName: method.name, options: argumentTranslationOptions)
         }
-        
+
         var registerVirtualMethodName: String? = nil
-        
+
         let containsUnsupportedCPointerTypes = arguments
             .filter { arg in arg.type.contains("*") }
             .contains { arg in
@@ -489,13 +512,13 @@ extension Generator {
                     return true
                 }
             }
-        
+
         if containsUnsupportedCPointerTypes {
             // TODO
             // print("Skipping \(className).\(method.name), unsupported c pointer type")
             return nil
         }
-        
+
         let bindName = "method_\(method.name)"
         var visibilityAttribute: String?
         let omitAllArgumentLabels: Bool
@@ -512,7 +535,7 @@ extension Generator {
             case .classMethod:
                 p.staticVar(visibility: staticVarVisibility, name: bindName, type: "GDExtensionMethodBindPtr") {
                     p ("let methodName = StringName(\"\(method.name)\")")
-                    
+
                     p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
                         p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
                             p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
@@ -527,7 +550,7 @@ extension Generator {
                     }
                 }
             }
-            
+
             // If this is an internal, and being reference by a property, hide it
             if usedMethods.contains (method.name) {
                 inlineAttribute = "@inline(__always)"
@@ -546,28 +569,28 @@ extension Generator {
             } else {
                 finalAttribute = nil
             }
-            
+
             documentationVisibilityAttribute = nil
         } else {
             assert(method.isVirtual)
-            
+
             inlineAttribute = nil
             // virtual overwrittable method
             finalAttribute = nil
             documentationVisibilityAttribute = "@_documentation(visibility: public)"
             visibilityAttribute = "open"
-            
+
             omitAllArgumentLabels = false
-            
+
             registerVirtualMethodName = swiftMethodName
         }
-        
+
         var signatureArgs: [String] = []
         let godotReturnType = method.returnValue?.type
         let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
         let returnOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
         let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
-        
+
         /// returns appropriate declaration of the return type, used by the helper function.
         let frameworkType = godotReturnTypeIsReferenceType
         func returnTypeDecl() -> String {
@@ -596,7 +619,7 @@ extension Generator {
                         } else if godotReturnType.starts(with: "enum::") {
                             return "var _result: Int64 = 0 // to avoid packed enums on the stack"
                         } else {
-                            
+
                             var declType: String = "let"
                             if (argTypeNeedsCopy(godotType: godotReturnType)) {
                                 if builtinGodotTypeNames [godotReturnType] != .isClass {
@@ -610,12 +633,12 @@ extension Generator {
             }
             return ""
         }
-        
+
         func getCallResultArgument() -> String {
             let ptrResult: String
             if returnType != "" {
                 guard let godotReturnType else { fatalError("godotReturnType is nil!") }
-                
+
                 if method.isVararg {
                     if godotReturnType == "String" {
                         ptrResult = "&_result.content"
@@ -624,7 +647,7 @@ extension Generator {
                     }
                 } else if argTypeNeedsCopy(godotType: godotReturnType) {
                     let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
-                    
+
                     ptrResult = isClass ? "&_result.content" : "&_result"
                 } else {
                     if godotReturnType == "Variant" {
@@ -648,7 +671,7 @@ extension Generator {
             }
             return ptrResult
         }
-        
+
         func getReturnStatement() -> String {
             if returnType == "" {
                 return ""
@@ -690,10 +713,10 @@ extension Generator {
                 return "return _result"
             }
         }
-        
+
         for (index, arg) in arguments.enumerated() {
             let isOptional: Bool
-            
+
             if arg.type == "Variant" {
                 isOptional = true
             } else {
@@ -703,7 +726,7 @@ extension Generator {
                     isOptional = false
                 }
             }
-            
+
             let omitLabel: Bool
             // Omit first argument label, if necessary
             if index == 0 && !omitAllArgumentLabels {
@@ -711,14 +734,14 @@ extension Generator {
             } else {
                 omitLabel = omitAllArgumentLabels
             }
-            
+
             signatureArgs.append(getArgumentDeclaration(arg, omitLabel: omitLabel, isOptional: isOptional))
         }
-        
+
         if method.isVararg {
             signatureArgs.append("_ arguments: Variant?...")
         }
-        
+
         if let inlineAttribute {
             p(inlineAttribute)
         }
@@ -730,11 +753,11 @@ extension Generator {
                 p("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
             }
         }
-        
+
         if let documentationVisibilityAttribute {
             p(documentationVisibilityAttribute)
         }
-        
+
         let declarationTokens = [
             visibilityAttribute,
             staticAttribute,
@@ -744,16 +767,16 @@ extension Generator {
         ]
             .compactMap { $0 }
             .joined(separator: " ")
-        
+
         let argumentsList = signatureArgs.joined(separator: ", ")
-        
+
         let returnClause: String
         if returnType.isEmpty {
             returnClause = ""
         } else {
             returnClause = " -> \(returnType)"
         }
-        
+
         p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
             if method.optionalHash == nil {
                 if let godotReturnType {
@@ -765,7 +788,7 @@ extension Generator {
                 } else if (method.isVararg) {
                     p("var _result: Variant.ContentType = Variant.zero")
                 }
-                
+
                 let instanceArg: String
                 if method.isStatic {
                     instanceArg = "nil"
@@ -778,30 +801,30 @@ extension Generator {
                     }
                     instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
                 }
-                
+
                 func getMethodNameArgument() -> String {
                     assert(generatedMethodKind == .classMethod)
-                    
+
                     if staticAttribute == nil {
                         return "\(className).method_\(method.name)"
                     } else {
                         return "method_\(method.name)"
                     }
                 }
-                
+
                 generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
                     if method.isVararg {
                         switch generatedMethodKind {
                         case .classMethod:
                             let countArg: String
-                            
+
                             switch count {
                             case .literal(let literal):
                                 countArg = "\(literal)"
                             case .expression(let expr):
                                 countArg = "Int64(\(expr))"
                             }
-                            
+
                             let argsList = [
                                 getMethodNameArgument(),
                                 instanceArg,
@@ -810,24 +833,24 @@ extension Generator {
                                 getCallResultArgument(),
                                 "nil"
                             ].joined(separator: ", ")
-                            
+
                             return "gi.object_method_bind_call(\(argsList))"
                         case .utilityFunction:
                             let countArg: String
-                            
+
                             switch count {
                             case .literal(let literal):
                                 countArg = "\(literal)"
                             case .expression(let expr):
                                 countArg = "Int32(\(expr))"
                             }
-                            
+
                             let argsList = [
                                 getCallResultArgument(),
                                 argsRef,
                                 countArg
                             ].joined(separator: ", ")
-                            
+
                             return "method_\(method.name)(\(argsList))"
                         }
                     } else {
@@ -836,31 +859,31 @@ extension Generator {
                             guard case .literal = count else {
                                 fatalError("Literal is expected")
                             }
-                            
+
                             let argsList = [
                                 getMethodNameArgument(),
                                 instanceArg,
                                 argsRef,
                                 getCallResultArgument()
                             ].joined(separator: ", ")
-                            
+
                             return "gi.object_method_bind_ptrcall(\(argsList))"
                         case .utilityFunction:
                             guard case let .literal(count) = count else {
                                 fatalError("Literal is expected")
                             }
-                            
+
                             let argsList = [
                                 getCallResultArgument(),
                                 argsRef,
                                 "\(count)" // just a literal, no need to convert to Int32
                             ].joined(separator: ", ")
-                            
+
                             return "method_\(method.name)(\(argsList))"
                         }
                     }
                 }
-                
+
                 p(getReturnStatement())
             }
         }

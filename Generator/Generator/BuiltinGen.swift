@@ -186,7 +186,7 @@ extension Generator {
 
                 let arguments = (m.arguments ?? []).map {
                     // must not fail
-                    try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
+                    try! methodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
                 }
 
                 if arguments.isEmpty {
@@ -230,7 +230,7 @@ extension Generator {
 
         let methodArguments = arguments.map { argument in
             // must never fail
-            try! MethodArgument(from: argument, typeName: typeName, methodName: methodToCall, options: .builtInClassOptions)
+            try! methodArgument(from: argument, typeName: typeName, methodName: methodToCall, options: .builtInClassOptions)
         }
 
         let ptrResult: String
@@ -395,14 +395,14 @@ extension Generator {
                     } else {
                         ptrResult = "&result.content"
                     }
-                    let lhsa = try! MethodArgument(
+                    let lhsa = try! methodArgument(
                         from: JGodotArgument(name: "lhs", type: godotTypeName, defaultValue: nil, meta: nil),
                         typeName: godotTypeName,
                         methodName: "#operator\(swiftOperator)",
                         options: .builtInClassOptions
                     )
 
-                    let rhsa = try! MethodArgument(
+                    let rhsa = try! methodArgument(
                         from: JGodotArgument(name: "rhs", type: right, defaultValue: nil, meta: nil),
                         typeName: godotTypeName,
                         methodName: "#operator\(swiftOperator)",
