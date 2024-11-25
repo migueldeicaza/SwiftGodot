@@ -216,28 +216,3 @@ private func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
     }
     return nil
 }
-
-func getArgRef (arg: JGodotArgument) -> String {
-    var argref: String
-    var optstorage: String
-    var needAddress = "&"
-    if !isStruct(arg.type) { // { ) isCoreType(name: arg.type){
-        argref = godotArgumentToSwift (arg.name)
-        if arg.type == "String" && mapStringToSwift {
-            argref = "gstr_\(arg.name)"
-            optstorage = ".content"
-        } else {
-            if builtinSizes [arg.type] != nil && arg.type != "Object" {
-                optstorage = ".content"
-            } else {
-                needAddress = "&"
-                optstorage = ".handle"
-            }
-        }
-        return "\(needAddress)\(escapeSwift(argref))\(optstorage)"
-    } else {
-        argref = "copy_\(arg.name)"
-        optstorage = ""
-        return "\(needAddress)\(escapeSwift(argref))\(optstorage)"
-    }
-}
