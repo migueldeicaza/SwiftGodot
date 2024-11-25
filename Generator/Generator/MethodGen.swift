@@ -903,56 +903,54 @@ extension Generator {
         }
         return registerVirtualMethodName
     }
-}
 
-private func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
-    switch godotType {
-    case "Variant":
-        return "nil"
-    case "int":
-        return "0"
-    case "float":
-        return "0.0"
-    case "bool":
-        return "false"
-    case "String":
-        return "String ()"
-    case "Array":
-        return "GArray ()"
-    case "Dictionary":
-        return "GDictionary ()"
-    case let t where t.starts (with: "typedarray::"):
-        let nestedTypeName = String (t.dropFirst(12))
-        let simple = SimpleType(type: nestedTypeName)
-        if classMap [nestedTypeName] != nil {
-            return "ObjectCollection<\(getGodotType (simple))>(\(initCollection))"
-        } else {
-            return "VariantCollection<\(getGodotType (simple))>(\(initCollection))"
+    private func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
+        switch godotType {
+        case "Variant":
+            return "nil"
+        case "int":
+            return "0"
+        case "float":
+            return "0.0"
+        case "bool":
+            return "false"
+        case "String":
+            return "String ()"
+        case "Array":
+            return "GArray ()"
+        case "Dictionary":
+            return "GDictionary ()"
+        case let t where t.starts (with: "typedarray::"):
+            let nestedTypeName = String (t.dropFirst(12))
+            let simple = SimpleType(type: nestedTypeName)
+            if classMap [nestedTypeName] != nil {
+                return "ObjectCollection<\(getGodotType (simple))>(\(initCollection))"
+            } else {
+                return "VariantCollection<\(getGodotType (simple))>(\(initCollection))"
+            }
+        case "enum::Error":
+            return ".ok"
+        case "enum::Variant.Type":
+            return ".`nil`"
+        case let e where e.starts (with: "enum::"):
+            return "\(e.dropFirst(6))(rawValue: 0)!"
+        case let e where e.starts (with: "bitfield::"):
+            let simple = SimpleType (type: godotType, meta: nil)
+            return "\(getGodotType (simple)) ()"
+       
+        case let other where builtinGodotTypeNames [other] != nil:
+            return "\(godotType) ()"
+        case "void*", "const Glyph*":
+            return "nil"
+        default:
+            return "\(getGodotType(SimpleType (type: godotType))) ()"
         }
-    case "enum::Error":
-        return ".ok"
-    case "enum::Variant.Type":
-        return ".`nil`"
-    case let e where e.starts (with: "enum::"):
-        return "\(e.dropFirst(6))(rawValue: 0)!"
-    case let e where e.starts (with: "bitfield::"):
-        let simple = SimpleType (type: godotType, meta: nil)
-        return "\(getGodotType (simple)) ()"
-   
-    case let other where builtinGodotTypeNames [other] != nil:
-        return "\(godotType) ()"
-    case "void*", "const Glyph*":
-        return "nil"
-    default:
-        return "\(getGodotType(SimpleType (type: godotType))) ()"
     }
-}
 
-private func makeDefaultReturn (godotType: String) -> String {
-    return "return \(makeDefaultInit(godotType: godotType))"
-}
+    private func makeDefaultReturn (godotType: String) -> String {
+        return "return \(makeDefaultInit(godotType: godotType))"
+    }
 
-extension Generator {
     private func argTypeNeedsCopy (godotType: String) -> Bool {
         if isStruct(godotType) {
             return true
