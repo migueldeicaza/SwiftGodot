@@ -47,6 +47,7 @@ let generateResettableCache = false
 //skipList.insert("OpenXRInterface")
 //#endif
 
+@main
 struct GeneratorCommand: AsyncParsableCommand {
     @Flag(
         help: "Generator all output to a single Swift file. Possibly useful on Windows."
@@ -205,12 +206,3 @@ struct Generator {
         }
     }
 }
-
-let semaphore = DispatchSemaphore(value: 0)
-let _ = Task {
-    defer { semaphore.signal() }
-    await GeneratorCommand.main()
-}
-semaphore.wait()
-
-//print ("Done")

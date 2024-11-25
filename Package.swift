@@ -90,7 +90,9 @@ var targets: [Target] = [
         exclude: ["README.md"],
         swiftSettings: [
             // Uncomment for using legacy array-based marshalling
-            //.define("LEGACY_MARSHALING")
+            //.define("LEGACY_MARSHALING"),
+
+            //.enableExperimentalFeature("StrictConcurrency"),
         ]
     ),
     
