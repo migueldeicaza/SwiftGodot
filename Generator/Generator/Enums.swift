@@ -8,35 +8,6 @@
 import Foundation
 import ExtensionApi
 
-// The name of the form 'bitfield::'
-func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
-    guard name.starts(with: "bitfield::") else {
-        return nil
-    }
-
-    let full = name.dropFirst(10)
-    guard let split = full.firstIndex(of: ".") else {
-        print ("No support for global bitfields for \(name)")
-        return nil
-    }
-    let type = full [full.startIndex..<split]
-    guard let cdef = classMap [String (type)] else {
-        print ("Could not find class \(type) for \(name)")
-        return nil
-    }
-    let enumName = full [full.index(split, offsetBy: 1)...]
-    guard let enums = cdef.enums else {
-        print ("Could not find an enum \(enumName) in \(type)")
-        return nil
-    }
-    for x in enums {
-        if x.name == enumName {
-            return x
-        }
-    }
-    return nil
-}
-
 /// Those cases don't bring anything but confusion, we don't need to export them at all
 let droppedCases: Set<String> = [
     "Variant.Type.TYPE_MAX"
