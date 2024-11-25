@@ -876,9 +876,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         default:
             let p: Printer = await PrinterFactory.shared.initPrinter(bc.name)
             p.preamble()
-            mapStringToSwift = bc.name != "String"
-            generateBuiltinClass (p: p, bc)
-            mapStringToSwift = true
+            $mapStringToSwift.withValue(bc.name != "String") {
+                generateBuiltinClass (p: p, bc)
+            }
             if let outputDir {
                 p.save(outputDir + "/\(bc.name).swift")
             }

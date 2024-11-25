@@ -226,6 +226,7 @@ enum ArgumentKind {
     case builtIn
 }
 
+@TaskLocal
 var mapStringToSwift = true
 
 /// Given a type definition with its metadata, and the context where the type is being
