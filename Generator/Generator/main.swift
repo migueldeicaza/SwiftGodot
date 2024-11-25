@@ -77,8 +77,6 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 
-let buildConfiguration: String = "float_64"
-
 //#if os(Windows)
 //// Because we generate too many symbols for Windows to be able to compile the library
 //// we eliminate some rare classes from the build.   This is a temporary hack to unblock
@@ -160,6 +158,8 @@ struct Generator {
     func isStruct(_ type: String) -> Bool { structTypes.contains(type) }
 
     init(command: GeneratorCommand) {
+        let buildConfiguration: String = "float_64"
+
         self.command = command
 
         builtinMemberOffsets = jsonApi.builtinClassMemberOffsets
