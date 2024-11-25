@@ -5,8 +5,9 @@
 //  Created by Miguel de Icaza on 5/20/20.
 //  Copyright © 2020-2023 Miguel de Icaza. MIT Licensed
 //
-import Foundation
+import ArgumentParser
 import ExtensionApi
+import Foundation
 
 var args = CommandLine.arguments
 
@@ -163,6 +164,7 @@ if singleFile {
 //#endif
 
 struct Generator {
+
     func run() async throws {
         let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
         coreDefPrinter.preamble()
