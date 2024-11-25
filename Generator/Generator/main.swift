@@ -163,7 +163,33 @@ if singleFile {
 //skipList.insert("OpenXRInterface")
 //#endif
 
+struct GeneratorCommand: AsyncParsableCommand {
+    @Flag(
+        help: "Generator all output to a single Swift file. Possibly useful on Windows."
+    ) var singleFile = false
+
+    @Argument(
+        help: "Path to the `extension_api.json` file exported by Godot.",
+        completion: .file(extensions: [".json"])
+    ) var jsonFile: String = defaultExtensionApiJsonUrl.path
+
+    @Argument(
+        help: "Path to the folder in which to write generated Swift files. I will create this if it doesn't exist.",
+        completion: .directory
+    ) var outputDir: String = defaultGeneratorOutputlUrl.path
+
+    @Argument(
+        help: "Path to the top-level Godot documentation folder (the `doc` folder in the root of a Godot repository)."
+    ) var docRoot: String = defaultDocRootUrl.path
+
+    mutating func run() async throws {
+        let generator = Generator(command: self)
+        try await generator.run()
+    }
+}
+
 struct Generator {
+    let command: GeneratorCommand
 
     func run() async throws {
         let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
@@ -189,9 +215,8 @@ struct Generator {
 
 let semaphore = DispatchSemaphore(value: 0)
 let _ = Task {
-    let generator = Generator()
-    try! await generator.run()
-    semaphore.signal()
+    defer { semaphore.signal() }
+    await GeneratorCommand.main()
 }
 semaphore.wait()
 
