@@ -80,17 +80,8 @@ var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 // Maps from a the class name to its definition
 var classMap: [String:JGodotExtensionAPIClass] = [:]
 
-// Tracks whether a Godot type has subclasses, we want to use this
-// to determine whether we want to perform the more expensive lookup
-// for handle -> Swift type using `lookupObject` rather than creating
-// a plain wrapper directly from the handle
-var hasSubclasses = Set<String> ()
-
 for x in jsonApi.classes {
     classMap [x.name] = x
-    if let parentClass = x.inherits {
-        hasSubclasses.insert(parentClass)
-    }
 }
 
 let buildConfiguration: String = "float_64"
@@ -144,11 +135,17 @@ struct Generator {
     let builtinMemberOffsets: [String: [JGodotMember]]
     let builtinSizes: [String: Int]
     let builtinMap: [String: JGodotBuiltinClass]
+    let structTypes: Set<String>
+
+    /// All members of this set have subclasses.
+    ///
+    /// If a Godot handle is for a class with subclasses, I have to
+    /// perform a `lookupObject` at runtime to wrap the handle, which
+    /// is more expensive than creating the wrapper directly.
+    let hasSubclasses: Set<String>
 
     var generatedBuiltinDir: String? { command.singleFile ? nil : (command.outputDir + "/generated-builtin/") }
     var generatedDir: String? { command.singleFile ? nil : (command.outputDir + "/generated/") }
-
-    let structTypes: Set<String>
 
     private static let knownStructTypes: Set<String> = [
         "const void*",
@@ -185,6 +182,8 @@ struct Generator {
         )
 
         builtinMap = jsonApi.builtinClasses.makeDictionary(key: \.name, value: \.self)
+
+        hasSubclasses = Set(jsonApi.classes.lazy.compactMap { $0.inherits })
     }
 
     func makeFolders() throws {
