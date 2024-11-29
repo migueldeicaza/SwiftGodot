@@ -34,7 +34,6 @@ var products: [Product] = [
             "ExtensionApi",
             "ExtensionApiJson"
         ]),
-    .plugin(name: "CodeGeneratorPlugin", targets: ["CodeGeneratorPlugin"]),
     .plugin(name: "EntryPointGeneratorPlugin", targets: ["EntryPointGeneratorPlugin"])
 ]
 
@@ -93,14 +92,6 @@ var targets: [Target] = [
         ]
     ),
     
-    // This is a build-time plugin that invokes the generator and produces
-    // the bindings that are compiled into SwiftGodot
-        .plugin(
-            name: "CodeGeneratorPlugin",
-            capability: .buildTool(),
-            dependencies: ["Generator"]
-        ),
-    
         .plugin(
             name: "EntryPointGeneratorPlugin",
             capability: .buildTool(),
@@ -111,8 +102,6 @@ var targets: [Target] = [
     .target(
         name: "GDExtension"),
 ]
-
-var swiftGodotPlugins: [Target.PluginUsage] = ["CodeGeneratorPlugin"]
 
 // Macros aren't supported on Windows before 5.9.1
 #if !(os(Windows) && swift(<5.9.1))
@@ -133,7 +122,6 @@ targets.append(contentsOf: [
         exclude: ["SwiftSprite.gdextension", "README.md"]),
         //linkerSettings: linkerSettings),
 ])
-swiftGodotPlugins.append("SwiftGodotMacroLibrary")
 #endif
 
 // Macro tests don't work on Windows yet
@@ -214,7 +202,7 @@ targets.append(contentsOf: [
         swiftSettings: [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS")
         ],
-        plugins: swiftGodotPlugins
+        plugins: ["SwiftGodotMacroLibrary"]
     ),
     
     // General purpose cross-platform tests

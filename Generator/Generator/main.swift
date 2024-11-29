@@ -27,13 +27,13 @@ var defaultExtensionApiJsonUrl: URL {
 
 var defaultGeneratorOutputlUrl: URL {
     rootUrl
-        .appendingPathComponent("GeneratedForDebug")
-        .appendingPathComponent("Sources")
+        .appending(path: "Sources")
+        .appending(path: "SwiftGodot")
+        .appending(path: "Generated")
 }
 
 var defaultDocRootUrl: URL {
     rootUrl
-        .appendingPathComponent("GeneratedForDebug")
         .appendingPathComponent("Docs")
 }
 
@@ -138,8 +138,8 @@ for mo in jsonApi.builtinClassMemberOffsets {
     }
 }
 
-let generatedBuiltinDir: String? = singleFile ? nil : (outputDir + "/generated-builtin/")
-let generatedDir: String? = singleFile ? nil : (outputDir + "/generated/")
+let generatedBuiltinDir: String? = singleFile ? nil : (outputDir + "/Builtin/")
+let generatedDir: String? = singleFile ? nil : (outputDir + "/Api/")
 
 if singleFile {
     try! FileManager.default.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
