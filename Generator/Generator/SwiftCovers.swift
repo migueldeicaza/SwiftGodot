@@ -163,15 +163,7 @@ struct SwiftCovers {
             let body = function.body
         else { return false }
 
-        let returnType: String
-        if let returnTypeSx = signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
-            returnType = returnTypeSx.name.text
-        } else if signature.returnClause == nil {
-            returnType = "Void"
-        } else {
-            print("warning: couldn't handle return type \(signature.returnClause!)")
-            return true
-        }
+        let returnType = signature.returnClause?.type.trimmed.description ?? "Void"
 
         let key = Key(
             type: type,
