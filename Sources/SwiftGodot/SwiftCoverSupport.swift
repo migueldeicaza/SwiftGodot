@@ -64,6 +64,10 @@ public func sign(_ x: Float) -> Float {
     return x == 0 ? 0 : (x > 0 ? 1.0 : -1.0)
 }
 
+/// This epsilon should match Godot's `CMP_EPSILON` (which is unfortunately not exported).
+@_spi(SwiftCovers)
+public let CMP_EPSILON: Double = 0.00001
+
 #if TESTABLE_SWIFT_COVERS
 
 /// If true (the default), use Swift cover implementations where available instead of calling Godot engine functions. You should only use this for testing covers. It is not intended for production use.

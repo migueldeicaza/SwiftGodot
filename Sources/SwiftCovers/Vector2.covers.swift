@@ -133,10 +133,7 @@ extension Vector2 {
         return result
     }
     
-    public func moveToward(to: Vector2, delta: Double) -> Vector2 {
-        /// This epsilon should match the one used by Godot for consistency.
-        let CMP_EPSILON = Double(0.00001)
-        
+    public func moveToward(to: Vector2, delta: Double) -> Vector2 {        
         let result = to - self
         let newLen = result.length()
         return newLen <= delta || newLen < CMP_EPSILON ? to : self + result / newLen * delta
