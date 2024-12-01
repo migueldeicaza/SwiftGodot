@@ -213,4 +213,44 @@ extension GodotTestCase {
 #endif
     }
 
+    public func forAll<Input>(
+        filePath: StaticString = #filePath, line: UInt = #line,
+        function: StaticString = #function,
+        @TinyGenBuilder _ build: () -> TinyGen<Input>,
+        checkCover expression: (Input) throws -> some TestEquatable
+    ) rethrows {
+#if TESTABLE_SWIFT_COVERS
+        let gen = build()
+
+        for k: UInt64 in 1 ... 1_000 {
+            var rng = SipRNG(key0: k, key1: 1234)
+            // Mix in the function name so every test that starts by asking for, say, a Plane doesn't get the same Plane.
+            function.withUTF8Buffer { buffer in
+                for byte in buffer {
+                    for bit in 0 ..< 8 {
+                        rng = (byte & (1 << bit) == 0) ? rng.left() : rng.right()
+                    }
+                }
+            }
+
+            let input = gen(rng)
+
+            let coverOutput = try $useSwiftCovers.withValue(true) {
+                try expression(input)
+            }
+            let engineOutput = try $useSwiftCovers.withValue(false) {
+                try expression(input)
+            }
+
+            guard coverOutput.closeEnough(to: engineOutput) else {
+                XCTFail("Test failure: cover output \(coverOutput) is not close enough to engine output \(engineOutput)", file: filePath, line: line)
+                return
+            }
+        }
+
+#else
+        throw XCTSkip("This test requires the compilation condition TESTABLE_SWIFT_COVERS.", file: filePath, line: line)
+#endif
+    }
+
 }
