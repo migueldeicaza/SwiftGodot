@@ -152,5 +152,12 @@ extension Vector2 {
         return Vector2(x: 2, y: 2) * line * self.dot(with: line) - self
     }
     
+    public static func / (lhs: Vector2, rhs: Int64) -> Vector2 {
+        return Vector2(
+            x: lhs.x / Float(rhs),
+            y: lhs.y / Float(rhs)
+        )
+    }
+    
     
 }
