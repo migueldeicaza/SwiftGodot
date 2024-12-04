@@ -152,11 +152,88 @@ extension Vector2 {
         return Vector2(x: 2, y: 2) * line * self.dot(with: line) - self
     }
     
+    // Arithmetic Operators
+    
+    public static func + (lhs: Vector2, rhs: Vector2) -> Vector2 {
+        return Vector2(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+    }
+    
+    public static func - (lhs: Vector2, rhs: Vector2) -> Vector2 {
+        return Vector2(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+    }
+    
+    public static func * (lhs: Vector2, rhs: Vector2) -> Vector2 {
+        return Vector2(x: lhs.x * rhs.x, y: lhs.y * rhs.y)
+    }
+    
+    public static func / (lhs: Vector2, rhs: Vector2) -> Vector2 {
+        return Vector2(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
+    }
+    
+    public static func * (lhs: Vector2, rhs: Int64) -> Vector2 {
+        return Vector2(
+            x: lhs.x * Float(rhs),
+            y: lhs.y * Float(rhs)
+        )
+    }
+    
     public static func / (lhs: Vector2, rhs: Int64) -> Vector2 {
         return Vector2(
             x: lhs.x / Float(rhs),
             y: lhs.y / Float(rhs)
         )
+    }
+    
+    public static func * (lhs: Vector2, rhs: Double) -> Vector2 {
+        return Vector2(
+            x: lhs.x * Float(rhs),
+            y: lhs.y * Float(rhs)
+        )
+    }
+    
+    public static func / (lhs: Vector2, rhs: Double) -> Vector2 {
+        return Vector2(
+            x: lhs.x / Float(rhs),
+            y: lhs.y / Float(rhs)
+        )
+    }
+    
+    // Comparison Operators
+    
+    public static func == (lhs: Vector2, rhs: Vector2) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y
+    }
+    
+    public static func != (lhs: Vector2, rhs: Vector2) -> Bool {
+        return lhs.x != rhs.x || lhs.y != rhs.y
+    }
+    
+    public static func < (lhs: Vector2, rhs: Vector2) -> Bool {
+        if lhs.x == rhs.x {
+            return lhs.y < rhs.y
+        }
+        return lhs.x < rhs.x
+    }
+    
+    public static func > (lhs: Vector2, rhs: Vector2) -> Bool {
+        if lhs.x == rhs.x {
+            return lhs.y > rhs.y
+        }
+        return lhs.x > rhs.x
+    }
+    
+    public static func <= (lhs: Vector2, rhs: Vector2) -> Bool {
+        if lhs.x == rhs.x {
+            return lhs.y <= rhs.y
+        }
+        return lhs.x < rhs.x
+    }
+    
+    public static func >= (lhs: Vector2, rhs: Vector2) -> Bool {
+        if lhs.x == rhs.x {
+            return lhs.y >= rhs.y
+        }
+        return lhs.x > rhs.x
     }
     
     
