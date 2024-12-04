@@ -148,7 +148,7 @@ extension Vector2 {
     }
     
     public func reflect(line: Vector2) -> Vector2 {
-        /// Reflection requires a scale by 2, but float * Vector2 is not overloaded
+        /// Reflection requires a scale by 2, but Float * Vector2 is not overloaded
         return Vector2(x: 2, y: 2) * line * self.dot(with: line) - self
     }
     
