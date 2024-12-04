@@ -116,7 +116,7 @@ func generateBuiltinCtors (_ p: Printer,
         
         p ("\(visibility) init (\(args))") {
             let parameterTypes = m.arguments?.map { arg in
-                getGodotType(SimpleType (type: arg.type), kind: .builtIn)
+                getGodotType(SimpleType (type: arg.type), kind: .builtInField)
             } ?? []
             let key = SwiftCovers.Key(type: typeName, name: "init", parameterTypes: parameterTypes, returnType: bc.name)
             p.useSwiftCoverIfAvailable(for: key) {
