@@ -146,6 +146,34 @@ final class Vector2Tests: GodotTestCase {
     
     // Operator Covers
     
+    func testBinaryOperators_Vector2i_Vector2i() throws {
+        // Operators of the form Vector2i * Vector2i.
+
+        func checkOperator(
+            _ op: (Vector2, Vector2) -> some Equatable,
+            filePath: StaticString = #filePath, line: UInt = #line
+        ) throws {
+            for v in Self.testVectors {
+                for u in Self.testVectors {
+                    try checkCover(filePath: filePath, line: line) { op(v, u) }
+                }
+            }
+        }
+        
+        // Arithmetic Operators
+        try checkOperator(+)
+        try checkOperator(-)
+        try checkOperator(*)
+        try checkOperator(/)
+        // Comparison Operators
+        try checkOperator(==)
+        try checkOperator(!=)
+        try checkOperator(<)
+        try checkOperator(<=)
+        try checkOperator(>)
+        try checkOperator(>=)
+    }
+    
     func testBinaryOperators_Vector2i_Int64() throws {
         // Operators of the form Vector2i * Int64.
 
@@ -161,6 +189,25 @@ final class Vector2Tests: GodotTestCase {
         }
 
         try checkOperator(/)
+        try checkOperator(*)
+    }
+    
+    func testBinaryOperators_Vector2i_Double() throws {
+        // Operators of the form Vector2i * Int64.
+
+        func checkOperator(
+            _ op: (Vector2, Double) -> some Equatable,
+            filePath: StaticString = #filePath, line: UInt = #line
+        ) throws {
+            for v in Self.testVectors {
+                for d in Self.testDoubles {
+                    try checkCover(filePath: filePath, line: line) { op(v, d) }
+                }
+            }
+        }
+
+        try checkOperator(/)
+        try checkOperator(*)
     }
     
     
