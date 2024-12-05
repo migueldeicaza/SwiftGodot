@@ -3,6 +3,9 @@
 //  All code (c) 2024 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+// This code is copied with permission from https://github.com/elegantchaos/EmbeddedXCTest.
+// Check back there for updates.
+
 import XCTest
 
 /// Superclass for test cases that are embedded.

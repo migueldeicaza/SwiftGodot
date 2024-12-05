@@ -3,6 +3,9 @@
 //  All code (c) 2024 - present day, Sam Deane.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+// This code is copied with permission from https://github.com/elegantchaos/EmbeddedXCTest.
+// Check back there for updates.
+
 import Foundation
 import XCTest
 
@@ -73,7 +76,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
       """
 
       ----------------------------------------------------------
-      Running injected tests
+      Running embedded tests
       ----------------------------------------------------------
 
       """)
@@ -87,7 +90,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
 
       ----------------------------------------------------------
 
-      Finished running injected tests with \(embeddedFailures.count) failures.
+      Finished running embedded tests with \(embeddedFailures.count) failures.
 
       """)
 

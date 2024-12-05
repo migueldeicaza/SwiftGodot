@@ -9,30 +9,14 @@ import XCTest
 
 @testable import SwiftGodot
 
-public struct GodotTestHost: TestHost {
-    public init() {}
-    public func embedTests(_ runEmbeddedTests: @escaping () -> Int) {
-        var failures = 0
-        GodotRuntime.run {
-            failures = runEmbeddedTests()
-            GodotRuntime.stop()
-        }
-
-        if failures > 0 {
-            exit(Int32(failures))
-        }
-    }
-}
 
 /// Base class for all test cases that run in the Godot runtime.
 open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
     open override class func setUp() {
-        print("GodotTestCase.setUp")
         super.setUp()
         if GodotRuntime.isRunning {
             // register any types that are needed for the tests
             for subclass in godotSubclasses {
-                print("***REGISTERED: \(subclass)")
                 register(type: subclass)
             }
         }
@@ -42,7 +26,6 @@ open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
         if GodotRuntime.isRunning {
             // unregister any types that were registered for the tests
             for subclass in godotSubclasses {
-                print("***UNREGISTERED: \(subclass)")
                 unregister(type: subclass)
             }
         }
