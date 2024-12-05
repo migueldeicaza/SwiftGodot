@@ -9,26 +9,30 @@ import XCTest
 
 @testable import SwiftGodot
 
-/// Base class for all test cases that run in the Godot runtime.
-open class GodotTestCase: XCTestCase {
-    open override var testRunClass: AnyClass? {
-        // use a dummy run if the engine isn't running to avoid generating output
-        !GodotRuntime.isRunning ? DummyTestRun.self : super.testRunClass
-    }
+public struct GodotTestHost: TestHost {
+    public init() {}
+    public func embedTests(_ runEmbeddedTests: @escaping () -> Int) {
+        var failures = 0
+        GodotRuntime.run {
+            failures = runEmbeddedTests()
+            GodotRuntime.stop()
+        }
 
-    override open func run() {
-        // We will be run twice - once in the normal XCTest runtime,
-        // and once in the Godot runtime. We only want to actually
-        // run the tests in the Godot runtime.
-        if GodotRuntime.isRunning {
-            super.run()
+        if failures > 0 {
+            exit(Int32(failures))
         }
     }
-    
-    override open class func setUp() {
+}
+
+/// Base class for all test cases that run in the Godot runtime.
+open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
+    open override class func setUp() {
+        print("GodotTestCase.setUp")
+        super.setUp()
         if GodotRuntime.isRunning {
             // register any types that are needed for the tests
             for subclass in godotSubclasses {
+                print("***REGISTERED: \(subclass)")
                 register(type: subclass)
             }
         }
@@ -38,9 +42,11 @@ open class GodotTestCase: XCTestCase {
         if GodotRuntime.isRunning {
             // unregister any types that were registered for the tests
             for subclass in godotSubclasses {
+                print("***UNREGISTERED: \(subclass)")
                 unregister(type: subclass)
             }
         }
+        super.tearDown()
     }
 
     override open func tearDown() async throws {
@@ -76,33 +82,6 @@ open class GodotTestCase: XCTestCase {
 
 }
 
-/// Test run which does nothing.
-/// We return one of these when a Godot test is run
-/// without the test engine running. This avoids having
-/// duplicate runs of the test appear in the output.
-open class DummyTestRun: XCTestCaseRun {
-    override init(test: XCTest) {
-        super.init(test: XCTestCase())
-    }
-    open override func start() {
-    }
-    open override func stop() {
-    }
-    open override func record(_ issue: XCTIssue) {
-    }
-    open override var hasBeenSkipped: Bool { true }
-    open override var hasSucceeded: Bool { false }
-    open override var skipCount: Int { 0 }
-    open override var failureCount: Int { 0 }
-    open override var executionCount: Int { 0 }
-    open override var testCaseCount: Int { 0 }
-    open override var unexpectedExceptionCount: Int { 0 }
-    open override var totalFailureCount: Int { 0 }
-
-    open override var totalDuration: TimeInterval { 0 }
-    open override var testDuration: TimeInterval { 0 }
-}
-/// Godot testing support.
 
 public extension GodotTestCase {
     
