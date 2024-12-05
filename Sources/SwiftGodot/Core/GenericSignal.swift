@@ -97,11 +97,11 @@ extension Arguments {
 
         // try to unpack the variant as the expected type
         let value: T?
-        if argument.gtype == .object {
-            value = T.Representable.godotType == .object ? argument.asObject(Object.self) as? T : nil
-        } else {
-            value = T(argument)
-        }
+       if T.self is Object.Type, (argument.gtype == .object) && (T.Representable.godotType == .object) {
+           value = argument.asObject(T.self as! Object.Type) as? T
+       } else {
+           value = T(argument)
+       }
 
         guard let value else {
             throw UnpackError.typeMismatch
