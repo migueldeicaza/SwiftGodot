@@ -99,7 +99,7 @@ extension Arguments {
         // try to unpack the variant as the expected type
         let value: T?
         if (argument.gtype == .object) && (T.Representable.godotType == .object) {
-            value = argument.asObject(Object.self)?.unwrappedObject as? T
+            value = argument.asObject(Object.self) as? T
         } else {
             value = T(argument)
         }
@@ -109,57 +109,5 @@ extension Arguments {
         }
         
         return value
-    }
-    
-    /// Unpack an argument as a specific type.
-    /// We throw a runtime error if the argument is not of the expected type,
-    /// or if there are not enough arguments to unpack.
-    func unwrap<T: VariantStorable>(ofType type: Optional<T>.Type, index: inout Int) throws -> T? {
-        let argument = try optionalVariantArgument(at: index)
-        index += 1
-        
-        // if the argument was nil, throw error
-        guard let argument else {
-            return nil
-        }
-        
-        // NOTE:
-        // Ideally we could just call T.unpack(from: argument) here.
-        // Unfortunately, T.unpack is dispatched statically, but we don't
-        // have the full dynamic type information for T when we're compiling.
-        // The only thing we know about type T is that it conforms to VariantStorable.
-        // We don't know if inherits from Object, so the compiler will always pick the
-        // default non-object implementation of T.unpack.
-        
-        // try to unpack the variant as the expected type
-        let value: T?
-        if let objectType = T.self as? Object.Type, (argument.gtype == .object) && (T.Representable.godotType == .object) {
-            value = argument.asObject(objectType) as? T
-        } else {
-            value = T(argument)
-        }
-        
-        guard let value else {
-            throw UnpackError.typeMismatch
-        }
-        
-        return value
-    }
-}
-
-protocol OptionalUnwrappable {
-    var unwrappedObject: Object? { get }
-}
-
-extension Object: OptionalUnwrappable {
-    var unwrappedObject: Object? { self }
-}
-
-extension Optional: OptionalUnwrappable {
-    var unwrappedObject: Object? {
-        switch self {
-            case .none: return nil
-            case .some(let value): return value as? Object
-        }
     }
 }
