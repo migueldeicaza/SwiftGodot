@@ -90,15 +90,16 @@ extension Arguments {
                 
         // NOTE:
         // Ideally we could just call T.unpack(from: argument) here.
-        // Unfortunately, we don't have the full type information for T in this context.
-        // The only thing we know about type T is that it conforms to VariantStorable, but
-        // it doesn't know if it's an object, so it will always pick the default non-object
-        // implementation of T.unpack, which is no use.
+        // Unfortunately, T.unpack is dispatched statically, but we don't
+        // have the full dynamic type information for T when we're compiling.
+        // The only thing we know about type T is that it conforms to VariantStorable.
+        // We don't know if inherits from Object, so the compiler will always pick the
+        // default non-object implementation of T.unpack.
         
         // try to unpack the variant as the expected type
         let value: T?
-        if (argument.gtype == .object) && (T.Representable.godotType == .object) {
-            value = argument.asObject(T.self as! Object.Type) as? T
+        if let objectType = type as? Object.Type, (argument.gtype == .object) && (T.Representable.godotType == .object) {
+            value = argument.asObject(objectType) as? T
         } else {
             value = T(argument)
         }
