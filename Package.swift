@@ -83,13 +83,16 @@ var targets: [Target] = [
         dependencies: [
             "ExtensionApi",
             .product(name: "SwiftSyntax", package: "swift-syntax"),
-            .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
+            .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
         ],
         path: "Generator",
         exclude: ["README.md"],
         swiftSettings: [
             // Uncomment for using legacy array-based marshalling
-            //.define("LEGACY_MARSHALING")
+            //.define("LEGACY_MARSHALING"),
+
+            //.enableExperimentalFeature("StrictConcurrency"),
         ]
     ),
     

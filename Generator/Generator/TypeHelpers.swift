@@ -34,53 +34,50 @@ func MemberBuiltinJsonTypeToSwift (_ type: String) -> String {
     }
 }
 
-/// Returns true for the Built-in types that are generated as classes, rather than structures
-func isBuiltinClass (_ godotTypeName: String) -> Bool {
-    builtinClassStorage [godotTypeName] != nil
-}
+extension Generator {
+    /// Given an enumeration name, and a value associated with it, returns the Swift
+    /// enum value, or nil if it can not be found.
+    /// Example type: "ArrowDirection", value: "0" would return ".up"
+    func mapEnumValue (enumDef: String, value: String) -> String? {
+        func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
+            let enumCasePrefix = element.values.commonPrefix()
+            for evalue in element.values {
+                let ename = evalue.name
+                if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
+                    continue
 
-/// Given an enumeration name, and a value associated with it, returns the Swift
-/// enum value, or nil if it can not be found.
-/// Example type: "ArrowDirection", value: "0" would return ".up"
-func mapEnumValue (enumDef: String, value: String) -> String? {
-    func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
-        let enumCasePrefix = element.values.commonPrefix()
-        for evalue in element.values {
-            let ename = evalue.name
-            if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
-                continue
-                
+                }
+
+                if "\(evalue.value)" == value {
+                    let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix))
+                    return ".\(escapeSwift (name))"
+                }
             }
-
-            if "\(evalue.value)" == value {
-                let name = snakeToCamel(evalue.name.dropPrefix(enumCasePrefix))
-                return ".\(escapeSwift (name))"
+            print ("WARNING: Enum, did not find a matching value in \(enumDef) for \(value)")
+            return nil
+        }
+        let t = enumDef.dropFirst(6) // drop "enum::" prefix
+        if let globalEnumDef = globalEnums [String (t)]  {
+            return findEnumMatch(element: globalEnumDef)
+        }
+        guard let p = t.firstIndex(of: ".") else {
+            print ("WARNING: Enum, not a global, and not a type: \(enumDef)")
+            return nil
+        }
+        let type = t [t.startIndex..<p]
+        let enumt = t [t.index(p, offsetBy: 1)...]
+        guard let x = classMap [String (type)] else {
+            print ("WARNING: Enum, could not find type \(type) for \(enumDef)")
+            return nil
+        }
+        for e in x.enums ?? [] {
+            if e.name == enumt {
+                return findEnumMatch(element: e)
             }
         }
-        print ("WARNING: Enum, did not find a matching value in \(enumDef) for \(value)")
+        print ("WARNING: Enum. did not find a matching value in \(enumDef) for \(value)")
         return nil
     }
-    let t = enumDef.dropFirst(6)
-    if let globalEnumDef = globalEnums [String (t)]  {
-        return findEnumMatch(element: globalEnumDef)
-    }
-    guard let p = t.firstIndex(of: ".") else {
-        print ("WARNING: Enum, not a global, and not a type: \(enumDef)")
-        return nil
-    }
-    let type = t [t.startIndex..<p]
-    let enumt = t [t.index(p, offsetBy: 1)...]
-    guard let x = classMap [String (type)] else {
-        print ("WARNING: Enum, could not find type \(type) for \(enumDef)")
-        return nil
-    }
-    for e in x.enums ?? [] {
-        if e.name == enumt {
-            return findEnumMatch(element: e)
-        }
-    }
-    print ("WARNING: Enum. did not find a matching value in \(enumDef) for \(value)")
-    return nil
 }
 
 func godotMethodToSwift (_ name: String) -> String {
@@ -226,148 +223,151 @@ enum ArgumentKind {
     case builtIn
 }
 
-var mapStringToSwift = true
+extension Generator {
+    @TaskLocal
+    static var mapStringToSwift = true
+}
 
-/// Given a type definition with its metadata, and the context where the type is being
-/// useds, returns the type for it.
-///
-///
-func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String {
-    guard let t else {
-        return ""
-    }
-    
-    switch t.type {
-    case "int":
-        if let meta = t.meta {
-            switch meta {
-            case .int32:
-                return "Int32"
-            case .uint32:
-                return "UInt32"
-            case .int64:
-                return "Int"
-            case .uint64:
-                return "UInt"
-            case .int16:
-                return "Int16"
-            case .uint16:
-                return "UInt16"
-            case .uint8:
-                return "UInt8"
-            case .int8:
-                return "Int8"
-            case .char32:
-                return "Int32"
-            default:
-                fatalError()
-            }
-        } else {
-            if kind == .builtInField {
-                return "Int32"
-            } else {
-                return "Int64"
-            }
+extension Generator {
+    /// Given a type definition with its metadata, and the context where the type is being
+    /// useds, returns the type for it.
+    func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String {
+        guard let t else {
+            return ""
         }
-    case "float", "real":
-        if kind == .builtInField {
-            return "Float"
-        } else {
+
+        switch t.type {
+        case "int":
             if let meta = t.meta {
                 switch meta {
-                case .double:
-                    return "Double"
-                case .float:
-                    // Looks like Godot just ignores its own
-                    // metadata of "Float" and uses Double.
-                    return "Double"
+                case .int32:
+                    return "Int32"
+                case .uint32:
+                    return "UInt32"
+                case .int64:
+                    return "Int"
+                case .uint64:
+                    return "UInt"
+                case .int16:
+                    return "Int16"
+                case .uint16:
+                    return "UInt16"
+                case .uint8:
+                    return "UInt8"
+                case .int8:
+                    return "Int8"
+                case .char32:
+                    return "Int32"
                 default:
                     fatalError()
                 }
             } else {
-                return "Double"
+                if kind == .builtInField {
+                    return "Int32"
+                } else {
+                    return "Int64"
+                }
             }
-        }
-    case "Nil":
-        return "Variant"
-    case "void":
-        return ""
-    case "bool":
-        return "Bool"
-    case "String":
-        if mapStringToSwift {
-            return "String" // We are going to use Swift strings
-        } else {
-            return "GString"
-        }
-    case "Dictionary":
-        return "GDictionary"
-    case "Array":
-        return "GArray"
-    case "void*":
-        return "OpaquePointer?"
-    case "const Glyph*":
-        return "OpaquePointer?"
-    case "Type":
-        return "GType"
-    case "const void*":
-        return "OpaquePointer?"
-    case "AudioFrame*":
-        return "OpaquePointer?"
-    default:
-        if t.type == "Error" {
-            return "GodotError"
-        }
-        if t.type.starts(with: "enum::Error") {
-            return "GodotError"
-        }
-        if t.type.starts(with: "enum::Variant.Type") {
-            return "Variant.GType"
-        }
-        if t.type.starts(with: "enum::VisualShader.Type") {
-            return "VisualShader.GType"
-        }
-        if t.type.starts(with: "enum::IP.Type") {
-            return "IP.GType"
-        }
-        if t.type.starts(with: "enum::") {
-            
-            return String (t.type.dropFirst(6))
-        }
-        if t.type.starts (with: "typedarray::") {
-            let nestedTypeName = String (t.type.dropFirst(12))
-            let nested = SimpleType(type: nestedTypeName, meta: nil)
-
-            if classMap [nestedTypeName] != nil {
-                return "ObjectCollection<\(getGodotType (nested))>"
+        case "float", "real":
+            if kind == .builtInField {
+                return "Float"
             } else {
-                return "VariantCollection<\(getGodotType (nested))>"
+                if let meta = t.meta {
+                    switch meta {
+                    case .double:
+                        return "Double"
+                    case .float:
+                        // Looks like Godot just ignores its own
+                        // metadata of "Float" and uses Double.
+                        return "Double"
+                    default:
+                        fatalError()
+                    }
+                } else {
+                    return "Double"
+                }
             }
-        }
-        if t.type.starts (with: "bitfield::") {
-            return "\(t.type.dropFirst(10))"
-        }
-        return t.type
-    }
-}
+        case "Nil":
+            return "Variant"
+        case "void":
+            return ""
+        case "bool":
+            return "Bool"
+        case "String":
+            if Self.mapStringToSwift {
+                return "String" // We are going to use Swift strings
+            } else {
+                return "GString"
+            }
+        case "Dictionary":
+            return "GDictionary"
+        case "Array":
+            return "GArray"
+        case "void*":
+            return "OpaquePointer?"
+        case "const Glyph*":
+            return "OpaquePointer?"
+        case "Type":
+            return "GType"
+        case "const void*":
+            return "OpaquePointer?"
+        case "AudioFrame*":
+            return "OpaquePointer?"
+        default:
+            if t.type == "Error" {
+                return "GodotError"
+            }
+            if t.type.starts(with: "enum::Error") {
+                return "GodotError"
+            }
+            if t.type.starts(with: "enum::Variant.Type") {
+                return "Variant.GType"
+            }
+            if t.type.starts(with: "enum::VisualShader.Type") {
+                return "VisualShader.GType"
+            }
+            if t.type.starts(with: "enum::IP.Type") {
+                return "IP.GType"
+            }
+            if t.type.starts(with: "enum::") {
 
-/// Built-ins classes keep their data stored internally in a variable called
-/// "content", given a godotType name of those, this returns a pair
-/// containing the Swift-type that is used to store this, and a suitable initialization
-/// value for it.
-func getBuiltinStorage (_ name: String) -> (String, String) {
-    guard let size = builtinSizes [name] else {
-        fatalError()
+                return String (t.type.dropFirst(6))
+            }
+            if t.type.starts (with: "typedarray::") {
+                let nestedTypeName = String (t.type.dropFirst(12))
+                let nested = SimpleType(type: nestedTypeName, meta: nil)
+
+                if classMap [nestedTypeName] != nil {
+                    return "ObjectCollection<\(getGodotType (nested))>"
+                } else {
+                    return "VariantCollection<\(getGodotType (nested))>"
+                }
+            }
+            if t.type.starts (with: "bitfield::") {
+                return "\(t.type.dropFirst(10))"
+            }
+            return t.type
+        }
     }
-    switch size {
-    case 4, 0:
-        return ("Int32", " = 0")
-    case 8:
-        return ("Int64", " = 0")
-    case 16:
-        return ("(Int64, Int64)", " = (0, 0)")
-    default:
-        fatalError()
+
+    /// Built-ins classes keep their data stored internally in a variable called
+    /// "content", given a godotType name of those, this returns a pair
+    /// containing the Swift-type that is used to store this, and a suitable initialization
+    /// value for it.
+    func getBuiltinStorage (_ name: String) -> (String, String) {
+        guard let size = builtinSizes [name] else {
+            fatalError()
+        }
+        switch size {
+        case 4, 0:
+            return ("Int32", " = 0")
+        case 8:
+            return ("Int64", " = 0")
+        case 16:
+            return ("(Int64, Int64)", " = (0, 0)")
+        default:
+            fatalError()
+        }
     }
 }
 
