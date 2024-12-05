@@ -5,6 +5,7 @@ import SwiftGodotTestability
 @Godot
 private class TestSignalNode: Node {
     #signal("mySignal", arguments: ["age": Int.self, "name": String.self])
+    #nusignal("nuSignal", arguments: ["age": Int.self, "name": String.self])
     var receivedInt: Int? = nil
     var receivedString: String? = nil
     
@@ -28,6 +29,19 @@ final class SignalTests: GodotTestCase {
 
         XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
+    }
+
+    func testNuSignal() {
+        let node = TestNode()
+        var signalReceived = false
+
+        node.nuSignal.connect { age, name in
+            XCTAssertEqual (age, 22)
+            XCTAssertEqual (name, "Sam")
+            signalReceived = true
+        }
+        node.nuSignal.emit(22, "Sam")
+        XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
     func testBuiltInSignalWithNoArgument() {
