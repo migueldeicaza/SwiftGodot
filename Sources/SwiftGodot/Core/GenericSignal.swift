@@ -32,7 +32,7 @@ public class GenericSignal<each T: VariantStorable> {
         signalProxy.proxy = { args in
             var index = 0
             do {
-                callback(repeat try args.unpack(as: (each T).self, index: &index))
+                callback(repeat try args.unwrap(ofType: (each T).self, index: &index))
             } catch {
                 print("Error unpacking signal arguments: \(error)")
             }
@@ -72,9 +72,6 @@ extension Arguments {
         /// The argument could not be coerced to the expected type.
         case typeMismatch
 
-        /// There are not enough arguments to unpack.
-        case missingArgument
-
         /// The argument was nil.
         case nilArgument
     }
@@ -82,31 +79,34 @@ extension Arguments {
     /// Unpack an argument as a specific type.
     /// We throw a runtime error if the argument is not of the expected type,
     /// or if there are not enough arguments to unpack.
-    func unpack<T: VariantStorable>(as type: T.Type, index: inout Int) throws -> T? {
-        if index >= count {
-            throw UnpackError.missingArgument
-        }
-
-        let argument = self[index]
+    func unwrap<T: VariantStorable>(ofType type: T.Type, index: inout Int) throws -> T? {
+        let argument = try optionalVariantArgument(at: index)
         index += 1
 
-        // if the argument was nil, throw an error
+        // if the argument was nil, return nil
         guard let argument else {
             return nil
         }
-
+                
+        // NOTE:
+        // Ideally we could just call T.unpack(from: argument) here.
+        // Unfortunately, we don't have the full type information for T in this context.
+        // The only thing we know about type T is that it conforms to VariantStorable, but
+        // it doesn't know if it's an object, so it will always pick the default non-object
+        // implementation of T.unpack, which is no use.
+        
         // try to unpack the variant as the expected type
         let value: T?
-       if T.self is Object.Type, (argument.gtype == .object) && (T.Representable.godotType == .object) {
-           value = argument.asObject(T.self as! Object.Type) as? T
-       } else {
-           value = T(argument)
-       }
-
+        if (argument.gtype == .object) && (T.Representable.godotType == .object) {
+            value = argument.asObject(T.self as! Object.Type) as? T
+        } else {
+            value = T(argument)
+        }
+        
         guard let value else {
             throw UnpackError.typeMismatch
         }
-
+        
         return value
     }
 }
