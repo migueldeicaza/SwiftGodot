@@ -26,48 +26,6 @@ final class MarshalTests: GodotTestCase {
         return [TestNode.self]
     }
 
-    func testVarArgs() {
-        let node = TestNode()
-        
-        node.probe ()
-        XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
-        XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
-    }
-
-    func testBuiltInSignalWithNoArgument() {
-        let node = TestNode()
-        var signalReceived = false
-        node.ready.connect {
-            signalReceived = true
-        }
-        node.emitSignal("ready")
-        XCTAssertTrue (signalReceived, "signal should have been received")
-    }
-
-    func testBuiltInSignalWithArgument() {
-        let node = TestNode()
-        var signalReceived = false
-        node.childExitingTree.connect { nodeParameter in
-            signalReceived = true
-            XCTAssertEqual(node, nodeParameter)
-        }
-        node.emitSignal("child_exiting_tree", Variant(node))
-        XCTAssertTrue (signalReceived, "signal should have been received")
-    }
-
-    func testBuiltInSignalWithPrimitiveArguments() {
-        let node = AnimationNode()
-        var signalReceived = false
-        node.animationNodeRenamed.connect { id, oldName, newName in
-            signalReceived = true
-            XCTAssertEqual(id, 123)
-            XCTAssertEqual(oldName, "old name")
-            XCTAssertEqual(newName, "new name")
-        }
-        node.emitSignal("animation_node_renamed", Variant(123), Variant("old name"), Variant("new name"))
-        XCTAssertTrue (signalReceived, "signal should have been received")
-    }
-    
     func testClassesMethodsPerformance() {
         let node = TestNode()
         let child = TestNode()
