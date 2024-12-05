@@ -3,7 +3,7 @@ import SwiftGodotTestability
 @testable import SwiftGodot
 
 @Godot
-private class TestSignalNode: Node {
+private class TestNode: Node {
     #signal("mySignal", arguments: ["age": Int.self, "name": String.self])
     var receivedInt: Int? = nil
     var receivedString: String? = nil
@@ -17,14 +17,14 @@ private class TestSignalNode: Node {
 final class SignalTests: GodotTestCase {
     
     override static var godotSubclasses: [Wrapped.Type] {
-        return [TestSignalNode.self]
+        return [TestNode.self]
     }
     
     func testUserDefinedSignal() {
-        let node = TestSignalNode()
+        let node = TestNode()
 
-        node.connect (signal: TestSignalNode.mySignal, to: node, method: "receiveSignal")
-        node.emit (signal: TestSignalNode.mySignal, 22, "Joey")
+        node.connect (signal: TestNode.mySignal, to: node, method: "receiveSignal")
+        node.emit (signal: TestNode.mySignal, 22, "Joey")
 
         XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
