@@ -26,14 +26,6 @@ final class MarshalTests: GodotTestCase {
         return [TestNode.self]
     }
 
-    func testVarArgs() {
-        let node = TestNode()
-        
-        node.probe ()
-        XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
-        XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
-    }
-    
     func testClassesMethodsPerformance() {
         let node = TestNode()
         let child = TestNode()

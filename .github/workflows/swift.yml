@@ -34,12 +34,19 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+
+    timeout-minutes: 10
+    
     steps:
       - uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-5.10-release
-          tag: 5.10-RELEASE
+          branch: swift-6.0.2-release
+          tag: 6.0.2-RELEASE
       - uses: actions/checkout@v4
       - name: Build
-        run: swift build -v
+        run: swift build --build-tests --quiet
+      - name: Run tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
+      - name: Run tests (Swift testing)
+        run: swift test --skip-build --no-parallel --disable-xctest
         

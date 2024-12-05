@@ -21,7 +21,7 @@ final class VariantTests: GodotTestCase {
 
     func testWrap() {
         let x: Node? = Node()
-        let j = Variant(x)
+        let _ = Variant(x)
         
     }
     func testVariantCall() {
