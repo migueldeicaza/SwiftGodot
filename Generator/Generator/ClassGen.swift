@@ -557,7 +557,11 @@ func getGenericSignalType(_ signal: JGodotSignal) -> String {
     for signalArgument in signal.arguments ?? [] {
         let godotType = getGodotType(signalArgument)
         if !godotType.isEmpty && godotType != "Variant" {
-            argTypes.append(godotType)
+            var t = godotType
+            if !isCoreType(name: t) && !isPrimitiveType(name: t) {
+                t += "?"
+            }
+            argTypes.append(t)
         }
     }
                 
