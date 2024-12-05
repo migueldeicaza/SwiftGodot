@@ -169,12 +169,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         return ret
     }
     
-    /// Fallback for when the type is not an object.
-    /// Will always return nil.
-    public func asObject<T: Any> (_ type: T.Type) -> T? {
-        return nil
-    }
-
     public var description: String {
         var ret = GDExtensionStringPtr (bitPattern: 0xdeaddead)
         gi.variant_stringify (&content, &ret)
