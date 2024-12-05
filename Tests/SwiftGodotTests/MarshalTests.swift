@@ -34,7 +34,7 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
     }
 
-    func testBuiltInSignals() {
+    func testBuiltInSignalWithNoArgument() {
         let node = TestNode()
         var signalReceived = false
         node.ready.connect {
@@ -42,6 +42,17 @@ final class MarshalTests: GodotTestCase {
         }
         node.emitSignal("ready")
         XCTAssertTrue (signalReceived, "ready signal should have been received")
+    }
+
+    func testBuiltInSignalWithArgument() {
+        let node = TestNode()
+        var signalReceived = false
+        node.childExitingTree.connect { nodeParameter in
+            signalReceived = true
+            XCTAssertEqual(node, nodeParameter)
+        }
+        node.emitSignal("child_exiting_tree", Variant(node))
+        XCTAssertTrue (signalReceived, "childExitingTree signal should have been received with a node parameter")
     }
 
     func testClassesMethodsPerformance() {

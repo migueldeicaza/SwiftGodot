@@ -27,7 +27,7 @@ public class GenericSignal<each T: VariantStorable> {
     /// - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.
     ///
     @discardableResult /* Signal1 */
-    public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Object {
+    public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat (each T)?) -> Void) -> Object {
         let signalProxy = SignalProxy()
         signalProxy.proxy = { args in
             var index = 0
@@ -82,7 +82,7 @@ extension Arguments {
     /// Unpack an argument as a specific type.
     /// We throw a runtime error if the argument is not of the expected type,
     /// or if there are not enough arguments to unpack.
-    func unpack<T: VariantStorable>(as type: T.Type, index: inout Int) throws -> T {
+    func unpack<T: VariantStorable>(as type: T.Type, index: inout Int) throws -> T? {
         if index >= count {
             throw UnpackError.missingArgument
         }
@@ -92,7 +92,7 @@ extension Arguments {
 
         // if the argument was nil, throw an error
         guard let argument else {
-            throw UnpackError.nilArgument
+            return nil
         }
 
         // try to unpack the variant as the expected type
