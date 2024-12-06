@@ -1,4 +1,8 @@
-# SwiftGodot
+<div align="center">
+  <h1>SwiftGodot</h1>
+  <img src="https://github.com/user-attachments/assets/c537aefa-561d-413c-a563-8aac1b1758ba" width="200">
+</div>
+<br>
 
 [![SwiftPM compatible](https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat)](https://swift.org/package-manager)
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-333333.svg?style=flat)
