@@ -16,6 +16,9 @@ extension VariantStorable {
     }
 }
 
+public typealias SignalWithArguments = GenericSignal
+public typealias SimpleSignal = GenericSignal< /* no args */ >
+
 /// Signal support.
 /// Use the ``GenericSignal/connect(flags:_:)`` method to connect to the signal on the container object,
 /// and ``GenericSignal/disconnect(_:)`` to drop the connection.
