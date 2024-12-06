@@ -6,6 +6,7 @@ import SwiftGodotTestability
 private class TestSignalNode: Node {
     #signal("mySignal", arguments: ["age": Int.self, "name": String.self])
     #nusignal("nuSignal", arguments: ["age": Int.self, "name": String.self])
+    @Signal var anotherSignal: GenericSignal< /* no args */ >
     var receivedInt: Int? = nil
     var receivedString: String? = nil
     
@@ -32,9 +33,22 @@ final class SignalTests: GodotTestCase {
     }
 
     func testNuSignal() {
-        let node = TestNode()
+        let node = TestSignalNode()
         var signalReceived = false
 
+        node.nuSignal.connect { age, name in
+            XCTAssertEqual (age, 22)
+            XCTAssertEqual (name, "Sam")
+            signalReceived = true
+        }
+        node.nuSignal.emit(22, "Sam")
+        XCTAssertTrue (signalReceived, "signal should have been received")
+    }
+
+    func testNuSignal2() {
+        let node = TestSignalNode()
+        var signalReceived = false
+        
         node.nuSignal.connect { age, name in
             XCTAssertEqual (age, 22)
             XCTAssertEqual (name, "Sam")

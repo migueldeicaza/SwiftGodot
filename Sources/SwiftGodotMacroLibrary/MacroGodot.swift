@@ -647,6 +647,7 @@ struct godotMacrosPlugin: CompilerPlugin {
         Texture2DLiteralMacro.self,
         SignalMacro.self,
         NuSignalMacro.self,
+        NuSignalMacro2.self,
     ]
 }
 

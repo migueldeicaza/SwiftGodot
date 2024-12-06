@@ -248,4 +248,8 @@ public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type
 @freestanding(declaration, names: arbitrary)
 public macro nusignal(_ signalName: String, arguments: [String: Any.Type] = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "NuSignalMacro")
 
+@attached(accessor)
+public macro Signal() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "NuSignalMacro2")
+
+
 #endif
