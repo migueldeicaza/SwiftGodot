@@ -115,20 +115,15 @@ is emitted by your code:
 ```
 @Godot
 class Demo: Node3D {
-    #signal("burp")
-
-    // Convenience method to emit the signal
-    public func emitBurp () {
-        emit(Demo.burp)
-    }
+    @Signal var burp: SimpleSignal
 }
 ```
 
-The free-standing macro `#signal` declares a signal named burp.   This macro
-will turn signals using the snake-case naming convention into camel-case
-names accessible in Swift.
+The free-standing macro `@Signal` declares a signal named burp. This macro
+will turn signal variable names using the camel-case naming convention into
+Godot signals using snake-case.
 
-So for example if you were to declare a signal called 'lives_changed' it
+So for example if you were to declare a signal called 'livesChanged' it
 would be exposed to Godot as 'lives_changed', and to your Swift code as
 'livesChanged'.
 
@@ -141,13 +136,13 @@ also Godot objects and the Godot core types;   See the documentation
 for ``Variant`` for more information).
 
 To use signals with parameters, you need to declare the parameter
-types using the `arguments:` parameter, specifying the Swift type
-of each parameter.
+types using the generic SignalWithArguments class, specifying the Swift 
+type of each parameter.
 
 
 In the following example we create a signal exposed to godot called
-`lives_changed` that takes an integer value, and it is surfaced to Swift as 
-the signal 'livesChanged'.
+`lives_changed` that takes an integer value, and it is surfaced to 
+Swift as the signal 'livesChanged'.
 
 The example below also shows how to emit the signal with the additional
 integer payload:
@@ -155,10 +150,10 @@ integer payload:
 ```swift
 @Godot 
 class Player: Node2D {
-    #signal("lives_changed", argument: ["new_lives_count": Int.self])
+    @Signal var livesChanged: SignalWithArguments<Int>
 
     func startGame() {
-       emit(Player.livesChanged, 5)
+        livesChanged.emit(5)
     }
 }
 ```
@@ -170,30 +165,27 @@ This example shows how you can create a signal and connect to it:
 ```swift
 @Godot 
 class Player: Node2D {
-    #signal("game_started")
-    #signal("lives_changed", argument: ["new_lives_count": Int.self])
+    @Signal var gameStarted: SimpleSignal
+    @Signal var livesChanged: SignalWithArguments<Int>
 
     func startGame() {
         // No arguments
-        emit(Player.gameStarted)
+        gameStarted.emit()
 
         // One argument of type int
-        emit(Player.livesChanged, 5)
+        livesChanged.emit(5)
     }
 }
 
 class Level: Area2D {
     func _ready() { 
-       player.connect(Player.gameStarted, to: self, method: "game_started")
-       player.connect(Player.livesChanged, to: self, method: "myLivesChanged")
-    }
+        player.gameStarted.connect {
+            GD.print("got game started signal!")
+        }
 
-    @Callable func myLivesChanged (newLivesCount: Int) {
-        print ("New lives: \(newLivesCount)")
-    }
-
-    @Callable func game_started() { 
-       GD.print("got game started signal!")
+        player.livesChanged.connect { newLivesCount in
+            print ("New lives: \(newLivesCount)")
+        }
     }
 }
 ```
@@ -243,34 +235,15 @@ func setup () {
 }
 ```
 
-### Emitting Signals
+## Emitting Signals
 
-The ``Object/emit(signal:)`` family of methods is a high-level version
-that provides some of the boilerplate information for you, and also
-conveniently allows you to call the emit method with any type that implements
-the ``VariantStorable`` protocol.   
+To emit a signal defined with the @Signal macro, you call ``SignalWithArguments/emit()`
+on the signal's property. If the signal takes arguments, the emit() method
+will accept arguments of the correct types.
 
-It is quite convenient to use as you do not need to wrap your parameters in 
-``Variants`` nor provide the ``PropInfo`` elements for your signal definition.
+You can also use this method to emit built-in signals on a foreign object,
+such as the ``ready`` signal on a ``Node`` instance, to pretend the object
+triggered that signal.
 
-When you declare signals using the #signal macro, you can trivially use this path.
-
-Sometimes you might need to emit a signal on a foreign object, to pretend the
-object triggered that signal.  I will not pass any judgement on this, I merely 
-want to empower you to get the job done.
-
-In those situations, you might still want to use the convenience emit method, over
-the ``Object/emitSignal`` version.   But you will find that you can not just call the method
-with the signal name as you did before.
-
-In those cases, you will need to provide both the signal name, and the argument 
-names, like this:
-
-```swift
-let foreign: Node
-
-foreign.emit(signal: SignalWith1Argument("open", argument1Name: "path"), "/tmp/demo")
-```
-
-The `signal` parameter is not a plain ``StringName``, instead it takes one of the
-SignalWithArgument types to specify the names of the arguments.
+I will not pass any judgement on this, I merely want to empower you to get the 
+job done.

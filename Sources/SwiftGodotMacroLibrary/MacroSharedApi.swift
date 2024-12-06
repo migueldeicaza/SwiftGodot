@@ -133,14 +133,14 @@ func hasExportAttribute (_ attrs: AttributeListSyntax?) -> Bool {
     hasAttribute ("Export", attrs)
 }
 
+/// True if the attribtue list syntax has an attribute name 'Signal'
+func hasSignalAttribute (_ attrs: AttributeListSyntax?) -> Bool {
+    hasAttribute ("Signal", attrs)
+}
+
 /// True if the attribtue list syntax has an attribute name 'Callable'
 func hasCallableAttribute (_ attrs: AttributeListSyntax?) -> Bool {
     hasAttribute ("Callable", attrs)
-}
-
-/// True if the attribtue list syntax has an attribute name 'signal'
-func hasSignalAttribute (_ attrs: AttributeListSyntax?) -> Bool {
-    hasAttribute ("signal", attrs)
 }
 
 func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
