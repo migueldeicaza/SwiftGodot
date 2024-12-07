@@ -5,6 +5,23 @@
 //  Created by Marquis Kurt on 5/16/23.
 //
 
+#if CUSTOM_BUILTIN_IMPLEMENTATIONS
+#if canImport(Darwin)
+import Darwin
+#elseif os(Windows)
+import ucrt
+import WinSDK
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#else
+#error("Unable to identify your C library.")
+#endif
+#endif
+
+private func system_acosf(_ x: Float) -> Float { acosf(x) }
+
 extension GD {
     /// Loads a resource from the filesystem located at `path`.
     ///
@@ -102,7 +119,18 @@ extension GD {
 
     public static func isEqualApprox(_ a: Float, _ b: Float) -> Bool {
         // This is imported with Double arguments but we need it with Float arguments.
-        return isEqualApprox(a, b, tolerance: Float(CMP_EPSILON))
+
+        // Check for exact equality first, required to handle "infinity" values.
+        if a == b {
+            return true
+        }
+
+        // Then check for approximate equality.
+        var tolerance = Float(CMP_EPSILON) * a.magnitude
+        if tolerance < Float(CMP_EPSILON) {
+            tolerance = Float(CMP_EPSILON)
+        }
+        return (a - b).magnitude < tolerance
     }
 
     public static func isEqualApprox(_ a: Float, _ b: Float, tolerance: Float) -> Bool {
@@ -126,12 +154,16 @@ extension GD {
 
     public static func cubicInterpolateInTime(from: Float, to: Float, pre: Float, post: Float, weight: Float, toT: Float, preT: Float, postT: Float) -> Float {
 	/* Barry-Goldman method */
-	let t = (0 as Float).lerp(to: toT, weight: weight)
-        let a1 = pre.lerp(to: from, weight: preT == 0 ? 0 : (t - preT) / -preT)
-	let a2 = from.lerp(to: to, weight: toT == 0 ? 0.5 : t / toT)
-        let a3 = to.lerp(to: post, weight: postT - toT == 0 ? 1 : (t - toT) / (postT - toT))
-        let b1 = a1.lerp(to: a2, weight: toT - preT == 0 ? 0 : (t - preT) / (toT - preT))
-	let b2 = a2.lerp(to: a3, weight: postT == 0 ? 1 : t / postT)
-        return b1.lerp(to: b2, weight: toT == 0 ? 0.5 : t / toT)
+	let t = (0 as Float).lerp(to: toT, withoutClampingWeight: weight)
+        let a1 = pre.lerp(to: from, withoutClampingWeight: preT == 0 ? 0 : (t - preT) / -preT)
+	let a2 = from.lerp(to: to, withoutClampingWeight: toT == 0 ? 0.5 : t / toT)
+        let a3 = to.lerp(to: post, withoutClampingWeight: postT - toT == 0 ? 1 : (t - toT) / (postT - toT))
+        let b1 = a1.lerp(to: a2, withoutClampingWeight: toT - preT == 0 ? 0 : (t - preT) / (toT - preT))
+	let b2 = a2.lerp(to: a3, withoutClampingWeight: postT == 0 ? 1 : t / postT)
+        return b1.lerp(to: b2, withoutClampingWeight: toT == 0 ? 0.5 : t / toT)
+    }
+
+    public static func acosf(_ x: Float) -> Float {
+        return x < -1 ? Float(Double.pi) : x > 1 ? 0 : system_acosf(x)
     }
 }

@@ -51,6 +51,10 @@ extension Float: LinearInterpolation {
         let clampedWeight = max(0.0, min(1.0, Float(weight)))
         return self + (to - self) * clampedWeight
     }
+
+    public func lerp(to: Float, withoutClampingWeight weight: any BinaryFloatingPoint) -> Float {
+        return self + (to - self) * Float(weight)
+    }
 }
 
 extension Vector2: LinearInterpolation {

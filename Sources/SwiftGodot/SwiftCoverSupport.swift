@@ -64,6 +64,16 @@ extension Plane {
     public var tuple: (Vector3, Float) { (normal, d) }
 }
 
+extension Quaternion {
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public var tuple: (Float, Float, Float, Float) { (x, y, z, w) }
+
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public var simd: SIMD4<Float> { SIMD4(x, y, z, w) }
+}
+
 @_spi(SwiftCovers)
 @inline(__always)
 public func sign(_ x: Float) -> Float {
@@ -79,6 +89,10 @@ public func sign(_ x: Double) -> Double {
 /// This epsilon should match Godot's `CMP_EPSILON` (which is unfortunately not exported).
 @_spi(SwiftCovers)
 public let CMP_EPSILON: Double = 0.00001
+
+/// This epsilon should match Godot's `UNIT_EPSILON` (which is unfortunately not exported).
+@_spi(SwiftCovers)
+public let UNIT_EPSILON: Double = 0.001
 
 #if TESTABLE_SWIFT_COVERS
 

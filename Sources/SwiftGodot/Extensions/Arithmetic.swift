@@ -235,7 +235,12 @@ public extension Quaternion {
     static prefix func - (_ q: Self) -> Self {
         return Self (x: -q.x, y: -q.y, z: -q.z, w: -q.w)
     }
-    
+
+    /// Multiplies each of my components by `rhs`.
+    static func * (lhs: Self, rhs: Float) -> Self {
+        return Quaternion(x: lhs.x * rhs, y: lhs.y * rhs, z: lhs.z * rhs, w: lhs.w * rhs)
+    }
+
 }
 
 public extension Color {
