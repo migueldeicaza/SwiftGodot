@@ -99,4 +99,20 @@ extension GD {
         let finalMessage = transformedItems.joined(separator: separator)
         GD.printerr(arg1: Variant (finalMessage))
     }
+
+    public static func isEqualApprox(_ a: Float, _ b: Float) -> Bool {
+        // This is imported with Double arguments but we need it with Float arguments.
+        return isEqualApprox(a, b, tolerance: Float(CMP_EPSILON))
+    }
+
+    public static func isEqualApprox(_ a: Float, _ b: Float, tolerance: Float) -> Bool {
+        // Godot doesn't export this three-argument version of isEqualApprox.
+
+	// Check for exact equality first, required to handle "infinity" values.
+	if a == b {
+            return true
+	}
+	// Then check for approximate equality.
+        return (a - b).magnitude < tolerance
+    }
 }
