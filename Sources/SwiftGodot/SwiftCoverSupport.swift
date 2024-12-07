@@ -70,6 +70,12 @@ public func sign(_ x: Float) -> Float {
     return x == 0 ? 0 : (x > 0 ? 1.0 : -1.0)
 }
 
+@_spi(SwiftCovers)
+@inline(__always)
+public func sign(_ x: Double) -> Double {
+    return x == 0 ? 0 : (x > 0 ? 1.0 : -1.0)
+}
+
 /// This epsilon should match Godot's `CMP_EPSILON` (which is unfortunately not exported).
 @_spi(SwiftCovers)
 public let CMP_EPSILON: Double = 0.00001
