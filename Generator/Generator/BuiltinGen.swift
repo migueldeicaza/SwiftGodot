@@ -505,7 +505,13 @@ func generateBuiltinMethods (_ p: Printer,
         } ?? []
         
         p ("public\(keyword) func \(methodName)(\(args))\(retSig)") {
-            let key = SwiftCovers.Key(type: typeName, name: methodName, parameterTypes: parameterTypes, returnType: ret)
+            let key = SwiftCovers.Key(
+                type: typeName,
+                name: methodName,
+                parameterTypes: parameterTypes,
+                returnType: ret,
+                isStatic: m.isStatic
+            )
             p.useSwiftCoverIfAvailable(for: key) {
                 generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
             }

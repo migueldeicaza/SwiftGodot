@@ -18,8 +18,10 @@ struct SwiftCovers {
         /// The return type.
         var returnType: String
 
+        var isStatic: Bool = false
+
         var description: String {
-            "\(type).\(name)(\(parameterTypes.joined(separator: ", "))) -> \(returnType)"
+            "\(isStatic ? "static " : "")\(type).\(name)(\(parameterTypes.joined(separator: ", "))) -> \(returnType)"
         }
     }
 
@@ -154,7 +156,8 @@ struct SwiftCovers {
 
     private mutating func extractFunctionCover(from function: FunctionDeclSyntax, of type: String) -> Bool {
         guard
-            function.modifiers.map({ $0.name.tokenKind }) == [.keyword(.public)],
+            case let modifiers = Set(function.modifiers.map({ $0.name.tokenKind })),
+            modifiers == [.keyword(.public)] || modifiers == [.keyword(.public), .keyword(.static)],
             case .identifier(let name) = function.name.tokenKind,
             case let signature = function.signature,
             case let parameterTypes = signature.parameterClause.parameters
@@ -169,7 +172,8 @@ struct SwiftCovers {
             type: type,
             name: name,
             parameterTypes: parameterTypes,
-            returnType: returnType
+            returnType: returnType,
+            isStatic: modifiers.contains(.keyword(.static))
         )
 
         covers[key] = fixCodeBlockIndentation(body)
