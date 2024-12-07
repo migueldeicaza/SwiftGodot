@@ -115,4 +115,23 @@ extension GD {
 	// Then check for approximate equality.
         return (a - b).magnitude < tolerance
     }
+
+    public static func cubicInterpolate(from: Float, to: Float, pre: Float, post: Float, weight: Float) -> Float {
+        let constTerm = 2 * from
+        let linearTerm = (-pre + to) * weight
+        let quadraticTerm = (2 * pre - 5 * from + 4 * to - post) * (weight * weight)
+        let cubicTerm = (-pre + 3 * from - 3 * to + post) * (weight * weight * weight)
+        return 0.5 * (constTerm + linearTerm + quadraticTerm + cubicTerm)
+    }
+
+    public static func cubicInterpolateInTime(from: Float, to: Float, pre: Float, post: Float, weight: Float, toT: Float, preT: Float, postT: Float) -> Float {
+	/* Barry-Goldman method */
+	let t = (0 as Float).lerp(to: toT, weight: weight)
+        let a1 = pre.lerp(to: from, weight: preT == 0 ? 0 : (t - preT) / -preT)
+	let a2 = from.lerp(to: to, weight: toT == 0 ? 0.5 : t / toT)
+        let a3 = to.lerp(to: post, weight: postT - toT == 0 ? 1 : (t - toT) / (postT - toT))
+        let b1 = a1.lerp(to: a2, weight: toT - preT == 0 ? 0 : (t - preT) / (toT - preT))
+	let b2 = a2.lerp(to: a3, weight: postT == 0 ? 1 : t / postT)
+        return b1.lerp(to: b2, weight: toT == 0 ? 0.5 : t / toT)
+    }
 }
