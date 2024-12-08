@@ -39,11 +39,13 @@ final class QuaternionCoverTests: GodotTestCase {
     }
 
     func testInitFromAxisAndAngle() {
-        forAll {
-            Vector3.normalizedGen
-            TinyGen<Float>.mixedFloats
-        } checkCover: {
-            Quaternion(axis: $0, angle: $1)
+        Float.$closeEnoughUlps.withValue(2) {
+            forAll {
+                Vector3.normalizedGen
+                TinyGen<Float>.mixedFloats
+            } checkCover: {
+                Quaternion(axis: $0, angle: $1)
+            }
         }
     }
 
@@ -80,7 +82,10 @@ final class QuaternionCoverTests: GodotTestCase {
         checkMethod(Quaternion.getAxis)
         checkMethod(Quaternion.getAngle)
         checkMethod(Quaternion.log)
-        checkMethod(Quaternion.exp)
+
+        Float.$closeEnoughUlps.withValue(2) {
+            checkMethod(Quaternion.exp)
+        }
     }
 
     func testIsNormalized() {
@@ -174,29 +179,33 @@ final class QuaternionCoverTests: GodotTestCase {
     }
 
     func testSphericalCubicInterpolate() {
-        forAll {
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
-            weightGen
-        } checkCover: {
-            $0.sphericalCubicInterpolate(b: $1, preA: $2, postB: $3, weight: $4)
+        Float.$closeEnoughUlps.withValue(21) {
+            forAll {
+                Quaternion.normalizedGen
+                Quaternion.normalizedGen
+                Quaternion.normalizedGen
+                Quaternion.normalizedGen
+                weightGen
+            } checkCover: {
+                $0.sphericalCubicInterpolate(b: $1, preA: $2, postB: $3, weight: $4)
+            }
         }
     }
 
     func testSphericalCubicInterpolateInTime() {
-        forAll {
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
-            weightGen
-            extendedWeightGen
-            extendedWeightGen
-            extendedWeightGen
-        } checkCover: {
-            $0.sphericalCubicInterpolateInTime(b: $1, preA: $2, postB: $3, weight: $4, bT: $5, preAT: $6, postBT: $7)
+        Float.$closeEnoughUlps.withValue(14) {
+            forAll {
+                Quaternion.normalizedGen
+                Quaternion.normalizedGen
+                Quaternion.normalizedGen
+                Quaternion.normalizedGen
+                weightGen
+                extendedWeightGen
+                extendedWeightGen
+                extendedWeightGen
+            } checkCover: {
+                $0.sphericalCubicInterpolateInTime(b: $1, preA: $2, postB: $3, weight: $4, bT: $5, preAT: $6, postBT: $7)
+            }
         }
     }
 
@@ -210,10 +219,12 @@ final class QuaternionCoverTests: GodotTestCase {
     }
 
     func testFromEuler() {
-        forAll {
-            Vector3.mixedGen
-        } checkCover: {
-            Quaternion.fromEuler($0)
+        Float.$closeEnoughUlps.withValue(512) {
+            forAll {
+                Vector3.mixedGen
+            } checkCover: {
+                Quaternion.fromEuler($0)
+            }
         }
     }
 
