@@ -395,7 +395,7 @@ private struct SipHash_2_4 {
 
     private mutating func finalize() -> UInt64 {
         // If buffer has less than 8 bits free, I need to start a new buffer to finalize, because I need to put the bit count mod 256 into the high byte of the buffer.
-        if totalBits & 63 < 8 {
+        if totalBits & 63 > 64 - 8 {
             compressBuffer()
         }
 
