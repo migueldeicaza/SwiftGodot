@@ -31,7 +31,7 @@ extension Vector2 {
 //    }
     
     public func angle() -> Double {
-        return Double(atan2(x, y))
+        return Double(atan2f(y, x))
     }
     
     public static func fromAngle(_ angle: Double) -> Vector2 {
@@ -66,7 +66,7 @@ extension Vector2 {
     }
     
     public func angleTo(_ to: Vector2) -> Double {
-        return atan2(cross(with: to), dot(with: to))
+        return Double(atan2f(Float(cross(with: to)), Float(dot(with: to))))
     }
     
     public func angleToPoint(to: Vector2) -> Double {
@@ -98,8 +98,9 @@ extension Vector2 {
     }
     
     public func rotated(angle: Double) -> Vector2 {
-        let sin = Float(sin(angle))
-        let cos = Float(cos(angle))
+        let angle = Float(angle)
+        let sin = sinf(angle)
+        let cos = cosf(angle)
         return Vector2(
             x: x * cos - y * sin,
             y: x * sin + y * cos
@@ -132,11 +133,12 @@ extension Vector2 {
     }
     
     public func limitLength(_ length: Double = 1.0) -> Vector2 {
-        let beforeLen = self.length()
+        let length = Float(length)
+        let beforeLen = Float(self.length())
         var result = self
-        if (beforeLen > 0 && length < beforeLen) {
-            result = result / beforeLen
-            result = result * length
+        if beforeLen > 0 && length < beforeLen {
+            result = result / Double(beforeLen)
+            result = result * Double(length)
         }
         return result
     }
