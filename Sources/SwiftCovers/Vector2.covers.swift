@@ -22,6 +22,14 @@ import Musl
 
 extension Vector2 {
     
+    public init(from: Vector2) {
+        self = from
+    }
+    
+//    public init(from: Vector2i) {
+//        
+//    }
+    
     public func angle() -> Double {
         return Double(atan2(x, y))
     }
