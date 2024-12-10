@@ -21,6 +21,10 @@ import Musl
 
 extension Vector3 {
     
+    public init(from: Vector3) {
+        self = from
+    }
+    
     public func cross(with: Vector3) -> Vector3 {
         return Vector3(
             x: (y * with.z) - (z * with.y),
