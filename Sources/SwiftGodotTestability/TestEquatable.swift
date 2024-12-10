@@ -43,9 +43,14 @@ extension Float: TestEquatable {
         // Don't allow opposite signs.
         guard (self <= 0 && other <= 0) || (self >= 0 && other >= 0) else { return false }
         let d = (self - other).magnitude
+        let closeEnough = Self.closeEnoughUlps * min(self.ulp, other.ulp)
+        if d <= closeEnough {
+            return true
+        }
+        // Compute actual ulps difference for debugging test failures.
         let ulps = d / min(self.ulp, other.ulp)
-        let answer = ulps <= Self.closeEnoughUlps
-        return answer
+        _ = ulps
+        return false
     }
 }
 
@@ -62,9 +67,14 @@ extension Double: TestEquatable {
         // Don't allow opposite signs.
         guard (self <= 0 && other <= 0) || (self >= 0 && other >= 0) else { return false }
         let d = (self - other).magnitude
+        let closeEnough = Self.closeEnoughUlps * min(self.ulp, other.ulp)
+        if d <= closeEnough {
+            return true
+        }
+        // Compute actual ulps difference for debugging test failures.
         let ulps = d / min(self.ulp, other.ulp)
-        let answer = ulps <= Self.closeEnoughUlps
-        return answer
+        _ = ulps
+        return false
     }
 }
 
