@@ -13,17 +13,6 @@ extension Vector2i {
 }
 
 @available(macOS 14, *)
-extension Vector2 {
-    static func gen(_ coordinateGen: TinyGen<Float>) -> TinyGen<Self> {
-        return TinyGen { rng in
-            return Vector2(x: coordinateGen(rng.left()), y: coordinateGen(rng.right()))
-        }
-    }
-
-    static let mixed: TinyGen<Self> = gen(.mixedFloats)
-}
-
-@available(macOS 14, *)
 final class Vector2iCoverTests: GodotTestCase {
 
     func testInitFromVector2i() {

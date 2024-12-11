@@ -19,22 +19,6 @@ extension Vector3i {
 }
 
 @available(macOS 14, *)
-extension Vector3 {
-    static func gen(_ coordinateGen: TinyGen<Float>) -> TinyGen<Self> {
-        return TinyGen { rng in
-            let right = rng.right()
-            return Vector3(
-                x: coordinateGen(rng.left()),
-                y: coordinateGen(right.left()),
-                z: coordinateGen(right.right())
-            )
-        }
-    }
-
-    static let mixed: TinyGen<Self> = gen(.mixedFloats)
-}
-
-@available(macOS 14, *)
 final class Vector3iCoverTests: GodotTestCase {
 
     func testInitFromVector3i() {
