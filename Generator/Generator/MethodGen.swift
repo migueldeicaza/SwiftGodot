@@ -746,113 +746,123 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     }
     
     p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
-        if method.optionalHash == nil {
-            if let godotReturnType {
-                p(makeDefaultReturn(godotType: godotReturnType))
-            }
-        } else {
-            if returnType != "" {
-                p(returnTypeDecl())
-            } else if (method.isVararg) {
-                p("var _result: Variant.ContentType = Variant.zero")
-            }
-            
-            let instanceArg: String
-            if method.isStatic {
-                instanceArg = "nil"
+        let parameterTypes = arguments.map { getGodotType(SimpleType(type: $0.type)) }
+        let key = SwiftCovers.Key(
+            type: className,
+            name: swiftMethodName,
+            parameterTypes: parameterTypes,
+            returnType: returnType.isEmpty ? "Void" : returnType,
+            isStatic: staticAttribute != nil
+        )
+        p.useSwiftCoverIfAvailable(for: key) {
+            if method.optionalHash == nil {
+                if let godotReturnType {
+                    p(makeDefaultReturn(godotType: godotReturnType))
+                }
             } else {
-                let accessor: String
-                if asSingleton {
-                    accessor = "shared.handle"
-                } else {
-                    accessor = "handle"
+                if returnType != "" {
+                    p(returnTypeDecl())
+                } else if (method.isVararg) {
+                    p("var _result: Variant.ContentType = Variant.zero")
                 }
-                instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
-            }
-            
-            func getMethodNameArgument() -> String {
-                assert(generatedMethodKind == .classMethod)
-                
-                if staticAttribute == nil {
-                    return "\(className).method_\(method.name)"
+
+                let instanceArg: String
+                if method.isStatic {
+                    instanceArg = "nil"
                 } else {
-                    return "method_\(method.name)"
-                }
-            }
-            
-            generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
-                if method.isVararg {
-                    switch generatedMethodKind {
-                    case .classMethod:
-                        let countArg: String
-                        
-                        switch count {
-                        case .literal(let literal):
-                            countArg = "\(literal)"
-                        case .expression(let expr):
-                            countArg = "Int64(\(expr))"
-                        }
-                        
-                        let argsList = [
-                            getMethodNameArgument(),
-                            instanceArg,
-                            argsRef,
-                            countArg,
-                            getCallResultArgument(),
-                            "nil"
-                        ].joined(separator: ", ")
-                        
-                        return "gi.object_method_bind_call(\(argsList))"
-                    case .utilityFunction:
-                        let countArg: String
-                        
-                        switch count {
-                        case .literal(let literal):
-                            countArg = "\(literal)"
-                        case .expression(let expr):
-                            countArg = "Int32(\(expr))"
-                        }
-                        
-                        let argsList = [
-                            getCallResultArgument(),
-                            argsRef,
-                            countArg
-                        ].joined(separator: ", ")
-                        
-                        return "method_\(method.name)(\(argsList))"
+                    let accessor: String
+                    if asSingleton {
+                        accessor = "shared.handle"
+                    } else {
+                        accessor = "handle"
                     }
-                } else {
-                    switch generatedMethodKind {
-                    case .classMethod:
-                        guard case .literal = count else {
-                            fatalError("Literal is expected")
-                        }
-                        
-                        let argsList = [
-                            getMethodNameArgument(),
-                            instanceArg,
-                            argsRef,
-                            getCallResultArgument()
-                        ].joined(separator: ", ")
-                        
-                        return "gi.object_method_bind_ptrcall(\(argsList))"
-                    case .utilityFunction:
-                        guard case let .literal(count) = count else {
-                            fatalError("Literal is expected")
-                        }
-                        
-                        let argsList = [
-                            getCallResultArgument(),
-                            argsRef,
-                            "\(count)" // just a literal, no need to convert to Int32
-                        ].joined(separator: ", ")
-                        
-                        return "method_\(method.name)(\(argsList))"
+                    instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
+                }
+
+                func getMethodNameArgument() -> String {
+                    assert(generatedMethodKind == .classMethod)
+
+                    if staticAttribute == nil {
+                        return "\(className).method_\(method.name)"
+                    } else {
+                        return "method_\(method.name)"
                     }
                 }
+
+                generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
+                    if method.isVararg {
+                        switch generatedMethodKind {
+                        case .classMethod:
+                            let countArg: String
+
+                            switch count {
+                            case .literal(let literal):
+                                countArg = "\(literal)"
+                            case .expression(let expr):
+                                countArg = "Int64(\(expr))"
+                            }
+
+                            let argsList = [
+                                getMethodNameArgument(),
+                                instanceArg,
+                                argsRef,
+                                countArg,
+                                getCallResultArgument(),
+                                "nil"
+                            ].joined(separator: ", ")
+
+                            return "gi.object_method_bind_call(\(argsList))"
+                        case .utilityFunction:
+                            let countArg: String
+
+                            switch count {
+                            case .literal(let literal):
+                                countArg = "\(literal)"
+                            case .expression(let expr):
+                                countArg = "Int32(\(expr))"
+                            }
+
+                            let argsList = [
+                                getCallResultArgument(),
+                                argsRef,
+                                countArg
+                            ].joined(separator: ", ")
+
+                            return "method_\(method.name)(\(argsList))"
+                        }
+                    } else {
+                        switch generatedMethodKind {
+                        case .classMethod:
+                            guard case .literal = count else {
+                                fatalError("Literal is expected")
+                            }
+
+                            let argsList = [
+                                getMethodNameArgument(),
+                                instanceArg,
+                                argsRef,
+                                getCallResultArgument()
+                            ].joined(separator: ", ")
+
+                            return "gi.object_method_bind_ptrcall(\(argsList))"
+                        case .utilityFunction:
+                            guard case let .literal(count) = count else {
+                                fatalError("Literal is expected")
+                            }
+
+                            let argsList = [
+                                getCallResultArgument(),
+                                argsRef,
+                                "\(count)" // just a literal, no need to convert to Int32
+                            ].joined(separator: ", ")
+
+                            return "method_\(method.name)(\(argsList))"
+                        }
+                    }
+                }
+
+                p(getReturnStatement())
             }
-            
-            p(getReturnStatement())
         }
     }
     return registerVirtualMethodName
