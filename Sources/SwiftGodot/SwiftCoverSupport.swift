@@ -98,6 +98,31 @@ extension Transform2D {
         return x.y * v.x + y.y * v.y
     }
     
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public func xform(_ v: Vector2) -> Vector2 {
+        var result = basisXform(v: v)
+        result += origin
+        return result
+    }
+}
+
+extension Basis {
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public func xform(_ v: Vector3) -> Vector3 {
+        return Vector3(
+            x: Float(x.dot(with: v)),
+            y: Float(y.dot(with: v)),
+            z: Float(z.dot(with: v))
+        )
+    }
+    
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public func scaledLocal(scale: Vector3) -> Basis {
+        return self * Basis.fromScale(scale)
+    }
 }
 
 @_spi(SwiftCovers)

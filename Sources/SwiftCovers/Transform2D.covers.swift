@@ -172,18 +172,19 @@ extension Transform2D {
         
         // Construct matrix
         var res = Transform2D(rotation: Float(v.angle()), position: p1.lerp(to: p2, weight: weight))
-        res.scaleBasis(scale: s1.lerp(to: s2, weight: weight))
+        res = res.scaleBasis(scale: s1.lerp(to: s2, weight: weight))
         return res
     }
     
     public func isFinite() -> Bool {
-        return x.isFinite && y.isFinite && z.isFinite
+        return x.isFinite() && y.isFinite() && origin.isFinite()
     }
     
     public func lookingAt(target: Vector2 = Vector2 (x: 0, y: 0)) -> Transform2D {
-        var returnTrans = Transform2D(rotation: getRotation(), position: origin)
-        let targetPosition = affineInverse().xform(p_target)
-        returnTrans.rotation = returnTrans.getRotation() + (targetPosition * scale).angle()
+        var returnTrans = Transform2D(rotation: Float(getRotation()), position: origin)
+        let targetPosition = affineInverse().xform(target)
+        let newRotation = (targetPosition * getScale()).angle()
+        returnTrans = returnTrans.rotated(angle: newRotation)
         return returnTrans
     }
     
@@ -237,10 +238,10 @@ extension Transform2D {
         var result = lhs
         result.origin = result.xform(rhs.origin)
         
-        let x0 = result.tdotx(rhs.x)
-        let x1 = result.tdoty(rhs.x)
-        let y0 = result.tdotx(rhs.y)
-        let y1 = result.tdoty(rhs.y)
+        let x0 = result.tdotx(v: rhs.x)
+        let x1 = result.tdoty(v: rhs.x)
+        let y0 = result.tdotx(v: rhs.y)
+        let y1 = result.tdoty(v: rhs.y)
         
         result.x.x = x0
         result.x.y = x1
@@ -249,10 +250,5 @@ extension Transform2D {
         
         return result
     }
-    
-//    public static func * (lhs: Transform2D, rhs: PackedVector2Array) -> PackedVector2Array {
-//        
-//    }
-    
     
 }
