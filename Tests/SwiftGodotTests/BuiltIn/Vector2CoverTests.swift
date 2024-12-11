@@ -26,7 +26,7 @@ final class Vector2CoverTests: GodotTestCase {
     func testInit() {
         forAll {
             Vector2.mixed
-        } checkCover {
+        } checkCover: {
             Vector2(from: $0)
         }
     }
@@ -34,7 +34,7 @@ final class Vector2CoverTests: GodotTestCase {
     // Vector2.method()
     func testNullaryCovers() {
         
-        func checkMethod(_ method: (Vector2) -> () -> some Equatable,
+        func checkMethod(_ method: (Vector2) -> () -> some TestEquatable,
                          filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
@@ -45,20 +45,20 @@ final class Vector2CoverTests: GodotTestCase {
 
         }
         
-        try checkMethod(Vector2.angle)
-        try checkMethod(Vector2.length)
-        try checkMethod(Vector2.lengthSquared)
-        try checkMethod(Vector2.normalized)
-        try checkMethod(Vector2.sign)
-        try checkMethod(Vector2.floor)
-        try checkMethod(Vector2.ceil)
-        try checkMethod(Vector2.round)
+        checkMethod(Vector2.angle)
+        checkMethod(Vector2.length)
+        checkMethod(Vector2.lengthSquared)
+        checkMethod(Vector2.normalized)
+        checkMethod(Vector2.sign)
+        checkMethod(Vector2.floor)
+        checkMethod(Vector2.ceil)
+        checkMethod(Vector2.round)
     }
 
     // Vector2.method(Double)
     func testUnaryDoubleCovers() {
         
-        func checkMethod(_ method: (Vector2) -> (Double) -> some Equatable,
+        func checkMethod(_ method: (Vector2) -> (Double) -> some TestEquatable,
                          filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
@@ -69,42 +69,42 @@ final class Vector2CoverTests: GodotTestCase {
             }
         }
         
-        try checkMethod(Vector2.rotated)
-        try checkMethod(Vector2.snappedf)
-        try checkMethod(Vector2.limitLength)
+        checkMethod(Vector2.rotated)
+        checkMethod(Vector2.snappedf)
+        checkMethod(Vector2.limitLength)
     }
     
     // Vector2.method(Vector2)
     func testUnaryCovers() {
         
-        func checkMethod(_ method: (Vector2) -> (Vector2) -> some Equatable,
+        func checkMethod(_ method: (Vector2) -> (Vector2) -> some TestEquatable,
                          filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
                 Vector2.mixed
                 Vector2.mixed
-            } checkCover {
+            } checkCover: {
                 method($0)($1)
             }
         }
         
-        try checkMethod(Vector2.distanceTo(_:))
-        try checkMethod(Vector2.distanceSquaredTo(_:))
-        try checkMethod(Vector2.angleTo(_:))
-        try checkMethod(Vector2.angleToPoint)
-        try checkMethod(Vector2.dot)
-        try checkMethod(Vector2.cross)
-        try checkMethod(Vector2.project)
-        try checkMethod(Vector2.slide)
-        try checkMethod(Vector2.bounce)
-        try checkMethod(Vector2.reflect(line:))
+        checkMethod(Vector2.distanceTo(_:))
+        checkMethod(Vector2.distanceSquaredTo(_:))
+        checkMethod(Vector2.angleTo(_:))
+        checkMethod(Vector2.angleToPoint)
+        checkMethod(Vector2.dot)
+        checkMethod(Vector2.cross)
+        checkMethod(Vector2.project)
+        checkMethod(Vector2.slide)
+        checkMethod(Vector2.bounce)
+        checkMethod(Vector2.reflect(line:))
     }
     
     // Static
     func testFromAngle() {
         forAll {
             TinyGen.mixedDoubles
-        } checkCover {
+        } checkCover: {
             Vector2.fromAngle($0)
         }
     }
@@ -114,7 +114,7 @@ final class Vector2CoverTests: GodotTestCase {
             Vector2.mixed
             Vector2.mixed
             Vector2.mixed
-        } checkCover {
+        } checkCover: {
             $0.clamp(min: $1, max: $2)
         }
     }
@@ -124,8 +124,8 @@ final class Vector2CoverTests: GodotTestCase {
             Vector2.mixed
             TinyGen.mixedDoubles
             TinyGen.mixedDoubles
-        } checkCover {
-            $0.clampf($1, $2)
+        } checkCover: { (vec: Vector2, min: Double, max: Double) -> Vector2 in
+            vec.clampf(min: min, max: max)
         }
     }
     
@@ -134,7 +134,7 @@ final class Vector2CoverTests: GodotTestCase {
             Vector2.mixed
             Vector2.mixed
             TinyGen.mixedDoubles
-        } checkCover {
+        } checkCover: {
             $0.moveToward(to: $1, delta: $2)
         }
     }
@@ -145,66 +145,66 @@ final class Vector2CoverTests: GodotTestCase {
         // Operators of the form Vector2i * Vector2i.
 
         func checkOperator(
-            _ op: (Vector2, Vector2) -> some Equatable,
+            _ op: (Vector2, Vector2) -> some TestEquatable,
             filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
                 Vector2.mixed
                 Vector2.mixed
-            } checkCover {
+            } checkCover: {
                 op($0, $1)
             }
         }
         
         // Arithmetic Operators
-        try checkOperator(+)
-        try checkOperator(-)
-        try checkOperator(*)
-        try checkOperator(/)
+        checkOperator(+)
+        checkOperator(-)
+        checkOperator(*)
+        checkOperator(/)
         // Comparison Operators
-        try checkOperator(==)
-        try checkOperator(!=)
-        try checkOperator(<)
-        try checkOperator(<=)
-        try checkOperator(>)
-        try checkOperator(>=)
+        checkOperator(==)
+        checkOperator(!=)
+        checkOperator(<)
+        checkOperator(<=)
+        checkOperator(>)
+        checkOperator(>=)
     }
     
     func testBinaryOperators_Vector2i_Int64() {
         // Operators of the form Vector2i * Int64.
 
         func checkOperator(
-            _ op: (Vector2, Int64) -> some Equatable,
+            _ op: (Vector2, Int64) -> some TestEquatable,
             filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
                 Vector2.mixed
-                TinyGen.mixedInt64s
-            } checkCover {
+                TinyGen.edgyInt64s
+            } checkCover: {
                 op($0, $1)
             }
         }
 
-        try checkOperator(/)
-        try checkOperator(*)
+        checkOperator(/)
+        checkOperator(*)
     }
     
     func testBinaryOperators_Vector2i_Double() {
         // Operators of the form Vector2i * Int64.
 
         func checkOperator(
-            _ op: (Vector2, Double) -> some Equatable,
+            _ op: (Vector2, Double) -> some TestEquatable,
             filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
                 Vector2.mixed
                 TinyGen.mixedDoubles
-            } checkCover {
+            } checkCover: {
                 op($0, $1)
             }
         }
 
-        try checkOperator(/)
-        try checkOperator(*)
+        checkOperator(/)
+        checkOperator(*)
     }
 }
