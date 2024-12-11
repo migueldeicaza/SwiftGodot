@@ -243,7 +243,7 @@ extension GodotTestCase {
             }
 
             guard coverOutput.closeEnough(to: engineOutput) else {
-                XCTFail("Test failure: cover output \(coverOutput) is not close enough to engine output \(engineOutput)", file: filePath, line: line)
+                XCTFail("Test failure: cover output \(coverOutput) is not close enough to engine output \(engineOutput) for input \(input)", file: filePath, line: line)
                 return
             }
         }
