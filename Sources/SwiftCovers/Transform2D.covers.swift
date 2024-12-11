@@ -187,4 +187,72 @@ extension Transform2D {
         return returnTrans
     }
     
+    public subscript(index: Int64) -> Vector2 {
+        return index == 0 ? x : index == 1 ? y : origin
+    }
+    
+    // Operators
+    
+    public static func * (lhs: Transform2D, rhs: Int64) -> Transform2D {
+        var result = lhs
+        result.x *= Double(rhs)
+        result.y *= Double(rhs)
+        result.origin *= Double(rhs)
+        return result
+    }
+
+    public static func / (lhs: Transform2D, rhs: Int64) -> Transform2D {
+        var result = lhs
+        result.x /= Double(rhs)
+        result.y /= Double(rhs)
+        result.origin /= Double(rhs)
+        return result
+    }
+
+    public static func * (lhs: Transform2D, rhs: Double) -> Transform2D {
+        var result = lhs
+        result.x *= rhs
+        result.y *= rhs
+        result.origin *= rhs
+        return result
+    }
+
+    public static func / (lhs: Transform2D, rhs: Double) -> Transform2D {
+        var result = lhs
+        result.x /= rhs
+        result.y /= rhs
+        result.origin /= rhs
+        return result
+    }
+    
+    public static func == (lhs: Transform2D, rhs: Transform2D) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.origin == rhs.origin
+    }
+    
+    public static func != (lhs: Transform2D, rhs: Transform2D) -> Bool {
+        return !(lhs == rhs)
+    }
+    
+    public static func * (lhs: Transform2D, rhs: Transform2D) -> Transform2D {
+        var result = lhs
+        result.origin = result.xform(rhs.origin)
+        
+        let x0 = result.tdotx(rhs.x)
+        let x1 = result.tdoty(rhs.x)
+        let y0 = result.tdotx(rhs.y)
+        let y1 = result.tdoty(rhs.y)
+        
+        result.x.x = x0
+        result.x.y = x1
+        result.y.x = y0
+        result.y.y = y1
+        
+        return result
+    }
+    
+//    public static func * (lhs: Transform2D, rhs: PackedVector2Array) -> PackedVector2Array {
+//        
+//    }
+    
+    
 }
