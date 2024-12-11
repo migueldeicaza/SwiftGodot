@@ -16,6 +16,13 @@ public func cCastToInt32(_ double: Double) -> Int32 {
     return int32_for_double(double)
 }
 
+/// The Swift standard library offers no efficient way to cast a `Double` to an `Int64` with the same semantics as C and C++. This method calls an imported inlinable C function.
+@_spi(SwiftCovers)
+@inline(__always)
+public func cCastToInt64(_ double: Double) -> Int64 {
+    return int64_for_double(double)
+}
+
 /// The Swift standard library offers no efficient way to divide an `Int32` by an `Int32` with the same semantics as C and C++. This method calls an imported inlinable C function.
 @_spi(SwiftCovers)
 @inline(__always)
