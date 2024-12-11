@@ -74,6 +74,32 @@ extension Quaternion {
     public var simd: SIMD4<Float> { SIMD4(x, y, z, w) }
 }
 
+extension Transform2D {
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public func scaleBasis(scale: Vector2) -> Transform2D {
+        var result = self
+        result.x.x *= scale.x
+        result.x.y *= scale.y
+        result.y.x *= scale.x
+        result.y.y *= scale.y
+        return result
+    }
+    
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public func tdotx(v: Vector2) -> Float {
+        return x.x * v.x + y.x * v.y
+    }
+    
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public func tdoty(v: Vector2) -> Float {
+        return x.y * v.x + y.y * v.y
+    }
+    
+}
+
 @_spi(SwiftCovers)
 @inline(__always)
 public func sign(_ x: Float) -> Float {
