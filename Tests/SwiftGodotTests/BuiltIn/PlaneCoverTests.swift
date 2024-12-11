@@ -4,23 +4,6 @@ import SwiftGodotTestability
 import XCTest
 
 @available(macOS 14, *)
-extension Vector3 {
-    static let normalizedGen: TinyGen<Self> = TinyGen.build {
-        TinyGen.gaussianFloats
-        TinyGen.gaussianFloats
-        TinyGen.gaussianFloats
-    }.map { x, y, z in
-        // https://stackoverflow.com/q/6283080/77567
-        let d = (x * x + y * y + z * z).squareRoot()
-        return Vector3(x: x / d, y: y / d, z: z / d)
-    }
-
-    static let mixedGen: TinyGen<Self> = gen(TinyGen<Float>.mixedFloats)
-
-    static let tinyGen: TinyGen<Self> = gen(TinyGen.gaussianFloats.map { $0 * 0.0001 })
-}
-
-@available(macOS 14, *)
 extension Plane {
     static func gen(normal: TinyGen<Vector3>, d: TinyGen<Float>) -> TinyGen<Self> {
         return TinyGen { rng in
@@ -29,7 +12,7 @@ extension Plane {
     }
 
     // Vanishingly small chance that the normal is zero.
-    static let nonZeroGen: TinyGen<Self> = gen(normal: Vector3.mixedGen, d: TinyGen.mixedFloats)
+    static let nonZeroGen: TinyGen<Self> = gen(normal: Vector3.mixed, d: TinyGen.mixedFloats)
 
     static let maybeZeroGen: TinyGen<Self> = TinyGen.biasedOneOf(gens: [
         (99, nonZeroGen),
@@ -40,7 +23,7 @@ extension Plane {
 @available(macOS 14, *)
 extension Basis {
     static let mostlyRotationGen: TinyGen<Self> = TinyGenBuilder {
-        Vector3.normalizedGen // rotation axis
+        Vector3.normalized // rotation axis
         TinyGen.gaussianDoubles.map { $0 } // rotation angle
         TinyGen.gaussianFloats.map { exp($0 * 0.0001) } // x scale
         TinyGen.gaussianFloats.map { exp($0 * 0.0001) } // y scale
@@ -56,7 +39,7 @@ extension Basis {
 extension Transform3D {
     static let gaussianGen: TinyGen<Self> = TinyGenBuilder {
         Basis.mostlyRotationGen
-        Vector3.mixedGen
+        Vector3.mixed
     }.map { Transform3D(basis: $0, origin: $1) }
 }
 
@@ -73,7 +56,7 @@ final class PlaneCoverTests: GodotTestCase {
 
     func testInitNormal() {
         forAll {
-            Vector3.mixedGen
+            Vector3.mixed
         } checkCover: {
             Plane(normal: $0)
         }
@@ -81,7 +64,7 @@ final class PlaneCoverTests: GodotTestCase {
 
     func testInitNormalPoint() {
         forAll {
-            Vector3.mixedGen
+            Vector3.mixed
             Vector3.mixed
         } checkCover: {
             Plane(normal: $0, point: $1)
@@ -176,7 +159,7 @@ final class PlaneCoverTests: GodotTestCase {
     func testHasPoint() {
         forAll {
             Plane.nonZeroGen
-            Vector3.normalizedGen
+            Vector3.normalized
             TinyGen<Double>.gaussianDoubles.map { 0.0001 * $0 } // offset
             TinyGen<Double>.gaussianDoubles.map { (0.0001 * $0).magnitude } // tolerance
         } checkCover: { plane, ray, offset, tolerance in
@@ -189,7 +172,7 @@ final class PlaneCoverTests: GodotTestCase {
     func testProject() {
         forAll {
             Plane.nonZeroGen
-            Vector3.normalizedGen
+            Vector3.normalized
             TinyGen<Double>.gaussianDoubles.map { 100.0 * $0 }
         } checkCover: { plane, ray, distance in
             let point = ray * distance
@@ -210,8 +193,8 @@ final class PlaneCoverTests: GodotTestCase {
     func testIntersectsRay() {
         forAll {
             Plane.maybeZeroGen
-            Vector3.normalizedGen
-            Vector3.normalizedGen
+            Vector3.normalized
+            Vector3.normalized
         } checkCover: { plane, start, heading in
             plane.intersectsRay(from: start, dir: heading).flatMap { Vector3($0) }
         }
@@ -220,8 +203,8 @@ final class PlaneCoverTests: GodotTestCase {
     func testIntersectsSegment() {
         forAll {
             Plane.maybeZeroGen
-            Vector3.normalizedGen
-            Vector3.normalizedGen
+            Vector3.normalized
+            Vector3.normalized
         } checkCover: { plane, start, end in
             plane.intersectsSegment(from: start, to: end).flatMap { Vector3($0) }
         }

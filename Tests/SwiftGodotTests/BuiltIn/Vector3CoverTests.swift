@@ -20,8 +20,19 @@ extension Vector3 {
             )
         }
     }
+    
+    static let normalized: TinyGen<Self> = TinyGen.build {
+        TinyGen.gaussianFloats
+        TinyGen.gaussianFloats
+        TinyGen.gaussianFloats
+    }.map { x, y, z in
+        // https://stackoverflow.com/q/6283080/77567
+        let d = (x * x + y * y + z * z).squareRoot()
+        return Vector3(x: x / d, y: y / d, z: z / d)
+    }
 
     static let mixed: TinyGen<Self> = gen(.mixedFloats)
+    static let tinyGen: TinyGen<Self> = gen(TinyGen.gaussianFloats.map { $0 * 0.0001 })
 }
 
 @available(macOS 14, *)
@@ -59,7 +70,6 @@ final class Vector3CoverTests: GodotTestCase {
     
     // Vector3.method(Vector3)
     func testUnaryVector3Covers() {
-        
         func checkMethod(_ method: (Vector3) -> (Vector3) -> some TestEquatable,
                          filePath: StaticString = #filePath, line: UInt = #line
         ) {
@@ -73,10 +83,26 @@ final class Vector3CoverTests: GodotTestCase {
         
         checkMethod(Vector3.cross)
         checkMethod(Vector3.dot)
+        checkMethod(Vector3.outer)
+    }
+    
+    // Vector3.method(Vector3)
+    // Parameter V3 must be normalized
+    func testUnaryNormalizedVector3Covers() {
+        func checkMethod(_ method: (Vector3) -> (Vector3) -> some TestEquatable,
+                         filePath: StaticString = #filePath, line: UInt = #line
+        ) {
+            forAll(filePath: filePath, line: line) {
+                Vector3.mixed
+                Vector3.normalized
+            } checkCover: {
+                method($0)($1)
+            }
+        }
+        
         checkMethod(Vector3.slide)
         checkMethod(Vector3.bounce)
         checkMethod(Vector3.reflect)
-        checkMethod(Vector3.outer)
     }
     
     // Vector3.method(Double)

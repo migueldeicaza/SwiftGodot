@@ -14,10 +14,10 @@ extension Quaternion {
         }.map { Quaternion(x: $0, y: $1, z: $2, w: $3) }
     }
 
-    static let mixedGen = gen(.mixedFloats)
+    static let mixed = gen(.mixedFloats)
 
-    static let normalizedGen = TinyGenBuilder {
-        Vector3.normalizedGen
+    static let normalized = TinyGenBuilder {
+        Vector3.normalized
         TinyGen<Float>.gaussianFloats
     }.map { Quaternion(axis: $0, angle: $1).normalized() }
 }
@@ -41,7 +41,7 @@ final class QuaternionCoverTests: GodotTestCase {
     func testInitFromAxisAndAngle() {
         Float.$closeEnoughUlps.withValue(2) {
             forAll {
-                Vector3.normalizedGen
+                Vector3.normalized
                 TinyGen<Float>.mixedFloats
             } checkCover: {
                 Quaternion(axis: $0, angle: $1)
@@ -51,8 +51,8 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testInitFromArc() {
         forAll {
-            Vector3.normalizedGen
-            Vector3.normalizedGen
+            Vector3.normalized
+            Vector3.normalized
         } checkCover: {
             Quaternion(arcFrom: $0, arcTo: $1)
         }
@@ -67,8 +67,8 @@ final class QuaternionCoverTests: GodotTestCase {
         ) {
             forAll(filePath: filePath, line: line) {
                 TinyGen.oneOf(gens: [
-                    Quaternion.mixedGen,
-                    Quaternion.normalizedGen,
+                    Quaternion.mixed,
+                    Quaternion.normalized,
                 ])
             } checkCover: {
                 method($0)()
@@ -95,14 +95,14 @@ final class QuaternionCoverTests: GodotTestCase {
         forAll {
             TinyGen.oneOf(gens: [
                 // Some arbitrary values including weird values.
-                Quaternion.mixedGen,
+                Quaternion.mixed,
 
                 // Some definitely normalized values.
-                Quaternion.normalizedGen,
+                Quaternion.normalized,
 
                 // Some normalized values with slight tweaking that might be enough to make them seem denormalized.
                 TinyGenBuilder {
-                    Quaternion.normalizedGen
+                    Quaternion.normalized
                     perturbation
                     perturbation
                     perturbation
@@ -121,7 +121,7 @@ final class QuaternionCoverTests: GodotTestCase {
             .map { Float(exp(0.000007 * $0)) }
 
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             perturbation
             perturbation
             perturbation
@@ -134,7 +134,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testInverse() {
         forAll {
-            Quaternion.normalizedGen
+            Quaternion.normalized
         } checkCover: {
             $0.inverse()
         }
@@ -142,8 +142,8 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testAngleTo() {
         forAll {
-            Quaternion.mixedGen
-            Quaternion.mixedGen
+            Quaternion.mixed
+            Quaternion.mixed
         } checkCover: {
             $0.angleTo($1)
         }
@@ -151,8 +151,8 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testDot() {
         forAll {
-            Quaternion.mixedGen
-            Quaternion.mixedGen
+            Quaternion.mixed
+            Quaternion.mixed
         } checkCover: {
             $0.dot(with: $1)
         }
@@ -160,8 +160,8 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testSlerp() {
         forAll {
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
+            Quaternion.normalized
+            Quaternion.normalized
             weightGen
         } checkCover: {
             $0.slerp(to: $1, weight: $2)
@@ -170,8 +170,8 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testSlerpni() {
         forAll {
-            Quaternion.normalizedGen
-            Quaternion.normalizedGen
+            Quaternion.normalized
+            Quaternion.normalized
             weightGen
         } checkCover: {
             $0.slerpni(to: $1, weight: $2)
@@ -181,10 +181,10 @@ final class QuaternionCoverTests: GodotTestCase {
     func testSphericalCubicInterpolate() {
         Float.$closeEnoughUlps.withValue(21) {
             forAll {
-                Quaternion.normalizedGen
-                Quaternion.normalizedGen
-                Quaternion.normalizedGen
-                Quaternion.normalizedGen
+                Quaternion.normalized
+                Quaternion.normalized
+                Quaternion.normalized
+                Quaternion.normalized
                 weightGen
             } checkCover: {
                 $0.sphericalCubicInterpolate(b: $1, preA: $2, postB: $3, weight: $4)
@@ -195,10 +195,10 @@ final class QuaternionCoverTests: GodotTestCase {
     func testSphericalCubicInterpolateInTime() {
         Float.$closeEnoughUlps.withValue(14) {
             forAll {
-                Quaternion.normalizedGen
-                Quaternion.normalizedGen
-                Quaternion.normalizedGen
-                Quaternion.normalizedGen
+                Quaternion.normalized
+                Quaternion.normalized
+                Quaternion.normalized
+                Quaternion.normalized
                 weightGen
                 extendedWeightGen
                 extendedWeightGen
@@ -211,7 +211,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testGetEuler() {
         forAll {
-            Quaternion.normalizedGen
+            Quaternion.normalized
             TinyGen<EulerOrder>.oneOf(values: EulerOrder.allCases)
         } checkCover: {
             $0.getEuler(order: $1.rawValue)
@@ -221,7 +221,7 @@ final class QuaternionCoverTests: GodotTestCase {
     func testFromEuler() {
         Float.$closeEnoughUlps.withValue(512) {
             forAll {
-                Vector3.mixedGen
+                Vector3.mixed
             } checkCover: {
                 Quaternion.fromEuler($0)
             }
@@ -230,7 +230,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testSubscriptGet() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             TinyGen<Int64>.oneOf(values: Array(0 ... 3))
         } checkCover: { q, axis in
             var q = q
@@ -240,7 +240,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testSubscriptSet() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             TinyGen<Int64>.oneOf(values: Array(0 ... 3))
             TinyGen.mixedDoubles
         } checkCover: { q, axis, newValue in
@@ -252,7 +252,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testTimesInt64() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             TinyGen.edgyInt64s
         } checkCover: {
             $0 * $1
@@ -261,7 +261,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testDividedByInt64() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             TinyGen.edgyInt64s
         } checkCover: {
             $0 / $1
@@ -270,7 +270,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testTimesDouble() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             TinyGen.mixedDoubles
         } checkCover: {
             $0 * $1
@@ -279,7 +279,7 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testDividedByDouble() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
             TinyGen.mixedDoubles
         } checkCover: {
             $0 / $1
@@ -288,8 +288,8 @@ final class QuaternionCoverTests: GodotTestCase {
 
     func testTimesVector3() {
         forAll {
-            Quaternion.normalizedGen
-            Vector3.mixedGen
+            Quaternion.normalized
+            Vector3.mixed
         } checkCover: {
             $0 * $1
         }
@@ -299,10 +299,10 @@ final class QuaternionCoverTests: GodotTestCase {
         forAll {
             TinyGen.oneOf(gens: [
                 // Same value twice so they are equal.
-                Quaternion.mixedGen.map { ($0, $0) },
+                Quaternion.mixed.map { ($0, $0) },
                 TinyGenBuilder {
-                    Quaternion.mixedGen
-                    Quaternion.mixedGen
+                    Quaternion.mixed
+                    Quaternion.mixed
                 }
             ])
         } checkCover: {
@@ -314,10 +314,10 @@ final class QuaternionCoverTests: GodotTestCase {
         forAll {
             TinyGen.oneOf(gens: [
                 // Same value twice so they are equal.
-                Quaternion.mixedGen.map { ($0, $0) },
+                Quaternion.mixed.map { ($0, $0) },
                 TinyGenBuilder {
-                    Quaternion.mixedGen
-                    Quaternion.mixedGen
+                    Quaternion.mixed
+                    Quaternion.mixed
                 }
             ])
         } checkCover: {
@@ -333,8 +333,8 @@ final class QuaternionCoverTests: GodotTestCase {
             filePath: StaticString = #filePath, line: UInt = #line
         ) {
             forAll(filePath: filePath, line: line) {
-                Quaternion.mixedGen
-                Quaternion.mixedGen
+                Quaternion.mixed
+                Quaternion.mixed
             } checkCover: {
                 op($0, $1)
             }
