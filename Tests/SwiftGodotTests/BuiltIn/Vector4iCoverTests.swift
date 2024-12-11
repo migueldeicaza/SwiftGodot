@@ -21,24 +21,6 @@ extension Vector4i {
 }
 
 @available(macOS 14, *)
-extension Vector4 {
-    static func gen(_ coordinateGen: TinyGen<Float>) -> TinyGen<Self> {
-        return TinyGen { rng in
-            let left = rng.left()
-            let right = rng.right()
-            return Vector4(
-                x: coordinateGen(left.left()),
-                y: coordinateGen(left.right()),
-                z: coordinateGen(right.left()),
-                w: coordinateGen(right.right())
-            )
-        }
-    }
-
-    static let mixed: TinyGen<Self> = gen(.mixedFloats)
-}
-
-@available(macOS 14, *)
 final class Vector4iCoverTests: GodotTestCase {
 
     func testInitFromVector4i() throws {
