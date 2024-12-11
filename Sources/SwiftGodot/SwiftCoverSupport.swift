@@ -65,6 +65,12 @@ extension Vector4i {
     public var tuple: (Int32, Int32, Int32, Int32) { (x, y, z, w) }
 }
 
+extension Vector3 {
+    @_spi(SwiftCovers)
+    @inline(__always)
+    public var simd: SIMD3<Float> { SIMD3(x, y, z) }
+}
+
 extension Plane {
     @_spi(SwiftCovers)
     @inline(__always)

@@ -144,6 +144,10 @@ extension GD {
         return (a - b).magnitude < tolerance
     }
 
+    public static func isZeroApprox(_ s: Float) -> Bool {
+        return s.magnitude < Float(CMP_EPSILON)
+    }
+
     public static func cubicInterpolate(from: Float, to: Float, pre: Float, post: Float, weight: Float) -> Float {
         let constTerm = 2 * from
         let linearTerm = (-pre + to) * weight

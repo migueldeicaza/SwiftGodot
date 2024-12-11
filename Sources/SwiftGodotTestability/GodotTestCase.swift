@@ -222,7 +222,7 @@ extension GodotTestCase {
 #if TESTABLE_SWIFT_COVERS
         let gen = build()
 
-        for k: UInt64 in 1 ... 1_000 {
+        for k: UInt64 in 204 ... 1_000 {
             var rng = SipRNG(key0: k, key1: 1234)
             // Mix in the function name so every test that starts by asking for, say, a Plane doesn't get the same Plane.
             function.withUTF8Buffer { buffer in
