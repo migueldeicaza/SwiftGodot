@@ -106,11 +106,8 @@ extension Vector3 {
     
     public func rotated(axis: Vector3, angle: Double) -> Vector3 {
         // basis subscript getter is mutating by default
-        var basisV = Basis(axis: axis, angle: Float(angle))
-        return Vector3(x: Float(basisV[0].dot(with: self)),
-                       y: Float(basisV[1].dot(with: self)),
-                       z: Float(basisV[2].dot(with: self))
-        )
+        let basis = Basis(axis: axis, angle: Float(angle))
+        return basis.xform(self)
     }
     
     public func clamp(min: Vector3, max: Vector3) -> Vector3 {
