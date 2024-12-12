@@ -97,6 +97,8 @@ extension Vector3 {
         return Double(x2 + y2 + z2)
     }
 
+#if false
+    // Not accurate enough yet.
     public func slerp(to: Vector3, weight: Double) -> Vector3 {
         // This method seems more complicated than it really is, since we write out
         // the internals of some methods for efficiency (mainly, checking length).
@@ -133,12 +135,16 @@ extension Vector3 {
 
         return rotated(axis: axis, angle: Double(Float(angle) * weight)) * Double(resultLength / startLength)
     }
+#endif
 
+#if false
+    // Not accurate enough yet.
     public func rotated(axis: Vector3, angle: Double) -> Vector3 {
         // basis subscript getter is mutating by default
         let basis = Basis(axis: axis, angle: Float(angle))
         return basis.xform(self)
     }
+#endif
 
     public func clamp(min: Vector3, max: Vector3) -> Vector3 {
         return Vector3(x: x.clamped(min: min.x, max: max.x),
@@ -162,11 +168,12 @@ extension Vector3 {
     }
     
     public func limitLength(_ length: Double = 1.0) -> Vector3 {
-        let beforeLen = self.length()
+        let limit = Float(length)
+        let l = Float(self.length())
         var result = self
-        if (beforeLen > 0 && length < beforeLen) {
-            result = result / beforeLen
-            result = result * length
+        if l > 0 && limit < l {
+            result = result / Double(l)
+            result = result * Double(limit)
         }
         return result
     }
@@ -190,7 +197,7 @@ extension Vector3 {
         /// Reflection requires a scale by 2, but Float * Vector3 is not overloaded
         return Vector3(x: 2, y: 2, z: 2) * n * self.dot(with: n) - self
     }
-    
+
     public func octahedronEncode() -> Vector2 {
         let n = self / Double((Swift.abs(x) + Swift.abs(y) + Swift.abs(z)))
         var o = Vector2()
@@ -207,7 +214,9 @@ extension Vector3 {
         o.y = o.y * 0.5 + 0.5
         return o
     }
-    
+
+#if false
+    // Needs fixing.
     public static func octahedronDecode(uv: Vector2) -> Vector3 {
         let f = Vector2(x: uv.x * 2.0 - 1.0, y: uv.y * 2.0 - 1.0)
         var n = Vector3(x: f.x, y: f.y, z: 1.0 - Swift.abs(f.x) - Swift.abs(f.y))
@@ -217,7 +226,8 @@ extension Vector3 {
         n.y += n.y >= 0 ? -t : t
         return n.normalized()
     }
-    
+#endif
+
     public func outer(with: Vector3) -> Basis {
         return Basis(xAxis: Vector3(x: x * with.x, y: x * with.y, z: x * with.z),
                      yAxis: Vector3(x: y * with.x, y: y * with.y, z: y * with.z),
@@ -288,51 +298,27 @@ extension Vector3 {
     // Comparison Operators
     
     public static func == (lhs: Vector3, rhs: Vector3) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z
+        return lhs.tuple == rhs.tuple
     }
     
     public static func != (lhs: Vector3, rhs: Vector3) -> Bool {
-        return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z
+        return !(lhs.tuple == rhs.tuple)
     }
     
     public static func < (lhs: Vector3, rhs: Vector3) -> Bool {
-        if lhs.x == rhs.x {
-            if lhs.y == rhs.y {
-                return lhs.z < rhs.z
-            }
-            return lhs.y < rhs.y
-        }
-        return lhs.x < rhs.x
+        return lhs.tuple < rhs.tuple
     }
     
     public static func > (lhs: Vector3, rhs: Vector3) -> Bool {
-        if lhs.x == rhs.x {
-            if lhs.y == rhs.y {
-                return lhs.z > rhs.z
-            }
-            return lhs.y > rhs.y
-        }
-        return lhs.x > rhs.x
+        return lhs.tuple > rhs.tuple
     }
     
     public static func <= (lhs: Vector3, rhs: Vector3) -> Bool {
-        if lhs.x == rhs.x {
-            if lhs.y == rhs.y {
-                return lhs.z <= rhs.z
-            }
-            return lhs.y < rhs.y
-        }
-        return lhs.x < rhs.x
+        return lhs.tuple <= rhs.tuple
     }
     
     public static func >= (lhs: Vector3, rhs: Vector3) -> Bool {
-        if lhs.x == rhs.x {
-            if lhs.y == rhs.y {
-                return lhs.z >= rhs.z
-            }
-            return lhs.y > rhs.y
-        }
-        return lhs.x > rhs.x
+        return lhs.tuple >= rhs.tuple
     }
     
 }

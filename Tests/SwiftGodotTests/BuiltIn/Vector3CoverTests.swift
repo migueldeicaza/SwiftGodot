@@ -141,21 +141,17 @@ final class Vector3CoverTests: GodotTestCase {
             }
         }
 
-        Float.$closeEnoughUlps.withValue(260) {
-            checkMethod(Vector3.slerp)
-        }
+        checkMethod(Vector3.slerp)
         checkMethod(Vector3.moveToward)
     }
 
     func testRotated() {
-        Float.$closeEnoughUlps.withValue(1024) {
-            forAll {
-                Vector3.mixed
-                Vector3.normalized
-                TinyGen.mixedDoubles
-            } checkCover: {
-                $0.rotated(axis: $1, angle: $2)
-            }
+        forAll {
+            Vector3.mixed
+            Vector3.normalized
+            TinyGen.mixedDoubles
+        } checkCover: {
+            $0.rotated(axis: $1, angle: $2)
         }
     }
 

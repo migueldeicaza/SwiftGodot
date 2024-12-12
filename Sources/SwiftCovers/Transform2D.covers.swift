@@ -141,7 +141,9 @@ extension Transform2D {
     public func basisXformInv(v: Vector2) -> Vector2 {
         return Vector2(x: Float(x.dot(with: v)), y: Float(y.dot(with: v)))
     }
-    
+
+#if false
+    // Needs fixing.
     public func interpolateWith(xform: Transform2D, weight: Double) -> Transform2D {
         let p1 = origin
         let p2 = xform.origin
@@ -175,7 +177,8 @@ extension Transform2D {
         res = res.scaleBasis(scale: s1.lerp(to: s2, weight: weight))
         return res
     }
-    
+#endif
+
     public func isFinite() -> Bool {
         return x.isFinite() && y.isFinite() && origin.isFinite()
     }

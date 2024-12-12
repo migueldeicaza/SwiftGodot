@@ -68,6 +68,10 @@ extension Vector4i {
 extension Vector3 {
     @_spi(SwiftCovers)
     @inline(__always)
+    public var tuple: (Float, Float, Float) { (x, y, z) }
+
+    @_spi(SwiftCovers)
+    @inline(__always)
     public var simd: SIMD3<Float> { SIMD3(x, y, z) }
 }
 
@@ -124,11 +128,10 @@ extension Basis {
     @_spi(SwiftCovers)
     @inline(__always)
     public func xform(_ v: Vector3) -> Vector3 {
-        let t = self.transposed()
         return Vector3(
-            x: Float(t.x.dot(with: v)),
-            y: Float(t.y.dot(with: v)),
-            z: Float(t.z.dot(with: v))
+            x: Float(x.dot(with: v)),
+            y: Float(y.dot(with: v)),
+            z: Float(z.dot(with: v))
         )
     }
     

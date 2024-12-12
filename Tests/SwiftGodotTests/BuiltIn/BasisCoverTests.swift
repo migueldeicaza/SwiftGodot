@@ -15,7 +15,7 @@ extension Basis {
     static let mixedGen = gen(TinyGen.mixedFloats)
 
     static let rotationGen = TinyGenBuilder {
-        Vector3.normalizedGen
+        Vector3.normalized
         TinyGen.gaussianFloats
     }.map { Basis(axis: $0, angle: $1) }
 
@@ -31,7 +31,7 @@ final class BasisCoverTests: GodotTestCase {
     func testInitAxisAngle() {
         Float.$closeEnoughUlps.withValue(250) {
             forAll {
-                Vector3.normalizedGen
+                Vector3.normalized
                 TinyGen.mixedFloats
             } checkCover: {
                 Basis(axis: $0, angle: $1)
@@ -49,7 +49,7 @@ final class BasisCoverTests: GodotTestCase {
 
     func testInitFromQuaternion() {
         forAll {
-            Quaternion.mixedGen
+            Quaternion.mixed
         } checkCover: {
             Basis(from: $0)
         }
@@ -118,7 +118,7 @@ final class BasisCoverTests: GodotTestCase {
         Float.$closeEnoughUlps.withValue(640) {
             forAll {
                 Basis.mixedGen
-                Vector3.normalizedGen // axis
+                Vector3.normalized // axis
                 TinyGen.mixedDoubles // angle
             } checkCover: {
                 $0.rotated(axis: $1, angle: $2)
@@ -135,7 +135,7 @@ final class BasisCoverTests: GodotTestCase {
         ) {
             forAll(filePath: filePath, line: line) {
                 Basis.mixedGen
-                Vector3.mixedGen
+                Vector3.mixed
             } checkCover: {
                 method($0)($1)
             }
