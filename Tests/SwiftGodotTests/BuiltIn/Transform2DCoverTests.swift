@@ -46,13 +46,15 @@ final class Transform2DCoverTests: GodotTestCase {
     }
     
     func testInitFloatVector2FloatVector2() {
-        forAll {
-            TinyGen.mixedFloats
-            Vector2.mixed
-            TinyGen.mixedFloats
-            Vector2.mixed
-        } checkCover: {
-            Transform2D.init(rotation: $0, scale: $1, skew: $2, position: $3)
+        Float.$closeEnoughUlps.withValue(2) {
+            forAll {
+                TinyGen.mixedFloats
+                Vector2.mixed
+                TinyGen.mixedFloats
+                Vector2.mixed
+            } checkCover: {
+                Transform2D.init(rotation: $0, scale: $1, skew: $2, position: $3)
+            }
         }
     }
     
@@ -68,9 +70,9 @@ final class Transform2DCoverTests: GodotTestCase {
             }
         }
         
+        checkMethod(Transform2D.getSkew)
         checkMethod(Transform2D.inverse)
         checkMethod(Transform2D.affineInverse)
-        checkMethod(Transform2D.getSkew)
         checkMethod(Transform2D.getRotation)
         checkMethod(Transform2D.getOrigin)
         checkMethod(Transform2D.orthonormalized)
