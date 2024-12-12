@@ -189,7 +189,22 @@ extension Transform2D {
     }
     
     public subscript(index: Int64) -> Vector2 {
-        return index == 0 ? x : index == 1 ? y : origin
+        get {
+            switch index {
+            case 0: return x
+            case 1: return y
+            case 2: return origin
+            default: return Vector2.zero
+            }
+        }
+        set {
+            switch index {
+            case 0: x = newValue
+            case 1: y = newValue
+            case 2: origin = newValue
+            default: fatalError("Invalid index")
+            }
+        }
     }
     
     // Operators
