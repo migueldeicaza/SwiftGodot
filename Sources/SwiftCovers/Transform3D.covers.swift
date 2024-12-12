@@ -28,7 +28,12 @@ extension Transform3D {
     
     public init(xAxis: Vector3, yAxis: Vector3, zAxis: Vector3, origin: Vector3) {
         self.init()
-        self.basis = Basis(xAxis: xAxis, yAxis: yAxis, zAxis: zAxis)
+        // Transpose the axes when creating the basis to match engine's row-major order
+        self.basis = Basis(
+            xAxis: Vector3(x: xAxis.x, y: yAxis.x, z: zAxis.x),
+            yAxis: Vector3(x: xAxis.y, y: yAxis.y, z: zAxis.y),
+            zAxis: Vector3(x: xAxis.z, y: yAxis.z, z: zAxis.z)
+        )
         self.origin = origin
     }
     
