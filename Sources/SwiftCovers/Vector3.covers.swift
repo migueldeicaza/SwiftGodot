@@ -37,6 +37,10 @@ extension Vector3 {
         return Double(x * with.x + y * with.y + z * with.z)
     }
     
+    public func distanceTo(_ to: Vector3) -> Double {
+        return Double((to - self).length())
+    }
+    
     public func abs() -> Vector3 {
         return Vector3(
             x: Swift.abs(x),
@@ -75,6 +79,22 @@ extension Vector3 {
             y: _math.round(y),
             z: _math.round(z)
         )
+    }
+    
+    public func length() -> Double {
+        let x2 = x * x
+        let y2 = y * y
+        let z2 = z * z
+        
+        return Double(sqrt(x2 + y2 + z2))
+    }
+    
+    public func lengthSquared() -> Double {
+        let x2 = x * x
+        let y2 = y * y
+        let z2 = z * z
+        
+        return Double(x2 + y2 + z2)
     }
     
    public func slerp(to: Vector3, weight: Double) -> Vector3 {
@@ -142,9 +162,10 @@ extension Vector3 {
     }
     
     public func moveToward(to: Vector3, delta: Double) -> Vector3 {
-        let result = to - self
-        let newLen = result.length()
-        return newLen <= delta || newLen < CMP_EPSILON ? to : self + result / newLen * delta
+        let v = self
+        let vd = to - v
+        let len = vd.length()
+        return len <= delta || len < CMP_EPSILON ? to : v + vd / len * delta
     }
     
     public func slide(n: Vector3) -> Vector3 {

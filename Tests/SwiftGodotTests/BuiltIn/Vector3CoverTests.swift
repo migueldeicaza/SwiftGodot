@@ -64,6 +64,9 @@ final class Vector3CoverTests: GodotTestCase {
         checkMethod(Vector3.floor)
         checkMethod(Vector3.ceil)
         checkMethod(Vector3.round)
+        checkMethod(Vector3.length)
+        checkMethod(Vector3.lengthSquared)
+        checkMethod(Vector3.round)
         checkMethod(Vector3.normalized)
         checkMethod(Vector3.octahedronEncode)
     }
@@ -84,6 +87,7 @@ final class Vector3CoverTests: GodotTestCase {
         checkMethod(Vector3.cross)
         checkMethod(Vector3.dot)
         checkMethod(Vector3.outer)
+        checkMethod(Vector3.distanceTo(_:))
     }
     
     // Vector3.method(Vector3)
