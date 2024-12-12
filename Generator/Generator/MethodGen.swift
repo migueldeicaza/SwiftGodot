@@ -30,6 +30,10 @@ enum GeneratedMethodKind {
     case utilityFunction
 }
 
+/// The list of static method names to make public.
+/// Most of the names are kept fileprivate.
+let publicMethodNames = ["method_get_class", "method_emit_signal"]
+
 // To test the design, will use an external file later
 // determines whether the className/method returns an optional reference type
 func isReturnOptional (className: String, method: String) -> Bool {
@@ -497,7 +501,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let inlineAttribute: String?
     let documentationVisibilityAttribute: String?
     if let methodHash = method.optionalHash {
-        let staticVarVisibility = if bindName != "method_get_class" { "fileprivate " } else { "" }
+        let staticVarVisibility = publicMethodNames.contains(bindName) ? "" : "fileprivate "
         assert (!method.isVirtual)
         switch generatedMethodKind {
         case .classMethod:

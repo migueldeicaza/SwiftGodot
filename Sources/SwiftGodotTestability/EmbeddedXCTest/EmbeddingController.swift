@@ -65,8 +65,10 @@ public class EmbeddingController: NSObject, XCTestObservation {
     if !isRunningEmbedded {
       if let test = suite.tests.first as? XCTestCase {
         let testClass = type(of: test)
-        let injected = EmbeddedTestCaseSuite(for: testClass, tests: suite.tests)
-        embeddedSuite.addTest(injected)
+          if testClass .isKind(of: EmbeddedTestBase.self) {
+              let injected = EmbeddedTestCaseSuite(for: testClass, tests: suite.tests)
+              embeddedSuite.addTest(injected)
+          }
       }
     }
   }
