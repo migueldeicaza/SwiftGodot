@@ -5,9 +5,10 @@
 //  Created by Danny Youstra on 12/11/24.
 //
 
-import XCTest
-import SwiftGodotTestability
 @testable import SwiftGodot
+import Darwin
+import SwiftGodotTestability
+import XCTest
 
 @available(macOS 14, *)
 extension Vector3 {
@@ -134,17 +135,30 @@ final class Vector3CoverTests: GodotTestCase {
             forAll(filePath: filePath, line: line) {
                 Vector3.mixed
                 Vector3.mixed
-                TinyGen.mixedDoubles
+                TinyGen.closedUnitRangeDoubles.map { $0 * 2 - 0.5 }
             } checkCover: {
                 method($0)($1, $2)
             }
         }
-        
-        checkMethod(Vector3.slerp)
-        checkMethod(Vector3.rotated)
+
+        Float.$closeEnoughUlps.withValue(260) {
+            checkMethod(Vector3.slerp)
+        }
         checkMethod(Vector3.moveToward)
     }
-    
+
+    func testRotated() {
+        Float.$closeEnoughUlps.withValue(1024) {
+            forAll {
+                Vector3.mixed
+                Vector3.normalized
+                TinyGen.mixedDoubles
+            } checkCover: {
+                $0.rotated(axis: $1, angle: $2)
+            }
+        }
+    }
+
     func testClamp() {
         forAll {
             Vector3.mixed

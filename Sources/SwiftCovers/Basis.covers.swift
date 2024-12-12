@@ -24,7 +24,11 @@ extension Basis {
     
     public init(axis: Vector3, angle: Float) {
         // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
-        // The axis Vector3 should be normalized.
+
+        guard axis.isNormalized() else {
+            self.init()
+            return
+        }
 
         let axisSq = axis * axis
         

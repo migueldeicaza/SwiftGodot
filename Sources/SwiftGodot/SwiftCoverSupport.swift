@@ -124,10 +124,11 @@ extension Basis {
     @_spi(SwiftCovers)
     @inline(__always)
     public func xform(_ v: Vector3) -> Vector3 {
+        let t = self.transposed()
         return Vector3(
-            x: Float(x.dot(with: v)),
-            y: Float(y.dot(with: v)),
-            z: Float(z.dot(with: v))
+            x: Float(t.x.dot(with: v)),
+            y: Float(t.y.dot(with: v)),
+            z: Float(t.z.dot(with: v))
         )
     }
     

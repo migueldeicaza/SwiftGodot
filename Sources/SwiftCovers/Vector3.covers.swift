@@ -85,51 +85,61 @@ extension Vector3 {
         let x2 = x * x
         let y2 = y * y
         let z2 = z * z
-        
+
         return Double(sqrt(x2 + y2 + z2))
     }
-    
+
     public func lengthSquared() -> Double {
         let x2 = x * x
         let y2 = y * y
         let z2 = z * z
-        
+
         return Double(x2 + y2 + z2)
     }
-    
-   public func slerp(to: Vector3, weight: Double) -> Vector3 {
+
+    public func slerp(to: Vector3, weight: Double) -> Vector3 {
         // This method seems more complicated than it really is, since we write out
         // the internals of some methods for efficiency (mainly, checking length).
-        let startLengthSq = lengthSquared()
-        let endLengthSq = to.lengthSquared()
-        
-        // Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+        let startLengthSq = Float(lengthSquared())
+        let endLengthSq = Float(to.lengthSquared())
+
+        let weight = Float(weight)
+
+        func simpleLerp() -> Vector3 {
+            return Vector3(
+                x: self.x.lerp(to: to.x, withoutClampingWeight: weight),
+                y: self.y.lerp(to: to.y, withoutClampingWeight: weight),
+                z: self.z.lerp(to: to.z, withoutClampingWeight: weight)
+            )
+        }
+
         if startLengthSq == 0.0 || endLengthSq == 0.0 {
-            return lerp(to: to, weight: weight)
+            // Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+            return simpleLerp()
         }
-        
+
         var axis = cross(with: to)
-        let axisLengthSq = axis.lengthSquared()
-        
-        // Colinear vectors have no rotation axis or angle between them, so the best we can do is lerp.
+        let axisLengthSq = Float(axis.lengthSquared())
+
         if axisLengthSq == 0.0 {
-            return lerp(to: to, weight: weight)
+            // Colinear vectors have no rotation axis or angle between them, so the best we can do is lerp.
+            return simpleLerp()
         }
-        
-        axis /= sqrt(axisLengthSq)
-        let startLength = sqrt(startLengthSq)
-        let resultLength = startLength.lerp(to: sqrt(endLengthSq), weight: weight)
+
+        axis /= Double(axisLengthSq.squareRoot())
+        let startLength = startLengthSq.squareRoot()
+        let resultLength = startLength.lerp(to: endLengthSq.squareRoot(), withoutClampingWeight: weight)
         let angle = angleTo(to)
-        
-        return rotated(axis: axis, angle: angle * weight) * (resultLength / startLength)
+
+        return rotated(axis: axis, angle: Double(Float(angle) * weight)) * Double(resultLength / startLength)
     }
-    
+
     public func rotated(axis: Vector3, angle: Double) -> Vector3 {
         // basis subscript getter is mutating by default
         let basis = Basis(axis: axis, angle: Float(angle))
         return basis.xform(self)
     }
-    
+
     public func clamp(min: Vector3, max: Vector3) -> Vector3 {
         return Vector3(x: x.clamped(min: min.x, max: max.x),
                        y: y.clamped(min: min.y, max: max.y),
