@@ -259,6 +259,9 @@ struct GodotInterface {
     let packed_vector4_array_operator_index_const: GDExtensionInterfacePackedVector4ArrayOperatorIndexConst
 
     let callable_custom_create: GDExtensionInterfaceCallableCustomCreate
+
+    let editor_add_plugin: GDExtensionInterfaceEditorAddPlugin
+    let editor_remove_plugin: GDExtensionInterfaceEditorRemovePlugin
 }
 
 var gi: GodotInterface!
@@ -367,7 +370,9 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
         packed_vector4_array_operator_index: load ("packed_vector4_array_operator_index"),
         packed_vector4_array_operator_index_const: load ("packed_vector4_array_operator_index_const"),
 
-        callable_custom_create: load ("callable_custom_create")
+        callable_custom_create: load ("callable_custom_create"),
+        editor_add_plugin: load("editor_add_plugin"),
+        editor_remove_plugin: load("editor_remove_plugin")
     )
 }
 

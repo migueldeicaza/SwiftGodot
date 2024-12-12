@@ -45,6 +45,18 @@ func gGetNativeStructSize (name: String) -> UInt64 {
     return gi.get_native_struct_size (name)
 }
 
+public func editorAddPlugin(name: StringName) {
+    withUnsafeMutablePointer(to: &name.content) { namePtr in
+        gi.editor_add_plugin(namePtr)
+    }
+}
+
+public func editorRemovePlugin(name: StringName) {
+    withUnsafeMutablePointer(to: &name.content) { namePtr in
+        gi.editor_remove_plugin(namePtr)
+    }
+}
+
 //
 ///* variant general */
 //void (*variant_new_copy)(GDExtensionVariantPtr r_dest, GDExtensionConstVariantPtr p_src);
