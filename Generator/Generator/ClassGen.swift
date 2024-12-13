@@ -234,7 +234,7 @@ let omittedMethodsList: [String: Set<String>] = [
         "absf", "absi", "absi", "acos", "acosh", "asbs", "asin", "asinh", "atan", "atan2", "atanh", "ceil", "ceilf",
         "ceili", "cos", "cosh", "deg_to_rad", "exp", "floor", "floor", "floorf", "floorf", "floori", "floori",
         "fmod", "fposmod", "inverse_lerp", "lerp", "lerpf", "log", "posmod", "pow", "rad_to_deg", "round", "roundf",
-        "roundi", "sin", "snapped", "snappedf", "sqrt", "tan", "tanh",
+        "roundi", "sin", "sinh", "snapped", "snappedf", "sqrt", "tan", "tanh",
     ],
 ]
 
