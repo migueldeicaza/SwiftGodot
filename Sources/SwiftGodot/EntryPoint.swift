@@ -415,12 +415,15 @@ func loadGodotInterface (_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddre
 ///  - initHook: this method is invoked repeatedly during the various stages of the extension
 ///  initialization
 ///  - deInitHook: this method is invoked repeatedly when various stages of the extension are wrapped up
+///  - minimumInitializationLevel: How early does this extension need to be activated? The default "scene" level should be sufficient for most cases,
+///    but if your Extension is only an Editor tool you could set this higher to .tool. If you need to extend base functionality set .core or .server.
 public func initializeSwiftModule (
     _ godotGetProcAddrPtr: OpaquePointer,
     _ libraryPtr: OpaquePointer,
     _ extensionPtr: OpaquePointer,
     initHook: @escaping (GDExtension.InitializationLevel)->(),
-    deInitHook: @escaping (GDExtension.InitializationLevel)->())
+    deInitHook: @escaping (GDExtension.InitializationLevel)->(),
+    minimumInitializationLevel: GDExtension.InitializationLevel = .scene)
 {
     let getProcAddrFun = unsafeBitCast(godotGetProcAddrPtr, to: GDExtensionInterfaceGetProcAddress.self)
     loadGodotInterface (getProcAddrFun)
@@ -437,7 +440,7 @@ public func initializeSwiftModule (
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
-    initialization.pointee.minimum_initialization_level = GDEXTENSION_INITIALIZATION_SCENE
+    initialization.pointee.minimum_initialization_level = GDExtensionInitialization(minimumInitializationLevel.rawValue)
     initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
 }
 
