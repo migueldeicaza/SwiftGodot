@@ -440,7 +440,7 @@ public func initializeSwiftModule (
     let initialization = UnsafeMutablePointer<GDExtensionInitialization> (extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
-    initialization.pointee.minimum_initialization_level = GDExtensionInitialization(minimumInitializationLevel.rawValue)
+    initialization.pointee.minimum_initialization_level = GDExtensionInitializationLevel(UInt32(minimumInitializationLevel.rawValue))
     initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
 }
 
