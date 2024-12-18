@@ -326,7 +326,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                     let className = StringName("MyData")
                     assert(ClassDB.classExists(class: className))
                     let classInfo = ClassInfo<MyData> (name: className)
-                } ()}
+                } ()
+            }
             final class MyClass: Node {
                 var data: MyData = .init()
             
