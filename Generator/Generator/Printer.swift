@@ -142,16 +142,15 @@ actor PrinterFactory {
   }
 
   func saveMultiplexed(_ root: String) {
-    let ranges: [ClosedRange<Character>] = ["a"..."h", "i"..."q", "r"..."z"]
-    for range in ranges {
+    for letter in "abcdefghijklmnopqrstuvwxyz" {
       let combined =
         printers
-        .filter({ range.contains($0.name.lowercased().first!) })
+        .filter({ $0.name.lowercased().first! == letter })
         .sorted(by: { $0.name < $1.name })
         .map({ $0.result })
         .joined(separator: "\n")
 
-      let url = URL(fileURLWithPath: root).appending(path: "\(range.lowerBound)-\(range.upperBound).swift")
+      let url = URL(fileURLWithPath: root).appending(path: "\(letter).swift")
       if let existingData = try? Data(url: url), let existing = String(data: existingData, encoding: .utf8) {
         if existing == combined {
           return
