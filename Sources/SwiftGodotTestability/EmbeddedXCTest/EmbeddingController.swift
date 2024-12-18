@@ -63,7 +63,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
   /// Record a test suite that has finished running.
   func registerSuite(_ suite: XCTestSuite) {
     if !isRunningEmbedded {
-      if let test = suite.tests.first as? XCTestCase {
+      if let test = suite.tests.first as? EmbeddedTestBase {
         let testClass = type(of: test)
         let injected = EmbeddedTestCaseSuite(for: testClass, tests: suite.tests)
         embeddedSuite.addTest(injected)
@@ -107,8 +107,6 @@ public class EmbeddingController: NSObject, XCTestObservation {
   public func testSuiteDidFinish(_ testSuite: XCTestSuite) {
     if testSuite.className == "XCTestCaseSuite" {
       registerSuite(testSuite)
-      // } else {
-      // print("SKIPPED \(testSuite) \(type(of: testSuite))")
     }
   }
 

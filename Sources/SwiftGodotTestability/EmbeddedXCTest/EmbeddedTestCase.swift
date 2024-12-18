@@ -8,12 +8,16 @@
 
 import XCTest
 
+/// Non-generic base class for EmbeddedTestCase.
+open class EmbeddedTestBase: XCTestCase {
+}
+
 /// Superclass for test cases that are embedded.
 ///
 /// When running normally, the tests will be silent and will do nothing.
 /// When re-run the embedded context, the test case will perform its normal
 /// actions.
-open class EmbeddedTestCase<T: TestHost>: XCTestCase {
+open class EmbeddedTestCase<T: TestHost>: EmbeddedTestBase {
   override open var name: String {
     return EmbeddingController.isRunningEmbedded ? "Embedded(\(super.name))" : super.name
   }
