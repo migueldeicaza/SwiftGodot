@@ -12,7 +12,7 @@ import XCTest
 open class EmbeddedTestBase: XCTestCase {
 }
 
-/// Superclass for test cases that are embedded.
+/// Base class for test cases that are embedded.
 ///
 /// When running normally, the tests will be silent and will do nothing.
 /// When re-run the embedded context, the test case will perform its normal

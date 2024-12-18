@@ -4,20 +4,6 @@ import SwiftGodotTestability
 
 @Godot
 private class TestNode: Node {
-    #signal("mySignal", arguments: ["age": Int.self, "name": String.self])
-    var receivedInt: Int? = nil
-    var receivedString: String? = nil
-    
-    @Callable func demo (_ age: Int, name: String) {
-        receivedInt = age
-        receivedString = name
-    }
-    
-    func probe () {
-        connect (signal: TestNode.mySignal, to: self, method: "demo")
-        emit (signal: TestNode.mySignal, 22, "Joey")
-        
-    }
 }
 
 final class MarshalTests: GodotTestCase {

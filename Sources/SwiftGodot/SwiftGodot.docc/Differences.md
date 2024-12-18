@@ -105,12 +105,12 @@ for additional information.
 
 ## Signals
 
-Generally, use the `#signal` macro to declare a new signal for your classes,
+Generally, use the `@Signal` macro to declare a new signal for your classes,
 like this:
 
 ```swift
 class Demo: Node {
-    #signal("lives_changed", argument: ["new_lives_count": Int.self])
+    @Signal var livesChanged: SignalWithArguments<Int>
 }
 ```
 

@@ -51,6 +51,22 @@ extension VariantStorable {
     }
 }
 
+
+extension VariantStorable {
+    /// Return PropInfo for this storage type.
+    static func propInfo(name: String) -> PropInfo {
+        let gType = Self.Representable.godotType
+        return PropInfo(
+            propertyType: gType,
+            propertyName: StringName(name),
+            className: gType == .object ? StringName(String(describing: Self.self)) : "",
+            hint: .none,
+            hintStr: "",
+            usage: .default
+        )
+    }
+}
+
 extension String: VariantStorable {
     public func toVariantRepresentable() -> GString {
         let r = GString()
