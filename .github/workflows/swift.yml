@@ -39,8 +39,8 @@ jobs:
     steps:
       - uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-6.0.2-release
-          tag: 6.0.2-RELEASE
+          branch: swift-6.0.3-release
+          tag: 6.0.3-RELEASE
       - uses: actions/checkout@v4
       - name: Build
         run: swift build --build-tests --quiet
