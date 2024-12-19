@@ -24,20 +24,16 @@ import PackagePlugin
     var arguments = [api.path, genSourcesDir.path]
     var outputFiles: [URL] = []
     #if os(Windows)
-      // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well
-      // so we combine the output into 26 swift files, each containing all the types that start with a letter.
+      // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well.
+      // We generate so many output files that passing them all into the build command would exceed the limit.
+      // So instead we combine the output into 26 swift files, one for each letter of the alphabet, each containing
+      // all the types that start with that letter.
       let letters = "abcdefghijklmnopqrstuvwxyz"
       for letter in letters {
-        outputFiles.append(genSourcesDir.appending(subpath: "\(letter).swift"))
+        outputFiles.append(genSourcesDir.appending(path: "\(letter).swift"))
       }
       arguments.append(context.package.directoryURL.appending(path: "doc").path)
       arguments.append("--singlefile")
-      commands.append(
-        Command.prebuildCommand(
-          displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
-          executable: generator,
-          arguments: arguments,
-          outputFilesDirectory: genSourcesDir))
     #else
       outputFiles.append(contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0]) })
       outputFiles.append(contentsOf: known.map { genSourcesDir.appending(["generated", $0]) })
