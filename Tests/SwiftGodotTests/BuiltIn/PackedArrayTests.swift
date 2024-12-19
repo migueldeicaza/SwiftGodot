@@ -8,7 +8,7 @@
 import Foundation
 import XCTest
 import SwiftGodotTestability
-@testable import SwiftGodot
+import SwiftGodot
 
 final class PackedArrayTests: GodotTestCase {
     func testCustomInitializers () {

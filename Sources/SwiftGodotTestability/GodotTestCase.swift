@@ -7,7 +7,7 @@
 
 import XCTest
 
-@testable import SwiftGodot
+import SwiftGodot
 
 
 /// Base class for all test cases that run in the Godot runtime.

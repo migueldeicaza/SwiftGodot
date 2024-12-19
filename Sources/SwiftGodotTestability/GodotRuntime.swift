@@ -7,7 +7,7 @@
 
 import Foundation
 import libgodot
-@testable import SwiftGodot
+import SwiftGodot
 
 public final class GodotRuntime {
     
