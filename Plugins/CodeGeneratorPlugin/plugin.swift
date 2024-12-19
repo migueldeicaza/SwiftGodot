@@ -33,7 +33,7 @@ import PackagePlugin
         outputFiles.append(genSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
       }
       arguments.append(context.package.directoryURL.appending(path: "doc").path)
-      arguments.append("--singlefile")
+      arguments.append("--combined")
       commands.append(
         Command.prebuildCommand(
           displayName: "Generating Swift API from \(api) to \(genSourcesDir)",

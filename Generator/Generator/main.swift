@@ -43,8 +43,9 @@ var docRoot = args.count > 3 ? args[3] : defaultDocRootUrl.path
 let outputDir = args.count > 2 ? args[2] : generatorOutput
 let generateResettableCache = false
 
-// IF we want a single file, or one file per type
-var singleFile = args.contains("--singlefile")
+// IF we want one file per type, or a smaller number of
+// files that are combined.
+var combineOutput = args.contains("--combined")
 
 if args.count < 2 {
   print(
@@ -144,10 +145,10 @@ for mo in jsonApi.builtinClassMemberOffsets {
   }
 }
 
-let generatedBuiltinDir: String? = singleFile ? nil : (outputDir + "/generated-builtin/")
-let generatedDir: String? = singleFile ? nil : (outputDir + "/generated/")
+let generatedBuiltinDir: String? = combineOutput ? nil : (outputDir + "/generated-builtin/")
+let generatedDir: String? = combineOutput ? nil : (outputDir + "/generated/")
 
-if singleFile {
+if combineOutput {
   try! FileManager.default.createDirectory(atPath: outputDir + "/generated/", withIntermediateDirectories: true)
 } else if let generatedBuiltinDir, let generatedDir {
   try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
@@ -180,7 +181,7 @@ struct Generator {
       coreDefPrinter.save(generatedBuiltinDir + "/core-defs.swift")
     }
 
-    if singleFile {
+    if combineOutput {
       await PrinterFactory.shared.saveMultiplexed(outputDir)
     }
   }
