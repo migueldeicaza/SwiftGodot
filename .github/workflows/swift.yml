@@ -49,7 +49,9 @@ jobs:
         run: swift build --build-tests --quiet
       - name: Build Again
         if: always()
-        run: swift build --build-tests --verbose
+        run: |
+          dir .build\plugins\outputs\swiftgodot\SwiftGodot\destination\CodeGeneratorPlugin\GeneratedSources
+          swift build --build-tests --verbose
       - name: Run tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
       - name: Run tests (Swift testing)
