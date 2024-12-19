@@ -13,18 +13,19 @@ import PackagePlugin
         guard let sourceFiles = target.sourceModule?.sourceFiles else {
             return []
         }
-        
-        let generatorPath = try context.tool(named: "EntryPointGenerator").path
-        
-        let output = context.pluginWorkDirectory.appending("GeneratedSources", "EntryPoint.generated.swift")
-        
-        let inputFiles = sourceFiles.map(\.path)
-        
-        let arguments = [
-           "-o",
-           output.string
-        ] + inputFiles.map(\.string)
-        
+
+        let generatorPath = try context.tool(named: "EntryPointGenerator").url
+
+        let output = context.pluginWorkDirectoryURL.appending(path: "GeneratedSources").appending(path: "EntryPoint.generated.swift")
+
+        let inputFiles = sourceFiles.map(\.url)
+
+        let arguments =
+            [
+                "-o",
+                output.path,
+            ] + inputFiles.map(\.path)
+
         return [
             Command.buildCommand(
                 displayName: "Generating Godot entry point",
