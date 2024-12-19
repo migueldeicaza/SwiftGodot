@@ -28,9 +28,9 @@ import PackagePlugin
       // We generate so many output files that passing them all into the build command would exceed the limit.
       // So instead we combine the output into 26 swift files, one for each letter of the alphabet, each containing
       // all the types that start with that letter.
-      let letters = "abcdefghijklmnopqrstuvwxyz"
+      let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       for letter in letters {
-        outputFiles.append(genSourcesDir.appending(path: "\(letter).swift"))
+        outputFiles.append(genSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
       }
       arguments.append(context.package.directoryURL.appending(path: "doc").path)
       arguments.append("--singlefile")

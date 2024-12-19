@@ -142,7 +142,7 @@ actor PrinterFactory {
   }
 
   func saveMultiplexed(_ root: String) {
-    for letter in "abcdefghijklmnopqrstuvwxyz" {
+    for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
       let combined =
         printers
         .filter({ $0.name.lowercased().first! == letter })
@@ -150,7 +150,7 @@ actor PrinterFactory {
         .map({ $0.result })
         .joined(separator: "\n")
 
-      let url = URL(fileURLWithPath: root).appending(path: "\(letter).swift")
+      let url = URL(fileURLWithPath: root).appending(path: "SwiftGodot\(letter).swift")
       if let existingData = try? Data(url: url), let existing = String(data: existingData, encoding: .utf8) {
         if existing == combined {
           return

@@ -27,10 +27,10 @@ jobs:
         xcode-version: "16.0"
     - name: Build
       run: swift build --build-tests --quiet
-    - name: Run tests (XCTest)
-      run: swift test --skip-build --no-parallel --disable-swift-testing
     - name: Run tests (Swift testing)
       run: swift test --skip-build --no-parallel --disable-xctest
+    - name: Run tests (XCTest)
+      run: swift test --skip-build --no-parallel --disable-swift-testing
 
   build-windows:
     runs-on: windows-latest
@@ -42,18 +42,13 @@ jobs:
         with:
           branch: swift-6.0.3-release
           tag: 6.0.3-RELEASE
-      - name: Swift Version Check
-        run: swift --version
       - uses: actions/checkout@v4
       - name: Build
-        run: swift build --build-tests --quiet
-      - name: Build Again
-        if: always()
         run: |
+          swift build --build-tests --quiet
           dir .build\plugins\outputs\swiftgodot\SwiftGodot\destination\CodeGeneratorPlugin\GeneratedSources
-          swift build --build-tests --verbose
-      - name: Run tests (XCTest)
-        run: swift test --skip-build --no-parallel --disable-swift-testing
       - name: Run tests (Swift testing)
         run: swift test --skip-build --no-parallel --disable-xctest
+      - name: Run tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
         
