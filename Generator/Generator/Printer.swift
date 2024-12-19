@@ -145,7 +145,7 @@ actor PrinterFactory {
     for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
       let combined =
         printers
-        .filter({ $0.name.lowercased().first! == letter })
+        .filter({ $0.name.uppercased().first! == letter })
         .sorted(by: { $0.name < $1.name })
         .map({ $0.result })
         .joined(separator: "\n")
