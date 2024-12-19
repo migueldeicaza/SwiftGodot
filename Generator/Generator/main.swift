@@ -166,8 +166,7 @@ if combineOutput {
 
 struct Generator {
   func run() async throws {
-    let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
-    coreDefPrinter.preamble()
+    let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs", withPreamble: true)
     generateUnsafePointerHelpers(coreDefPrinter)
     generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
     await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
