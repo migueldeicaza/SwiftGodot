@@ -1,6 +1,6 @@
 //
 // Generator's Plugin definition.swift
-//  
+//
 //
 //  Created by Miguel de Icaza on 4/4/23.
 //
@@ -13,40 +13,40 @@ import PackagePlugin
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
         var commands: [Command] = []
         // Configure the commands to write to a "GeneratedSources" directory.
-        let genSourcesDir = context.pluginWorkDirectory.appending("GeneratedSources")
+        let genSourcesDir = context.pluginWorkDirectoryURL.appending(path: "GeneratedSources")
 
         // We only generate commands for source targets.
-        let generator: Path = try context.tool(named: "Generator").path
+        let generator = try context.tool(named: "Generator").url
 
-        let api = context.package.directory.appending(["Sources", "ExtensionApi", "extension_api.json"])
-        
-        var arguments: [CustomStringConvertible] = [ api, genSourcesDir ]
-        var outputFiles: [Path] = []
+        let api = context.package.directoryURL
+            .appending(["Sources", "ExtensionApi", "extension_api.json"])
+
+        var arguments = [api.path, genSourcesDir.path]
+        var outputFiles: [URL] = []
         #if os(Windows)
-        // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well
-        outputFiles.append(genSourcesDir.appending(subpath: "Generated.swift"))
-        arguments.append(context.package.directory.appending(subpath: "doc"))
-        arguments.append("--singlefile")
-        commands.append(Command.prebuildCommand(
-            displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
-            executable: generator,
-            arguments: arguments,
-            outputFilesDirectory: genSourcesDir))
+            // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well
+            outputFiles.append(genSourcesDir.appending(path: "Generated.swift"))
+            arguments.append(context.package.directoryURL.appending(path: "doc").path)
+            arguments.append("--singlefile")
+            commands.append(
+                Command.prebuildCommand(
+                    displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
+                    executable: generator,
+                    arguments: arguments,
+                    outputFilesDirectory: genSourcesDir))
         #else
-        outputFiles.append (contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0])})
-        outputFiles.append (contentsOf: known.map { genSourcesDir.appending(["generated", $0])})
+            outputFiles.append(contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0]) })
+            outputFiles.append(contentsOf: known.map { genSourcesDir.appending(["generated", $0]) })
         #endif
 
-        // For Windows with Swift 5.10 both prebuildCommand and buildCommand are needed
-        #if !os(Windows) || swift(>=5.10)
-        commands.append(Command.buildCommand(
-            displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
-            executable: generator,
-            arguments: arguments,
-            inputFiles: [api],
-            outputFiles: outputFiles))
-        #endif
-        
+        commands.append(
+            Command.buildCommand(
+                displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
+                executable: generator,
+                arguments: arguments,
+                inputFiles: [api],
+                outputFiles: outputFiles))
+
         return commands
     }
 }
@@ -1013,3 +1013,9 @@ let known = [
     "ZIPReader.swift",
 
 ]
+
+extension URL {
+    func appending(_ paths: [String]) -> URL {
+        return paths.reduce(self) { $0.appending(path: $1) }
+    }
+}
