@@ -181,8 +181,7 @@ struct Generator {
     }
 
     if singleFile {
-      await PrinterFactory.shared.saveMultiplexed(outputDir + "/generated")
-      //   await PrinterFactory.shared.save(outputDir + "/generated.swift")
+      await PrinterFactory.shared.saveMultiplexed(outputDir)
     }
   }
 }
