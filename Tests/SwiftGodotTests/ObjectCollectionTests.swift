@@ -9,7 +9,7 @@ import XCTest
 
 import XCTest
 import SwiftGodotTestability
-@testable import SwiftGodot
+import SwiftGodot
 
 final class ObjectCollectionTests: GodotTestCase {
     func testAppendingElementStoresInArray() {

@@ -121,7 +121,14 @@ var targets: [Target] = [
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
         ],
-        swiftSettings: [.swiftLanguageMode(.v5)]
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .unsafeFlags(
+                [
+                    "-Xfrontend", "-entry-point-function-name",
+                    "-Xfrontend", "wWinMain",
+                ], .when(platforms: [.windows])),
+        ]
     ),
     // This contains sample code showing how to use the SwiftGodot API
     .target(
@@ -154,24 +161,21 @@ var targets: [Target] = [
         ],
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
+
+    // Macro tests
+    // Idea: -mark_dead_strippable_dylib
+    .testTarget(
+        name: "SwiftGodotMacrosTests",
+        dependencies: [
+            "SwiftGodotMacroLibrary",
+            "SwiftGodot",
+            .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        ],
+        swiftSettings: [.swiftLanguageMode(.v5)]
+    ),
 ]
 
-// Macro tests don't work on Windows yet
-#if !os(Windows)
-    // Idea: -mark_dead_strippable_dylib
-    targets.append(
-        .testTarget(
-            name: "SwiftGodotMacrosTests",
-            dependencies: [
-                "SwiftGodotMacroLibrary",
-                "SwiftGodot",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-            ],
-            swiftSettings: [.swiftLanguageMode(.v5)]
-        ))
-#endif
-
-// libgodot is only available for macOS and testability runtime depends on it
+// libgodot is only available for macOS and most of the tests depend on it
 #if os(macOS)
     /// You might want to build your own libgodot, so you can step into it in the debugger when fixing failing tests. Here's how:
     ///
@@ -181,7 +185,7 @@ var targets: [Target] = [
     /// 4. Change `#if true` to `#if false` below.
     ///
     #if true
-        let libgodot_tests = Target.binaryTarget(
+        let libgodot_runtime = Target.binaryTarget(
             name: "libgodot_tests",
             url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/4.3.5/libgodot.xcframework.zip",
             checksum: "865ea17ad3e20caab05b3beda35061f57143c4acf0e4ad2684ddafdcc6c4f199"
@@ -195,8 +199,7 @@ var targets: [Target] = [
 
     targets.append(contentsOf: [
         // Godot runtime as a library
-
-        libgodot_tests,
+        libgodot_runtime,
 
         // Base functionality for Godot runtime dependant tests
         .target(
@@ -239,7 +242,7 @@ let package = Package(
     name: "SwiftGodot",
     platforms: [
         .macOS(.v14),
-        .iOS (.v17)
+        .iOS(.v17),
     ],
     products: products,
     dependencies: [

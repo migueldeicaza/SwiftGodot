@@ -2,7 +2,7 @@
 
 import XCTest
 import SwiftGodotTestability
-@testable import SwiftGodot
+import SwiftGodot
 
 final class AABBTests: GodotTestCase {
     
