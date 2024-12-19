@@ -46,11 +46,6 @@ jobs:
       - name: Build
         run: |
           swift build --build-tests --quiet
-      - name: Show Generated Files
-        if: always()
-        run: |
-          dir .build\plugins\outputs\swiftgodot\SwiftGodot\destination\CodeGeneratorPlugin\GeneratedSources
-          cat .build\plugins\outputs\swiftgodot\SwiftGodot\destination\CodeGeneratorPlugin\GeneratedSources\*.swift
       - name: Run tests (Swift testing)
         run: swift test --skip-build --no-parallel --disable-xctest
       - name: Run tests (XCTest)
