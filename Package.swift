@@ -124,7 +124,13 @@ var targets: [Target] = [
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
         ],
-        swiftSettings: [.swiftLanguageMode(.v5)]
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .unsafeFlags([
+            "-Xfrontend", "-entry-point-function-name",
+            "-Xfrontend", "wWinMain",
+            ]),
+        ]
     ),
     // This contains sample code showing how to use the SwiftGodot API
     .target(
