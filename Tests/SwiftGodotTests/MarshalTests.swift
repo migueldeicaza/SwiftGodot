@@ -1,6 +1,6 @@
 import XCTest
 import SwiftGodotTestability
-@testable import SwiftGodot
+import SwiftGodot
 
 @Godot
 private class TestNode: Node {
