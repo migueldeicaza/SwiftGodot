@@ -6,7 +6,7 @@
 //
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWithNoArguments {
     public let name: StringName
     public let arguments: [PropInfo] = [] // needed for registration in macro, but always []
@@ -17,7 +17,7 @@ public struct SignalWithNoArguments {
 }
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWith1Argument<Argument: VariantStorable> {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -34,7 +34,7 @@ public struct SignalWith1Argument<Argument: VariantStorable> {
 }
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWith2Arguments<
     Argument1: VariantStorable,
     Argument2: VariantStorable
@@ -56,7 +56,7 @@ public struct SignalWith2Arguments<
 }
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWith3Arguments<
     Argument1: VariantStorable,
     Argument2: VariantStorable,
@@ -81,7 +81,7 @@ public struct SignalWith3Arguments<
 }
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWith4Arguments<
     Argument1: VariantStorable,
     Argument2: VariantStorable,
@@ -109,7 +109,7 @@ public struct SignalWith4Arguments<
 }
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWith5Arguments<
     Argument1: VariantStorable,
     Argument2: VariantStorable,
@@ -140,7 +140,7 @@ public struct SignalWith5Arguments<
 }
 
 /// Describes a signal and its arguments.
-/// - note: It is recommended to use the #signal macro instead of using this directly.
+/// - note: It is recommended to use the @Signal macro instead of using this directly.
 public struct SignalWith6Arguments<
     Argument1: VariantStorable,
     Argument2: VariantStorable,
@@ -375,8 +375,8 @@ public extension Object {
     }
 }
 
-private extension PropInfo {
-    init(
+extension PropInfo {
+    fileprivate init(
         propertyType: (some VariantStorable).Type,
         propertyName: StringName
     ) {

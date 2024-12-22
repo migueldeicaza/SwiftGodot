@@ -115,7 +115,7 @@ class SwiftSprite: Sprite2D {
 ```
 
 When you use the `@Godot` macro, a number of additional macros can be used inside
-your class, like `#signal` [to define signals](Signals.md), `@Callable` to surface a method to
+your class, like `@Signal` [to define signals](Signals.md), `@Callable` to surface a method to
 Godot, and `@Export` to [surface properties](Exports.md).
 
 Behind the scenes these macros use the lower-level ``ClassDB`` API to define functions,

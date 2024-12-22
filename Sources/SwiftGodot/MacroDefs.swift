@@ -240,4 +240,25 @@ public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodot
 @freestanding(declaration, names: arbitrary)
 public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type> = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
 
+/// Defines a Godot signal on a class.
+///
+/// The `@Godot` macro will register any #signal defined signals so that they can be used in the editor.
+///
+/// Usage:
+/// ```swift
+/// @Godot class MyNode: Node2D {
+///     @Signal var gameStarted: SimpleSignal
+///     @Signal var livesChanged: SignalWithArguments<Int>
+///
+///     func startGame() {
+///        gameStarted.emit()
+///        livesChanged.emit(5)
+///     }
+/// }
+/// ```
+
+@attached(accessor)
+public macro Signal() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalAttachmentMacro")
+
+
 #endif
