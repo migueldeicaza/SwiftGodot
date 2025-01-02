@@ -263,8 +263,11 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
     }
 
     if let returnValue, let ret {
-        if ret.gtype != finfo.retType {
-            print ("Your declared function should return the type originally set \(String(describing: finfo.retType)) and \(ret.gtype)")
+        // If returnValue is not nil and `retType` is ".nil", then it means we are expecting a `Variant` and don't care
+        // which types are stored in it.
+        // See https://github.com/godotengine/godot/issues/67544#issuecomment-1382229216
+        if finfo.retType != .nil && ret.gtype != finfo.retType {
+            print ("Function is expected to return \(String(describing: finfo.retType)), returned \(ret.gtype) instead")
             if let rError = r_error {
                 rError.pointee.error = GDEXTENSION_CALL_ERROR_INVALID_METHOD
             }

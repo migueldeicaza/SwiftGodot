@@ -280,7 +280,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         prop_0,
                     ]
                     classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
-                    let prop_1 = PropInfo (propertyType: .object, propertyName: "from", className: StringName("Variant"), hint: .none, hintStr: "", usage: .default)
+                    let prop_1 = PropInfo (propertyType: .nil, propertyName: "from", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let removeSilencesArgs = [
                         prop_1,
                     ]
@@ -622,6 +622,63 @@ final class MacroGodotTests: MacroGodotTestCase {
                         prop_1,
                     ]
                     classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
+                } ()
+            }
+            """
+        )
+    }
+    
+    func testGodotMacroWithCallableFuncHavingVariantsInSignature() {
+        assertExpansion(
+            of: """
+            @Godot
+            private class TestNode: Node {
+                @Callable
+                func foo(variant: Variant?) -> Variant? {
+                    return variant
+                }
+            }
+            """,
+            into: """
+            
+            private class TestNode: Node {
+                func foo(variant: Variant?) -> Variant? {
+                    return variant
+                }
+            
+                func _mproxy_foo(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Variant? = try arguments.optionalVariantArgument(at: 0)
+                        let result = foo(variant: arg0)
+                        guard let result else {
+                            return nil
+                        }
+                        return Variant(result)
+            
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `foo`: \\(error)")
+                        return nil
+                    }
+                }
+            
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
+            
+                private static let _initializeClass: Void = {
+                    let className = StringName("TestNode")
+                    assert(ClassDB.classExists(class: className))
+                    let classInfo = ClassInfo<TestNode> (name: className)
+                    let prop_0 = PropInfo (propertyType: .nil, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .nilIsVariant)
+                    let prop_1 = PropInfo (propertyType: .nil, propertyName: "variant", className: StringName(""), hint: .none, hintStr: "", usage: .default)
+                    let fooArgs = [
+                        prop_1,
+                    ]
+                    classInfo.registerMethod(name: StringName("foo"), flags: .default, returnValue: prop_0, arguments: fooArgs, function: TestNode._mproxy_foo)
                 } ()
             }
             """
