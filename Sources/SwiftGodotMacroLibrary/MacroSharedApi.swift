@@ -209,6 +209,14 @@ var godotVariants = [
     "Vector3i": ".vector3i",
     "Vector4": ".vector4",
     "Vector4i": ".vector4i",
+    
+    // According to:
+    // - https://github.com/godotengine/godot/issues/67544#issuecomment-1382229216
+    // - https://github.com/godotengine/godot/blob/b6e06038f8a373f7fb8d26e92d5f06887e459598/core/doc_data.cpp#L85
+    // It's `.nil` with hint = `.nilIsVariant` in returned value prop info
+    // And `.nil` with hint = `.none` in argument prop info    
+    "Variant": ".nil",
+    "Variant?": ".nil",
 ]
 
 func godotTypeToProp (typeName: String) -> String {

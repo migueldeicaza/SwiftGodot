@@ -4,6 +4,23 @@ import SwiftGodotTestability
 
 @Godot
 private class TestNode: Node {
+    @Callable
+    func foo(_ callable: Callable, a: Int, b: Int) -> Int {
+        guard let variant = callable.call(Variant(a), Variant(b)) else {
+            return -1
+        }
+        
+        guard let value = Int(variant) else {
+            return -1
+        }
+        
+        return value
+    }
+    
+    @Callable
+    func bar(_ value: Variant?) -> Variant? {
+        return value
+    }
 }
 
 final class MarshalTests: GodotTestCase {
@@ -65,6 +82,32 @@ final class MarshalTests: GodotTestCase {
                 XCTAssertEqual(max, maxVariant)
             }
         }
+    }
+    
+    func testCallableArgumentInCallable() {
+        let testNode = TestNode()
+        
+        let result = testNode.foo(Callable({ arguments in
+            guard let arg0 = arguments[0], let arg1 = arguments[1] else {
+                return nil
+            }
+            
+            guard let a = Int(arg0), let b = Int(arg1) else {
+                return nil
+            }
+            
+            return Variant(a * b)
+        }), a: 11, b: 6)
+        
+        XCTAssertTrue(result == 66)
+    }
+    
+    func testCallableMethodReturningVariant() {
+        let testNode = TestNode()
+        
+        XCTAssertEqual(testNode.call(method: "bar", Variant(42)), Variant(42))
+        XCTAssertEqual(testNode.call(method: "bar", Variant("Foo")), Variant("Foo"))
+        XCTAssertEqual(testNode.call(method: "bar", nil), nil)
     }
     
     func testUnsafePointersNMemoryLayout() {
