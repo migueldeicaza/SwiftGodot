@@ -3,6 +3,7 @@
 
 import PackageDescription
 import CompilerPluginSupport
+import Foundation
 
 //var linkerSettings: [LinkerSetting] = []
 //#if os(macOS)
@@ -49,10 +50,12 @@ products.append(
 
 // libgodot is only available for macOS and testability runtime depends on it
 #if os(macOS)
+if ProcessInfo.processInfo.environment["SKIP_BRIDGE"] == nil { // SKIP_BRIDGE is set when cross-compiling to Android from macOS
 products.append(
     .library(
         name: "SwiftGodotTestability",
         targets: ["SwiftGodotTestability"]))
+}
 #endif
 
 var targets: [Target] = [
@@ -150,7 +153,7 @@ targets.append(
 
 // libgodot is only available for macOS
 #if os(macOS)
-
+if ProcessInfo.processInfo.environment["SKIP_BRIDGE"] == nil { // SKIP_BRIDGE is set when cross-compiling to Android from macOS
 /// You might want to build your own libgodot, so you can step into it in the debugger when fixing failing tests. Here's how:
 ///
 /// 1. Check out the appropriate branch of https://github.com/migueldeicaza/libgodot
@@ -184,7 +187,7 @@ targets.append(contentsOf: [
             "libgodot_tests",
             "GDExtension"
         ]),
-    
+
     // General purpose runtime dependant tests
     .testTarget(
         name: "SwiftGodotTests",
@@ -201,6 +204,7 @@ targets.append(contentsOf: [
         ]
     ),
 ])
+}
 #endif
 
 targets.append(contentsOf: [
