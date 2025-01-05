@@ -35,6 +35,8 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
+    timeout-minutes: 10
+
     steps:
       - uses: compnerd/gha-setup-swift@main
         with:
