@@ -18,7 +18,7 @@ public struct GodotCallable: PeerMacro {
         
         if let effects = funcDecl.signature.effectSpecifiers,
            effects.asyncSpecifier?.presence == .present ||
-            effects.throwsSpecifier?.presence == .present {
+            effects.throwsClause?.throwsSpecifier.presence == .present {
             throw GodotMacroError.unsupportedCallableEffect
         }
         
