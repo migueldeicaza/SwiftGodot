@@ -37,7 +37,7 @@ class MacroGodotTestCase: XCTestCase {
                 sourceFiles: [file: .init(moduleName: "test", fullFilePath: "test.swift")]
             )
 
-            let expandedSourceFile = file.expand(macros: Self.macros, in: context, indentationWidth: .spaces(4))
+            let expandedSourceFile = file.expand(macros: Self.macros, contextGenerator: { _ in context }, indentationWidth: .spaces(4))
             
             let testBody = """
             assertExpansion(
