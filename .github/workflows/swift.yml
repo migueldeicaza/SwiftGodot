@@ -27,25 +27,26 @@ jobs:
         xcode-version: "16.0"
     - name: Build
       run: swift build --build-tests --quiet
-    - name: Run tests (XCTest)
-      run: swift test --skip-build --no-parallel --disable-swift-testing
     - name: Run tests (Swift testing)
       run: swift test --skip-build --no-parallel --disable-xctest
+    - name: Run tests (XCTest)
+      run: swift test --skip-build --no-parallel --disable-swift-testing
 
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     
     steps:
-      - uses: compnerd/gha-setup-swift@main
+      - name: Swift Install
+        uses: compnerd/gha-setup-swift@main
         with:
           branch: swift-6.0.3-release
           tag: 6.0.3-RELEASE
       - uses: actions/checkout@v4
       - name: Build
-        run: swift build --build-tests --quiet
-      - name: Run tests (XCTest)
-        run: swift test --skip-build --no-parallel --disable-swift-testing
+        run: |
+          swift build --build-tests --quiet
       - name: Run tests (Swift testing)
         run: swift test --skip-build --no-parallel --disable-xctest
-        
+      - name: Run tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
