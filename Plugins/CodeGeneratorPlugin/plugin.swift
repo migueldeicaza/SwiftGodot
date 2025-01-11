@@ -14,13 +14,13 @@ import PackagePlugin
         var commands: [Command] = []
         // Configure the commands to write to a "GeneratedSources" directory.
         let genSourcesDir = context.pluginWorkDirectoryURL.appending(path: "GeneratedSources")
-        
+
         // We only generate commands for source targets.
         let generator = try context.tool(named: "Generator").url
-        
+
         let api = context.package.directoryURL
             .appending(["Sources", "ExtensionApi", "extension_api.json"])
-        
+
         var arguments = [api.path, genSourcesDir.path]
         var outputFiles: [URL] = []
 #if os(Windows)
@@ -53,7 +53,7 @@ import PackagePlugin
                 inputFiles: [api],
                 outputFiles: outputFiles))
 #endif
-        
+
         return commands
     }
 }
@@ -1022,13 +1022,7 @@ let known = [
 ]
 
 extension URL {
-<<<<<<< HEAD
     func appending(_ paths: [String]) -> URL {
         return paths.reduce(self) { $0.appending(path: $1) }
     }
-=======
-  func appending(_ paths: [String]) -> URL {
-    return paths.reduce(self) { $0.appending(path: $1) }
-  }
->>>>>>> origin/pr/633
 }
