@@ -229,6 +229,7 @@ struct GodotInterface {
     let variant_get_ptr_keyed_checker: GDExtensionInterfaceVariantGetPtrKeyedChecker
     let variant_get_ptr_keyed_getter: GDExtensionInterfaceVariantGetPtrKeyedGetter
     let variant_get_ptr_keyed_setter: GDExtensionInterfaceVariantGetPtrKeyedSetter
+    let variant_get_named: GDExtensionInterfaceVariantGetNamed
     let get_variant_from_type_constructor: GDExtensionInterfaceGetVariantFromTypeConstructor
     let get_variant_to_type_constructor: GDExtensionInterfaceGetVariantToTypeConstructor
 
@@ -342,6 +343,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         variant_get_ptr_keyed_checker: load("variant_get_ptr_keyed_checker"),
         variant_get_ptr_keyed_getter: load("variant_get_ptr_keyed_getter"),
         variant_get_ptr_keyed_setter: load("variant_get_ptr_keyed_setter"),
+        variant_get_named: load("variant_get_named"),
         get_variant_from_type_constructor: load("get_variant_from_type_constructor"),
         get_variant_to_type_constructor: load("get_variant_to_type_constructor"),
         array_operator_index: load("array_operator_index"),
