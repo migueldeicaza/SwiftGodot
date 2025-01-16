@@ -126,10 +126,11 @@ var targets: [Target] = [
         ],
         swiftSettings: [
             .swiftLanguageMode(.v5),
-            .unsafeFlags([
-            "-Xfrontend", "-entry-point-function-name",
-            "-Xfrontend", "wWinMain",
-            ]),
+            .unsafeFlags(
+                [
+                    "-Xfrontend", "-entry-point-function-name",
+                    "-Xfrontend", "wWinMain",
+                ], .when(platforms: [.windows])),
         ]
     ),
     // This contains sample code showing how to use the SwiftGodot API
