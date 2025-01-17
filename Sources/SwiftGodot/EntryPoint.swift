@@ -23,7 +23,7 @@ public protocol ExtensionInterface {
 
 }
 
-class LibGodotExtensionInterface: ExtensionInterface {
+public class LibGodotExtensionInterface: ExtensionInterface {
 
     /// If your application is crashing due to the Variant leak fixes, please
     /// enable this flag, and provide me with a test case, so I can find that
@@ -440,12 +440,7 @@ public func initializeSwiftModule(
     let initialization = UnsafeMutablePointer<GDExtensionInitialization>(extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
-    #if os(Windows)
-        typealias RawType = Int32
-    #else
-        typealias RawType = UInt32
-    #endif
-    initialization.pointee.minimum_initialization_level = GDExtensionInitializationLevel(RawType(minimumInitializationLevel.rawValue))
+    initialization.pointee.minimum_initialization_level = minimumInitializationLevel.asCType
     initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
 }
 
@@ -456,5 +451,30 @@ public func initializeSwiftModule(
  */
 
 func withArgPointers(_ _args: UnsafeMutableRawPointer?..., body: ([UnsafeRawPointer?]) -> Void) {
-    body(unsafeBitCast(_args, to: [UnsafeRawPointer?].self))
+  body(unsafeBitCast(_args, to: [UnsafeRawPointer?].self))
+}
+
+public func setExtensionInterfaceOpaque(library libraryPtr: UnsafeMutableRawPointer, getProcAddrFun godotGetProcAddr: Any) {
+    let interface = LibGodotExtensionInterface(library: libraryPtr, getProcAddrFun: godotGetProcAddr as! GDExtensionInterfaceGetProcAddress)
+    setExtensionInterface(interface: interface)
+}
+
+
+
+#if os(Windows)
+typealias RawType = Int32
+#else
+typealias RawType = UInt32
+#endif
+
+extension GDExtension.InitializationLevel {
+    var asCType: GDExtensionInitializationLevel {
+        GDExtensionInitializationLevel(RawType(rawValue))
+    }
+}
+
+extension GDExtensionInitializationLevel {
+    var asSwiftType: GDExtension.InitializationLevel {
+        GDExtension.InitializationLevel(rawValue: Int64(exactly: rawValue)!)!
+    }
 }
