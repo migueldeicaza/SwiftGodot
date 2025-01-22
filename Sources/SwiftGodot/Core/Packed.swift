@@ -148,7 +148,7 @@ extension PackedFloat32Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Float values.
+    /// Initializes a PackedFloat32Array from an array of Float values.
     public convenience init (_ data: [Float]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -181,7 +181,7 @@ extension PackedFloat64Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Double values.
+    /// Initializes a PackedFloat64Array from an array of Double values.
     public convenience init (_ data: [Double]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -214,7 +214,7 @@ extension PackedInt32Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Int32 values values.
+    /// Initializes a PackedInt32Array from an array of Int32 values values.
     public convenience init (_ data: [Int32]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -247,7 +247,7 @@ extension PackedInt64Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Int32 values values.
+    /// Initializes a PackedInt64Array from an array of Int64 values values.
     public convenience init (_ data: [Int64]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
