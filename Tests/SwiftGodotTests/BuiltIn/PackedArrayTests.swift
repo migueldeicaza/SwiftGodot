@@ -75,6 +75,12 @@ final class PackedArrayTests: GodotTestCase {
         for (idx, v) in vec4s.enumerated() {
             XCTAssertEqual (v, h [idx])
         }
+        
+        let colors: [Color] = [ Color(), .red, .green, .blue, Color(r: 0.1, g: 0.2, b: 0.3, a: 0.4)]
+        let i = PackedColorArray(colors)
+        for (idx, v) in colors.enumerated() {
+            XCTAssertEqual (v, i [idx])
+        }
     }
     
     func testPackedByteArrayExtract () {

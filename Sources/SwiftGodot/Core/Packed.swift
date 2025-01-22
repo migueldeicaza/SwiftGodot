@@ -134,6 +134,21 @@ extension PackedColorArray {
     public func append(value: Color) {
         append(value)
     }
+    
+    /// Initializes a PackedColorArray from an array of Color values.
+    public convenience init (_ data: [Color]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_color_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Color.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
 }
 
 extension PackedFloat32Array {
