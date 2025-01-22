@@ -42,6 +42,39 @@ final class PackedArrayTests: GodotTestCase {
         for (idx, v) in doubles.enumerated() {
             XCTAssertEqual (v, e [idx])
         }
+
+        let vec2s: [Vector2] = [
+            Vector2(),
+            Vector2(x: 0.3, y: .pi),
+            Vector2(x: .greatestFiniteMagnitude, y: -.greatestFiniteMagnitude),
+            Vector2(x: Float32.infinity, y: -.infinity),
+        ]
+        let f = PackedVector2Array(vec2s)
+        for (idx, v) in vec2s.enumerated() {
+            XCTAssertEqual (v, f [idx])
+        }
+        
+        let vec3s: [Vector3] = [
+            Vector3(),
+            Vector3(x: 0.3, y: .pi, z: 2.0 * .pi),
+            Vector3(x: .greatestFiniteMagnitude, y: -.greatestFiniteMagnitude, z: 0),
+            Vector3(x: Float32.infinity, y: -.infinity, z: 0),
+        ]
+        let g = PackedVector3Array(vec3s)
+        for (idx, v) in vec3s.enumerated() {
+            XCTAssertEqual (v, g [idx])
+        }
+        
+        let vec4s: [Vector4] = [
+            Vector4(),
+            Vector4(x: 0.3, y: .pi, z: 2.0 * .pi, w: 1.0 / .pi),
+            Vector4(x: .greatestFiniteMagnitude, y: -.greatestFiniteMagnitude, z: 0, w: -0),
+            Vector4(x: Float32.infinity, y: -.infinity, z: 0, w: -0),
+        ]
+        let h = PackedVector4Array(vec4s)
+        for (idx, v) in vec4s.enumerated() {
+            XCTAssertEqual (v, h [idx])
+        }
     }
     
     func testPackedByteArrayExtract () {
