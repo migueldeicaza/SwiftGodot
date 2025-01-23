@@ -216,6 +216,24 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 @attached(accessor)
 public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
+/// A macro that finds and assigns a node from the scene tree to a stored property.
+///
+/// Use this to quickly assign a stored property to a node in the scene tree.
+/// ```swift
+/// class MyNode: Node2D {
+///     @Node("Entities/Player")
+///     var player: CharacterBody2D
+/// }
+/// ```
+///
+/// If you declare the property as optional, the property will be `nil` if the node is missing.
+/// If you declare the property as non-optional, or forced-unwrap, it will be a runtime error for the node to be missing.
+/// 
+/// - Important: This property will become a computed property, and it cannot be reassigned later.
+@attached(accessor)
+public macro Node(_ path: String? = nil, required: Bool = true) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
+
+
 /// Defines a Godot signal on a class.
 ///
 /// The `@Godot` macro will register any #signal defined signals so that they can be used in the editor.
