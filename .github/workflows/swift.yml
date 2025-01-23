@@ -40,8 +40,8 @@ jobs:
       - name: Swift Install
         uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-6.0.3-release
-          tag: 6.0.3-RELEASE
+          branch: swift-6.1-branch
+          tag: 6.1-DEVELOPMENT-SNAPSHOT-2025-01-22-a
       - uses: actions/checkout@v4
       - name: Build
         run: |
