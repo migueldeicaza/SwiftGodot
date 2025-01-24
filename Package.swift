@@ -3,18 +3,11 @@
 import CompilerPluginSupport
 import PackageDescription
 
-var libraryType: Product.Library.LibraryType
-#if os(Windows)
-    libraryType = .static
-#else
-    libraryType = .dynamic
-#endif
-
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
     .library(
         name: "SwiftGodot",
-        type: libraryType,
+        type: .dynamic,
         targets: ["SwiftGodot"]
     ),
 
@@ -43,11 +36,12 @@ var products: [Product] = [
 
     .library(
         name: "SimpleExtension",
-        type: libraryType,
+        type: .dynamic,
         targets: ["SimpleExtension"]
     ),
 ]
 
+/// Targets are the basic building blocks of a package. A target can define a module, plugin, test suite, etc.
 var targets: [Target] = [
     .executableTarget(
         name: "EntryPointGenerator",
@@ -95,13 +89,16 @@ var targets: [Target] = [
     ),
 
     // This is a build-time plugin that invokes the generator and produces
-    // the bindings that are compiled into SwiftGodot
+    // the bindings that are compiled into SwiftGodot.
     .plugin(
         name: "CodeGeneratorPlugin",
         capability: .buildTool(),
         dependencies: ["Generator"]
     ),
 
+    // This is a build-time plugin that generates the EntryPoint.swift file,
+    // which is used to bootstrap the SwiftGodot API and register your
+    // extension and classes with Godot.
     .plugin(
         name: "EntryPointGeneratorPlugin",
         capability: .buildTool(),
@@ -133,7 +130,6 @@ var targets: [Target] = [
         exclude: ["SwiftSprite.gdextension", "README.md"],
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
-    //linkerSettings: linkerSettings),
 
     // This is the binding itself, it is made up of our generated code for the
     // Godot API, supporting infrastructure and extensions to the API to provide
@@ -141,7 +137,6 @@ var targets: [Target] = [
     .target(
         name: "SwiftGodot",
         dependencies: ["GDExtension"],
-        //linkerSettings: linkerSettings,
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
