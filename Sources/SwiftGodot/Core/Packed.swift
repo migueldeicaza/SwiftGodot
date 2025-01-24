@@ -134,6 +134,21 @@ extension PackedColorArray {
     public func append(value: Color) {
         append(value)
     }
+    
+    /// Initializes a PackedColorArray from an array of Color values.
+    public convenience init (_ data: [Color]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_color_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Color.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
 }
 
 extension PackedFloat32Array {
@@ -148,7 +163,7 @@ extension PackedFloat32Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Float values.
+    /// Initializes a PackedFloat32Array from an array of Float values.
     public convenience init (_ data: [Float]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -181,7 +196,7 @@ extension PackedFloat64Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Double values.
+    /// Initializes a PackedFloat64Array from an array of Double values.
     public convenience init (_ data: [Double]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -214,7 +229,7 @@ extension PackedInt32Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Int32 values values.
+    /// Initializes a PackedInt32Array from an array of Int32 values values.
     public convenience init (_ data: [Int32]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -247,7 +262,7 @@ extension PackedInt64Array {
         }
     }
     
-    /// Initializes a PackedByteArray from an array of Int32 values values.
+    /// Initializes a PackedInt64Array from an array of Int64 values values.
     public convenience init (_ data: [Int64]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
@@ -283,6 +298,21 @@ extension PackedVector2Array {
     public func append(value: Vector2) {
         append(value)
     }
+
+    /// Initializes a PackedVector2Array from an array of Vector2 values.
+    public convenience init (_ data: [Vector2]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_vector2_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Vector2.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
 }
 
 extension PackedVector3Array {
@@ -300,6 +330,21 @@ extension PackedVector3Array {
     public func append(value: Vector3) {
         append(value)
     }
+
+    /// Initializes a PackedVector3Array from an array of Vector3 values.
+    public convenience init (_ data: [Vector3]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_vector3_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Vector3.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
+        }
+    }
 }
 
 extension PackedVector4Array {
@@ -311,6 +356,21 @@ extension PackedVector4Array {
         }
         set {
             set (index: Int64 (index), value: newValue)
+        }
+    }
+
+    /// Initializes a PackedVector4Array from an array of Vector4 values.
+    public convenience init (_ data: [Vector4]) {
+        self.init ()
+        _ = resize(newSize: Int64(data.count))
+        if let ptr = gi.packed_vector4_array_operator_index(&content, 0) {
+            ptr.withMemoryRebound(to: Vector4.self, capacity: data.count) { typed in
+                var idx = 0
+                for value in data {
+                    typed [idx] = value
+                    idx += 1
+                }
+            }
         }
     }
 }
