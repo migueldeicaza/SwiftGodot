@@ -71,7 +71,7 @@ public struct SceneTreeMacro: AccessorMacro {
             // the type was non-optional, so use as! and force unwrap; this will be a runtime error if the node is not found
             return [
                 """
-                get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as? \(unwrappedType) }
+                get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as! \(unwrappedType) }
                 """,
             ]
         }
