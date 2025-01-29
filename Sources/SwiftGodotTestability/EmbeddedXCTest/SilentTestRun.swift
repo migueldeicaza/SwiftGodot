@@ -13,10 +13,10 @@ import XCTest
 /// without the embedded engine running. This avoids having
 /// duplicate runs of the test appear in the output.
 open class SilentTestRun: XCTestCaseRun {
-  open override required init(test: XCTest) { super.init(test: XCTestCase()) }
+  public override required init(test: XCTest) { super.init(test: XCTestCase()) }
   open override func start() {}
   open override func stop() {}
-  open override func record(_ issue: XCTIssue) {}
+  // open override func record(_ issue: XCTIssue) {}
   open override var hasBeenSkipped: Bool { true }
   open override var hasSucceeded: Bool { false }
   open override var skipCount: Int { 0 }
