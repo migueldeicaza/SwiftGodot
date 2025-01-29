@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 4/8/23.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 public enum ArrayError {
     case outOfRange

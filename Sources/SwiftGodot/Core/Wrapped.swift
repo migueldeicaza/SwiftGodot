@@ -33,7 +33,7 @@
 // We ensure that all Godot
 
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 func pd (_ str: String) {
     #if false

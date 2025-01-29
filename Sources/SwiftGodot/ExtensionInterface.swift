@@ -2,7 +2,7 @@
 //  ExtensionInterface.swift: Extension interface for SwiftGodot
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 /// The pointer to the Godot Extension Interface
 var extensionInterface: ExtensionInterface!

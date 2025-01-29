@@ -5,7 +5,7 @@
 //
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process

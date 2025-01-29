@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 3/26/23.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 extension StringName: CustomStringConvertible, Hashable {
     /// Creates a StringName from a Swift String.Substring
