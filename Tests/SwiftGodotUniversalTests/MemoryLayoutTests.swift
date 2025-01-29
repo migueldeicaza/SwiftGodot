@@ -8,7 +8,7 @@
 import XCTest
 import ExtensionApi
 import ExtensionApiJson
-@testable import SwiftGodot
+import SwiftGodot
 
 final class MemoryLayoutTests: XCTestCase {
     

@@ -7,7 +7,7 @@
 
 import XCTest
 import SwiftGodotTestability
-@testable import SwiftGodot
+import SwiftGodot
 
 final class IntersectRayResultTests: GodotTestCase {
     func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() throws {

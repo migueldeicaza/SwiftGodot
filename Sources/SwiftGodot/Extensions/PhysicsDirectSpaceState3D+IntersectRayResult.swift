@@ -40,7 +40,7 @@ extension PhysicsDirectSpaceState3D {
         /// The face index at the intersection point.
         public let faceIndex: Int
 
-        init?(_ dictionary: GDictionary) {
+        public init?(_ dictionary: GDictionary) {
             guard dictionary.isEmpty() == false,
                   let position: Vector3 = dictionary.makeOrUnwrap(key: "position"),
                   let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),

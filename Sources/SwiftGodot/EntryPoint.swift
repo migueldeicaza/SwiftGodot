@@ -5,63 +5,7 @@
 //
 //
 
-@_implementationOnly import GDExtension
-
-public protocol ExtensionInterface {
-
-    func variantShouldDeinit(content: UnsafeRawPointer) -> Bool
-
-    func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool
-
-    func objectInited(object: Wrapped)
-
-    func objectDeinited(object: Wrapped)
-
-    func getLibrary() -> UnsafeMutableRawPointer
-
-    func getProcAddr() -> OpaquePointer
-
-}
-
-class LibGodotExtensionInterface: ExtensionInterface {
-
-    /// If your application is crashing due to the Variant leak fixes, please
-    /// enable this flag, and provide me with a test case, so I can find that
-    /// pesky scenario.
-    public let experimentalDisableVariantUnref = false
-
-    private let library: GDExtensionClassLibraryPtr
-    private let getProcAddrFun: GDExtensionInterfaceGetProcAddress
-
-    public init(library: GDExtensionClassLibraryPtr, getProcAddrFun: GDExtensionInterfaceGetProcAddress) {
-        self.library = library
-        self.getProcAddrFun = getProcAddrFun
-    }
-
-    public func variantShouldDeinit(content: UnsafeRawPointer) -> Bool {
-        return !experimentalDisableVariantUnref
-    }
-
-    public func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool {
-        return true
-    }
-
-    public func objectInited(object: Wrapped) {}
-
-    public func objectDeinited(object: Wrapped) {}
-
-    public func getLibrary() -> UnsafeMutableRawPointer {
-        return UnsafeMutableRawPointer(mutating: library)
-    }
-
-    public func getProcAddr() -> OpaquePointer {
-        return unsafeBitCast(getProcAddrFun, to: OpaquePointer.self)
-    }
-
-}
-
-/// The pointer to the Godot Extension Interface
-var extensionInterface: ExtensionInterface!
+internal import GDExtension
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
@@ -72,16 +16,6 @@ var extensionDeInitCallbacks: [OpaquePointer: ((GDExtension.InitializationLevel)
 
 func loadFunctions(loader: GDExtensionInterfaceGetProcAddress) {
 
-}
-
-///
-/// This method is used to configure the extension interface for SwiftGodot to
-/// operate.   It is only used when you use SwiftGodot embedded into an
-/// application - as opposed to using SwiftGodot purely as an extension
-///
-public func setExtensionInterface(interface: ExtensionInterface) {
-    extensionInterface = interface
-    loadGodotInterface(unsafeBitCast(interface.getProcAddr(), to: GDExtensionInterfaceGetProcAddress.self))
 }
 
 // Extension initialization callback
@@ -421,8 +355,8 @@ public func initializeSwiftModule(
     _ godotGetProcAddrPtr: OpaquePointer,
     _ libraryPtr: OpaquePointer,
     _ extensionPtr: OpaquePointer,
-    initHook: @escaping (GDExtension.InitializationLevel) -> (),
-    deInitHook: @escaping (GDExtension.InitializationLevel) -> (),
+    initHook: @escaping (GDExtension.InitializationLevel) -> Void,
+    deInitHook: @escaping (GDExtension.InitializationLevel) -> Void,
     minimumInitializationLevel: GDExtension.InitializationLevel = .scene
 ) {
     let getProcAddrFun = unsafeBitCast(godotGetProcAddrPtr, to: GDExtensionInterfaceGetProcAddress.self)
@@ -440,12 +374,7 @@ public func initializeSwiftModule(
     let initialization = UnsafeMutablePointer<GDExtensionInitialization>(extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
-    #if os(Windows)
-        typealias RawType = Int32
-    #else
-        typealias RawType = UInt32
-    #endif
-    initialization.pointee.minimum_initialization_level = GDExtensionInitializationLevel(RawType(minimumInitializationLevel.rawValue))
+    initialization.pointee.minimum_initialization_level = minimumInitializationLevel.asCType
     initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
 }
 
@@ -457,4 +386,24 @@ public func initializeSwiftModule(
 
 func withArgPointers(_ _args: UnsafeMutableRawPointer?..., body: ([UnsafeRawPointer?]) -> Void) {
     body(unsafeBitCast(_args, to: [UnsafeRawPointer?].self))
+}
+
+#if os(Windows)
+    typealias RawType = Int32
+#else
+    typealias RawType = UInt32
+#endif
+
+extension GDExtension.InitializationLevel {
+    /// Converts the public Swift type to the private Godot type.
+    var asCType: GDExtensionInitializationLevel {
+        GDExtensionInitializationLevel(RawType(rawValue))
+    }
+}
+
+extension GDExtensionInitializationLevel {
+    /// Converts the private Godot type to the public Swift type.
+    var asSwiftType: GDExtension.InitializationLevel {
+        GDExtension.InitializationLevel(rawValue: Int64(exactly: rawValue)!)!
+    }
 }

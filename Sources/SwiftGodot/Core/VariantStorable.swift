@@ -5,7 +5,7 @@
 //  Created by Padraig O Cinneide on 2023-10-22.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
  
 
 /// Types that conform to VariantStorable can be stored in a Variant and can be extracted

@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 4/11/23.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 extension ObjectCollection: VariantStorable {
     public typealias Representable = GArray

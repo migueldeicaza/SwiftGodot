@@ -4,7 +4,7 @@
 //  Created by Miguel de Icaza on 3/25/23.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 func additionalRegistations (name: StringName) {
     // I guess this is to surface functions to Godot, but not clear why should

@@ -51,8 +51,10 @@ public class EmbeddingController: NSObject, XCTestObservation {
   /// the test bodies are actually executed.
   public static func setUp(hostClass: TestHost.Type) {
     if _instance == nil {
+      #if os(macOS)
       // turn off buffering on stdout so that we see the output immediately
       setbuf(__stdoutp, nil)
+      #endif
 
       let observer = EmbeddingController(host: hostClass.init())
       _instance = observer
@@ -105,7 +107,7 @@ public class EmbeddingController: NSObject, XCTestObservation {
   }
 
   public func testSuiteDidFinish(_ testSuite: XCTestSuite) {
-    if testSuite.className == "XCTestCaseSuite" {
+    if "\(type(of: testSuite))" == "XCTestCaseSuite" {
       registerSuite(testSuite)
     }
   }
