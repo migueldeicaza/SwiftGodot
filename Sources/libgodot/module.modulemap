@@ -1,0 +1,4 @@
+module libgodot {
+    header "libgodot.h"
+    export *
+}

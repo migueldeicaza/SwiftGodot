@@ -2,6 +2,7 @@
 
 import CompilerPluginSupport
 import PackageDescription
+import Foundation
 
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
@@ -176,7 +177,14 @@ var targets: [Target] = [
 ]
 
 // libgodot is only available for macOS and most of the tests depend on it
-#if os(macOS)
+var godotRuntime: Target?
+if FileManager.default.fileExists(atPath: "libgodot.xcframework") {
+    godotRuntime = .binaryTarget(
+        name: "libgodot",
+        path: "libgodot.xcframework"
+    )
+} else { 
+    #if os(macOS)
     /// You might want to build your own libgodot, so you can step into it in the debugger when fixing failing tests. Here's how:
     ///
     /// 1. Check out the appropriate branch of https://github.com/migueldeicaza/libgodot
@@ -184,29 +192,29 @@ var targets: [Target] = [
     /// 3. Use `scripts/make-libgodot.framework` to build an `xcframework` and put it at the root of your SwiftGodot work tree.
     /// 4. Change `#if true` to `#if false` below.
     ///
-    #if true
-        let libgodot_runtime = Target.binaryTarget(
-            name: "libgodot_tests",
-            url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/4.3.5/libgodot.xcframework.zip",
-            checksum: "865ea17ad3e20caab05b3beda35061f57143c4acf0e4ad2684ddafdcc6c4f199"
-        )
-    #else
-        let libgodot_tests = Target.binaryTarget(
-            name: "libgodot_tests",
-            path: "libgodot.xcframework"
-        )
+    godotRuntime = .binaryTarget(
+        name: "libgodot",
+        url: "https://github.com/migueldeicaza/SwiftGodotKit/releases/download/4.3.5/libgodot.xcframework.zip",
+        checksum: "865ea17ad3e20caab05b3beda35061f57143c4acf0e4ad2684ddafdcc6c4f199"
+    )
     #endif
 
+    #if os(Windows)
+    godotRuntime = .systemLibrary(name: "libgodot")
+    #endif
+}
+
+if let godotRuntime {
     targets.append(contentsOf: [
         // Godot runtime as a library
-        libgodot_runtime,
+        godotRuntime,
 
         // Base functionality for Godot runtime dependant tests
         .target(
             name: "SwiftGodotTestability",
             dependencies: [
                 "SwiftGodot",
-                "libgodot_tests",
+                "libgodot",
                 "GDExtension",
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
@@ -235,8 +243,7 @@ var targets: [Target] = [
         .library(
             name: "SwiftGodotTestability",
             targets: ["SwiftGodotTestability"]))
-
-#endif
+}
 
 let package = Package(
     name: "SwiftGodot",
