@@ -1,4 +1,5 @@
-module libgodot {
+module libgodot [system][extern_c] {
     header "libgodot.h"
+    link "godot"
     export *
 }
