@@ -39,6 +39,12 @@ var products: [Product] = [
         type: .dynamic,
         targets: ["SimpleExtension"]
     ),
+
+    .library(
+        name: "ManualExtension",
+        type: .dynamic,
+        targets: ["ManualExtension"]
+    ),
 ]
 
 /// Targets are the basic building blocks of a package. A target can define a module, plugin, test suite, etc.
@@ -127,7 +133,17 @@ var targets: [Target] = [
     .target(
         name: "SimpleExtension",
         dependencies: ["SwiftGodot"],
-        exclude: ["SwiftSprite.gdextension", "README.md"],
+        exclude: ["SimpleExtension.gdextension", "README.md"],
+        swiftSettings: [.swiftLanguageMode(.v5)],
+        plugins: [.plugin(name: "EntryPointGeneratorPlugin")]
+    ),
+
+    // This contains sample code showing how to use the SwiftGodot API
+    // with manual registration of methods and properties
+    .target(
+        name: "ManualExtension",
+        dependencies: ["SwiftGodot"],
+        exclude: ["ManualExtension.gdextension", "README.md"],
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
