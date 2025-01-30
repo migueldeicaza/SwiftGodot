@@ -212,7 +212,7 @@ public macro NativeHandleDiscarding() = #externalMacro(module: "SwiftGodotMacroL
 /// }
 /// ```
 ///
-/// - Important: This property will become a computed property, and it cannot be reassigned later.
+/// The generated property will be computed, and therefore read-only.
 @attached(accessor)
 public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
@@ -229,7 +229,7 @@ public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodot
 /// If you declare the property as optional, the property will be `nil` if the node is missing.
 /// If you declare the property as non-optional, or forced-unwrap, it will be a runtime error for the node to be missing.
 /// 
-/// - Important: This property will become a computed property, and it cannot be reassigned later.
+/// The generated property will be computed, and therefore read-only.
 @attached(accessor)
 public macro Node(_ path: String? = nil, required: Bool = true) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
