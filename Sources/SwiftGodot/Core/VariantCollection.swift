@@ -85,7 +85,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     
     func unwrap(_ variant: Variant) -> Element {
         guard let element = Element(variant) else {
-            fatalError("VariantCollection<\(Element.self)> got a variant with gtype = \(variant.gtype.debugDescription)")
+            fatalError("VariantCollection<\(Element.self)> got a variant with gtype = \(variant.gtype)")
         }
         return element
     }
