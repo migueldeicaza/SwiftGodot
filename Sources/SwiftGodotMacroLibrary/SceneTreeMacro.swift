@@ -58,22 +58,22 @@ public struct SceneTreeMacro: AccessorMacro {
         let preferredIdentifier = preferredContent?.text
 
         let optionalType = nodeType.as(OptionalTypeSyntax.self)?.wrappedType
-        let unwrappedType = nodeType.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType ?? nodeType
+        let implicitType = nodeType.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType
+        let unwrappedType = implicitType ?? optionalType ?? nodeType
 
-        if let optionalType {
-            // the type was optional, so use an as? case and allow nil
-            return [
-                """
-                get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as? \(optionalType) }
-                """,
-            ]
+        let castOperator: String
+        if let _ = optionalType ?? implicitType {
+            // the type was optional or implicit, so use an as? case
+            castOperator = "as?"
         } else {
             // the type was non-optional, so use as! and force unwrap; this will be a runtime error if the node is not found
-            return [
-                """
-                get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as! \(unwrappedType) }
-                """,
-            ]
+            castOperator = "as!"
         }
+
+        return [
+            """
+            get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) \(raw: castOperator) \(unwrappedType) }
+            """,
+        ]
     }
 }
