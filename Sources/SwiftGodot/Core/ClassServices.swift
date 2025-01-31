@@ -255,7 +255,9 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
     guard let classInstance else { return }
         
     let finfo = udata.assumingMemoryBound(to: ClassInfo.FunctionInfo.self).pointee
-    let object = Unmanaged<Object>.fromOpaque(classInstance).takeUnretainedValue()
+    let ref = Unmanaged<WrappedReference>.fromOpaque(classInstance).takeUnretainedValue()
+    guard let object = ref.value as? Object else { return }
+
     
     let ret = withArguments(pargs: variantArgs, argc: argc) { arguments in
         let bound = finfo.function(object)

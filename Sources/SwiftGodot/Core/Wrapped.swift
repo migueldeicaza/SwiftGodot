@@ -12,25 +12,9 @@
 // state is preserved if the object is passed to Godot, and later it is
 // resurfaced to the Swift universe.
 //
-// We recognize the difference between objects that are merely proxies to
-// the Godot API, and act as bridges, but whose entire state resides in
-// the Godot land, and we call those FrameworkTypes vs types that the user
-// has subclassed and might have potentially added state that needs to be
-// preserved.
+// We ensure that all Godot objects that are surfaced to Swift retain their
+// identity.  So we keep a table of every surfaced Godot object into Swift.
 //
-// FrameworkTypes are recreated on demand if necessary from their handle
-// as they are only a proxy for the Godot side of the code, there is no
-// harm in creating different copies of it, and destroying them when they
-// are no longer in use.   To support identity, we implement Equatable
-// based on their handles.
-//
-// Subclassed types are those that the user might have created, and could
-// potentially keep state, so we need to keep those objects alive until
-// they are destroyed, and when the framework surfaces objects of this
-// type, we need to find and locate the existing live object, rather than
-// returning a new instance
-//
-// We ensure that all Godot
 
 @_implementationOnly import GDExtension
 
@@ -52,15 +36,42 @@ var xmap: [UnsafeRawPointer: String] = [:]
 /// pointer to the Godot native object and also implements the Identifiable
 /// protocol using this pointer.
 ///
+/// Wrapped manages the lifecycle of these objects, and in the event that an
+/// object in the Godot world has been disposed, the handle in the Wrapped
+/// object will be cleared - you can detect this condition by calling `isValid`
+/// on the object.
+///
+/// # State Management
+///
 /// Wrapped subclasses come in two forms: straight bindings to the Godot
 /// API which are used to expose capabilities to developers.   These objects, referred
 /// to as Framework types do not have any additional state associated in
-/// Swift, so they can be discarded or recreated as many times as it is needed.
+/// Swift.
 ///
 /// When user subclass Wrapped, they might have state associated with them,
 /// so those objects are preserved and are not thrown away until they are
 /// explicitly relinquished by both Godot and any references you might hold to
-/// them.   These are known as User types.
+/// them.   These are known as User types.   Objects can be subclassed either
+/// to attach additional runtime information, or to override methods (we follow
+/// the Godot conventions and the methods are prefixed with an underscore).
+///
+/// # LifeCycle
+///
+/// Some special handling is done for different objects in the Godot hierarchy.
+/// The way we now handle the lifecycle of Godot objects in Swift is the following:
+/// If an object is not a RefCounted, we keep a strong reference to it, so that only
+/// a call to the appropriate free method can delete the object.
+///
+/// If an object is a RefCounted, we keep track of the reference()/unreference() calls
+/// to it, and we keep a weak reference to it if there are no references to it in Godot,
+/// otherwise we keep a strong reference to it. This guarantees that the object can
+/// still be deleted when no reference to it exists anymore, while making sure that
+/// subtyped objects keep their state on the Swift side throughout the Godot object's
+/// lifetime. As the Swift wrapper also increases the reference count of the
+/// RefCounted, this means that once a RefCounted is passed to the Swift side, that
+/// Godot object will always be destroyed by the Swift wrapper eventually.
+///
+/// # Type Registration
 ///
 /// Any subclass ends up calling the Wrapped(StringName) constructor which
 /// provides the name of the most-derived framework type, and this constructor
@@ -76,13 +87,9 @@ var xmap: [UnsafeRawPointer: String] = [:]
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Points to the underlying object
     public var handle: UnsafeRawPointer?
-    /// If this is true, we created the object, and we are responsible for its lifecyle, otherwise, we are not
-    /// like when objects are surfaced from Godot-land, and all we do is provide a convenience to access
-    /// it.
-    var ownsHandle: Bool
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
-    
+
     /// Conformance to Identifiable by using the native handle to the object
     public var id: Int { Int (bitPattern: handle) }
     
@@ -115,60 +122,46 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         []
     }
 
+    @inline(never)
+    public static func attemptToUseObjectFreedByGodot() {
+        fatalError ("Wrapped.handle was nil, which indicates the object was cleared by Godot")
+    }
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
         pd ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
         return nil
     }
 
     deinit {
-        if ownsHandle {
-            if let handle {
-                guard extensionInterface.objectShouldDeinit(handle: handle) else { return }
+        // Use the following to catch the deinit happening and then the free framework
+        // code running - we have no way of notifying that code that we are dead.
+        #if DEBUG_DEINIT
+        let opaque: UnsafeMutableRawPointer = Unmanaged.passUnretained(self).toOpaque()
+        print ("Wrapped.deinit \(String(describing: opaque)) handle=\(handle)")
+        if let so = self as? Object {
+            if so.isValid {
+                print ("   -> \(so)")
+            } else {
+                print("    -> \(type(of:self)) [DIED BEFORE DEINIT]")
+            }
+        }
+        #endif
+        if let handle {
+            guard extensionInterface.objectShouldDeinit(handle: handle) else { return }
 #if DEBUG_INSTANCES
-                let type = xmap[handle] ?? "unknown"
-                let txt = "DEINIT for object=\(type) handle=\(handle)"
+            let type = xmap[handle] ?? "unknown"
+            let txt = "DEINIT for object=\(type) handle=\(handle)"
 #endif
 
-                if let res = self as? RefCounted {
-                    if res.unreference() {
-#if DEBUG_INSTANCES
-                        print ("\(txt): dropped to zero, destroying rc=\(res.getReferenceCount())")
-#endif
-                        gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
-                    } else {
-#if DEBUG_INSTANCES
-                        print ("\(txt): Unreferenced, but still have instances alive rc=\(res.getReferenceCount())")
-#endif
-                    }
-                } else {
-                    if self is Node {
-                        // TODO: I seem to recall that Nodes that are added to a scene are managed by the scene
-                        // and they are owned by the scene.   I do indeed not get leaks from those.
-                        //
-                        // The question is whether I should delete Nodes that were not added to a scene, and
-                        // destroy them here, and if so, what is the criteria to do so - is it purely
-                        // Node.getTree() returning nil an indicator that this is a loose node?
-#if DEBUG_INSTANCES
-                        print ("\(txt) is a node, Godot will release")
-#endif
-                    } else {
-                        #if DEBUG_INSTANCES
-                        print ("\(txt) plain object, destroying")
-                        #endif
+            if let res = self as? RefCounted {
+                Callable({ [handle] (args: borrowing Arguments) in
+                    var result: Bool = false
+                    gi.object_method_bind_ptrcall(RefCounted.method_unreference, UnsafeMutableRawPointer(mutating: handle), nil, &result)
+                    if result {
                         gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
                     }
-                }
+                    return nil
+                }).callDeferred()
             }
-        } else {
-#if DEBUG_INSTANCES
-            let txt: String
-            if let handle {
-                txt = xmap[handle] ?? "unknown"
-            } else {
-                txt = "NIL"
-            }
-            print ("deinit: we do not own this object, nothing to do: object=\(txt) handle=\(handle)")
-#endif
         }
         extensionInterface.objectDeinited(object: self)
     }
@@ -180,8 +173,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     static var frameworkTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: frameworkTypeBindingCreate,
         free_callback: frameworkTypeBindingFree,
-        reference_callback: nil) // frameworkTypeBindingReference)
-
+        reference_callback: frameworkTypeBindingReference)
 
     /// Returns the Godot's class name as a `StringName`, returns the empty string on error
     public var godotClassName: StringName {
@@ -238,12 +230,15 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// For use by the framework, you should not need to call this.
     public required init (nativeHandle: UnsafeRawPointer) {
         handle = nativeHandle
-        ownsHandle = false
         extensionInterface.objectInited(object: self)
+
 #if DEBUG_INSTANCES
         xmap [nativeHandle] = "\(self)"
         print ("Init Object From Handle: \(nativeHandle) -> \(self)")
 #endif
+        if gi.object_get_instance_binding(UnsafeMutableRawPointer (mutating: handle),  extensionInterface.getLibrary(), nil) == nil {
+            bindGodotInstance(instance: self, handle: nativeHandle)
+        }
     }
     
     /// This property indicates if the instance is valid or not.
@@ -255,6 +250,28 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return handle != nil
     }
 
+    /// Use this to release objects that are neither Nodes or RefCounted subclasses.
+    ///
+    /// To release a ``Node`` or a Node subclass, call ``Node.queueFree()``,
+    /// ``RefCounted`` objects are destroyed automatically when the last reference
+    /// is gone, so it is not necessary to call ``free`` on those.
+    public func free() {
+        guard !(self is Node) else {
+            print ("SwiftGodot: Cannot call free() on Nodes; queueFree() should be used instead.")
+            return
+        }
+        guard !(self is RefCounted) else  {
+            print ("SwiftGodot: Cannot call free() on RefCounted; release all references to it instead.")
+            return
+        }
+        guard isValid else {
+            print ("SwiftGodot: free() called on an invalid object.")
+            return
+        }
+
+        gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
+    }
+
     /// The constructor chain that uses StringName is internal, and is triggered
     /// when a class is initialized with the empty constructor - this means that
     /// subclasses will have a different name than the subclass.
@@ -263,7 +280,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             fatalError("SWIFT: It was not possible to construct a \(Self.godotClassName.description)")
         }
         bindingObject = nil
-        ownsHandle = true
         let handle = UnsafeRawPointer(godotObject)
         self.handle = handle
 #if DEBUG_INSTANCES
@@ -280,23 +296,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     
     open class var classInitializer: Void { () }
 }
-    
+
 func bindGodotInstance(instance: some Wrapped, handle: UnsafeRawPointer) {
     let name = instance.self.godotClassName
     let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: instance)))
     let frameworkType = thisTypeName == name
-    let retain = frameworkType ? Unmanaged.passUnretained(instance) : Unmanaged.passRetained(instance)
-
-    // This I believe should only be set for user subclasses, and not anything else.
-    if frameworkType {
-        //pd ("Skipping object registration, this is a framework type")
-    } else {
-        //pd ("Registering instance with Godot")
-        withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
-            gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
-                                    ptr, retain.toOpaque())
-        }
-    }
     
     var callbacks: GDExtensionInstanceBindingCallbacks
     if frameworkType {
@@ -304,16 +308,37 @@ func bindGodotInstance(instance: some Wrapped, handle: UnsafeRawPointer) {
     } else {
         callbacks = Wrapped.userTypeBindingCallback
     }
+
+    let reference: WrappedReference
+    if let refCounted = instance as? RefCounted, refCounted.getReferenceCount() <= 1 {
+        reference = WrappedReference(instance, strong: false)
+    } else {
+        reference = WrappedReference(instance, strong: true)
+    }
+
     tableLock.withLockVoid {
         if frameworkType {
-            // Speed optimization, I do not think that we need this
-            //liveFrameworkObjects [handle] = instance
+            liveFrameworkObjects [handle] = reference
         } else {
-            liveSubtypedObjects [handle] = instance
+            liveSubtypedObjects [handle] = reference
+        }
+    }
+
+    let unmanaged = Unmanaged<WrappedReference>.passUnretained(reference)
+
+    // This I believe should only be set for user subclasses, and not anything else.
+    if frameworkType {
+        //pd ("Skipping object registration, this is a framework type")
+    } else {
+        //pd ("Registering instance with Godot")
+        // Retain an additional unmanaged reference that will be released in freeFunc().
+        withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
+            gi.object_set_instance (UnsafeMutableRawPointer (mutating: handle),
+                                    ptr, unmanaged.retain().toOpaque())
         }
     }
     
-    gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle),  extensionInterface.getLibrary(), retain.toOpaque(), &callbacks)
+    gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle),  extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
 }
 
 var userTypes: [String:(UnsafeRawPointer)->Wrapped] = [:]
@@ -365,6 +390,55 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     }
 }
 
+final class WrappedReference {
+
+    typealias T = Wrapped
+
+    public init(_ val: T, strong: Bool = true) {
+        self.ref = val
+        if strong {
+            strongify()
+        }
+    }
+    
+    deinit {
+        weakify()
+    }
+    
+    public final func strongify() -> Self {
+        if strong {
+            return self
+        }
+        if let value {
+            Unmanaged<T>.passUnretained(value).retain()
+        }
+        strong = true
+        return self
+    }
+    
+    public final func weakify() -> Self {
+        if !strong {
+            return self
+        }
+        if let value {
+            Unmanaged<T>.passUnretained(value).release()
+        }
+        strong = false
+        return self
+    }
+    
+    public final func isStrong() -> Bool {
+        return strong
+    }
+    
+    public var value: T? {
+        return ref
+    }
+
+    private weak var ref: T?
+    private var strong: Bool = false
+}
+
 /// Registers the user-type specified with the Godot system, and allows it to
 /// receive any of the calls from Godot virtual methods (those that are prefixed
 /// with an underscore)
@@ -389,8 +463,8 @@ public func unregister<T:Wrapped> (type: T.Type) {
 
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
-var liveFrameworkObjects: [UnsafeRawPointer:Wrapped] = [:]
-var liveSubtypedObjects: [UnsafeRawPointer:Wrapped] = [:]
+var liveFrameworkObjects: [UnsafeRawPointer:WrappedReference] = [:]
+var liveSubtypedObjects: [UnsafeRawPointer:WrappedReference] = [:]
 
 // Lock for accessing the above
 var tableLock = NIOLock()
@@ -411,7 +485,7 @@ fileprivate var bindingObject: UnsafeMutableRawPointer? = nil
 /// are the only ones that would keep state
 func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
     tableLock.withLock {
-        return liveSubtypedObjects [handleAddress]
+        return liveSubtypedObjects [handleAddress]?.value
     }
 }
 
@@ -423,13 +497,13 @@ func lookupLiveObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
 /// we do not get the base type, but the most derived one
 func lookupFrameworkObject (handleAddress: UnsafeRawPointer) -> Wrapped? {
     tableLock.withLock {
-        return liveFrameworkObjects [handleAddress]
+        return liveFrameworkObjects [handleAddress]?.value
     }
 }
 
 func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
     tableLock.withLock {
-        if let o = (liveFrameworkObjects [nativeHandle] ?? liveSubtypedObjects [nativeHandle]) {
+        if let o = (liveFrameworkObjects [nativeHandle]?.value ?? liveSubtypedObjects [nativeHandle]?.value) {
             return o
         }
         
@@ -437,9 +511,47 @@ func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
     }
 }
 
-func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer) -> T? {
+// The following function makes the reference count of RefCounted objects consistent
+// with the semantics of Godot:
+// - Every time godot returns a RefCounted object in a Ref<> wrapper for a ptrcall,
+// its reference count is incremeneted. As object identity results in the return of
+// the same Swift proxy for the same RefCounted object, this means that every subsequent
+// return should result in an unreference() call, so that the existence of the Swift proxy
+// object always results in a single increment of the reference count.
+// - On the other hand, if a RefCounted object was returned through a non-RefCounted
+// static return type (e.g. as an Object), then Godot did not increment its reference
+// count. This means that on the first return of such an object, the reference count
+// should be incremented by a reference() call, so that similarly the existence of
+// the Swift proxy object always results in a single increment of the reference count.
+// - The ownsRef parameter is true iff Godot can pass ownership of a Ref<> wrapper to
+// SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
+func handleRef<T: Object>(object: T?, ownsRef: Bool, unref: Bool) {
+    if !ownsRef {
+        if !unref {
+            if let refCounted = object as? RefCounted {
+                refCounted.reference()
+            }
+        }
+        return
+    }
+    if let refCounted = object as? RefCounted {
+        if T.self is RefCounted.Type {
+            if unref {
+                refCounted.unreference()
+            }
+        } else {
+            if !unref {
+                refCounted.reference()
+            }
+        }
+    }
+}
+
+func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer, ownsRef: Bool) -> T? {
     if let a = objectFromHandle(nativeHandle: nativeHandle) {
-        return a as? T
+        let result = a as? T
+        handleRef(object: result, ownsRef: ownsRef, unref: true)
+        return result
     }
     var className: String = ""
     var sc: StringName.ContentType = StringName.zero
@@ -453,17 +565,22 @@ func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer) -> T? {
         className = _result.description
     }
     if let ctor = godotFrameworkCtors [className] {
-        return ctor.init (nativeHandle: nativeHandle) as? T
+        let result = ctor.init (nativeHandle: nativeHandle) as? T
+        handleRef(object: result, ownsRef: ownsRef, unref: false)
+        return result
     }
     if let userTypeCtor = userTypes [className] {
         if let created = userTypeCtor (nativeHandle) as? T {
+            handleRef(object: created, ownsRef: ownsRef, unref: false)
             return created
         } else {
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
     }
     
-    return T.init (nativeHandle: nativeHandle)
+    let result = T.init (nativeHandle: nativeHandle)
+    handleRef(object: result, ownsRef: ownsRef, unref: false)
+    return result
 }
 
 func referenceFunc(_ userData: UnsafeMutableRawPointer) {
@@ -523,28 +640,17 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 //    }
 //    print ("SWIFT: Destroying object, userData: \(typeAny) objectHandle: \(objectHandle)")
 //    #endif
-    if let key = objectHandle {
-        let original = Unmanaged<Wrapped>.fromOpaque(key).takeRetainedValue()
-        tableLock.withLockVoid {
-            if let handle = original.handle {
-                let removed = liveSubtypedObjects.removeValue(forKey: handle)
-                if removed == nil {
-                    print ("SWIFT ERROR: attempt to release object we were not aware of: \(original) \(key)")
-                } else {
-                    //print ("SWIFT: Removed object from our live SubType list (type was: \(original.self)")
-                }
-            } else {
-                print ("freeFunc: the object being released already had a nil handle")
-            }
-            original.handle = nil
-        }
-    }
+    
+    guard let objectHandle else { return }
+    // Release the unmanaged reference that was retained in bindGodotInstance()
+    Unmanaged<WrappedReference>.fromOpaque(objectHandle).release()
 }
 
 func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UInt8) {
     guard let ptr else { return } 
-    let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
-    original._notification(code: Int(code), reversed: reversed != 0)
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return }
+    instance._notification(code: Int(code), reversed: reversed != 0)
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
@@ -554,26 +660,87 @@ func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: Unsaf
 }
 
 func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
-    // Godot-cpp does nothing for user types
-    // I do not think this is necessary, since we are handling the release in the
-    // user-binding catch-all (that also covers the Godot-triggers invocations)
-    // freeFunc above.
-    pd ("SWIFT: instanceBindingFree token=\(String(describing: token)) instance=\(String(describing: instance)) binding=\(String(describing: binding))")
+    if let binding {
+        let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+        guard let obj = reference.value else { return }
+
+        tableLock.withLockVoid {
+            if let handle = obj.handle {
+                let removed = liveSubtypedObjects.removeValue(forKey: handle)
+                if removed == nil {
+                    print ("SWIFT ERROR: attempt to release object we were not aware of: \(obj))")
+                }
+            } else {
+                print ("SWIFT ERROR: the object being released already had a nil handle")
+            }
+        }
+
+        // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
+        // invoke methods for objects that have been disposed by Godot.
+        obj.handle = nil
+    }
 }
 
 // This is invoked to take a reference on the object and ensure our Swift-land object
 // does not go away while the object is in use.
-func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?, _ reference: UInt8) -> UInt8{
+func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?, _ reference: UInt8) -> UInt8 {
     guard let binding else { return 0 }
 
-    let wrapped = Unmanaged<Wrapped>.fromOpaque(binding)
-    if reference == 0 {
-        _ = wrapped.retain()
-    } else {
-        wrapped.release()
+    let ref = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+    weak var refCounted = ref.value as? RefCounted
+    guard let rc = refCounted?.getReferenceCount() else {
+        // unreference() was called by Wrapped.deinit, so we allow the object to be destroyed.
+        return 1
     }
-    // Success
-    return 1
+    
+    if reference != 0 {
+        // In addition to a reference by SwiftGodot, Godot also retained a reference.
+        if rc == 2 {
+            if let refCounted, let handle = refCounted.handle {
+                ref.strongify()
+            }
+        }
+    } else {
+        // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
+        if rc == 1 {
+            if let refCounted, let handle = refCounted.handle {
+                ref.weakify()
+            }
+        }
+    }
+    
+    // As long as the Wrapped's deinit is not called, we do not allow the object to be destroyed.
+    return 0
+}
+
+func frameworkTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?, _ reference: UInt8) -> UInt8 {
+    guard let binding else { return 0 }
+
+    let ref = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+    weak var refCounted = ref.value as? RefCounted
+    guard let rc = refCounted?.getReferenceCount() else {
+        // unreference() was called by Wrapper.deinit, so we allow the object to be destroyed.
+        return 1
+    }
+    
+    if reference != 0 {
+        // In addition to a reference by SwiftGodot, Godot also retained a reference.
+        if rc == 2 {
+            if let refCounted, let handle = refCounted.handle {
+                ref.strongify()
+            }
+        }
+    } else {
+        // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
+        if rc == 1 {
+            if let refCounted, let handle = refCounted.handle {
+                ref.weakify()
+            }
+        }
+    }
+    
+    // As long as the Wrapped's deinit is not called, we do not allow the object to be destroyed.
+    return 0
 }
 
 func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
@@ -582,7 +749,25 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
-    // No longer needed
+    if let binding {
+        let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+        guard let obj = reference.value else { return }
+
+        tableLock.withLockVoid {
+            if let handle = obj.handle {
+                let removed = liveFrameworkObjects.removeValue(forKey: handle)
+                if removed == nil {
+                    print ("SWIFT ERROR: attempt to release object we were not aware of: \(obj))")
+                }
+            } else {
+                print ("SWIFT ERROR: the object being released already had a nil handle")
+            }
+        }
+
+        // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
+        // invoke methods for objects that have been disposed by Godot.
+        obj.handle = nil
+    }
 }
 
 /// This function is called by Godot to invoke our callable, and contains our context in `userData`,
@@ -642,5 +827,27 @@ struct CallableWrapper {
         var content: Callable.ContentType = Callable.zero
         gi.callable_custom_create(&content, &cci);
         return content
+    }
+}
+
+// This is a temporary hack until we get proper WeakReference support
+// so we can clear the internal dictionaries when a domain is shut down.
+///
+public func getActiveHandles() -> ([UnsafeRawPointer]) {
+    var handles: [UnsafeRawPointer] = []
+    for x in liveFrameworkObjects {
+        handles.append(x.key)
+    }
+    for x in liveSubtypedObjects {
+        handles.append(x.key)
+    }
+    return handles
+}
+
+public func clearHandles(_ handles: [UnsafeRawPointer]) {
+    for handle in handles {
+        if liveFrameworkObjects.removeValue(forKey: handle) == nil {
+            liveSubtypedObjects.removeValue(forKey: handle)
+        }
     }
 }

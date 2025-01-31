@@ -9,6 +9,8 @@
 
 public protocol ExtensionInterface {
 
+    func initClasses()
+
     func variantShouldDeinit(content: UnsafeRawPointer) -> Bool
 
     func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool
@@ -17,10 +19,24 @@ public protocol ExtensionInterface {
 
     func objectDeinited(object: Wrapped)
 
+    func variantInited(variant: Variant, content: UnsafeMutableRawPointer)
+
+    func variantDeinited(variant: Variant, content: UnsafeMutableRawPointer)
+
     func getLibrary() -> UnsafeMutableRawPointer
 
     func getProcAddr() -> OpaquePointer
 
+    func sameDomain(handle: UnsafeRawPointer) -> Bool
+
+    func getCurrenDomain() -> UInt8
+}
+
+public extension ExtensionInterface {
+    // Register any general Godot classes/methods here
+    public func initClasses() {
+        SignalProxy.initClass()
+    }
 }
 
 class LibGodotExtensionInterface: ExtensionInterface {
@@ -50,6 +66,12 @@ class LibGodotExtensionInterface: ExtensionInterface {
 
     public func objectDeinited(object: Wrapped) {}
 
+    public func variantInited(variant: Variant, content: UnsafeMutableRawPointer) {}
+
+    public func variantDeinited(variant: Variant, content: UnsafeMutableRawPointer) {}
+
+    public func sameDomain(handle: UnsafeRawPointer) -> Bool { true }
+
     public func getLibrary() -> UnsafeMutableRawPointer {
         return UnsafeMutableRawPointer(mutating: library)
     }
@@ -58,6 +80,9 @@ class LibGodotExtensionInterface: ExtensionInterface {
         return unsafeBitCast(getProcAddrFun, to: OpaquePointer.self)
     }
 
+    func getCurrenDomain() -> UInt8 {
+        0
+    }
 }
 
 /// The pointer to the Godot Extension Interface
@@ -90,6 +115,9 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
     guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
     guard let userData else { return }
     guard let callback = extensionInitCallbacks[OpaquePointer(userData)] else { return }
+    if level == .scene {
+        extensionInterface.initClasses()
+    }
     callback(level)
 }
 
@@ -171,7 +199,9 @@ struct GodotInterface {
     let classdb_unregister_extension_class: GDExtensionInterfaceClassdbUnregisterExtensionClass
 
     let object_set_instance: GDExtensionInterfaceObjectSetInstance
+    let object_get_instance_binding: GDExtensionInterfaceObjectGetInstanceBinding
     let object_set_instance_binding: GDExtensionInterfaceObjectSetInstanceBinding
+    let object_free_instance_binding: GDExtensionInterfaceObjectFreeInstanceBinding
     let object_get_class_name: GDExtensionInterfaceObjectGetClassName
 
     let object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
@@ -211,6 +241,8 @@ struct GodotInterface {
     let variant_evaluate: GDExtensionInterfaceVariantEvaluate
     let variant_hash: GDExtensionInterfaceVariantHash
     let variant_destroy: GDExtensionInterfaceVariantDestroy
+    let variant_get: GDExtensionInterfaceVariantGet
+    let variant_set: GDExtensionInterfaceVariantSet
     let variant_get_type: GDExtensionInterfaceVariantGetType
     let variant_get_type_name: GDExtensionInterfaceVariantGetTypeName
     let variant_stringify: GDExtensionInterfaceVariantStringify
@@ -218,7 +250,7 @@ struct GodotInterface {
     let variant_call_static: GDExtensionInterfaceVariantCallStatic
     let variant_get_indexed: GDExtensionInterfaceVariantGetIndexed
     let variant_set_indexed: GDExtensionInterfaceVariantSetIndexed
-
+    let variant_construct: GDExtensionInterfaceVariantConstruct
     let variant_get_ptr_constructor: GDExtensionInterfaceVariantGetPtrConstructor
     let variant_get_ptr_builtin_method: GDExtensionInterfaceVariantGetPtrBuiltinMethod
     let variant_get_ptr_operator_evaluator: GDExtensionInterfaceVariantGetPtrOperatorEvaluator
@@ -300,6 +332,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         classdb_construct_object: load("classdb_construct_object"),
         classdb_get_method_bind: load("classdb_get_method_bind"),
         classdb_get_class_tag: load("classdb_get_class_tag"),
+
         classdb_register_extension_class: load("classdb_register_extension_class2"),
         classdb_register_extension_class_signal: load("classdb_register_extension_class_signal"),
         classdb_register_extension_class_method: load("classdb_register_extension_class_method"),
@@ -307,14 +340,18 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         classdb_register_extension_class_property_group: load("classdb_register_extension_class_property_group"),
         classdb_register_extension_class_property_subgroup: load("classdb_register_extension_class_property_subgroup"),
         classdb_unregister_extension_class: load("classdb_unregister_extension_class"),
-
+        
         object_set_instance: load("object_set_instance"),
+        object_get_instance_binding: load("object_get_instance_binding"),
         object_set_instance_binding: load("object_set_instance_binding"),
+        object_free_instance_binding: load("object_free_instance_binding"),
         object_get_class_name: load("object_get_class_name"),
         object_method_bind_ptrcall: load("object_method_bind_ptrcall"),
         object_destroy: load("object_destroy"),
+
         object_has_script_method: load("object_has_script_method"),
         object_call_script_method: load("object_call_script_method"),
+
 
         global_get_singleton: load("global_get_singleton"),
         ref_get_object: load("ref_get_object"),
@@ -325,6 +362,8 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         variant_evaluate: load("variant_evaluate"),
         variant_hash: load("variant_hash"),
         variant_destroy: load("variant_destroy"),
+        variant_get: load("variant_get"),
+        variant_set: load("variant_set"),
         variant_get_type: load("variant_get_type"),
         variant_get_type_name: load("variant_get_type_name"),
         variant_stringify: load("variant_stringify"),
@@ -332,7 +371,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         variant_call_static: load("variant_call_static"),
         variant_get_indexed: load("variant_get_indexed"),
         variant_set_indexed: load("variant_set_indexed"),
-
+        variant_construct: load("variant_construct"),
         variant_get_ptr_constructor: load("variant_get_ptr_constructor"),
         variant_get_ptr_builtin_method: load("variant_get_ptr_builtin_method"),
         variant_get_ptr_operator_evaluator: load("variant_get_ptr_operator_evaluator"),
