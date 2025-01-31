@@ -1,7 +1,8 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+# This workflow checks to see if the Generator code has changed.
+# If it has, we run the new generator, and the version from the target branch,
+# and then we diff the two outputs.
 
-name: Swift
+name: Generator
 
 on:
   pull_request:
