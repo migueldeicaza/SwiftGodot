@@ -1,0 +1,64 @@
+# This workflow checks to see if the Generator code has changed.
+# If it has, we run the new generator, and the version from the target branch,
+# and then we diff the two outputs.
+
+name: Generator
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-diff
+  cancel-in-progress: true
+
+jobs:
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    # Required permissions
+    permissions:
+      pull-requests: read
+    # Set job outputs to values from filter step
+    outputs:
+      generator: ${{ steps.filter.outputs.generator }}
+    steps:
+    # For pull requests it's not necessary to checkout the code
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          generator:
+            - 'Generator/**'
+
+  # JOB to run the diff - only runs if changes were detected in Generator/
+  diff-generator:
+    needs: changes
+    if: ${{ needs.changes.outputs.generator == 'true' }}
+    runs-on: macos-14
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          generator:
+            - 'Generator/**'
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: "16.2"
+    - name: Build This Branch
+      run: swift build --target SwiftGodot --scratch-path .build/New
+    - name: Checkout Target Branch
+      run: git checkout ${{ github.event.pull_request.base.sha }}
+    - name: Build Target Branch
+      run: swift build --target SwiftGodot --scratch-path .build/Old
+    - name: Diff generated
+      run: diff --recursive --color=auto --minimal .build/New/plugins/outputs/swiftgodot/SwiftGodot/destination/CodeGeneratorPlugin/ .build/Old/plugins/outputs/swiftgodot/SwiftGodot/destination/CodeGeneratorPlugin/ | sed -e 's/diff\(.*\)\/\(.*\).swift/\n\2.swift:/'
+
+
