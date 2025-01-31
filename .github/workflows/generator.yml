@@ -31,6 +31,6 @@ jobs:
     - name: Build Target Branch
       run: swift build --target SwiftGodot --scratch-path .build/Old
     - name: Diff generated
-      run: diff -r .build/New/plugins/outputs/swiftgodot/SwiftGodot/destination/CodeGeneratorPlugin/ .build/Old/plugins/outputs/swiftgodot/SwiftGodot/destination/CodeGeneratorPlugin/
+      run: diff -r .build/New/plugins/outputs/swiftgodot/SwiftGodot/destination/CodeGeneratorPlugin/ .build/Old/plugins/outputs/swiftgodot/SwiftGodot/destination/CodeGeneratorPlugin/ | sed -e 's/diff\(.*\)\/\(.*\).swift/\n\2.swift:/'
 
 
