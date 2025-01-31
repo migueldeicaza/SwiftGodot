@@ -36,7 +36,7 @@ final class VariantTests: GodotTestCase {
             }
             
             guard let value = Int(value) else {
-                XCTFail("Expected \(Variant.GType.int.debugDescription), got \(value.gtype.debugDescription) instead")
+                XCTFail("Expected \(Variant.GType.int), got \(value.gtype) instead")
                 return
             }
             XCTAssertEqual(value, 2, "ello appears twice in `\(string)` from index 0 to 11, got \(value) instead")
@@ -53,7 +53,7 @@ final class VariantTests: GodotTestCase {
             }
             
             guard let value = Int(value) else {
-                XCTFail("Expected \(Variant.GType.int.debugDescription), got \(value.gtype.debugDescription) instead")
+                XCTFail("Expected \(Variant.GType.int), got \(value.gtype) instead")
                 return
             }
             XCTAssertEqual(value, 4, "ello appears twice in `\(string)`, got \(value) instead")
@@ -71,7 +71,7 @@ final class VariantTests: GodotTestCase {
             }
             
             guard let value = Bool(value) else {
-                XCTFail("Expected \(Variant.GType.bool.debugDescription), got \(value.gtype.debugDescription) instead")
+                XCTFail("Expected \(Variant.GType.bool), got \(value.gtype) instead")
                 return
             }
             XCTAssertTrue(value, "`\(string)` ends with `llo`, got `false` instead")
@@ -89,7 +89,7 @@ final class VariantTests: GodotTestCase {
             }
             
             guard let value = Bool(value) else {
-                XCTFail("Expected \(Variant.GType.bool.debugDescription), got \(value.gtype.debugDescription) instead")
+                XCTFail("Expected \(Variant.GType.bool), got \(value.gtype) instead")
                 return
             }
             XCTAssertFalse(value, "`\(string)` is not empty, got `true` instead")
