@@ -23,11 +23,11 @@ jobs:
       with:
         xcode-version: "16.2"
     - name: Run generator for this branch
-      run: swift run Generator Sources/ExtensionApi/extension_api.json .build/NewGenerated
+      run: swift run --disable-sandbox --disable-signature-validation Generator Sources/ExtensionApi/extension_api.json .build/NewGenerated
     - name: Checkout target branch
       run: git checkout ${{ github.event.pull_request.base.sha }}
     - name: Run generator again
-      run: swift run Generator Sources/ExtensionApi/extension_api.json .build/OldGenerated
+      run: swift run --disable-sandbox --disable-signature-validation Generator Sources/ExtensionApi/extension_api.json .build/OldGenerated
     - name: Diff output
       run: diff -r .build/NewGenerated .build/OldGenerated
 
