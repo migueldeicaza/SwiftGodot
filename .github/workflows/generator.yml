@@ -23,11 +23,11 @@ jobs:
       with:
         xcode-version: "16.2"
     - name: Run generator for this branch
-      run: swift run Generator Sources/ExtensionApi/extension_api.json NewGenerated
+      run: swift run Generator Sources/ExtensionApi/extension_api.json /tmp/NewGenerated
     - name: Checkout target branch
       run: git checkout ${{ github.event.pull_request.base.sha }}
     - name: Run generator again
-      run: swift run Generator Sources/ExtensionApi/extension_api.json OldGenerated
+      run: swift run Generator Sources/ExtensionApi/extension_api.json /tmp/OldGenerated
     - name: Diff output
-      run: diff -r NewGenerated OldGenerated
+      run: diff -r /tmp/NewGenerated /tmp/OldGenerated
 
