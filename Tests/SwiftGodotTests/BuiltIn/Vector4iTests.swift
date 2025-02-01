@@ -7,7 +7,7 @@
 
 import XCTest
 import SwiftGodotTestability
-@testable import SwiftGodot
+import SwiftGodot
 
 final class Vector4iTests: GodotTestCase {
     
