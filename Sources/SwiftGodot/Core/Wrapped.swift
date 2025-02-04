@@ -525,7 +525,7 @@ func objectFromHandle (nativeHandle: UnsafeRawPointer) -> Wrapped? {
 // the Swift proxy object always results in a single increment of the reference count.
 // - The ownsRef parameter is true iff Godot can pass ownership of a Ref<> wrapper to
 // SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
-func handleRef<T: Object>(object: T?, ownsRef: Bool, unref: Bool) {
+func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, unref: Bool) {
     if !ownsRef {
         if !unref {
             if let refCounted = object as? RefCounted {
@@ -535,7 +535,7 @@ func handleRef<T: Object>(object: T?, ownsRef: Bool, unref: Bool) {
         return
     }
     if let refCounted = object as? RefCounted {
-        if T.self is RefCounted.Type {
+        if staticType is RefCounted.Type {
             if unref {
                 refCounted.unreference()
             }
@@ -549,9 +549,8 @@ func handleRef<T: Object>(object: T?, ownsRef: Bool, unref: Bool) {
 
 func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer, ownsRef: Bool) -> T? {
     if let a = objectFromHandle(nativeHandle: nativeHandle) {
-        let result = a as? T
-        handleRef(object: result, ownsRef: ownsRef, unref: true)
-        return result
+        handleRef(staticType: T.self, object: a, ownsRef: ownsRef, unref: true)
+        return a as? T
     }
     var className: String = ""
     var sc: StringName.ContentType = StringName.zero
@@ -565,21 +564,22 @@ func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer, ownsRef: Bool) -> 
         className = _result.description
     }
     if let ctor = godotFrameworkCtors [className] {
-        let result = ctor.init (nativeHandle: nativeHandle) as? T
-        handleRef(object: result, ownsRef: ownsRef, unref: false)
-        return result
+        let result = ctor.init (nativeHandle: nativeHandle)
+        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+        return result as? T
     }
     if let userTypeCtor = userTypes [className] {
-        if let created = userTypeCtor (nativeHandle) as? T {
-            handleRef(object: created, ownsRef: ownsRef, unref: false)
-            return created
+        let created = userTypeCtor (nativeHandle)
+        handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
+        if let result = created as? T {
+            return result
         } else {
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
     }
-    
+
     let result = T.init (nativeHandle: nativeHandle)
-    handleRef(object: result, ownsRef: ownsRef, unref: false)
+    handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
     return result
 }
 
