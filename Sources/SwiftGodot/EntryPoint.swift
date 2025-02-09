@@ -113,11 +113,11 @@ public func setExtensionInterface(interface: ExtensionInterface) {
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
     guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
-    guard let userData else { return }
-    guard let callback = extensionInitCallbacks[OpaquePointer(userData)] else { return }
     if level == .scene {
         extensionInterface.initClasses()
     }
+    guard let userData else { return }
+    guard let callback = extensionInitCallbacks[OpaquePointer(userData)] else { return }
     callback(level)
 }
 
