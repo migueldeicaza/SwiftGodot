@@ -202,9 +202,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
 
         gi.variant_get_named(&content, &key.content, &newContent, &valid)
         if valid != 0 {
-            if newContent == Variant.zero {
-                return .success(nil)
-            }
             return .success(Variant(takingOver: newContent))
         } else {
             return .failure(.notFound)
@@ -340,9 +337,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
 
             gi.variant_get(&content, &copyIndex.content, &newContent, &valid)
             if valid != 0 {
-                if newContent == Variant.zero {
-                    return nil
-                }
                 return Variant(takingOver: newContent)
             } else {
                 return nil
