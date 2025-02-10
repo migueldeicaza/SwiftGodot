@@ -64,9 +64,9 @@ private extension GodotRuntime {
                 godotLibrary = OpaquePointer (libraryPtr)
                 extensionInit?.pointee = GDExtensionInitialization (
                     minimum_initialization_level: GDEXTENSION_INITIALIZATION_CORE,
-                    userdata: nil,
-                    initialize: embeddedExtensionInit,
-                    deinitialize: embeddedExtensionDeinit
+                    userdata: libraryPtr,
+                    initialize: extension_initialize,
+                    deinitialize: extension_deinitialize
                 )
                 return 1
 
