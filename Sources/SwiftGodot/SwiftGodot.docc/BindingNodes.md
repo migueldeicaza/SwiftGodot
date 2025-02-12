@@ -21,9 +21,24 @@ class Main: Node {
 
 When you access the property, the node is looked up, using the specified path.
 
-This happens at runtime, and it's possible that the node won't be found - because
-the path is wrong, or the node has been removed from the scene. It is
-also possible that a node is found, but it's the wrong type.
+### Implicit Path
+
+You can also omit the path - in which case the name of the property
+is also assumed to be the path to the node.
+
+```swift
+@Godot
+class Main: Node {
+    @Node var myNode: Node2D? // this is the eqivalent of @Node("myNode")...
+}
+```
+
+### Missing Nodes
+
+Node lookup happens at runtime, when you access the property, and it's possible that the node won't be found.
+
+This could happen because the path is wrong, or the node has been removed from the scene. 
+It is also possible that a node is found, but it's the wrong type.
 
 What happens in this situation depends on whether you defined the associated
 property as an optional type.
