@@ -29,6 +29,7 @@ final class LifecycleTests: GodotTestCase {
             let img = UndoRedo()
             let id = Int64(bitPattern: UInt64(img.getInstanceId()))
             XCTAssertTrue (GD.isInstanceIdValid(id: id), "Timer was supposed to be alive")
+            img.free()
             return id
         }
         let id = createTimerAndGetId()

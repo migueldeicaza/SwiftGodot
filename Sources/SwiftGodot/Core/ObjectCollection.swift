@@ -128,7 +128,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
             fatalError("Could not unwrap variant as object.")
         }
         
-        return lookupObject(nativeHandle: handle)
+        return lookupObject(nativeHandle: handle, ownsRef: false)
     }
     
     // If I make this optional, I am told I need to implement an internal _read method
