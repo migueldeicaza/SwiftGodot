@@ -231,7 +231,7 @@ public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodot
 /// 
 /// The generated property will be computed, and therefore read-only.
 @attached(accessor)
-public macro Node(_ path: String? = nil, required: Bool = true) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
+public macro Node(_ path: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
 
 /// Defines a Godot signal on a class.
