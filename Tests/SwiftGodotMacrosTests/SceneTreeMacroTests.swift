@@ -13,9 +13,10 @@ import XCTest
 final class SceneTreeMacroTests: XCTestCase {
     let testMacros: [String: Macro.Type] = [
         "SceneTree": SceneTreeMacro.self,
+        "Node": SceneTreeMacro.self,
     ]
 
-    func testMacroExpansion() {
+    func testSceneTreeMacroExpansion() {
         assertMacroExpansion(
             """
             class MyNode: Node {
@@ -36,7 +37,7 @@ final class SceneTreeMacroTests: XCTestCase {
         )
     }
 
-    func testMacroExpansionWithImplicitlyUnwrappedOptional() {
+    func testSceneTreeMacroExpansionWithImplicitlyUnwrappedOptional() {
         assertMacroExpansion(
             """
             class MyNode: Node {
@@ -57,7 +58,7 @@ final class SceneTreeMacroTests: XCTestCase {
         )
     }
 
-    func testMacroExpansionWithDefaultArgument() {
+    func testSceneTreeMacroExpansionWithDefaultArgument() {
         assertMacroExpansion(
             """
             class MyNode: Node {
@@ -77,11 +78,32 @@ final class SceneTreeMacroTests: XCTestCase {
         )
     }
 
-    func testMacroNotOptionalDiagnostic() {
+    func testNodeMacroExpansionWithOptional() {
         assertMacroExpansion(
             """
             class MyNode: Node {
-                @SceneTree(path: "Entities/CharacterBody2D")
+                @Node("Entities/CharacterBody2D")
+                var character: CharacterBody2D?
+            }
+            """,
+            expandedSource: """
+            class MyNode: Node {
+                var character: CharacterBody2D? {
+                    get {
+                        getNodeOrNull(path: NodePath(stringLiteral: "Entities/CharacterBody2D")) as? CharacterBody2D
+                    }
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+
+    func testNodeMacroExpansion() {
+        assertMacroExpansion(
+            """
+            class MyNode: Node {
+                @Node("Entities/CharacterBody2D")
                 var character: CharacterBody2D
             }
             """,
@@ -89,19 +111,31 @@ final class SceneTreeMacroTests: XCTestCase {
             class MyNode: Node {
                 var character: CharacterBody2D {
                     get {
-                        getNodeOrNull(path: NodePath(stringLiteral: "Entities/CharacterBody2D")) as? CharacterBody2D
+                        getNodeOrNull(path: NodePath(stringLiteral: "Entities/CharacterBody2D")) as! CharacterBody2D
                     }
                 }
             }
             """,
-            diagnostics: [
-                .init(message: "Stored properties with SceneTree must be marked as Optional",
-                      line: 2,
-                      column: 5,
-                      fixIts: [
-                          .init(message: "Mark as Optional"),
-                      ]),
-            ],
+            macros: testMacros
+        )
+    }
+
+    func testNodeMacroExpansionWithDefaultArgument() {
+        assertMacroExpansion(
+            """
+            class MyNode: Node {
+                @Node var character: CharacterBody2D?
+            }
+            """,
+            expandedSource: """
+            class MyNode: Node {
+                var character: CharacterBody2D? {
+                    get {
+                        getNodeOrNull(path: NodePath(stringLiteral: "character")) as? CharacterBody2D
+                    }
+                }
+            }
+            """,
             macros: testMacros
         )
     }
