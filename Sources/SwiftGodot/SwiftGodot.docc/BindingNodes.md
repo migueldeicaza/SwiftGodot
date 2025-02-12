@@ -1,49 +1,47 @@
 # Referencing Nodes from your Scene
 
-You will find yourself referencing nodes from a scene in your code.   In
+You will find yourself referencing nodes from a scene in your code. In
 GDScript, that is usually achieved by using the dollar sign and the name of the
 object you want to reference.
 
 With SwiftGodot, you can achieve the same behavior by using the
-``SceneTreeMacro`` macro (or if you are not using Macros, the ``BindNode``
-property wrapper.    The macro can produce a nil value if the node is not found,
-which forces you to check if it succeeded, and will produce more resilient code
-as you modify your scenes.
+``@Node`` macro to define a property.
 
-## SceneTree
-
-You typically use the `path` parameter to specify the path to the node in your
+The macro takes a single parameter, which is the path to the node in your
 scene that you want to reference:
 
 ```swift
 @Godot
 class Main: Node {
-    @SceneTree(path: "CharacterBody2D") var player: PlayerController?
-    @SceneTree(path: "locations/spawnpoint") var spawnpoint: Node2D?
-    @SceneTree(path: "Telepoint") var teleportArea: Area2D?
+    @Node("CharacterBody2D") var player: PlayerController?
+    @Node("locations/spawnpoint") var spawnpoint: Node2D?
+    @Node("Telepoint") var teleportArea: Area2D
 }
 ```
 
-## BindNode
+When you access the property, the node is looked up, using the specified path.
 
-BindNode is an older version, but is not as convenient as using the SceneTree
-macro.
+This happens at runtime, and it's possible that the node won't be found - because
+the path is wrong, or the node has been removed from the scene. It is
+also possible that a node is found, but it's the wrong type.
 
-In your class declaration, use the ``BindNode`` property wrapper like this to
-reference the nodes that you created with the Godot Editor:
+What happens in this situation depends on whether you defined the associated
+property as an optional type.
 
-```swift
-@Godot
-class Main: Node {
-    @BindNode(withPath:"timer") var startTimer: SwiftGodot.Timer
-    @BindNode(withPath:"music") var music: AudioStreamPlayer
-    @BindNode(withPath:"mobTimer") var mobTimer: SwiftGodot.Timer
+If a property is defined as optional (eg `player` or `spawnpoint` in the above
+example), then the property value will simply be `nil`.
 
-    func newGame () {
-        startTimer.start ()
-    }
-}
-```
+However, it is also possible to define a non-optional property (eg `teleportArea`
+in the above example). In this situation, accessing the property will cause
+a fatal runtime error if the associated node can't be found.
 
-If you omit the `withPath` parameter, depending on your system, the result might
-not resolve at runtime.
+Which style you use is largely a matter of personal preference. 
+
+The optional style produces more resilient code that can keep running as you
+modify your scenes, but requires you to unwrap the optional property every
+time you use it.
+
+Using the non-optional style is equivalent to asserting that the node must
+be present, and that it's a coding error if it isn't. If you know that your
+node is loaded as part of a scene file and will never be missing, you may
+prefer this style, which results in more compact code.
