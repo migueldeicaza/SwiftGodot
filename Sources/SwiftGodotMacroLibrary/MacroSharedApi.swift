@@ -143,26 +143,84 @@ func hasCallableAttribute (_ attrs: AttributeListSyntax?) -> Bool {
     hasAttribute ("Callable", attrs)
 }
 
+/// Splits a function parameter into a tuple.
+///
+/// - Returns: A tuple of three items: (member_name:String?, type_name: String, is_optional: Bool).
+///   If the type is not supported by SwiftGodot then it returns nil.
+///
+func splitParameterQualifiers(_ parameter: FunctionParameterSyntax) -> (String?, String, Bool)? {
+    let isOptional: Bool
+    let unwrappedType: TypeSyntax
+    
+    if let type = parameter.type.as(OptionalTypeSyntax.self)?.wrappedType {
+        unwrappedType = type
+        isOptional = true
+    }
+    else {
+        unwrappedType = parameter.type
+        isOptional = false
+    }
+    
+    let baseType: String?
+    let typeName: String?
+
+    if let type = unwrappedType.as(MemberTypeSyntax.self) {
+        if let identifier = type.baseType.as(IdentifierTypeSyntax.self) {
+            baseType = identifier.name.text
+        }
+        else {
+            // What to do now?
+            baseType = nil
+        }
+        typeName = type.name.text
+    }
+    else if let type = unwrappedType.as(IdentifierTypeSyntax.self) {
+        baseType = nil
+        typeName = type.name.text
+    }
+    else {
+        baseType = nil
+        typeName = nil
+    }
+    
+    if let typeName {
+        return (baseType, typeName, isOptional)
+    }
+    else {
+        return nil
+    }
+}
+
 func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
     guard !parameter.isVariantCollection,
           !parameter.isSwiftArray,
           !parameter.isObjectCollection else {
         return "GArray"
     }
-    
-    if let typeName = parameter.type.as (IdentifierTypeSyntax.self)?.name.text {
-        // `TypeName`
-        return typeName
-    } else if let optionalWrappedType = parameter.type.as(OptionalTypeSyntax.self)?.wrappedType {
-        // `TypeName?`
-        // only `Variant?` is supported now
-        if optionalWrappedType.as(IdentifierTypeSyntax.self)?.name.text == "Variant" {
-            return "Variant?"
-        } else {
+   
+    guard let (baseType, typeName, isOptional) = splitParameterQualifiers(parameter) else {
+        // Type syntax not supported
+        return nil
+    }
+
+    if isOptional {
+        if typeName == "Variant" && (baseType == nil || baseType == "SwiftGodot") {
+            return "SwiftGodot.Variant?"
+        }
+        else {
             return nil
         }
-    } else {
-        return nil
+    }
+    else {
+        if typeName == "Variant" && (baseType == nil || baseType == "SwiftGodot") {
+            return "SwiftGodot.Variant"
+        }
+        else if let baseType {
+            return baseType + "." + typeName
+        }
+        else {
+            return typeName
+        }
     }
 }
 

@@ -36,14 +36,15 @@ public struct GodotCallable: PeerMacro {
                 throw MacroError.typeName (parameter)
             }
             
-            if ptype == "Variant" {
+            // We are using full qualifier SwiftGodot.Variant to prevent conflicts with user-defined Variant type
+            if ptype == "SwiftGodot.Variant" {
                 body += """
-                        let arg\(index): Variant = try arguments.variantArgument(at: \(index))
+                        let arg\(index): SwiftGodot.Variant = try arguments.variantArgument(at: \(index))
                 
                 """
-            } else if ptype == "Variant?" {
+            } else if ptype == "SwiftGodot.Variant?" {
                 body += """
-                        let arg\(index): Variant? = try arguments.optionalVariantArgument(at: \(index))
+                        let arg\(index): SwiftGodot.Variant? = try arguments.optionalVariantArgument(at: \(index))
                 
                 """
             } else if parameter.isSwiftArray, let elementType = parameter.arrayElementTypeName {
@@ -111,7 +112,7 @@ public struct GodotCallable: PeerMacro {
             
             if funcDecl.isReturnedTypeSwiftArray, let elementType = funcDecl.returnedSwiftArrayElementType {
                 body += """
-                \(indentation)    return Variant(
+                \(indentation)    return SwiftGodot.Variant(
                 \(indentation)        result.reduce(into: GArray(\(elementType).self)) { array, element in
                 \(indentation)            array.append(Variant(element))
                 \(indentation)        }
@@ -120,7 +121,7 @@ public struct GodotCallable: PeerMacro {
                 """
             } else {
                 body += """
-                \(indentation)    return Variant(result)  
+                \(indentation)    return SwiftGodot.Variant(result)  
                   
                 """
             }
@@ -132,13 +133,13 @@ public struct GodotCallable: PeerMacro {
         
         if parameters.isEmpty {
             return """
-            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
             \(body)                
             }
             """
         } else {
             return """
-            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                 do { // safe arguments access scope
             \(body)        
                 } catch let error as ArgumentAccessError {
