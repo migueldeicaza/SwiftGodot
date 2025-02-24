@@ -21,7 +21,25 @@ func getIdentifier (_ typeSyntax: TypeSyntax?) -> (typeName: String, generics: [
         typeSyntax = optSyntax.wrappedType
         opt = true
     }
-    if let identifier = typeSyntax.as(IdentifierTypeSyntax.self) {
+    if let unwrapped = typeSyntax.as(MemberTypeSyntax.self) {
+        if let baseType = unwrapped.baseType.as(IdentifierTypeSyntax.self)?.name.text {
+            if baseType != "SwiftGodot" {
+                return nil
+            }
+        }
+        else {
+            // What to do now?
+            return nil
+        }
+        let genericTypeNames: [String] = unwrapped
+            .genericArgumentClause?
+            .arguments
+            .compactMap { GenericArgumentSyntax ($0) }
+            .compactMap { $0.argument.as(IdentifierTypeSyntax.self) }
+            .map { $0.name.text } ?? []
+        return (typeName: unwrapped.name.text, generics: genericTypeNames, isOptional: opt)
+    }
+    else if let identifier = typeSyntax.as(IdentifierTypeSyntax.self) {
         let genericTypeNames: [String] = identifier
             .genericArgumentClause?
             .arguments
@@ -275,10 +293,23 @@ var godotVariants = [
     // And `.nil` with hint = `.none` in argument prop info    
     "Variant": ".nil",
     "Variant?": ".nil",
+    "SwiftGodot.Variant": ".nil",
+    "SwiftGodot.Variant?": ".nil",
 ]
 
 func godotTypeToProp (typeName: String) -> String {
-    godotVariants [typeName] ?? ".object"
+    return godotVariants [typeName] ?? ".object"
+}
+
+let swiftGodotPrefix: String = "SwiftGodot."
+
+func stripQualifier(_ name: String) -> String {
+    if name.hasPrefix(swiftGodotPrefix) {
+        return String(name.dropFirst(swiftGodotPrefix.count))
+    }
+    else {
+        return name
+    }
 }
 
 struct SignalName {

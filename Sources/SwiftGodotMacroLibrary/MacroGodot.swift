@@ -71,7 +71,7 @@ class GodotMacroProcessor {
             className = "Array[\(godotArrayElementTypeName)]"
             hintStr = godotArrayElementTypeName
         } else if propType == ".object" {
-            className = parameterTypeName
+            className = stripQualifier(parameterTypeName)
             hintStr = ""
         } else {
             className = ""
