@@ -50,3 +50,20 @@ jobs:
         run: swift test --skip-build --no-parallel --disable-xctest
       - name: Run tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
+
+  check-macro-compatibility:
+    name: Check Macro Compatibility
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.2"
+      - name: Run Swift Macro Compatibility Check
+        uses: Matejkob/swift-macro-compatibility-check@v1
+        with:
+          run-tests: false
+          major-versions-only: true
+          
