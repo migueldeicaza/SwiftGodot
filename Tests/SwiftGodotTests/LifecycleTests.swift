@@ -20,6 +20,7 @@ final class LifecycleTests: GodotTestCase {
             return id
         }
         let id = createImageAndGetId()
+        releasePendingObjects()
         XCTAssertFalse (GD.isInstanceIdValid(id: id), "Expected image to be disposed")
     }
 

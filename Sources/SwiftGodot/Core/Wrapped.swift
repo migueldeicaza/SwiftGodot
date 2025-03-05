@@ -152,15 +152,16 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             let txt = "DEINIT for object=\(type) handle=\(handle)"
 #endif
 
-            if let res = self as? RefCounted {
-                Callable({ [handle] (args: borrowing Arguments) in
-                    var result: Bool = false
-                    gi.object_method_bind_ptrcall(RefCounted.method_unreference, UnsafeMutableRawPointer(mutating: handle), nil, &result)
-                    if result {
-                        gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
+            if self is RefCounted {
+                freeLock.withLockVoid {
+                    pendingReleaseHandles.append(handle)
+                    if pendingReleaseHandles.count == 1 {
+                        Callable({ (args: borrowing Arguments) in
+                            releasePendingObjects()
+                            return nil
+                        }).callDeferred()
                     }
-                    return nil
-                }).callDeferred()
+                }
             }
         }
         extensionInterface.objectDeinited(object: self)
@@ -468,6 +469,26 @@ var liveSubtypedObjects: [UnsafeRawPointer:WrappedReference] = [:]
 
 // Lock for accessing the above
 var tableLock = NIOLock()
+
+// Lock for the pending free list
+var freeLock = NIOLock()
+var pendingReleaseHandles: [UnsafeRawPointer] = []
+
+/// Use this function to force the disposing of any objects that were queued for destruction
+/// this is called automatically by Godot's main loop iteration, but it is expose for the sake
+/// of the test suite that wants to release objects without waiting for Godot to run the queue
+public func releasePendingObjects() {
+    var result: Bool = false
+    freeLock.withLock {
+        for handle in pendingReleaseHandles {
+            gi.object_method_bind_ptrcall(RefCounted.method_unreference, UnsafeMutableRawPointer(mutating: handle), nil, &result)
+            if result {
+                gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
+            }
+        }
+        pendingReleaseHandles = []
+    }
+}
 
 // If not-nil, we are in the process of serially re-creating objects from Godot,
 // this contains the handle to use, and prevents a new Godot object peer to

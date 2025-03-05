@@ -378,8 +378,10 @@ class GodotEncoder: Encoder {
 final class MemoryLeakTests: GodotTestCase {
     /// Check that `body` doesn't leak. Or ensure that something is leaking, if `useUnoReverseCard` is true
     func checkLeaks(useUnoReverseCard: Bool = false, _ body: () -> Void) {
+        releasePendingObjects()
         let before = Performance.getMonitor(.memoryStatic)
         body()
+        releasePendingObjects()
         let after = Performance.getMonitor(.memoryStatic)
         
         if useUnoReverseCard {
