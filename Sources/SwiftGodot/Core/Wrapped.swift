@@ -181,7 +181,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         var sc: StringName.ContentType = StringName.zero
         
         if gi.object_get_class_name (handle, extensionInterface.getLibrary(), &sc) != 0 {
-            let sn = StringName(content: sc)
+            let sn = StringName(alreadyOwnedContent: sc)
             return sn
         }
         return ""
