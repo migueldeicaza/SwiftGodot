@@ -157,7 +157,7 @@ class GodotMacroProcessor {
         guard let signalName = firstArg.expression.signalName() else {
             return
         }
-        
+        injectClassInfo()
         ctor.append("classInfo.registerSignal(")
         ctor.append("name: \(className).\(signalName.swiftName).name,")
         ctor.append("arguments: \(className).\(signalName.swiftName).arguments")
@@ -165,6 +165,7 @@ class GodotMacroProcessor {
     }
     
     func processExportGroup(name: String, prefix: String) {
+        injectClassInfo()
         ctor.append(
             """
             classInfo.addPropertyGroup(name: "\(name)", prefix: "\(prefix)")\n
@@ -173,6 +174,7 @@ class GodotMacroProcessor {
     }
     
     func processExportSubgroup(name: String, prefix: String) {
+        injectClassInfo()
         ctor.append(
             """
             classInfo.addPropertySubgroup(name: "\(name)", prefix: "\(prefix)")\n
@@ -215,6 +217,7 @@ class GodotMacroProcessor {
             funcArgs.append ("    ]\n")
         }
         ctor.append (funcArgs)
+        injectClassInfo()
         ctor.append ("    classInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
     }
       
@@ -332,6 +335,7 @@ class GodotMacroProcessor {
     
     """)
             
+            injectClassInfo()
             ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
             ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
             ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
@@ -429,7 +433,8 @@ class GodotMacroProcessor {
         hintStr: "\(godotArrayElementTypeName)",
         usage: .default)\n
     """)
-            
+
+            injectClassInfo()
             ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
             ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
             ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
@@ -463,6 +468,7 @@ class GodotMacroProcessor {
             let nameWithPrefix = ips.identifier.text
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
 
+            injectClassInfo()
             ctor.append("\(typeName).register(\"\(name.camelCaseToSnakeCase())\", info: classInfo)")
         }
     }
@@ -470,14 +476,23 @@ class GodotMacroProcessor {
     
     var ctor: String = ""
     var genMethods: [String] = []
-    
+    var injected = false
+
+    func injectClassInfo() {
+        if injected { return }
+        injected = true
+        ctor +=
+    """
+        let classInfo = ClassInfo<\(className)> (name: className)\n
+    """
+    }
+
     func processType () throws -> String {
         ctor =
     """
     private static let _initializeClass: Void = {
         let className = StringName("\(className)")
-        assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<\(className)> (name: className)\n
+        assert(ClassDB.classExists(class: className))\n
     """
         var previousGroupPrefix: String? = nil
         var previousSubgroupPrefix: String? = nil

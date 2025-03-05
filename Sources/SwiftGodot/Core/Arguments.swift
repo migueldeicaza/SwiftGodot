@@ -161,7 +161,7 @@ public struct Arguments: ~Copyable {
         
         if let variant = arg {
             guard let result = T.unwrap(from: variant) else {
-                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
             }
             
             return result
@@ -180,7 +180,7 @@ public struct Arguments: ~Copyable {
         
         if let variant = arg {
             guard let result = T.unwrap(from: variant) else {
-                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
             }
             
             return result
@@ -203,7 +203,7 @@ public struct Arguments: ~Copyable {
         }
                 
         guard let result = T.unwrap(from: variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
         }
         
         return result
@@ -223,7 +223,7 @@ public struct Arguments: ~Copyable {
         }
                 
         guard let result = T.unwrap(from: variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
         }
         
         return result
@@ -244,7 +244,7 @@ public struct Arguments: ~Copyable {
         }
         
         guard let rawValue = Int(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "int", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "int", actual: String(describing: variant.gtype))
         }
         
         guard let result = T(rawValue: T.RawValue(rawValue)) else {
@@ -269,7 +269,7 @@ public struct Arguments: ~Copyable {
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
         }
         
         var result: [T] = []
@@ -303,7 +303,7 @@ public struct Arguments: ~Copyable {
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
         }
         
         var result: [T] = []
@@ -338,7 +338,7 @@ public struct Arguments: ~Copyable {
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
         }
         
         guard let result = VariantCollection<T>(array) else {
@@ -367,7 +367,7 @@ public struct Arguments: ~Copyable {
         }
         
         guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: variant.gtype.debugDescription)
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
         }
         
         guard let result = ObjectCollection<T>(array) else {

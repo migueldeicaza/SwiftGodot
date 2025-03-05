@@ -1,4 +1,4 @@
-//
+import ExtensionApi
 //  main.swift
 //  SwiftGodot/Generator
 //
@@ -6,15 +6,14 @@
 //  Copyright © 2020-2023 Miguel de Icaza. MIT Licensed
 //
 import Foundation
-import ExtensionApi
 
 var args = CommandLine.arguments
 
 var rootUrl: URL {
-    let url = URL(fileURLWithPath: #file) // SwiftGodot/Generator/Generator/main.swift
-        .deletingLastPathComponent() // SwiftGodot/Generator/Generator
-        .deletingLastPathComponent() // SwiftGodot/Generator
-        .deletingLastPathComponent() // SwiftGodot
+    let url = URL(fileURLWithPath: #file)  // SwiftGodot/Generator/Generator/main.swift
+        .deletingLastPathComponent()  // SwiftGodot/Generator/Generator
+        .deletingLastPathComponent()  // SwiftGodot/Generator
+        .deletingLastPathComponent()  // SwiftGodot
     return url
 }
 
@@ -37,38 +36,40 @@ var defaultDocRootUrl: URL {
         .appendingPathComponent("Docs")
 }
 
-let jsonFile = args.count > 1 ? args [1] : defaultExtensionApiJsonUrl.path
-var generatorOutput = args.count > 2 ? args [2] : defaultGeneratorOutputlUrl.path
-var docRoot =  args.count > 3 ? args [3] : defaultDocRootUrl.path
-let outputDir = args.count > 2 ? args [2] : generatorOutput
-let generateResettableCache = false 
+let jsonFile = args.count > 1 ? args[1] : defaultExtensionApiJsonUrl.path
+var generatorOutput = args.count > 2 ? args[2] : defaultGeneratorOutputlUrl.path
+var docRoot = args.count > 3 ? args[3] : defaultDocRootUrl.path
+let outputDir = args.count > 2 ? args[2] : generatorOutput
+let generateResettableCache = false
 
-// IF we want a single file, or one file per type
-var singleFile = args.contains("--singlefile")
+// IF we want one file per type, or a smaller number of
+// files that are combined.
+var combineOutput = args.contains("--combined")
 
 if args.count < 2 {
-    print("""
-    Usage is: generator path-to-extension-api output-directory doc-directory
-    - path-to-extension-api is the full path to extension_api.json from Godot
-    - output-directory is where the files will be placed
-    - doc-directory is the Godot documentation resides (godot/doc)
-    Running with defaults:
-        path-to-extension-api = "\(jsonFile)"
-        output-directory = "\(outputDir)"
-        doc-directory = "\(docRoot)"
-    """)
+    print(
+        """
+        Usage is: generator path-to-extension-api output-directory doc-directory
+        - path-to-extension-api is the full path to extension_api.json from Godot
+        - output-directory is where the files will be placed
+        - doc-directory is the Godot documentation resides (godot/doc)
+        Running with defaults:
+            path-to-extension-api = "\(jsonFile)"
+            output-directory = "\(outputDir)"
+            doc-directory = "\(docRoot)"
+        """)
 }
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
-func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
-    let snake = snakeToCamel (enumKey)
+func dropMatchingPrefix(_ enumName: String, _ enumKey: String) -> String {
+    let snake = snakeToCamel(enumKey)
     if snake.lowercased().starts(with: enumName.lowercased()) {
         if snake.count == enumName.count {
             return snake
         }
-        let ret = String (snake [snake.index (snake.startIndex, offsetBy: enumName.count)...])
+        let ret = String(snake[snake.index(snake.startIndex, offsetBy: enumName.count)...])
         if let f = ret.first {
             if f.isNumber {
                 return snake
@@ -85,22 +86,22 @@ func dropMatchingPrefix (_ enumName: String, _ enumKey: String) -> String {
 var globalEnums: [String: JGodotGlobalEnumElement] = [:]
 
 // Maps from a the class name to its definition
-var classMap: [String:JGodotExtensionAPIClass] = [:]
+var classMap: [String: JGodotExtensionAPIClass] = [:]
 
 // Tracks whether a Godot type has subclasses, we want to use this
 // to determine whether we want to perform the more expensive lookup
 // for handle -> Swift type using `lookupObject` rather than creating
 // a plain wrapper directly from the handle
-var hasSubclasses = Set<String> ()
+var hasSubclasses = Set<String>()
 
 for x in jsonApi.classes {
-    classMap [x.name] = x
+    classMap[x.name] = x
     if let parentClass = x.inherits {
         hasSubclasses.insert(parentClass)
     }
 }
 
-fileprivate var structTypes: Set<String> = [
+private var structTypes: Set<String> = [
     "const void*",
     "AudioFrame*",
     "Float",
@@ -130,7 +131,7 @@ var builtinSizes: [String: Int] = [:]
 for cs in jsonApi.builtinClassSizes {
     if cs.buildConfiguration == buildConfiguration {
         for c in cs.sizes {
-            builtinSizes [c.name] = c.size
+            builtinSizes[c.name] = c.size
         }
     }
 }
@@ -138,16 +139,16 @@ var builtinMemberOffsets: [String: [JGodotMember]] = [:]
 for mo in jsonApi.builtinClassMemberOffsets {
     if mo.buildConfiguration == buildConfiguration {
         for c in mo.classes {
-            builtinMemberOffsets [c.name.rawValue] = c.members
+            builtinMemberOffsets[c.name.rawValue] = c.members
         }
     }
 }
 
-let generatedBuiltinDir: String? = singleFile ? nil : (outputDir + "/generated-builtin/")
-let generatedDir: String? = singleFile ? nil : (outputDir + "/generated/")
+let generatedBuiltinDir: String? = combineOutput ? nil : (outputDir + "/generated-builtin/")
+let generatedDir: String? = combineOutput ? nil : (outputDir + "/generated/")
 
-if singleFile {
-    try! FileManager.default.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
+if combineOutput {
+    try! FileManager.default.createDirectory(atPath: outputDir + "/generated/", withIntermediateDirectories: true)
 } else if let generatedBuiltinDir, let generatedDir {
     try! FileManager.default.createDirectory(atPath: generatedBuiltinDir, withIntermediateDirectories: true)
     try! FileManager.default.createDirectory(atPath: generatedDir, withIntermediateDirectories: true)
@@ -164,23 +165,22 @@ if singleFile {
 
 struct Generator {
     func run() async throws {
-        let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs")
-        coreDefPrinter.preamble()
+        let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs", withPreamble: true)
         generateUnsafePointerHelpers(coreDefPrinter)
         generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
         await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
-        await generateClasses (values: jsonApi.classes, outputDir: generatedDir)
+        await generateClasses(values: jsonApi.classes, outputDir: generatedDir)
 
-        generateCtorPointers (coreDefPrinter)
+        generateCtorPointers(coreDefPrinter)
         generateNativeStructures(coreDefPrinter, values: jsonApi.nativeStructures)
 
         if let generatedBuiltinDir {
-            coreDefPrinter.save (generatedBuiltinDir + "/core-defs.swift")
+            coreDefPrinter.save(generatedBuiltinDir + "/core-defs.swift")
         }
 
-        if singleFile {
-            await PrinterFactory.shared.save(outputDir + "/generated.swift")
+        if combineOutput {
+            await PrinterFactory.shared.saveMultiplexed(outputDir)
         }
     }
 }

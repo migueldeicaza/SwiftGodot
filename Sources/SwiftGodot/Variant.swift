@@ -181,7 +181,29 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     public var debugDescription: String {
         "\(gtype) [\(description)]"
     }
-    
+
+    public enum VariantErrorType: Error {
+        case notFound
+    }
+
+    /// Gets the value of a named key from a Variant.
+    /// - Parameter key: a Variant representing the key.
+    /// - Returns: Result with the value on success
+    public func getNamed(key: StringName) -> Result<Variant?, VariantErrorType> {
+        var newContent: ContentType = Variant.zero
+        var valid: GDExtensionBool = 0
+
+        gi.variant_get_named(&content, &key.content, &newContent, &valid)
+        if valid != 0 {
+            if newContent == Variant.zero {
+                return .success(nil)
+            }
+            return .success(Variant(takingOver: newContent))
+        } else {
+            return .failure(.notFound)
+        }
+    }
+
     /// Invokes a variant's method by name.
     /// - Parameters:
     ///  - method: name of the method to invoke

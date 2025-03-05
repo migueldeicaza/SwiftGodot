@@ -23,21 +23,21 @@ import PackagePlugin
 
         var arguments = [api.path, genSourcesDir.path]
         var outputFiles: [URL] = []
-        #if os(Windows)
-            // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well
-            outputFiles.append(genSourcesDir.appending(path: "Generated.swift"))
-            arguments.append(context.package.directoryURL.appending(path: "doc").path)
-            arguments.append("--singlefile")
-            commands.append(
-                Command.prebuildCommand(
-                    displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
-                    executable: generator,
-                    arguments: arguments,
-                    outputFilesDirectory: genSourcesDir))
-        #else
-            outputFiles.append(contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0]) })
-            outputFiles.append(contentsOf: known.map { genSourcesDir.appending(["generated", $0]) })
-        #endif
+#if os(Windows)
+        // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well.
+        // We generate so many output files that passing them all into the build command would exceed the limit.
+        // So instead we combine the output into 26 swift files, one for each letter of the alphabet, each containing
+        // all the types that start with that letter.
+        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for letter in letters {
+            outputFiles.append(genSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
+        }
+        arguments.append(context.package.directoryURL.appending(path: "doc").path)
+        arguments.append("--combined")
+#else
+        outputFiles.append(contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0]) })
+        outputFiles.append(contentsOf: known.map { genSourcesDir.appending(["generated", $0]) })
+#endif
 
         commands.append(
             Command.buildCommand(
@@ -45,49 +45,51 @@ import PackagePlugin
                 executable: generator,
                 arguments: arguments,
                 inputFiles: [api],
-                outputFiles: outputFiles))
+                outputFiles: outputFiles
+            )
+        )
 
         return commands
     }
 }
 
 let knownBuiltin = [
-    "AABB.swift",
-    "Array.swift",
-    "Basis.swift",
-    "Callable.swift",
-    "Color.swift",
-    "core-defs.swift",
-    "Dictionary.swift",
-    "NodePath.swift",
-    "PackedByteArray.swift",
-    "PackedColorArray.swift",
-    "PackedFloat32Array.swift",
-    "PackedFloat64Array.swift",
-    "PackedInt32Array.swift",
-    "PackedInt64Array.swift",
-    "PackedStringArray.swift",
-    "PackedVector2Array.swift",
-    "PackedVector3Array.swift",
-    "PackedVector4Array.swift",
-    "Plane.swift",
-    "Projection.swift",
-    "Quaternion.swift",
-    "Rect2.swift",
-    "Rect2i.swift",
-    "RID.swift",
-    "Signal.swift",
-    "String.swift",
-    "StringName.swift",
-    "Transform2D.swift",
-    "Transform3D.swift",
-    "utility.swift",
-    "Vector2.swift",
-    "Vector2i.swift",
-    "Vector3.swift",
-    "Vector3i.swift",
-    "Vector4.swift",
-    "Vector4i.swift",
+  "AABB.swift",
+  "Array.swift",
+  "Basis.swift",
+  "Callable.swift",
+  "Color.swift",
+  "core-defs.swift",
+  "Dictionary.swift",
+  "NodePath.swift",
+  "PackedByteArray.swift",
+  "PackedColorArray.swift",
+  "PackedFloat32Array.swift",
+  "PackedFloat64Array.swift",
+  "PackedInt32Array.swift",
+  "PackedInt64Array.swift",
+  "PackedStringArray.swift",
+  "PackedVector2Array.swift",
+  "PackedVector3Array.swift",
+  "PackedVector4Array.swift",
+  "Plane.swift",
+  "Projection.swift",
+  "Quaternion.swift",
+  "Rect2.swift",
+  "Rect2i.swift",
+  "RID.swift",
+  "Signal.swift",
+  "String.swift",
+  "StringName.swift",
+  "Transform2D.swift",
+  "Transform3D.swift",
+  "utility.swift",
+  "Vector2.swift",
+  "Vector2i.swift",
+  "Vector3.swift",
+  "Vector3i.swift",
+  "Vector4.swift",
+  "Vector4i.swift",
 ]
 
 let known = [
@@ -1011,7 +1013,6 @@ let known = [
     "XRVRS.swift",
     "ZIPPacker.swift",
     "ZIPReader.swift",
-
 ]
 
 extension URL {

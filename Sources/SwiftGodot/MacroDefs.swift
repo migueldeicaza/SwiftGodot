@@ -238,6 +238,7 @@ public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodot
 /// example, ["name" : String.self] declares that the signal takes one argument of string type. The argument name is provided to the godot
 /// editor. Argument types are enforced on the `emit(signal:_argument)` method. Argument types must conform to GodotVariant.
 @freestanding(declaration, names: arbitrary)
+@available(*, deprecated, message: "Use the @Signal macro instead.")
 public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type> = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
 
 /// Defines a Godot signal on a class.

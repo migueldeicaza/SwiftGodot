@@ -43,6 +43,7 @@ Going in depth with SwiftGodot:
 ### Platform Integration
 
 - <doc:iOS>
+- <doc:Windows>
 
 ### Godot Nodes
 
