@@ -61,6 +61,11 @@ public struct GodotCallable: PeerMacro {
                         let arg\(index): ObjectCollection<\(elementType)> = try arguments.objectCollectionArgument(ofType: \(elementType).self, at: \(index))
                 
                 """
+            } else if ptype.hasSuffix("?"){
+                body += """
+                        let arg\(index): \(ptype) = try arguments.optionlArgument(ofType: \(ptype.dropLast()).self, at: \(index))
+                
+                """
             } else {
                 body += """
                         let arg\(index): \(ptype) = try arguments.argument(ofType: \(ptype).self, at: \(index))

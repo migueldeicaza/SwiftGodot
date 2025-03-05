@@ -189,6 +189,7 @@ final class MacroGodotTests: MacroGodotTestCase {
             @Godot class Castro: Node {
                 @Callable func deleteEpisode() {}
                 @Callable func subscribe(podcast: Podcast) {}
+                @Callable func perhapsSubscribe(podcast: Podcast?) {}
                 @Callable func removeSilences(from: Variant) {}
                 @Callable func getLatestEpisode(podcast: Podcast) -> Episode {}
                 @Callable func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
@@ -214,6 +215,21 @@ final class MacroGodotTests: MacroGodotTestCase {
                         return nil
                     } catch {
                         GD.printErr("Error calling `subscribe`: \\(error)")
+                        return nil
+                    }
+                }
+                func perhapsSubscribe(podcast: Podcast?) {}
+            
+                func _mproxy_perhapsSubscribe(arguments: borrowing Arguments) -> Variant? {
+                    do { // safe arguments access scope
+                        let arg0: Podcast? = try arguments.optionlArgument(ofType: Podcast.self, at: 0)
+                        perhapsSubscribe(podcast: arg0)
+                        return nil
+                    } catch let error as ArgumentAccessError {
+                        GD.printErr(error.description)
+                        return nil
+                    } catch {
+                        GD.printErr("Error calling `perhapsSubscribe`: \\(error)")
                         return nil
                     }
                 }
@@ -280,6 +296,10 @@ final class MacroGodotTests: MacroGodotTestCase {
                         prop_0,
                     ]
                     classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
+                    let perhapsSubscribeArgs = [
+                        prop_0,
+                    ]
+                    classInfo.registerMethod(name: StringName("perhapsSubscribe"), flags: .default, returnValue: nil, arguments: perhapsSubscribeArgs, function: Castro._mproxy_perhapsSubscribe)
                     let prop_1 = PropInfo (propertyType: .nil, propertyName: "from", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let removeSilencesArgs = [
                         prop_1,
