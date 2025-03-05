@@ -14,13 +14,13 @@ import SwiftSyntaxMacros
 
 public struct GodotExport: PeerMacro {
     
-    
+    // We are using full qualifier SwiftGodot.Variant to prevent conflicts with user-defined Variant type
     static func makeGetAccessor (varName: String, isOptional: Bool, isEnum: Bool) -> String {
         let name = "_mproxy_get_\(varName)"
         if isEnum {
             return
     """
-    func \(name) (args: borrowing Arguments) -> Variant? {
+    func \(name) (args: borrowing Arguments) -> SwiftGodot.Variant? {
         return Variant (\(varName).rawValue)
     }
     """
@@ -29,7 +29,7 @@ public struct GodotExport: PeerMacro {
         if isOptional {
             return
     """
-    func \(name) (args: borrowing Arguments) -> Variant? {
+    func \(name) (args: borrowing Arguments) -> SwiftGodot.Variant? {
         guard let result = \(varName) else { return nil }
         return Variant (result)
     }
@@ -37,7 +37,7 @@ public struct GodotExport: PeerMacro {
         } else {
             return
     """
-    func \(name) (args: borrowing Arguments) -> Variant? {
+    func \(name) (args: borrowing Arguments) -> SwiftGodot.Variant? {
         return Variant (\(varName))
     }
     """
@@ -166,7 +166,7 @@ public struct GodotExport: PeerMacro {
         }
                 
         return """
-        func \(name)(args: borrowing Arguments) -> Variant? {
+        func \(name)(args: borrowing Arguments) -> SwiftGodot.Variant? {
         \(body)    
             return nil
         }
