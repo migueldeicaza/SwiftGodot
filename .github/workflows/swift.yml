@@ -48,6 +48,7 @@ jobs:
           swift build --build-tests --quiet
       - name: Run tests (Swift testing)
         run: swift test --skip-build --no-parallel --disable-xctest
+      - name: Run tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
 
   build-android:
