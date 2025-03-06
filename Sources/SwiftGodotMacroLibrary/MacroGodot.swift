@@ -42,7 +42,7 @@ class GodotMacroProcessor {
     
     func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
         let key = PropertyDeclarationKey(
-            typeName: parameterTypeName,
+            typeName: parameterTypeName.hasSuffix("?") ? String(parameterTypeName.dropLast()) : parameterTypeName,
             parameterElementTypeName: parameterElementTypeName,
             parameterName: parameterName
         )
