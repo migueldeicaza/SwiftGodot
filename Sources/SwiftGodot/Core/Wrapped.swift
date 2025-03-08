@@ -483,14 +483,17 @@ var pendingReleaseHandles: [UnsafeRawPointer] = []
 /// of the test suite that wants to release objects without waiting for Godot to run the queue
 public func releasePendingObjects() {
     var result: Bool = false
+    var copy: [UnsafeRawPointer] = []
+
     freeLock.withLock {
-        for handle in pendingReleaseHandles {
-            gi.object_method_bind_ptrcall(RefCounted.method_unreference, UnsafeMutableRawPointer(mutating: handle), nil, &result)
-            if result {
-                gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
-            }
-        }
+        copy = pendingReleaseHandles
         pendingReleaseHandles = []
+    }
+    for handle in copy {
+        gi.object_method_bind_ptrcall(RefCounted.method_unreference, UnsafeMutableRawPointer(mutating: handle), nil, &result)
+        if result {
+            gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
+        }
     }
 }
 
