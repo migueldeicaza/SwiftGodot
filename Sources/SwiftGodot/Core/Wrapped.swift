@@ -153,14 +153,18 @@ open class Wrapped: Equatable, Identifiable, Hashable {
 #endif
 
             if self is RefCounted {
+                var queue = false
                 freeLock.withLockVoid {
                     pendingReleaseHandles.append(handle)
                     if pendingReleaseHandles.count == 1 {
-                        Callable({ (args: borrowing Arguments) in
-                            releasePendingObjects()
-                            return nil
-                        }).callDeferred()
+                        queue = true
                     }
+                }
+                if queue {
+                    Callable({ (args: borrowing Arguments) in
+                        releasePendingObjects()
+                        return nil
+                    }).callDeferred()
                 }
             }
         }
