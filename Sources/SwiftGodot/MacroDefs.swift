@@ -46,9 +46,10 @@ public macro Callable() = #externalMacro(module: "SwiftGodotMacroLibrary", type:
 /// multi-line property box, or it can represent a file.   This hint drives the experience in the editor
 /// - Parameter hintStr: some of the hint types can use an additional configuration option as a string
 /// and this is used for this.  For example the `.file` option can have a mask to select files, for example `"*.png"`
+/// - Parameter usage: The desired usage flags, applies to exported variables
 ///
 @attached(peer, names: prefixed(_mproxy_get_), prefixed(_mproxy_set_), arbitrary)
-public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
+public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil, usage: PropertyUsageFlags = .default) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
 
 // MARK: - Freestanding Macros
 

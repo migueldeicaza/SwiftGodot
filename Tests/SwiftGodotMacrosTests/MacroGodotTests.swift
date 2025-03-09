@@ -986,7 +986,67 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
-    
+
+    func testExportGodotUsage() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export(usage: [.editor, .array]) var goodName: String = "Supertop"
+            }
+            """,
+            into: """
+            class Hi: Node {
+                var goodName: String = "Supertop"
+            
+                func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
+                    guard let arg = args.first else {
+                        GD.printErr("Unable to set `goodName`, no arguments")
+                        return nil
+                    }
+            
+                    guard let variant = arg else {
+                        GD.printErr("Unable to set `goodName`, argument is nil")
+                        return nil
+                    }
+            
+                    guard let newValue = String(variant) else {
+                        GD.printErr("Unable to set `goodName`, argument is not String")
+                        return nil
+                    }
+            
+                    goodName = newValue
+                    return nil
+                }
+            
+                func _mproxy_get_goodName (args: borrowing Arguments) -> Variant? {
+                    return Variant (goodName)
+                }
+            
+                override open class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
+            
+                private static let _initializeClass: Void = {
+                    let className = StringName("Hi")
+                    assert(ClassDB.classExists(class: className))
+                    let _pgoodName = PropInfo (
+                        propertyType: .string,
+                        propertyName: "goodName",
+                        className: className,
+                        hint: .none,
+                        hintStr: "",
+                        usage: [.editor, .array])
+                    let classInfo = ClassInfo<Hi> (name: className)
+                    classInfo.registerMethod (name: "_mproxy_get_goodName", flags: .default, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
+                    classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .default, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
+                    classInfo.registerProperty (_pgoodName, getter: "_mproxy_get_goodName", setter: "_mproxy_set_goodName")
+                } ()
+            }
+            """
+        )
+    }
+
     func testExportGodotMacro() {
         assertExpansion(
             of: """
