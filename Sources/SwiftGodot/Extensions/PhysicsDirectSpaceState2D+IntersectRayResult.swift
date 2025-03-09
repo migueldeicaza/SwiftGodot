@@ -38,7 +38,7 @@ extension PhysicsDirectSpaceState2D {
         /// The metadata value from the dictionary.
         public let metadata: Variant?
 
-        init?(_ dictionary: GDictionary) {
+        public init?(_ dictionary: GDictionary) {
             guard dictionary.isEmpty() == false,
                   let position: Vector2 = dictionary.unwrap(key: "position"),
                   let normal: Vector2 = dictionary.unwrap(key: "normal"),

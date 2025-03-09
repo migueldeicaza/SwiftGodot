@@ -7,8 +7,7 @@
 
 import Foundation
 import libgodot
-@testable import SwiftGodot
-
+import SwiftGodot
 public final class GodotRuntime {
     
     static var isInitialized: Bool = false
@@ -59,8 +58,7 @@ private extension GodotRuntime {
                 guard let godotGetProcAddr, let libraryPtr else {
                     return 0
                 }
-                let interface = LibGodotExtensionInterface(library: libraryPtr, getProcAddrFun: godotGetProcAddr)
-                setExtensionInterface(interface: interface)
+                setExtensionInterfaceOpaque(library: libraryPtr, getProcAddrFun: godotGetProcAddr)
                 godotLibrary = OpaquePointer (libraryPtr)
                 extensionInit?.pointee = GDExtensionInitialization (
                     minimum_initialization_level: GDEXTENSION_INITIALIZATION_CORE,
