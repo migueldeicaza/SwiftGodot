@@ -42,7 +42,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             }
             """
@@ -68,7 +67,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Hi> (name: className)
                 } ()
 
                 override public class func implementedOverrides () -> [StringName] {
@@ -103,7 +101,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             
                 override open class func implementedOverrides () -> [StringName] {
@@ -139,7 +136,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Hi> (name: className)
                 } ()
             }
             """
@@ -345,7 +341,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("MyData")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<MyData> (name: className)
                 } ()
             }
             final class MyClass: Node {
@@ -386,7 +381,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("MyClass")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<MyClass> (name: className)
                     let _pdata = PropInfo (
                         propertyType: .object,
                         propertyName: "data",
@@ -394,6 +388,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         hint: .none,
                         hintStr: "",
                         usage: .default)
+                    let classInfo = ClassInfo<MyClass> (name: className)
                     classInfo.registerMethod (name: "_mproxy_get_data", flags: .default, returnValue: _pdata, arguments: [], function: MyClass._mproxy_get_data)
                     classInfo.registerMethod (name: "_mproxy_set_data", flags: .default, returnValue: nil, arguments: [_pdata], function: MyClass._mproxy_set_data)
                     classInfo.registerProperty (_pdata, getter: "_mproxy_get_data", setter: "_mproxy_set_data")
@@ -437,8 +432,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<SomeNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
+                    let classInfo = ClassInfo<SomeNode> (name: className)
                     classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
                 } ()
             }
@@ -487,12 +482,12 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<SomeNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     let squareArgs = [
                         prop_1,
                     ]
+                    let classInfo = ClassInfo<SomeNode> (name: className)
                     classInfo.registerMethod(name: StringName("square"), flags: .default, returnValue: prop_0, arguments: squareArgs, function: SomeNode._mproxy_square)
                 } ()
             }
@@ -534,8 +529,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<SomeNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
+                    let classInfo = ClassInfo<SomeNode> (name: className)
                     classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
                 } ()
             }
@@ -583,11 +578,11 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<SomeNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .array, propertyName: "nodes", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
                     let printNamesArgs = [
                         prop_0,
                     ]
+                    let classInfo = ClassInfo<SomeNode> (name: className)
                     classInfo.registerMethod(name: StringName("printNames"), flags: .default, returnValue: nil, arguments: printNamesArgs, function: SomeNode._mproxy_printNames)
                 } ()
             }
@@ -636,12 +631,12 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("MultiplierNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<MultiplierNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     let multiplyArgs = [
                         prop_1,
                     ]
+                    let classInfo = ClassInfo<MultiplierNode> (name: className)
                     classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
                 } ()
             }
@@ -693,12 +688,12 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("TestNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<TestNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .nil, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .nilIsVariant)
                     let prop_1 = PropInfo (propertyType: .nil, propertyName: "variant", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let fooArgs = [
                         prop_1,
                     ]
+                    let classInfo = ClassInfo<TestNode> (name: className)
                     classInfo.registerMethod(name: StringName("foo"), flags: .default, returnValue: prop_0, arguments: fooArgs, function: TestNode._mproxy_foo)
                 } ()
             }
@@ -760,8 +755,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("CallableCollectionsNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
+                    let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
                     classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
                     let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .default)
                     classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
@@ -812,12 +807,12 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("MultiplierNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<MultiplierNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
                     let multiplyArgs = [
                         prop_1,
                     ]
+                    let classInfo = ClassInfo<MultiplierNode> (name: className)
                     classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
                 } ()
             }
@@ -879,8 +874,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("CallableCollectionsNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
                     let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
+                    let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
                     classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
                     let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .default)
                     classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
@@ -961,7 +956,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("MathHelper")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<MathHelper> (name: className)
                     let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let prop_1 = PropInfo (propertyType: .int, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let prop_2 = PropInfo (propertyType: .int, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
@@ -969,6 +963,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         prop_1,
                         prop_2,
                     ]
+                    let classInfo = ClassInfo<MathHelper> (name: className)
                     classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MathHelper._mproxy_multiply)
                     let prop_3 = PropInfo (propertyType: .float, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
                     let prop_4 = PropInfo (propertyType: .float, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
@@ -1035,7 +1030,6 @@ final class MacroGodotTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Hi")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Hi> (name: className)
                     let _pgoodName = PropInfo (
                         propertyType: .string,
                         propertyName: "goodName",
@@ -1043,6 +1037,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                         hint: .none,
                         hintStr: "",
                         usage: .default)
+                    let classInfo = ClassInfo<Hi> (name: className)
                     classInfo.registerMethod (name: "_mproxy_get_goodName", flags: .default, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
                     classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .default, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
                     classInfo.registerProperty (_pgoodName, getter: "_mproxy_get_goodName", setter: "_mproxy_set_goodName")

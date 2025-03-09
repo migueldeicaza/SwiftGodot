@@ -110,7 +110,6 @@ final class MacroGodotExportEnumTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("SomeNode")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<SomeNode> (name: className)
                     let _pdemo = PropInfo (
                         propertyType: .int,
                         propertyName: "demo",
@@ -118,6 +117,7 @@ final class MacroGodotExportEnumTests: MacroGodotTestCase {
                         hint: .enum,
                         hintStr: tryCase (Demo.self),
                         usage: .default)
+                    let classInfo = ClassInfo<SomeNode> (name: className)
                     classInfo.registerMethod (name: "_mproxy_get_demo", flags: .default, returnValue: _pdemo, arguments: [], function: SomeNode._mproxy_get_demo)
                     classInfo.registerMethod (name: "_mproxy_set_demo", flags: .default, returnValue: nil, arguments: [_pdemo], function: SomeNode._mproxy_set_demo)
                     classInfo.registerProperty (_pdemo, getter: "_mproxy_get_demo", setter: "_mproxy_set_demo")
