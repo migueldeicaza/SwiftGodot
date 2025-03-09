@@ -201,7 +201,12 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// For example `Node.notificationProcess`
     open func _notification(code: Int, reversed: Bool) {
     }
-    
+
+    ///  Called whenever Godot retrieves value of property. Allows to customize existing properties.
+    ///
+    open func _validateProperty(_ property: PropInfo) -> Bool {
+        return true
+    }
 
     /// Checks if this object has a script with the given method.
     /// - Parameter method: StringName identifying the method.
@@ -352,6 +357,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.get_virtual_func = getVirtual
     info.notification_func = notificationFunc
     info.recreate_instance_func = recreateFunc
+    info.validate_property_func = validatePropertyFunc
     info.is_exposed = 1
     userTypes [name.description] = { ptr in
         return type.init(nativeHandle: ptr)
@@ -545,6 +551,26 @@ func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UIn
     guard let ptr else { return } 
     let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
     original._notification(code: Int(code), reversed: reversed != 0)
+}
+
+func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, info: UnsafeMutablePointer<GDExtensionPropertyInfo>?) -> UInt8 {
+    guard let ptr else { return 0 }
+    let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
+    guard let info = info?.pointee else { return 0 }
+    guard let namePtr = info.name,
+          let classNamePtr = info.class_name,
+          let infoHintPtr = info.hint_string else {
+        return 0
+    }
+    guard let ptype = Variant.GType(rawValue: Int64(info.type.rawValue)) else { return 0 }
+    let pname = StringName(fromPtr: namePtr)
+    let className = StringName(fromPtr: classNamePtr)
+    let hint = PropertyHint(rawValue: Int64(info.hint)) ?? .none
+    let hintStr = GString(content: infoHintPtr.load(as: Int64.self))
+    let usage = PropertyUsageFlags(rawValue: Int(info.usage))
+
+    let pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
+    return original._validateProperty(pinfo) ? 1 : 0
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
