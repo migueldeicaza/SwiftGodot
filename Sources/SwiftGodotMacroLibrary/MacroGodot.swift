@@ -268,7 +268,7 @@ class GodotMacroProcessor {
         // If the first one is an MemberAccessExprSyntax, it is not a labeled expression, so in that case, we have a
         // hint, and in that case, the second can be a hint
         let hintExpr = labeledExpressionList?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
-        let hintStrExpr = hintExpr == nil ? nil : labeledExpressionList?.dropFirst().first?.expression.as(MemberAccessExprSyntax.self)?.declName
+        let hintStrExpr = hintExpr == nil ? nil : labeledExpressionList?.dropFirst().first
 
         let usageExpr = labeledExpressionList?.first(where: { ($0 as? LabeledExprSyntax)?.label?.description == "usage"})
 
