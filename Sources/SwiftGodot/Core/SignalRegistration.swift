@@ -185,6 +185,7 @@ public extension Object {
     ///
     ///  - Example: emit(signal: Player.scored)
     @discardableResult
+    @available(*, deprecated, message: "Use the @Signal macro instead.")
     func emit(signal: SignalWithNoArguments) -> GodotError {
         emitSignal(signal.name)
     }
