@@ -93,7 +93,8 @@ func generateVirtualProxy (_ p: Printer,
         if let arguments = method.arguments, arguments.count > 0 {
             p ("guard let args else { return }")
         }
-        p ("let swiftObject = Unmanaged<\(cdef.name)>.fromOpaque(instance).takeUnretainedValue()")
+        p ("let reference = Unmanaged<WrappedReference>.fromOpaque(instance).takeUnretainedValue()")
+        p ("guard let swiftObject = reference.value as? \(cdef.name) else { return }")
         
         var argCall = ""
         var argPrep = ""
@@ -114,17 +115,12 @@ func generateVirtualProxy (_ p: Printer,
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
-                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: UnsafeRawPointer.self)\n"
-                let handleResolver: String
-                if hasSubclasses.contains(cdef.name) {
-                    // If the type we are bubbling up has subclasses, we want to create the most
-                    // derived type if possible, so we perform the longer lookup
-                    handleResolver = "lookupObject (nativeHandle: resolved_\(i))!"
+                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: UnsafeRawPointer?.self)\n"
+                if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
+                    argCall += "resolved_\(i) == nil ? nil : lookupObject (nativeHandle: resolved_\(i)!, ownsRef: false) as? \(arg.type)"
                 } else {
-                    // There are no subclasses, so we can create the object right away
-                    handleResolver = "\(arg.type) (nativeHandle: resolved_\(i))"
+                    argCall += "lookupObject (nativeHandle: resolved_\(i)!, ownsRef: false) as! \(arg.type)"
                 }
-                argCall += "lookupLiveObject (handleAddress: resolved_\(i)) as? \(arg.type) ?? \(handleResolver)"
             } else if let storage = builtinClassStorage [arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
             } else {
@@ -589,13 +585,9 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     p (typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p.staticVar(visibility: "public ", name: "shared", type: cdef.name) {
+            p.staticVar(visibility: "public ", cached: true, name: "shared", type: cdef.name) {
                 p ("return withUnsafePointer (to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
-                    if hasSubclasses.contains(cdef.name) {
-                        p ("lookupObject (nativeHandle: gi.global_get_singleton (ptr)!)!")
-                    } else {
-                        p ("\(cdef.name) (nativeHandle: gi.global_get_singleton (ptr)!)")
-                    }
+                    p ("lookupObject (nativeHandle: gi.global_get_singleton (ptr)!, ownsRef: false)!")
                 }
             }
         }
@@ -609,8 +601,6 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             }
             p ("public required init(nativeHandle: UnsafeRawPointer)") {
                 p ("super.init (nativeHandle: nativeHandle)")
-                p ("reference()")
-                p ("ownsHandle = true")
             }
         }
         var referencedMethods = Set<String>()
