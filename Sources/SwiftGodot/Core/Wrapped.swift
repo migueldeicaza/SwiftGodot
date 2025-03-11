@@ -203,9 +203,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
 
     ///  Called whenever Godot retrieves value of property. Allows to customize existing properties.
-    ///
-    open func _validateProperty(_ property: PropInfo) -> Bool {
-        return true
+    /// Return true if you made changes to the PropInfo value you got
+    open func _validateProperty(_ property: inout PropInfo) -> Bool {
+        return false
     }
 
     /// Checks if this object has a script with the given method.
@@ -556,7 +556,7 @@ func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UIn
 func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, info: UnsafeMutablePointer<GDExtensionPropertyInfo>?) -> UInt8 {
     guard let ptr else { return 0 }
     let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
-    guard let info = info?.pointee else { return 0 }
+    guard var info = info?.pointee else { return 0 }
     guard let namePtr = info.name,
           let classNamePtr = info.class_name,
           let infoHintPtr = info.hint_string else {
@@ -569,8 +569,14 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, info: UnsafeMutablePoin
     let hintStr = GString(content: infoHintPtr.load(as: Int64.self))
     let usage = PropertyUsageFlags(rawValue: Int(info.usage))
 
-    let pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
-    return original._validateProperty(pinfo) ? 1 : 0
+    var pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
+    if original._validateProperty(&pinfo) {
+        let native = pinfo.makeNativeStruct()
+        info = native
+
+        return 1
+    }
+    return 0
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
