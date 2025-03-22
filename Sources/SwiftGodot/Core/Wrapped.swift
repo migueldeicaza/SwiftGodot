@@ -553,10 +553,10 @@ func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UIn
     original._notification(code: Int(code), reversed: reversed != 0)
 }
 
-func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, info: UnsafeMutablePointer<GDExtensionPropertyInfo>?) -> UInt8 {
+func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePointer<GDExtensionPropertyInfo>?) -> UInt8 {
     guard let ptr else { return 0 }
     let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
-    guard var info = info?.pointee else { return 0 }
+    guard let info = _info?.pointee else { return 0 }
     guard let namePtr = info.name,
           let classNamePtr = info.class_name,
           let infoHintPtr = info.hint_string else {
@@ -572,7 +572,7 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, info: UnsafeMutablePoin
     var pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
     if original._validateProperty(&pinfo) {
         let native = pinfo.makeNativeStruct()
-        info = native
+        _info?.pointee = native
 
         return 1
     }
