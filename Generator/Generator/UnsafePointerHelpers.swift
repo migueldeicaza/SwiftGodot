@@ -20,7 +20,7 @@ func generateUnsafePointerHelpers(_ p: Printer) {
 /// }
 /// ```
 private func generateUnsafeRawPointersN(_ p: Printer, pointerCount count: Int) {
-    p("struct UnsafeRawPointersN\(count)") {
+    p("public struct UnsafeRawPointersN\(count)") {
         for i in 0..<count {
             p("let p\(i): UnsafeRawPointer?")
         }
