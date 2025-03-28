@@ -275,7 +275,7 @@ public struct GodotExport: PeerMacro {
 private extension GodotExport {
     private static func makeGArrayCollectionGetProxyAccessor(varName: String, elementTypeName: String) -> String {
         """
-        func _mproxy_get_\(varName)(args: borrowing Arguments) -> Variant? {
+        func _mproxy_get_\(varName)(args: borrowing Arguments) -> SwiftGodot.Variant? {
             return Variant(\(varName).array)
         }
         """
@@ -283,7 +283,7 @@ private extension GodotExport {
     
     private static func makeGArrayCollectionSetProxyAccessor(varName: String, elementTypeName: String) -> String {
         """
-        func _mproxy_set_\(varName)(args: borrowing Arguments) -> Variant? {
+        func _mproxy_set_\(varName)(args: borrowing Arguments) -> SwiftGodot.Variant? {
             guard let arg = args.first else {
                 GD.printErr("Unable to set `\(varName)`, no arguments")
                 return nil
