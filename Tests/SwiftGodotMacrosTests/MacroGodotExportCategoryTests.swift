@@ -37,7 +37,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vehicle_make: String = "Mazda"
             
-                func _mproxy_set_vehicle_make(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vehicle_make(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vehicle_make`, no arguments")
                         return nil
@@ -57,12 +57,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_vehicle_make (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vehicle_make (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (vehicle_make)
                 }
                 var vehicle_model: String = "RX7"
             
-                func _mproxy_set_vehicle_model(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vehicle_model(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vehicle_model`, no arguments")
                         return nil
@@ -82,7 +82,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_vehicle_model (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vehicle_model (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (vehicle_model)
                 }
             
@@ -137,7 +137,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var make: String = "Mazda"
             
-                func _mproxy_set_make(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_make(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `make`, no arguments")
                         return nil
@@ -157,12 +157,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_make (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (make)
                 }
                 var model: String = "RX7"
             
-                func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_model(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `model`, no arguments")
                         return nil
@@ -182,7 +182,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_model (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (model)
                 }
             
@@ -237,7 +237,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vin: String = "00000000000000000"
             
-                func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vin(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vin`, no arguments")
                         return nil
@@ -257,12 +257,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vin (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (vin)
                 }
                 var year: Int = 1997
             
-                func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_year(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `year`, no arguments")
                         return nil
@@ -282,7 +282,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_year (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (year)
                 }
             
@@ -337,7 +337,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vin: String = "00000000000000000"
             
-                func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vin(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vin`, no arguments")
                         return nil
@@ -357,12 +357,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vin (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (vin)
                 }
                 var year: Int = 1997
             
-                func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_year(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `year`, no arguments")
                         return nil
@@ -382,7 +382,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_year (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (year)
                 }
             
@@ -441,7 +441,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vin: String = ""
             
-                func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vin(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vin`, no arguments")
                         return nil
@@ -461,12 +461,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vin (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (vin)
                 }
                 var year: Int = 1997
             
-                func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_year(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `year`, no arguments")
                         return nil
@@ -486,12 +486,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_year (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (year)
                 }
                 var make: String = "HONDA"
             
-                func _mproxy_set_make(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_make(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `make`, no arguments")
                         return nil
@@ -511,12 +511,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_make (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (make)
                 }
                 var model: String = "ACCORD"
             
-                func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_model(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `model`, no arguments")
                         return nil
@@ -536,7 +536,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_model (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (model)
                 }
             
@@ -613,11 +613,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: VariantCollection<String> = ["00000000000000000"]
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -637,11 +637,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: VariantCollection<Int> = [1997]
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -711,11 +711,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: VariantCollection<String> = ["00000000000000000"]
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -735,11 +735,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: VariantCollection<Int> = [1997]
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -809,11 +809,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: VariantCollection<String> = ["00000000000000000"]
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -833,11 +833,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: VariantCollection<Int> = [1997]
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -911,11 +911,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: VariantCollection<String> = [""]
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -935,11 +935,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: VariantCollection<Int> = [1997]
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -959,11 +959,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var makes: VariantCollection<String> = ["HONDA"]
             
-                func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_makes(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(makes.array)
                 }
             
-                func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_makes(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `makes`, no arguments")
                         return nil
@@ -983,11 +983,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var models: VariantCollection<String> = ["ACCORD"]
             
-                func _mproxy_get_models(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_models(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(models.array)
                 }
             
-                func _mproxy_set_models(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_models(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `models`, no arguments")
                         return nil
@@ -1081,11 +1081,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var makes: ObjectCollection<Node> = []
             
-                func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_makes(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(makes.array)
                 }
             
-                func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_makes(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `makes`, no arguments")
                         return nil
@@ -1105,11 +1105,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var model: ObjectCollection<Node> = []
             
-                func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_model(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(model.array)
                 }
             
-                func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_model(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `model`, no arguments")
                         return nil
@@ -1179,11 +1179,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: ObjectCollection<Node> = []
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -1203,11 +1203,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: ObjectCollection<Node> = []
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -1277,11 +1277,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: ObjectCollection<Node> = []
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -1301,11 +1301,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: ObjectCollection<Node> = []
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -1379,11 +1379,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vins: ObjectCollection<Node> = []
             
-                func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(vins.array)
                 }
             
-                func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_vins(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vins`, no arguments")
                         return nil
@@ -1403,11 +1403,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var years: ObjectCollection<Node> = []
             
-                func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(years.array)
                 }
             
-                func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_years(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `years`, no arguments")
                         return nil
@@ -1427,11 +1427,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var makes: ObjectCollection<Node> = []
             
-                func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_makes(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(makes.array)
                 }
             
-                func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_makes(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `makes`, no arguments")
                         return nil
@@ -1451,11 +1451,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var models: ObjectCollection<Node> = []
             
-                func _mproxy_get_models(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_models(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(models.array)
                 }
             
-                func _mproxy_set_models(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_models(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `models`, no arguments")
                         return nil
@@ -1555,7 +1555,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Garage: Node {
                 var name: String = ""
             
-                func _mproxy_set_name(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_name(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `name`, no arguments")
                         return nil
@@ -1575,12 +1575,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_name (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_name (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (name)
                 }
                 var rating: Float = 0.0
             
-                func _mproxy_set_rating(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_rating(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `rating`, no arguments")
                         return nil
@@ -1600,16 +1600,16 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_rating (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_rating (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (rating)
                 }
                 var reviews: VariantCollection<String> = []
             
-                func _mproxy_get_reviews(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_reviews(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(reviews.array)
                 }
             
-                func _mproxy_set_reviews(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_reviews(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `reviews`, no arguments")
                         return nil
@@ -1629,11 +1629,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var checkIns: ObjectCollection<CheckIn> = []
             
-                func _mproxy_get_checkIns(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_checkIns(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(checkIns.array)
                 }
             
-                func _mproxy_set_checkIns(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_checkIns(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `checkIns`, no arguments")
                         return nil
@@ -1653,7 +1653,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var address: String = ""
             
-                func _mproxy_set_address(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_address(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `address`, no arguments")
                         return nil
@@ -1673,16 +1673,16 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_address (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_address (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (address)
                 }
                 var daysOfOperation: VariantCollection<String> = []
             
-                func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(daysOfOperation.array)
                 }
             
-                func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `daysOfOperation`, no arguments")
                         return nil
@@ -1702,11 +1702,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var hours: VariantCollection<String> = []
             
-                func _mproxy_get_hours(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_hours(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(hours.array)
                 }
             
-                func _mproxy_set_hours(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_hours(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `hours`, no arguments")
                         return nil
@@ -1726,11 +1726,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
             
-                func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(insuranceProvidersAccepted.array)
                 }
             
-                func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `insuranceProvidersAccepted`, no arguments")
                         return nil
@@ -1861,7 +1861,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Garage: Node {
                 var bar: Bool = false
             
-                func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_bar(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `bar`, no arguments")
                         return nil
@@ -1881,7 +1881,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_bar (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_bar (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (bar)
                 }
             
@@ -1926,7 +1926,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             public class Issue353: Node {
                 var prefix1_prefixed_bool: Bool = true
             
-                func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `prefix1_prefixed_bool`, no arguments")
                         return nil
@@ -1946,12 +1946,12 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_prefix1_prefixed_bool (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (prefix1_prefixed_bool)
                 }
                 var non_prefixed_bool: Bool = true
             
-                func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `non_prefixed_bool`, no arguments")
                         return nil
@@ -1971,7 +1971,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_non_prefixed_bool (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (non_prefixed_bool)
                 }
             
@@ -2025,11 +2025,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             class Garage: Node {
                 var bar: VariantCollection<Bool> = [false]
             
-                func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_bar(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(bar.array)
                 }
             
-                func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_bar(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `bar`, no arguments")
                         return nil
@@ -2089,11 +2089,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             public class Issue353: Node {
                 var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
             
-                func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(prefix1_prefixed_bool.array)
                 }
             
-                func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `prefix1_prefixed_bool`, no arguments")
                         return nil
@@ -2113,11 +2113,11 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 }
                 var non_prefixed_bool: VariantCollection<Bool> = [false]
             
-                func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant(non_prefixed_bool.array)
                 }
             
-                func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `non_prefixed_bool`, no arguments")
                         return nil
