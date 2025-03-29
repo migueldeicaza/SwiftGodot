@@ -9,9 +9,9 @@ import SwiftGodot
 
 @Godot
 class MainLevel: Node2D {
-    @SceneTree(path: "CharacterBody2D") var player: PlayerController?
-    @SceneTree(path: "Spawnpoint") var spawnpoint: Node2D?
-    @SceneTree(path: "Telepoint") var teleportArea: Area2D?
+    @Node("CharacterBody2D") var player: PlayerController?
+    @Node("Spawnpoint") var spawnpoint: Node2D?
+    @Node("Telepoint") var teleportArea: Area2D?
 
     override func _ready() {
         teleportArea?.bodyEntered.connect { [self] enteredBody in

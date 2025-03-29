@@ -42,7 +42,7 @@ class GodotMacroProcessor {
     
     func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
         let key = PropertyDeclarationKey(
-            typeName: parameterTypeName,
+            typeName: parameterTypeName.hasSuffix("?") ? String(parameterTypeName.dropLast()) : parameterTypeName,
             parameterElementTypeName: parameterElementTypeName,
             parameterName: parameterName
         )
@@ -261,10 +261,17 @@ class GodotMacroProcessor {
         }
 
         let exportAttr = varDecl.attributes.first?.as(AttributeSyntax.self)
+
+        // We cornered ourselves by not having named parameters for the first two arguments
         let labeledExpressionList = exportAttr?.arguments?.as(LabeledExprListSyntax.self)
-        let firstLabeledExpression = labeledExpressionList?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
-        let secondLabeledExpression = labeledExpressionList?.dropFirst().first
-        
+
+        // If the first one is an MemberAccessExprSyntax, it is not a labeled expression, so in that case, we have a
+        // hint, and in that case, the second can be a hint
+        let hintExpr = labeledExpressionList?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
+        let hintStrExpr = hintExpr == nil ? nil : labeledExpressionList?.dropFirst().first
+
+        let usageExpr = labeledExpressionList?.first(where: { ($0 as? LabeledExprSyntax)?.label?.description == "usage"})
+
         for singleVar in varDecl.bindings {
             guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
                 throw GodotMacroError.expectedIdentifier(singleVar)
@@ -315,23 +322,25 @@ class GodotMacroProcessor {
             }
             let mappedType = godotTypeToProp (typeName: typeName)
             let pinfo = "_p\(varNameWithPrefix)"
-            let isEnum = firstLabeledExpression?.description == "enum"
-            
+            let isEnum = hintExpr?.description == "enum"
+
             
             let propType = isEnum ? ".int" : mappedType
             let fallback = isEnum ? "tryCase (\(ta).self)" : "\"\""
+            let usageFallback = ".default"
             if isEnum {
                 usedTryCase = true
             }
+
             ctor.append (
     """
     let \(pinfo) = PropInfo (
         propertyType: \(propType),
         propertyName: "\(varNameWithPrefix)",
         className: className,
-        hint: .\(firstLabeledExpression?.description ?? "none"),
-        hintStr: \(secondLabeledExpression?.description ?? fallback),
-        usage: .default)
+        hint: .\(hintExpr?.description ?? "none"),
+        hintStr: \(hintStrExpr?.description ?? fallback),
+        usage: \(usageExpr?.expression.description ?? usageFallback))
     
     """)
             

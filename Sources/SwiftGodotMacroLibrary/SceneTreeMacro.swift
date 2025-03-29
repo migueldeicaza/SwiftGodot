@@ -16,7 +16,6 @@ public struct SceneTreeMacro: AccessorMacro {
     enum ProviderDiagnostic: String, DiagnosticMessage {
         case invalidDeclaration
         case missingTypeAnnotation
-        case nonOptionalTypeAnnotation
 
         var severity: DiagnosticSeverity { .error }
 
@@ -26,23 +25,11 @@ public struct SceneTreeMacro: AccessorMacro {
                 "SceneTree can only be applied to stored properties"
             case .missingTypeAnnotation:
                 "SceneTree requires an explicit type declaration"
-            case .nonOptionalTypeAnnotation:
-                "Stored properties with SceneTree must be marked as Optional"
             }
         }
 
         var diagnosticID: MessageID {
             MessageID(domain: "SwiftGodotMacros", id: rawValue)
-        }
-    }
-
-    struct MarkOptionalMessage: FixItMessage {
-        var message: String {
-            "Mark as Optional"
-        }
-
-        var fixItID: SwiftDiagnostics.MessageID {
-            ProviderDiagnostic.nonOptionalTypeAnnotation.diagnosticID
         }
     }
 
@@ -70,26 +57,22 @@ public struct SceneTreeMacro: AccessorMacro {
         let preferredContent = preferredIdentifierExpr?.segments.first?.as(StringSegmentSyntax.self)?.content
         let preferredIdentifier = preferredContent?.text
 
-        let unwrappedType = nodeType.as(OptionalTypeSyntax.self)?.wrappedType ?? nodeType.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType
+        let optionalType = nodeType.as(OptionalTypeSyntax.self)?.wrappedType
+        let implicitType = nodeType.as(ImplicitlyUnwrappedOptionalTypeSyntax.self)?.wrappedType
+        let unwrappedType = implicitType ?? optionalType ?? nodeType
 
-        guard let unwrappedType else {
-            let newOptional = OptionalTypeSyntax(wrappedType: nodeType)
-            let addOptionalFix = FixIt(message: MarkOptionalMessage(),
-                                       changes: [.replace(oldNode: Syntax(nodeType), newNode: Syntax(newOptional))])
-            let nonOptional = Diagnostic(node: nodeType.root,
-                                         message: ProviderDiagnostic.nonOptionalTypeAnnotation,
-                                         fixIts: [addOptionalFix])
-            context.diagnose(nonOptional)
-            return [
-                """
-                get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as? \(nodeType) }
-                """,
-            ]
+        let castOperator: String
+        if let _ = optionalType ?? implicitType {
+            // the type was optional or implicit, so use an as? case
+            castOperator = "as?"
+        } else {
+            // the type was non-optional, so use as! and force unwrap; this will be a runtime error if the node is not found
+            castOperator = "as!"
         }
 
         return [
             """
-            get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) as? \(unwrappedType) }
+            get { getNodeOrNull(path: NodePath(stringLiteral: \"\(raw: preferredIdentifier ?? nodeIdentifier.text)\")) \(raw: castOperator) \(unwrappedType) }
             """,
         ]
     }
