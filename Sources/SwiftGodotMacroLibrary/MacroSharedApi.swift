@@ -226,7 +226,7 @@ func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
             return "SwiftGodot.Variant?"
         }
         else {
-            return nil
+            return typeName + "?"
         }
     }
     else {
