@@ -523,7 +523,7 @@ func generateBuiltinMethods (_ p: Printer,
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
-        public subscript(key: Variant?) -> Variant? {
+        public subscript(key: SwiftGodot.Variant?) -> SwiftGodot.Variant? {
             get {                            
                 withUnsafePointer(to: key.content) { pKeyContent in
                     if Self.keyed_checker(&content, pKeyContent) != 0 {
@@ -709,7 +709,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if bc.name == "Callable" {
                 p ("/// Creates a Callable instance from a Swift function")
                 p ("/// - Parameter callback: the swift function that receives `Arguments`, and returns a `Variant`")
-                p ("public init(_ callback: @escaping (borrowing Arguments) -> Variant?)") {
+                p ("public init(_ callback: @escaping (borrowing Arguments) -> SwiftGodot.Variant?)") {
                     p ("content = CallableWrapper.callableVariantContent(wrapping: callback)")
                 }
 

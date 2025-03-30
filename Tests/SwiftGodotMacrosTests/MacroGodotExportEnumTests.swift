@@ -43,7 +43,7 @@ final class MacroGodotExportEnumTests: MacroGodotTestCase {
             class SomeNode: Node {
                 var demo: Demo
             
-                func _mproxy_set_demo(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_demo(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `demo`, no arguments")
                         return nil
@@ -68,12 +68,12 @@ final class MacroGodotExportEnumTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_demo (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_demo (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (demo.rawValue)
                 }
                 var demo64: Demo64
             
-                func _mproxy_set_demo64(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_demo64(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `demo64`, no arguments")
                         return nil
@@ -98,7 +98,7 @@ final class MacroGodotExportEnumTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_demo64 (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_demo64 (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (demo64.rawValue)
                 }
             
