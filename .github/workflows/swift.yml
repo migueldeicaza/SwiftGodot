@@ -35,7 +35,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     timeout-minutes: 30
-    
+
     steps:
       - name: Swift Install
         uses: compnerd/gha-setup-swift@main
@@ -50,3 +50,12 @@ jobs:
         run: swift test --skip-build --no-parallel --disable-xctest
       - name: Run tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
+
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: skiptools/swift-android-action@v2
+        with:
+          build-tests: false

@@ -198,7 +198,12 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// For example `Node.notificationProcess`
     open func _notification(code: Int, reversed: Bool) {
     }
-    
+
+    ///  Called whenever Godot retrieves value of property. Allows to customize existing properties.
+    /// Return true if you made changes to the PropInfo value you got
+    open func _validateProperty(_ property: inout PropInfo) -> Bool {
+        return false
+    }
 
     /// Checks if this object has a script with the given method.
     /// - Parameter method: StringName identifying the method.
@@ -382,6 +387,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.get_virtual_func = getVirtual
     info.notification_func = notificationFunc
     info.recreate_instance_func = recreateFunc
+    info.validate_property_func = validatePropertyFunc
     info.is_exposed = 1
     userTypes [name.description] = { ptr in
         return type.init(nativeHandle: ptr)
@@ -679,6 +685,38 @@ func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UIn
     let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
     guard let instance = original.value else { return }
     instance._notification(code: Int(code), reversed: reversed != 0)
+}
+
+func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePointer<GDExtensionPropertyInfo>?) -> UInt8 {
+    guard let ptr else { return 0 }
+    let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
+    guard var info = _info?.pointee else { return 0 }
+    guard let namePtr = info.name,
+          let classNamePtr = info.class_name,
+          let infoHintPtr = info.hint_string else {
+        return 0
+    }
+    guard let ptype = Variant.GType(rawValue: Int64(info.type.rawValue)) else { return 0 }
+    let pname = StringName(fromPtr: namePtr)
+    let className = StringName(fromPtr: classNamePtr)
+    let hint = PropertyHint(rawValue: Int64(info.hint)) ?? .none
+    let hintStr = GString(content: infoHintPtr.load(as: Int64.self))
+    let usage = PropertyUsageFlags(rawValue: Int(info.usage))
+
+    var pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
+    if original._validateProperty(&pinfo) {
+        // The problem with the code below is that it does not make a copy of the StringName and String,
+        // and passes a reference that we will destroy right away when `pinfo` goes out of scope.
+        //
+        // For now, we just update the usage, type and hint but we need to find a solution for those other fields
+        let native = pinfo.makeNativeStruct()
+        _info?.pointee.usage = UInt32(pinfo.usage.rawValue)
+        _info?.pointee.hint = UInt32(pinfo.hint.rawValue)
+        _info?.pointee.type = GDExtensionVariantType(GDExtensionVariantType.RawValue (pinfo.propertyType.rawValue))
+
+        return 1
+    }
+    return 0
 }
 
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {

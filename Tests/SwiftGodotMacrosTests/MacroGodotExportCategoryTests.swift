@@ -294,7 +294,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvin = PropInfo (
                         propertyType: .string,
                         propertyName: "vin",
@@ -302,6 +301,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .none,
                         hintStr: "",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
                     classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
                     classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
@@ -394,7 +394,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvin = PropInfo (
                         propertyType: .string,
                         propertyName: "vin",
@@ -402,6 +401,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .none,
                         hintStr: "",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
                     classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
                     classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
@@ -668,7 +668,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvins = PropInfo (
                         propertyType: .array,
                         propertyName: "vins",
@@ -676,6 +675,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .arrayType,
                         hintStr: "String",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
                     classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
                     classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
@@ -766,7 +766,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvins = PropInfo (
                         propertyType: .array,
                         propertyName: "vins",
@@ -774,6 +773,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .arrayType,
                         hintStr: "String",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
                     classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
                     classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
@@ -864,7 +864,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvins = PropInfo (
                         propertyType: .array,
                         propertyName: "vins",
@@ -872,6 +871,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .arrayType,
                         hintStr: "String",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
                     classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
                     classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
@@ -1234,7 +1234,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvins = PropInfo (
                         propertyType: .array,
                         propertyName: "vins",
@@ -1242,6 +1241,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .arrayType,
                         hintStr: "Node",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
                     classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
                     classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
@@ -1332,7 +1332,6 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 private static let _initializeClass: Void = {
                     let className = StringName("Car")
                     assert(ClassDB.classExists(class: className))
-                    let classInfo = ClassInfo<Car> (name: className)
                     let _pvins = PropInfo (
                         propertyType: .array,
                         propertyName: "vins",
@@ -1340,6 +1339,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                         hint: .arrayType,
                         hintStr: "Node",
                         usage: .default)
+                    let classInfo = ClassInfo<Car> (name: className)
                     classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
                     classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
                     classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")

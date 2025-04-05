@@ -199,17 +199,17 @@ public class ClassInfo<T:Object> {
 /// The supported types are those that can be wrapped as a Godot Variant type.
 public struct PropInfo: CustomDebugStringConvertible {
     /// The type of the property being defined
-    public let propertyType: Variant.GType
+    public var propertyType: Variant.GType
     /// The name for the property
-    public let propertyName: StringName
+    public var propertyName: StringName
     /// The class name where this is defined
-    public let className: StringName
+    public var className: StringName
     /// Property Hint for this property
-    public let hint: PropertyHint
+    public var hint: PropertyHint
     /// Human-readable hint
-    public let hintStr: GString
+    public var hintStr: GString
     /// Describes how the property can be used.
-    public let usage: PropertyUsageFlags
+    public var usage: PropertyUsageFlags
     
     public init(propertyType: Variant.GType, propertyName: StringName, className: StringName, hint: PropertyHint, hintStr: GString, usage: PropertyUsageFlags) {
         self.propertyType = propertyType

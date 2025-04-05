@@ -158,9 +158,10 @@ func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
         // only `Variant?` is supported now
         if optionalWrappedType.as(IdentifierTypeSyntax.self)?.name.text == "Variant" {
             return "Variant?"
-        } else {
-            return nil
+        } else if let typeName = optionalWrappedType.as(IdentifierTypeSyntax.self)?.name.text {
+            return "\(typeName)?"
         }
+        return nil
     } else {
         return nil
     }
