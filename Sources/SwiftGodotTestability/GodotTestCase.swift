@@ -26,6 +26,7 @@ open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
         if GodotRuntime.isRunning {
             // unregister any types that were registered for the tests
             for subclass in godotSubclasses.reversed() {
+                releasePendingObjects()
                 unregister(type: subclass)
             }
         }
