@@ -689,7 +689,8 @@ func notificationFunc (ptr: UnsafeMutableRawPointer?, code: Int32, reversed: UIn
 
 func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePointer<GDExtensionPropertyInfo>?) -> UInt8 {
     guard let ptr else { return 0 }
-    let original = Unmanaged<Wrapped>.fromOpaque(ptr).takeUnretainedValue()
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return 0 }
     guard var info = _info?.pointee else { return 0 }
     guard let namePtr = info.name,
           let classNamePtr = info.class_name,
@@ -704,7 +705,7 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
     let usage = PropertyUsageFlags(rawValue: Int(info.usage))
 
     var pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
-    if original._validateProperty(&pinfo) {
+    if instance._validateProperty(&pinfo) {
         // The problem with the code below is that it does not make a copy of the StringName and String,
         // and passes a reference that we will destroy right away when `pinfo` goes out of scope.
         //
