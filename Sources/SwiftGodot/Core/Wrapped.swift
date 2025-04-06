@@ -477,6 +477,13 @@ public func unregister<T:Wrapped> (type: T.Type) {
 var liveFrameworkObjects: [UnsafeRawPointer:WrappedReference] = [:]
 var liveSubtypedObjects: [UnsafeRawPointer:WrappedReference] = [:]
 
+public func printSwiftGodotStats() {
+    print("User types: \(userTypes.count)")
+    print("Framework: \(liveFrameworkObjects.count)")
+    print("LiveSubTyped: \(liveSubtypedObjects.count)")
+
+}
+
 // Lock for accessing the above
 var tableLock = NIOLock()
 
@@ -818,22 +825,34 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
     if let binding {
         let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
-        guard let obj = reference.value else { return }
 
-        tableLock.withLockVoid {
-            if let handle = obj.handle {
-                let removed = liveFrameworkObjects.removeValue(forKey: handle)
-                if removed == nil {
-                    print ("SWIFT ERROR: attempt to release object we were not aware of: \(obj))")
+        if let obj = reference.value {
+            tableLock.withLockVoid {
+                if let handle = obj.handle {
+                    let removed = liveFrameworkObjects.removeValue(forKey: handle)
+                    if removed == nil {
+                        print ("SWIFT ERROR: attempt to release object we were not aware of: \(obj))")
+                    }
+                } else {
+                    print ("SWIFT ERROR: the object being released already had a nil handle")
                 }
-            } else {
-                print ("SWIFT ERROR: the object being released already had a nil handle")
             }
-        }
 
-        // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
-        // invoke methods for objects that have been disposed by Godot.
-        obj.handle = nil
+            // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
+            // invoke methods for objects that have been disposed by Godot.
+            obj.handle = nil
+        } else if let instance {
+            // For RefCounted objects, the call to `reference.value` will already be nil,
+            // we can just remove the handle.
+            tableLock.withLockVoid {
+                let removed = liveFrameworkObjects.removeValue(forKey: instance)
+                if removed == nil {
+                    print ("SWIFT ERROR: attempt to release object we were not aware of: \(instance))")
+                }
+            }
+        } else {
+            print("frameworkTypeBindingFree: instance was nil")
+        }
     }
 }
 
