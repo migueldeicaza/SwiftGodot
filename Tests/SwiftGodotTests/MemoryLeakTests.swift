@@ -577,6 +577,7 @@ final class MemoryLeakTests: GodotTestCase {
                 let object = Object()
                 let methodName = StringName("get_method_list")
                 _ = object.call(method: methodName)
+                object.free()
             }
         }
     }
