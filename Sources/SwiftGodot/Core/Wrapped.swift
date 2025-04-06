@@ -89,6 +89,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public var handle: UnsafeRawPointer?
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
+    public static var deferred: Callable? = nil
 
     /// Conformance to Identifiable by using the native handle to the object
     public var id: Int { Int (bitPattern: handle) }
@@ -155,16 +156,19 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             if self is RefCounted {
                 var queue = false
                 freeLock.withLockVoid {
+                    if Wrapped.deferred == nil {
+                        Wrapped.deferred = Callable ({ (args: borrowing Arguments) in
+                            releasePendingObjects()
+                            return nil
+                        })
+                    }
                     pendingReleaseHandles.append(handle)
                     if pendingReleaseHandles.count == 1 {
                         queue = true
                     }
                 }
                 if queue {
-                    Callable({ (args: borrowing Arguments) in
-                        releasePendingObjects()
-                        return nil
-                    }).callDeferred()
+                    Wrapped.deferred?.callDeferred()
                 }
             }
         }
