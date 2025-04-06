@@ -74,3 +74,4 @@ Some interesting Godot types:
   - ``SkeletonIK3D``
   - ``Timer``
   - ``WorldEnvironment``
+- ``Resource``
