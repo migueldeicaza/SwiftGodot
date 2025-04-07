@@ -39,6 +39,7 @@ Going in depth with SwiftGodot:
 - <doc:CustomTypes>
 - <doc:BindingNodes>
 - <doc:RunningInEditor>
+- <doc:MemoryManagement>
 
 ### Platform Integration
 
@@ -73,3 +74,4 @@ Some interesting Godot types:
   - ``SkeletonIK3D``
   - ``Timer``
   - ``WorldEnvironment``
+- ``Resource``

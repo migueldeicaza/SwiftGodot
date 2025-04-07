@@ -70,7 +70,11 @@ class Printer {
     }
 
     // Prints a variable definition
-    func staticVar(visibility: String = "", name: String, type: String, block: () -> ()) {
+    func staticVar (visibility: String = "", cached: Bool = true, name: String, type: String, block: () -> ()) {
+        if !cached {
+            b ("\(visibility)static var \(name): \(type)", suffix: "", block: block)
+            return
+        }
         if generateResettableCache {
             p ("fileprivate static var _c_\(name): \(type)? = nil")
             p ("fileprivate static var _g_\(name): UInt16 = 0")

@@ -53,6 +53,10 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(nil)
         
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
+        testObject.free()
+        object0.free()
+        object1.free()
+        object2.free()
     }
     
     func testImplicitTypingOfUntypedObjectArrayFailure() {
@@ -73,6 +77,10 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         
         // Fails, prints into console and returns nil due to RefCounted not being TestObject
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), nil)
+        testObject.free()
+        object0.free()
+        object1.free()
+        object2.free()
     }
     
     func testExplicitlyTypedObjectArrayGodotSideMismatch() {
@@ -93,6 +101,10 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         // this one won't be added, error is logged from Godot, RefCounted is not TestObject
         objectsArray.append(Variant(RefCounted()))
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
+        testObject.free()
+        object0.free()
+        object1.free()
+        object2.free()
     }
     
     func testTypedObjectArray() {
@@ -111,6 +123,10 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(nil) // 6
         
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
+        testObject.free()
+        object0.free()
+        object1.free()
+        object2.free()
     }
     
     func testImplicitlyTypingBuiltinsArray() {
@@ -122,6 +138,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         builtinsArray.append(Variant(3))
         
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        testObject.free()
     }
     
     
@@ -139,6 +156,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         
         // Fails, prints into console and returns nil due to typed builtin array not allowing nils
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), nil)
+        testObject.free()
     }
     
     func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
@@ -152,6 +170,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         builtinsArray.append(nil)
         
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        testObject.free()
     }
     
     func testExplicitlyTypedBuiltinArray() {
@@ -163,6 +182,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         builtinsArray.append(3)
         
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        testObject.free()
     }
     
     func testCountMixed() {
@@ -183,5 +203,6 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         
         
         XCTAssertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(7))
+        testObject.free()
     }
 }
