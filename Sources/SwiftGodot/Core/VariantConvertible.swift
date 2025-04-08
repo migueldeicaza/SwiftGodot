@@ -147,15 +147,6 @@ public func _macroExportGet<T>(_ value: T?) -> Variant? where T: VariantConverti
     return value.toVariant()
 }
 
-/// Internal API. Required for macros.
-/// Catch all overload for types that do not conform to`` VariantConvertible`` to have a fancy diagnostic message which otherwise is
-/// not possible to produce in macros. They operate on Syntax.
-@available(*, unavailable, message: "Macro requires that the type conforms to VariantConvertible.")
-@inline(__always)
-public func _macroExportGet<T>(_ value: T?) -> Variant? {
-    return nil
-}
-
 /// Internal API. Required for macros. Setter for @Export macro on non-Optional value.
 @inline(__always)
 public func _macroExportSet<T>(
@@ -208,14 +199,3 @@ public func _macroExportSet<T>(
     property?._macroRcUnref()
     property = newValue
 }
-
-/// Internal API. Required for macros. Catch-all overload for non VariantConvertible types.
-@available(*, unavailable, message: "Macro requires that the type conforms to VariantConvertible.")
-public func _macroExportSet<T>(
-    _ arguments: borrowing Arguments,
-    _ propertyName: StaticString,
-    property: inout T?
-) {
-    fatalError()
-}
-
