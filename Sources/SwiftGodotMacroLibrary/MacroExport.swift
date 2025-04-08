@@ -13,7 +13,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct GodotExport: PeerMacro {
-    static func makeGetAccessor (varName: String, isOptional: Bool, isEnum: Bool) -> String {
+    static func makeGetAccessor (varName: String, isEnum: Bool) -> String {
         let name = "_mproxy_get_\(varName)"
         if isEnum {
             return """
@@ -31,7 +31,7 @@ public struct GodotExport: PeerMacro {
         }
     }
     
-    static func makeSetAccessor (varName: String, typeName: String, isOptional: Bool, isEnum: Bool) -> String {
+    static func makeSetAccessor (varName: String, typeName: String, isEnum: Bool) -> String {
         let name = "_mproxy_set_\(varName)"
         var body: String = ""
 
@@ -165,8 +165,8 @@ public struct GodotExport: PeerMacro {
                 results.append (DeclSyntax(stringLiteral: makeGArrayCollectionGetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
                 results.append (DeclSyntax(stringLiteral: makeGArrayCollectionSetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
             } else if let typeName = type.as(IdentifierTypeSyntax.self)?.name.text {
-                results.append (DeclSyntax(stringLiteral: makeSetAccessor(varName: varName, typeName: typeName, isOptional: isOptional, isEnum: isEnum)))
-                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, isOptional: isOptional, isEnum: isEnum)))
+                results.append (DeclSyntax(stringLiteral: makeSetAccessor(varName: varName, typeName: typeName, isEnum: isEnum)))
+                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, isEnum: isEnum)))
             }
         }
         
