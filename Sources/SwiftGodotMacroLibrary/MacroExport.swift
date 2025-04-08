@@ -13,34 +13,22 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct GodotExport: PeerMacro {
-    
-    
-    static func makeGetAccessor (varName: String, isOptional: Bool, isEnum: Bool) -> String {
+    static func makeGetAccessor (varName: String, typeName: String, isOptional: Bool, isEnum: Bool) -> String {
         let name = "_mproxy_get_\(varName)"
         if isEnum {
-            return
-    """
-    func \(name) (args: borrowing Arguments) -> Variant? {
-        return Variant (\(varName).rawValue)
-    }
-    """
+            return """
+            func \(name) (args: borrowing Arguments) -> Variant? {
+                \(varName).rawValue.toVariant()                
+            }
+            """
 
-        }
-        if isOptional {
-            return
-    """
-    func \(name) (args: borrowing Arguments) -> Variant? {
-        guard let result = \(varName) else { return nil }
-        return Variant (result)
-    }
-    """
         } else {
-            return
-    """
-    func \(name) (args: borrowing Arguments) -> Variant? {
-        return Variant (\(varName))
-    }
-    """
+            return """
+            func \(name) (args: borrowing Arguments) -> Variant? {
+                _macroEnsureVariantConvertible(\(typeName).self)
+                return \(varName).toVariant()        
+            }                        
+            """
         }
     }
     
@@ -49,7 +37,8 @@ public struct GodotExport: PeerMacro {
         var body: String = ""
 
         if isEnum {
-            body = """
+            body =
+            """
                 guard let arg = args.first else {
                     GD.printErr("Unable to set `\(varName)`, no arguments")
                     return nil
@@ -60,7 +49,7 @@ public struct GodotExport: PeerMacro {
                     return nil
                 }
             
-                guard let int = Int(variant) else {
+                guard let int = Int.fromVariant(variant) else {
                     GD.printErr("Unable to set `\(varName)`, argument is not int")
                     return nil
                 }
@@ -72,97 +61,12 @@ public struct GodotExport: PeerMacro {
             
                 self.\(varName) = newValue
             """
-        } else if typeName == "Variant" {
-            body = "\(varName) = args [0]"
-        } else if godotVariants [typeName] == nil {
-            // Branch for `Object`
-            // TODO: check that no leak happens in deinit for `RefCounted`. Someone has to unreference them?
-            if isOptional {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        _unreferenceIfRefCounted(\(varName))                        
-                        \(varName) = nil
-                        return nil
-                    }
-                
-                    guard let newValue = variant.asObject(\(typeName).self) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                                    
-                    _referenceIfRefCounted(newValue)
-                    _unreferenceIfRefCounted(\(varName))                    
-                
-                    \(varName) = newValue
-                """
-            } else {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        GD.printErr("Unable to set `\(varName)`, argument is nil")
-                        return nil
-                    }
-                    
-                    guard let newValue = variant.asObject(\(typeName).self) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                
-                    _referenceIfRefCounted(newValue)
-                    _unreferenceIfRefCounted(\(varName))  
-                
-                    \(varName) = newValue
-                """
-            }
         } else {
-            if isOptional {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        \(varName) = nil
-                        return nil
-                    }
-                
-                    guard let newValue = \(typeName)(variant) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                
-                    \(varName) = newValue
-                """
-            } else {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        GD.printErr("Unable to set `\(varName)`, argument is nil")
-                        return nil
-                    }
-                    
-                    guard let newValue = \(typeName)(variant) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                    
-                    \(varName) = newValue
-                """
-            }
+            // TODO: check that no leak happens in deinit for `RefCounted`. Someone has to unreference them?
+            body = """
+                _macroEnsureVariantConvertible(\(typeName).self)
+                \(typeName)._macroExportSetter(args, "\(varName)", property: &\(varName)) 
+            """
         }
                 
         return """
@@ -264,7 +168,7 @@ public struct GodotExport: PeerMacro {
                 results.append (DeclSyntax(stringLiteral: makeGArrayCollectionSetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
             } else if let typeName = type.as(IdentifierTypeSyntax.self)?.name.text {
                 results.append (DeclSyntax(stringLiteral: makeSetAccessor(varName: varName, typeName: typeName, isOptional: isOptional, isEnum: isEnum)))
-                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, isOptional: isOptional, isEnum: isEnum)))
+                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, typeName: typeName, isOptional: isOptional, isEnum: isEnum)))
             }
         }
         

@@ -173,6 +173,10 @@ func getParamName(_ parameter: FunctionParameterSyntax) -> String {
 
 var godotVariants = [
     "Int": ".int",
+    "Int64": ".int",
+    "Int32": ".int",
+    "Int16": ".int",
+    "Int8": ".int",
     "Float": ".float",
     "Double": ".float",
     "Bool": ".bool",

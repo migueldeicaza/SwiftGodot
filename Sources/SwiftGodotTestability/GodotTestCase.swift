@@ -9,7 +9,6 @@ import XCTest
 
 @testable import SwiftGodot
 
-
 /// Base class for all test cases that run in the Godot runtime.
 open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
     open override class func setUp() {

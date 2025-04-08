@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, VariantConvertible {
     static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -192,6 +192,15 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     public enum VariantErrorType: Error {
         case notFound
     }
+    
+
+    public static func fromVariant(_ variant: Variant) -> Variant? {
+        return variant
+    }
+    
+    public func toVariant() -> Variant {
+        return self
+    }
 
     /// Gets the value of a named key from a Variant.
     /// - Parameter key: a Variant representing the key.
@@ -332,10 +341,9 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     public subscript(index: Variant) -> Variant? {
         get {
             var newContent: ContentType = Variant.zero
-            var copyIndex = index
             var valid: GDExtensionBool = 0
 
-            gi.variant_get(&content, &copyIndex.content, &newContent, &valid)
+            gi.variant_get(&content, &index.content, &newContent, &valid)
             if valid != 0 {
                 return Variant(takingOver: newContent)
             } else {
@@ -343,10 +351,10 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             }
         }
         set {
-            var copyIndex = index
-            var copyValue: Variant.ContentType = newValue.content ?? Variant.zero
+            var copyValue: Variant.ContentType = newValue.content
             var valid: GDExtensionBool = 0
-            gi.variant_set(&content, &copyIndex.content, &copyValue, &valid)
+            gi.variant_set(&content, &index.content, &copyValue, &valid)
+            // TODO: make sure that previous
         }
     }
     /// Gets the name of a Variant type.
