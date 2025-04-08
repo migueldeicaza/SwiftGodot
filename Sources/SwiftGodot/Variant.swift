@@ -353,8 +353,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
         set {
             var copyValue: Variant.ContentType = newValue.content
             var valid: GDExtensionBool = 0
-            gi.variant_set(&content, &index.content, &copyValue, &valid)
-            // TODO: make sure that previous
+            gi.variant_set(&content, &index.content, &copyValue, &valid)            
         }
     }
     /// Gets the name of a Variant type.
