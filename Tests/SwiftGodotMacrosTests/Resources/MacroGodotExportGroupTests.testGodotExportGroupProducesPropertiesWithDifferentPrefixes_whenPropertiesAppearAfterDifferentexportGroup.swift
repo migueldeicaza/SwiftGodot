@@ -3,50 +3,42 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "vin", property: &vin)
+        _macroExportSet(args, "vin", &vin)
         return nil
     }
 
     func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return vin.toVariant()
+        _macroExportGet(vin)
     }
     var year: Int = 1997
 
     func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int.self)
-        Int._macroExportSetter(args, "year", property: &year)
+        _macroExportSet(args, "year", &year)
         return nil
     }
 
     func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int.self)
-        return year.toVariant()
+        _macroExportGet(year)
     }
     var make: String = "HONDA"
 
     func _mproxy_set_make(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "make", property: &make)
+        _macroExportSet(args, "make", &make)
         return nil
     }
 
     func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return make.toVariant()
+        _macroExportGet(make)
     }
     var model: String = "ACCORD"
 
     func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "model", property: &model)
+        _macroExportSet(args, "model", &model)
         return nil
     }
 
     func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return model.toVariant()
+        _macroExportGet(model)
     }
 
     override open class var classInitializer: Void {

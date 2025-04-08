@@ -3,26 +3,22 @@ class Garage: Node {
     var name: String = ""
 
     func _mproxy_set_name(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "name", property: &name)
+        _macroExportSet(args, "name", &name)
         return nil
     }
 
     func _mproxy_get_name (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return name.toVariant()
+        _macroExportGet(name)
     }
     var rating: Float = 0.0
 
     func _mproxy_set_rating(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Float.self)
-        Float._macroExportSetter(args, "rating", property: &rating)
+        _macroExportSet(args, "rating", &rating)
         return nil
     }
 
     func _mproxy_get_rating (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Float.self)
-        return rating.toVariant()
+        _macroExportGet(rating)
     }
     var reviews: VariantCollection<String> = []
 
@@ -75,14 +71,12 @@ class Garage: Node {
     var address: String = ""
 
     func _mproxy_set_address(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "address", property: &address)
+        _macroExportSet(args, "address", &address)
         return nil
     }
 
     func _mproxy_get_address (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return address.toVariant()
+        _macroExportGet(address)
     }
     var daysOfOperation: VariantCollection<String> = []
 

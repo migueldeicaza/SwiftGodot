@@ -2,14 +2,12 @@ class Hi: Node {
     var goodName: String = "Supertop"
 
     func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "goodName", property: &goodName)
+        _macroExportSet(args, "goodName", &goodName)
         return nil
     }
 
     func _mproxy_get_goodName (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return goodName.toVariant()
+        _macroExportGet(goodName)
     }
 
     override open class var classInitializer: Void {

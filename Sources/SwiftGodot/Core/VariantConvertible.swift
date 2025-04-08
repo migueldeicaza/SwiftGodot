@@ -40,59 +40,16 @@ extension VariantConvertible {
     public func _macroRcUnref() {
         // No-op default implementation
     }
-    
-    // Internal API. Required for macros. Setter for @Export macro on Optional value.
-    @inline(__always)
-    public static func _macroExportSetter(
-        _ arguments: borrowing Arguments,
-        _ propertyName: StaticString,
-        property: inout Self?
-    ) {
-        guard let variantOrNil = arguments.first else {
-            GD.printErr("Unable to set `\(propertyName)`, no arguments")
-            return
-        }
-    
-        guard let variant = variantOrNil else {
-            property?._macroRcUnref()
-            property = nil
-            return
-        }
-    
-        guard let newValue = Self.fromVariant(variant) else {
-            GD.printErr("Unable to set `\(propertyName)`, argument is not \(Self.self)")
-            return
-        }
-        newValue._macroRcRef()
-        property?._macroRcUnref()
-        property = newValue
-    }
-    
-    // Internal API. Required for macros. Setter for @Export macro on non-Optional value.
-    @inline(__always)
-    public static func _macroExportSetter(
-        _ arguments: borrowing Arguments,
-        _ propertyName: StaticString,
-        property: inout Self
-    ) {
-        guard let variantOrNil = arguments.first else {
-            GD.printErr("Unable to set `\(propertyName)`, no arguments")
-            return
-        }
-    
-        guard let variant = variantOrNil else {
-            GD.printErr("Unable to set `\(propertyName)`, argument is nil")
-            return
-        }
-    
-        guard let newValue = Self.fromVariant(variant) else {
-            GD.printErr("Unable to set `\(propertyName)`, argument is not \(Self.self)")
-            return
-        }
-        newValue._macroRcRef()
-        property._macroRcUnref()
-        property = newValue
-    }
+}
+
+/// Internal API. Required for macros. Catch-all overload for non VariantConvertible types.
+@available(*, unavailable, message: "Macro requires that the type conforms to VariantConvertible.")
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ propertyName: StaticString,
+    property: inout T?
+) {
+    fatalError()
 }
 
 extension Int64: VariantConvertible {
@@ -188,7 +145,17 @@ public extension RawRepresentable where RawValue: BinaryInteger {
 /// Overload for types that do conform to`` VariantConvertible`` to avoid having fancy error diagnostic messages.
 /// Ideally this function will be optimized away by the compiler and needed strictly for `static_assert`-like purposes.
 @inline(__always)
-public func _macroEnsureVariantConvertible<T>(_ type: T.Type = T.self) where T: VariantConvertible {}
+public func _macroExportGet<T>(_ value: T) -> Variant? where T: VariantConvertible {
+    return value.toVariant()
+}
+
+/// Internal API. Required for macros.
+/// Overload for Optional wrapping types that do conform to`` VariantConvertible`` to avoid having fancy error diagnostic messages.
+/// Ideally this function will be optimized away by the compiler and needed strictly for `static_assert`-like purposes.
+@inline(__always)
+public func _macroExportGet<T>(_ value: T?) -> Variant? where T: VariantConvertible {
+    return value.toVariant()
+}
 
 
 /// Internal API. Required for macros.
@@ -196,4 +163,60 @@ public func _macroEnsureVariantConvertible<T>(_ type: T.Type = T.self) where T: 
 /// not possible to produce in macros. They operate on Syntax.
 @available(*, unavailable, message: "Macro requires that the type conforms to VariantConvertible.")
 @inline(__always)
-public func _macroEnsureVariantConvertible<T>(_ type: T.Type = T.self) {}
+public func _macroExportGet<T>(_ value: T?) -> Variant? {
+    return nil
+}
+
+
+/// Internal API. Required for macros. Setter for @Export macro on non-Optional value.
+@inline(__always)
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ propertyName: StaticString,
+    _ property: inout T
+) where T: VariantConvertible {
+    guard let variantOrNil = arguments.first else {
+        GD.printErr("Unable to set `\(propertyName)`, no arguments")
+        return
+    }
+
+    guard let variant = variantOrNil else {
+        GD.printErr("Unable to set `\(propertyName)`, argument is nil")
+        return
+    }
+
+    guard let newValue = T.fromVariant(variant) else {
+        GD.printErr("Unable to set `\(propertyName)`, argument is not \(T.self)")
+        return
+    }
+    newValue._macroRcRef()
+    property._macroRcUnref()
+    property = newValue
+}
+
+/// Internal API. Required for macros. Setter for @Export macro on Optional value.
+@inline(__always)
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ propertyName: StaticString,
+    _ property: inout T?
+) where T: VariantConvertible {
+    guard let variantOrNil = arguments.first else {
+        GD.printErr("Unable to set `\(propertyName)`, no arguments")
+        return
+    }
+
+    guard let variant = variantOrNil else {
+        property?._macroRcUnref()
+        property = nil
+        return
+    }
+
+    guard let newValue = T.fromVariant(variant) else {
+        GD.printErr("Unable to set `\(propertyName)`, argument is not \(T.self)")
+        return
+    }
+    newValue._macroRcRef()
+    property?._macroRcUnref()
+    property = newValue
+}

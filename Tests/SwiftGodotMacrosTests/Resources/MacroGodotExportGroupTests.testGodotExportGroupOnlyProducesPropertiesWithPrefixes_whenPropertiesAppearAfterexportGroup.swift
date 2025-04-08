@@ -3,26 +3,22 @@ class Car: Node {
     var vin: String = "00000000000000000"
 
     func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "vin", property: &vin)
+        _macroExportSet(args, "vin", &vin)
         return nil
     }
 
     func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return vin.toVariant()
+        _macroExportGet(vin)
     }
     var year: Int = 1997
 
     func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int.self)
-        Int._macroExportSetter(args, "year", property: &year)
+        _macroExportSet(args, "year", &year)
         return nil
     }
 
     func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int.self)
-        return year.toVariant()
+        _macroExportGet(year)
     }
 
     override open class var classInitializer: Void {

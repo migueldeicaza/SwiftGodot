@@ -3,26 +3,22 @@ public class Issue353: Node {
     var prefix1_prefixed_bool: Bool = true
 
     func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Bool.self)
-        Bool._macroExportSetter(args, "prefix1_prefixed_bool", property: &prefix1_prefixed_bool)
+        _macroExportSet(args, "prefix1_prefixed_bool", &prefix1_prefixed_bool)
         return nil
     }
 
     func _mproxy_get_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Bool.self)
-        return prefix1_prefixed_bool.toVariant()
+        _macroExportGet(prefix1_prefixed_bool)
     }
     var non_prefixed_bool: Bool = true
 
     func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Bool.self)
-        Bool._macroExportSetter(args, "non_prefixed_bool", property: &non_prefixed_bool)
+        _macroExportSet(args, "non_prefixed_bool", &non_prefixed_bool)
         return nil
     }
 
     func _mproxy_get_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Bool.self)
-        return non_prefixed_bool.toVariant()
+        _macroExportGet(non_prefixed_bool)
     }
 
     override open class var classInitializer: Void {

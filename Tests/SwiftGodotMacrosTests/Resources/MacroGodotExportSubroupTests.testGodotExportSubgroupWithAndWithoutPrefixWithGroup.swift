@@ -2,62 +2,52 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "vin", property: &vin)
+        _macroExportSet(args, "vin", &vin)
         return nil
     }
 
     func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return vin.toVariant()
+        _macroExportGet(vin)
     }
     var ymms_year: Int = 1998
 
     func _mproxy_set_ymms_year(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int.self)
-        Int._macroExportSetter(args, "ymms_year", property: &ymms_year)
+        _macroExportSet(args, "ymms_year", &ymms_year)
         return nil
     }
 
     func _mproxy_get_ymms_year (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int.self)
-        return ymms_year.toVariant()
+        _macroExportGet(ymms_year)
     }
     var ymms_make: String = "Honda"
 
     func _mproxy_set_ymms_make(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "ymms_make", property: &ymms_make)
+        _macroExportSet(args, "ymms_make", &ymms_make)
         return nil
     }
 
     func _mproxy_get_ymms_make (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return ymms_make.toVariant()
+        _macroExportGet(ymms_make)
     }
     var ymms_model: String = "Odyssey"
 
     func _mproxy_set_ymms_model(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "ymms_model", property: &ymms_model)
+        _macroExportSet(args, "ymms_model", &ymms_model)
         return nil
     }
 
     func _mproxy_get_ymms_model (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return ymms_model.toVariant()
+        _macroExportGet(ymms_model)
     }
     var ymms_series: String = "LX"
 
     func _mproxy_set_ymms_series(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "ymms_series", property: &ymms_series)
+        _macroExportSet(args, "ymms_series", &ymms_series)
         return nil
     }
 
     func _mproxy_get_ymms_series (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return ymms_series.toVariant()
+        _macroExportGet(ymms_series)
     }
 
     override open class var classInitializer: Void {

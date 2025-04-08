@@ -3,14 +3,12 @@ class SomeNode: Node {
     var someArray: GArray = GArray()
 
     func _mproxy_set_someArray(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(GArray.self)
-        GArray._macroExportSetter(args, "someArray", property: &someArray)
+        _macroExportSet(args, "someArray", &someArray)
         return nil
     }
 
     func _mproxy_get_someArray (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(GArray.self)
-        return someArray.toVariant()
+        _macroExportGet(someArray)
     }
 
     override open class var classInitializer: Void {

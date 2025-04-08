@@ -13,7 +13,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct GodotExport: PeerMacro {
-    static func makeGetAccessor (varName: String, typeName: String, isOptional: Bool, isEnum: Bool) -> String {
+    static func makeGetAccessor (varName: String, isOptional: Bool, isEnum: Bool) -> String {
         let name = "_mproxy_get_\(varName)"
         if isEnum {
             return """
@@ -25,8 +25,7 @@ public struct GodotExport: PeerMacro {
         } else {
             return """
             func \(name) (args: borrowing Arguments) -> Variant? {
-                _macroEnsureVariantConvertible(\(typeName).self)
-                return \(varName).toVariant()        
+                _macroExportGet(\(varName))                        
             }                        
             """
         }
@@ -64,8 +63,7 @@ public struct GodotExport: PeerMacro {
         } else {
             // TODO: check that no leak happens in deinit for `RefCounted`. Someone has to unreference them?
             body = """
-                _macroEnsureVariantConvertible(\(typeName).self)
-                \(typeName)._macroExportSetter(args, "\(varName)", property: &\(varName)) 
+                _macroExportSet(args, "\(varName)", &\(varName)) 
             """
         }
                 
@@ -168,7 +166,7 @@ public struct GodotExport: PeerMacro {
                 results.append (DeclSyntax(stringLiteral: makeGArrayCollectionSetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
             } else if let typeName = type.as(IdentifierTypeSyntax.self)?.name.text {
                 results.append (DeclSyntax(stringLiteral: makeSetAccessor(varName: varName, typeName: typeName, isOptional: isOptional, isEnum: isEnum)))
-                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, typeName: typeName, isOptional: isOptional, isEnum: isEnum)))
+                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, isOptional: isOptional, isEnum: isEnum)))
             }
         }
         

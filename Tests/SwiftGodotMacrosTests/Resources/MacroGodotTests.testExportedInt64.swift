@@ -3,14 +3,12 @@ class Thing: SwiftGodot.Object {
     var value: Int64 = 0
 
     func _mproxy_set_value(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int64.self)
-        Int64._macroExportSetter(args, "value", property: &value)
+        _macroExportSet(args, "value", &value)
         return nil
     }
 
     func _mproxy_get_value (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Int64.self)
-        return value.toVariant()
+        _macroExportGet(value)
     }
 
     func get_some() -> Int64 { 10 }

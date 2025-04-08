@@ -3,14 +3,12 @@ class Garage: Node {
     var bar: Bool = false
 
     func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Bool.self)
-        Bool._macroExportSetter(args, "bar", property: &bar)
+        _macroExportSet(args, "bar", &bar)
         return nil
     }
 
     func _mproxy_get_bar (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(Bool.self)
-        return bar.toVariant()
+        _macroExportGet(bar)
     }
 
     override open class var classInitializer: Void {

@@ -3,26 +3,22 @@ class Car: Node {
     var vehicle_make: String = "Mazda"
 
     func _mproxy_set_vehicle_make(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "vehicle_make", property: &vehicle_make)
+        _macroExportSet(args, "vehicle_make", &vehicle_make)
         return nil
     }
 
     func _mproxy_get_vehicle_make (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return vehicle_make.toVariant()
+        _macroExportGet(vehicle_make)
     }
     var vehicle_model: String = "RX7"
 
     func _mproxy_set_vehicle_model(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        String._macroExportSetter(args, "vehicle_model", property: &vehicle_model)
+        _macroExportSet(args, "vehicle_model", &vehicle_model)
         return nil
     }
 
     func _mproxy_get_vehicle_model (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(String.self)
-        return vehicle_model.toVariant()
+        _macroExportGet(vehicle_model)
     }
 
     override open class var classInitializer: Void {

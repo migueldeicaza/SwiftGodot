@@ -15,14 +15,12 @@ final class MyClass: Node {
     var data: MyData = .init()
 
     func _mproxy_set_data(args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(MyData.self)
-        MyData._macroExportSetter(args, "data", property: &data)
+        _macroExportSet(args, "data", &data)
         return nil
     }
 
     func _mproxy_get_data (args: borrowing Arguments) -> Variant? {
-        _macroEnsureVariantConvertible(MyData.self)
-        return data.toVariant()
+        _macroExportGet(data)
     }
 
     override public class var classInitializer: Void {
