@@ -86,6 +86,9 @@ public struct GodotExport: PeerMacro {
         guard let last = varDecl.bindings.last else {
             throw GodotMacroError.noVariablesFound
         }
+        guard varDecl.bindings.count == 1 else {
+            throw GodotMacroError.multipleDeclarationBindings
+        }
         guard var type = last.typeAnnotation?.type else {
             throw GodotMacroError.noTypeFound(varDecl)
         }

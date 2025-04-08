@@ -56,8 +56,7 @@ class SwiftSprite: Sprite2D {
     @Export(.dir) var directory: String?
     @Export(.file, "*txt") var file: String?
     @Export var demo: String = "demo"
-    @Export var food: String = "none"
-    @Export var lala: Data = Data()
+    @Export var food: String = "none"    
     
     var x: Rigid?
     

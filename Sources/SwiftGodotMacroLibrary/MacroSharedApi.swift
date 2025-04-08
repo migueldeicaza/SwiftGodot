@@ -43,6 +43,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case requiresGArrayCollection
     case requiresNonOptionalGArrayCollection
     case noVariablesFound
+    case multipleDeclarationBindings
     case noTypeFound(VariableDeclSyntax)
     case unsupportedType(VariableDeclSyntax)
     case expectedIdentifier(PatternBindingListSyntax.Element)
@@ -56,6 +57,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
 
     var message: String {
         switch self {
+        case .multipleDeclarationBindings:
+            "@Export doesn't support multiple binding expressions per declaration"
         case .requiresClass:
             "@Godot attribute can only be applied to a class"
         case .requiresVar:
