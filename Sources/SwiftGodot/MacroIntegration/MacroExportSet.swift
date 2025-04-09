@@ -150,7 +150,7 @@ public func _macroExportSet<T>(
 func _macroExportSetGArrayCollection<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
-    _ old: T,
+    _ old: T
 ) -> Variant? where T: GArrayCollection {
     guard let variantOrNil = arguments.first else {
         GD.printErr("Unable to set `\(variableName)`, no arguments")
