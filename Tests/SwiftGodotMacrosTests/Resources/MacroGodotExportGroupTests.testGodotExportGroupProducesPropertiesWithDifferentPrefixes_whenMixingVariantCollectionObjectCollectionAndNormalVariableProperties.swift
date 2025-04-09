@@ -3,152 +3,90 @@ class Garage: Node {
     var name: String = ""
 
     func _mproxy_set_name(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "name", &name)
-        return nil
+        _macroExportSet(args, "name", name) {
+            name = $0
+        }
     }
 
-    func _mproxy_get_name (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_name(args: borrowing Arguments) -> Variant? {
         _macroExportGet(name)
     }
     var rating: Float = 0.0
 
     func _mproxy_set_rating(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "rating", &rating)
-        return nil
+        _macroExportSet(args, "rating", rating) {
+            rating = $0
+        }
     }
 
-    func _mproxy_get_rating (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_rating(args: borrowing Arguments) -> Variant? {
         _macroExportGet(rating)
     }
     var reviews: VariantCollection<String> = []
 
-    func _mproxy_get_reviews(args: borrowing Arguments) -> Variant? {
-        return Variant(reviews.array)
+    func _mproxy_set_reviews(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "reviews", reviews) {
+            reviews = $0
+        }
     }
 
-    func _mproxy_set_reviews(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `reviews`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `reviews`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(String.self)) else {
-            return nil
-        }
-        reviews.array = gArray
-        return nil
+    func _mproxy_get_reviews(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(reviews)
     }
     var checkIns: ObjectCollection<CheckIn> = []
 
-    func _mproxy_get_checkIns(args: borrowing Arguments) -> Variant? {
-        return Variant(checkIns.array)
+    func _mproxy_set_checkIns(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "checkIns", checkIns) {
+            checkIns = $0
+        }
     }
 
-    func _mproxy_set_checkIns(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `checkIns`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `checkIns`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(CheckIn.self)) else {
-            return nil
-        }
-        checkIns.array = gArray
-        return nil
+    func _mproxy_get_checkIns(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(checkIns)
     }
     var address: String = ""
 
     func _mproxy_set_address(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "address", &address)
-        return nil
+        _macroExportSet(args, "address", address) {
+            address = $0
+        }
     }
 
-    func _mproxy_get_address (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_address(args: borrowing Arguments) -> Variant? {
         _macroExportGet(address)
     }
     var daysOfOperation: VariantCollection<String> = []
 
-    func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> Variant? {
-        return Variant(daysOfOperation.array)
+    func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "daysOfOperation", daysOfOperation) {
+            daysOfOperation = $0
+        }
     }
 
-    func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `daysOfOperation`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `daysOfOperation`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(String.self)) else {
-            return nil
-        }
-        daysOfOperation.array = gArray
-        return nil
+    func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(daysOfOperation)
     }
     var hours: VariantCollection<String> = []
 
-    func _mproxy_get_hours(args: borrowing Arguments) -> Variant? {
-        return Variant(hours.array)
+    func _mproxy_set_hours(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "hours", hours) {
+            hours = $0
+        }
     }
 
-    func _mproxy_set_hours(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `hours`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `hours`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(String.self)) else {
-            return nil
-        }
-        hours.array = gArray
-        return nil
+    func _mproxy_get_hours(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(hours)
     }
     var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
 
-    func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
-        return Variant(insuranceProvidersAccepted.array)
+    func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "insuranceProvidersAccepted", insuranceProvidersAccepted) {
+            insuranceProvidersAccepted = $0
+        }
     }
 
-    func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `insuranceProvidersAccepted`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `insuranceProvidersAccepted`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(InsuranceProvider.self)) else {
-            return nil
-        }
-        insuranceProvidersAccepted.array = gArray
-        return nil
+    func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(insuranceProvidersAccepted)
     }
 
     override open class var classInitializer: Void {

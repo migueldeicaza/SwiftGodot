@@ -3,11 +3,12 @@ class SomeNode: Node {
     var someArray: GArray = GArray()
 
     func _mproxy_set_someArray(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "someArray", &someArray)
-        return nil
+        _macroExportSet(args, "someArray", someArray) {
+            someArray = $0
+        }
     }
 
-    func _mproxy_get_someArray (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_someArray(args: borrowing Arguments) -> Variant? {
         _macroExportGet(someArray)
     }
 

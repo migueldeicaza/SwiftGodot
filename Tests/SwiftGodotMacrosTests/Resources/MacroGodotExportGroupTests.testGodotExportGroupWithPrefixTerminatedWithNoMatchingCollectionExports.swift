@@ -2,27 +2,14 @@
 class Garage: Node {
     var bar: VariantCollection<Bool> = [false]
 
-    func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
-        return Variant(bar.array)
+    func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "bar", bar) {
+            bar = $0
+        }
     }
 
-    func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `bar`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `bar`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(Bool.self)) else {
-            return nil
-        }
-        bar.array = gArray
-        return nil
+    func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(bar)
     }
 
     override open class var classInitializer: Void {

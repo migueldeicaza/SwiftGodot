@@ -178,6 +178,58 @@ func _macroExportSetGArrayCollection<T>(
     return nil
 }
 
+/// Internal API.  CaseIterable enums with BinaryInteger RawValue.
+@inline(__always)
+@inlinable
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: T,
+    _ set: (T) -> Void
+) -> Variant? where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger  {
+    guard let variantOrNil = arguments.first else {
+        GD.printErr("Unable to set `\(name)`, no arguments")
+        return nil
+    }
+
+    guard let variant = variantOrNil else {
+        GD.printErr("Unable to set `\(name)`, argument is nil")
+        return nil
+    }
+
+    guard let newValue = T.fromVariant(variant) else {
+        GD.printErr("Unable to set `\(name)`, couldn't construct \(T.self) from \(variant.description)")
+        return nil
+    }
+    
+    set(newValue)
+    return nil
+}
+
+// MARK: Failures with diagnostics
+
+/// Internal API. Optional VariantCollection.
+@available(*, unavailable, message: "The Optional VariantCollection is not supported by @Export macro")
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ variableName: StaticString,
+    _ old: VariantCollection<T>?,
+    _: (VariantCollection<T>?) -> Void // ignored, old.array is reassigned
+) -> Variant? where T: VariantStorable {
+    fatalError("Unreachable")
+}
+
+/// Internal API. Optional ObjectCollection.
+@available(*, unavailable, message: "The Optional ObjectCollection is not supported by @Export macro")
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ variableName: StaticString,
+    _ old: ObjectCollection<T>?,
+    _: (ObjectCollection<T>?) -> Void // ignored, old.array is reassigned
+) -> Variant? where T: Object {
+    fatalError("Unreachable")
+}
+
 /// Internal API. Catch-all-overload for optional unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload

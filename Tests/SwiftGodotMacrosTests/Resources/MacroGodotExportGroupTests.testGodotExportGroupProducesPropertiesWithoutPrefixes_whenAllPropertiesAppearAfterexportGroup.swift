@@ -3,21 +3,23 @@ class Car: Node {
     var vin: String = "00000000000000000"
 
     func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "vin", &vin)
-        return nil
+        _macroExportSet(args, "vin", vin) {
+            vin = $0
+        }
     }
 
-    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_vin(args: borrowing Arguments) -> Variant? {
         _macroExportGet(vin)
     }
     var year: Int = 1997
 
     func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "year", &year)
-        return nil
+        _macroExportSet(args, "year", year) {
+            year = $0
+        }
     }
 
-    func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_year(args: borrowing Arguments) -> Variant? {
         _macroExportGet(year)
     }
 

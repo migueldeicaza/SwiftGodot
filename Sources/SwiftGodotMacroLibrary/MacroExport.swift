@@ -116,36 +116,3 @@ public struct GodotExport: PeerMacro {
         return declarations
     }
 }
-
-private extension GodotExport {
-    private static func makeGArrayCollectionGetProxyAccessor(varName: String, elementTypeName: String) -> String {
-        """
-        func _mproxy_get_\(varName)(args: borrowing Arguments) -> Variant? {
-            return Variant(\(varName).array)
-        }
-        """
-    }
-    
-    private static func makeGArrayCollectionSetProxyAccessor(varName: String, elementTypeName: String) -> String {
-        """
-        func _mproxy_set_\(varName)(args: borrowing Arguments) -> Variant? {
-            guard let arg = args.first else {
-                GD.printErr("Unable to set `\(varName)`, no arguments")
-                return nil
-            }
-        
-            guard let variant = arg else {
-                GD.printErr("Unable to set `\(varName)`, argument is `nil`")
-                return nil
-            }
-            guard let gArray = GArray(variant),
-                  gArray.isTyped(),
-                  gArray.isSameTyped(array: GArray(\(elementTypeName).self)) else {
-                return nil
-            }
-            \(varName).array = gArray
-            return nil
-        }
-        """
-    }
-}

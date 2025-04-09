@@ -2,51 +2,25 @@
 class Car: Node {
     var vins: ObjectCollection<Node> = []
 
-    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
-        return Variant(vins.array)
+    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "vins", vins) {
+            vins = $0
+        }
     }
 
-    func _mproxy_set_vins(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `vins`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `vins`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(Node.self)) else {
-            return nil
-        }
-        vins.array = gArray
-        return nil
+    func _mproxy_get_vins(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(vins)
     }
     var years: ObjectCollection<Node> = []
 
-    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
-        return Variant(years.array)
+    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "years", years) {
+            years = $0
+        }
     }
 
-    func _mproxy_set_years(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `years`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `years`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(Node.self)) else {
-            return nil
-        }
-        years.array = gArray
-        return nil
+    func _mproxy_get_years(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(years)
     }
 
     override open class var classInitializer: Void {

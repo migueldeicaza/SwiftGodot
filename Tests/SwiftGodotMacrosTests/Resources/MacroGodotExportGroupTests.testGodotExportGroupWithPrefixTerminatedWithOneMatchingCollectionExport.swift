@@ -2,51 +2,25 @@
 public class Issue353: Node {
     var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
 
-    func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        return Variant(prefix1_prefixed_bool.array)
+    func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "prefix1_prefixed_bool", prefix1_prefixed_bool) {
+            prefix1_prefixed_bool = $0
+        }
     }
 
-    func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `prefix1_prefixed_bool`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `prefix1_prefixed_bool`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(Bool.self)) else {
-            return nil
-        }
-        prefix1_prefixed_bool.array = gArray
-        return nil
+    func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(prefix1_prefixed_bool)
     }
     var non_prefixed_bool: VariantCollection<Bool> = [false]
 
-    func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        return Variant(non_prefixed_bool.array)
+    func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
+        _macroExportSet(args, "non_prefixed_bool", non_prefixed_bool) {
+            non_prefixed_bool = $0
+        }
     }
 
-    func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `non_prefixed_bool`, no arguments")
-            return nil
-        }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `non_prefixed_bool`, argument is `nil`")
-            return nil
-        }
-        guard let gArray = GArray(variant),
-              gArray.isTyped(),
-              gArray.isSameTyped(array: GArray(Bool.self)) else {
-            return nil
-        }
-        non_prefixed_bool.array = gArray
-        return nil
+    func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(non_prefixed_bool)
     }
 
     override open class var classInitializer: Void {

@@ -2,51 +2,56 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "vin", &vin)
-        return nil
+        _macroExportSet(args, "vin", vin) {
+            vin = $0
+        }
     }
 
-    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_vin(args: borrowing Arguments) -> Variant? {
         _macroExportGet(vin)
     }
     var ymms_year: Int = 1998
 
     func _mproxy_set_ymms_year(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "ymms_year", &ymms_year)
-        return nil
+        _macroExportSet(args, "ymms_year", ymms_year) {
+            ymms_year = $0
+        }
     }
 
-    func _mproxy_get_ymms_year (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_year(args: borrowing Arguments) -> Variant? {
         _macroExportGet(ymms_year)
     }
     var ymms_make: String = "Honda"
 
     func _mproxy_set_ymms_make(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "ymms_make", &ymms_make)
-        return nil
+        _macroExportSet(args, "ymms_make", ymms_make) {
+            ymms_make = $0
+        }
     }
 
-    func _mproxy_get_ymms_make (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_make(args: borrowing Arguments) -> Variant? {
         _macroExportGet(ymms_make)
     }
     var ymms_model: String = "Odyssey"
 
     func _mproxy_set_ymms_model(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "ymms_model", &ymms_model)
-        return nil
+        _macroExportSet(args, "ymms_model", ymms_model) {
+            ymms_model = $0
+        }
     }
 
-    func _mproxy_get_ymms_model (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_model(args: borrowing Arguments) -> Variant? {
         _macroExportGet(ymms_model)
     }
     var ymms_series: String = "LX"
 
     func _mproxy_set_ymms_series(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "ymms_series", &ymms_series)
-        return nil
+        _macroExportSet(args, "ymms_series", ymms_series) {
+            ymms_series = $0
+        }
     }
 
-    func _mproxy_get_ymms_series (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_ymms_series(args: borrowing Arguments) -> Variant? {
         _macroExportGet(ymms_series)
     }
 

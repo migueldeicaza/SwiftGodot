@@ -113,8 +113,15 @@ public extension RawRepresentable where RawValue: BinaryInteger {
     }
     
     static func fromVariant(_ variant: Variant) -> Self? {
-        guard let rawValue = Int64.fromVariant(variant).map({ RawValue($0) }) else { return nil }
-        guard let value = Self(rawValue: rawValue) else { return nil }
+        guard let rawValue = Int64.fromVariant(variant) else {
+            GD.printErr("Variant doesn't store `int`")
+            return nil
+        }
+        
+        guard let value = Self(rawValue: RawValue(rawValue)) else {
+            GD.printErr("\(rawValue) is not a valid `rawValue` for \(Self.self)")
+            return nil
+        }
         return value
     }
 }

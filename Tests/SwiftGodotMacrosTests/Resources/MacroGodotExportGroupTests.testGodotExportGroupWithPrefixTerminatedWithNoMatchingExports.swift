@@ -3,11 +3,12 @@ class Garage: Node {
     var bar: Bool = false
 
     func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "bar", &bar)
-        return nil
+        _macroExportSet(args, "bar", bar) {
+            bar = $0
+        }
     }
 
-    func _mproxy_get_bar (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
         _macroExportGet(bar)
     }
 

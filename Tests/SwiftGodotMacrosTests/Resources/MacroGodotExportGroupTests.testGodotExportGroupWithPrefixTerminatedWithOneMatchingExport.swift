@@ -3,21 +3,23 @@ public class Issue353: Node {
     var prefix1_prefixed_bool: Bool = true
 
     func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "prefix1_prefixed_bool", &prefix1_prefixed_bool)
-        return nil
+        _macroExportSet(args, "prefix1_prefixed_bool", prefix1_prefixed_bool) {
+            prefix1_prefixed_bool = $0
+        }
     }
 
-    func _mproxy_get_prefix1_prefixed_bool (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
         _macroExportGet(prefix1_prefixed_bool)
     }
     var non_prefixed_bool: Bool = true
 
     func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "non_prefixed_bool", &non_prefixed_bool)
-        return nil
+        _macroExportSet(args, "non_prefixed_bool", non_prefixed_bool) {
+            non_prefixed_bool = $0
+        }
     }
 
-    func _mproxy_get_non_prefixed_bool (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
         _macroExportGet(non_prefixed_bool)
     }
 

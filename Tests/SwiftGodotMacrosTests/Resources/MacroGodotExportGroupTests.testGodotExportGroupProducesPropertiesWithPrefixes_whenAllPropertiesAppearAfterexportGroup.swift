@@ -3,21 +3,23 @@ class Car: Node {
     var make: String = "Mazda"
 
     func _mproxy_set_make(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "make", &make)
-        return nil
+        _macroExportSet(args, "make", make) {
+            make = $0
+        }
     }
 
-    func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_make(args: borrowing Arguments) -> Variant? {
         _macroExportGet(make)
     }
     var model: String = "RX7"
 
     func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "model", &model)
-        return nil
+        _macroExportSet(args, "model", model) {
+            model = $0
+        }
     }
 
-    func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
         _macroExportGet(model)
     }
 

@@ -3,41 +3,45 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "vin", &vin)
-        return nil
+        _macroExportSet(args, "vin", vin) {
+            vin = $0
+        }
     }
 
-    func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_vin(args: borrowing Arguments) -> Variant? {
         _macroExportGet(vin)
     }
     var year: Int = 1997
 
     func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "year", &year)
-        return nil
+        _macroExportSet(args, "year", year) {
+            year = $0
+        }
     }
 
-    func _mproxy_get_year (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_year(args: borrowing Arguments) -> Variant? {
         _macroExportGet(year)
     }
     var make: String = "HONDA"
 
     func _mproxy_set_make(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "make", &make)
-        return nil
+        _macroExportSet(args, "make", make) {
+            make = $0
+        }
     }
 
-    func _mproxy_get_make (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_make(args: borrowing Arguments) -> Variant? {
         _macroExportGet(make)
     }
     var model: String = "ACCORD"
 
     func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "model", &model)
-        return nil
+        _macroExportSet(args, "model", model) {
+            model = $0
+        }
     }
 
-    func _mproxy_get_model (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
         _macroExportGet(model)
     }
 

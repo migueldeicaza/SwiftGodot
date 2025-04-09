@@ -15,11 +15,12 @@ final class MyClass: Node {
     var data: MyData = .init()
 
     func _mproxy_set_data(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "data", &data)
-        return nil
+        _macroExportSet(args, "data", data) {
+            data = $0
+        }
     }
 
-    func _mproxy_get_data (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_data(args: borrowing Arguments) -> Variant? {
         _macroExportGet(data)
     }
 

@@ -8,62 +8,24 @@ class SomeNode: Node {
     var demo: Demo
 
     func _mproxy_set_demo(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `demo`, no arguments")
-            return nil
+        _macroExportSet(args, "demo", demo) {
+            demo = $0
         }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `demo`, argument is nil")
-            return nil
-        }
-
-        guard let int = Int.fromVariant(variant) else {
-            GD.printErr("Unable to set `demo`, argument is not int")
-            return nil
-        }
-
-        guard let newValue = Demo(rawValue: Demo.RawValue(int)) else {
-            GD.printErr("Unable to set `demo`, \(int) is not a valid Demo rawValue")
-            return nil
-        }
-
-        self.demo = newValue
-        return nil
     }
 
-    func _mproxy_get_demo (args: borrowing Arguments) -> Variant? {
-        demo.rawValue.toVariant()
+    func _mproxy_get_demo(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(demo)
     }
     var demo64: Demo64
 
     func _mproxy_set_demo64(args: borrowing Arguments) -> Variant? {
-        guard let arg = args.first else {
-            GD.printErr("Unable to set `demo64`, no arguments")
-            return nil
+        _macroExportSet(args, "demo64", demo64) {
+            demo64 = $0
         }
-
-        guard let variant = arg else {
-            GD.printErr("Unable to set `demo64`, argument is nil")
-            return nil
-        }
-
-        guard let int = Int.fromVariant(variant) else {
-            GD.printErr("Unable to set `demo64`, argument is not int")
-            return nil
-        }
-
-        guard let newValue = Demo64(rawValue: Demo64.RawValue(int)) else {
-            GD.printErr("Unable to set `demo64`, \(int) is not a valid Demo64 rawValue")
-            return nil
-        }
-
-        self.demo64 = newValue
-        return nil
     }
 
-    func _mproxy_get_demo64 (args: borrowing Arguments) -> Variant? {
-        demo64.rawValue.toVariant()
+    func _mproxy_get_demo64(args: borrowing Arguments) -> Variant? {
+        _macroExportGet(demo64)
     }
 
     override open class var classInitializer: Void {

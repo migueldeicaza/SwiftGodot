@@ -2,11 +2,12 @@ class Hi: Node {
     var goodName: String = "Supertop"
 
     func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "goodName", &goodName)
-        return nil
+        _macroExportSet(args, "goodName", goodName) {
+            goodName = $0
+        }
     }
 
-    func _mproxy_get_goodName (args: borrowing Arguments) -> Variant? {
+    func _mproxy_get_goodName(args: borrowing Arguments) -> Variant? {
         _macroExportGet(goodName)
     }
 
