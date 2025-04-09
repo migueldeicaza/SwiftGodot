@@ -36,6 +36,9 @@ class SwiftSprite: Sprite2D {
     var time_passed: Double = 0
     var count: Int = 0
     
+    @Export
+    var someCollection: VariantCollection<Int> = [1, 2, 3, 4]
+    
     @Signal var pickedUpItem: SignalWithArguments<String, Bool, Int>
     @Signal var scored: SimpleSignal
     @Signal var livesChanged: SignalWithArguments<Int>
