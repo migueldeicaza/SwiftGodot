@@ -32,9 +32,7 @@ enum MyEnum: Int, CaseIterable {
 typealias SomeArray = [Int]
 
 @Godot
-class SwiftSprite: Sprite2D {
-    @Export var en: SomeArray = []
-    
+class SwiftSprite: Sprite2D {    
     var time_passed: Double = 0
     var count: Int = 0
     
