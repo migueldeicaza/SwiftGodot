@@ -230,6 +230,30 @@ public func _macroExportSet<T>(
     fatalError("Unreachable")
 }
 
+/// Internal API. Swift Array.
+@available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
+@_disfavoredOverload
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ variableName: StaticString,
+    _ old: [T]?,
+    _ set: ([T]?) -> Void
+) -> Variant? {
+    fatalError("Unreachable")
+}
+
+/// Internal API. Swift Array.
+@available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
+@_disfavoredOverload
+public func _macroExportSet<T>(
+    _ arguments: borrowing Arguments,
+    _ variableName: StaticString,
+    _ old: [T],
+    _ set: ([T]) -> Void
+) -> Variant? {
+    fatalError("Unreachable")
+}
+
 /// Internal API. Catch-all-overload for optional unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload

@@ -56,17 +56,17 @@ public func _macroExportGet<T>(
 @inlinable
 public func _macroExportGet<T>(
     _ value: ObjectCollection<T>
-) -> Variant? where T: VariantStorable {
+) -> Variant? where T: Object {
     value.array.toVariant()
 }
 
 // MARK: Failures with diagnostics
 
 /// Internal API.  Swift Array.
-@available(*, unavailable, message: "Swift arrays are not supported by @Export macro, use VariantCollection or ObjectCollection")
+@available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
 public func _macroExportGet<T>(
     _ value: [T]?
-) -> Variant? where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
+) -> Variant? {
     fatalError("Unreachable")
 }
 
@@ -82,7 +82,7 @@ public func _macroExportGet<T>(
 @available(*, unavailable, message: "Optional ObjectCollection is not supported by @Export macro")
 public func _macroExportGet<T>(
     _ value: ObjectCollection<T>?
-) -> Variant? where T: VariantStorable {
+) -> Variant? where T: Object {
     fatalError("Unreachable")
 }
 

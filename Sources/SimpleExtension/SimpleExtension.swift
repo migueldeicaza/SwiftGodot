@@ -29,8 +29,12 @@ enum MyEnum: Int, CaseIterable {
     case late = 20
 }
 
+typealias SomeArray = [Int]
+
 @Godot
 class SwiftSprite: Sprite2D {
+    @Export var en: SomeArray = []
+    
     var time_passed: Double = 0
     var count: Int = 0
     
@@ -38,7 +42,6 @@ class SwiftSprite: Sprite2D {
     @Signal var scored: SimpleSignal
     @Signal var livesChanged: SignalWithArguments<Int>
     
-    @Export(.enum) var en: MyEnum = .late
     
     @Callable
     public func computeGodot (x: String, y: Int) -> Double {
