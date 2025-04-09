@@ -19,11 +19,6 @@ public protocol VariantConvertible {
 /// This is more specialized version of ``VariantConvertible`` for cases where an ability to be converted to and from a ``Variant`` is not enough.
 /// At the same time it allows ``VariantConvertible`` to be implemented by the user for coding arbitary values inside the ``Variant``
 public protocol _GodotBridgeable: VariantConvertible {
-    /// Internal API. Required for macros to properly handle reference counting. Do not implement this method.
-    func _macroRcRef()
-    
-    /// Internal API. Required for macros to properly handle reference counting. Do not implement this method.
-    func _macroRcUnref()
 }
 
 public extension Optional where Wrapped: VariantConvertible {
@@ -33,13 +28,6 @@ public extension Optional where Wrapped: VariantConvertible {
 }
 
 extension _GodotBridgeable {
-    public func _macroRcRef() {
-        // No-op default implementation
-    }
-    
-    public func _macroRcUnref() {
-        // No-op default implementation
-    }
 }
 
 extension Int64: _GodotBridgeable {
