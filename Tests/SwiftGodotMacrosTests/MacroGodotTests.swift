@@ -255,7 +255,7 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
-
+    
     func testExportGodotUsage() {
         assertExpansion(
             of: """

@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, VariantConvertible {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
     static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         

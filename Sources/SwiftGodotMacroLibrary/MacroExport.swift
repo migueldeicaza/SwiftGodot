@@ -12,126 +12,71 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public struct GodotExport: PeerMacro {
-    static func makeGetAccessor (varName: String, isEnum: Bool) -> String {
-        let name = "_mproxy_get_\(varName)"
-        if isEnum {
-            return """
-            func \(name) (args: borrowing Arguments) -> Variant? {
-                \(varName).rawValue.toVariant()                
+extension SwiftSyntax.AttributeSyntax {
+    /// @Export(.enum)
+    var hasFirstEnumArgument: Bool {
+        guard let arguments else {
+            return false
+        }
+        
+        switch arguments {
+        case .argumentList(let labeledExprList):
+            guard let firstLabeledExpr = labeledExprList.first else {
+                return false
             }
-            """
-
-        } else {
-            return """
-            func \(name) (args: borrowing Arguments) -> Variant? {
-                _macroExportGet(\(varName))                        
-            }                        
-            """
+            
+            return firstLabeledExpr.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
+        default:
+            return false
         }
     }
-    
-    static func makeSetAccessor (varName: String, typeName: String, isEnum: Bool) -> String {
-        let name = "_mproxy_set_\(varName)"
-        var body: String = ""
+}
 
-        if isEnum {
-            body =
-            """
-                guard let arg = args.first else {
-                    GD.printErr("Unable to set `\(varName)`, no arguments")
-                    return nil
-                }
-            
-                guard let variant = arg else {
-                    GD.printErr("Unable to set `\(varName)`, argument is nil")
-                    return nil
-                }
-            
-                guard let int = Int.fromVariant(variant) else {
-                    GD.printErr("Unable to set `\(varName)`, argument is not int")
-                    return nil
-                }
-            
-                guard let newValue = \(typeName)(rawValue: \(typeName).RawValue(int)) else {
-                    GD.printErr("Unable to set `\(varName)`, \\(int) is not a valid \(typeName) rawValue")
-                    return nil
-                }
-            
-                self.\(varName) = newValue
-            """
-        } else {
-            // TODO: check that no leak happens in deinit for `RefCounted`. Someone has to unreference them?
-            body = """
-                _macroExportSet(args, "\(varName)", &\(varName)) 
-            """
-        }
-                
-        return """
-        func \(name)(args: borrowing Arguments) -> Variant? {
-        \(body)    
-            return nil
+public struct GodotExport: PeerMacro {
+    static func makeGetAccessor(identifier: String) -> String {
+        """
+        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> Variant? {
+            _macroExportGet(\(identifier))                        
+        }                        
+        """
+    }
+    
+    static func makeSetAccessor(identifier: String) -> String {
+        """
+        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> Variant? {
+            _macroExportSet(args, "\(identifier)", \(identifier)) {
+                \(identifier) = $0
+            }
         }
         """
     }
-
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
-        guard let varDecl = declaration.as(VariableDeclSyntax.self) else {
+        guard let variableDecl = declaration.as(VariableDeclSyntax.self) else {
             let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresVar)
             context.diagnose(classError)
             return []
         }
-        var isOptional = false
-        guard let last = varDecl.bindings.last else {
+        
+        guard !variableDecl.bindings.isEmpty else {
             throw GodotMacroError.noVariablesFound
         }
-        guard varDecl.bindings.count == 1 else {
-            throw GodotMacroError.multipleDeclarationBindings
-        }
-        guard var type = last.typeAnnotation?.type else {
-            throw GodotMacroError.noTypeFound(varDecl)
-        }
-        if let optSyntax = type.as (OptionalTypeSyntax.self) {
-            isOptional = true
-            type = optSyntax.wrappedType
-        }
         
-        guard varDecl.isSwiftArray == false else {
-            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresGArrayCollection)
-            context.diagnose(classError)
-            return []
-        }
+        var declarations: [DeclSyntax] = []
         
-        guard type.is(IdentifierTypeSyntax.self) else {
-            throw GodotMacroError.unsupportedType(varDecl)
-        }
-        
-        guard (type.isGArrayCollection && isOptional) == false else {
-            throw GodotMacroError.requiresNonOptionalGArrayCollection
-        }
-        
-        var isEnum = false
-        if case let .argumentList (arguments) = node.arguments, let expression = arguments.first?.expression {
-            isEnum = expression.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
-        }
-        if isEnum && isOptional {
-            throw GodotMacroError.noSupportForOptionalEnums
-            
-        }
-        var results: [DeclSyntax] = []
-        
-        for singleVar in varDecl.bindings {
-            guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
-                throw GodotMacroError.expectedIdentifier(singleVar)
+        for binding in variableDecl.bindings {
+            guard let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
+                throw GodotMacroError.expectedIdentifier(binding)
             }
-            let varName = ips.identifier.text
             
-            if let accessors = last.accessorBlock {
+            let identifier = identifierPattern.identifier.text
+            
+            if let accessors = binding.accessorBlock {
                 if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }
-                if let block = AccessorBlockSyntax (accessors) {
+                
+                if let block = AccessorBlockSyntax(accessors) {
                     var hasSet = false
                     var hasGet = false
                     switch block.accessors {
@@ -164,16 +109,11 @@ public struct GodotExport: PeerMacro {
                 }
             }
             
-            if let elementTypeName = varDecl.gArrayCollectionElementTypeName {
-                results.append (DeclSyntax(stringLiteral: makeGArrayCollectionGetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
-                results.append (DeclSyntax(stringLiteral: makeGArrayCollectionSetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
-            } else if let typeName = type.as(IdentifierTypeSyntax.self)?.name.text {
-                results.append (DeclSyntax(stringLiteral: makeSetAccessor(varName: varName, typeName: typeName, isEnum: isEnum)))
-                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, isEnum: isEnum)))
-            }
+            declarations.append(DeclSyntax(stringLiteral: makeSetAccessor(identifier: identifier)))
+            declarations.append(DeclSyntax(stringLiteral: makeGetAccessor(identifier: identifier)))
         }
         
-        return results
+        return declarations
     }
 }
 

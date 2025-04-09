@@ -20,6 +20,16 @@ class Rigid: RigidBody2D {
 }
 
 @Godot
+class MultiBindingExample: Node {
+//    @Export var one: String = "one", two: Bool = false, three: Int = 50
+}
+
+enum MyEnum: Int, CaseIterable {
+    case first = 10
+    case late = 20
+}
+
+@Godot
 class SwiftSprite: Sprite2D {
     var time_passed: Double = 0
     var count: Int = 0
@@ -27,7 +37,9 @@ class SwiftSprite: Sprite2D {
     @Signal var pickedUpItem: SignalWithArguments<String, Bool, Int>
     @Signal var scored: SimpleSignal
     @Signal var livesChanged: SignalWithArguments<Int>
-
+    
+    @Export(.enum) var en: MyEnum = .late
+    
     @Callable
     public func computeGodot (x: String, y: Int) -> Double {
         return 1.0
@@ -56,7 +68,7 @@ class SwiftSprite: Sprite2D {
     @Export(.dir) var directory: String?
     @Export(.file, "*txt") var file: String?
     @Export var demo: String = "demo"
-    @Export var food: String = "none"    
+    @Export var food: String = "none"
     
     var x: Rigid?
     
@@ -73,7 +85,7 @@ class SwiftSprite: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-       GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {

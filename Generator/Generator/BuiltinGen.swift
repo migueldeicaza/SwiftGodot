@@ -589,7 +589,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
                 
-        var conformances: [String] = ["VariantConvertible"]
+        var conformances: [String] = ["_GodotBridgeable"]
         if kind == .isStruct {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
