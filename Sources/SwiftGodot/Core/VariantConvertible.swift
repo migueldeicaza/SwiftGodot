@@ -94,6 +94,83 @@ public protocol VariantConvertible {
 /// ```
 ///
 public protocol _GodotBridgeable: VariantConvertible {
+    /// Internal API. Return PropInfo when this class is used as an @Exported property.
+    static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo
+}
+
+/// Internal API.
+/// This is a special case due to Swift type system not allowing default implementation using `Self` for non-final classes.
+/// It's needed to allow statically dispatching macro functions in the context of `Object` and its subclasses.
+public protocol _GodotBridgeableObject: VariantConvertible {
+}
+
+public extension _GodotBridgeableObject where Self: Object {
+    /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used as an `@Exported` variable
+    @inline(__always)
+    @inlinable
+    static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _macroGodotGetVariablePropInfoSimple(
+            rootType: rootType,
+            propertyType: .object,
+            name: name,
+            userHint: userHint,
+            userHintStr: userHintStr,
+            userUsage: userUsage
+        )
+    }
+}
+
+
+/// Returns the metatype of the `Value` at given key path.
+///
+/// For example:
+/// ```
+/// struct A {
+///  let a = 10
+///  static func foo() {
+///    type(at: \A.a).max // returns Int.max
+///  }
+/// }
+/// ```
+/// This can be used for accessing static members of the type of the property from the static context of the containing type without relying on explicit type of `Value`.
+/// See how in example above `Int` is not mentioned anywhere in the code explicitly.
+@inline(__always)
+@inlinable
+public func valueType<Root, Value>(at keyPath: KeyPath<Root, Value>) -> Value.Type {
+    Value.self
+}
+
+public extension KeyPath {
+    /// Returns the metatype of the `Value` of the ``KeyPath``
+    ///
+    /// For example:
+    /// ```
+    /// struct A {
+    ///  let a = 10
+    ///  static func foo() {
+    ///    (\A.a).valueType // returns Int.max
+    ///  }
+    /// }
+    /// ```
+    /// This can be used for accessing static members of the type of the property from the static context of the containing type without relying on explicit type of `Value`.
+    /// See how in example above `Int` is not mentioned anywhere in the code explicitly.
+    @inline(__always)
+    @inlinable
+    var valueType: Value.Type {
+        Value.self
+    }
 }
 
 public extension Optional where Wrapped: VariantConvertible {
@@ -102,25 +179,113 @@ public extension Optional where Wrapped: VariantConvertible {
     }
 }
 
-extension _GodotBridgeable {
+// Simple common case for most of the bridged types
+@inline(__always)
+@inlinable
+func _macroGodotGetVariablePropInfoSimple<T>(
+    rootType: T.Type,
+    propertyType: Variant.GType,
+    name: String,
+    userHint: PropertyHint?,
+    userHintStr: String?,
+    userUsage: PropertyUsageFlags?
+) -> PropInfo {
+    return PropInfo(
+        propertyType: propertyType,
+        propertyName: StringName(name),
+        className: "\(rootType)",
+        hint: userHint ?? .none,
+        hintStr: userHintStr.map { GString($0) } ?? GString(),
+        usage: userUsage ?? .default
+    )
 }
 
 extension Int64: _GodotBridgeable {
+    // _macroGodotGetVariablePropInfo is implemented below for all `BinaryInteger`
+    
+    /// Wrap a ``Int64``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Attempt to unwrap a ``Int64`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
     public static func fromVariant(_ variant: Variant) -> Self? {
         guard let value = Int64(variant) else { return nil }
         return value
     }
 }
 
+public extension BinaryInteger {
+    /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used as an `@Exported` variable
+    @inline(__always)
+    @inlinable
+    static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _macroGodotGetVariablePropInfoSimple(
+            rootType: rootType,
+            propertyType: .int,
+            name: name,
+            userHint: userHint,
+            userHintStr: userHintStr,
+            userUsage: userUsage
+        )
+    }
+    
+    /// Wrap an integer number  into ``Variant``.
+    func toVariant() -> Variant {
+        Int64(self).toVariant()
+    }
+    
+    /// Attempt to unwrap an integer number from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`, or wrapped number doesn't fit the integer size.
+    static func fromVariant(_ variant: Variant) -> Self? {
+        guard let int = Int64.fromVariant(variant) else {
+            return nil
+        }
+        
+        // Fail gracefully if overflow happens
+        let result = Self(exactly: int)
+        
+        guard let result else {
+            GD.printErr("\(self) can't contain the value '\(int)'.")
+            return nil
+        }
+        
+        return result
+    }
+}
+
 extension Bool: _GodotBridgeable {
+    /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used as an `@Exported` variable
+    @inline(__always)
+    @inlinable
+    public static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _macroGodotGetVariablePropInfoSimple(
+            rootType: rootType,
+            propertyType: .bool,
+            name: name,
+            userHint: userHint,
+            userHintStr: userHintStr,
+            userUsage: userUsage
+        )
+    }
+    
+    /// Wrap a ``Bool``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Attempt to unwrap a ``Bool`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
     public static func fromVariant(_ variant: Variant) -> Self? {
         guard let value = Bool(variant) else { return nil }
         return value
@@ -128,10 +293,32 @@ extension Bool: _GodotBridgeable {
 }
 
 extension String: _GodotBridgeable {
+    /// Internal API. Returns ``PropInfo`` for when any ``String`` is used as an `@Exported` variable
+    @inline(__always)
+    @inlinable
+    public static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _macroGodotGetVariablePropInfoSimple(
+            rootType: rootType,
+            propertyType: .string,
+            name: name,
+            userHint: userHint,
+            userHintStr: userHintStr,
+            userUsage: userUsage
+        )
+    }
+    
+    /// Wrap a ``String``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Attempt to unwrap a ``String`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
     public static func fromVariant(_ variant: Variant) -> Self? {
         guard let value = String(variant) else { return nil }
         return value
@@ -139,10 +326,14 @@ extension String: _GodotBridgeable {
 }
 
 extension Double: _GodotBridgeable {
+    // _macroGodotGetVariablePropInfo is implemented below for all `BinaryFloatingPoint`
+    
+    /// Wrap a ``Double``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Attempt to unwrap a ``Double`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
     public static func fromVariant(_ variant: Variant) -> Self? {
         guard let value = Double(variant) else { return nil }
         return value
@@ -150,22 +341,34 @@ extension Double: _GodotBridgeable {
 }
 
 public extension BinaryFloatingPoint {
+    /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used as an `@Exported` variable
+    @inline(__always)
+    @inlinable
+    static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _macroGodotGetVariablePropInfoSimple(
+            rootType: rootType,
+            propertyType: .float,
+            name: name,
+            userHint: userHint,
+            userHintStr: userHintStr,
+            userUsage: userUsage
+        )
+    }
+    
+    /// Wrap a floating point number into ``Variant``.
     func toVariant() -> Variant {
         Double(self).toVariant()
     }
-    
+
+    /// Attempt to unwrap a floating point number from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`
     static func fromVariant(_ variant: Variant) -> Self? {
         Double.fromVariant(variant).map { Self($0) }
-    }
-}
-
-public extension BinaryInteger {
-    func toVariant() -> Variant {
-        Int64(self).toVariant()
-    }
-    
-    static func fromVariant(_ variant: Variant) -> Self? {
-        Int64.fromVariant(variant).map { Self($0) }
     }
 }
 
