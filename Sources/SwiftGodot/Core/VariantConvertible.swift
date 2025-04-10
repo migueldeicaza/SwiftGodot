@@ -133,47 +133,6 @@ public extension _GodotBridgeableObject where Self: Object {
     }
 }
 
-
-/// Returns the metatype of the `Value` at given key path.
-///
-/// For example:
-/// ```
-/// struct A {
-///  let a = 10
-///  static func foo() {
-///    type(at: \A.a).max // returns Int.max
-///  }
-/// }
-/// ```
-/// This can be used for accessing static members of the type of the property from the static context of the containing type without relying on explicit type of `Value`.
-/// See how in example above `Int` is not mentioned anywhere in the code explicitly.
-@inline(__always)
-@inlinable
-public func valueType<Root, Value>(at keyPath: KeyPath<Root, Value>) -> Value.Type {
-    Value.self
-}
-
-public extension KeyPath {
-    /// Returns the metatype of the `Value` of the ``KeyPath``
-    ///
-    /// For example:
-    /// ```
-    /// struct A {
-    ///  let a = 10
-    ///  static func foo() {
-    ///    (\A.a).valueType // returns Int.max
-    ///  }
-    /// }
-    /// ```
-    /// This can be used for accessing static members of the type of the property from the static context of the containing type without relying on explicit type of `Value`.
-    /// See how in example above `Int` is not mentioned anywhere in the code explicitly.
-    @inline(__always)
-    @inlinable
-    var valueType: Value.Type {
-        Value.self
-    }
-}
-
 public extension Optional where Wrapped: VariantConvertible {
     func toVariant() -> Variant? {
         self?.toVariant()
