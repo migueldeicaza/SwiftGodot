@@ -46,15 +46,20 @@ public class ClassInfo<T:Object> {
     /// - Parameters:
     ///  - name: the name we want to use to register the signal
     ///  - arguments: an array of PropInfo structures that describe each argument that must be passed to the signal
-    public func registerSignal (name: StringName, arguments propInfo: [PropInfo] = []) {
-        let propPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: propInfo.count)
-        var i = 0
-        for prop in propInfo {
-            propPtr [i] = prop.makeNativeStruct()
-            i += 1
+    public func registerSignal (name: StringName, arguments: [PropInfo] = []) {
+        withUnsafeTemporaryAllocation(of: GDExtensionPropertyInfo.self, capacity: arguments.count) { bufferPtr in
+            guard let ptr = bufferPtr.baseAddress else {
+                GD.print("Swift.withUnsafeTemporaryAllocation failed at `ClassInfo.registerSignal`")
+                return
+            }
+            
+            for (index, argument) in arguments.enumerated() {
+                bufferPtr.initializeElement(at: index, to: argument.makeNativeStruct())
+            }
+            
+            gi.classdb_register_extension_class_signal (extensionInterface.getLibrary(), &self.name.content, &name.content, ptr, GDExtensionInt(arguments.count))
+            bufferPtr.deinitialize()
         }
-        gi.classdb_register_extension_class_signal (extensionInterface.getLibrary(), &self.name.content, &name.content, propPtr, GDExtensionInt(propInfo.count))
-        propPtr.deallocate()
     }
     
     // Here so we can box the function pointer
