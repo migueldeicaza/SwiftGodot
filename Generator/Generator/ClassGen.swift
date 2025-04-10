@@ -549,6 +549,8 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
     }
 }
 
+let objectInherits = "Wrapped, _GodotBridgeable"
+
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     // Determine if it is a singleton, but exclude EditorInterface
     let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
@@ -564,7 +566,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
     }
     
-    let inherits = cdef.inherits ?? "Wrapped"
+    let inherits = cdef.inherits ?? objectInherits
     let typeDecl = "open class \(cdef.name): \(inherits)"
     
     var virtuals: [String: (String, JGodotClassMethod)] = [:]
@@ -603,6 +605,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
                 p ("super.init (nativeHandle: nativeHandle)")
             }
         }
+        
         var referencedMethods = Set<String>()
         
         if let enums = cdef.enums {
@@ -620,6 +623,40 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
         if let methods = cdef.methods {
             virtuals = generateMethods (p, cdef: cdef, methods: methods, usedMethods: referencedMethods, asSingleton: asSingleton)
+        }
+        
+        if inherits == objectInherits {
+            p("/// Wrap ``\(cdef.name)`` into a ``Variant``")
+            p("public func toVariant() -> Variant") {
+                p ("Variant(self)")
+            }
+        
+            p("/// Attempt to unwrap ``\(cdef.name)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
+            p("public class func fromVariant(_ variant: Variant) -> Self?") {
+                p("variant.asObject(Self.self)")
+            }
+            
+            p("/// Internal API")
+            p("public func _macroRcRef()") {
+                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            }
+            
+            p("/// Internal API")
+            p("public func _macroRcUnref()") {
+                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            }
+        }
+        
+        if cdef.name == "RefCounted" {
+            p("/// Internal API")
+            p("public final override func _macroRcRef()") {
+                p("reference()")
+            }
+            
+            p("/// Internal API")
+            p("public final override func _macroRcUnref()") {
+                p("unreference()")
+            }
         }
         
         if let signals = cdef.signals {

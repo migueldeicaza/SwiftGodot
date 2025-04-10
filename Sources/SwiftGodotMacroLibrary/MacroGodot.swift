@@ -284,7 +284,7 @@ class GodotMacroProcessor {
             let setterName = "_mproxy_set_\(varNameWithoutPrefix)"
             let getterName = "_mproxy_get_\(varNameWithoutPrefix)"
             
-            if let accessors = last.accessorBlock {
+            if let accessors = singleVar.accessorBlock {
                 if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }
@@ -387,7 +387,7 @@ class GodotMacroProcessor {
             let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             
-            if let accessors = last.accessorBlock {
+            if let accessors = singleVar.accessorBlock {
                 if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }

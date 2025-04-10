@@ -20,14 +20,30 @@ class Rigid: RigidBody2D {
 }
 
 @Godot
-class SwiftSprite: Sprite2D {
+class MultiBindingExample: Node {
+//    @Export var one: String = "one", two: Bool = false, three: Int = 50
+}
+
+enum MyEnum: Int, CaseIterable {
+    case first = 10
+    case late = 20
+}
+
+typealias SomeArray = [Int]
+
+@Godot
+class SwiftSprite: Sprite2D {    
     var time_passed: Double = 0
     var count: Int = 0
+    
+    @Export
+    var someCollection: VariantCollection<Int> = [1, 2, 3, 4]
     
     @Signal var pickedUpItem: SignalWithArguments<String, Bool, Int>
     @Signal var scored: SimpleSignal
     @Signal var livesChanged: SignalWithArguments<Int>
-
+    
+    
     @Callable
     public func computeGodot (x: String, y: Int) -> Double {
         return 1.0
@@ -73,7 +89,7 @@ class SwiftSprite: Sprite2D {
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
         let dict2: GDictionary? = GDictionary(imageVariant)
-       GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
+        GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
         
         // part b
         if let result = dict2?.get(key: Variant("type"), default: Variant(-1)) {
