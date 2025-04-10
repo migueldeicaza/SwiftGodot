@@ -16,8 +16,83 @@ public protocol VariantConvertible {
 }
 
 /// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
-/// This is more specialized version of ``VariantConvertible`` for cases where an ability to be converted to and from a ``Variant`` is not enough.
-/// At the same time it allows ``VariantConvertible`` to be implemented by the user for coding arbitary values inside the ``Variant``
+///
+/// ### Rationale
+///
+/// This is more specialized version of `VariantConvertible` for cases where an ability to be converted to and from a `Variant` is not suffucient.
+/// At the same time it allows `VariantConvertible` to be implemented by the user for coding arbitary values inside the `Variant`.
+/// This class is a base for future changes such as generating relevant `PropInfo` in the context of this type being:
+/// 1. A returned value
+/// 2. An argument
+/// 3. A class property
+///
+/// This this allow to statically dispatch `PropInfo` generation in the context of macro without relying on Swift syntax analysis.
+/// For now this protocol allows to distinguish between a type being merely `VariantConvertible` and being able, for example, to be `@Export`-ed.
+/// ```
+/// struct SomeUserType: VariantConvertible {
+///     // implementation
+/// }
+/// ```
+///
+/// While `SomeUserType` can be freely used in the context where `Variant` is accepted as a part of Godot API:
+/// ```
+/// GD.print(SomeUserType())
+/// ```
+///
+/// It's still prohibited to be used as `@Export`-ed in this case:
+/// ```
+/// @Godot
+/// class SomeClass {
+///     @Export var someUsertType: SomeUserType = .init() // How should it be visible on Godot side?
+/// }
+/// ```
+///
+/// In future it will alow us to resurface arbitary user types on Godot side via generating `_GodotBridgeable` by introducing `CustomGodotBridgeable` as in:
+/// ```
+/// public protocol CustomGodotBridgeable: _GodotBridgeable {
+///     associatedtype GodotCompatibleRepresentation: _GodotBridgeable
+///
+///     func to(_ type: GodotCompatibleRepresentation.Type) -> GodotCompatibleRepresentation
+///     static func from(_ godotCompatibleInstance: GodotCompatibleRepresentation) -> Self?
+///
+/// }
+/// ```
+///
+/// Low-level part of `CustomGodotBridgeable` requirements will simply be default-implemented by `GodotCompatibleRepresentation`
+///
+/// ```
+/// public extension CustomGodotBridgeable {
+///     static func _propertyPropInfo(hint: String?) -> PropInfo { GodotCompatibleRepresentation._someLowLevelApi() }
+/// }
+/// ```
+///
+/// At user side it wil look like:
+/// ```
+/// struct SomeUserType: CustomGodotBridgeable {
+///      func to(_ type: GDictionary.Type = GDictionary.self) -> GDictionary {
+///         // encode this instance to GDictionary
+///      }
+///
+///      static func from(_ godotCompatibleInstance: GDictionary) -> Self? {
+///         // Try to decode this type from dictionary, print something nasty in `GD.printErr` if things go south,
+///         // Perhaps provide some `Godot(Variant/Dictionary)(Encoder/Decoder)` to make things super-straight forward
+///         // and make `Codable` work from the box
+///      }
+/// }
+///
+/// @Godot
+/// class Example: Object {
+///     @Export var someUserType: SomeUserType = .init() // Will work fine now
+///
+///     // Macro expansion
+///     // ...
+///     // let prop0 = type(at: \Object.someUserType)._propertyPropInfo()
+///     // ...
+///
+/// }
+///
+/// ```
+///
 public protocol _GodotBridgeable: VariantConvertible {
 }
 

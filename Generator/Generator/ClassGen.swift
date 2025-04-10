@@ -626,28 +626,34 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
         
         if inherits == objectInherits {
+            p("/// Wrap ``\(cdef.name)`` into a ``Variant``")
             p("public func toVariant() -> Variant") {
                 p ("Variant(self)")
             }
         
+            p("/// Attempt to unwrap ``\(cdef.name)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
             p("public class func fromVariant(_ variant: Variant) -> Self?") {
                 p("variant.asObject(Self.self)")
             }
             
+            p("/// Internal API")
             p("public func _macroRcRef()") {
                 p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
             }
             
+            p("/// Internal API")
             p("public func _macroRcUnref()") {
                 p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
             }
         }
         
         if cdef.name == "RefCounted" {
+            p("/// Internal API")
             p("public final override func _macroRcRef()") {
                 p("reference()")
             }
             
+            p("/// Internal API")
             p("public final override func _macroRcUnref()") {
                 p("unreference()")
             }

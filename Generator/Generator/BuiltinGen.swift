@@ -813,10 +813,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             generateBuiltinOperators (p, bc, typeName: typeName)
             generateBuiltinConstants (p, bc, typeName: typeName)
                         
+            p("/// Wrap ``\(typeName)`` into a ``Variant``")
             p("public func toVariant() -> Variant") {
                 p("Variant(self)")
             }
             
+            p("/// Attempt to unwrap ``\(typeName)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
             p("public static func fromVariant(_ variant: Variant) -> Self?") {
                 p("Self(variant)")
             }
