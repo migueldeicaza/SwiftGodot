@@ -396,4 +396,23 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     public final func isReadOnly ()-> Bool {
         array.isReadOnly()
     }
+        
+    @inline(__always)
+    @inlinable
+    public static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: StringName(name),
+            className: StringName("Array[\(Element.self)]"),
+            hint: userHint ?? .arrayType,
+            hintStr: GString(userHintStr ?? "\(Element.self)"),
+            usage: userUsage ?? .default
+        )
+    }
 }

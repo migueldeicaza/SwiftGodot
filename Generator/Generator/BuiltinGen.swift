@@ -860,6 +860,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
             """)
             
+            p("""
+            /// Internal API. For indicating that Godot `Array` of ``\(typeName)`` has type `Array[\(bc.name)]`
+            @inline(__always)
+            @inlinable
+            public static var _macroGodotGetVariablePropInfoArrayType: String { "\(bc.name)" }
+            """)
+            
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {
                 let retType: String

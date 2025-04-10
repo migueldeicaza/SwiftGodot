@@ -5,6 +5,47 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
+/// Internal API.  Variant.
+@inline(__always)
+@inlinable
+public func _macroExportSet(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: Variant,
+    _ set: (Variant) -> Void
+) -> Variant? {
+    guard let variantOrNil = arguments.first else {
+        GD.printErr("Unable to set `\(name)`, no arguments")
+        return nil
+    }
+
+    guard let variant = variantOrNil else {
+        GD.printErr("Unable to set `\(name)`, argument is nil")
+        return nil
+    }
+    
+    set(variant)
+    return nil
+}
+
+/// Internal API.  Optional Variant.
+@inline(__always)
+@inlinable
+public func _macroExportSet(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: Variant?,
+    _ set: (Variant?) -> Void
+) -> Variant? {
+    guard let variantOrNil = arguments.first else {
+        GD.printErr("Unable to set `\(name)`, no arguments")
+        return nil
+    }
+    
+    set(variantOrNil)
+    return nil
+}
+
 /// Internal API.  Builtin types.
 @inline(__always)
 @inlinable

@@ -81,6 +81,44 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     )
 }
 
+/// Internal API. VariantCollection.
+@inline(__always)
+@inlinable
+public func _macroGodotGetVariablePropInfo<Root, T>(
+    at keyPath: KeyPath<Root, VariantCollection<T>>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: VariantStorable, T: _GodotBridgeable {
+    VariantCollection<T>._macroGodotGetVariablePropInfo(
+        rootType: Root.self,
+        name: name,
+        userHint: userHint,
+        userHintStr: userHintStr,
+        userUsage: userUsage
+    )
+}
+
+/// Internal API. ObjectCollection.
+@inline(__always)
+@inlinable
+public func _macroGodotGetVariablePropInfo<Root, T>(
+    at keyPath: KeyPath<Root, ObjectCollection<T>>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: Object {
+    ObjectCollection<T>._macroGodotGetVariablePropInfo(
+        rootType: Root.self,
+        name: name,
+        userHint: userHint,
+        userHintStr: userHintStr,
+        userUsage: userUsage
+    )
+}
+
 @available(*, unavailable, message: "Type is not supported for @Export")
 @_disfavoredOverload
 public func _macroGodotGetVariablePropInfo<Root, T>(

@@ -5,6 +5,21 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
+/// Internal API. Variant.
+@inline(__always)
+@inlinable
+public func _macroExportGet(_ value: Variant) -> Variant? {
+    return value
+}
+
+/// Internal API. Optional Variant.
+@inline(__always)
+@inlinable
+public func _macroExportGet(_ value: Variant?) -> Variant? {
+    return value
+}
+
+
 /// Internal API. Builtin type.
 @inline(__always)
 @inlinable
