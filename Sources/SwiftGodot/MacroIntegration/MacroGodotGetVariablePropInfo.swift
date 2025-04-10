@@ -11,9 +11,9 @@
 public func _macroGodotGetVariablePropInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
-    userHint: PropertyHint?,
-    userHintStr: String?,
-    userUsage: PropertyUsageFlags?
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeable {
     T._macroGodotGetVariablePropInfo(
         rootType: Root.self,
@@ -24,17 +24,17 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     )
 }
 
-/// Internal API. Optional Builtin type.
+/// Internal API. Optional Builtin type. Facaded as Godot Variant, because Godot builtin types can't be nil, unlike objects.
 @inline(__always)
 @inlinable
 public func _macroGodotGetVariablePropInfo<Root, T>(
     at keyPath: KeyPath<Root, T?>,
     name: String,
-    userHint: PropertyHint?,
-    userHintStr: String?,
-    userUsage: PropertyUsageFlags?
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeable {
-    T._macroGodotGetVariablePropInfo(
+    Variant._macroGodotGetVariablePropInfo(
         rootType: Root.self,
         name: name,
         userHint: userHint,
@@ -49,9 +49,28 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
 public func _macroGodotGetVariablePropInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
-    userHint: PropertyHint?,
-    userHintStr: String?,
-    userUsage: PropertyUsageFlags?
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: Object {
+    T._macroGodotGetVariablePropInfo(
+        rootType: Root.self,
+        name: name,
+        userHint: userHint,
+        userHintStr: userHintStr,
+        userUsage: userUsage
+    )
+}
+
+/// Internal API. Optional Object.
+@inline(__always)
+@inlinable
+public func _macroGodotGetVariablePropInfo<Root, T>(
+    at keyPath: KeyPath<Root, T?>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
     T._macroGodotGetVariablePropInfo(
         rootType: Root.self,
@@ -67,9 +86,9 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
 public func _macroGodotGetVariablePropInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
-    userHint: PropertyHint?,
-    userHintStr: String?,
-    userUsage: PropertyUsageFlags?
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo {
     fatalError("Unreachable")
 }
