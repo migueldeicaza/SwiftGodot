@@ -95,8 +95,7 @@ public protocol VariantConvertible {
 ///
 public protocol _GodotBridgeable: VariantConvertible {
     /// Internal API. Return PropInfo when this class is used as an @Exported property.
-    static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    static func _macroGodotGetVariablePropInfo(
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
@@ -117,19 +116,16 @@ public extension _GodotBridgeableObject where Self: Object {
     /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    static func _macroGodotGetVariablePropInfo(
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo {
-        // QoL
-        
         return _macroGodotGetVariablePropInfoSimple(
-            rootType: rootType,
             propertyType: .object,
             name: name,
+            className: StringName("\(Self.self)"),
             userHint: userHint,
             userHintStr: userHintStr,
             userUsage: userUsage
@@ -187,10 +183,10 @@ public extension Optional where Wrapped: VariantConvertible {
 // Simple common case for most of the bridged types
 @inline(__always)
 @inlinable
-func _macroGodotGetVariablePropInfoSimple<T>(
-    rootType: T.Type,
+func _macroGodotGetVariablePropInfoSimple(
     propertyType: Variant.GType,
     name: String,
+    className: StringName? = nil,
     userHint: PropertyHint?,
     userHintStr: String?,
     userUsage: PropertyUsageFlags?
@@ -198,7 +194,7 @@ func _macroGodotGetVariablePropInfoSimple<T>(
     return PropInfo(
         propertyType: propertyType,
         propertyName: StringName(name),
-        className: "\(rootType)",
+        className: className ?? "",
         hint: userHint ?? .none,
         hintStr: userHintStr.map { GString($0) } ?? GString(),
         usage: userUsage ?? .default
@@ -225,15 +221,13 @@ public extension BinaryInteger {
     /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    static func _macroGodotGetVariablePropInfo(
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo {
         _macroGodotGetVariablePropInfoSimple(
-            rootType: rootType,
             propertyType: .int,
             name: name,
             userHint: userHint,
@@ -274,15 +268,13 @@ extension Bool: _GodotBridgeable {
     /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    public static func _macroGodotGetVariablePropInfo(
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo {
         _macroGodotGetVariablePropInfoSimple(
-            rootType: rootType,
             propertyType: .bool,
             name: name,
             userHint: userHint,
@@ -312,15 +304,13 @@ extension String: _GodotBridgeable {
     /// Internal API. Returns ``PropInfo`` for when any ``String`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    public static func _macroGodotGetVariablePropInfo(
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo {
         _macroGodotGetVariablePropInfoSimple(
-            rootType: rootType,
             propertyType: .string,
             name: name,
             userHint: userHint,
@@ -366,15 +356,13 @@ public extension BinaryFloatingPoint {
     /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    static func _macroGodotGetVariablePropInfo(
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo {
         _macroGodotGetVariablePropInfoSimple(
-            rootType: rootType,
             propertyType: .float,
             name: name,
             userHint: userHint,

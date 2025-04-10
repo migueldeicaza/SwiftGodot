@@ -207,7 +207,7 @@ public struct PropInfo: CustomDebugStringConvertible {
     public var propertyType: Variant.GType
     /// The name for the property
     public var propertyName: StringName
-    /// The class name where this is defined
+    /// The special identifier needed in some cases: class name for `.object` props, Array[typename] for typed Arrays, empty otherwise
     public var className: StringName
     /// Property Hint for this property
     public var hint: PropertyHint

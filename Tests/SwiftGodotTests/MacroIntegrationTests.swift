@@ -36,5 +36,9 @@ final class MacroIntegrationTests: GodotTestCase {
         XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
         XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
         XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.enumExample, name: "").hintStr, "Array[MeshInstance2D]")
+        
+        let enumPropInfo = _macroGodotGetVariablePropInfo(at: \NoMacroExample.enumExample, name: "")
+        XCTAssertEqual(enumPropInfo.propertyType, .int)
+        //XCTAssertEqual(enumPropInfo., .int)
     }
 }
