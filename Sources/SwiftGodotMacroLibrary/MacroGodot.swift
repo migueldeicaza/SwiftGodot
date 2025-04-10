@@ -222,19 +222,17 @@ class GodotMacroProcessor {
     }
       
 
-    func processVariable(_ varDecl: VariableDeclSyntax, previousGroupPrefix: String?, previousSubgroupPrefix: String?) throws -> Bool {
+    func processVariable(_ varDecl: VariableDeclSyntax, previousGroupPrefix: String?, previousSubgroupPrefix: String?) throws {
         if hasExportAttribute(varDecl.attributes) {
-            return try processExportVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
+            try processExportVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
         } else if hasSignalAttribute(varDecl.attributes) {
             try processSignalVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
         }
-            
-        return false
     }
 
     
     // Returns true if it used "tryCase"
-    func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws -> Bool {
+    func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
         assert(hasExportAttribute(varDecl.attributes))
                 
         guard !varDecl.bindings.isEmpty else {
@@ -343,8 +341,6 @@ class GodotMacroProcessor {
             ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
             ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
         }
-        
-        return false
     }
     
     // Returns true if it used "tryCase"
@@ -400,8 +396,7 @@ class GodotMacroProcessor {
         assert(ClassDB.classExists(class: className))\n
     """
         var previousGroupPrefix: String? = nil
-        var previousSubgroupPrefix: String? = nil
-        var needTrycase = false
+        var previousSubgroupPrefix: String? = nil        
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
             let macroExpansion = MacroExpansionDeclSyntax(decl)
@@ -415,27 +410,16 @@ class GodotMacroProcessor {
             } else if let funcDecl = FunctionDeclSyntax(decl) {
                 try processFunction (funcDecl)
             } else if let varDecl = VariableDeclSyntax(decl) {
-                if try processVariable(
+                try processVariable(
                     varDecl,
                     previousGroupPrefix: previousGroupPrefix,
                     previousSubgroupPrefix: previousSubgroupPrefix
-                ) {
-                    needTrycase = true
-                }
+                )
             } else if let macroExpansion {
                 try classInitSignals(macroExpansion)
             }
         }
 
-        if needTrycase {
-            ctor.append (
-            """
-            func tryCase <T : RawRepresentable & CaseIterable> (_ type: T.Type) -> GString {
-                GString (type.allCases.map { v in "\\(v):\\(v.rawValue)" }.joined(separator: ","))
-            }
-            func tryCase <T : RawRepresentable> (_ type: T.Type) -> String { "" }
-            """)
-        }
         ctor.append("} ()\n")
         return ctor
     }
