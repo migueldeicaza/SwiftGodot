@@ -43,6 +43,20 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     )
 }
 
+// Add sane defaults if no explicit arguments were passed
+@inline(__always)
+@usableFromInline
+func improveObjectVariablePropInfo<T>(
+    objectType: T.Type = T.self,
+    userHint: inout PropertyHint?,
+    userHintStr: inout String?
+) where T: Object {
+    if objectType is Node.Type && userHint == nil && userHintStr == nil {
+        userHint = .nodeType
+        userHintStr = "\(T.self)"
+    }
+}
+
 /// Internal API. Object.
 @inline(__always)
 @inlinable
@@ -53,7 +67,10 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    T._macroGodotGetVariablePropInfo(
+    var userHint = userHint
+    var userHintStr = userHintStr
+    improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
+    return T._macroGodotGetVariablePropInfo(
         rootType: Root.self,
         name: name,
         userHint: userHint,
@@ -72,7 +89,10 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    T._macroGodotGetVariablePropInfo(
+    var userHint = userHint
+    var userHintStr = userHintStr
+    improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
+    return T._macroGodotGetVariablePropInfo(
         rootType: Root.self,
         name: name,
         userHint: userHint,
@@ -112,6 +132,47 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
 ) -> PropInfo where T: Object {
     ObjectCollection<T>._macroGodotGetVariablePropInfo(
         rootType: Root.self,
+        name: name,
+        userHint: userHint,
+        userHintStr: userHintStr,
+        userUsage: userUsage
+    )
+}
+
+@inline(__always)
+@usableFromInline
+func enumCasesHintStr<T>(_ type: T.Type = T.self) -> String
+where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
+    type
+        .allCases
+        .map {
+            "\($0):\($0.rawValue)"
+        }
+        .joined(separator: ",")
+}
+
+/// Internal API.  CaseIterable enum with BinaryInteger RawValue.
+@inline(__always)
+@inlinable
+public func _macroGodotGetVariablePropInfo<Root, T>(
+    at keyPath: KeyPath<Root, T>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
+    var userHint = userHint
+    var userHintStr = userHintStr
+    
+    if userHint == nil && userHintStr == nil {
+        // QoL add it automatically
+        userHint = .enum
+        userHintStr = enumCasesHintStr(T.self)
+    }
+    
+    return _macroGodotGetVariablePropInfoSimple(
+        rootType: Root.self,
+        propertyType: .int,
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,

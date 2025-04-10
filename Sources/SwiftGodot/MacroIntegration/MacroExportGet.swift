@@ -106,7 +106,7 @@ public func _macroExportGet<T>(
 @available(*, unavailable, message: "Optional enums are not supported by @Export macro")
 public func _macroExportGet<T>(
     _ value: T?
-) -> Variant? where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
+) -> Variant? where T: RawRepresentable, T: CaseIterable {
     fatalError("Unreachable")
 }
 
