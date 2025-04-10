@@ -124,7 +124,9 @@ public extension _GodotBridgeableObject where Self: Object {
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetVariablePropInfoSimple(
+        // QoL
+        
+        return _macroGodotGetVariablePropInfoSimple(
             rootType: rootType,
             propertyType: .object,
             name: name,
