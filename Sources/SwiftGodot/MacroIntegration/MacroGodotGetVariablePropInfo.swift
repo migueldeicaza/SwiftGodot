@@ -16,7 +16,6 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeable {
     T._macroGodotGetVariablePropInfo(
-        rootType: Root.self,
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,
@@ -35,7 +34,6 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeable {
     Variant._macroGodotGetVariablePropInfo(
-        rootType: Root.self,
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,
@@ -71,7 +69,6 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     var userHintStr = userHintStr
     improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
     return T._macroGodotGetVariablePropInfo(
-        rootType: Root.self,
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,
@@ -92,8 +89,7 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     var userHint = userHint
     var userHintStr = userHintStr
     improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
-    return T._macroGodotGetVariablePropInfo(
-        rootType: Root.self,
+    return T._macroGodotGetVariablePropInfo(        
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,
@@ -171,7 +167,6 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     }
     
     return _macroGodotGetVariablePropInfoSimple(
-        rootType: Root.self,
         propertyType: .int,
         name: name,
         userHint: userHint,

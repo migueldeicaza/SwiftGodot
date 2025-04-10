@@ -842,15 +842,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used as an `@Exported` variable
             @inline(__always)
             @inlinable
-            public static func _macroGodotGetVariablePropInfo<Root>(
-                rootType: Root.Type,
+            public static func _macroGodotGetVariablePropInfo(                
                 name: String,
                 userHint: PropertyHint?,
                 userHintStr: String?,
                 userUsage: PropertyUsageFlags?
             ) -> PropInfo {
                 _macroGodotGetVariablePropInfoSimple(
-                    rootType: rootType,
                     propertyType: \(propInfoPropertyType),
                     name: name,
                     userHint: userHint,
