@@ -102,6 +102,9 @@ public protocol _GodotBridgeable: VariantConvertible {
         userHintStr: String?,
         userUsage: PropertyUsageFlags?
     ) -> PropInfo
+    
+    /// Internal API. Returns Godot type name for typed array.
+    static var _macroGodotGetVariablePropInfoArrayType: String { get }
 }
 
 /// Internal API.
@@ -202,6 +205,7 @@ func _macroGodotGetVariablePropInfoSimple<T>(
 
 extension Int64: _GodotBridgeable {
     // _macroGodotGetVariablePropInfo is implemented below for all `BinaryInteger`
+    // _macroGodotGetVariablePropInfoArrayType is implemented below for all `BinaryInteger`
     
     /// Wrap a ``Int64``  into ``Variant``.
     public func toVariant() -> Variant {
@@ -235,6 +239,11 @@ public extension BinaryInteger {
             userUsage: userUsage
         )
     }
+    
+    /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
+    @inline(__always)
+    @inlinable
+    static var _macroGodotGetVariablePropInfoArrayType: String { "int" }
     
     /// Wrap an integer number  into ``Variant``.
     func toVariant() -> Variant {
@@ -280,6 +289,11 @@ extension Bool: _GodotBridgeable {
         )
     }
     
+    /// Internal API. For indicating that Godot` Array` of ``Bool`` has type `Array[bool]`
+    @inline(__always)
+    @inlinable
+    public static var _macroGodotGetVariablePropInfoArrayType: String { "bool" }
+    
     /// Wrap a ``Bool``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
@@ -313,6 +327,11 @@ extension String: _GodotBridgeable {
         )
     }
     
+    /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
+    @inline(__always)
+    @inlinable
+    public static var _macroGodotGetVariablePropInfoArrayType: String { "String" }
+    
     /// Wrap a ``String``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
@@ -327,6 +346,7 @@ extension String: _GodotBridgeable {
 
 extension Double: _GodotBridgeable {
     // _macroGodotGetVariablePropInfo is implemented below for all `BinaryFloatingPoint`
+    // _macroGodotGetVariablePropInfoArrayType is implemented below for all `BinaryFloatingPoint`
     
     /// Wrap a ``Double``  into ``Variant``.
     public func toVariant() -> Variant {
@@ -360,6 +380,11 @@ public extension BinaryFloatingPoint {
             userUsage: userUsage
         )
     }
+    
+    /// Internal API. For indicating that Godot` Array` of ``BinaryFloatingPoint`` has type `Array[float]`
+    @inline(__always)
+    @inlinable
+    static var _macroGodotGetVariablePropInfoArrayType: String { "float" }
     
     /// Wrap a floating point number into ``Variant``.
     func toVariant() -> Variant {

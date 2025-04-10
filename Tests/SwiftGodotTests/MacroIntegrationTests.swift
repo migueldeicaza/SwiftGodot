@@ -22,17 +22,18 @@ final class MacroIntegrationTests: GodotTestCase {
             
             var wop = 42 as Int?
             
-            
-            static func inferGTypes() -> [Variant.GType] {
-                return [
-                    _macroGodotGetVariablePropInfo(at: \NoMacroExample.object, name: "object").propertyType,
-                    _macroGodotGetVariablePropInfo(at: \NoMacroExample.lala, name: "lala").propertyType,
-                    _macroGodotGetVariablePropInfo(at: \NoMacroExample.someNode, name: "someNode").propertyType,
-                    _macroGodotGetVariablePropInfo(at: \NoMacroExample.wop, name: "wop").propertyType
-                ]
-            }
+            var variantCollection = VariantCollection<Int>()
+            var objectCollection = ObjectCollection<MeshInstance2D>()
         }
+            
+        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.object, name: "").propertyType, .object)
+        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.lala, name: "").propertyType, .int)
+        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.someNode, name: "").propertyType, .object)
+        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.wop, name: "").propertyType, .nil)
+        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
+        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
         
-        XCTAssertEqual(NoMacroExample.inferGTypes(), [.object, .int, .object, .nil /* Aka Variant */])
+        let a = _macroGodotGetVariablePropInfo(at: \NoMacroExample.objectCollection, name: "")
+        print(a)
     }
 }

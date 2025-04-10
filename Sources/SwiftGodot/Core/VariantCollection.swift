@@ -15,7 +15,7 @@ extension VariantCollection: VariantStorable {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<Element: VariantStorable>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+public class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection where Element: VariantStorable {
     public typealias ArrayLiteralElement = Element
     
     /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
@@ -356,5 +356,26 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     public final func isReadOnly ()-> Bool {
         array.isReadOnly()
     }
+}
 
+public extension VariantCollection where Element: _GodotBridgeable {
+    /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used as an `@Exported` variable
+    @inlinable
+    @inline(__always)
+    static func _macroGodotGetVariablePropInfo<Root>(
+        rootType: Root.Type,
+        name: String,
+        userHint: PropertyHint?,
+        userHintStr: String?,
+        userUsage: PropertyUsageFlags?
+    ) -> PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: StringName(name),
+            className: StringName("Array[\(Element._macroGodotGetVariablePropInfoArrayType)]"),
+            hint: userHint ?? .arrayType,
+            hintStr: GString(userHintStr ?? "\(Element._macroGodotGetVariablePropInfoArrayType)"),
+            usage: userUsage ?? .default
+        )
+    }
 }
