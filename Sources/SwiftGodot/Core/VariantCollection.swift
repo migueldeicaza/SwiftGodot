@@ -362,8 +362,7 @@ public extension VariantCollection where Element: _GodotBridgeable {
     /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used as an `@Exported` variable
     @inlinable
     @inline(__always)
-    static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    static func _macroGodotGetVariablePropInfo(        
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,

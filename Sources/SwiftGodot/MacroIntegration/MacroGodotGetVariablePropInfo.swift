@@ -108,7 +108,6 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: VariantStorable, T: _GodotBridgeable {
     VariantCollection<T>._macroGodotGetVariablePropInfo(
-        rootType: Root.self,
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,
@@ -126,8 +125,7 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._macroGodotGetVariablePropInfo(
-        rootType: Root.self,
+    ObjectCollection<T>._macroGodotGetVariablePropInfo(        
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,

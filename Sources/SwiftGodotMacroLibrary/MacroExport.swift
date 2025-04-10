@@ -35,16 +35,16 @@ extension SwiftSyntax.AttributeSyntax {
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
-        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> Variant? {
-            _macroExportGet(\(identifier))                        
+        func _mproxy_get_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+            SwiftGodot._macroExportGet(\(identifier))                        
         }                        
         """
     }
     
     static func makeSetAccessor(identifier: String) -> String {
         """
-        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> Variant? {
-            _macroExportSet(args, "\(identifier)", \(identifier)) {
+        func _mproxy_set_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+            SwiftGodot._macroExportSet(args, "\(identifier)", \(identifier)) {
                 \(identifier) = $0
             }
         }

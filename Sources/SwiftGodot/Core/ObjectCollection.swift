@@ -399,8 +399,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
         
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetVariablePropInfo<Root>(
-        rootType: Root.Type,
+    public static func _macroGodotGetVariablePropInfo(        
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
