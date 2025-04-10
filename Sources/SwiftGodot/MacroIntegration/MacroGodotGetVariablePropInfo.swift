@@ -5,6 +5,42 @@
 //  Created by Elijah Semyonov on 10/04/2025.
 //
 
+/// Internal API. Variant.
+@inline(__always)
+@inlinable
+public func _macroGodotGetVariablePropInfo<Root>(
+    at keyPath: KeyPath<Root, Variant>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo {
+    Variant._macroGodotGetVariablePropInfo(
+        name: name,
+        userHint: userHint,
+        userHintStr: userHintStr,
+        userUsage: userUsage
+    )
+}
+
+/// Internal API. Optional Variant.
+@inline(__always)
+@inlinable
+public func _macroGodotGetVariablePropInfo<Root>(
+    at keyPath: KeyPath<Root, Variant?>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo {
+    Variant._macroGodotGetVariablePropInfo(
+        name: name,
+        userHint: userHint,
+        userHintStr: userHintStr,
+        userUsage: userUsage
+    )
+}
+
 /// Internal API. Builtin type.
 @inline(__always)
 @inlinable
@@ -125,7 +161,7 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._macroGodotGetVariablePropInfo(        
+    ObjectCollection<T>._macroGodotGetVariablePropInfo(
         name: name,
         userHint: userHint,
         userHintStr: userHintStr,
