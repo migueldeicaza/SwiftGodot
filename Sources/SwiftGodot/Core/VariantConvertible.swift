@@ -62,7 +62,7 @@ public protocol VariantConvertible {
 ///
 /// ```
 /// public extension CustomGodotBridgeable {
-///     static func _propertyPropInfo(hint: String?) -> PropInfo { GodotCompatibleRepresentation._someLowLevelApi() }
+///     static func _propertyPropInfo(hint: String?) -> PropInfo { GodotCompatibleRepresentation._propertyPropInfo(hint: hint) }
 /// }
 /// ```
 ///
