@@ -18,6 +18,7 @@ final class MacroIntegrationTests: GodotTestCase {
         }
         
         class NoMacroExample {
+            var meshInstance: MeshInstance3D? = nil
             var variant = 1.toVariant()
             var optionalVariant: Variant?
             var garray: GArray = GArray()
@@ -44,6 +45,10 @@ final class MacroIntegrationTests: GodotTestCase {
         
         let enumPropInfo = _macroGodotGetVariablePropInfo(at: \NoMacroExample.enumExample, name: "")
         XCTAssertEqual(enumPropInfo.propertyType, .int)
-        XCTAssertEqual(enumPropInfo.hintStr, GString("zero:0,one:1,two:2"))
+        XCTAssertEqual(enumPropInfo.hintStr, "zero:0,one:1,two:2")
+        
+        let meshInstancePropInfo = _macroGodotGetVariablePropInfo(at: \NoMacroExample.meshInstance, name: "")
+        XCTAssertEqual(meshInstancePropInfo.hint, .nodeType)
+        XCTAssertEqual(meshInstancePropInfo.hintStr, "MeshInstance3D")
     }
 }
