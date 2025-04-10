@@ -262,8 +262,8 @@ class GodotMacroProcessor {
             let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
             let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
-            let setterName = "_mproxy_set_\(varNameWithoutPrefix)"
-            let getterName = "_mproxy_get_\(varNameWithoutPrefix)"
+            let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
+            let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             
             if let accessors = singleVar.accessorBlock {
                 if CodeBlockSyntax (accessors) != nil {
@@ -396,7 +396,7 @@ class GodotMacroProcessor {
         assert(ClassDB.classExists(class: className))\n
     """
         var previousGroupPrefix: String? = nil
-        var previousSubgroupPrefix: String? = nil        
+        var previousSubgroupPrefix: String? = nil
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
             let macroExpansion = MacroExpansionDeclSyntax(decl)
