@@ -19,10 +19,6 @@ class Rigid: RigidBody2D {
     }
 }
 
-func someFunc() -> Node3D {
-    fatalError()
-}
-
 @Godot
 class MultiBindingExample: Node {
 //    @Export var one: String = "one", two: Bool = false, three: Int = 50
