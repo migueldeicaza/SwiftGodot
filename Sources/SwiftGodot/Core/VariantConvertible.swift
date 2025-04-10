@@ -47,7 +47,7 @@ public protocol VariantConvertible {
 /// }
 /// ```
 ///
-/// In future it will alow us to resurface arbitary user types on Godot side via generating `_GodotBridgeable` by introducing `CustomGodotBridgeable` as in:
+/// In future it will alow us to resurface arbitary user types on Godot side via implementing `_GodotBridgeable` requirements as extension of a protocol `CustomGodotBridgeable` intended for users as in:
 /// ```
 /// public protocol CustomGodotBridgeable: _GodotBridgeable {
 ///     associatedtype GodotCompatibleRepresentation: _GodotBridgeable
