@@ -63,7 +63,7 @@ public struct GodotCallable: PeerMacro {
                 """
             } else if ptype.hasSuffix("?"){
                 body += """
-                        let arg\(index): \(ptype) = try arguments.optionlArgument(ofType: \(ptype.dropLast()).self, at: \(index))
+                        let arg\(index): \(ptype) = try arguments.optionalArgument(ofType: \(ptype.dropLast()).self, at: \(index))
                 
                 """
             } else {

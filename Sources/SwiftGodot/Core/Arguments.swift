@@ -156,7 +156,7 @@ public struct Arguments: ~Copyable {
     /// Throws an error if:
     /// - `Variant` is not `nil` but wraps a type other than `T`
     /// - `index` is out of bounds.
-    public func optionlArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
+    public func optionalArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
         let arg = try optionalVariantArgument(at: index)
         
         if let variant = arg {
@@ -170,12 +170,17 @@ public struct Arguments: ~Copyable {
         }
     }
     
+    @available(*, deprecated, renamed: "optionalArgument(ofType:at:)", message: "Fixing typo")
+    public func optionlArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
+        try optionalArgument(ofType: type, at: index)
+    }
+    
     /// Returns `T?` value wrapped in `Variant` argument at `index`.  This method is a preferred overload for `T: Object`.
     ///
     /// Throws an error if:
     /// - `Variant` is not `nil` but wraps a type other than `T`
     /// - `index` is out of bounds.
-    public func optionlArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
+    public func optionalArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
         let arg = try optionalVariantArgument(at: index)
         
         if let variant = arg {
@@ -187,6 +192,11 @@ public struct Arguments: ~Copyable {
         } else {
             return nil
         }
+    }
+    
+    @available(*, deprecated, renamed: "optionalArgument(ofType:at:)", message: "Fixing typo")
+    public func optionlArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
+        try optionalArgument(ofType: type, at: index)
     }
         
     /// Returns `T` value wrapped in `Variant` argument at `index`.
