@@ -65,11 +65,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             class SomeNode: Node {
                 var greetings: VariantCollection<String> = []
 
-                func _mproxy_get_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                     return Variant(greetings.array)
                 }
 
-                func _mproxy_set_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `greetings`, no arguments")
                         return nil
@@ -121,11 +121,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             expandedSource: """
             var greetings: VariantCollection<String> = []
 
-            func _mproxy_get_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                 return Variant(greetings.array)
             }
 
-            func _mproxy_set_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
                 guard let arg = args.first else {
                     GD.printErr("Unable to set `greetings`, no arguments")
                     return nil
@@ -155,11 +155,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             expandedSource: """
             var greetings: VariantCollection<String> = []
             
-            func _mproxy_get_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                 return Variant(greetings.array)
             }
 
-            func _mproxy_set_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
                 guard let arg = args.first else {
                     GD.printErr("Unable to set `greetings`, no arguments")
                     return nil
@@ -190,11 +190,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             into: """
             let greetings: VariantCollection<String> = []
 
-            func _mproxy_get_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                 return Variant(greetings.array)
             }
 
-            func _mproxy_set_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
                 guard let arg = args.first else {
                     GD.printErr("Unable to set `greetings`, no arguments")
                     return nil
@@ -240,7 +240,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             class SomeNode: Node {
                 var someArray: GArray = GArray()
             
-                func _mproxy_set_someArray(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_someArray(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `someArray`, no arguments")
                         return nil
@@ -260,7 +260,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_someArray (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_someArray (args: borrowing Arguments) -> Variant? {
                     return Variant (someArray)
                 }
             
@@ -300,11 +300,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             class SomeNode: Node {
                 var someNumbers: VariantCollection<Int> = []
             
-                func _mproxy_get_someNumbers(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
                     return Variant(someNumbers.array)
                 }
 
-                func _mproxy_set_someNumbers(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `someNumbers`, no arguments")
                         return nil
@@ -361,11 +361,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             class SomeNode: Node {
                 var someNumbers: VariantCollection<Int> = []
 
-                func _mproxy_get_someNumbers(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_someNumbers(args: borrowing Arguments) -> Variant? {
                     return Variant(someNumbers.array)
                 }
 
-                func _mproxy_set_someNumbers(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_someNumbers(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `someNumbers`, no arguments")
                         return nil
@@ -385,11 +385,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                 }
                 var someOtherNumbers: VariantCollection<Int> = []
 
-                func _mproxy_get_someOtherNumbers(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_someOtherNumbers(args: borrowing Arguments) -> Variant? {
                     return Variant(someOtherNumbers.array)
                 }
 
-                func _mproxy_set_someOtherNumbers(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_someOtherNumbers(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `someOtherNumbers`, no arguments")
                         return nil
@@ -459,11 +459,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             class ArrayTest: Node {
                var firstNames: VariantCollection<String> = ["Thelonius"]
 
-               func _mproxy_get_firstNames(args: borrowing Arguments) -> SwiftGodot.Variant? {
+               func _mproxy_get_firstNames(args: borrowing Arguments) -> Variant? {
                    return Variant(firstNames.array)
                }
 
-               func _mproxy_set_firstNames(args: borrowing Arguments) -> SwiftGodot.Variant? {
+               func _mproxy_set_firstNames(args: borrowing Arguments) -> Variant? {
                    guard let arg = args.first else {
                        GD.printErr("Unable to set `firstNames`, no arguments")
                        return nil
@@ -483,11 +483,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
                }
                var lastNames: VariantCollection<String> = ["Monk"]
 
-               func _mproxy_get_lastNames(args: borrowing Arguments) -> SwiftGodot.Variant? {
+               func _mproxy_get_lastNames(args: borrowing Arguments) -> Variant? {
                    return Variant(lastNames.array)
                }
 
-               func _mproxy_set_lastNames(args: borrowing Arguments) -> SwiftGodot.Variant? {
+               func _mproxy_set_lastNames(args: borrowing Arguments) -> Variant? {
                    guard let arg = args.first else {
                        GD.printErr("Unable to set `lastNames`, no arguments")
                        return nil
@@ -549,11 +549,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             into: """
             var greetings: ObjectCollection<Node3D> = []
 
-            func _mproxy_get_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                 return Variant(greetings.array)
             }
 
-            func _mproxy_set_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
                 guard let arg = args.first else {
                     GD.printErr("Unable to set `greetings`, no arguments")
                     return nil
@@ -587,11 +587,11 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             class SomeNode: Node {
                 var greetings: ObjectCollection<Node3D> = []
 
-                func _mproxy_get_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
                     return Variant(greetings.array)
                 }
 
-                func _mproxy_set_greetings(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `greetings`, no arguments")
                         return nil

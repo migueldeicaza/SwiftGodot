@@ -8,6 +8,7 @@
 @_implementationOnly import GDExtension
 
 // If our exported Collections conform to this protocol, then we can use the same Macro code while exporting them
+@usableFromInline
 protocol GArrayCollection: Collection where Element: VariantStorable {
-    var array: GArray { set get }
+    var array: GArray { nonmutating set get }
 }

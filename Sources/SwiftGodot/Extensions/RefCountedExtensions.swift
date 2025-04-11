@@ -14,25 +14,3 @@ public extension RefCounted {
         }
     }
 }
-
-/// Do not call, needed for Macros
-public func _referenceIfRefCounted<T>(_ value: T?) {
-    guard let value else {
-        return
-    }
-    
-    if let refCounted = value as? RefCounted {
-        refCounted.reference()
-    }
-}
-
-/// Do not call, needed for Macros
-public func _unreferenceIfRefCounted<T>(_ value: T?) {
-    guard let value else {
-        return
-    }
-    
-    if let refCounted = value as? RefCounted {
-        refCounted.unreference()
-    }
-}

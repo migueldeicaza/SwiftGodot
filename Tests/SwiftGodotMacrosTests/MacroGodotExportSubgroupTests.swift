@@ -38,7 +38,7 @@ final class MacroGodotExportSubroupTests: MacroGodotTestCase {
             class Car: Node {
                 var vin: String = ""
             
-                func _mproxy_set_vin(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `vin`, no arguments")
                         return nil
@@ -58,12 +58,12 @@ final class MacroGodotExportSubroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_vin (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_vin (args: borrowing Arguments) -> Variant? {
                     return Variant (vin)
                 }
                 var ymms_year: Int = 1998
             
-                func _mproxy_set_ymms_year(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_ymms_year(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `ymms_year`, no arguments")
                         return nil
@@ -83,12 +83,12 @@ final class MacroGodotExportSubroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_ymms_year (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_ymms_year (args: borrowing Arguments) -> Variant? {
                     return Variant (ymms_year)
                 }
                 var ymms_make: String = "Honda"
             
-                func _mproxy_set_ymms_make(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_ymms_make(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `ymms_make`, no arguments")
                         return nil
@@ -108,12 +108,12 @@ final class MacroGodotExportSubroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_ymms_make (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_ymms_make (args: borrowing Arguments) -> Variant? {
                     return Variant (ymms_make)
                 }
                 var ymms_model: String = "Odyssey"
             
-                func _mproxy_set_ymms_model(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_ymms_model(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `ymms_model`, no arguments")
                         return nil
@@ -133,12 +133,12 @@ final class MacroGodotExportSubroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_ymms_model (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_ymms_model (args: borrowing Arguments) -> Variant? {
                     return Variant (ymms_model)
                 }
                 var ymms_series: String = "LX"
             
-                func _mproxy_set_ymms_series(args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_set_ymms_series(args: borrowing Arguments) -> Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `ymms_series`, no arguments")
                         return nil
@@ -158,7 +158,7 @@ final class MacroGodotExportSubroupTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_ymms_series (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                func _mproxy_get_ymms_series (args: borrowing Arguments) -> Variant? {
                     return Variant (ymms_series)
                 }
             

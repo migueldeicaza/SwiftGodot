@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
     static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -74,6 +74,8 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         withUnsafePointer(to: otherContent) { src in
             gi.variant_new_copy(&content, src)
         }
+
+        extensionInterface.variantInited(variant: self, content: &content)
     }
     
     /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
@@ -81,11 +83,14 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         if otherContent == Variant.zero { return nil }
         
         self.content = otherContent
+
+        extensionInterface.variantInited(variant: self, content: &content)
     }
 
     deinit {
         if !extensionInterface.variantShouldDeinit(content: &content) { return }
         gi.variant_destroy (&content)
+        extensionInterface.variantDeinited(variant: self, content: &content)
     }
     
     /// Compares two variants, does this by delegating the comparison to Godot
@@ -108,6 +113,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
                 gi.variant_new_copy(selfPtr, ptr)
             }
         }
+        extensionInterface.variantInited(variant: self, content: &content)
     }
     
     convenience public init(_ value: some VariantStorable) {
@@ -123,6 +129,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
                 Variant.fromTypeMap [Int (godotType.rawValue)] (selfPtr, ptr)
             }
         }
+        extensionInterface.variantInited(variant: self, content: &content)
     }
     
     /// This describes the type of the data wrapped by this variant
@@ -165,7 +172,7 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         guard let value else {
             return nil
         }
-        let ret: T? = lookupObject(nativeHandle: value)
+        let ret: T? = lookupObject(nativeHandle: value, ownsRef: false)
         return ret
     }
     
@@ -185,6 +192,15 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     public enum VariantErrorType: Error {
         case notFound
     }
+    
+
+    public static func fromVariant(_ variant: Variant) -> Variant? {
+        return variant
+    }
+    
+    public func toVariant() -> Variant {
+        return self
+    }
 
     /// Gets the value of a named key from a Variant.
     /// - Parameter key: a Variant representing the key.
@@ -195,9 +211,6 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
 
         gi.variant_get_named(&content, &key.content, &newContent, &valid)
         if valid != 0 {
-            if newContent == Variant.zero {
-                return .success(nil)
-            }
             return .success(Variant(takingOver: newContent))
         } else {
             return .failure(.notFound)
@@ -261,7 +274,17 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         
         return .success(Variant(takingOver: result))
     }
-    
+
+    /// Constructs a new variant of the specified type, with the given array of types
+    public static func construct(type: Variant.GType) -> Result<Variant?,CallErrorType> {
+        var newContent: ContentType = Variant.zero
+        var err = GDExtensionCallError()
+        gi.variant_construct(GDExtensionVariantType(rawValue: UInt32(type.rawValue)), &newContent, nil, 0, &err)
+        if err.error != GDEXTENSION_CALL_OK {
+            return .failure(toCallErrorType(err.error))
+        }
+        return .success(Variant(takingOver: newContent))
+    }
     /// Errors raised by the variant subscript
     ///
     /// There are two possible error conditions, an attempt to use an indexer on a variant that is not
@@ -313,8 +336,26 @@ public class Variant: Hashable, Equatable, CustomDebugStringConvertible {
             gi.variant_set_indexed (&copy_content, Int64(index), &newV, &valid, &oob)
         }
     }
-    
-    
+
+    /// Provides keyed access to the variant using a variant as an index
+    public subscript(index: Variant) -> Variant? {
+        get {
+            var newContent: ContentType = Variant.zero
+            var valid: GDExtensionBool = 0
+
+            gi.variant_get(&content, &index.content, &newContent, &valid)
+            if valid != 0 {
+                return Variant(takingOver: newContent)
+            } else {
+                return nil
+            }
+        }
+        set {
+            var copyValue: Variant.ContentType = newValue.content
+            var valid: GDExtensionBool = 0
+            gi.variant_set(&content, &index.content, &copyValue, &valid)            
+        }
+    }
     /// Gets the name of a Variant type.
     public static func typeName(_ type: GType) -> String {
         let res = GString()

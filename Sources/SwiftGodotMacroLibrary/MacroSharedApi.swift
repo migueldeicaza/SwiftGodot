@@ -60,7 +60,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case requiresFunction
     case requiresGArrayCollection
     case requiresNonOptionalGArrayCollection
-    case noVariablesFound
+    case noVariablesFound    
     case noTypeFound(VariableDeclSyntax)
     case unsupportedType(VariableDeclSyntax)
     case expectedIdentifier(PatternBindingListSyntax.Element)
@@ -248,6 +248,10 @@ func getParamName(_ parameter: FunctionParameterSyntax) -> String {
 
 var godotVariants = [
     "Int": ".int",
+    "Int64": ".int",
+    "Int32": ".int",
+    "Int16": ".int",
+    "Int8": ".int",
     "Float": ".float",
     "Double": ".float",
     "Bool": ".bool",

@@ -9,7 +9,6 @@ import XCTest
 
 @testable import SwiftGodot
 
-
 /// Base class for all test cases that run in the Godot runtime.
 open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
     open override class func setUp() {
@@ -25,36 +24,12 @@ open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
     override open class func tearDown() {
         if GodotRuntime.isRunning {
             // unregister any types that were registered for the tests
-            for subclass in godotSubclasses {
+            for subclass in godotSubclasses.reversed() {
+                releasePendingObjects()
                 unregister(type: subclass)
             }
         }
         super.tearDown()
-    }
-
-    override open func tearDown() async throws {
-        if GodotRuntime.isRunning {
-            // clean up test objects
-            let liveObjects: [Wrapped] = Array(liveFrameworkObjects.values) + Array(liveSubtypedObjects.values)
-            for liveObject in liveObjects {
-                switch liveObject {
-                case let node as Node:
-                    node.queueFree()
-                case let refCounted as RefCounted:
-                    refCounted._exp_unref()
-                case let object as Object:
-                    _ = object.call(method: "free")
-                default:
-                    print("Unable to free \(liveObject)")
-                }
-            }
-            liveFrameworkObjects.removeAll()
-            liveSubtypedObjects.removeAll()
-
-            // waiting for queueFree to take effect
-            let scene = try GodotRuntime.getScene()
-            await scene.processFrame.emitted
-        }
     }
 
     /// List of types that need to be registered in the Godot runtime.

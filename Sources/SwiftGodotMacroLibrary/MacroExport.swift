@@ -12,221 +12,71 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+extension SwiftSyntax.AttributeSyntax {
+    /// @Export(.enum)
+    var hasFirstEnumArgument: Bool {
+        guard let arguments else {
+            return false
+        }
+        
+        switch arguments {
+        case .argumentList(let labeledExprList):
+            guard let firstLabeledExpr = labeledExprList.first else {
+                return false
+            }
+            
+            return firstLabeledExpr.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
+        default:
+            return false
+        }
+    }
+}
+
 public struct GodotExport: PeerMacro {
-    
-    // We are using full qualifier SwiftGodot.Variant to prevent conflicts with user-defined Variant type
-    static func makeGetAccessor (varName: String, isOptional: Bool, isEnum: Bool) -> String {
-        let name = "_mproxy_get_\(varName)"
-        if isEnum {
-            return
-    """
-    func \(name) (args: borrowing Arguments) -> SwiftGodot.Variant? {
-        return Variant (\(varName).rawValue)
-    }
-    """
-
-        }
-        if isOptional {
-            return
-    """
-    func \(name) (args: borrowing Arguments) -> SwiftGodot.Variant? {
-        guard let result = \(varName) else { return nil }
-        return Variant (result)
-    }
-    """
-        } else {
-            return
-    """
-    func \(name) (args: borrowing Arguments) -> SwiftGodot.Variant? {
-        return Variant (\(varName))
-    }
-    """
-        }
+    static func makeGetAccessor(identifier: String) -> String {
+        """
+        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            _macroExportGet(\(identifier))                        
+        }                        
+        """
     }
     
-    static func makeSetAccessor (varName: String, typeName: String, isOptional: Bool, isEnum: Bool) -> String {
-        let name = "_mproxy_set_\(varName)"
-        var body: String = ""
-
-        if isEnum {
-            body = """
-                guard let arg = args.first else {
-                    GD.printErr("Unable to set `\(varName)`, no arguments")
-                    return nil
-                }
-            
-                guard let variant = arg else {
-                    GD.printErr("Unable to set `\(varName)`, argument is nil")
-                    return nil
-                }
-            
-                guard let int = Int(variant) else {
-                    GD.printErr("Unable to set `\(varName)`, argument is not int")
-                    return nil
-                }
-            
-                guard let newValue = \(typeName)(rawValue: \(typeName).RawValue(int)) else {
-                    GD.printErr("Unable to set `\(varName)`, \\(int) is not a valid \(typeName) rawValue")
-                    return nil
-                }
-            
-                self.\(varName) = newValue
-            """
-        } else if typeName == "Variant" {
-            body = "\(varName) = args [0]"
-        } else if godotVariants [typeName] == nil {
-            // Branch for `Object`
-            // TODO: check that no leak happens in deinit for `RefCounted`. Someone has to unreference them?
-            if isOptional {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        _unreferenceIfRefCounted(\(varName))                        
-                        \(varName) = nil
-                        return nil
-                    }
-                
-                    guard let newValue = variant.asObject(\(typeName).self) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                                    
-                    _referenceIfRefCounted(newValue)
-                    _unreferenceIfRefCounted(\(varName))                    
-                
-                    \(varName) = newValue
-                """
-            } else {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        GD.printErr("Unable to set `\(varName)`, argument is nil")
-                        return nil
-                    }
-                    
-                    guard let newValue = variant.asObject(\(typeName).self) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                
-                    _referenceIfRefCounted(newValue)
-                    _unreferenceIfRefCounted(\(varName))  
-                
-                    \(varName) = newValue
-                """
+    static func makeSetAccessor(identifier: String) -> String {
+        """
+        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> SwiftGodot.Variant? {
+            _macroExportSet(args, "\(identifier)", \(identifier)) {
+                \(identifier) = $0
             }
-        } else {
-            if isOptional {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        \(varName) = nil
-                        return nil
-                    }
-                
-                    guard let newValue = \(typeName)(variant) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                
-                    \(varName) = newValue
-                """
-            } else {
-                body = """
-                    guard let arg = args.first else {
-                        GD.printErr("Unable to set `\(varName)`, no arguments")
-                        return nil
-                    }
-                
-                    guard let variant = arg else {
-                        GD.printErr("Unable to set `\(varName)`, argument is nil")
-                        return nil
-                    }
-                    
-                    guard let newValue = \(typeName)(variant) else {
-                        GD.printErr("Unable to set `\(varName)`, argument is not \(typeName)")
-                        return nil
-                    }
-                    
-                    \(varName) = newValue
-                """
-            }
-        }
-                
-        return """
-        func \(name)(args: borrowing Arguments) -> SwiftGodot.Variant? {
-        \(body)    
-            return nil
         }
         """
     }
-
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
-        guard let varDecl = declaration.as(VariableDeclSyntax.self) else {
+        guard let variableDecl = declaration.as(VariableDeclSyntax.self) else {
             let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresVar)
             context.diagnose(classError)
             return []
         }
-        var isOptional = false
-        guard let last = varDecl.bindings.last else {
+        
+        guard !variableDecl.bindings.isEmpty else {
             throw GodotMacroError.noVariablesFound
         }
-        guard var type = last.typeAnnotation?.type else {
-            throw GodotMacroError.noTypeFound(varDecl)
-        }
-        if let optSyntax = type.as (OptionalTypeSyntax.self) {
-            isOptional = true
-            type = optSyntax.wrappedType
-        }
         
-        guard varDecl.isSwiftArray == false else {
-            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresGArrayCollection)
-            context.diagnose(classError)
-            return []
-        }
+        var declarations: [DeclSyntax] = []
         
-        guard type.is(IdentifierTypeSyntax.self) else {
-            throw GodotMacroError.unsupportedType(varDecl)
-        }
-        
-        guard (type.isGArrayCollection && isOptional) == false else {
-            throw GodotMacroError.requiresNonOptionalGArrayCollection
-        }
-        
-        var isEnum = false
-        if case let .argumentList (arguments) = node.arguments, let expression = arguments.first?.expression {
-            isEnum = expression.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
-        }
-        if isEnum && isOptional {
-            throw GodotMacroError.noSupportForOptionalEnums
-            
-        }
-        var results: [DeclSyntax] = []
-        
-        for singleVar in varDecl.bindings {
-            guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
-                throw GodotMacroError.expectedIdentifier(singleVar)
+        for binding in variableDecl.bindings {
+            guard let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
+                throw GodotMacroError.expectedIdentifier(binding)
             }
-            let varName = ips.identifier.text
             
-            if let accessors = last.accessorBlock {
+            let identifier = identifierPattern.identifier.text
+            
+            if let accessors = binding.accessorBlock {
                 if CodeBlockSyntax (accessors) != nil {
                     throw MacroError.propertyGetSet
                 }
-                if let block = AccessorBlockSyntax (accessors) {
+                
+                if let block = AccessorBlockSyntax(accessors) {
                     var hasSet = false
                     var hasGet = false
                     switch block.accessors {
@@ -259,48 +109,10 @@ public struct GodotExport: PeerMacro {
                 }
             }
             
-            if let elementTypeName = varDecl.gArrayCollectionElementTypeName {
-                results.append (DeclSyntax(stringLiteral: makeGArrayCollectionGetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
-                results.append (DeclSyntax(stringLiteral: makeGArrayCollectionSetProxyAccessor(varName: varName, elementTypeName: elementTypeName)))
-            } else if let typeName = type.as(IdentifierTypeSyntax.self)?.name.text {
-                results.append (DeclSyntax(stringLiteral: makeSetAccessor(varName: varName, typeName: typeName, isOptional: isOptional, isEnum: isEnum)))
-                results.append (DeclSyntax(stringLiteral: makeGetAccessor(varName: varName, isOptional: isOptional, isEnum: isEnum)))
-            }
+            declarations.append(DeclSyntax(stringLiteral: makeSetAccessor(identifier: identifier)))
+            declarations.append(DeclSyntax(stringLiteral: makeGetAccessor(identifier: identifier)))
         }
         
-        return results
-    }
-}
-
-private extension GodotExport {
-    private static func makeGArrayCollectionGetProxyAccessor(varName: String, elementTypeName: String) -> String {
-        """
-        func _mproxy_get_\(varName)(args: borrowing Arguments) -> SwiftGodot.Variant? {
-            return Variant(\(varName).array)
-        }
-        """
-    }
-    
-    private static func makeGArrayCollectionSetProxyAccessor(varName: String, elementTypeName: String) -> String {
-        """
-        func _mproxy_set_\(varName)(args: borrowing Arguments) -> SwiftGodot.Variant? {
-            guard let arg = args.first else {
-                GD.printErr("Unable to set `\(varName)`, no arguments")
-                return nil
-            }
-        
-            guard let variant = arg else {
-                GD.printErr("Unable to set `\(varName)`, argument is `nil`")
-                return nil
-            }
-            guard let gArray = GArray(variant),
-                  gArray.isTyped(),
-                  gArray.isSameTyped(array: GArray(\(elementTypeName).self)) else {
-                return nil
-            }
-            \(varName).array = gArray
-            return nil
-        }
-        """
+        return declarations
     }
 }

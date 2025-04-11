@@ -183,6 +183,10 @@ var targets: [Target] = [
                 "SwiftGodot",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ],
+            exclude: ["Resources"],
+            resources: [
+                .copy("Resources")
+            ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ))
 #endif

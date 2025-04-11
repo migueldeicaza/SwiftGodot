@@ -588,9 +588,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
-        
-        
-        var conformances: [String] = []
+                
+        var conformances: [String] = ["_GodotBridgeable"]
         if kind == .isStruct {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
@@ -813,6 +812,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             generateBuiltinMethods(p, bc, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
             generateBuiltinOperators (p, bc, typeName: typeName)
             generateBuiltinConstants (p, bc, typeName: typeName)
+                        
+            p("/// Wrap ``\(typeName)`` into a ``Variant``")
+            p("public func toVariant() -> Variant") {
+                p("Variant(self)")
+            }
+            
+            p("/// Attempt to unwrap ``\(typeName)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
+            p("public static func fromVariant(_ variant: Variant) -> Self?") {
+                p("Self(variant)")
+            }
             
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {
