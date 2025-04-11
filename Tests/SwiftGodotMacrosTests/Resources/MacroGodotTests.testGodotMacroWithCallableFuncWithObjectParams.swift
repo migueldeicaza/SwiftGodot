@@ -99,39 +99,39 @@ class Castro: Node {
             function: Castro._mproxy_deleteEpisode
         )
         classInfo.registerMethod(
-                name: StringName("subscribe"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
-                arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
-                function: Castro._mproxy_subscribe
-            )
+            name: StringName("subscribe"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+            arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
+            function: Castro._mproxy_subscribe
+        )
         classInfo.registerMethod(
-                name: StringName("perhapsSubscribe"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
-                arguments: [_macroGodotGetCallablePropInfo(Podcast?.self, name: "podcast")],
-                function: Castro._mproxy_perhapsSubscribe
-            )
+            name: StringName("perhapsSubscribe"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+            arguments: [_macroGodotGetCallablePropInfo(Podcast?.self, name: "podcast")],
+            function: Castro._mproxy_perhapsSubscribe
+        )
         classInfo.registerMethod(
-                name: StringName("removeSilences"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
-                arguments: [_macroGodotGetCallablePropInfo(Variant.self, name: "from")],
-                function: Castro._mproxy_removeSilences
-            )
+            name: StringName("removeSilences"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+            arguments: [_macroGodotGetCallablePropInfo(Variant.self, name: "from")],
+            function: Castro._mproxy_removeSilences
+        )
         classInfo.registerMethod(
-                name: StringName("getLatestEpisode"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Episode.self),
-                arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
-                function: Castro._mproxy_getLatestEpisode
-            )
+            name: StringName("getLatestEpisode"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Episode.self),
+            arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
+            function: Castro._mproxy_getLatestEpisode
+        )
         classInfo.registerMethod(
-                name: StringName("queue"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
-                arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast"), _macroGodotGetCallablePropInfo(Podcast.self, name: "preceedingPodcast")],
-                function: Castro._mproxy_queue
-            )
+            name: StringName("queue"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+            arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast"), _macroGodotGetCallablePropInfo(Podcast.self, name: "preceedingPodcast")],
+            function: Castro._mproxy_queue
+        )
     } ()
 }
