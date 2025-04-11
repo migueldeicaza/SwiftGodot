@@ -58,13 +58,13 @@ public class SignalWithArguments<each T: VariantStorable> {
             do {
                 callback(repeat try args.unwrap(ofType: (each T).self, index: &index))
             } catch {
-                print("Error unpacking signal arguments: \(error)")
+                GD.printErr("Error unpacking signal arguments: \(error)")
             }
         }
 
         let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
         let r = target.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
-        if r != .ok { print("Warning, error connecting to signal, code: \(r)") }
+        if r != .ok { GD.printErr("Warning, error connecting to signal, code: \(r)") }
         return signalProxy
     }
 
