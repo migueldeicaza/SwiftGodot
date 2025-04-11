@@ -52,7 +52,7 @@ public protocol VariantConvertible {
 /// public protocol CustomGodotBridgeable: _GodotBridgeable {
 ///     associatedtype GodotCompatibleRepresentation: _GodotBridgeable
 ///
-///     func to(_ type: GodotCompatibleRepresentation.Type) -> GodotCompatibleRepresentation
+///     func to(_ type: GodotCompatibleRepresentation) -> GodotCompatibleRepresentation
 ///     static func from(_ godotCompatibleInstance: GodotCompatibleRepresentation) -> Self?
 ///
 /// }
