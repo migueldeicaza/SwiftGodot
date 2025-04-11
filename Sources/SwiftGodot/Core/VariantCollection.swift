@@ -362,7 +362,7 @@ public extension VariantCollection where Element: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used as an `@Exported` variable
     @inlinable
     @inline(__always)
-    static func _macroGodotGetVariablePropInfo(        
+    static func _macroGodotGetPropInfo(        
         name: String,
         userHint: PropertyHint?,
         userHintStr: String?,
@@ -371,9 +371,9 @@ public extension VariantCollection where Element: _GodotBridgeableBuiltin {
         PropInfo(
             propertyType: .array,
             propertyName: StringName(name),
-            className: StringName("Array[\(Element._macroGodotGetVariablePropInfoArrayType)]"),
+            className: StringName("Array[\(Element._macroGodotGetPropInfoArrayType)]"),
             hint: userHint ?? .arrayType,
-            hintStr: GString(userHintStr ?? "\(Element._macroGodotGetVariablePropInfoArrayType)"),
+            hintStr: GString(userHintStr ?? "\(Element._macroGodotGetPropInfoArrayType)"),
             usage: userUsage ?? .default
         )
     }

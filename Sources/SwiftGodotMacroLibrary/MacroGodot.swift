@@ -333,7 +333,7 @@ class GodotMacroProcessor {
             injectClassInfo()
             ctor.append("""
             classInfo.registerPropertyWithGetterSetter(
-                SwiftGodot._macroGodotGetVariablePropInfo(
+                SwiftGodot._macroGodotGetPropInfo(
             \(argsStr)
                 ),
                 getterName: "\(getterName)\",

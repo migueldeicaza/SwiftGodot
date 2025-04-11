@@ -842,18 +842,18 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used as an `@Exported` variable
             @inline(__always)
             @inlinable
-            public static func _macroGodotGetVariablePropInfo(                
+            public static func _macroGodotGetPropInfo(                
                 name: String,
-                userHint: PropertyHint?,
-                userHintStr: String?,
-                userUsage: PropertyUsageFlags?
+                hint: PropertyHint?,
+                hintStr: String?,
+                usage: PropertyUsageFlags?
             ) -> PropInfo {
-                _macroGodotGetVariablePropInfoSimple(
+                _macroGodotGetPropInfoDefault(
                     propertyType: \(propInfoPropertyType),
                     name: name,
-                    userHint: userHint,
-                    userHintStr: userHintStr,
-                    userUsage: userUsage
+                    hint: hint,
+                    hintStr: hintStr,
+                    usage: usage
                 )
             }
             """)
@@ -862,7 +862,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             /// Internal API. For indicating that Godot `Array` of ``\(typeName)`` has type `Array[\(bc.name)]`
             @inline(__always)
             @inlinable
-            public static var _macroGodotGetVariablePropInfoArrayType: String { "\(bc.name)" }
+            public static var _macroGodotGetPropInfoArrayType: String { "\(bc.name)" }
             """)
             
             // Generate the synthetic `end` property

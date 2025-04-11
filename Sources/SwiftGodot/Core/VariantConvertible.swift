@@ -23,15 +23,15 @@ public protocol _GodotBridgeable: VariantConvertible, _ArgumentConvertible {
 /// Internal API. Subset protocol for all Builtin Types.
 public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     /// Internal API. Return PropInfo when this class is used as an @Exported property.
-    static func _macroGodotGetVariablePropInfo(
+    static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo
     
     /// Internal API. Returns Godot type name for typed array.
-    static var _macroGodotGetVariablePropInfoArrayType: String { get }
+    static var _macroGodotGetPropInfoArrayType: String { get }
 }
 
 /// Internal API. Subset protocol for all Object-derived types.
@@ -44,19 +44,19 @@ public extension _GodotBridgeableObject where Self: Object {
     /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    static func _macroGodotGetVariablePropInfo(
+    static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
-        return _macroGodotGetVariablePropInfoSimple(
+        return _macroGodotGetPropInfoDefault(
             propertyType: .object,
             name: name,
             className: StringName("\(Self.self)"),
-            userHint: userHint,
-            userHintStr: userHintStr,
-            userUsage: userUsage
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
         )
     }
 }
@@ -67,30 +67,30 @@ public extension Optional where Wrapped: VariantConvertible {
     }
 }
 
-// Simple common case for most of the bridged types
+// Default case covering most of the cases, only propertyType is needed
 @inline(__always)
 @inlinable
-func _macroGodotGetVariablePropInfoSimple(
+func _macroGodotGetPropInfoDefault(
     propertyType: Variant.GType,
     name: String,
     className: StringName? = nil,
-    userHint: PropertyHint?,
-    userHintStr: String?,
-    userUsage: PropertyUsageFlags?
+    hint: PropertyHint?,
+    hintStr: String?,
+    usage: PropertyUsageFlags?
 ) -> PropInfo {
     return PropInfo(
         propertyType: propertyType,
         propertyName: StringName(name),
         className: className ?? "",
-        hint: userHint ?? .none,
-        hintStr: userHintStr.map { GString($0) } ?? GString(),
-        usage: userUsage ?? .default
+        hint: hint ?? .none,
+        hintStr: hintStr.map { GString($0) } ?? GString(),
+        usage: usage ?? .default
     )
 }
 
 extension Int64: _GodotBridgeableBuiltin {
-    // _macroGodotGetVariablePropInfo is implemented below for all `BinaryInteger`
-    // _macroGodotGetVariablePropInfoArrayType is implemented below for all `BinaryInteger`
+    // _macroGodotGetPropInfo is implemented below for all `BinaryInteger`
+    // _macroGodotGetPropInfoArrayType is implemented below for all `BinaryInteger`
     
     /// Wrap a ``Int64``  into ``Variant``.
     public func toVariant() -> Variant {
@@ -108,25 +108,25 @@ public extension BinaryInteger {
     /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    static func _macroGodotGetVariablePropInfo(
+    static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetVariablePropInfoSimple(
+        _macroGodotGetPropInfoDefault(
             propertyType: .int,
             name: name,
-            userHint: userHint,
-            userHintStr: userHintStr,
-            userUsage: userUsage
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
         )
     }
     
     /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
     @inline(__always)
     @inlinable
-    static var _macroGodotGetVariablePropInfoArrayType: String { "int" }
+    static var _macroGodotGetPropInfoArrayType: String { "int" }
     
     /// Wrap an integer number  into ``Variant``.
     func toVariant() -> Variant {
@@ -155,25 +155,25 @@ extension Bool: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetVariablePropInfo(
+    public static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetVariablePropInfoSimple(
+        _macroGodotGetPropInfoDefault(
             propertyType: .bool,
             name: name,
-            userHint: userHint,
-            userHintStr: userHintStr,
-            userUsage: userUsage
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
         )
     }
     
     /// Internal API. For indicating that Godot` Array` of ``Bool`` has type `Array[bool]`
     @inline(__always)
     @inlinable
-    public static var _macroGodotGetVariablePropInfoArrayType: String { "bool" }
+    public static var _macroGodotGetPropInfoArrayType: String { "bool" }
     
     /// Wrap a ``Bool``  into ``Variant``.
     public func toVariant() -> Variant {
@@ -191,25 +191,25 @@ extension String: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``String`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetVariablePropInfo(
+    public static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetVariablePropInfoSimple(
+        _macroGodotGetPropInfoDefault(
             propertyType: .string,
             name: name,
-            userHint: userHint,
-            userHintStr: userHintStr,
-            userUsage: userUsage
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
         )
     }
     
     /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
     @inline(__always)
     @inlinable
-    public static var _macroGodotGetVariablePropInfoArrayType: String { "String" }
+    public static var _macroGodotGetPropInfoArrayType: String { "String" }
     
     /// Wrap a ``String``  into ``Variant``.
     public func toVariant() -> Variant {
@@ -224,8 +224,8 @@ extension String: _GodotBridgeableBuiltin {
 }
 
 extension Double: _GodotBridgeableBuiltin {
-    // _macroGodotGetVariablePropInfo is implemented below for all `BinaryFloatingPoint`
-    // _macroGodotGetVariablePropInfoArrayType is implemented below for all `BinaryFloatingPoint`
+    // _macroGodotGetPropInfo is implemented below for all `BinaryFloatingPoint`
+    // _macroGodotGetPropInfoArrayType is implemented below for all `BinaryFloatingPoint`
     
     /// Wrap a ``Double``  into ``Variant``.
     public func toVariant() -> Variant {
@@ -243,25 +243,25 @@ public extension BinaryFloatingPoint {
     /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    static func _macroGodotGetVariablePropInfo(
+    static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetVariablePropInfoSimple(
+        _macroGodotGetPropInfoDefault(
             propertyType: .float,
             name: name,
-            userHint: userHint,
-            userHintStr: userHintStr,
-            userUsage: userUsage
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
         )
     }
     
     /// Internal API. For indicating that Godot` Array` of ``BinaryFloatingPoint`` has type `Array[float]`
     @inline(__always)
     @inlinable
-    static var _macroGodotGetVariablePropInfoArrayType: String { "float" }
+    static var _macroGodotGetPropInfoArrayType: String { "float" }
     
     /// Wrap a floating point number into ``Variant``.
     func toVariant() -> Variant {

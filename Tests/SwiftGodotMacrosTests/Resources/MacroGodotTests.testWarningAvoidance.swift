@@ -34,7 +34,7 @@ final class MyClass: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MyClass> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \MyClass.data,
                 name: "data",
                 userHint: nil,

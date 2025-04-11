@@ -38,7 +38,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \SomeNode.demo,
                 name: "demo",
                 userHint: .enum,
@@ -51,7 +51,7 @@ class SomeNode: Node {
             setterFunction: SomeNode._mproxy_set_demo
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \SomeNode.demo64,
                 name: "demo64",
                 userHint: .enum,
