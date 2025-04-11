@@ -159,6 +159,35 @@ public struct Arguments: ~Copyable {
         return variant
     }
     
+    /// Returns `[T]` value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` wraps a type other than `Array`
+    /// - Any element of underlying Godot Array couldn't be converted to `T`
+    /// - `index` is out of bounds.
+    ///
+    public func argument<T>(ofType type: T.Type = T.self, at index: Int) throws -> [T] where T: _ArgumentConvertible {
+        let arg = try argument(ofType: Variant?.self, at: index)
+        
+        guard let variant = arg else {
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
+        }
+        
+        guard let array = GArray(variant) else {
+            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
+        }
+        
+        var result: [T] = []
+        result.reserveCapacity(array.count)
+        for element in array {
+            result.append(
+                try T.fromArgumentVariant(element)
+            )
+        }
+        return result
+    }
+    
     /// Returns `Variant` or `nil` argument at  `index`.
     ///
     /// Throws an error if `index` is out of bounds.
@@ -254,10 +283,10 @@ public struct Arguments: ~Copyable {
         try optionalArgument(ofType: type, at: index)
     }
     
-    /// Returns `T` value wrapped in `Variant` argument at `index`.
+    /// Returns `T` value wrapped in `Variant?` argument at `index`.
     ///
     /// Throws an error if:
-    /// - `Variant` contains a type other than `T`
+    /// - `Variant?` contains a type from which `T` cannot be unwrapped
     /// - `index` is out of bounds.
     public func argument<T: _ArgumentConvertible>(ofType type: T.Type = T.self, at index: Int) throws -> T {
         return try T.fromArgumentVariant(
@@ -341,6 +370,8 @@ public struct Arguments: ~Copyable {
     /// - `Variant` wraps a type other than `Int`
     /// - `index` is out of bounds.
     /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
     public func arrayArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
         let arg = try argument(ofType: Variant?.self, at: index)
         
@@ -375,6 +406,8 @@ public struct Arguments: ~Copyable {
     /// - `Variant` wraps a type other than `Int`
     /// - `index` is out of bounds.
     /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
+    @_disfavoredOverload
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
     public func arrayArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
         let arg = try argument(ofType: Variant?.self, at: index)
         
