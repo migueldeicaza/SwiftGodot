@@ -122,7 +122,7 @@ class Castro: Node {
         classInfo.registerMethod(
                 name: StringName("getLatestEpisode"),
                 flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Episode .self),
+                returnValue: _macroGodotGetCallablePropInfo(Episode.self),
                 arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
                 function: Castro._mproxy_getLatestEpisode
             )

@@ -29,14 +29,14 @@ class CallableCollectionsNode: Node {
         classInfo.registerMethod(
             name: StringName("get_ages"),
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Array<Int> .self),
+            returnValue: _macroGodotGetCallablePropInfo(Array<Int>.self),
             arguments: [],
             function: CallableCollectionsNode._mproxy_get_ages
         )
         classInfo.registerMethod(
                 name: StringName("get_markers"),
                 flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Array<Marker3D> .self),
+                returnValue: _macroGodotGetCallablePropInfo(Array<Marker3D>.self),
                 arguments: [],
                 function: CallableCollectionsNode._mproxy_get_markers
             )

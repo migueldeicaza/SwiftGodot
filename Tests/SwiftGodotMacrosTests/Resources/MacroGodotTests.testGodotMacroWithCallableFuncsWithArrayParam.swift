@@ -30,7 +30,7 @@ class MultiplierNode: Node {
         classInfo.registerMethod(
             name: StringName("multiply"),
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Int .self),
+            returnValue: _macroGodotGetCallablePropInfo(Int.self),
             arguments: [_macroGodotGetCallablePropInfo([Int].self, name: "integers")],
             function: MultiplierNode._mproxy_multiply
         )

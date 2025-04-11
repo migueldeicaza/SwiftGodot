@@ -1,5 +1,6 @@
 
 class DebugThing: SwiftGodot.Object {
+    @Signal var livesChanged: SignalWithArguments<Swift.Int>
     func do_thing(value: SwiftGodot.Variant?) -> SwiftGodot.Variant? {
         return nil
     }
@@ -27,12 +28,13 @@ class DebugThing: SwiftGodot.Object {
         let className = StringName("DebugThing")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<DebugThing> (name: className)
+        SignalWithArguments<Swift.Int>.register("lives_changed", info: classInfo)
         classInfo.registerMethod(
-            name: StringName("do_thing"),
-            flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(SwiftGodot.Variant? .self),
-            arguments: [_macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self, name: "value")],
-            function: DebugThing._mproxy_do_thing
-        )
+                name: StringName("do_thing"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self),
+                arguments: [_macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self, name: "value")],
+                function: DebugThing._mproxy_do_thing
+            )
     } ()
 }
