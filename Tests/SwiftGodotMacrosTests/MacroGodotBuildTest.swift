@@ -181,3 +181,10 @@ class SomeNode: Node {
         nodes.forEach { print($0?.name ?? "") }
     }
 }
+
+class DebugThing: SwiftGodot.Object {
+    @Callable
+    func do_thing(value: Swift.Int) -> SwiftGodot.Variant? {
+        return nil
+    }
+}

@@ -26,12 +26,13 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
-        let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
-        let squareArgs = [
-            prop_1,
-        ]
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod(name: StringName("square"), flags: .default, returnValue: prop_0, arguments: squareArgs, function: SomeNode._mproxy_square)
+        classInfo.registerMethod(
+            name: StringName("square"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int> .self),
+            arguments: [_macroGodotGetCallablePropInfo(VariantCollection<Int>.self, name: "integers")],
+            function: SomeNode._mproxy_square
+        )
     } ()
 }

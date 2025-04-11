@@ -146,9 +146,9 @@ public func _macroGodotGetPropInfo<Root, T>(
 ) -> PropInfo where T: VariantStorable, T: _GodotBridgeableBuiltin {
     VariantCollection<T>._macroGodotGetPropInfo(
         name: name,
-        userHint: userHint,
-        userHintStr: userHintStr,
-        userUsage: userUsage
+        hint: userHint,
+        hintStr: userHintStr,
+        usage: userUsage
     )
 }
 
@@ -164,9 +164,9 @@ public func _macroGodotGetPropInfo<Root, T>(
 ) -> PropInfo where T: Object {
     ObjectCollection<T>._macroGodotGetPropInfo(
         name: name,
-        userHint: userHint,
-        userHintStr: userHintStr,
-        userUsage: userUsage
+        hint: userHint,
+        hintStr: userHintStr,
+        usage: userUsage
     )
 }
 

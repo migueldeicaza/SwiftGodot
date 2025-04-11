@@ -26,12 +26,13 @@ private class TestNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("TestNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .nil, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .nilIsVariant)
-        let prop_1 = PropInfo (propertyType: .nil, propertyName: "variant", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let fooArgs = [
-            prop_1,
-        ]
         let classInfo = ClassInfo<TestNode> (name: className)
-        classInfo.registerMethod(name: StringName("foo"), flags: .default, returnValue: prop_0, arguments: fooArgs, function: TestNode._mproxy_foo)
+        classInfo.registerMethod(
+            name: StringName("foo"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Variant? .self),
+            arguments: [_macroGodotGetCallablePropInfo(Variant?.self, name: "variant")],
+            function: TestNode._mproxy_foo
+        )
     } ()
 }

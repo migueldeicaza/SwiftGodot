@@ -401,17 +401,17 @@ public final class ObjectCollection<Element: Object>: Collection, ExpressibleByA
     @inlinable
     public static func _macroGodotGetPropInfo(        
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
         PropInfo(
             propertyType: .array,
             propertyName: StringName(name),
             className: StringName("Array[\(Element.self)]"),
-            hint: userHint ?? .arrayType,
-            hintStr: GString(userHintStr ?? "\(Element.self)"),
-            usage: userUsage ?? .default
+            hint: hint ?? .arrayType,
+            hintStr: GString(hintStr ?? "\(Element.self)"),
+            usage: usage ?? .default
         )
     }
 }

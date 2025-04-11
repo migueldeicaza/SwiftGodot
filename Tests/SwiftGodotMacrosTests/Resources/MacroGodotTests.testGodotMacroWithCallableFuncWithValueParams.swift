@@ -56,30 +56,27 @@ class MathHelper: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MathHelper")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_1 = PropInfo (propertyType: .int, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_2 = PropInfo (propertyType: .int, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let multiplyArgs = [
-            prop_1,
-            prop_2,
-        ]
         let classInfo = ClassInfo<MathHelper> (name: className)
-        classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MathHelper._mproxy_multiply)
-        let prop_3 = PropInfo (propertyType: .float, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_4 = PropInfo (propertyType: .float, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_5 = PropInfo (propertyType: .float, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let divideArgs = [
-            prop_4,
-            prop_5,
-        ]
-        classInfo.registerMethod(name: StringName("divide"), flags: .default, returnValue: prop_3, arguments: divideArgs, function: MathHelper._mproxy_divide)
-        let prop_6 = PropInfo (propertyType: .bool, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_7 = PropInfo (propertyType: .bool, propertyName: "a", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_8 = PropInfo (propertyType: .bool, propertyName: "b", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let areBothTrueArgs = [
-            prop_7,
-            prop_8,
-        ]
-        classInfo.registerMethod(name: StringName("areBothTrue"), flags: .default, returnValue: prop_6, arguments: areBothTrueArgs, function: MathHelper._mproxy_areBothTrue)
+        classInfo.registerMethod(
+            name: StringName("multiply"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Int .self),
+            arguments: [_macroGodotGetCallablePropInfo(Int.self, name: "a"), _macroGodotGetCallablePropInfo(Int.self, name: "b")],
+            function: MathHelper._mproxy_multiply
+        )
+        classInfo.registerMethod(
+                name: StringName("divide"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Float .self),
+                arguments: [_macroGodotGetCallablePropInfo(Float.self, name: "a"), _macroGodotGetCallablePropInfo(Float.self, name: "b")],
+                function: MathHelper._mproxy_divide
+            )
+        classInfo.registerMethod(
+                name: StringName("areBothTrue"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Bool .self),
+                arguments: [_macroGodotGetCallablePropInfo(Bool.self, name: "a"), _macroGodotGetCallablePropInfo(Bool.self, name: "b")],
+                function: MathHelper._mproxy_areBothTrue
+            )
     } ()
 }

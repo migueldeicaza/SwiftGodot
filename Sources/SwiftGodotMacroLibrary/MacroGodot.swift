@@ -188,37 +188,37 @@ class GodotMacroProcessor {
             return
         }
         let funcName = funcDecl.name.text
-        var funcArgs = ""
-        var retProp: String? = nil
-        if let (retType, generics, _) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = lookupPropReturn(
-                parameterTypeName: retType,
-                genericParameterTypeNames: generics,
-                parameterName: ""
-            )
-        }
-
-        for parameter in funcDecl.signature.parameterClause.parameters {
-            guard let ptype = getTypeName(parameter) else {
-                throw MacroError.typeName (parameter)
+        
+        var arguments = funcDecl
+            .signature
+            .parameterClause
+            .parameters
+            .map { parameter in
+                let typename = parameter.type.description
+                let name = getParamName(parameter)
+                return "_macroGodotGetCallablePropInfo(\(typename).self, name: \"\(name)\")"
             }
-            let pname = getParamName(parameter)
-            let propInfo = lookupPropParam(
-                parameterTypeName: ptype,
-                parameterElementTypeName: parameter.arrayElementTypeName ?? parameter.variantCollectionElementTypeName ?? parameter.objectCollectionElementTypeName,
-                parameterName: pname
-            )
-            if funcArgs == "" {
-                funcArgs = "    let \(funcName)Args = [\n"
-            }
-            funcArgs.append ("        \(propInfo),\n")
+            .joined(separator: ", ")
+        
+        arguments = "[\(arguments)]"
+        let returnTypename: String
+        if let type = funcDecl.signature.returnClause?.type {
+            returnTypename = type.description
+        } else {
+            returnTypename = "Swift.Void"
         }
-        if funcArgs != "" {
-            funcArgs.append ("    ]\n")
-        }
-        ctor.append (funcArgs)
+                
+                
         injectClassInfo()
-        ctor.append ("    classInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
+        ctor.append ("""
+            classInfo.registerMethod(
+                name: StringName("\(funcName)"), 
+                flags: .default, 
+                returnValue: _macroGodotGetCallablePropInfo(\(returnTypename).self), 
+                arguments: \(arguments), 
+                function: \(className)._mproxy_\(funcName)
+            )
+        """)
     }
       
 

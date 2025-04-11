@@ -91,31 +91,47 @@ class Castro: Node {
         let className = StringName("Castro")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Castro> (name: className)
-        classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
-        let prop_0 = PropInfo (propertyType: .object, propertyName: "podcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
-        let subscribeArgs = [
-            prop_0,
-        ]
-        classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
-        let perhapsSubscribeArgs = [
-            prop_0,
-        ]
-        classInfo.registerMethod(name: StringName("perhapsSubscribe"), flags: .default, returnValue: nil, arguments: perhapsSubscribeArgs, function: Castro._mproxy_perhapsSubscribe)
-        let prop_1 = PropInfo (propertyType: .nil, propertyName: "from", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let removeSilencesArgs = [
-            prop_1,
-        ]
-        classInfo.registerMethod(name: StringName("removeSilences"), flags: .default, returnValue: nil, arguments: removeSilencesArgs, function: Castro._mproxy_removeSilences)
-        let prop_2 = PropInfo (propertyType: .object, propertyName: "", className: StringName("Episode"), hint: .none, hintStr: "", usage: .default)
-        let getLatestEpisodeArgs = [
-            prop_0,
-        ]
-        classInfo.registerMethod(name: StringName("getLatestEpisode"), flags: .default, returnValue: prop_2, arguments: getLatestEpisodeArgs, function: Castro._mproxy_getLatestEpisode)
-        let prop_3 = PropInfo (propertyType: .object, propertyName: "preceedingPodcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
-        let queueArgs = [
-            prop_0,
-            prop_3,
-        ]
-        classInfo.registerMethod(name: StringName("queue"), flags: .default, returnValue: nil, arguments: queueArgs, function: Castro._mproxy_queue)
+        classInfo.registerMethod(
+            name: StringName("deleteEpisode"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+            arguments: [],
+            function: Castro._mproxy_deleteEpisode
+        )
+        classInfo.registerMethod(
+                name: StringName("subscribe"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+                arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
+                function: Castro._mproxy_subscribe
+            )
+        classInfo.registerMethod(
+                name: StringName("perhapsSubscribe"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+                arguments: [_macroGodotGetCallablePropInfo(Podcast?.self, name: "podcast")],
+                function: Castro._mproxy_perhapsSubscribe
+            )
+        classInfo.registerMethod(
+                name: StringName("removeSilences"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+                arguments: [_macroGodotGetCallablePropInfo(Variant.self, name: "from")],
+                function: Castro._mproxy_removeSilences
+            )
+        classInfo.registerMethod(
+                name: StringName("getLatestEpisode"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Episode .self),
+                arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast")],
+                function: Castro._mproxy_getLatestEpisode
+            )
+        classInfo.registerMethod(
+                name: StringName("queue"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+                arguments: [_macroGodotGetCallablePropInfo(Podcast.self, name: "podcast"), _macroGodotGetCallablePropInfo(Podcast.self, name: "preceedingPodcast")],
+                function: Castro._mproxy_queue
+            )
     } ()
 }

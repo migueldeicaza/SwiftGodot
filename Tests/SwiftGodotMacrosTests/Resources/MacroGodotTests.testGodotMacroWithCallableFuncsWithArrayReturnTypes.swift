@@ -25,10 +25,20 @@ class CallableCollectionsNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("CallableCollectionsNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-        classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
-        let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .default)
-        classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
+        classInfo.registerMethod(
+            name: StringName("get_ages"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo([Int] .self),
+            arguments: [],
+            function: CallableCollectionsNode._mproxy_get_ages
+        )
+        classInfo.registerMethod(
+                name: StringName("get_markers"),
+                flags: .default,
+                returnValue: _macroGodotGetCallablePropInfo([Marker3D] .self),
+                arguments: [],
+                function: CallableCollectionsNode._mproxy_get_markers
+            )
     } ()
 }

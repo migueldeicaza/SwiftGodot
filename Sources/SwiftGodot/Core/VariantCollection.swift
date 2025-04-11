@@ -364,17 +364,17 @@ public extension VariantCollection where Element: _GodotBridgeableBuiltin {
     @inline(__always)
     static func _macroGodotGetPropInfo(        
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
         PropInfo(
             propertyType: .array,
             propertyName: StringName(name),
             className: StringName("Array[\(Element._macroGodotGetPropInfoArrayType)]"),
-            hint: userHint ?? .arrayType,
-            hintStr: GString(userHintStr ?? "\(Element._macroGodotGetPropInfoArrayType)"),
-            usage: userUsage ?? .default
+            hint: hint ?? .arrayType,
+            hintStr: GString(hintStr ?? "\(Element._macroGodotGetPropInfoArrayType)"),
+            usage: usage ?? .default
         )
     }
 }

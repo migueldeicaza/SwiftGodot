@@ -143,6 +143,10 @@ func hasCallableAttribute (_ attrs: AttributeListSyntax?) -> Bool {
     hasAttribute ("Callable", attrs)
 }
 
+func lala(_ param: some Codable) {
+    
+}
+
 func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
     guard !parameter.isVariantCollection,
           !parameter.isSwiftArray,
