@@ -244,6 +244,10 @@ public struct PropInfo: CustomDebugStringConvertible {
         self.hintStr = hintStr
         self.usage = usage
     }
+    
+    // TODO: violates invariant
+    /// ``withUnsafeMutablePointer`` doc says:
+    /// Do not store or return the pointer for later use.
     func makeNativeStruct () -> GDExtensionPropertyInfo {
         withUnsafeMutablePointer(to: &propertyName.content) { propertyNamePtr in
             withUnsafeMutablePointer(to: &className.content) { classNamePtr in
