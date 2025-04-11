@@ -11,7 +11,7 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// Use the ``emit(...)`` method to emit a signal.
 /// You can also await the ``emitted`` property for waiting for a single emission of the signal.
 ///
-public class SignalWithArguments<each T: VariantStorable> {
+public class SignalWithArguments<each T: _ArgumentConvertible> {
     var target: Object
     var signalName: StringName
     public init(target: Object, signalName: String) {
@@ -56,7 +56,12 @@ public class SignalWithArguments<each T: VariantStorable> {
         signalProxy.proxy = { args in
             var index = 0
             do {
-                callback(repeat try args.unwrap(ofType: (each T).self, index: &index))
+                callback(
+                    repeat try args.unwrapArgument(
+                        ofType: (each T).self,
+                        incrementingIndex: &index
+                    )
+                )
             } catch {
                 GD.printErr("Error unpacking signal arguments: \(error)")
             }
@@ -91,7 +96,7 @@ public class SignalWithArguments<each T: VariantStorable> {
         let args = GArray()
         args.append(Variant(signalName))
         for arg in repeat each t {
-            args.append(Variant(arg))
+            args.append(arg.toVariant())
         }
         let result = target.callv(method: "emit_signal", argArray: args)
         guard let result else { return .ok }
@@ -124,39 +129,14 @@ extension Arguments {
         /// The argument was nil.
         case nilArgument
     }
-
-    /// Unpack an argument as a specific type.
-    /// We throw a runtime error if the argument is not of the expected type,
-    /// or if there are not enough arguments to unpack.
-    func unwrap<T: VariantStorable>(ofType type: T.Type, index: inout Int) throws -> T {
-        let argument = try optionalVariantArgument(at: index)
-        index += 1
-
-        // if the argument was nil, throw error
-        guard let argument else {
-            throw UnpackError.nilArgument
+    
+    func unwrapArgument<T>(ofType type: T.Type, incrementingIndex index: inout Int) throws -> T where T: _ArgumentConvertible {
+        defer {
+            index += 1
         }
-
-        // NOTE:
-        // Ideally we could just call T.unpack(from: argument) here.
-        // Unfortunately, T.unpack is dispatched statically, but we don't
-        // have the full dynamic type information for T when we're compiling.
-        // The only thing we know about type T is that it conforms to VariantStorable.
-        // We don't know if inherits from Object, so the compiler will always pick the
-        // default non-object implementation of T.unpack.
-
-        // try to unpack the variant as the expected type
-        let value: T?
-        if (argument.gtype == .object) && (T.Representable.godotType == .object) {
-            value = argument.asObject(Object.self) as? T
-        } else {
-            value = T(argument)
-        }
-
-        guard let value else {
-            throw UnpackError.typeMismatch
-        }
-
-        return value
+        
+        return try T.fromArgumentVariant(
+            try argument(ofType: Variant?.self, at: index)
+        )
     }
 }

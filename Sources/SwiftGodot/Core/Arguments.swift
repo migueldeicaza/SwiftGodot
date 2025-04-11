@@ -262,7 +262,7 @@ public struct Arguments: ~Copyable {
     /// - `Variant` contains a type other than `T`
     /// - `index` is out of bounds.
     public func argument<T: _ArgumentConvertible>(ofType type: T.Type = T.self, at index: Int) throws -> T {
-        return try T.fromOptionalVariantOrThrow(
+        return try T.fromArgumentVariant(
             try argument(at: index)
         )
     }
@@ -493,12 +493,14 @@ public extension Array where Element == Variant? {
 /// 3. Godot has `Object`-derived  types types. They can be either `nil` or not when used as argument.
 public protocol _ArgumentConvertible {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed
-    static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self
+    static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self
+    
+    func toArgumentVariant() -> Variant?
 }
 
 public extension _GodotBridgeableBuiltin {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
-    static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+    static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
             throw ArgumentConversionError.unexpectedNil
         }
@@ -508,6 +510,10 @@ public extension _GodotBridgeableBuiltin {
         }
         
         return value
+    }
+    
+    public func toArgumentVariant() -> Variant? {
+        toVariant()
     }
 }
 
@@ -519,7 +525,7 @@ public protocol _OptionalGodotBridgeable: VariantConvertible {
 
 extension Object: _ArgumentConvertible, _OptionalGodotBridgeable {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
-    public static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
             throw ArgumentConversionError.unexpectedNil
         }
@@ -530,10 +536,14 @@ extension Object: _ArgumentConvertible, _OptionalGodotBridgeable {
         
         return value
     }
+    
+    public func toArgumentVariant() -> Variant? {
+        toVariant()
+    }
 }
 
 extension Variant: _ArgumentConvertible, _OptionalGodotBridgeable {
-    public static func fromOptionalVariantOrThrow(
+    public static func fromArgumentVariant(
         _ variantOrNil: Variant?
     ) throws(ArgumentConversionError) -> Variant {
         if let variant = variantOrNil {
@@ -542,11 +552,15 @@ extension Variant: _ArgumentConvertible, _OptionalGodotBridgeable {
             throw ArgumentConversionError.unexpectedNil
         }
     }
+    
+    public func toArgumentVariant() -> Variant? {
+        self
+    }
 }
 
 extension Optional: _ArgumentConvertible where Wrapped: _OptionalGodotBridgeable {
     /// Unwrap `Object?` or `Variant?` from `variant`. If it's `nil` - return `nil`. If it's not `nil`, and unwrapping failed, throw a error.
-    public static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         if let variant = variantOrNil {
             guard let value = Wrapped.fromVariant(variant) else {
                 throw ArgumentConversionError.other
@@ -556,5 +570,9 @@ extension Optional: _ArgumentConvertible where Wrapped: _OptionalGodotBridgeable
         } else {
             return nil // Expected
         }
+    }
+    
+    public func toArgumentVariant() -> Variant? {
+        map { $0.toVariant() }
     }
 }
