@@ -6,7 +6,7 @@ class SomeNode: Node {
 
     func _mproxy_printNames(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: ObjectCollection<Node> = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
+            let arg0 = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
             return SwiftGodot._macroCallableToVariant(printNames(of: arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {

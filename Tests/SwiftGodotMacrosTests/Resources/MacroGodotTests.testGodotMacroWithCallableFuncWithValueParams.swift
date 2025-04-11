@@ -3,8 +3,8 @@ class MathHelper: Node {
 
     func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Int = try arguments.argument(ofType: Int.self, at: 0)
-            let arg1: Int = try arguments.argument(ofType: Int.self, at: 1)
+            let arg0 = try arguments.argument(ofType: Int.self, at: 0)
+            let arg1 = try arguments.argument(ofType: Int.self, at: 1)
             return SwiftGodot._macroCallableToVariant(multiply(arg0, by: arg1))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
@@ -19,8 +19,8 @@ class MathHelper: Node {
 
     func _mproxy_divide(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Float = try arguments.argument(ofType: Float.self, at: 0)
-            let arg1: Float = try arguments.argument(ofType: Float.self, at: 1)
+            let arg0 = try arguments.argument(ofType: Float.self, at: 0)
+            let arg1 = try arguments.argument(ofType: Float.self, at: 1)
             return SwiftGodot._macroCallableToVariant(divide(arg0, by: arg1))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
@@ -35,8 +35,8 @@ class MathHelper: Node {
 
     func _mproxy_areBothTrue(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Bool = try arguments.argument(ofType: Bool.self, at: 0)
-            let arg1: Bool = try arguments.argument(ofType: Bool.self, at: 1)
+            let arg0 = try arguments.argument(ofType: Bool.self, at: 0)
+            let arg1 = try arguments.argument(ofType: Bool.self, at: 1)
             return SwiftGodot._macroCallableToVariant(areBothTrue(arg0, and: arg1))
 
         } catch let error as SwiftGodot.ArgumentAccessError {

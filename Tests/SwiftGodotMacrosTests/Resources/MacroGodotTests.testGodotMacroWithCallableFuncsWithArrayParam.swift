@@ -6,7 +6,7 @@ class MultiplierNode: Node {
 
     func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: [Int] = try arguments.argument(ofType: [Int].self, at: 0)
+            let arg0 = try arguments.argument(ofType: [Int].self, at: 0)
             return SwiftGodot._macroCallableToVariant(multiply(arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {

@@ -6,7 +6,7 @@ class SomeNode: Node {
 
     func _mproxy_square(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: VariantCollection<Int> = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
+            let arg0 = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
             return SwiftGodot._macroCallableToVariant(square(arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
