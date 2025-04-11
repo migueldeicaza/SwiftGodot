@@ -124,7 +124,7 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inline(__always)
 @inlinable
 public func _macroGodotGetCallablePropInfo(
-    _ type: Void.Type = Void.self,
+    _ type: Void.Type = Void.self
     // no name: String arg for source compatibility with macro
 ) -> PropInfo? {
     return nil
