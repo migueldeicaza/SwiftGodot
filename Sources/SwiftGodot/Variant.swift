@@ -152,18 +152,18 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetVariablePropInfo(
+    public static func _macroGodotGetPropInfo(
         name: String,
-        userHint: PropertyHint?,
-        userHintStr: String?,
-        userUsage: PropertyUsageFlags?
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetVariablePropInfoSimple(
+        _macroGodotGetPropInfoDefault(
             propertyType: .nil, // Godot treats .nil as Godot Variant
             name: name,
-            userHint: userHint,
-            userHintStr: userHintStr,
-            userUsage: userUsage
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
         )
     }
     

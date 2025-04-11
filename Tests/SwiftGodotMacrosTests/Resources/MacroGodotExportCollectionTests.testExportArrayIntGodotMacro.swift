@@ -22,7 +22,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \SomeNode.someNumbers,
                 name: "some_numbers",
                 userHint: nil,

@@ -33,7 +33,7 @@ class ArrayTest: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<ArrayTest> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \ArrayTest.firstNames,
                 name: "first_names",
                 userHint: nil,
@@ -46,7 +46,7 @@ class ArrayTest: Node {
             setterFunction: ArrayTest._mproxy_set_firstNames
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \ArrayTest.lastNames,
                 name: "last_names",
                 userHint: nil,

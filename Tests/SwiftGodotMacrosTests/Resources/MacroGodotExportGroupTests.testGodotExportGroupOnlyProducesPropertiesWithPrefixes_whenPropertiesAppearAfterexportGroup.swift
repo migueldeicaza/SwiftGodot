@@ -33,7 +33,7 @@ class Car: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \Car.vin,
                 name: "vin",
                 userHint: nil,
@@ -47,7 +47,7 @@ class Car: Node {
         )
         classInfo.addPropertyGroup(name: "YMMS", prefix: "")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \Car.year,
                 name: "year",
                 userHint: nil,

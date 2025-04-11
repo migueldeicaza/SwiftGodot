@@ -34,7 +34,7 @@ public class Issue353: Node {
         let classInfo = ClassInfo<Issue353> (name: className)
         classInfo.addPropertyGroup(name: "Group With a Prefix", prefix: "prefix1")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \Issue353.prefix1_prefixed_bool,
                 name: "prefix1_prefixed_bool",
                 userHint: nil,
@@ -47,7 +47,7 @@ public class Issue353: Node {
             setterFunction: Issue353._mproxy_set_prefix1_prefixed_bool
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \Issue353.non_prefixed_bool,
                 name: "non_prefixed_bool",
                 userHint: nil,

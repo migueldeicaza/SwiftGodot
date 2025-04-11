@@ -33,21 +33,21 @@ final class MacroIntegrationTests: GodotTestCase {
             var enumExample = EnumExample.two
         }
         
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.optionalVariant, name: "").propertyType, .nil)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.garray, name: "").propertyType, .array)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.object, name: "").propertyType, .object)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.lala, name: "").propertyType, .int)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.someNode, name: "").propertyType, .object)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.wop, name: "").propertyType, .nil)
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
-        XCTAssertEqual(_macroGodotGetVariablePropInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.optionalVariant, name: "").propertyType, .nil)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.garray, name: "").propertyType, .array)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.object, name: "").propertyType, .object)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.lala, name: "").propertyType, .int)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.someNode, name: "").propertyType, .object)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.wop, name: "").propertyType, .nil)
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
+        XCTAssertEqual(_macroGodotGetPropInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
         
-        let enumPropInfo = _macroGodotGetVariablePropInfo(at: \NoMacroExample.enumExample, name: "")
+        let enumPropInfo = _macroGodotGetPropInfo(at: \NoMacroExample.enumExample, name: "")
         XCTAssertEqual(enumPropInfo.propertyType, .int)
         XCTAssertEqual(enumPropInfo.hintStr, "zero:0,one:1,two:2")
         
-        let meshInstancePropInfo = _macroGodotGetVariablePropInfo(at: \NoMacroExample.meshInstance, name: "")
+        let meshInstancePropInfo = _macroGodotGetPropInfo(at: \NoMacroExample.meshInstance, name: "")
         XCTAssertEqual(meshInstancePropInfo.hint, .nodeType)
         XCTAssertEqual(meshInstancePropInfo.hintStr, "MeshInstance3D")
     }

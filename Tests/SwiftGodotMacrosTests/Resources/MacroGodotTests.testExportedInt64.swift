@@ -29,7 +29,7 @@ class Thing: SwiftGodot.Object {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Thing> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetVariablePropInfo(
+            SwiftGodot._macroGodotGetPropInfo(
                 at: \Thing.value,
                 name: "value",
                 userHint: nil,
