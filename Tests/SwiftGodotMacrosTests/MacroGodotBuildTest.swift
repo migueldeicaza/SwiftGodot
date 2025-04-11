@@ -190,4 +190,9 @@ class DebugThing: SwiftGodot.Object {
     func do_thing(value: Swift.Int) -> SwiftGodot.Variant? {
         return nil
     }
+    
+    @Callable
+    func explicitVoid(value: Swift.Int) -> Void {
+        return
+    }    
 }

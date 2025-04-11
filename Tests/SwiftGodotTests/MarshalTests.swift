@@ -5,6 +5,13 @@ import SwiftGodotTestability
 @Godot
 private class TestNode: Node {
     @Callable
+    func double(_ ints: [Int]) -> [Double] {
+        return ints.map {
+            Double($0) * 2.0
+        }
+    }
+    
+    @Callable
     func foo(_ callable: Callable, a: Int, b: Int) -> Int {
         guard let variant = callable.call(Variant(a), Variant(b)) else {
             return -1
@@ -100,6 +107,27 @@ final class MarshalTests: GodotTestCase {
         }), a: 11, b: 6)
         
         XCTAssertTrue(result == 66)
+    }
+    
+    func testSwiftArrays() {
+        let testNode = TestNode()
+        let array = GArray(Int.self)
+        array.append(Variant(20))
+        array.append(Variant(40))
+        
+        guard let variant = testNode.call(method: "double", array.toVariant()) else {
+            XCTFail()
+            return
+        }
+        
+        guard let collection = VariantCollection<Double>(variant) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(collection[0], 40.0)
+        XCTAssertEqual(collection[1], 80.0)
+        
     }
     
     func testCallableMethodReturningVariant() {
