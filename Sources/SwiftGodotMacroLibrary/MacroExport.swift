@@ -12,26 +12,6 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-extension SwiftSyntax.AttributeSyntax {
-    /// @Export(.enum)
-    var hasFirstEnumArgument: Bool {
-        guard let arguments else {
-            return false
-        }
-        
-        switch arguments {
-        case .argumentList(let labeledExprList):
-            guard let firstLabeledExpr = labeledExprList.first else {
-                return false
-            }
-            
-            return firstLabeledExpr.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
-        default:
-            return false
-        }
-    }
-}
-
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
