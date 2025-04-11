@@ -50,7 +50,7 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
-) -> PropInfo where T: _GodotBridgeable {
+) -> PropInfo where T: _GodotBridgeableBuiltin {
     T._macroGodotGetVariablePropInfo(
         name: name,
         userHint: userHint,
@@ -68,7 +68,7 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
-) -> PropInfo where T: _GodotBridgeable {
+) -> PropInfo where T: _GodotBridgeableBuiltin {
     Variant._macroGodotGetVariablePropInfo(
         name: name,
         userHint: userHint,
@@ -142,7 +142,7 @@ public func _macroGodotGetVariablePropInfo<Root, T>(
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
-) -> PropInfo where T: VariantStorable, T: _GodotBridgeable {
+) -> PropInfo where T: VariantStorable, T: _GodotBridgeableBuiltin {
     VariantCollection<T>._macroGodotGetVariablePropInfo(
         name: name,
         userHint: userHint,

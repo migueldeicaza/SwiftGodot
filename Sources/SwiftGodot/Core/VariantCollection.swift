@@ -358,7 +358,7 @@ public class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, 
     }
 }
 
-public extension VariantCollection where Element: _GodotBridgeable {
+public extension VariantCollection where Element: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used as an `@Exported` variable
     @inlinable
     @inline(__always)

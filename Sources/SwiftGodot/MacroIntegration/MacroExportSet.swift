@@ -54,7 +54,7 @@ public func _macroExportSet<T>(
     _ name: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? where T: _GodotBridgeable {
+) -> Variant? where T: _GodotBridgeableBuiltin {
     guard let variantOrNil = arguments.first else {
         GD.printErr("Unable to set `\(name)`, no arguments")
         return nil
@@ -82,7 +82,7 @@ public func _macroExportSet<T>(
     _ name: StaticString,
     _ old: T?,
     _ set: (T?) -> Void
-) -> Variant? where T: _GodotBridgeable {
+) -> Variant? where T: _GodotBridgeableBuiltin {
     guard let variantOrNil = arguments.first else {
         GD.printErr("Unable to set `\(name)`, no arguments")
         return nil

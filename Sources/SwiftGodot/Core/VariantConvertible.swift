@@ -16,6 +16,10 @@ public protocol VariantConvertible {
 }
 
 /// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
+public protocol _GodotBridgeable: VariantConvertible, _ArgumentsUnwrappable {
+}
+
+/// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
 ///
 /// ### Rationale
 ///
@@ -93,7 +97,7 @@ public protocol VariantConvertible {
 ///
 /// ```
 ///
-public protocol _GodotBridgeable: VariantConvertible {
+public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     /// Internal API. Return PropInfo when this class is used as an @Exported property.
     static func _macroGodotGetVariablePropInfo(
         name: String,
@@ -109,7 +113,7 @@ public protocol _GodotBridgeable: VariantConvertible {
 /// Internal API.
 /// This is a special case due to Swift type system not allowing default implementation using `Self` for non-final classes.
 /// It's needed to allow statically dispatching macro functions in the context of `Object` and its subclasses.
-public protocol _GodotBridgeableObject: VariantConvertible {
+public protocol _GodotBridgeableObject: _GodotBridgeable {
 }
 
 public extension _GodotBridgeableObject where Self: Object {
@@ -160,7 +164,7 @@ func _macroGodotGetVariablePropInfoSimple(
     )
 }
 
-extension Int64: _GodotBridgeable {
+extension Int64: _GodotBridgeableBuiltin {
     // _macroGodotGetVariablePropInfo is implemented below for all `BinaryInteger`
     // _macroGodotGetVariablePropInfoArrayType is implemented below for all `BinaryInteger`
     
@@ -223,7 +227,7 @@ public extension BinaryInteger {
     }
 }
 
-extension Bool: _GodotBridgeable {
+extension Bool: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
@@ -259,7 +263,7 @@ extension Bool: _GodotBridgeable {
     }
 }
 
-extension String: _GodotBridgeable {
+extension String: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``String`` is used as an `@Exported` variable
     @inline(__always)
     @inlinable
@@ -295,7 +299,7 @@ extension String: _GodotBridgeable {
     }
 }
 
-extension Double: _GodotBridgeable {
+extension Double: _GodotBridgeableBuiltin {
     // _macroGodotGetVariablePropInfo is implemented below for all `BinaryFloatingPoint`
     // _macroGodotGetVariablePropInfoArrayType is implemented below for all `BinaryFloatingPoint`
     
@@ -346,18 +350,18 @@ public extension BinaryFloatingPoint {
     }
 }
 
-extension Int: _GodotBridgeable {}
-extension Int32: _GodotBridgeable {}
-extension Int16: _GodotBridgeable {}
-extension Int8: _GodotBridgeable {}
+extension Int: _GodotBridgeableBuiltin {}
+extension Int32: _GodotBridgeableBuiltin {}
+extension Int16: _GodotBridgeableBuiltin {}
+extension Int8: _GodotBridgeableBuiltin {}
 
-extension UInt: _GodotBridgeable {}
-extension UInt64: _GodotBridgeable {}
-extension UInt32: _GodotBridgeable {}
-extension UInt16: _GodotBridgeable {}
-extension UInt8: _GodotBridgeable {}
+extension UInt: _GodotBridgeableBuiltin {}
+extension UInt64: _GodotBridgeableBuiltin {}
+extension UInt32: _GodotBridgeableBuiltin {}
+extension UInt16: _GodotBridgeableBuiltin {}
+extension UInt8: _GodotBridgeableBuiltin {}
     
-extension Float: _GodotBridgeable {}
+extension Float: _GodotBridgeableBuiltin {}
 
 public extension RawRepresentable where RawValue: BinaryInteger {
     func toVariant() -> Variant {
