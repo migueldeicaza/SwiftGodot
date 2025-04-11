@@ -289,4 +289,18 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
+    
+    func testDebugThing() {
+        assertExpansion(
+            of: """
+            @Godot
+            class DebugThing: SwiftGodot.Object {
+                @Callable
+                func do_thing(value: SwiftGodot.Variant?) -> SwiftGodot.Variant? {
+                    return nil
+                }
+            }
+            """
+        )
+    }
 }
