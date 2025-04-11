@@ -46,59 +46,10 @@ public struct GodotCallable: PeerMacro {
         
         let callArgs = callArgsList.joined(separator: ", ")
         
-        var retProp: String? = nil
-        var isReturnedTypeOptional: Bool = false
-        
-        if let (returnedTypeName, _, ro) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = godotTypeToProp (typeName: returnedTypeName)
-            isReturnedTypeOptional = ro
-        }
-        
-        if funcDecl.isReturnedTypeGArrayCollection {
-            retProp = ".array"
-        }
-        
-        let resultDeclOrNothing: String
-        
-        if retProp == nil {
-            resultDeclOrNothing = ""
-        } else {
-            resultDeclOrNothing = "let result = "
-        }
-        
         body += """
-        \(indentation)    \(resultDeclOrNothing)\(funcName)(\(callArgs))
+        \(indentation)    return SwiftGodot._macroCallableToVariant(\(funcName)(\(callArgs)))
         
         """
-        
-        if retProp != nil {
-            if isReturnedTypeOptional {
-                body += """
-                \(indentation)    guard let result else { return nil }
-                
-                """
-            }
-            
-            if funcDecl.isReturnedTypeSwiftArray, let elementType = funcDecl.returnedSwiftArrayElementType {
-                body += """
-                \(indentation)    return SwiftGodot.Variant(
-                \(indentation)        result.reduce(into: SwiftGodot.GArray(\(elementType).self)) { array, element in
-                \(indentation)            array.append(SwiftGodot.Variant(element))
-                \(indentation)        }
-                \(indentation)    )
-                
-                """
-            } else {
-                body += """
-                \(indentation)    return SwiftGodot.Variant(result)  
-                  
-                """
-            }
-        } else {
-            body += """
-            \(indentation)    return nil                
-            """
-        }
         
         if parameters.isEmpty {
             return """

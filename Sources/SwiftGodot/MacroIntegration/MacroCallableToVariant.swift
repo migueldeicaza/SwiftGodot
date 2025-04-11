@@ -19,6 +19,13 @@ public func _macroCallableToVariant<T>(_ value: T?) -> Variant? where T: _GodotB
     value.toVariant()
 }
 
+/// Internal API. Variant or Variant?
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant(_ value: Variant?) -> Variant? {
+    return value
+}
+
 /// Internal API. Swift Array.
 @inline(__always)
 @inlinable
