@@ -84,65 +84,6 @@ class GodotMacroProcessor {
         propertyDeclarations [key] = name
         return name
     }
-
-    func lookupPropReturn (parameterTypeName: String, genericParameterTypeNames: [String], parameterName: String) -> String {
-        let key = PropertyDeclarationKey(
-            typeName: parameterTypeName,
-            genericParameterNames: genericParameterTypeNames,
-            parameterName: parameterName
-        )
-        if let v = propertyDeclarations [key] {
-            return v
-        }
-        
-        let propType: String
-        let className: String
-        let hintStr: String
-        
-        if let gArrayCollectionElementTypeName = genericParameterTypeNames.first {
-            let godotArrayElementTypeName: String
-            if let gType = godotVariants[gArrayCollectionElementTypeName], let fromGType = godotArrayElementType(gType: gType) {
-                godotArrayElementTypeName = fromGType
-            } else {
-                godotArrayElementTypeName = gArrayCollectionElementTypeName
-            }
-            
-            propType = godotTypeToProp (typeName: "GArray")
-            className = "Array[\(godotArrayElementTypeName)]"
-            hintStr = godotArrayElementTypeName
-        } else {
-            propType = godotTypeToProp (typeName: parameterTypeName)
-            
-            if propType == ".object" {
-                className = parameterTypeName
-            } else {
-                className = ""
-            }
-            hintStr = ""
-        }
-        
-        let name = "prop_\(propertyDeclarations.count)"
-        
-        let hint: String
-        if propType == ".array" && hintStr != "" {
-            hint = ".arrayType"
-        } else {
-            hint = ".none"
-        }
-        
-        let usage: String
-        if propType == ".nil" {
-            usage = ".nilIsVariant"
-        } else {
-            usage = ".default"
-        }
-        
-        // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
-        // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: \(usage))\n")
-        propertyDeclarations [key] = name
-        return name
-    }
     
     
     func classInitSignals(_ declSyntax: MacroExpansionDeclSyntax) throws {
