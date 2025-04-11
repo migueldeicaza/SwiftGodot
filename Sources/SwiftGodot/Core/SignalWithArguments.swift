@@ -96,7 +96,7 @@ public class SignalWithArguments<each T: _ArgumentConvertible> {
         let args = GArray()
         args.append(Variant(signalName))
         for arg in repeat each t {
-            args.append(arg.toVariant())
+            args.append(arg.toArgumentVariant())
         }
         let result = target.callv(method: "emit_signal", argArray: args)
         guard let result else { return .ok }
