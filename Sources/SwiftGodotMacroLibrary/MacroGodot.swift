@@ -40,51 +40,6 @@ class GodotMacroProcessor {
         className = classDecl.name.text
     }
     
-    func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
-        let key = PropertyDeclarationKey(
-            typeName: parameterTypeName.hasSuffix("?") ? String(parameterTypeName.dropLast()) : parameterTypeName,
-            parameterElementTypeName: parameterElementTypeName,
-            parameterName: parameterName
-        )
-        if let v = propertyDeclarations [key] {
-            return v
-        }
-        let propType = godotTypeToProp (typeName: parameterTypeName)
-        
-        let name = "prop_\(propertyDeclarations.count)"
-        
-        let className: String
-        let hintStr: String
-        let hint = propType == ".array" ? ".arrayType" : ".none"
-        
-        if propType == ".array",
-           let parameterElementTypeName {
-            let godotArrayElementTypeName: String
-            
-            if let gType = godotVariants[parameterElementTypeName],
-               let fromGType = godotArrayElementType(gType: gType) {
-                godotArrayElementTypeName = fromGType
-            } else {
-                godotArrayElementTypeName = parameterElementTypeName
-            }
-            
-            className = "Array[\(godotArrayElementTypeName)]"
-            hintStr = godotArrayElementTypeName
-        } else if propType == ".object" {
-            className = parameterTypeName
-            hintStr = ""
-        } else {
-            className = ""
-            hintStr = ""
-        }
-        
-        // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
-        // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
-        propertyDeclarations [key] = name
-        return name
-    }
-    
     
     func classInitSignals(_ declSyntax: MacroExpansionDeclSyntax) throws {
         guard declSyntax.macroName.tokenKind == .identifier("signal") else {
