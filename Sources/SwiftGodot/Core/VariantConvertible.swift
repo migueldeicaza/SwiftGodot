@@ -5,21 +5,18 @@
 //  Created by Elijah Semyonov on 08/04/2025.
 //
 
-/// Protocol for types that can be converted  from ``Variant``.
-public protocol FromVariantConvertible {
-    /// Extract ``Self`` from a ``Variant``. Returns `nil` if it's not possible. E.g. another type is stored in the `variant`
-    static func fromVariant(_ variant: Variant) -> Self?
-}
-
 /// Protocol for types that can be converted to and from ``Variant``.
 /// NOTE: this type is planned to supersede ``VariantStorable`` in the future.
-public protocol VariantConvertible: FromVariantConvertible {
+public protocol VariantConvertible {
+    /// Extract ``Self`` from a ``Variant``. Returns `nil` if it's not possible. E.g. another type is stored in the `variant`
+    static func fromVariant(_ variant: Variant) -> Self?
+    
     /// Converts the instance to a ``Variant``.
     func toVariant() -> Variant
 }
 
 /// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
-public protocol _GodotBridgeable: VariantConvertible, _ArgumentsUnwrappable {
+public protocol _GodotBridgeable: VariantConvertible, _ArgumentConvertible {
 }
 
 /// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
