@@ -34,11 +34,11 @@ class CallableCollectionsNode: Node {
             function: CallableCollectionsNode._mproxy_get_ages
         )
         classInfo.registerMethod(
-                name: StringName("get_markers"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo([Marker3D].self),
-                arguments: [],
-                function: CallableCollectionsNode._mproxy_get_markers
-            )
+            name: StringName("get_markers"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo([Marker3D].self),
+            arguments: [],
+            function: CallableCollectionsNode._mproxy_get_markers
+        )
     } ()
 }

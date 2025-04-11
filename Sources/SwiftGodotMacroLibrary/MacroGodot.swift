@@ -106,7 +106,7 @@ class GodotMacroProcessor {
                 
                 
         injectClassInfo()
-        ctor.append ("""
+        ctor.append("""
             classInfo.registerMethod(
                 name: StringName("\(funcName)"), 
                 flags: .default, 
@@ -114,7 +114,7 @@ class GodotMacroProcessor {
                 arguments: \(arguments), 
                 function: \(className)._mproxy_\(funcName)
             )
-        """)
+            """)
     }
       
 

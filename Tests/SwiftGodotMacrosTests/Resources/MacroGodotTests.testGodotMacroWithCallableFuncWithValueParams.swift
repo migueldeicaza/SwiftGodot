@@ -65,18 +65,18 @@ class MathHelper: Node {
             function: MathHelper._mproxy_multiply
         )
         classInfo.registerMethod(
-                name: StringName("divide"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Float.self),
-                arguments: [_macroGodotGetCallablePropInfo(Float.self, name: "a"), _macroGodotGetCallablePropInfo(Float.self, name: "b")],
-                function: MathHelper._mproxy_divide
-            )
+            name: StringName("divide"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Float.self),
+            arguments: [_macroGodotGetCallablePropInfo(Float.self, name: "a"), _macroGodotGetCallablePropInfo(Float.self, name: "b")],
+            function: MathHelper._mproxy_divide
+        )
         classInfo.registerMethod(
-                name: StringName("areBothTrue"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Bool.self),
-                arguments: [_macroGodotGetCallablePropInfo(Bool.self, name: "a"), _macroGodotGetCallablePropInfo(Bool.self, name: "b")],
-                function: MathHelper._mproxy_areBothTrue
-            )
+            name: StringName("areBothTrue"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Bool.self),
+            arguments: [_macroGodotGetCallablePropInfo(Bool.self, name: "a"), _macroGodotGetCallablePropInfo(Bool.self, name: "b")],
+            function: MathHelper._mproxy_areBothTrue
+        )
     } ()
 }

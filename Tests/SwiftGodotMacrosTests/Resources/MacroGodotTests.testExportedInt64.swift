@@ -42,11 +42,11 @@ class Thing: SwiftGodot.Object {
             setterFunction: Thing._mproxy_set_value
         )
         classInfo.registerMethod(
-                name: StringName("get_some"),
-                flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Int64.self),
-                arguments: [],
-                function: Thing._mproxy_get_some
-            )
+            name: StringName("get_some"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Int64.self),
+            arguments: [],
+            function: Thing._mproxy_get_some
+        )
     } ()
 }
