@@ -19,6 +19,11 @@ public enum ArgumentAccessError: Error, CustomStringConvertible {
     }
 }
 
+public enum ArgumentUnwrappingFailure: Error {
+    case unexpectedNil
+    case other
+}
+
 /// A lightweight non-copyable storage for arguments marshalled to implementations where a sequence of `Variant`s is expected.
 /// If you need a copy of `Variant`s inside, you can construct an array using `Array.init(_ args: borrowing Arguments)`
 /// Elements can be accessed using subscript operator.
@@ -118,6 +123,51 @@ public struct Arguments: ~Copyable {
     /// Throws an error if `index` is out of bounds.
     /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
     /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    public func argument(ofType: Variant?.Type = Variant?.self, at index: Int) throws -> Variant? {
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                return array[index]
+            } else {
+                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
+            }
+        case .unsafeGodotArgs(let unsafeGodotArgs):
+            return try unsafeGodotArgs.argument(at: index)
+        }
+    }
+    
+    /// Returns `Variant`  argument at  `index`.
+    ///
+    /// Throws an error if `index` is out of bounds or argument is `nil`
+    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    public func argument(ofType: Variant.Type = Variant.self, at index: Int) throws -> Variant {
+        let variantOrNil: Variant?
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                variantOrNil = array[index]
+            } else {
+                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
+            }
+        case .unsafeGodotArgs(let unsafeGodotArgs):
+            variantOrNil = try unsafeGodotArgs.argument(at: index)
+        }
+        
+        guard let variant = variantOrNil else {
+            throw ArgumentAccessError.mismatchingType(expected: "non-nil Variant", actual: "nil")
+        }
+        
+        return variant
+    }
+    
+    /// Returns `Variant` or `nil` argument at  `index`.
+    ///
+    /// Throws an error if `index` is out of bounds.
+    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
+    @_disfavoredOverload
     public func optionalVariantArgument(at index: Int) throws -> Variant? {
         switch contents {
         case .array(let array):
@@ -131,6 +181,8 @@ public struct Arguments: ~Copyable {
         }
     }
     
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
+    @_disfavoredOverload
     public func variantArgument(at index: Int) throws -> Variant {
         let variant: Variant?
         switch contents {
@@ -156,6 +208,8 @@ public struct Arguments: ~Copyable {
     /// Throws an error if:
     /// - `Variant` is not `nil` but wraps a type other than `T`
     /// - `index` is out of bounds.
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
+    @_disfavoredOverload
     public func optionalArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
         let arg = try optionalVariantArgument(at: index)
         
@@ -171,6 +225,7 @@ public struct Arguments: ~Copyable {
     }
     
     @available(*, deprecated, renamed: "optionalArgument(ofType:at:)", message: "Fixing typo")
+    @_disfavoredOverload
     public func optionlArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
         try optionalArgument(ofType: type, at: index)
     }
@@ -180,6 +235,8 @@ public struct Arguments: ~Copyable {
     /// Throws an error if:
     /// - `Variant` is not `nil` but wraps a type other than `T`
     /// - `index` is out of bounds.
+    @available(*, deprecated, message: "Old compatibility API")
+    @_disfavoredOverload
     public func optionalArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
         let arg = try optionalVariantArgument(at: index)
         
@@ -198,6 +255,19 @@ public struct Arguments: ~Copyable {
     public func optionlArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
         try optionalArgument(ofType: type, at: index)
     }
+    
+    /// Returns `T` value wrapped in `Variant` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant` is `nil`
+    /// - `Variant` contains a type other than `T`
+    /// - `index` is out of bounds.
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
+    public func argument<T: _ArgumentsUnwrappable>(ofType type: T.Type = T.self, at index: Int) throws -> T {
+        let variantOrNil = try optionalVariantArgument(at: index)
+        
+        return try T.fromOptionalVariantOrThrow(variantOrNil)
+    }
         
     /// Returns `T` value wrapped in `Variant` argument at `index`.
     ///
@@ -205,6 +275,8 @@ public struct Arguments: ~Copyable {
     /// - `Variant` is `nil`
     /// - `Variant` contains a type other than `T`
     /// - `index` is out of bounds.
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
+    @_disfavoredOverload
     public func argument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T {
         let arg = try optionalVariantArgument(at: index)
         
@@ -225,6 +297,8 @@ public struct Arguments: ~Copyable {
     /// - `Variant` is `nil`
     /// - `Variant` contains a type other than `T`
     /// - `index` is out of bounds.
+    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
+    @_disfavoredOverload
     public func argument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T {
         let arg = try optionalVariantArgument(at: index)
         
@@ -247,7 +321,7 @@ public struct Arguments: ~Copyable {
     /// - `index` is out of bounds.
     /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
     public func rawRepresentableArgument<T: RawRepresentable>(ofType type: T.Type = T.self, at index: Int) throws -> T where T.RawValue: BinaryInteger {
-        let arg = try optionalVariantArgument(at: index)
+        let arg = try argument(ofType: Variant?.self, at: index)
         
         guard let variant = arg else {
             throw ArgumentAccessError.mismatchingType(expected: "int", actual: "nil")
@@ -272,7 +346,7 @@ public struct Arguments: ~Copyable {
     /// - `index` is out of bounds.
     /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
     public func arrayArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
-        let arg = try optionalVariantArgument(at: index)
+        let arg = try argument(ofType: Variant?.self, at: index)
         
         guard let variant = arg else {
             throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
@@ -306,7 +380,7 @@ public struct Arguments: ~Copyable {
     /// - `index` is out of bounds.
     /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
     public func arrayArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
-        let arg = try optionalVariantArgument(at: index)
+        let arg = try argument(ofType: Variant?.self, at: index)
         
         guard let variant = arg else {
             throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
@@ -341,7 +415,7 @@ public struct Arguments: ~Copyable {
     /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
     /// - Passed argument is `GArray`, but contains a type other than `T` or is `nil`
     public func variantCollectionArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> VariantCollection<T> {
-        let arg = try optionalVariantArgument(at: index)
+        let arg = try argument(ofType: Variant?.self, at: index)
         
         guard let variant = arg else {
             throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
@@ -370,7 +444,7 @@ public struct Arguments: ~Copyable {
     /// Note:
     /// Unlike `VariantCollection`, Godot allows `nil` elements in this case.
     public func objectCollectionArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> ObjectCollection<T> {
-        let arg = try optionalVariantArgument(at: index)
+        let arg = try argument(ofType: Variant?.self, at: index)
         
         guard let variant = arg else {
             throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
@@ -415,54 +489,66 @@ public extension Array where Element == Variant? {
 
 /// Internal API. Needed for unwrapping things from ``Arguments`` in a generalised way. Allows to differentiate between `Variant`, `Variant?`, Builtin types, `Object` and `Object?` during static dispatch
 public protocol _ArgumentsUnwrappable {
-    /// Unwrap ``Self`` from ``Arguments`` if argument
-    static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Self
+    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed
+    static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self
 }
 
-/// Internal API. Protocol for bounding extension implementation for types that are allowed to be unwrapped as Optional: Variant and Object.
-/// This is a workaround for inability to have multiple conditional extensions for one type (Optional in our case)
-public protocol _OptionalArgumentsUnwrappable {
-    static func fromVariant(_ variant: Variant) -> Self?
-}
-
-extension Object: _ArgumentsUnwrappable, _OptionalArgumentsUnwrappable {
-}
-
-extension Variant: _ArgumentsUnwrappable, _OptionalArgumentsUnwrappable {
-    /// Unwrap ``Variant`` from ``Arguments`` if argument with `index` exists and is not `nil`, otherwise throws an ``ArgumentAccessError``
-    public static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Variant {
-        try arguments.variantArgument(at: index)
-    }
-}
-
-public extension _GodotBridgeable {
-    /// Internal API. For unwrapping Bultin and Object.
-    static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Self {
-        defer {
-            index += 1
+public extension _GodotBridgeableBuiltin {
+    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
+    static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self {
+        guard let variant else {
+            throw ArgumentUnwrappingFailure.unexpectedNil
         }
-        let variant = try arguments.variantArgument(at: index)
+        
         guard let value = Self.fromVariant(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(Self.self)", actual: "\(variant.gtype)")
+            throw ArgumentUnwrappingFailure.other
         }
+        
         return value
     }
 }
 
-extension Optional: _ArgumentsUnwrappable where Wrapped: _OptionalArgumentsUnwrappable {
-    /// Internal API. For unwrapping Object? and Variant?
-    public static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Self {
-        defer {
-            index += 1
+/// Internal API. Protocol for conditional extension of Optional for types that are allowed to be marshaled as Optional: Variant and Object.
+/// This is a workaround for Swift inability to have multiple conditional extensions for one type (Optional in our case).
+public protocol _OptionalGodotBridgeable: FromVariantConvertible {
+}
+
+
+extension Object: _ArgumentsUnwrappable, _OptionalGodotBridgeable {
+    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
+    public static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self {
+        guard let variant else {
+            throw ArgumentUnwrappingFailure.unexpectedNil
         }
         
-        guard let variant = try arguments.optionalVariantArgument(at: index) else {
-            return nil // Expected, just return nil
+        guard let value = Self.fromVariant(variant) else {
+            throw ArgumentUnwrappingFailure.other
         }
         
-        guard let value = Wrapped.fromVariant(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(Self.self)", actual: "\(variant.gtype)")
-        }
         return value
+    }
+}
+
+extension Variant: _ArgumentsUnwrappable, _OptionalGodotBridgeable {
+    public static func fromOptionalVariantOrThrow(_ variant: Variant?)  throws(ArgumentUnwrappingFailure) -> Variant {
+        if let variant {
+            return variant
+        } else {
+            throw ArgumentUnwrappingFailure.unexpectedNil
+        }
+    }
+}
+
+extension Optional: _ArgumentsUnwrappable where Wrapped: _OptionalGodotBridgeable {
+    public static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self {
+        if let variant {
+            guard let value = Wrapped.fromVariant(variant) else {
+                throw ArgumentUnwrappingFailure.other
+            }
+            
+            return value
+        } else {
+            return nil // Expected
+        }
     }
 }
