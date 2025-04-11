@@ -195,13 +195,13 @@ final class MacroGodotTests: MacroGodotTestCase {
             class Castro: Node {
                 func deleteEpisode() {}
             
-                func _mproxy_deleteEpisode(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_deleteEpisode(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     deleteEpisode()
                     return nil
                 }
                 func subscribe(podcast: Podcast) {}
             
-                func _mproxy_subscribe(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_subscribe(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
                         subscribe(podcast: arg0)
@@ -216,7 +216,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }
                 func perhapsSubscribe(podcast: Podcast?) {}
             
-                func _mproxy_perhapsSubscribe(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_perhapsSubscribe(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Podcast? = try arguments.optionlArgument(ofType: Podcast.self, at: 0)
                         perhapsSubscribe(podcast: arg0)
@@ -231,9 +231,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }
                 func removeSilences(from: Variant) {}
             
-                func _mproxy_removeSilences(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_removeSilences(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
-                        let arg0: Variant = try arguments.variantArgument(at: 0)
+                        let arg0: SwiftGodot.Variant = try arguments.variantArgument(at: 0)
                         removeSilences(from: arg0)
                         return nil
                     } catch let error as ArgumentAccessError {
@@ -246,11 +246,11 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }
                 func getLatestEpisode(podcast: Podcast) -> Episode {}
             
-                func _mproxy_getLatestEpisode(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_getLatestEpisode(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
                         let result = getLatestEpisode(podcast: arg0)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -262,7 +262,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }
                 func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
             
-                func _mproxy_queue(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_queue(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
                         let arg1: Podcast = try arguments.argument(ofType: Podcast.self, at: 1)
@@ -346,7 +346,7 @@ final class MacroGodotTests: MacroGodotTestCase {
             final class MyClass: Node {
                 var data: MyData = .init()
             
-                func _mproxy_set_data(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_data(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `data`, no arguments")
                         return nil
@@ -369,8 +369,8 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_data (args: borrowing Arguments) -> Variant? {
-                    return Variant (data)
+                func _mproxy_get_data (args: borrowing Arguments) -> SwiftGodot.Variant? {
+                    return SwiftGodot.Variant (data)
                 }
             
                 override public class var classInitializer: Void {
@@ -418,9 +418,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return result
                 }
             
-                func _mproxy_getIntegerCollection(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_getIntegerCollection(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     let result = getIntegerCollection()
-                    return Variant(result)
+                    return SwiftGodot.Variant(result)
             
                 }
             
@@ -459,11 +459,11 @@ final class MacroGodotTests: MacroGodotTestCase {
                     integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
                 }
             
-                func _mproxy_square(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_square(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: VariantCollection<Int> = try arguments.variantCollectionArgument(ofType: Int.self, at: 0)
                         let result = square(arg0)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -515,9 +515,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return result
                 }
             
-                func _mproxy_getNodeCollection(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_getNodeCollection(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     let result = getNodeCollection()
-                    return Variant(result)
+                    return SwiftGodot.Variant(result)
             
                 }
             
@@ -556,7 +556,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                     nodes.forEach { print($0.name) }
                 }
             
-                func _mproxy_printNames(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_printNames(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: ObjectCollection<Node> = try arguments.objectCollectionArgument(ofType: Node.self, at: 0)
                         printNames(of: arg0)
@@ -608,11 +608,11 @@ final class MacroGodotTests: MacroGodotTestCase {
                     integers.reduce(into: 1) { $0 *= $1 }
                 }
             
-                func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_multiply(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: [Int] = try arguments.arrayArgument(ofType: Int.self, at: 0)
                         let result = multiply(arg0)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -662,14 +662,14 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return variant
                 }
             
-                func _mproxy_foo(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_foo(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
-                        let arg0: Variant? = try arguments.optionalVariantArgument(at: 0)
+                        let arg0: SwiftGodot.Variant? = try arguments.optionalVariantArgument(at: 0)
                         let result = foo(variant: arg0)
                         guard let result else {
                             return nil
                         }
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -724,9 +724,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                     [1, 2, 3, 4]
                 }
             
-                func _mproxy_get_ages(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_get_ages(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     let result = get_ages()
-                    return Variant(
+                    return SwiftGodot.Variant(
                         result.reduce(into: GArray(Int.self)) { array, element in
                             array.append(Variant(element))
                         }
@@ -737,9 +737,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                     [.init(), .init(), .init()]
                 }
             
-                func _mproxy_get_markers(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_get_markers(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     let result = get_markers()
-                    return Variant(
+                    return SwiftGodot.Variant(
                         result.reduce(into: GArray(Marker3D.self)) { array, element in
                             array.append(Variant(element))
                         }
@@ -784,11 +784,11 @@ final class MacroGodotTests: MacroGodotTestCase {
                     integers.reduce(into: 1) { $0 *= $1 }
                 }
             
-                func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_multiply(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: [Int] = try arguments.arrayArgument(ofType: Int.self, at: 0)
                         let result = multiply(arg0)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -843,9 +843,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                     [1, 2, 3, 4]
                 }
             
-                func _mproxy_get_ages(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_get_ages(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     let result = get_ages()
-                    return Variant(
+                    return SwiftGodot.Variant(
                         result.reduce(into: GArray(Int.self)) { array, element in
                             array.append(Variant(element))
                         }
@@ -856,9 +856,9 @@ final class MacroGodotTests: MacroGodotTestCase {
                     [.init(), .init(), .init()]
                 }
             
-                func _mproxy_get_markers(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_get_markers(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     let result = get_markers()
-                    return Variant(
+                    return SwiftGodot.Variant(
                         result.reduce(into: GArray(Marker3D.self)) { array, element in
                             array.append(Variant(element))
                         }
@@ -898,12 +898,12 @@ final class MacroGodotTests: MacroGodotTestCase {
             class MathHelper: Node {
                 func multiply(_ a: Int, by b: Int) -> Int { a * b}
             
-                func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_multiply(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Int = try arguments.argument(ofType: Int.self, at: 0)
                         let arg1: Int = try arguments.argument(ofType: Int.self, at: 1)
                         let result = multiply(arg0, by: arg1)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -915,12 +915,12 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }
                 func divide(_ a: Float, by b: Float) -> Float { a / b }
             
-                func _mproxy_divide(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_divide(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Float = try arguments.argument(ofType: Float.self, at: 0)
                         let arg1: Float = try arguments.argument(ofType: Float.self, at: 1)
                         let result = divide(arg0, by: arg1)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -932,12 +932,12 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }
                 func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
             
-                func _mproxy_areBothTrue(arguments: borrowing Arguments) -> Variant? {
+                func _mproxy_areBothTrue(arguments: borrowing Arguments) -> SwiftGodot.Variant? {
                     do { // safe arguments access scope
                         let arg0: Bool = try arguments.argument(ofType: Bool.self, at: 0)
                         let arg1: Bool = try arguments.argument(ofType: Bool.self, at: 1)
                         let result = areBothTrue(arg0, and: arg1)
-                        return Variant(result)
+                        return SwiftGodot.Variant(result)
             
                     } catch let error as ArgumentAccessError {
                         GD.printErr(error.description)
@@ -998,7 +998,7 @@ final class MacroGodotTests: MacroGodotTestCase {
             class Hi: Node {
                 var goodName: String = "Supertop"
             
-                func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_goodName(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `goodName`, no arguments")
                         return nil
@@ -1018,7 +1018,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_goodName (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_goodName (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (goodName)
                 }
             
@@ -1058,7 +1058,7 @@ final class MacroGodotTests: MacroGodotTestCase {
             class Hi: Node {
                 var goodName: String = "Supertop"
             
-                func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
+                func _mproxy_set_goodName(args: borrowing Arguments) -> SwiftGodot.Variant? {
                     guard let arg = args.first else {
                         GD.printErr("Unable to set `goodName`, no arguments")
                         return nil
@@ -1078,7 +1078,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                     return nil
                 }
             
-                func _mproxy_get_goodName (args: borrowing Arguments) -> Variant? {
+                func _mproxy_get_goodName (args: borrowing Arguments) -> SwiftGodot.Variant? {
                     return Variant (goodName)
                 }
             
