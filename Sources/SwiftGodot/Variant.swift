@@ -211,11 +211,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         case notFound
     }
     
-
+    /// Identity function. Always returns non-nil optional. Needed for static dispatch for certain features.
     public static func fromVariant(_ variant: Variant) -> Variant? {
         return variant
     }
     
+    /// Identity function. Needed for static dispatch for certain features.
     public func toVariant() -> Variant {
         return self
     }

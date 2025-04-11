@@ -23,14 +23,14 @@ public func _macroExportGet(_ value: Variant?) -> Variant? {
 /// Internal API. Builtin type.
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(_ value: T) -> Variant? where T: _GodotBridgeable {
+public func _macroExportGet<T>(_ value: T) -> Variant? where T: _GodotBridgeableBuiltin {
     return value.toVariant()
 }
 
 /// Internal API. Optional builtin type.
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(_ value: T?) -> Variant? where T: _GodotBridgeable {
+public func _macroExportGet<T>(_ value: T?) -> Variant? where T: _GodotBridgeableBuiltin {
     return value.toVariant()
 }
 

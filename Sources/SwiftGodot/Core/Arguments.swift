@@ -412,3 +412,57 @@ public extension Array where Element == Variant? {
         }
     }
 }
+
+/// Internal API. Needed for unwrapping things from ``Arguments`` in a generalised way. Allows to differentiate between `Variant`, `Variant?`, Builtin types, `Object` and `Object?` during static dispatch
+public protocol _ArgumentsUnwrappable {
+    /// Unwrap ``Self`` from ``Arguments`` if argument
+    static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Self
+}
+
+/// Internal API. Protocol for bounding extension implementation for types that are allowed to be unwrapped as Optional: Variant and Object.
+/// This is a workaround for inability to have multiple conditional extensions for one type (Optional in our case)
+public protocol _OptionalArgumentsUnwrappable {
+    static func fromVariant(_ variant: Variant) -> Self?
+}
+
+extension Object: _ArgumentsUnwrappable, _OptionalArgumentsUnwrappable {
+}
+
+extension Variant: _ArgumentsUnwrappable, _OptionalArgumentsUnwrappable {
+    /// Unwrap ``Variant`` from ``Arguments`` if argument with `index` exists and is not `nil`, otherwise throws an ``ArgumentAccessError``
+    public static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Variant {
+        try arguments.variantArgument(at: index)
+    }
+}
+
+public extension _GodotBridgeable {
+    /// Internal API. For unwrapping Bultin and Object.
+    static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Self {
+        defer {
+            index += 1
+        }
+        let variant = try arguments.variantArgument(at: index)
+        guard let value = Self.fromVariant(variant) else {
+            throw ArgumentAccessError.mismatchingType(expected: "\(Self.self)", actual: "\(variant.gtype)")
+        }
+        return value
+    }
+}
+
+extension Optional: _ArgumentsUnwrappable where Wrapped: _OptionalArgumentsUnwrappable {
+    /// Internal API. For unwrapping Object? and Variant?
+    public static func unwrap(from arguments: borrowing Arguments, at index: inout Int) throws -> Self {
+        defer {
+            index += 1
+        }
+        
+        guard let variant = try arguments.optionalVariantArgument(at: index) else {
+            return nil // Expected, just return nil
+        }
+        
+        guard let value = Wrapped.fromVariant(variant) else {
+            throw ArgumentAccessError.mismatchingType(expected: "\(Self.self)", actual: "\(variant.gtype)")
+        }
+        return value
+    }
+}
