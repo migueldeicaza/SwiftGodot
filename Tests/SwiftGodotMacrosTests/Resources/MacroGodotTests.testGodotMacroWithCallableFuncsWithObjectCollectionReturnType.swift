@@ -5,9 +5,8 @@ class SomeNode: Node {
         return result
     }
 
-    func _mproxy_getNodeCollection(arguments: borrowing Arguments) -> Variant? {
-        let result = getNodeCollection()
-        return Variant(result)
+    func _mproxy_getNodeCollection(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+        return SwiftGodot._macroCallableToVariant(getNodeCollection())
 
     }
 

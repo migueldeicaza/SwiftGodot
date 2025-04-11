@@ -4,26 +4,16 @@ class CallableCollectionsNode: Node {
         [1, 2, 3, 4]
     }
 
-    func _mproxy_get_ages(arguments: borrowing Arguments) -> Variant? {
-        let result = get_ages()
-        return Variant(
-            result.reduce(into: GArray(Int.self)) { array, element in
-                array.append(Variant(element))
-            }
-        )
+    func _mproxy_get_ages(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+        return SwiftGodot._macroCallableToVariant(get_ages())
 
     }
     func get_markers() -> Array<Marker3D> {
         [.init(), .init(), .init()]
     }
 
-    func _mproxy_get_markers(arguments: borrowing Arguments) -> Variant? {
-        let result = get_markers()
-        return Variant(
-            result.reduce(into: GArray(Marker3D.self)) { array, element in
-                array.append(Variant(element))
-            }
-        )
+    func _mproxy_get_markers(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+        return SwiftGodot._macroCallableToVariant(get_markers())
 
     }
 

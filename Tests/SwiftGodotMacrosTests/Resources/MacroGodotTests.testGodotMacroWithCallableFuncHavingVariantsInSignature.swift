@@ -4,20 +4,16 @@ private class TestNode: Node {
         return variant
     }
 
-    func _mproxy_foo(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_foo(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Variant? = try arguments.argument(ofType: Variant?.self, at: 0)
-            let result = foo(variant: arg0)
-            guard let result else {
-                return nil
-            }
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(foo(variant: arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `foo`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `foo`: \(error)")
             return nil
         }
     }

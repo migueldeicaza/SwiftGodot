@@ -14,9 +14,8 @@ class Thing: SwiftGodot.Object {
 
     func get_some() -> Int64 { 10 }
 
-    func _mproxy_get_some(arguments: borrowing Arguments) -> Variant? {
-        let result = get_some()
-        return Variant(result)
+    func _mproxy_get_some(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+        return SwiftGodot._macroCallableToVariant(get_some())
 
     }
 

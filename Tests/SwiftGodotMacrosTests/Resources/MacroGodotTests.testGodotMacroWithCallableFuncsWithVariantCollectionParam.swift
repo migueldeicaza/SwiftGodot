@@ -4,17 +4,16 @@ class SomeNode: Node {
         integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
     }
 
-    func _mproxy_square(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_square(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: VariantCollection<Int> = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
-            let result = square(arg0)
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(square(arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `square`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `square`: \(error)")
             return nil
         }
     }
