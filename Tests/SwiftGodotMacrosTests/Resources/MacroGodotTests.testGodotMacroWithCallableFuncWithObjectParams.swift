@@ -9,7 +9,7 @@ class Castro: Node {
 
     func _mproxy_subscribe(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
+            let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
             return SwiftGodot._macroCallableToVariant(subscribe(podcast: arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
@@ -24,7 +24,7 @@ class Castro: Node {
 
     func _mproxy_perhapsSubscribe(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Podcast? = try arguments.argument(ofType: Podcast?.self, at: 0)
+            let arg0 = try arguments.argument(ofType: Podcast?.self, at: 0)
             return SwiftGodot._macroCallableToVariant(perhapsSubscribe(podcast: arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
@@ -39,7 +39,7 @@ class Castro: Node {
 
     func _mproxy_removeSilences(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Variant = try arguments.argument(ofType: Variant.self, at: 0)
+            let arg0 = try arguments.argument(ofType: Variant.self, at: 0)
             return SwiftGodot._macroCallableToVariant(removeSilences(from: arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
@@ -54,7 +54,7 @@ class Castro: Node {
 
     func _mproxy_getLatestEpisode(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
+            let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
             return SwiftGodot._macroCallableToVariant(getLatestEpisode(podcast: arg0))
 
         } catch let error as SwiftGodot.ArgumentAccessError {
@@ -69,8 +69,8 @@ class Castro: Node {
 
     func _mproxy_queue(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
-            let arg1: Podcast = try arguments.argument(ofType: Podcast.self, at: 1)
+            let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
+            let arg1 = try arguments.argument(ofType: Podcast.self, at: 1)
             return SwiftGodot._macroCallableToVariant(queue(arg0, after: arg1))
 
         } catch let error as SwiftGodot.ArgumentAccessError {

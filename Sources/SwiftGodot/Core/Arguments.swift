@@ -167,7 +167,7 @@ public struct Arguments: ~Copyable {
     /// - Any element of underlying Godot Array couldn't be converted to `T`
     /// - `index` is out of bounds.
     ///
-    public func argument<T>(ofType type: T.Type = T.self, at index: Int) throws -> [T] where T: _ArgumentConvertible {
+    public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws -> [T] where T: _ArgumentConvertible {
         let arg = try argument(ofType: Variant?.self, at: index)
         
         guard let variant = arg else {
