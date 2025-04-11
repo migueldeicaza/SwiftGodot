@@ -33,25 +33,31 @@ public class Issue353: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)
         classInfo.addPropertyGroup(name: "Group With a Prefix", prefix: "prefix1")
-        let _pprefix1_prefixed_bool = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Issue353.prefix1_prefixed_bool,
-            name: "prefix1_prefixed_bool",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Issue353.prefix1_prefixed_bool,
+                name: "prefix1_prefixed_bool",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get__prefixed_bool",
+            setterName: "set__prefixed_bool",
+            getterFunction: Issue353._mproxy_get_prefix1_prefixed_bool,
+            setterFunction: Issue353._mproxy_set_prefix1_prefixed_bool
         )
-        classInfo.registerMethod (name: "get__prefixed_bool", flags: .default, returnValue: _pprefix1_prefixed_bool, arguments: [], function: Issue353._mproxy_get_prefix1_prefixed_bool)
-        classInfo.registerMethod (name: "set__prefixed_bool", flags: .default, returnValue: nil, arguments: [_pprefix1_prefixed_bool], function: Issue353._mproxy_set_prefix1_prefixed_bool)
-        classInfo.registerProperty (_pprefix1_prefixed_bool, getter: "get__prefixed_bool", setter: "set__prefixed_bool")
-        let _pnon_prefixed_bool = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Issue353.non_prefixed_bool,
-            name: "non_prefixed_bool",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Issue353.non_prefixed_bool,
+                name: "non_prefixed_bool",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_non_prefixed_bool",
+            setterName: "set_non_prefixed_bool",
+            getterFunction: Issue353._mproxy_get_non_prefixed_bool,
+            setterFunction: Issue353._mproxy_set_non_prefixed_bool
         )
-        classInfo.registerMethod (name: "get_non_prefixed_bool", flags: .default, returnValue: _pnon_prefixed_bool, arguments: [], function: Issue353._mproxy_get_non_prefixed_bool)
-        classInfo.registerMethod (name: "set_non_prefixed_bool", flags: .default, returnValue: nil, arguments: [_pnon_prefixed_bool], function: Issue353._mproxy_set_non_prefixed_bool)
-        classInfo.registerProperty (_pnon_prefixed_bool, getter: "get_non_prefixed_bool", setter: "set_non_prefixed_bool")
     } ()
 }

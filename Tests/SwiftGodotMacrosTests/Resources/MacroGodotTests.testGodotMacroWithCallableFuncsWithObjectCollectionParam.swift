@@ -6,7 +6,7 @@ class SomeNode: Node {
 
     func _mproxy_printNames(arguments: borrowing Arguments) -> Variant? {
         do { // safe arguments access scope
-            let arg0: ObjectCollection<Node> = try arguments.objectCollectionArgument(ofType: Node.self, at: 0)
+            let arg0: ObjectCollection<Node> = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
             printNames(of: arg0)
             return nil
         } catch let error as ArgumentAccessError {

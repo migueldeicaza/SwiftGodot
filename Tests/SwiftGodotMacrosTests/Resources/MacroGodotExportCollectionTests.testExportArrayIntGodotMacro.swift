@@ -20,16 +20,19 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let _psomeNumbers = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \SomeNode.someNumbers,
-            name: "some_numbers",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
-        )
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod (name: "get_some_numbers", flags: .default, returnValue: _psomeNumbers, arguments: [], function: SomeNode._mproxy_get_someNumbers)
-        classInfo.registerMethod (name: "set_some_numbers", flags: .default, returnValue: nil, arguments: [_psomeNumbers], function: SomeNode._mproxy_set_someNumbers)
-        classInfo.registerProperty (_psomeNumbers, getter: "get_some_numbers", setter: "set_some_numbers")
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \SomeNode.someNumbers,
+                name: "some_numbers",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_some_numbers",
+            setterName: "set_some_numbers",
+            getterFunction: SomeNode._mproxy_get_someNumbers,
+            setterFunction: SomeNode._mproxy_set_someNumbers
+        )
     } ()
 }

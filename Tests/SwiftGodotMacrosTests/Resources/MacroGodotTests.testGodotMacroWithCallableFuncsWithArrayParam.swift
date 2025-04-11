@@ -6,7 +6,7 @@ class MultiplierNode: Node {
 
     func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
         do { // safe arguments access scope
-            let arg0: [Int] = try arguments.arrayArgument(ofType: Int.self, at: 0)
+            let arg0: [Int] = try arguments.argument(ofType: [Int].self, at: 0)
             let result = multiply(arg0)
             return Variant(result)
 

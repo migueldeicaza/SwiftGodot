@@ -31,27 +31,33 @@ class Car: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
-        let _pvins = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Car.vins,
-            name: "vins",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
-        )
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
-        classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
-        classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
-        let _pyears = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Car.years,
-            name: "years",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Car.vins,
+                name: "vins",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_vins",
+            setterName: "set_vins",
+            getterFunction: Car._mproxy_get_vins,
+            setterFunction: Car._mproxy_set_vins
         )
-        classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
-        classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
-        classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Car.years,
+                name: "years",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_years",
+            setterName: "set_years",
+            getterFunction: Car._mproxy_get_years,
+            setterFunction: Car._mproxy_set_years
+        )
         classInfo.addPropertyGroup(name: "Pointless", prefix: "")
     } ()
 }

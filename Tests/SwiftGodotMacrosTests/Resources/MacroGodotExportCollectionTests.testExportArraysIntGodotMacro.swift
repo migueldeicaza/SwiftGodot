@@ -31,26 +31,32 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let _psomeNumbers = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \SomeNode.someNumbers,
-            name: "some_numbers",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
-        )
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod (name: "get_some_numbers", flags: .default, returnValue: _psomeNumbers, arguments: [], function: SomeNode._mproxy_get_someNumbers)
-        classInfo.registerMethod (name: "set_some_numbers", flags: .default, returnValue: nil, arguments: [_psomeNumbers], function: SomeNode._mproxy_set_someNumbers)
-        classInfo.registerProperty (_psomeNumbers, getter: "get_some_numbers", setter: "set_some_numbers")
-        let _psomeOtherNumbers = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \SomeNode.someOtherNumbers,
-            name: "some_other_numbers",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \SomeNode.someNumbers,
+                name: "some_numbers",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_some_numbers",
+            setterName: "set_some_numbers",
+            getterFunction: SomeNode._mproxy_get_someNumbers,
+            setterFunction: SomeNode._mproxy_set_someNumbers
         )
-        classInfo.registerMethod (name: "get_some_other_numbers", flags: .default, returnValue: _psomeOtherNumbers, arguments: [], function: SomeNode._mproxy_get_someOtherNumbers)
-        classInfo.registerMethod (name: "set_some_other_numbers", flags: .default, returnValue: nil, arguments: [_psomeOtherNumbers], function: SomeNode._mproxy_set_someOtherNumbers)
-        classInfo.registerProperty (_psomeOtherNumbers, getter: "get_some_other_numbers", setter: "set_some_other_numbers")
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \SomeNode.someOtherNumbers,
+                name: "some_other_numbers",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_some_other_numbers",
+            setterName: "set_some_other_numbers",
+            getterFunction: SomeNode._mproxy_get_someOtherNumbers,
+            setterFunction: SomeNode._mproxy_set_someOtherNumbers
+        )
     } ()
 }

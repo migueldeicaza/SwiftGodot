@@ -55,47 +55,59 @@ class Car: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
         classInfo.addPropertyGroup(name: "VIN", prefix: "")
-        let _pvins = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Car.vins,
-            name: "vins",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Car.vins,
+                name: "vins",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_vins",
+            setterName: "set_vins",
+            getterFunction: Car._mproxy_get_vins,
+            setterFunction: Car._mproxy_set_vins
         )
-        classInfo.registerMethod (name: "get_vins", flags: .default, returnValue: _pvins, arguments: [], function: Car._mproxy_get_vins)
-        classInfo.registerMethod (name: "set_vins", flags: .default, returnValue: nil, arguments: [_pvins], function: Car._mproxy_set_vins)
-        classInfo.registerProperty (_pvins, getter: "get_vins", setter: "set_vins")
         classInfo.addPropertyGroup(name: "YMM", prefix: "")
-        let _pyears = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Car.years,
-            name: "years",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Car.years,
+                name: "years",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_years",
+            setterName: "set_years",
+            getterFunction: Car._mproxy_get_years,
+            setterFunction: Car._mproxy_set_years
         )
-        classInfo.registerMethod (name: "get_years", flags: .default, returnValue: _pyears, arguments: [], function: Car._mproxy_get_years)
-        classInfo.registerMethod (name: "set_years", flags: .default, returnValue: nil, arguments: [_pyears], function: Car._mproxy_set_years)
-        classInfo.registerProperty (_pyears, getter: "get_years", setter: "set_years")
-        let _pmakes = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Car.makes,
-            name: "makes",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Car.makes,
+                name: "makes",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_makes",
+            setterName: "set_makes",
+            getterFunction: Car._mproxy_get_makes,
+            setterFunction: Car._mproxy_set_makes
         )
-        classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
-        classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
-        classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
-        let _pmodels = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Car.models,
-            name: "models",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Car.models,
+                name: "models",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_models",
+            setterName: "set_models",
+            getterFunction: Car._mproxy_get_models,
+            setterFunction: Car._mproxy_set_models
         )
-        classInfo.registerMethod (name: "get_models", flags: .default, returnValue: _pmodels, arguments: [], function: Car._mproxy_get_models)
-        classInfo.registerMethod (name: "set_models", flags: .default, returnValue: nil, arguments: [_pmodels], function: Car._mproxy_set_models)
-        classInfo.registerProperty (_pmodels, getter: "get_models", setter: "set_models")
     } ()
     
 }

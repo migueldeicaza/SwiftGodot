@@ -6,7 +6,7 @@ class SomeNode: Node {
 
     func _mproxy_square(arguments: borrowing Arguments) -> Variant? {
         do { // safe arguments access scope
-            let arg0: VariantCollection<Int> = try arguments.variantCollectionArgument(ofType: Int.self, at: 0)
+            let arg0: VariantCollection<Int> = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
             let result = square(arg0)
             return Variant(result)
 
