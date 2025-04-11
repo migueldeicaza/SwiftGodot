@@ -182,7 +182,10 @@ class SomeNode: Node {
     }
 }
 
+@Godot
 class DebugThing: SwiftGodot.Object {
+    @Signal var livesChanged: SignalWithArguments<Swift.Int>
+    
     @Callable
     func do_thing(value: Swift.Int) -> SwiftGodot.Variant? {
         return nil
