@@ -29,6 +29,8 @@
 ///
 /// ```
 public class ClassInfo<T:Object> {
+    public typealias Function = (T) -> (borrowing Arguments) -> Variant?
+    
     var name: StringName
     
     /// Initializes a ClassInfo structure to register operations with Godot
@@ -138,6 +140,8 @@ public class ClassInfo<T:Object> {
         if let returnValue {
             retInfo = returnValue.makeNativeStruct()
         }
+        
+        // TODO: leaks, never deallocated
         let userdata = UnsafeMutablePointer<FunctionInfo>.allocate(capacity: 1)
         userdata.initialize(to: .init(function, retType: returnValue?.propertyType))
         
@@ -191,11 +195,27 @@ public class ClassInfo<T:Object> {
     ///  - info: PropInfo describing the property you wil register
     ///  - getter: the name of the method you have already registered and will provide the getter functionality
     ///  - setter: the name of the method you have already registered and will provide the setter functionality
-    public func registerProperty (_ info: PropInfo, getter: StringName, setter: StringName){
+    public func registerProperty (_ info: PropInfo, getter: StringName, setter: StringName) {
         var pinfo = GDExtensionPropertyInfo ()
         pinfo = info.makeNativeStruct()
         
         gi.classdb_register_extension_class_property (extensionInterface.getLibrary(), &self.name.content, &pinfo, &setter.content, &getter.content)
+    }
+    
+    /// Registers the property in the class with the information provided in `info` and corresponding getter and setter functions.
+    /// The `getter` and `setter` name corresponds to the names that were used to register the function
+    /// with Godot in `registerMethod`.
+    ///
+    /// - Parameters:
+    ///  - info: PropInfo describing the property you wil register
+    ///  - getterName: the name of the method for providing getter functionality
+    ///  - setterName: the name of the method for providing setter functionality
+    ///  - getterFunction: Swift getter function
+    ///  - setterFunction: Swift setter function
+    public func registerPropertyWithGetterSetter(_ info: PropInfo, getterName: StringName, setterName: StringName, getterFunction: @escaping Function, setterFunction: @escaping Function) {
+        registerMethod(name: getterName, flags: .default, returnValue: info, arguments: [], function: getterFunction)
+        registerMethod(name: setterName, flags: .default, returnValue: nil, arguments: [info], function: setterFunction)
+        registerProperty(info, getter: getterName, setter: setterName)
     }
 }
 
