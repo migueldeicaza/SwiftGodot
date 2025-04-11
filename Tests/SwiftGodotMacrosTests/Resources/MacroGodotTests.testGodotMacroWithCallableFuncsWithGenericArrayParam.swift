@@ -28,7 +28,7 @@ class MultiplierNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MultiplierNode> (name: className)
         classInfo.registerMethod(
-            name: StringName("multiply"),
+            name: "multiply",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Int.self),
             arguments: [_macroGodotGetCallablePropInfo(Array<Int>.self, name: "integers")],

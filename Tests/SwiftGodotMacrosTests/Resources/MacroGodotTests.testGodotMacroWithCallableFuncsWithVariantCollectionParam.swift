@@ -28,7 +28,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         classInfo.registerMethod(
-            name: StringName("square"),
+            name: "square",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int>.self),
             arguments: [_macroGodotGetCallablePropInfo(VariantCollection<Int>.self, name: "integers")],

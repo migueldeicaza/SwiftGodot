@@ -108,7 +108,7 @@ class GodotMacroProcessor {
         injectClassInfo()
         ctor.append("""
             classInfo.registerMethod(
-                name: StringName("\(funcName)"), 
+                name: "\(funcName)", 
                 flags: .default, 
                 returnValue: _macroGodotGetCallablePropInfo(\(returnTypename).self), 
                 arguments: \(arguments), 

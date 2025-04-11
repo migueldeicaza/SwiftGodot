@@ -30,7 +30,7 @@ class DebugThing: SwiftGodot.Object {
         let classInfo = ClassInfo<DebugThing> (name: className)
         SignalWithArguments<Swift.Int>.register("lives_changed", info: classInfo)
         classInfo.registerMethod(
-            name: StringName("do_thing"),
+            name: "do_thing",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self),
             arguments: [_macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self, name: "value")],

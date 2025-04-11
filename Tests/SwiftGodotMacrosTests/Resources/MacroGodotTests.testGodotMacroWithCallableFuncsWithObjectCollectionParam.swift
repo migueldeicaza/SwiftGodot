@@ -28,7 +28,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         classInfo.registerMethod(
-            name: StringName("printNames"),
+            name: "printNames",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
             arguments: [_macroGodotGetCallablePropInfo(ObjectCollection<Node>.self, name: "nodes")],

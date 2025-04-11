@@ -58,21 +58,21 @@ class MathHelper: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MathHelper> (name: className)
         classInfo.registerMethod(
-            name: StringName("multiply"),
+            name: "multiply",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Int.self),
             arguments: [_macroGodotGetCallablePropInfo(Int.self, name: "a"), _macroGodotGetCallablePropInfo(Int.self, name: "b")],
             function: MathHelper._mproxy_multiply
         )
         classInfo.registerMethod(
-            name: StringName("divide"),
+            name: "divide",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Float.self),
             arguments: [_macroGodotGetCallablePropInfo(Float.self, name: "a"), _macroGodotGetCallablePropInfo(Float.self, name: "b")],
             function: MathHelper._mproxy_divide
         )
         classInfo.registerMethod(
-            name: StringName("areBothTrue"),
+            name: "areBothTrue",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Bool.self),
             arguments: [_macroGodotGetCallablePropInfo(Bool.self, name: "a"), _macroGodotGetCallablePropInfo(Bool.self, name: "b")],

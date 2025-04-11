@@ -20,7 +20,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         classInfo.registerMethod(
-            name: StringName("getNodeCollection"),
+            name: "getNodeCollection",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(ObjectCollection<Node>.self),
             arguments: [],

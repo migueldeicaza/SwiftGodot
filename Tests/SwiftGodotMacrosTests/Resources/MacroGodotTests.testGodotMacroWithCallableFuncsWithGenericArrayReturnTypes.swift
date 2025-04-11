@@ -27,14 +27,14 @@ class CallableCollectionsNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
         classInfo.registerMethod(
-            name: StringName("get_ages"),
+            name: "get_ages",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Array<Int>.self),
             arguments: [],
             function: CallableCollectionsNode._mproxy_get_ages
         )
         classInfo.registerMethod(
-            name: StringName("get_markers"),
+            name: "get_markers",
             flags: .default,
             returnValue: _macroGodotGetCallablePropInfo(Array<Marker3D>.self),
             arguments: [],
