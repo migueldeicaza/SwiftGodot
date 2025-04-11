@@ -15,88 +15,12 @@ public protocol VariantConvertible {
     func toVariant() -> Variant
 }
 
-/// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
+/// Internal API. Protocol for types that contains details on how it interacts with C GDExtension API.
+/// You could assume that to be the set of all Builtin Types and Object-derived Types. `Variant` is not included and processed in a special overload of functions where `_GodotBridgeable` shows up.
 public protocol _GodotBridgeable: VariantConvertible, _ArgumentConvertible {
 }
 
-/// Internal API. Interface for types that contains details on how it interacts with C GDExtension API.
-///
-/// ### Rationale
-///
-/// This is more specialized version of `VariantConvertible` for cases where an ability to be converted to and from a `Variant` is not suffucient.
-/// At the same time it allows `VariantConvertible` to be implemented by the user for coding arbitary values inside the `Variant`.
-/// This class is a base for future changes such as generating relevant `PropInfo` in the context of this type being:
-/// 1. A returned value
-/// 2. An argument
-/// 3. A class property
-///
-/// This this allow to statically dispatch `PropInfo` generation in the context of macro without relying on Swift syntax analysis.
-/// For now this protocol allows to distinguish between a type being merely `VariantConvertible` and being able, for example, to be `@Export`-ed.
-/// ```
-/// struct SomeUserType: VariantConvertible {
-///     // implementation
-/// }
-/// ```
-///
-/// While `SomeUserType` can be freely used in the context where `Variant` is accepted as a part of Godot API:
-/// ```
-/// GD.print(SomeUserType())
-/// ```
-///
-/// It's still prohibited to be used as `@Export`-ed in this case:
-/// ```
-/// @Godot
-/// class SomeClass {
-///     @Export var someUsertType: SomeUserType = .init() // How should it be visible on Godot side?
-/// }
-/// ```
-///
-/// In future it will alow us to resurface arbitary user types on Godot side via implementing `_GodotBridgeable` requirements as extension of a protocol `CustomGodotBridgeable` intended for users as in:
-/// ```
-/// public protocol CustomGodotBridgeable: _GodotBridgeable {
-///     associatedtype GodotCompatibleRepresentation: _GodotBridgeable
-///
-///     func to(_ type: GodotCompatibleRepresentation) -> GodotCompatibleRepresentation
-///     static func from(_ godotCompatibleInstance: GodotCompatibleRepresentation) -> Self?
-///
-/// }
-/// ```
-///
-/// Low-level part of `CustomGodotBridgeable` requirements will simply be default-implemented by `GodotCompatibleRepresentation`
-///
-/// ```
-/// public extension CustomGodotBridgeable {
-///     static func _propertyPropInfo(hint: String?) -> PropInfo { GodotCompatibleRepresentation._propertyPropInfo(hint: hint) }
-/// }
-/// ```
-///
-/// At user side it wil look like:
-/// ```
-/// struct SomeUserType: CustomGodotBridgeable {
-///      func to(_ type: GDictionary.Type = GDictionary.self) -> GDictionary {
-///         // encode this instance to GDictionary
-///      }
-///
-///      static func from(_ godotCompatibleInstance: GDictionary) -> Self? {
-///         // Try to decode this type from dictionary, print something nasty in `GD.printErr` if things go south,
-///         // Perhaps provide some `Godot(Variant/Dictionary)(Encoder/Decoder)` to make things super-straight forward
-///         // and make `Codable` work from the box
-///      }
-/// }
-///
-/// @Godot
-/// class Example: Object {
-///     @Export var someUserType: SomeUserType = .init() // Will work fine now
-///
-///     // Macro expansion
-///     // ...
-///     // let prop0 = type(at: \Object.someUserType)._propertyPropInfo()
-///     // ...
-///
-/// }
-///
-/// ```
-///
+/// Internal API. Subset protocol for all Builtin Types.
 public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     /// Internal API. Return PropInfo when this class is used as an @Exported property.
     static func _macroGodotGetVariablePropInfo(
@@ -110,7 +34,7 @@ public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     static var _macroGodotGetVariablePropInfoArrayType: String { get }
 }
 
-/// Internal API.
+/// Internal API. Subset protocol for all Object-derived types.
 /// This is a special case due to Swift type system not allowing default implementation using `Self` for non-final classes.
 /// It's needed to allow statically dispatching macro functions in the context of `Object` and its subclasses.
 public protocol _GodotBridgeableObject: _GodotBridgeable {

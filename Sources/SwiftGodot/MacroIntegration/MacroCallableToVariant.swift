@@ -1,0 +1,59 @@
+//
+//  MacroCallableToVariant.swift
+//  SwiftGodot
+//
+//  Created by Elijah Semyonov on 11/04/2025.
+//
+
+/// Internal API. Bridgeable.
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant<T>(_ value: T) -> Variant? where T: _GodotBridgeable {
+    value.toVariant()
+}
+
+/// Internal API. Optional Bridgeable.
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant<T>(_ value: T?) -> Variant? where T: _GodotBridgeable {
+    value.toVariant()
+}
+
+/// Internal API. Swift Array.
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant<T>(_ value: [T]) -> Variant? where T: VariantStorable {
+    let array = GArray(T.self)
+    for element in value {
+        array.append(Variant(element))
+    }
+    
+    return array.toVariant()
+}
+
+/// Internal API. ObjectCollection.
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant<T>(_ value: ObjectCollection<T>) -> Variant? where T: VariantStorable {
+    value.array.toVariant()
+}
+
+/// Internal API. VariantCollection.
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant<T>(_ value: VariantCollection<T>) -> Variant? where T: VariantStorable {
+    value.array.toVariant()
+}
+
+/// Internal API. Void.
+@inline(__always)
+@inlinable
+public func _macroCallableToVariant(_ value: Void) -> Variant? {
+    return nil
+}
+
+@available(*, unavailable, message: "Type cannot be returned from @Callable")
+@_disfavoredOverload
+public func _macroCallableToVariant<T>(_ value: T?) -> Variant? {
+    fatalError("Unreachable")
+}

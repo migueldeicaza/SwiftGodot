@@ -543,12 +543,13 @@ public extension _GodotBridgeableBuiltin {
         return value
     }
     
-    public func toArgumentVariant() -> Variant? {
+    func toArgumentVariant() -> Variant? {
         toVariant()
     }
 }
 
 extension VariantCollection: _ArgumentConvertible where Element: _ArgumentConvertible {
+    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
     public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
             throw ArgumentConversionError()
@@ -571,6 +572,7 @@ extension VariantCollection: _ArgumentConvertible where Element: _ArgumentConver
 }
 
 extension ObjectCollection: _ArgumentConvertible where Element: _ArgumentConvertible {
+    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation.
     public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
             throw ArgumentConversionError()
@@ -592,14 +594,15 @@ extension ObjectCollection: _ArgumentConvertible where Element: _ArgumentConvert
     }
 }
 
-/// Internal API. Protocol for conditional extension of Optional for types that are allowed to be marshaled as Optional: Variant and Object.
+/// Internal API. Protocol covering types that have nullable semantics on Godot Side: Object-derived types and Variant.
+/// It's used for conditional extension of Optional.
 /// This is a workaround for Swift inability to have multiple conditional extensions for one type (Optional in our case).
-public protocol _OptionalGodotBridgeable: VariantConvertible {
+public protocol _GodotOptionalBridgeable: VariantConvertible {
 }
 
 
-extension Object: _ArgumentConvertible, _OptionalGodotBridgeable {
-    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
+extension Object: _ArgumentConvertible, _GodotOptionalBridgeable {
+    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. Objects are technically nullable but this overload will be used in a context where non-optional `Object` was explicitly requested.
     public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
             throw ArgumentConversionError()
@@ -617,7 +620,8 @@ extension Object: _ArgumentConvertible, _OptionalGodotBridgeable {
     }
 }
 
-extension Variant: _ArgumentConvertible, _OptionalGodotBridgeable {
+extension Variant: _ArgumentConvertible, _GodotOptionalBridgeable {
+    /// Attempts to unwrap `Variant` from `Variant?` throws if `nil`. `Variant` on Godot side do have nullable semantics but this overload is used in the context where non-optional `Variant` was explicitly requested
     public static func fromArgumentVariant(
         _ variantOrNil: Variant?
     ) throws(ArgumentConversionError) -> Variant {
@@ -633,8 +637,9 @@ extension Variant: _ArgumentConvertible, _OptionalGodotBridgeable {
     }
 }
 
-extension Optional: _ArgumentConvertible where Wrapped: _OptionalGodotBridgeable {
-    /// Unwrap `Object?` or `Variant?` from `variant`. If it's `nil` - return `nil`. If it's not `nil`, and unwrapping failed, throw a error.
+// Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
+extension Optional: _ArgumentConvertible where Wrapped: _GodotOptionalBridgeable {
+    /// Unwrap `Object?` or `Variant?` from `variant`. If it's `nil` - return `nil`. If it's not `nil`, and unwrapping failed, throw an error.
     public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         if let variant = variantOrNil {
             guard let value = Wrapped.fromVariant(variant) else {
@@ -647,6 +652,7 @@ extension Optional: _ArgumentConvertible where Wrapped: _OptionalGodotBridgeable
         }
     }
     
+    /// Wrap `Object?` into `Variant?` or pass `Variant?` as is
     public func toArgumentVariant() -> Variant? {
         map { $0.toVariant() }
     }
