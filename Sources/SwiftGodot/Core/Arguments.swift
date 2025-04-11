@@ -19,7 +19,7 @@ public enum ArgumentAccessError: Error, CustomStringConvertible {
     }
 }
 
-public enum ArgumentUnwrappingFailure: Error {
+public enum ArgumentConversionError: Error {
     case unexpectedNil
     case other
 }
@@ -261,7 +261,7 @@ public struct Arguments: ~Copyable {
     /// Throws an error if:
     /// - `Variant` contains a type other than `T`
     /// - `index` is out of bounds.
-    public func argument<T: _ArgumentsUnwrappable>(ofType type: T.Type = T.self, at index: Int) throws -> T {
+    public func argument<T: _ArgumentConvertible>(ofType type: T.Type = T.self, at index: Int) throws -> T {
         return try T.fromOptionalVariantOrThrow(
             try argument(at: index)
         )
@@ -485,21 +485,26 @@ public extension Array where Element == Variant? {
     }
 }
 
-/// Internal API. Needed for unwrapping things from ``Arguments`` in a generalised way. Allows to differentiate between `Variant`, `Variant?`, Builtin types, `Object` and `Object?` during static dispatch
-public protocol _ArgumentsUnwrappable {
+/// Internal API. Needed for interaction with``Arguments`` in a generalised way. Allows to differentiate between `Variant`, `Variant?`, Builtin types, `Object` and `Object?` during static dispatch when used in the context of managing arguments marshaling to and from Godot.
+///
+/// Unlike ``VariantConvertible`` this type is used to treat weird quirks of interop of Godot and Swift Type system:
+/// 1. Godot has `Variant` type, which has nullable semantics, but represented as `Variant` and `Variant?` on Swift side incorporating nullability into Swift type system
+/// 2. Godot has `BuiltinClass` types, in the scope of interop they can never be passed as `nil`. If function takes `Array` - it's always an array.
+/// 3. Godot has `Object`-derived  types types. They can be either `nil` or not when used as argument.
+public protocol _ArgumentConvertible {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed
-    static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self
+    static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self
 }
 
 public extension _GodotBridgeableBuiltin {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
-    static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self {
-        guard let variant else {
-            throw ArgumentUnwrappingFailure.unexpectedNil
+    static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+        guard let variant = variantOrNil else {
+            throw ArgumentConversionError.unexpectedNil
         }
         
         guard let value = Self.fromVariant(variant) else {
-            throw ArgumentUnwrappingFailure.other
+            throw ArgumentConversionError.other
         }
         
         return value
@@ -508,40 +513,43 @@ public extension _GodotBridgeableBuiltin {
 
 /// Internal API. Protocol for conditional extension of Optional for types that are allowed to be marshaled as Optional: Variant and Object.
 /// This is a workaround for Swift inability to have multiple conditional extensions for one type (Optional in our case).
-public protocol _OptionalGodotBridgeable: FromVariantConvertible {
+public protocol _OptionalGodotBridgeable: VariantConvertible {
 }
 
 
-extension Object: _ArgumentsUnwrappable, _OptionalGodotBridgeable {
+extension Object: _ArgumentConvertible, _OptionalGodotBridgeable {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
-    public static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self {
-        guard let variant else {
-            throw ArgumentUnwrappingFailure.unexpectedNil
+    public static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+        guard let variant = variantOrNil else {
+            throw ArgumentConversionError.unexpectedNil
         }
         
         guard let value = Self.fromVariant(variant) else {
-            throw ArgumentUnwrappingFailure.other
+            throw ArgumentConversionError.other
         }
         
         return value
     }
 }
 
-extension Variant: _ArgumentsUnwrappable, _OptionalGodotBridgeable {
-    public static func fromOptionalVariantOrThrow(_ variant: Variant?)  throws(ArgumentUnwrappingFailure) -> Variant {
-        if let variant {
+extension Variant: _ArgumentConvertible, _OptionalGodotBridgeable {
+    public static func fromOptionalVariantOrThrow(
+        _ variantOrNil: Variant?
+    ) throws(ArgumentConversionError) -> Variant {
+        if let variant = variantOrNil {
             return variant
         } else {
-            throw ArgumentUnwrappingFailure.unexpectedNil
+            throw ArgumentConversionError.unexpectedNil
         }
     }
 }
 
-extension Optional: _ArgumentsUnwrappable where Wrapped: _OptionalGodotBridgeable {
-    public static func fromOptionalVariantOrThrow(_ variant: Variant?) throws(ArgumentUnwrappingFailure) -> Self {
-        if let variant {
+extension Optional: _ArgumentConvertible where Wrapped: _OptionalGodotBridgeable {
+    /// Unwrap `Object?` or `Variant?` from `variant`. If it's `nil` - return `nil`. If it's not `nil`, and unwrapping failed, throw a error.
+    public static func fromOptionalVariantOrThrow(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+        if let variant = variantOrNil {
             guard let value = Wrapped.fromVariant(variant) else {
-                throw ArgumentUnwrappingFailure.other
+                throw ArgumentConversionError.other
             }
             
             return value
