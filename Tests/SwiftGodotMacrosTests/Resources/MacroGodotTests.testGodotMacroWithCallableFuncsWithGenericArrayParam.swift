@@ -4,17 +4,16 @@ class MultiplierNode: Node {
         integers.reduce(into: 1) { $0 *= $1 }
     }
 
-    func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Array<Int> = try arguments.argument(ofType: Array<Int>.self, at: 0)
-            let result = multiply(arg0)
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(multiply(arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `multiply`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `multiply`: \(error)")
             return nil
         }
     }

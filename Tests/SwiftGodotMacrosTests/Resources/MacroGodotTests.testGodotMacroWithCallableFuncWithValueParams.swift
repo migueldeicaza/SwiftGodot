@@ -1,52 +1,49 @@
 class MathHelper: Node {
     func multiply(_ a: Int, by b: Int) -> Int { a * b}
 
-    func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Int = try arguments.argument(ofType: Int.self, at: 0)
             let arg1: Int = try arguments.argument(ofType: Int.self, at: 1)
-            let result = multiply(arg0, by: arg1)
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(multiply(arg0, by: arg1))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `multiply`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `multiply`: \(error)")
             return nil
         }
     }
     func divide(_ a: Float, by b: Float) -> Float { a / b }
 
-    func _mproxy_divide(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_divide(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Float = try arguments.argument(ofType: Float.self, at: 0)
             let arg1: Float = try arguments.argument(ofType: Float.self, at: 1)
-            let result = divide(arg0, by: arg1)
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(divide(arg0, by: arg1))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `divide`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `divide`: \(error)")
             return nil
         }
     }
     func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
 
-    func _mproxy_areBothTrue(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_areBothTrue(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Bool = try arguments.argument(ofType: Bool.self, at: 0)
             let arg1: Bool = try arguments.argument(ofType: Bool.self, at: 1)
-            let result = areBothTrue(arg0, and: arg1)
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(areBothTrue(arg0, and: arg1))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `areBothTrue`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `areBothTrue`: \(error)")
             return nil
         }
     }

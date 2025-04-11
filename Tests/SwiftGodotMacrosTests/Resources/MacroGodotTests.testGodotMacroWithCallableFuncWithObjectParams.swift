@@ -1,84 +1,83 @@
 class Castro: Node {
     func deleteEpisode() {}
 
-    func _mproxy_deleteEpisode(arguments: borrowing Arguments) -> Variant? {
-        deleteEpisode()
-        return nil
+    func _mproxy_deleteEpisode(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+        return SwiftGodot._macroCallableToVariant(deleteEpisode())
+
     }
     func subscribe(podcast: Podcast) {}
 
-    func _mproxy_subscribe(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_subscribe(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
-            subscribe(podcast: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+            return SwiftGodot._macroCallableToVariant(subscribe(podcast: arg0))
+
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `subscribe`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `subscribe`: \(error)")
             return nil
         }
     }
     func perhapsSubscribe(podcast: Podcast?) {}
 
-    func _mproxy_perhapsSubscribe(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_perhapsSubscribe(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Podcast? = try arguments.argument(ofType: Podcast?.self, at: 0)
-            perhapsSubscribe(podcast: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+            return SwiftGodot._macroCallableToVariant(perhapsSubscribe(podcast: arg0))
+
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `perhapsSubscribe`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: \(error)")
             return nil
         }
     }
     func removeSilences(from: Variant) {}
 
-    func _mproxy_removeSilences(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_removeSilences(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Variant = try arguments.argument(ofType: Variant.self, at: 0)
-            removeSilences(from: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+            return SwiftGodot._macroCallableToVariant(removeSilences(from: arg0))
+
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `removeSilences`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `removeSilences`: \(error)")
             return nil
         }
     }
     func getLatestEpisode(podcast: Podcast) -> Episode {}
 
-    func _mproxy_getLatestEpisode(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_getLatestEpisode(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
-            let result = getLatestEpisode(podcast: arg0)
-            return Variant(result)
+            return SwiftGodot._macroCallableToVariant(getLatestEpisode(podcast: arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `getLatestEpisode`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: \(error)")
             return nil
         }
     }
     func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
 
-    func _mproxy_queue(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_queue(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
             let arg1: Podcast = try arguments.argument(ofType: Podcast.self, at: 1)
-            queue(arg0, after: arg1)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+            return SwiftGodot._macroCallableToVariant(queue(arg0, after: arg1))
+
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `queue`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `queue`: \(error)")
             return nil
         }
     }

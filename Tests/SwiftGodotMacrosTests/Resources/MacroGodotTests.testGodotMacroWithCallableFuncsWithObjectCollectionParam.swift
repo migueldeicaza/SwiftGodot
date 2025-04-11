@@ -4,16 +4,16 @@ class SomeNode: Node {
         nodes.forEach { print($0.name) }
     }
 
-    func _mproxy_printNames(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_printNames(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0: ObjectCollection<Node> = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
-            printNames(of: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+            return SwiftGodot._macroCallableToVariant(printNames(of: arg0))
+
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `printNames`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `printNames`: \(error)")
             return nil
         }
     }
