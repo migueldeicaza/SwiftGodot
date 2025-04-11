@@ -81,16 +81,16 @@ public struct GodotCallable: PeerMacro {
             
             if funcDecl.isReturnedTypeSwiftArray, let elementType = funcDecl.returnedSwiftArrayElementType {
                 body += """
-                \(indentation)    return Variant(
-                \(indentation)        result.reduce(into: GArray(\(elementType).self)) { array, element in
-                \(indentation)            array.append(Variant(element))
+                \(indentation)    return SwiftGodot.Variant(
+                \(indentation)        result.reduce(into: SwiftGodot.GArray(\(elementType).self)) { array, element in
+                \(indentation)            array.append(SwiftGodot.Variant(element))
                 \(indentation)        }
                 \(indentation)    )
                 
                 """
             } else {
                 body += """
-                \(indentation)    return Variant(result)  
+                \(indentation)    return SwiftGodot.Variant(result)  
                   
                 """
             }
@@ -102,20 +102,20 @@ public struct GodotCallable: PeerMacro {
         
         if parameters.isEmpty {
             return """
-            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+            func _mproxy_\(funcName)(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
             \(body)                
             }
             """
         } else {
             return """
-            func _mproxy_\(funcName)(arguments: borrowing Arguments) -> Variant? {
+            func _mproxy_\(funcName)(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
                 do { // safe arguments access scope
             \(body)        
-                } catch let error as ArgumentAccessError {
-                    GD.printErr(error.description)
+                } catch let error as SwiftGodot.ArgumentAccessError {
+                    SwiftGodot.GD.printErr(error.description)
                     return nil
                 } catch {
-                    GD.printErr("Error calling `\(funcName)`: \\(error)")
+                    SwiftGodot.GD.printErr("Error calling `\(funcName)`: \\(error)")
                     return nil
                 }
             }
