@@ -207,8 +207,7 @@ public class ClassInfo<T:Object> {
     }
     
     /// Registers the property in the class with the information provided in `info` and corresponding getter and setter functions.
-    /// The `getter` and `setter` name corresponds to the names that were used to register the function
-    /// with Godot in `registerMethod`.
+    /// It's a convenience function that calls``registerProperty`` and ``registerMethod`` for getter and setter
     ///
     /// - Parameters:
     ///  - info: PropInfo describing the property you wil register
