@@ -302,44 +302,46 @@ class GodotMacroProcessor {
                 }
             }
             
-            let pinfo = "_p\(varNameWithPrefix)"
-            
-            
             var args: [String] = [
-                "    at: \\\(className).\(varNameWithPrefix)",
-                "    name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
+                "at: \\\(className).\(varNameWithPrefix)",
+                "name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
             ]
             
             if let hint = hintExpr?.description {
-                args.append("    userHint: .\(hint)")
+                args.append("userHint: .\(hint)")
             } else {
-                args.append("    userHint: nil")
+                args.append("userHint: nil")
             }
             
             if let hintStr = hintStrExpr?.description {
-                args.append("    userHintStr: \(hintStr)")
+                args.append("userHintStr: \(hintStr)")
             } else {
-                args.append("    userHintStr: nil")
+                args.append("userHintStr: nil")
             }
             
             if let usage = usageExpr?.expression.description {
-                args.append("    userUsage: \(usage)")
+                args.append("userUsage: \(usage)")
             } else {
-                args.append("    userUsage: nil")
+                args.append("userUsage: nil")
             }
             
-            
-            ctor.append("""
-            let \(pinfo) = SwiftGodot._macroGodotGetVariablePropInfo(
-            \(args.joined(separator: ",\n"))
-            )
-            """)
+            let argsStr = args
+                .map { String(repeating: " ", count: 8) + $0 }
+                .joined(separator: ",\n")
             
             
             injectClassInfo()
-            ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
-            ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
-            ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
+            ctor.append("""
+            classInfo.registerPropertyWithGetterSetter(
+                SwiftGodot._macroGodotGetVariablePropInfo(
+            \(argsStr)
+                ),
+                getterName: "\(getterName)\",
+                setterName: "\(setterName)",
+                getterFunction: \(className).\(proxyGetterName),
+                setterFunction: \(className).\(proxySetterName)
+            )
+            """)
         }
     }
     
