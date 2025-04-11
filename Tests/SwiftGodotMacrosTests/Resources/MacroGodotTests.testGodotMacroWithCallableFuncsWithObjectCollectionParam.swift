@@ -4,16 +4,16 @@ class SomeNode: Node {
         nodes.forEach { print($0.name) }
     }
 
-    func _mproxy_printNames(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_printNames(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: ObjectCollection<Node> = try arguments.objectCollectionArgument(ofType: Node.self, at: 0)
-            printNames(of: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+            let arg0 = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
+            return SwiftGodot._macroCallableToVariant(printNames(of: arg0))
+
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `printNames`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `printNames`: \(error)")
             return nil
         }
     }
@@ -26,11 +26,13 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "nodes", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
-        let printNamesArgs = [
-            prop_0,
-        ]
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod(name: StringName("printNames"), flags: .default, returnValue: nil, arguments: printNamesArgs, function: SomeNode._mproxy_printNames)
+        classInfo.registerMethod(
+            name: StringName("printNames"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
+            arguments: [_macroGodotGetCallablePropInfo(ObjectCollection<Node>.self, name: "nodes")],
+            function: SomeNode._mproxy_printNames
+        )
     } ()
 }

@@ -510,7 +510,7 @@ func generateSignals (_ p: Printer,
 func getSignalType(_ signal: JGodotSignal) -> String {
     var argTypes: [String] = []
     for signalArgument in signal.arguments ?? [] {
-        let godotType = getGodotType(signalArgument)
+        let godotType = getGodotType(signalArgument)        
         if !godotType.isEmpty && godotType != "Variant" {
             var t = godotType
             if !isCoreType(name: t) && !isPrimitiveType(name: signalArgument.type) {
@@ -549,7 +549,7 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
     }
 }
 
-let objectInherits = "Wrapped, _GodotBridgeable"
+let objectInherits = "Wrapped, _GodotBridgeableObject"
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     // Determine if it is a singleton, but exclude EditorInterface

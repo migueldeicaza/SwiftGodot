@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible {
     static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -149,6 +149,24 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         }
     }
     
+    /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used as an `@Exported` variable
+    @inline(__always)
+    @inlinable
+    public static func _macroGodotGetPropInfo(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _macroGodotGetPropInfoDefault(
+            propertyType: .nil, // Godot treats .nil as Godot Variant
+            name: name,
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
+        )
+    }
+    
     /// Returns true if the variant is not an object, or the object is missing from the lookup table
     public var isNull: Bool {
         return asObject(Object.self) == nil
@@ -193,11 +211,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         case notFound
     }
     
-
+    /// Identity function. Always returns non-nil optional. Needed for static dispatch for certain features.
     public static func fromVariant(_ variant: Variant) -> Variant? {
         return variant
     }
     
+    /// Identity function. Needed for static dispatch for certain features.
     public func toVariant() -> Variant {
         return self
     }

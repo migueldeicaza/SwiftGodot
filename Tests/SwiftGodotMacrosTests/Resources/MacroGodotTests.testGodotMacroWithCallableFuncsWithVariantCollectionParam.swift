@@ -4,17 +4,16 @@ class SomeNode: Node {
         integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
     }
 
-    func _mproxy_square(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_square(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: VariantCollection<Int> = try arguments.variantCollectionArgument(ofType: Int.self, at: 0)
-            let result = square(arg0)
-            return Variant(result)
+            let arg0 = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
+            return SwiftGodot._macroCallableToVariant(square(arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `square`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `square`: \(error)")
             return nil
         }
     }
@@ -27,12 +26,13 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
-        let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
-        let squareArgs = [
-            prop_1,
-        ]
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod(name: StringName("square"), flags: .default, returnValue: prop_0, arguments: squareArgs, function: SomeNode._mproxy_square)
+        classInfo.registerMethod(
+            name: StringName("square"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int>.self),
+            arguments: [_macroGodotGetCallablePropInfo(VariantCollection<Int>.self, name: "integers")],
+            function: SomeNode._mproxy_square
+        )
     } ()
 }

@@ -12,39 +12,19 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-extension SwiftSyntax.AttributeSyntax {
-    /// @Export(.enum)
-    var hasFirstEnumArgument: Bool {
-        guard let arguments else {
-            return false
-        }
-        
-        switch arguments {
-        case .argumentList(let labeledExprList):
-            guard let firstLabeledExpr = labeledExprList.first else {
-                return false
-            }
-            
-            return firstLabeledExpr.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
-        default:
-            return false
-        }
-    }
-}
-
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
-        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> Variant? {
-            _macroExportGet(\(identifier))                        
+        func _mproxy_get_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+            SwiftGodot._macroExportGet(\(identifier))                        
         }                        
         """
     }
     
     static func makeSetAccessor(identifier: String) -> String {
         """
-        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> Variant? {
-            _macroExportSet(args, "\(identifier)", \(identifier)) {
+        func _mproxy_set_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+            SwiftGodot._macroExportSet(args, "\(identifier)", \(identifier)) {
                 \(identifier) = $0
             }
         }

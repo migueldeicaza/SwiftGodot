@@ -589,7 +589,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
                 
-        var conformances: [String] = ["_GodotBridgeable"]
+        var conformances: [String] = ["_GodotBridgeableBuiltin"]
         if kind == .isStruct {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
@@ -621,7 +621,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             doc (p, bc, bc.description)
         }
         
-        p ("public \(kind == .isStruct ? "struct" : "class") \(typeName)\(proto)") {
+        p ("public \(kind == .isStruct ? "struct" : "final class") \(typeName)\(proto)") {
             if bc.name == "String" {
                 p("""
                 public required init(_ string: String) {
@@ -822,6 +822,48 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p("public static func fromVariant(_ variant: Variant) -> Self?") {
                 p("Self(variant)")
             }
+                        
+            let propInfoPropertyType: String
+            switch bc.name {
+            case "Transform2D":
+                propInfoPropertyType = ".transform2d"
+            case "Transform3D":
+                propInfoPropertyType = ".transform3d"
+            default:
+                let isAbbrev = bc.name.allSatisfy { $0.isUppercase }
+                if isAbbrev {
+                    propInfoPropertyType = ".\(bc.name.lowercased())"
+                } else {
+                    propInfoPropertyType = ".\((bc.name.first?.lowercased() ?? "") + bc.name.dropFirst())"
+                }
+            }
+            
+            p("""
+            /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used as an `@Exported` variable
+            @inline(__always)
+            @inlinable
+            public static func _macroGodotGetPropInfo(                
+                name: String,
+                hint: PropertyHint?,
+                hintStr: String?,
+                usage: PropertyUsageFlags?
+            ) -> PropInfo {
+                _macroGodotGetPropInfoDefault(
+                    propertyType: \(propInfoPropertyType),
+                    name: name,
+                    hint: hint,
+                    hintStr: hintStr,
+                    usage: usage
+                )
+            }
+            """)
+            
+            p("""
+            /// Internal API. For indicating that Godot `Array` of ``\(typeName)`` has type `Array[\(bc.name)]`
+            @inline(__always)
+            @inlinable
+            public static var _macroGodotGetPropInfoArrayType: String { "\(bc.name)" }
+            """)
             
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {

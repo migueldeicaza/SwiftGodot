@@ -15,7 +15,7 @@ extension ObjectCollection: VariantStorable {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+public final class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
     /// GDScript allows `nil`s in `Array[Object]`
     public typealias ArrayLiteralElement = Element?
     
@@ -395,5 +395,23 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     /// Returns `true` if the array is read-only. See ``makeReadOnly()``. Arrays are automatically read-only if declared with `const` keyword.
     public final func isReadOnly ()-> Bool {
         array.isReadOnly()
+    }
+        
+    @inline(__always)
+    @inlinable
+    public static func _macroGodotGetPropInfo(        
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: StringName(name),
+            className: StringName("Array[\(Element.self)]"),
+            hint: hint ?? .arrayType,
+            hintStr: GString(hintStr ?? "\(Element.self)"),
+            usage: usage ?? .default
+        )
     }
 }

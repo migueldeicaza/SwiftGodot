@@ -4,17 +4,16 @@ class MultiplierNode: Node {
         integers.reduce(into: 1) { $0 *= $1 }
     }
 
-    func _mproxy_multiply(arguments: borrowing Arguments) -> Variant? {
+    func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
-            let arg0: [Int] = try arguments.arrayArgument(ofType: Int.self, at: 0)
-            let result = multiply(arg0)
-            return Variant(result)
+            let arg0 = try arguments.argument(ofType: [Int].self, at: 0)
+            return SwiftGodot._macroCallableToVariant(multiply(arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
+        } catch let error as SwiftGodot.ArgumentAccessError {
+            SwiftGodot.GD.printErr(error.description)
             return nil
         } catch {
-            GD.printErr("Error calling `multiply`: \(error)")
+            SwiftGodot.GD.printErr("Error calling `multiply`: \(error)")
             return nil
         }
     }
@@ -27,12 +26,13 @@ class MultiplierNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MultiplierNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .int, propertyName: "", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let prop_1 = PropInfo (propertyType: .array, propertyName: "integers", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
-        let multiplyArgs = [
-            prop_1,
-        ]
         let classInfo = ClassInfo<MultiplierNode> (name: className)
-        classInfo.registerMethod(name: StringName("multiply"), flags: .default, returnValue: prop_0, arguments: multiplyArgs, function: MultiplierNode._mproxy_multiply)
+        classInfo.registerMethod(
+            name: StringName("multiply"),
+            flags: .default,
+            returnValue: _macroGodotGetCallablePropInfo(Int.self),
+            arguments: [_macroGodotGetCallablePropInfo([Int].self, name: "integers")],
+            function: MultiplierNode._mproxy_multiply
+        )
     } ()
 }

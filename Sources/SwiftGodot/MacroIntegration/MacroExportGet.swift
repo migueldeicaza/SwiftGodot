@@ -5,17 +5,32 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
+/// Internal API. Variant.
+@inline(__always)
+@inlinable
+public func _macroExportGet(_ value: Variant) -> Variant? {
+    return value
+}
+
+/// Internal API. Optional Variant.
+@inline(__always)
+@inlinable
+public func _macroExportGet(_ value: Variant?) -> Variant? {
+    return value
+}
+
+
 /// Internal API. Builtin type.
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(_ value: T) -> Variant? where T: _GodotBridgeable {
+public func _macroExportGet<T>(_ value: T) -> Variant? where T: _GodotBridgeableBuiltin {
     return value.toVariant()
 }
 
 /// Internal API. Optional builtin type.
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(_ value: T?) -> Variant? where T: _GodotBridgeable {
+public func _macroExportGet<T>(_ value: T?) -> Variant? where T: _GodotBridgeableBuiltin {
     return value.toVariant()
 }
 
@@ -91,7 +106,7 @@ public func _macroExportGet<T>(
 @available(*, unavailable, message: "Optional enums are not supported by @Export macro")
 public func _macroExportGet<T>(
     _ value: T?
-) -> Variant? where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
+) -> Variant? where T: RawRepresentable, T: CaseIterable {
     fatalError("Unreachable")
 }
 
