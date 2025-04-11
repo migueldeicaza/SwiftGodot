@@ -15,7 +15,7 @@ extension VariantCollection: VariantStorable {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection where Element: VariantStorable {
+public final class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection where Element: VariantStorable {
     public typealias ArrayLiteralElement = Element
     
     /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors

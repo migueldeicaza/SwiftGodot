@@ -19,9 +19,7 @@ public enum ArgumentAccessError: Error, CustomStringConvertible {
     }
 }
 
-public enum ArgumentConversionError: Error {
-    case unexpectedNil
-    case other
+public struct ArgumentConversionError: Error {
 }
 
 /// A lightweight non-copyable storage for arguments marshalled to implementations where a sequence of `Variant`s is expected.
@@ -502,11 +500,11 @@ public extension _GodotBridgeableBuiltin {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
     static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
-            throw ArgumentConversionError.unexpectedNil
+            throw ArgumentConversionError()
         }
         
         guard let value = Self.fromVariant(variant) else {
-            throw ArgumentConversionError.other
+            throw ArgumentConversionError()
         }
         
         return value
@@ -514,6 +512,50 @@ public extension _GodotBridgeableBuiltin {
     
     public func toArgumentVariant() -> Variant? {
         toVariant()
+    }
+}
+
+extension VariantCollection: _ArgumentConvertible where Element: _ArgumentConvertible {
+    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+        guard let variant = variantOrNil else {
+            throw ArgumentConversionError()
+        }
+        
+        guard let array = GArray.fromVariant(variant) else {
+            throw ArgumentConversionError()
+        }
+        
+        guard let typedArray = Self(array) else {
+            throw ArgumentConversionError()
+        }
+        
+        return typedArray
+    }
+    
+    public func toArgumentVariant() -> Variant? {
+        array.toVariant()
+    }
+}
+
+extension ObjectCollection: _ArgumentConvertible where Element: _ArgumentConvertible {
+    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
+        guard let variant = variantOrNil else {
+            throw ArgumentConversionError()
+        }
+        
+        guard let array = GArray.fromVariant(variant) else {
+            throw ArgumentConversionError()
+        }
+        
+        guard let typedArray = Self(array) else {
+            throw ArgumentConversionError()
+        }
+        
+        return typedArray
+    }
+    
+    public func toArgumentVariant() -> Variant? {
+        array.toVariant()
     }
 }
 
@@ -527,11 +569,11 @@ extension Object: _ArgumentConvertible, _OptionalGodotBridgeable {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
     public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         guard let variant = variantOrNil else {
-            throw ArgumentConversionError.unexpectedNil
+            throw ArgumentConversionError()
         }
         
         guard let value = Self.fromVariant(variant) else {
-            throw ArgumentConversionError.other
+            throw ArgumentConversionError()
         }
         
         return value
@@ -549,7 +591,7 @@ extension Variant: _ArgumentConvertible, _OptionalGodotBridgeable {
         if let variant = variantOrNil {
             return variant
         } else {
-            throw ArgumentConversionError.unexpectedNil
+            throw ArgumentConversionError()
         }
     }
     
@@ -563,7 +605,7 @@ extension Optional: _ArgumentConvertible where Wrapped: _OptionalGodotBridgeable
     public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
         if let variant = variantOrNil {
             guard let value = Wrapped.fromVariant(variant) else {
-                throw ArgumentConversionError.other
+                throw ArgumentConversionError()
             }
             
             return value

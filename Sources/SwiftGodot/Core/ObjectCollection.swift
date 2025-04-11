@@ -15,7 +15,7 @@ extension ObjectCollection: VariantStorable {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+public final class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
     /// GDScript allows `nil`s in `Array[Object]`
     public typealias ArrayLiteralElement = Element?
     
