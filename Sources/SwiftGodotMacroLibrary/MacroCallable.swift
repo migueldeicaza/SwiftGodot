@@ -35,7 +35,7 @@ public struct GodotCallable: PeerMacro {
             let ptype = parameter.type.description
             
             body += """
-                    let arg\(index): \(ptype) = try arguments.argument(ofType: \(ptype).self, at: \(index))            
+                    let arg\(index) = try arguments.argument(ofType: \(ptype).self, at: \(index))            
             """
             
             let first = parameter.firstName.text
