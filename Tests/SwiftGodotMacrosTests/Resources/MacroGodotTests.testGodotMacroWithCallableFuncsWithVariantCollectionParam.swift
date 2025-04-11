@@ -30,7 +30,7 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: StringName("square"),
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int> .self),
+            returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int>.self),
             arguments: [_macroGodotGetCallablePropInfo(VariantCollection<Int>.self, name: "integers")],
             function: SomeNode._mproxy_square
         )

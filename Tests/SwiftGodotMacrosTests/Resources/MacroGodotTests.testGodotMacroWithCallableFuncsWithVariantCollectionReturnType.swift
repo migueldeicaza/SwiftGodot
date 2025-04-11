@@ -22,7 +22,7 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: StringName("getIntegerCollection"),
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int> .self),
+            returnValue: _macroGodotGetCallablePropInfo(VariantCollection<Int>.self),
             arguments: [],
             function: SomeNode._mproxy_getIntegerCollection
         )

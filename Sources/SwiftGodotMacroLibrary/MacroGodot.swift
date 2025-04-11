@@ -90,7 +90,7 @@ class GodotMacroProcessor {
             .parameterClause
             .parameters
             .map { parameter in
-                let typename = parameter.type.description
+                let typename = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 let name = getParamName(parameter)
                 return "_macroGodotGetCallablePropInfo(\(typename).self, name: \"\(name)\")"
             }
@@ -99,7 +99,7 @@ class GodotMacroProcessor {
         arguments = "[\(arguments)]"
         let returnTypename: String
         if let type = funcDecl.signature.returnClause?.type {
-            returnTypename = type.description
+            returnTypename = type.description.trimmingCharacters(in: .whitespacesAndNewlines)
         } else {
             returnTypename = "Swift.Void"
         }

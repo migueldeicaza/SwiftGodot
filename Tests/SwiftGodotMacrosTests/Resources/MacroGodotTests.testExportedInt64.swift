@@ -44,7 +44,7 @@ class Thing: SwiftGodot.Object {
         classInfo.registerMethod(
                 name: StringName("get_some"),
                 flags: .default,
-                returnValue: _macroGodotGetCallablePropInfo(Int64 .self),
+                returnValue: _macroGodotGetCallablePropInfo(Int64.self),
                 arguments: [],
                 function: Thing._mproxy_get_some
             )

@@ -22,7 +22,7 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: StringName("getNodeCollection"),
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(ObjectCollection<Node> .self),
+            returnValue: _macroGodotGetCallablePropInfo(ObjectCollection<Node>.self),
             arguments: [],
             function: SomeNode._mproxy_getNodeCollection
         )
