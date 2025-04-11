@@ -259,14 +259,12 @@ public struct Arguments: ~Copyable {
     /// Returns `T` value wrapped in `Variant` argument at `index`.
     ///
     /// Throws an error if:
-    /// - `Variant` is `nil`
     /// - `Variant` contains a type other than `T`
     /// - `index` is out of bounds.
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
     public func argument<T: _ArgumentsUnwrappable>(ofType type: T.Type = T.self, at index: Int) throws -> T {
-        let variantOrNil = try optionalVariantArgument(at: index)
-        
-        return try T.fromOptionalVariantOrThrow(variantOrNil)
+        return try T.fromOptionalVariantOrThrow(
+            try argument(at: index)
+        )
     }
         
     /// Returns `T` value wrapped in `Variant` argument at `index`.
