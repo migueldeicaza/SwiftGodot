@@ -50,5 +50,11 @@ final class MacroIntegrationTests: GodotTestCase {
         let meshInstancePropInfo = _macroGodotGetPropInfo(at: \NoMacroExample.meshInstance, name: "")
         XCTAssertEqual(meshInstancePropInfo.hint, .nodeType)
         XCTAssertEqual(meshInstancePropInfo.hintStr, "MeshInstance3D")
+        
+        let closure = { (a: Int, b: Int) -> Int in
+            a + b
+        }
+        
+        XCTAssertEqual(_macroExportGet(closure)?.gtype, .callable)
     }
 }

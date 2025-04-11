@@ -529,6 +529,14 @@ public protocol _ArgumentConvertible {
     func toArgumentVariant() -> Variant?
 }
 
+public extension _ArgumentConvertible {
+    /// Extract from `Arguments` increasing `index` after complete. Useful for `repeat each` iteration.
+    static func fromArguments(_ arguments: borrowing Arguments, incrementingIndex index: inout Int) throws -> Self {
+        defer { index += 1 }
+        return try arguments.argument(at: index)
+    }
+}
+
 public extension _GodotBridgeableBuiltin {
     /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
     static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {

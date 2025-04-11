@@ -57,6 +57,28 @@ public func _macroExportGet<T>(
     value.rawValue.toVariant()
 }
 
+/// Internal API. Closure
+@inline(__always)
+@inlinable
+public func _macroExportGet<each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+    _ value: @escaping (repeat each Argument) -> Result
+) -> Variant? {
+    return Callable { arguments in
+        do {
+            var currentIndex = 0
+            
+            let result = try value(
+                repeat (each Argument).fromArguments(arguments, incrementingIndex: &currentIndex)
+            )
+            
+            return result.toArgumentVariant()
+        } catch {
+            GD.printErr("Couldn't extract arguments to call closure. \(error)")
+            return nil
+        }
+    }.toVariant()
+}
+
 /// Internal API.  VariantCollection.
 @inline(__always)
 @inlinable
@@ -65,6 +87,7 @@ public func _macroExportGet<T>(
 ) -> Variant? where T: VariantStorable {
     value.array.toVariant()
 }
+
 
 /// Internal API.  ObjectCollection.
 @inline(__always)

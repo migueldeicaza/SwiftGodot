@@ -102,6 +102,53 @@ public func _macroExportSet<T>(
     return nil
 }
 
+@inline(__always)
+@inlinable
+func proxyClosureViaCallable<each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+    _ callable: Callable
+) -> (repeat each Argument) -> Result {
+    return { (arguments: repeat each Argument) -> Result in
+        let array = GArray()
+            
+        repeat array.append((each arguments).toArgumentVariant())
+        
+        do {
+            return try Result.fromArgumentVariant(callable.callv(arguments: array))
+        } catch {
+            fatalError("Failed to proxy Callable: \(error). Unable to convert resulting Variant back to expected Swift type '\(Result.self)'.")
+        }
+    }
+}
+
+/// Internal API.  Closure.
+@inline(__always)
+@inlinable
+public func _macroExportSet<each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: @escaping (repeat each Argument) -> Result,
+    _ set: (@escaping (repeat each Argument) -> Result) -> Void
+) -> Variant? {
+    guard let variantOrNil = arguments.first else {
+        GD.printErr("Unable to set `\(name)`, no arguments")
+        return nil
+    }
+
+    guard let variant = variantOrNil else {
+        return nil
+    }
+    
+    guard let newCallable = Callable.fromVariant(variant) else {
+        GD.printErr("Unable to set `\(name)`, argument is not Callable")
+        return nil
+    }
+    
+    
+    set(proxyClosureViaCallable(newCallable))
+    
+    return nil
+}
+
 /// Internal API. Objects.
 @inline(__always)
 @inlinable

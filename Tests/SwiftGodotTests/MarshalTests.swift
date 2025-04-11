@@ -4,6 +4,11 @@ import SwiftGodotTestability
 
 @Godot
 private class TestNode: Node {
+    @Export
+    var closure: (Int, Int, Int) -> Int = { (a: Int, b: Int, c: Int) -> Int in
+        return a + b + c
+    }
+    
     @Callable
     func double(_ ints: [Int]) -> [Double] {
         return ints.map {
@@ -34,6 +39,36 @@ final class MarshalTests: GodotTestCase {
     
     override static var godotSubclasses: [Wrapped.Type] {
         return [TestNode.self]
+    }
+    
+    func testExportedClosure() {
+        let node = TestNode()
+        
+        guard let callable = node.call(method: "get_closure").map({ Callable.fromVariant($0) }) as? Callable else {
+            XCTFail()
+            return
+        }
+        
+        guard let result = callable.call(1.toVariant(), 2.toVariant(), 3.toVariant()).map({ Int.fromVariant($0) }) as? Int else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(6, result)
+        
+        _ = node.call(method: "set_closure", Callable { arguments in
+            do {
+                var value = try arguments.argument(ofType: Int.self, at: 0)
+                value *= try arguments.argument(ofType: Int.self, at: 1)
+                value *= try arguments.argument(ofType: Int.self, at: 2)
+                return value.toVariant()
+            } catch {
+                return nil
+            }
+        }.toVariant())
+        
+        XCTAssertEqual(node.closure(2, 3, 4), 24)
+        
     }
 
     func testClassesMethodsPerformance() {

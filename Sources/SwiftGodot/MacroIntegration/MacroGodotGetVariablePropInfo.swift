@@ -170,6 +170,19 @@ public func _macroGodotGetPropInfo<Root, T>(
     )
 }
 
+/// Internal API. Closure.
+@inline(__always)
+@inlinable
+public func _macroGodotGetPropInfo<Root, each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+    at keyPath: KeyPath<Root, (repeat each Argument) -> Result>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo {
+    Callable._macroGodotGetPropInfo(name: name, hint: userHint, hintStr: userHintStr, usage: userUsage)
+}
+
 @inline(__always)
 @usableFromInline
 func enumCasesHintStr<T>(_ type: T.Type = T.self) -> String
