@@ -36,26 +36,32 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let _pdemo = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \SomeNode.demo,
-            name: "demo",
-            userHint: .enum,
-            userHintStr: nil,
-            userUsage: nil
-        )
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod (name: "get_demo", flags: .default, returnValue: _pdemo, arguments: [], function: SomeNode._mproxy_get_demo)
-        classInfo.registerMethod (name: "set_demo", flags: .default, returnValue: nil, arguments: [_pdemo], function: SomeNode._mproxy_set_demo)
-        classInfo.registerProperty (_pdemo, getter: "get_demo", setter: "set_demo")
-        let _pdemo64 = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \SomeNode.demo64,
-            name: "demo64",
-            userHint: .enum,
-            userHintStr: nil,
-            userUsage: nil
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \SomeNode.demo,
+                name: "demo",
+                userHint: .enum,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_demo",
+            setterName: "set_demo",
+            getterFunction: SomeNode._mproxy_get_demo,
+            setterFunction: SomeNode._mproxy_set_demo
         )
-        classInfo.registerMethod (name: "get_demo64", flags: .default, returnValue: _pdemo64, arguments: [], function: SomeNode._mproxy_get_demo64)
-        classInfo.registerMethod (name: "set_demo64", flags: .default, returnValue: nil, arguments: [_pdemo64], function: SomeNode._mproxy_set_demo64)
-        classInfo.registerProperty (_pdemo64, getter: "get_demo64", setter: "set_demo64")
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \SomeNode.demo64,
+                name: "demo64",
+                userHint: .enum,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_demo64",
+            setterName: "set_demo64",
+            getterFunction: SomeNode._mproxy_get_demo64,
+            setterFunction: SomeNode._mproxy_set_demo64
+        )
     } ()
 }

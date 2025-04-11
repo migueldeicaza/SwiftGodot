@@ -24,7 +24,7 @@ class Castro: Node {
 
     func _mproxy_perhapsSubscribe(arguments: borrowing Arguments) -> Variant? {
         do { // safe arguments access scope
-            let arg0: Podcast? = try arguments.optionlArgument(ofType: Podcast.self, at: 0)
+            let arg0: Podcast? = try arguments.argument(ofType: Podcast?.self, at: 0)
             perhapsSubscribe(podcast: arg0)
             return nil
         } catch let error as ArgumentAccessError {
@@ -39,7 +39,7 @@ class Castro: Node {
 
     func _mproxy_removeSilences(arguments: borrowing Arguments) -> Variant? {
         do { // safe arguments access scope
-            let arg0: Variant = try arguments.variantArgument(at: 0)
+            let arg0: Variant = try arguments.argument(ofType: Variant.self, at: 0)
             removeSilences(from: arg0)
             return nil
         } catch let error as ArgumentAccessError {

@@ -6,7 +6,7 @@ private class TestNode: Node {
 
     func _mproxy_foo(arguments: borrowing Arguments) -> Variant? {
         do { // safe arguments access scope
-            let arg0: Variant? = try arguments.optionalVariantArgument(at: 0)
+            let arg0: Variant? = try arguments.argument(ofType: Variant?.self, at: 0)
             let result = foo(variant: arg0)
             guard let result else {
                 return nil

@@ -32,16 +32,19 @@ final class MyClass: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MyClass")
         assert(ClassDB.classExists(class: className))
-        let _pdata = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \MyClass.data,
-            name: "data",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
-        )
         let classInfo = ClassInfo<MyClass> (name: className)
-        classInfo.registerMethod (name: "get_data", flags: .default, returnValue: _pdata, arguments: [], function: MyClass._mproxy_get_data)
-        classInfo.registerMethod (name: "set_data", flags: .default, returnValue: nil, arguments: [_pdata], function: MyClass._mproxy_set_data)
-        classInfo.registerProperty (_pdata, getter: "get_data", setter: "set_data")
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \MyClass.data,
+                name: "data",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_data",
+            setterName: "set_data",
+            getterFunction: MyClass._mproxy_get_data,
+            setterFunction: MyClass._mproxy_set_data
+        )
     } ()
 }

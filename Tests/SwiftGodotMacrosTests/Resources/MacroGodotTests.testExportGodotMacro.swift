@@ -19,16 +19,19 @@ class Hi: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
-        let _pgoodName = SwiftGodot._macroGodotGetVariablePropInfo(
-            at: \Hi.goodName,
-            name: "good_name",
-            userHint: nil,
-            userHintStr: nil,
-            userUsage: nil
-        )
         let classInfo = ClassInfo<Hi> (name: className)
-        classInfo.registerMethod (name: "get_good_name", flags: .default, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
-        classInfo.registerMethod (name: "set_good_name", flags: .default, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
-        classInfo.registerProperty (_pgoodName, getter: "get_good_name", setter: "set_good_name")
+        classInfo.registerPropertyWithGetterSetter(
+            SwiftGodot._macroGodotGetVariablePropInfo(
+                at: \Hi.goodName,
+                name: "good_name",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_good_name",
+            setterName: "set_good_name",
+            getterFunction: Hi._mproxy_get_goodName,
+            setterFunction: Hi._mproxy_set_goodName
+        )
     } ()
 }

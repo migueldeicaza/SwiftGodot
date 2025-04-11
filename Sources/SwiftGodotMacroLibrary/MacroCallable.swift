@@ -32,46 +32,11 @@ public struct GodotCallable: PeerMacro {
         let indentation = parameters.isEmpty ? "" : "    "
         
         for (index, parameter) in parameters.enumerated() {
-            guard let ptype = getTypeName(parameter) else {
-                throw MacroError.typeName (parameter)
-            }
+            let ptype = parameter.type.description
             
-            if ptype == "Variant" {
-                body += """
-                        let arg\(index): Variant = try arguments.variantArgument(at: \(index))
-                
-                """
-            } else if ptype == "Variant?" {
-                body += """
-                        let arg\(index): Variant? = try arguments.optionalVariantArgument(at: \(index))
-                
-                """
-            } else if parameter.isSwiftArray, let elementType = parameter.arrayElementTypeName {
-                body += """
-                        let arg\(index): [\(elementType)] = try arguments.arrayArgument(ofType: \(elementType).self, at: \(index))
-                
-                """
-            } else if parameter.isVariantCollection, let elementType = parameter.variantCollectionElementTypeName {
-                body += """
-                        let arg\(index): VariantCollection<\(elementType)> = try arguments.variantCollectionArgument(ofType: \(elementType).self, at: \(index))
-                
-                """
-            } else if parameter.isObjectCollection, let elementType = parameter.objectCollectionElementTypeName {
-                body += """
-                        let arg\(index): ObjectCollection<\(elementType)> = try arguments.objectCollectionArgument(ofType: \(elementType).self, at: \(index))
-                
-                """
-            } else if ptype.hasSuffix("?"){
-                body += """
-                        let arg\(index): \(ptype) = try arguments.optionalArgument(ofType: \(ptype.dropLast()).self, at: \(index))
-                
-                """
-            } else {
-                body += """
-                        let arg\(index): \(ptype) = try arguments.argument(ofType: \(ptype).self, at: \(index))
-                
-                """
-            }
+            body += """
+                    let arg\(index): \(ptype) = try arguments.argument(ofType: \(ptype).self, at: \(index))            
+            """
             
             let first = parameter.firstName.text
                         
