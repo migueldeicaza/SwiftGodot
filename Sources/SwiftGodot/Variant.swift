@@ -38,19 +38,6 @@
 /// Modifications to a container will modify all references to it.
 
 public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
-    static let toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
-        var map: [GDExtensionTypeFromVariantConstructorFunc] = []
-        
-        // stub for GDEXTENSION_VARIANT_TYPE_NIL
-        map.append({ _, _ in })
-        
-        for vtype in GDEXTENSION_VARIANT_TYPE_NIL.rawValue + 1 ..< GDEXTENSION_VARIANT_TYPE_VARIANT_MAX.rawValue {
-            map.append(gi.get_variant_to_type_constructor(GDExtensionVariantType(rawValue: vtype))!)
-        }
-        
-        return map
-    }()
-    
     static let variantFromBool = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_BOOL)!
     static let variantFromInt = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_INT)!
     static let variantFromDouble = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
@@ -223,13 +210,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         }
         
         return result
-    }
-    
-    func toType (_ type: GType, dest: UnsafeMutableRawPointer) {
-        withUnsafeMutablePointer(to: &content) { selfPtr in
-            Variant.toTypeMap [Int (type.rawValue)] (dest, selfPtr)
-        }
-    }
+    }        
     
     /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used in API visible to Godot
     @inline(__always)
