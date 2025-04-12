@@ -60,22 +60,22 @@ class MathHelper: Node {
         classInfo.registerMethod(
             name: "multiply",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Int.self),
-            arguments: [_macroGodotGetCallablePropInfo(Int.self, name: "a"), _macroGodotGetCallablePropInfo(Int.self, name: "b")],
+            returnValue: _callablePropInfo(Int.self),
+            arguments: [_callablePropInfo(Int.self, name: "a"), _callablePropInfo(Int.self, name: "b")],
             function: MathHelper._mproxy_multiply
         )
         classInfo.registerMethod(
             name: "divide",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Float.self),
-            arguments: [_macroGodotGetCallablePropInfo(Float.self, name: "a"), _macroGodotGetCallablePropInfo(Float.self, name: "b")],
+            returnValue: _callablePropInfo(Float.self),
+            arguments: [_callablePropInfo(Float.self, name: "a"), _callablePropInfo(Float.self, name: "b")],
             function: MathHelper._mproxy_divide
         )
         classInfo.registerMethod(
             name: "areBothTrue",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Bool.self),
-            arguments: [_macroGodotGetCallablePropInfo(Bool.self, name: "a"), _macroGodotGetCallablePropInfo(Bool.self, name: "b")],
+            returnValue: _callablePropInfo(Bool.self),
+            arguments: [_callablePropInfo(Bool.self, name: "a"), _callablePropInfo(Bool.self, name: "b")],
             function: MathHelper._mproxy_areBothTrue
         )
     } ()

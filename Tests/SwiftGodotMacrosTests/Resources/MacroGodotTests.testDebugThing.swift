@@ -32,8 +32,8 @@ class DebugThing: SwiftGodot.Object {
         classInfo.registerMethod(
             name: "do_thing",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self),
-            arguments: [_macroGodotGetCallablePropInfo(SwiftGodot.Variant?.self, name: "value")],
+            returnValue: _callablePropInfo(SwiftGodot.Variant?.self),
+            arguments: [_callablePropInfo(SwiftGodot.Variant?.self, name: "value")],
             function: DebugThing._mproxy_do_thing
         )
     } ()

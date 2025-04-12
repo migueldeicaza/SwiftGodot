@@ -98,7 +98,7 @@ public protocol _GodotBridgeable: VariantConvertible {
 /// Internal API. Subset protocol for all Builtin Types.
 public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     /// Internal API.
-    static func _macroGodotGetPropInfo(
+    static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
@@ -128,13 +128,13 @@ public extension _GodotBridgeableObject where Self: Object {
     /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used in API visible to Godot
     @inline(__always)
     @inlinable
-    static func _macroGodotGetPropInfo(
+    static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        return _macroGodotGetPropInfoDefault(
+        return _propInfoDefault(
             propertyType: .object,
             name: name,
             className: StringName("\(Self.self)"),
@@ -158,7 +158,7 @@ public extension Optional where Wrapped: VariantConvertible {
 // Default case covering most of the cases, only propertyType is needed
 @inline(__always)
 @inlinable
-func _macroGodotGetPropInfoDefault(
+func _propInfoDefault(
     propertyType: Variant.GType,
     name: String,
     className: StringName? = nil,
@@ -177,7 +177,7 @@ func _macroGodotGetPropInfoDefault(
 }
 
 extension Int64: _GodotBridgeableBuiltin {
-    // _macroGodotGetPropInfo is implemented below for all `BinaryInteger`
+    // _propInfo is implemented below for all `BinaryInteger`
     // _gtype is implemented below for all `BinaryInteger`
     
     /// Wrap a ``Int64``  into ``Variant?``.
@@ -189,6 +189,21 @@ extension Int64: _GodotBridgeableBuiltin {
     /// Wrap a ``Int64``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
+    }
+    
+    /// Initialze ``Int64`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``
+    public init?(_ variant: Variant) {
+        self.init()
+        
+        withUnsafeMutablePointer(to: &self) { pPayload in
+            variant.constructType(into: pPayload, constructor: Variant.intFromVariant)
+        }
+    }
+    
+    /// Initialze ``Int64`` from ``Variant``. Fails if `variant` doesn't contain ``Int64`` or is `nil`
+    public init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
     }
     
     /// Attempt to unwrap a ``Int64`` from a `variant`. Throws `VariantConversionError` if it's not possible.
@@ -209,13 +224,13 @@ public extension BinaryInteger {
     /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used in API visible to Godot
     @inline(__always)
     @inlinable
-    static func _macroGodotGetPropInfo(
+    static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetPropInfoDefault(
+        _propInfoDefault(
             propertyType: .int,
             name: name,
             hint: hint,
@@ -233,6 +248,22 @@ public extension BinaryInteger {
     /// Wrap an integer number  into ``Variant``.
     func toVariant() -> Variant {
         Int64(self).toVariant()
+    }
+    
+    
+    /// Initialze ``BinaryInteger`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``, or its value is too large for this ``BinaryInteger``
+    init?(_ variant: Variant) {
+        guard let value = try? Self.fromVariantOrThrow(variant) else {
+            return nil
+        }
+        
+        self = value
+    }
+    
+    /// Initialze ``BinaryInteger`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``, its value is too large for this ``BinaryInteger``, or is `nil`
+    init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
     }
     
     /// Attempt to unwrap an integer number from a `variant`. Throws `VariantConversionError` if it's not possible.
@@ -257,13 +288,13 @@ extension Bool: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used in API visible to Godot
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetPropInfo(
+    public static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetPropInfoDefault(
+        _propInfoDefault(
             propertyType: _variantType,
             name: name,
             hint: hint,
@@ -283,6 +314,23 @@ extension Bool: _GodotBridgeableBuiltin {
         Variant(self)
     }
     
+    /// Initialze ``Bool`` from ``Variant``. Fails if `variant` doesn't contain ``Bool``
+    public init?(_ variant: Variant) {
+        var payload: GDExtensionBool = 0
+        
+        withUnsafeMutablePointer(to: &payload) { pPayload in
+            variant.constructType(into: pPayload, constructor: Variant.boolFromVariant)
+        }
+        
+        self = payload != 0
+    }
+    
+    /// Initialze ``Bool`` from ``Variant``. Fails if `variant` doesn't contain ``Bool`` or is `nil`
+    public init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
+    }
+    
     /// Attempt to unwrap a ``Bool`` from a `variant`. Throws `VariantConversionError` if it's not possible.
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         guard let value = Bool(variant) else {
@@ -300,13 +348,13 @@ extension String: _GodotBridgeableBuiltin {
     /// Internal API. Returns ``PropInfo`` for when any ``String`` is used in API visible to Godot
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetPropInfo(
+    public static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetPropInfoDefault(
+        _propInfoDefault(
             propertyType: .string,
             name: name,
             hint: hint,
@@ -326,6 +374,21 @@ extension String: _GodotBridgeableBuiltin {
         Variant(self)
     }
     
+    /// Initialze ``String`` from ``Variant``. Fails if `variant` doesn't contain ``String``
+    public init?(_ variant: Variant) {
+        guard let string = GString(variant) else {
+            return nil
+        }
+        
+        self = string.description
+    }
+    
+    /// Initialze ``String`` from ``Variant``. Fails if `variant` doesn't contain ``String`` or is `nil`
+    public init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
+    }
+    
     /// Attempt to unwrap a ``String`` from a `variant`. Throws `VariantConversionError` if it's not possible.
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         guard let value = String(variant) else {
@@ -337,7 +400,7 @@ extension String: _GodotBridgeableBuiltin {
 }
 
 extension Double: _GodotBridgeableBuiltin {
-    // _macroGodotGetPropInfo is implemented below for all `BinaryFloatingPoint`
+    // _propInfo is implemented below for all `BinaryFloatingPoint`
     // _gtype is implemented below for all `BinaryFloatingPoint`
     
     /// Wrap a ``Double``  into ``Variant?``.
@@ -349,6 +412,21 @@ extension Double: _GodotBridgeableBuiltin {
     /// Wrap a ``Double``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
+    }
+    
+    /// Initialze ``Double`` from ``Variant``. Fails if `variant` doesn't contain ``Double``
+    public init?(_ variant: Variant) {
+        self.init()
+        
+        withUnsafeMutablePointer(to: &self) { pPayload in
+            variant.constructType(into: pPayload, constructor: Variant.doubleFromVariant)
+        }
+    }
+    
+    /// Initialze ``Double`` from ``Variant``. Fails if `variant` doesn't contain ``Double`` or is `nil`
+    public init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
     }
     
     /// Attempt to unwrap a ``Double`` from a `variant`. Throws `VariantConversionError` if it's not possible.
@@ -369,13 +447,13 @@ public extension BinaryFloatingPoint {
     /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used in API visible to Godot
     @inline(__always)
     @inlinable
-    static func _macroGodotGetPropInfo(
+    static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetPropInfoDefault(
+        _propInfoDefault(
             propertyType: .float,
             name: name,
             hint: hint,
@@ -393,6 +471,18 @@ public extension BinaryFloatingPoint {
     /// Wrap a floating point number into ``Variant``.
     func toVariant() -> Variant {
         Double(self).toVariant()
+    }
+    
+    /// Initialze ``BinaryFloatingPoint`` from ``Variant``. Fails if `variant` doesn't contain ``Double``
+    init?(_ variant: Variant) {
+        guard let value = Double(variant) else { return nil }
+        self = Self(value)
+    }
+    
+    /// Initialze ``BinaryFloatingPoint`` from ``Variant``. Fails if `variant` doesn't contain ``Double``, or is `nil`
+    init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
     }
 
     /// Attempt to unwrap a floating point number from a `variant`. Throws `VariantConversionError` if it's not possible.

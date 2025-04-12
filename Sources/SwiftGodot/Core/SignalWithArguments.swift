@@ -27,18 +27,15 @@ public class SignalWithArguments<each T: _GodotBridgeable> {
     }
 
     /// Expand a list of argument types into a list of PropInfo objects
-    /// Note: it doesn't currently seem to be possible to constrain
-    /// the type of the pack expansion to be ``VariantStorable.Type``, but
-    /// we know that it always will be, so we can force cast it.
-    static func expandArguments<each ArgType>(_ type: repeat each ArgType) -> [PropInfo] {
+    static func expandArguments<each ArgType: _GodotBridgeable>(_ type: repeat (each ArgType).Type) -> [PropInfo] {
         var args = [PropInfo]()
         var argC = 1
-        for arg in repeat each type {
-            let a = arg as! any VariantStorable.Type
-            args.append(a.propInfo(name: "arg\(argC)"))
-            argC += 1
-
-        }
+//        for arg in repeat each type {
+//            let propInfo = _callablePropInfo(arg, name: "arg\(argC)")
+//            let a = arg as! any _GodotBridgeable.Type
+//            args.append(a.propInfo(name: "arg\(argC)"))
+//            argC += 1
+//        }
         return args
     }
 

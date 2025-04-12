@@ -27,7 +27,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     }
     
     init (content: Int64) {
-        array = GArray(alreadyOwnedContent: content)
+        array = GArray(takingOver: content)
     }
     
     /// Initializes the collection with an empty typed GArray
@@ -376,7 +376,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used in API visible to Godot
     @inlinable
     @inline(__always)
-    public static func _macroGodotGetPropInfo(
+    public static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,

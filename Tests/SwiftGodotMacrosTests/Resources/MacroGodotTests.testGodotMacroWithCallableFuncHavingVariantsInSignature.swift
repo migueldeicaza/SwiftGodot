@@ -30,8 +30,8 @@ private class TestNode: Node {
         classInfo.registerMethod(
             name: "foo",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Variant?.self),
-            arguments: [_macroGodotGetCallablePropInfo(Variant?.self, name: "variant")],
+            returnValue: _callablePropInfo(Variant?.self),
+            arguments: [_callablePropInfo(Variant?.self, name: "variant")],
             function: TestNode._mproxy_foo
         )
     } ()

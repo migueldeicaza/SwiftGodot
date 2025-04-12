@@ -8,14 +8,14 @@
 /// Internal API. Variant.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root>(
+public func _propInfo<Root>(
     at keyPath: KeyPath<Root, Variant>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo {
-    Variant._macroGodotGetPropInfo(
+    Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -26,14 +26,14 @@ public func _macroGodotGetPropInfo<Root>(
 /// Internal API. Optional Variant.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root>(
+public func _propInfo<Root>(
     at keyPath: KeyPath<Root, Variant?>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo {
-    Variant._macroGodotGetPropInfo(
+    Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -44,14 +44,14 @@ public func _macroGodotGetPropInfo<Root>(
 /// Internal API. Builtin type.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    T._macroGodotGetPropInfo(
+    T._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -63,14 +63,14 @@ public func _macroGodotGetPropInfo<Root, T>(
 @inline(__always)
 @inlinable
 
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, T?>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    Variant._macroGodotGetPropInfo(
+    Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -95,7 +95,7 @@ func improveObjectVariablePropInfo<T>(
 /// Internal API. Object.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
     userHint: PropertyHint? = nil,
@@ -105,7 +105,7 @@ public func _macroGodotGetPropInfo<Root, T>(
     var userHint = userHint
     var userHintStr = userHintStr
     improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
-    return T._macroGodotGetPropInfo(
+    return T._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -116,7 +116,7 @@ public func _macroGodotGetPropInfo<Root, T>(
 /// Internal API. Optional Object.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, T?>,
     name: String,
     userHint: PropertyHint? = nil,
@@ -126,7 +126,7 @@ public func _macroGodotGetPropInfo<Root, T>(
     var userHint = userHint
     var userHintStr = userHintStr
     improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
-    return T._macroGodotGetPropInfo(        
+    return T._propInfo(        
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -137,14 +137,14 @@ public func _macroGodotGetPropInfo<Root, T>(
 /// Internal API. VariantCollection.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, VariantCollection<T>>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
-) -> PropInfo where T: VariantStorable, T: _GodotBridgeableBuiltin {
-    VariantCollection<T>._macroGodotGetPropInfo(
+) -> PropInfo where T: _GodotBridgeableBuiltin {
+    VariantCollection<T>._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -155,14 +155,14 @@ public func _macroGodotGetPropInfo<Root, T>(
 /// Internal API. ObjectCollection.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, ObjectCollection<T>>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._macroGodotGetPropInfo(
+    ObjectCollection<T>._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -173,14 +173,14 @@ public func _macroGodotGetPropInfo<Root, T>(
 /// Internal API. Closure.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, each Argument: VariantConvertible, Result: VariantConvertible>(
+public func _propInfo<Root, each Argument: VariantConvertible, Result: VariantConvertible>(
     at keyPath: KeyPath<Root, (repeat each Argument) -> Result>,
     name: String,
     userHint: PropertyHint? = nil,
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo {
-    Callable._macroGodotGetPropInfo(name: name, hint: userHint, hintStr: userHintStr, usage: userUsage)
+    Callable._propInfo(name: name, hint: userHint, hintStr: userHintStr, usage: userUsage)
 }
 
 @inline(__always)
@@ -198,7 +198,7 @@ where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
 /// Internal API.  CaseIterable enum with BinaryInteger RawValue.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
     userHint: PropertyHint? = nil,
@@ -214,7 +214,7 @@ public func _macroGodotGetPropInfo<Root, T>(
         userHintStr = enumCasesHintStr(T.self)
     }
     
-    return _macroGodotGetPropInfoDefault(
+    return _propInfoDefault(
         propertyType: .int,
         name: name,
         hint: userHint,
@@ -225,7 +225,7 @@ public func _macroGodotGetPropInfo<Root, T>(
 
 @available(*, unavailable, message: "Type is not supported for @Export")
 @_disfavoredOverload
-public func _macroGodotGetPropInfo<Root, T>(
+public func _propInfo<Root, T>(
     at keyPath: KeyPath<Root, T>,
     name: String,
     userHint: PropertyHint? = nil,

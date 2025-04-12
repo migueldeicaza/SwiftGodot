@@ -21,7 +21,7 @@ class Hi: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Hi> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Hi.goodName,
                 name: "good_name",
                 userHint: nil,

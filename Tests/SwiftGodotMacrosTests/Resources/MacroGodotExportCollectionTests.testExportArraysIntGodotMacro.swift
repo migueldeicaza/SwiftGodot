@@ -33,7 +33,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \SomeNode.someNumbers,
                 name: "some_numbers",
                 userHint: nil,
@@ -46,7 +46,7 @@ class SomeNode: Node {
             setterFunction: SomeNode._mproxy_set_someNumbers
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \SomeNode.someOtherNumbers,
                 name: "some_other_numbers",
                 userHint: nil,

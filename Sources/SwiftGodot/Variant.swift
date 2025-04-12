@@ -54,7 +54,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     static let variantFromBool = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_BOOL)!
     static let variantFromInt = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_INT)!
     static let variantFromDouble = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
-    static let variantFromObject = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
+    static let variantFromObject = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
+    
+    static let boolFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_BOOL)!
+    static let intFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_INT)!
+    static let doubleFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
+    static let objectFromVariant =  gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
     
     typealias ContentType = (Int, Int, Int)
     var content: ContentType = Variant.zero
@@ -71,11 +76,11 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         extensionInterface.variantInited(variant: self, content: &content)
     }
     
-    /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
+    /// Initialize with existing `ContentType` assuming this ``Variant`` owns it since now. Fails if `content` represents Godot Nil.
     init?(takingOver otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
         
-        self.content = otherContent
+        content = otherContent
 
         extensionInterface.variantInited(variant: self, content: &content)
     }
@@ -110,15 +115,37 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
     
     /// Initialize ``Variant`` using inlinable payload or opaque handle managed by Builtin Type or Object.
-    init<Payload>(payload: Payload, constructor: GDExtensionVariantFromTypeConstructorFunc) {
+    @inline(__always)
+    @usableFromInline
+    init<Payload>(
+        payload: Payload,
+        constructor: @convention(c) (
+            /* pVariantContent */ UnsafeMutableRawPointer?,
+            /* pPayload */ UnsafeMutableRawPointer?
+        ) -> Void
+    ) {
         var payload = payload
-        withUnsafeMutablePointer(to: &content) { target in
-            withUnsafeMutablePointer(to: &payload) { source in
-                constructor(target, source)
+        withUnsafeMutablePointer(to: &content) { pVariantContent in
+            withUnsafeMutablePointer(to: &payload) { pPayload in
+                constructor(pVariantContent, pPayload)
             }
         }
         
         extensionInterface.variantInited(variant: self, content: &content)
+    }
+    
+    @inline(__always)
+    @usableFromInline
+    func constructType(
+        into pPayload: UnsafeMutableRawPointer,
+        constructor: @convention(c) (
+            /* pPayload */ UnsafeMutableRawPointer?,
+            /* pVariantContent */ UnsafeMutableRawPointer?
+        ) -> Void
+    ) {
+        withUnsafeMutablePointer(to: &content) { pVariantContent in
+            constructor(pPayload, pVariantContent)
+        }
     }
     
     /// Initialize ``Variant`` by wrapping ``Object``
@@ -207,13 +234,13 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used in API visible to Godot
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetPropInfo(
+    public static func _propInfo(
         name: String,
         hint: PropertyHint?,
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        _macroGodotGetPropInfoDefault(
+        _propInfoDefault(
             propertyType: .nil, // Godot treats .nil as Godot Variant
             name: name,
             hint: hint,
@@ -240,12 +267,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
             return nil
         }
 
-        var value: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
-        toType(.object, dest: &value)
-        guard let value else {
+        var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
+        constructType(into: &objectHandle, constructor: Self.objectFromVariant)
+        guard let objectHandle else {
             return nil
         }
-        let ret: T? = lookupObject(nativeHandle: value, ownsRef: false)
+        let ret: T? = lookupObject(nativeHandle: objectHandle, ownsRef: false)
         return ret
     }
     
@@ -461,39 +488,17 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
 }
 
-public extension Variant? {
+extension Variant? {
     /// Extract `T` from this ``Variant?`` or return nil if unsucessful.
-    func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
         type.fromVariant(self)
     }
-}
-
-extension Optional where Wrapped == Variant {
+    
     var content: Variant.ContentType {
         if let wrapped = self {
             return wrapped.content
         } else {
             return Variant.zero
-        }
-    }
-}
-
-extension Optional: VariantStorable where Wrapped: VariantStorable {
-    public typealias Representable = Wrapped.Representable
-    
-    public func toVariantRepresentable() -> Wrapped.Representable {
-        if let wrapped = self {
-            return wrapped.toVariantRepresentable()
-        }
-        // It's not needed and is just a wrong abstraction of internal implementation leaking into the public API
-        fatalError("It's illegal to construct a `Variant` from `Variant?`, unwrap it or pass it as it is.")
-    }
-    
-    public init?(_ variant: Variant) {
-        if let wrapped = Wrapped(variant) {
-            self = .some(wrapped)
-        } else {
-            return nil
         }
     }
 }

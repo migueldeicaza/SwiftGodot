@@ -30,8 +30,8 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: "printNames",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Swift.Void.self),
-            arguments: [_macroGodotGetCallablePropInfo(ObjectCollection<Node>.self, name: "nodes")],
+            returnValue: _callablePropInfo(Swift.Void.self),
+            arguments: [_callablePropInfo(ObjectCollection<Node>.self, name: "nodes")],
             function: SomeNode._mproxy_printNames
         )
     } ()

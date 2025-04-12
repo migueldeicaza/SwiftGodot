@@ -56,7 +56,7 @@ class Car: Node {
         let classInfo = ClassInfo<Car> (name: className)
         classInfo.addPropertyGroup(name: "VIN", prefix: "")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Car.vins,
                 name: "vins",
                 userHint: nil,
@@ -70,7 +70,7 @@ class Car: Node {
         )
         classInfo.addPropertyGroup(name: "YMM", prefix: "")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Car.years,
                 name: "years",
                 userHint: nil,
@@ -83,7 +83,7 @@ class Car: Node {
             setterFunction: Car._mproxy_set_years
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Car.makes,
                 name: "makes",
                 userHint: nil,
@@ -96,7 +96,7 @@ class Car: Node {
             setterFunction: Car._mproxy_set_makes
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Car.models,
                 name: "models",
                 userHint: nil,

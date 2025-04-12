@@ -92,7 +92,7 @@ class GodotMacroProcessor {
             .map { parameter in
                 let typename = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 let name = getParamName(parameter)
-                return "_macroGodotGetCallablePropInfo(\(typename).self, name: \"\(name)\")"
+                return "_callablePropInfo(\(typename).self, name: \"\(name)\")"
             }
             .joined(separator: ", ")
         
@@ -110,7 +110,7 @@ class GodotMacroProcessor {
             classInfo.registerMethod(
                 name: "\(funcName)", 
                 flags: .default, 
-                returnValue: _macroGodotGetCallablePropInfo(\(returnTypename).self), 
+                returnValue: _callablePropInfo(\(returnTypename).self), 
                 arguments: \(arguments), 
                 function: \(className)._mproxy_\(funcName)
             )
@@ -229,7 +229,7 @@ class GodotMacroProcessor {
             injectClassInfo()
             ctor.append("""
             classInfo.registerPropertyWithGetterSetter(
-                SwiftGodot._macroGodotGetPropInfo(
+                SwiftGodot._propInfo(
             \(argsStr)
                 ),
                 getterName: "\(getterName)\",

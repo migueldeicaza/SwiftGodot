@@ -765,9 +765,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 """)
                 
-                p ("// Used to construct objects when the underlying built-in's ref count has already been incremented for me")
-                p ("public required init(alreadyOwnedContent content: ContentType)") {
-                    p ("self.content = content")
+                p("""
+                /// Initialize with existing `ContentType` assuming this ``\(typeName)`` owns it since now.
+                init(takingOver content: ContentType)
+                """) {
+                    p("self.content = content")
                 }
             }
            
@@ -820,7 +822,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p("""
             
             static let variantFromSelf = gi.get_variant_from_type_constructor(\(typeEnum))!
-            static let selfFromVariant = gi.get_variant_from_type_constructor(\(typeEnum))!
+            static let selfFromVariant = gi.get_variant_from_type_constructor(\(typeEnum))!                            
             
             /// Wrap ``\(typeName)`` into a ``Variant``
             public func toVariant() -> Variant {
@@ -840,7 +842,46 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 return value                
             }
+            
             """)
+            
+            if isContentRepresented == true {
+                p("""
+                /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
+                public convenience init?(_ variant: Variant) {
+                    guard Self._variantType == variant.gtype else { return nil }
+                    var content = \(typeName).zero
+                    withUnsafeMutablePointer(to: &content) { pPayload in
+                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                    }
+                    self.init(takingOver: content)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                public convenience init?(_ variant: Variant?) {
+                    guard let variant else { return nil }
+                    self.init(variant)
+                }
+                """)
+            } else {
+                p("""
+                /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
+                public init?(_ variant: Variant) {
+                    self.init()
+                    
+                    withUnsafeMutablePointer(to: &self) { pPayload in
+                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                    }
+                }
+                
+                /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                public init?(_ variant: Variant?) {
+                    guard let variant else { return nil }
+                    self.init(variant)
+                }
+                
+                """)
+            }
                         
             let propInfoPropertyType: String
             switch bc.name {
@@ -861,13 +902,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used in API visible to Godot
             @inline(__always)
             @inlinable
-            public static func _macroGodotGetPropInfo(                
+            public static func _propInfo(                
                 name: String,
                 hint: PropertyHint?,
                 hintStr: String?,
                 usage: PropertyUsageFlags?
             ) -> PropInfo {
-                _macroGodotGetPropInfoDefault(
+                _propInfoDefault(
                     propertyType: \(propInfoPropertyType),
                     name: name,
                     hint: hint,

@@ -23,7 +23,7 @@ class Garage: Node {
         let classInfo = ClassInfo<Garage> (name: className)
         classInfo.addPropertyGroup(name: "Example", prefix: "example")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.bar,
                 name: "bar",
                 userHint: nil,

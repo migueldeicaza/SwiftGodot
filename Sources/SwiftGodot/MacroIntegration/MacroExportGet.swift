@@ -48,7 +48,7 @@ public func _macroExportGet<each Argument: VariantConvertible, Result: VariantCo
 @inlinable
 public func _macroExportGet<T>(
     _ value: VariantCollection<T>
-) -> Variant? where T: VariantStorable {
+) -> Variant? where T: _GodotBridgeableBuiltin {
     value.array.toVariant()
 }
 
@@ -76,7 +76,7 @@ public func _macroExportGet<T>(
 @available(*, unavailable, message: "Optional VariantCollection is not supported by @Export macro")
 public func _macroExportGet<T>(
     _ value: VariantCollection<T>?
-) -> Variant? where T: VariantStorable {
+) -> Variant? where T: _GodotBridgeableBuiltin {
     fatalError("Unreachable")
 }
 

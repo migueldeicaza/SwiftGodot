@@ -392,7 +392,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
         
     @inline(__always)
     @inlinable
-    public static func _macroGodotGetPropInfo(        
+    public static func _propInfo(        
         name: String,
         hint: PropertyHint?,
         hintStr: String?,

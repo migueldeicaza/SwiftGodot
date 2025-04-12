@@ -100,7 +100,7 @@ class Garage: Node {
         let classInfo = ClassInfo<Garage> (name: className)
         classInfo.addPropertyGroup(name: "Front Page", prefix: "")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.name,
                 name: "name",
                 userHint: nil,
@@ -113,7 +113,7 @@ class Garage: Node {
             setterFunction: Garage._mproxy_set_name
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.rating,
                 name: "rating",
                 userHint: nil,
@@ -127,7 +127,7 @@ class Garage: Node {
         )
         classInfo.addPropertyGroup(name: "More Details", prefix: "")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.reviews,
                 name: "reviews",
                 userHint: nil,
@@ -140,7 +140,7 @@ class Garage: Node {
             setterFunction: Garage._mproxy_set_reviews
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.checkIns,
                 name: "check_ins",
                 userHint: nil,
@@ -153,7 +153,7 @@ class Garage: Node {
             setterFunction: Garage._mproxy_set_checkIns
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.address,
                 name: "address",
                 userHint: nil,
@@ -167,7 +167,7 @@ class Garage: Node {
         )
         classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "")
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.daysOfOperation,
                 name: "days_of_operation",
                 userHint: nil,
@@ -180,7 +180,7 @@ class Garage: Node {
             setterFunction: Garage._mproxy_set_daysOfOperation
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.hours,
                 name: "hours",
                 userHint: nil,
@@ -193,7 +193,7 @@ class Garage: Node {
             setterFunction: Garage._mproxy_set_hours
         )
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Garage.insuranceProvidersAccepted,
                 name: "insurance_providers_accepted",
                 userHint: nil,

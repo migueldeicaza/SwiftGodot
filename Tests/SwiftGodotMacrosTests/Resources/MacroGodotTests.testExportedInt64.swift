@@ -29,7 +29,7 @@ class Thing: SwiftGodot.Object {
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Thing> (name: className)
         classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._macroGodotGetPropInfo(
+            SwiftGodot._propInfo(
                 at: \Thing.value,
                 name: "value",
                 userHint: nil,
@@ -44,7 +44,7 @@ class Thing: SwiftGodot.Object {
         classInfo.registerMethod(
             name: "get_some",
             flags: .default,
-            returnValue: _macroGodotGetCallablePropInfo(Int64.self),
+            returnValue: _callablePropInfo(Int64.self),
             arguments: [],
             function: Thing._mproxy_get_some
         )

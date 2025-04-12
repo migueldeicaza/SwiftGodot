@@ -102,7 +102,7 @@ public func _macroExportSet<T>(
     _ variableName: StaticString,
     _ old: VariantCollection<T>,
     _: (VariantCollection<T>) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: VariantStorable, T: _GodotBridgeable {
+) -> Variant? where T: _GodotBridgeableBuiltin {
     _macroExportSetGArrayCollection(arguments, variableName, old)
 }
 
@@ -114,7 +114,7 @@ public func _macroExportSet<T>(
     _ variableName: StaticString,
     _ old: ObjectCollection<T>,
     _: (ObjectCollection<T>) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: Object, T: _GodotBridgeable {
+) -> Variant? where T: Object {
     _macroExportSetGArrayCollection(arguments, variableName, old)
 }
 
@@ -124,7 +124,7 @@ func _macroExportSetGArrayCollection<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ collection: T
-) -> Variant? where T: GArrayCollection, T.Element: VariantConvertible, T.Element: VariantStorable {
+) -> Variant? where T: GArrayCollection, T.Element: _GodotBridgeable {
     do {
         let newArray = try arguments.argument(ofType: GArray.self, at: 0)
         guard newArray.isSameTyped(array: collection.array) else {
@@ -170,7 +170,7 @@ public func _macroExportSet<T>(
     _ variableName: StaticString,
     _ old: VariantCollection<T>?,
     _: (VariantCollection<T>?) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: VariantStorable {
+) -> Variant? where T: _GodotBridgeableBuiltin {
     fatalError("Unreachable")
 }
 
