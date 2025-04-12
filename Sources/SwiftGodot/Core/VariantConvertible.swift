@@ -30,10 +30,10 @@ public enum VariantConversionError: Error, CustomStringConvertible {
     }
 }
 
-/// Protocol for types that can be converted to and from ``Variant``.
+/// Protocol for types that can be converted to and from ``Variant?``.
 /// NOTE: this type is planned to supersede ``VariantStorable`` in the future.
 public protocol VariantConvertible {
-    /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+    /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.    
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self
     
     /// Extract ``Self`` from nil Variant. Throws `VariantConversionError` if it's not possible.

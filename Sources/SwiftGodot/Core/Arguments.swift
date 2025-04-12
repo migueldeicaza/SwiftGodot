@@ -264,16 +264,14 @@ extension Variant: _GodotOptionalBridgeable {
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
 extension Optional: VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+    /// Variant?.some -> Variant?.some (never throws, see Variant.fromVariantOrThrow)
+    /// Variant?.some -> Object?.some or throw
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         // TODO: investigate a case where Variant can contain an object, but fails to unwrap it not because it's wrong type, but because it was nullified. We need to distinguish such case and return nil instead of throwing. It's an opposite of case where the incompatible object is contained inside Variant - then we indeed need to throw.
         try Wrapped.fromVariantOrThrow(variant)
     }
         
-    public static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self {
-        if let variant {
-            return try Wrapped.fromVariantOrThrow(variant)
-        } else {
-            return nil
-        }
-    }
+    /// Variant?.none -> Object?.none
+    /// Variant?.none -> Variant?.none
+    public static func fromNilVariantOrThrow() -> Self { nil }
 }
