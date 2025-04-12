@@ -486,6 +486,22 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     public static var _godotTypeName: String {
         "Variant"
     }
+    
+    
+    /// Internal API.
+    /// According to:
+    /// - https://github.com/godotengine/godot/issues/67544#issuecomment-1382229216
+    /// - https://github.com/godotengine/godot/blob/b6e06038f8a373f7fb8d26e92d5f06887e459598/core/doc_data.cpp#L85
+    /// It's `.nil` with hint = `.nilIsVariant` in returned value prop info
+    /// And `.nil` with hint = `.none` in argument prop info
+    public static func _argumentPropInfo(name: String) -> PropInfo {
+        _propInfoDefault(propertyType: _variantType, name: name)
+    }
+    
+    /// Internal API.
+    public static var _returnValuePropInfo: PropInfo {
+        _propInfoDefault(propertyType: _variantType, name: "", usage: .nilIsVariant)
+    }
 }
 
 extension Variant? {

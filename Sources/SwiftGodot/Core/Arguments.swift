@@ -255,7 +255,6 @@ public extension VariantConvertible {
 public protocol _GodotOptionalBridgeable: _GodotBridgeable {
 }
 
-
 extension Object: _GodotOptionalBridgeable {
 }
 
@@ -264,6 +263,18 @@ extension Variant: _GodotOptionalBridgeable {
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
 extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+    public static func _argumentPropInfo(name: String) -> PropInfo {
+        Wrapped._argumentPropInfo(name: name)
+    }
+    
+    public static var _returnValuePropInfo: PropInfo {
+        Wrapped._returnValuePropInfo
+    }
+    
+    public static func _propInfo(name: String, hint: PropertyHint?, hintStr: String?, usage: PropertyUsageFlags?) -> PropInfo {
+        Wrapped._propInfo(name: name, hint: hint, hintStr: hintStr, usage: usage)
+    }
+    
     public static var _variantType: Variant.GType {
         Wrapped._variantType
     }

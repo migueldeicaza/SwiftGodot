@@ -899,26 +899,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
             
             p("""
-            /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used in API visible to Godot
-            @inline(__always)
-            @inlinable
-            public static func _propInfo(                
-                name: String,
-                hint: PropertyHint?,
-                hintStr: String?,
-                usage: PropertyUsageFlags?
-            ) -> PropInfo {
-                _propInfoDefault(
-                    propertyType: \(propInfoPropertyType),
-                    name: name,
-                    hint: hint,
-                    hintStr: hintStr,
-                    usage: usage
-                )
-            }
-            """)
-            
-            p("""
             /// Internal API. For indicating that Godot `Array` of ``\(typeName)`` has type `Array[\(bc.name)]`
             @inline(__always)
             @inlinable

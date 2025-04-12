@@ -93,11 +93,16 @@ public protocol _GodotBridgeable: VariantConvertible {
     
     /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `GArray` -> `Array`, `Object` -> `Object`
     static var _godotTypeName: String { get }
-}
-
-/// Internal API. Subset protocol for all Builtin Types.
-public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
-    /// Internal API.
+    
+    /// Internal API. PropInfo for this type when it's used as an argument.
+    static func _argumentPropInfo(
+        name: String,
+    ) -> PropInfo
+    
+    /// Internal API.  PropInfo for this type when it's used as a returned value.
+    static var _returnValuePropInfo: PropInfo { get }
+    
+    /// Internal API. PropInfo for this type when it's as an exported variable.
     static func _propInfo(
         name: String,
         hint: PropertyHint?,
@@ -106,10 +111,56 @@ public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     ) -> PropInfo
 }
 
+/// Internal API. Subset protocol for all Builtin Types.
+public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
+}
+
 public extension _GodotBridgeableBuiltin {
     /// Internal API. Returns Godot type name for typed array.
+    @inline(__always)
+    @inlinable
     static var _godotTypeName: String {
         _variantType._godotTypeName
+    }
+    
+    /// Internal API. Default implementation.
+    @inline(__always)
+    @inlinable
+    static func _propInfo(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _propInfoDefault(
+            propertyType: _variantType,
+            name: name,
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage
+        )
+    }
+    
+    /// Internal API. Default implementation.
+    @inline(__always)
+    @inlinable
+    static func _argumentPropInfo(
+        name: String,
+    ) -> PropInfo {
+        _propInfoDefault(
+            propertyType: _variantType,
+            name: name
+        )
+    }
+    
+    /// Internal API. Default implementation.
+    @inline(__always)
+    @inlinable
+    static var _returnValuePropInfo: PropInfo {
+        _propInfoDefault(
+            propertyType: _variantType,
+            name: ""
+        )
     }
 }
 
@@ -120,7 +171,14 @@ public protocol _GodotBridgeableObject: _GodotBridgeable {
 }
 
 public extension _GodotBridgeableObject where Self: Object {
-    /// Internal API. Returns Godot type name for typed array.
+    /// Internal API. Default implementation.
+    @inline(__always)
+    @inlinable
+    static var _variantType: Variant.GType { .object }
+    
+    /// Internal API. Default implementation.
+    @inline(__always)
+    @inlinable
     static var _godotTypeName: String {
         "\(self)"
     }
@@ -135,12 +193,36 @@ public extension _GodotBridgeableObject where Self: Object {
         usage: PropertyUsageFlags?
     ) -> PropInfo {
         return _propInfoDefault(
-            propertyType: .object,
+            propertyType: _variantType,
             name: name,
-            className: StringName("\(Self.self)"),
+            className: StringName(_godotTypeName),
             hint: hint,
             hintStr: hintStr,
             usage: usage
+        )
+    }
+    
+    /// Internal API.
+    @inline(__always)
+    @inlinable
+    static func _argumentPropInfo(
+        name: String,
+    ) -> PropInfo {
+        _propInfoDefault(
+            propertyType: _variantType,
+            name: name,
+            className: StringName(_godotTypeName)
+        )
+    }
+    
+    /// Internal API.
+    @inline(__always)
+    @inlinable
+    static var _returnValuePropInfo: PropInfo {
+        _propInfoDefault(
+            propertyType: _variantType,
+            name: "",
+            className: StringName(_godotTypeName)
         )
     }
 }
@@ -162,9 +244,9 @@ func _propInfoDefault(
     propertyType: Variant.GType,
     name: String,
     className: StringName? = nil,
-    hint: PropertyHint?,
-    hintStr: String?,
-    usage: PropertyUsageFlags?
+    hint: PropertyHint? = nil,
+    hintStr: String? = nil,
+    usage: PropertyUsageFlags? = nil
 ) -> PropInfo {
     return PropInfo(
         propertyType: propertyType,
@@ -177,9 +259,6 @@ func _propInfoDefault(
 }
 
 extension Int64: _GodotBridgeableBuiltin {
-    // _propInfo is implemented below for all `BinaryInteger`
-    // _gtype is implemented below for all `BinaryInteger`
-    
     /// Wrap a ``Int64``  into ``Variant?``.
     @_disfavoredOverload
     public func toVariant() -> Variant? {
@@ -219,24 +298,6 @@ extension Int64: _GodotBridgeableBuiltin {
 public extension BinaryInteger {
     static var _variantType: Variant.GType {
         .int
-    }
-    
-    /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used in API visible to Godot
-    @inline(__always)
-    @inlinable
-    static func _propInfo(
-        name: String,
-        hint: PropertyHint?,
-        hintStr: String?,
-        usage: PropertyUsageFlags?
-    ) -> PropInfo {
-        _propInfoDefault(
-            propertyType: .int,
-            name: name,
-            hint: hint,
-            hintStr: hintStr,
-            usage: usage
-        )
     }
 
     /// Wrap an integer number  into ``Variant?``.
@@ -345,23 +406,6 @@ extension String: _GodotBridgeableBuiltin {
     public static var _variantType: Variant.GType {
         .string
     }
-    /// Internal API. Returns ``PropInfo`` for when any ``String`` is used in API visible to Godot
-    @inline(__always)
-    @inlinable
-    public static func _propInfo(
-        name: String,
-        hint: PropertyHint?,
-        hintStr: String?,
-        usage: PropertyUsageFlags?
-    ) -> PropInfo {
-        _propInfoDefault(
-            propertyType: .string,
-            name: name,
-            hint: hint,
-            hintStr: hintStr,
-            usage: usage
-        )
-    }
     
     /// Wrap a ``String``  into ``Variant?``.
     @_disfavoredOverload
@@ -400,9 +444,6 @@ extension String: _GodotBridgeableBuiltin {
 }
 
 extension Double: _GodotBridgeableBuiltin {
-    // _propInfo is implemented below for all `BinaryFloatingPoint`
-    // _gtype is implemented below for all `BinaryFloatingPoint`
-    
     /// Wrap a ``Double``  into ``Variant?``.
     @_disfavoredOverload
     public func toVariant() -> Variant? {
@@ -442,24 +483,6 @@ public extension BinaryFloatingPoint {
     /// Internal API.
     static var _variantType: Variant.GType {
         .float
-    }
-    
-    /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used in API visible to Godot
-    @inline(__always)
-    @inlinable
-    static func _propInfo(
-        name: String,
-        hint: PropertyHint?,
-        hintStr: String?,
-        usage: PropertyUsageFlags?
-    ) -> PropInfo {
-        _propInfoDefault(
-            propertyType: .float,
-            name: name,
-            hint: hint,
-            hintStr: hintStr,
-            usage: usage
-        )
     }
     
     /// Wrap a floating point number into ``Variant?``.
@@ -535,8 +558,4 @@ public extension RawRepresentable where RawValue: BinaryFloatingPoint {
     func toVariant() -> Variant {
         rawValue.toVariant()
     }
-}
-
-public extension Object {
-    static var _variantType: Variant.GType { .object }
 }
