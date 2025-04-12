@@ -96,7 +96,7 @@ public protocol _GodotBridgeable: VariantConvertible {
     
     /// Internal API. PropInfo for this type when it's used as an argument.
     static func _argumentPropInfo(
-        name: String,
+        name: String
     ) -> PropInfo
     
     /// Internal API.  PropInfo for this type when it's used as a returned value.
@@ -145,7 +145,7 @@ public extension _GodotBridgeableBuiltin {
     @inline(__always)
     @inlinable
     static func _argumentPropInfo(
-        name: String,
+        name: String
     ) -> PropInfo {
         _propInfoDefault(
             propertyType: _variantType,
@@ -206,7 +206,7 @@ public extension _GodotBridgeableObject where Self: Object {
     @inline(__always)
     @inlinable
     static func _argumentPropInfo(
-        name: String,
+        name: String
     ) -> PropInfo {
         _propInfoDefault(
             propertyType: _variantType,
