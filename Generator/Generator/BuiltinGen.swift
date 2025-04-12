@@ -822,7 +822,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p("""
             
             static let variantFromSelf = gi.get_variant_from_type_constructor(\(typeEnum))!
-            static let selfFromVariant = gi.get_variant_from_type_constructor(\(typeEnum))!                            
+            static let selfFromVariant = gi.get_variant_to_type_constructor(\(typeEnum))!                            
             
             /// Wrap ``\(typeName)`` into a ``Variant``
             public func toVariant() -> Variant {
