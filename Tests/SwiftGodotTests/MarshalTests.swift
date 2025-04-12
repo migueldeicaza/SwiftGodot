@@ -16,6 +16,7 @@ private class TestNode: Node {
         }
     }
     
+    
     @Callable
     func foo(_ callable: Callable, a: Int, b: Int) -> Int {
         guard let variant = callable.call(Variant(a), Variant(b)) else {
@@ -49,7 +50,7 @@ final class MarshalTests: GodotTestCase {
             return
         }
         
-        guard let result = callable.call(1.toVariant(), 2.toVariant(), 3.toVariant()).map({ Int.fromVariant($0) }) as? Int else {
+        guard let result = callable.call(1.toVariant(), 2.toVariant(), 3.toVariant()).to(Int.self) else {
             XCTFail()
             return
         }

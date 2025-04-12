@@ -51,10 +51,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(nil)
         objectsArray.append(Variant(object2))
         objectsArray.append(nil)
-        
-        let result = testObject.call(method: "countObjects", Variant(objectsArray))        
-        
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
+                
+        XCTAssertEqual(testObject.call(method: "countObjects", objectsArray.toVariant()).to(), 6)
         testObject.free()
         object0.free()
         object1.free()
@@ -104,7 +102,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(Variant(RefCounted()))
         
         let result = testObject.call(method: "countObjects", objectsArray.toVariant())
-        XCTAssertEqual(result.into(), 6)
+        XCTAssertEqual(result.to(), 6)
         
         testObject.free()
         object0.free()
