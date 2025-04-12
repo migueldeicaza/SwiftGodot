@@ -11,7 +11,7 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// Use the ``emit(...)`` method to emit a signal.
 /// You can also await the ``emitted`` property for waiting for a single emission of the signal.
 ///
-public class SignalWithArguments<each T: VariantConvertible> {
+public class SignalWithArguments<each T: _GodotBridgeable> {
     var target: Object
     var signalName: StringName
     public init(target: Object, signalName: String) {
