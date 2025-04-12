@@ -184,7 +184,11 @@ public struct Arguments: ~Copyable {
         let variant = try argument(ofType: Variant?.self, at: index)
         
         do {
-            return try T.fromVariantOrThrow(variant)
+            if let variant {
+                return try T.fromVariantOrThrow(variant)
+            } else {
+                return try T.fromVariantOrThrow(nil)
+            }
         } catch {
             throw .variantConversionError(error)
         }

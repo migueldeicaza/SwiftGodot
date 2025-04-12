@@ -36,8 +36,8 @@ public protocol VariantConvertible {
     /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self
     
-    /// Extract ``Self`` from a ``Variant?``. Throws `VariantConversionError` if it's not possible.
-    static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self
+    /// Extract ``Self`` from nil Variant. Throws `VariantConversionError` if it's not possible.
+    static func fromNilVariantOrThrow() throws(VariantConversionError) -> Self
     
     /// Converts the instance to a ``Variant?``.
     func toVariant() -> Variant?
@@ -45,8 +45,18 @@ public protocol VariantConvertible {
 
 public extension VariantConvertible {
     /// Default implementation for most of the cases where a type cannot be constructed from a nil Variant.
+    static func fromNilVariantOrThrow() throws(VariantConversionError) -> Self {
+        throw .unexpectedContent(parsing: self, from: nil)
+    }
+    
+    /// Default implementation for most of the cases where a type cannot be constructed from a nil Variant.
+    @_disfavoredOverload // always prefer calling non-nil
     static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self {
-        throw .unexpectedContent(parsing: self, from: variant)
+        if let variant {
+            return try fromVariantOrThrow(variant)
+        } else {
+            return try fromNilVariantOrThrow()
+        }
     }
     
     /// Unwrap ``Self`` from a ``Variant``. Returns `nil` if it's not possible.
@@ -69,7 +79,7 @@ public extension VariantConvertible {
 }
 
 /// Internal API. Protocol for types that contains details on how it interacts with C GDExtension API.
-/// You could assume that to be the set of all Builtin Types, Object-derived Types, and Variant.
+/// You could assume that to be the set of all Builtin Types, Object-derived Types.
 public protocol _GodotBridgeable: VariantConvertible {
 }
 
@@ -84,7 +94,7 @@ public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
     ) -> PropInfo
     
     /// Internal API. Returns Godot type name for typed array.
-    static var _macroGodotGetPropInfoArrayType: String { get }
+    static var _typeHintStr: String { get }
 }
 
 /// Internal API. Subset protocol for all Object-derived types.
@@ -147,7 +157,7 @@ func _macroGodotGetPropInfoDefault(
 
 extension Int64: _GodotBridgeableBuiltin {
     // _macroGodotGetPropInfo is implemented below for all `BinaryInteger`
-    // _macroGodotGetPropInfoArrayType is implemented below for all `BinaryInteger`
+    // _typeHintStr is implemented below for all `BinaryInteger`
     
     /// Wrap a ``Int64``  into ``Variant?``.
     @_disfavoredOverload
@@ -192,7 +202,7 @@ public extension BinaryInteger {
     /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
     @inline(__always)
     @inlinable
-    static var _macroGodotGetPropInfoArrayType: String { "int" }
+    static var _typeHintStr: String { "int" }
     
     /// Wrap an integer number  into ``Variant?``.
     @_disfavoredOverload
@@ -240,7 +250,7 @@ extension Bool: _GodotBridgeableBuiltin {
     /// Internal API. For indicating that Godot` Array` of ``Bool`` has type `Array[bool]`
     @inline(__always)
     @inlinable
-    public static var _macroGodotGetPropInfoArrayType: String { "bool" }
+    public static var _typeHintStr: String { "bool" }
     
     /// Wrap a ``Bool``  into ``Variant?``.
     @_disfavoredOverload
@@ -284,7 +294,7 @@ extension String: _GodotBridgeableBuiltin {
     /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
     @inline(__always)
     @inlinable
-    public static var _macroGodotGetPropInfoArrayType: String { "String" }
+    public static var _typeHintStr: String { "String" }
     
     /// Wrap a ``String``  into ``Variant?``.
     @_disfavoredOverload
@@ -309,7 +319,7 @@ extension String: _GodotBridgeableBuiltin {
 
 extension Double: _GodotBridgeableBuiltin {
     // _macroGodotGetPropInfo is implemented below for all `BinaryFloatingPoint`
-    // _macroGodotGetPropInfoArrayType is implemented below for all `BinaryFloatingPoint`
+    // _typeHintStr is implemented below for all `BinaryFloatingPoint`
     
     /// Wrap a ``Double``  into ``Variant?``.
     @_disfavoredOverload
@@ -353,7 +363,7 @@ public extension BinaryFloatingPoint {
     /// Internal API. For indicating that Godot` Array` of ``BinaryFloatingPoint`` has type `Array[float]`
     @inline(__always)
     @inlinable
-    static var _macroGodotGetPropInfoArrayType: String { "float" }
+    static var _typeHintStr: String { "float" }
     
     /// Wrap a floating point number into ``Variant?``.
     @_disfavoredOverload

@@ -390,9 +390,9 @@ extension VariantCollection: VariantConvertible where Element: _GodotBridgeableB
         PropInfo(
             propertyType: .array,
             propertyName: StringName(name),
-            className: StringName("Array[\(Element._macroGodotGetPropInfoArrayType)]"),
+            className: StringName("Array[\(Element._typeHintStr)]"),
             hint: hint ?? .arrayType,
-            hintStr: GString(hintStr ?? "\(Element._macroGodotGetPropInfoArrayType)"),
+            hintStr: GString(hintStr ?? "\(Element._typeHintStr)"),
             usage: usage ?? .default
         )
     }

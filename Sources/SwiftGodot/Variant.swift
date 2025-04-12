@@ -397,7 +397,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
 
 public extension Variant? {
     /// Extract `T` from this ``Variant?`` or return nil if unsucessful.
-    func into<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {        
+    func into<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
         type.fromVariant(self)
     }
 }
