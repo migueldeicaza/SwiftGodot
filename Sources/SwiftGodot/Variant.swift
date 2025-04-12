@@ -38,18 +38,6 @@
 /// Modifications to a container will modify all references to it.
 
 public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, VariantConvertible {
-    static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
-        var map: [GDExtensionVariantFromTypeConstructorFunc] = []
-        
-        // stub for GDEXTENSION_VARIANT_TYPE_NIL
-        map.append({ _, _ in })
-        
-        for vtype in GDEXTENSION_VARIANT_TYPE_NIL.rawValue + 1 ..< GDEXTENSION_VARIANT_TYPE_VARIANT_MAX.rawValue {
-            map.append(gi.get_variant_from_type_constructor(GDExtensionVariantType(rawValue: vtype))!)
-        }
-        return map
-    }()
-    
     static let toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
         var map: [GDExtensionTypeFromVariantConstructorFunc] = []
         
@@ -62,6 +50,11 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
         
         return map
     }()
+    
+    static let variantFromBool = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_BOOL)!
+    static let variantFromInt = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_INT)!
+    static let variantFromDouble = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
+    static let variantFromObject = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
     
     typealias ContentType = (Int, Int, Int)
     var content: ContentType = Variant.zero
@@ -116,20 +109,83 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
         extensionInterface.variantInited(variant: self, content: &content)
     }
     
-    convenience public init(_ value: some VariantStorable) {
-        self.init(representable: value.toVariantRepresentable())
-    }
-    
-    private init<T: VariantRepresentable>(representable value: T) {
-        let godotType = T.godotType
-        
-        withUnsafeMutablePointer(to: &content) { selfPtr in
-            var mutableValue = value.content
-            withUnsafeMutablePointer(to: &mutableValue) { ptr in
-                Variant.fromTypeMap [Int (godotType.rawValue)] (selfPtr, ptr)
+    /// Initialize ``Variant`` using inlinable payload or opaque handle managed by Builtin Type or Object.
+    init<Payload>(payload: inout Payload, constructor: GDExtensionVariantFromTypeConstructorFunc) {
+        withUnsafeMutablePointer(to: &content) { target in
+            withUnsafeMutablePointer(to: &payload) { source in
+                constructor(target, source)
             }
         }
+        
         extensionInterface.variantInited(variant: self, content: &content)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Object``
+    public convenience init(_ from: Object) {
+        self.init(payload: &from.handle, constructor: Self.variantFromObject)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Object?``, fails if it's `nil`
+    public convenience init?(_ from: Object?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryInteger``
+    public convenience init(_ from: some BinaryInteger) {
+        var payload = Int64(from)
+        self.init(payload: &payload, constructor: Self.variantFromInt)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryInteger?``, fails if it's `nil`
+    public convenience init?(_ from: (some BinaryInteger)?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint``
+    public convenience init(_ from: some BinaryFloatingPoint) {
+        var payload = Double(from)
+        self.init(payload: &payload, constructor: Self.variantFromDouble)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint?``, fails if it's `nil`
+    public convenience init?(_ from: (some BinaryFloatingPoint)?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Bool``
+    public convenience init(_ from: Bool) {
+        var payload: GDExtensionBool = from ? 1 : 0
+        self.init(payload: &payload, constructor: Self.variantFromBool)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Bool?``, fails if it's `nil`
+    public convenience init?(_ from: Bool?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``String``
+    public convenience init(_ from: String) {
+        self.init(GString(from))
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``String?``, fails if it's `nil`
+    public convenience init?(_ from: String?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
     }
     
     /// This describes the type of the data wrapped by this variant
@@ -149,7 +205,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
         }
     }
     
-    /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used as an `@Exported` variable
+    /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used in API visible to Godot
     @inline(__always)
     @inlinable
     public static func _macroGodotGetPropInfo(
@@ -428,6 +484,92 @@ extension Optional: VariantStorable where Wrapped: VariantStorable {
             self = .some(wrapped)
         } else {
             return nil
+        }
+    }
+}
+
+public extension Variant.GType {
+    /// Internal API. hintStr for when type is used inside an array
+    var _typeNameHintStr: String {
+        switch self {
+        case .nil:
+            fatalError("Unreachable")
+        case .bool:
+            return "bool"
+        case .int:
+            return "int"
+        case .float:
+            return "float"
+        case .string:
+            return "String"
+        case .vector2:
+            return "Vector2"
+        case .vector2i:
+            return "Vector2i"
+        case .rect2:
+            return "Rect2"
+        case .rect2i:
+            return "Rect2i"
+        case .vector3:
+            return "Vector3"
+        case .vector3i:
+            return "Vector3i"
+        case .transform2d:
+            return "Transform2D"
+        case .vector4:
+            return "Vector4"
+        case .vector4i:
+            return "Vector4i"
+        case .plane:
+            return "Plane"
+        case .quaternion:
+            return "Quaternion"
+        case .aabb:
+            return "AABB"
+        case .basis:
+            return "Basis"
+        case .transform3d:
+            return "Transform3D"
+        case .projection:
+            return "Projection"
+        case .color:
+            return "Color"
+        case .stringName:
+            return "StringName"
+        case .nodePath:
+            return "NodePath"
+        case .rid:
+            return "RID"
+        case .object:
+            fatalError("Unreachable")
+        case .callable:
+            return "Callable"
+        case .signal:
+            return "Signal"
+        case .dictionary:
+            return "Dictionary"
+        case .array:
+            return "Array"
+        case .packedByteArray:
+            return "PackedByteArray"
+        case .packedInt32Array:
+            return "PackedInt32Array"
+        case .packedInt64Array:
+            return "PackedInt64Array"
+        case .packedFloat32Array:
+            return "PackedFloat32Array"
+        case .packedFloat64Array:
+            return "PackedFloat64Array"
+        case .packedStringArray:
+            return "PackedStringArray"
+        case .packedVector2Array:
+            return "PackedVector2Array"
+        case .packedVector3Array:
+            return "PackedVector3Array"
+        case .packedColorArray:
+            return "PackedColorArray"
+        case .packedVector4Array:
+            return "PackedVector4Array"
         }
     }
 }

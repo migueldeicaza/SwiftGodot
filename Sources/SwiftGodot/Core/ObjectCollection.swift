@@ -7,15 +7,8 @@
 
 @_implementationOnly import GDExtension
 
-extension ObjectCollection: VariantStorable {
-    public typealias Representable = GArray
-    public func toVariantRepresentable() -> GArray {
-        array
-    }
-}
-
 /// This represents a typed array of one of the built-in types from Godot
-public final class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection, VariantConvertible {
+public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection, VariantConvertible where Element: Object {
     /// GDScript allows `nil`s in `Array[Object]`
     public typealias ArrayLiteralElement = Element?
     
@@ -142,7 +135,7 @@ public final class ObjectCollection<Element: Object>: Collection, ExpressibleByA
             return unwrap(variant)            
         }
         set {
-            array[index] = Variant(newValue)
+            array[index] = newValue.toVariant()
         }
     }
     

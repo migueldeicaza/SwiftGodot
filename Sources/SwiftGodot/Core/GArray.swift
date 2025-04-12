@@ -12,12 +12,20 @@ public enum ArrayError {
 }
 extension GArray {
     /// Initializes an empty, but typed `GArray`. For example: `GArray(Node.self)`
-    /// - Parameter type: `T` the type of the elements in the GArray, must conform to `VariantStorable`.
-    public convenience init<T: VariantStorable>(_ type: T.Type = T.self) {
+    /// - Parameter type: `T` the type of the elements in the GArray, must conform to `_GodotBridgeable`.
+    public convenience init<T: _GodotBridgeable>(_ type: T.Type = T.self) {
+        let className: String
+        
+        if let type = type as? _GodotBridgeableObject.Type {
+            className = type._typeNameHintStr
+        } else {
+            className = ""
+        }
+        
         self.init(
             base: GArray(),
-            type: Int32(T.Representable.godotType.rawValue),
-            className: T.Representable.godotType == .object ? StringName("\(T.self)") : StringName(),
+            type: Int32(T._gtype.rawValue),
+            className: StringName(className),
             script: nil
         )
     }

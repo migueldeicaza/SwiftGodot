@@ -655,7 +655,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             public func _macroRcUnref() {
                 // no-op, needed for virtual dispatch when RefCounted is stored as Object
             }
-            """)                        
+            """)
         }
         
         if cdef.name == "RefCounted" {

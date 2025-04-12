@@ -7,7 +7,7 @@
 
 /// This file contains the overloads for generating PropInfo in the context, where functions callable by Godot
 /// are registered
-/// `name` is optional in all overloads. If it's nil - the function is called for returned value `PropInfo`, if not - for argument and it contains argument name.
+/// `name` is optional in all overloads. If it's nil - the function is called for returned value `PropInfo`, if not - for argument and it contains argument name (or empty string for cases like Signal).
 
 
 /// Internal API. Optional Variant.
@@ -15,17 +15,17 @@
 @inlinable
 public func _macroGodotGetCallablePropInfo(
     _ type: Variant?.Type = Variant?.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo {
     let usage: PropertyUsageFlags?
-    if name.isEmpty {
+    if name == nil {
         // return value
         usage = .nilIsVariant
     } else {
         usage = nil
     }
     
-    return Variant._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: usage)
+    return Variant._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: usage)
 }
 
 /// Internal API. Variant.
@@ -33,7 +33,7 @@ public func _macroGodotGetCallablePropInfo(
 @inlinable
 public func _macroGodotGetCallablePropInfo(
     _ type: Variant.Type = Variant.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo {
     // Same as Optional Variant.
     _macroGodotGetCallablePropInfo(Variant?.self, name: name)
@@ -44,9 +44,9 @@ public func _macroGodotGetCallablePropInfo(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: T.Type = T.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    T._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    T._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Optional Builtin Type.
@@ -54,7 +54,7 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: T?.Type = T?.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
     // Same as Optional Variant, we facade Optional Builtin Types this way
     _macroGodotGetCallablePropInfo(Variant?.self, name: name)
@@ -65,9 +65,9 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: T.Type = T.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: Object {
-    T._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    T._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Optional object.
@@ -75,9 +75,9 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: T?.Type = T?.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: Object {
-    T._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    T._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Swift Builtin Array.
@@ -85,9 +85,9 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: [T].Type = [T].self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin, T: VariantStorable {
-    VariantCollection<T>._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    VariantCollection<T>._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Swift Object Array.
@@ -95,9 +95,9 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: [T].Type = [T].self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    ObjectCollection<T>._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. VariantCollection.
@@ -105,9 +105,9 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: VariantCollection<T>.Type = VariantCollection<T>.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin, T: VariantStorable {
-    VariantCollection<T>._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    VariantCollection<T>._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. ObjectCollection.
@@ -115,9 +115,9 @@ public func _macroGodotGetCallablePropInfo<T>(
 @inlinable
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: ObjectCollection<T>.Type = ObjectCollection<T>.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._macroGodotGetPropInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    ObjectCollection<T>._macroGodotGetPropInfo(name: name ?? "", hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Void.
@@ -133,7 +133,7 @@ public func _macroGodotGetCallablePropInfo(
 @available(*, unavailable, message: "Void type arguments are not supported")
 public func _macroGodotGetCallablePropInfo(
     _ type: Void.Type = Void.self,
-    name: String // no default arg
+    name: String? // no default arg
 ) -> PropInfo {
     fatalError("Unreachable")
 }
@@ -142,7 +142,7 @@ public func _macroGodotGetCallablePropInfo(
 @_disfavoredOverload
 public func _macroGodotGetCallablePropInfo<T>(
     _ type: T.Type = T.self,
-    name: String = ""
+    name: String? = nil
 ) -> PropInfo {
     fatalError("Unreachable")
 }

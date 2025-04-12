@@ -306,7 +306,7 @@ func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumen
             let argumentName = godotArgumentToSwift(argument.name)
                         
             if argument.type != "Variant" {
-                p("let \(argumentName) = Variant(\(argumentName))")
+                p("let \(argumentName) = \(argumentName).toVariant()")
             }
             
             p("withUnsafePointer(to: \(argumentName).content)", arg: " pArg\(index) in") {

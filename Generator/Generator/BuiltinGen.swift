@@ -621,6 +621,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             doc (p, bc, bc.description)
         }
         
+        var isContentRepresented: Bool? = nil
+        
         p ("public \(kind == .isStruct ? "struct" : "final class") \(typeName)\(proto)") {
             if bc.name == "String" {
                 p("""
@@ -812,17 +814,39 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             generateBuiltinMethods(p, bc, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
             generateBuiltinOperators (p, bc, typeName: typeName)
             generateBuiltinConstants (p, bc, typeName: typeName)
-                        
+                                                
+            isContentRepresented = storedMembers == nil
+            
+            // Bool? == true
+            if isContentRepresented == true {
+                p("""
+                func toVariantImpl() -> Variant {                    
+                    Variant(payload: &content, constructor: Self.variantFromSelf)
+                }
+                """)
+            } else {
+                p("""
+                func toVariantImpl() -> Variant {
+                    var payload = self
+                    return Variant(payload: &payload, constructor: Self.variantFromSelf)
+                }
+                """)
+            }
+            
             p("""
+            
+            static let variantFromSelf = gi.get_variant_from_type_constructor(\(typeEnum))!
+            static let selfFromVariant = gi.get_variant_from_type_constructor(\(typeEnum))!
+            
             /// Wrap ``\(typeName)`` into a ``Variant``
             public func toVariant() -> Variant {
-                Variant(self)                
+                toVariantImpl()
             }
             
             /// Wrap ``\(typeName)`` into a ``Variant?``
             @_disfavoredOverload
             public func toVariant() -> Variant? {
-                Variant(self)                
+                toVariantImpl()
             }
             
             /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
@@ -850,7 +874,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
             
             p("""
-            /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used as an `@Exported` variable
+            /// Internal API. Returns ``PropInfo`` for when any ``\(typeName)`` is used in API visible to Godot
             @inline(__always)
             @inlinable
             public static func _macroGodotGetPropInfo(                
@@ -873,7 +897,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             /// Internal API. For indicating that Godot `Array` of ``\(typeName)`` has type `Array[\(bc.name)]`
             @inline(__always)
             @inlinable
-            public static var _typeHintStr: String { "\(bc.name)" }
+            public static var _gtype: Variant.GType {
+                \(propInfoPropertyType) 
+            }
             """)
             
             // Generate the synthetic `end` property
@@ -910,6 +936,34 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 
                 p ("public func index(before i: Int) -> Int") {
                     p ("return i-1")
+                }
+            }
+        }
+        
+        if let isContentRepresented {
+            p("public extension Variant") {
+                p("""
+                /// Initialize ``Variant`` by wrapping ``\(typeName)?``, fails if it's `nil`
+                convenience init(_ from: \(typeName)?) {
+                    guard let from else {
+                        return nil
+                    }
+                    self.init(from)
+                }
+                
+                /// Initialize ``Variant`` by wrapping ``\(typeName)``
+                convenience init(_ from: \(typeName))
+                """) {
+                    if isContentRepresented {
+                        p("""
+                        self.init(payload: &from.content, constructor: \(typeName).variantFromSelf)
+                        """)
+                    } else {
+                        p("""
+                        var payload = from
+                        self.init(payload: &payload, constructor: \(typeName).variantFromSelf)
+                        """)
+                    }
                 }
             }
         }

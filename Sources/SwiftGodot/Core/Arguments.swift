@@ -252,18 +252,34 @@ public extension VariantConvertible {
 /// Internal API. Protocol covering types that have nullable semantics on Godot Side: Object-derived types and Variant.
 /// It's used for conditional extension of Optional.
 /// This is a workaround for Swift inability to have multiple conditional extensions for one type (Optional in our case).
-public protocol _GodotOptionalBridgeable: VariantConvertible {
+public protocol _GodotOptionalBridgeable: _GodotBridgeable {
 }
 
 
 extension Object: _GodotOptionalBridgeable {
 }
 
-extension Variant: _GodotOptionalBridgeable {    
+extension Variant: _GodotOptionalBridgeable {
+    public static var _gtype: GType {
+        .nil
+    }
+    
+    public static var _typeNameHintStr: String {
+        "Variant"
+    }
+    
 }
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
-extension Optional: VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+    public static var _gtype: Variant.GType {
+        Wrapped._gtype
+    }
+    
+    public static var _typeNameHintStr: String {
+        Wrapped._typeNameHintStr
+    }
+    
     /// Variant?.some -> Variant?.some (never throws, see Variant.fromVariantOrThrow)
     /// Variant?.some -> Object?.some or throw
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {

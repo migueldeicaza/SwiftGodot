@@ -8,14 +8,14 @@
 /// Internal API. Bridgeable.
 @inline(__always)
 @inlinable
-public func _macroCallableToVariant<T>(_ value: T) -> Variant? where T: _GodotBridgeable {
+public func _macroCallableToVariant<T>(_ value: T) -> Variant? where T: VariantConvertible {
     value.toVariant()
 }
 
 /// Internal API. Optional Bridgeable.
 @inline(__always)
 @inlinable
-public func _macroCallableToVariant<T>(_ value: T?) -> Variant? where T: _GodotBridgeable {
+public func _macroCallableToVariant<T>(_ value: T?) -> Variant? where T: VariantConvertible {
     value.toVariant()
 }
 
@@ -29,10 +29,10 @@ public func _macroCallableToVariant(_ value: Variant?) -> Variant? {
 /// Internal API. Swift Array.
 @inline(__always)
 @inlinable
-public func _macroCallableToVariant<T>(_ value: [T]) -> Variant? where T: VariantStorable {
+public func _macroCallableToVariant<T>(_ value: [T]) -> Variant? where T: _GodotBridgeable {
     let array = GArray(T.self)
     for element in value {
-        array.append(Variant(element))
+        array.append(element.toVariant())
     }
     
     return array.toVariant()
@@ -41,14 +41,14 @@ public func _macroCallableToVariant<T>(_ value: [T]) -> Variant? where T: Varian
 /// Internal API. ObjectCollection.
 @inline(__always)
 @inlinable
-public func _macroCallableToVariant<T>(_ value: ObjectCollection<T>) -> Variant? where T: VariantStorable {
+public func _macroCallableToVariant<T>(_ value: ObjectCollection<T>) -> Variant? where T: _GodotBridgeable {
     value.array.toVariant()
 }
 
 /// Internal API. VariantCollection.
 @inline(__always)
 @inlinable
-public func _macroCallableToVariant<T>(_ value: VariantCollection<T>) -> Variant? where T: VariantStorable {
+public func _macroCallableToVariant<T>(_ value: VariantCollection<T>) -> Variant? where T: _GodotBridgeable {
     value.array.toVariant()
 }
 

@@ -5,6 +5,8 @@
 //  Created by Elijah Semyonov on 08/04/2025.
 //
 
+@_implementationOnly import GDExtension
+
 /// Error while trying to unwrap Variant
 public enum VariantConversionError: Error, CustomStringConvertible {
     public var description: String {
@@ -80,6 +82,11 @@ public extension VariantConvertible {
 /// Internal API. Protocol for types that contains details on how it interacts with C GDExtension API.
 /// You could assume that to be the set of all Builtin Types, Object-derived Types.
 public protocol _GodotBridgeable: VariantConvertible {
+    /// Internal API.
+    static var _gtype: Variant.GType { get }
+    
+    /// Internal API. Returns Godot type name for typed array
+    static var _typeNameHintStr: String { get }
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
@@ -91,9 +98,13 @@ public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo
-    
+}
+
+public extension _GodotBridgeableBuiltin {
     /// Internal API. Returns Godot type name for typed array.
-    static var _typeHintStr: String { get }
+    static var _typeNameHintStr: String {
+        _gtype._typeNameHintStr
+    }
 }
 
 /// Internal API. Subset protocol for all Object-derived types.
@@ -103,7 +114,12 @@ public protocol _GodotBridgeableObject: _GodotBridgeable {
 }
 
 public extension _GodotBridgeableObject where Self: Object {
-    /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used as an `@Exported` variable
+    /// Internal API. Returns Godot type name for typed array.
+    static var _typeNameHintStr: String {
+        "\(self)"
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used in API visible to Godot
     @inline(__always)
     @inlinable
     static func _macroGodotGetPropInfo(
@@ -156,7 +172,7 @@ func _macroGodotGetPropInfoDefault(
 
 extension Int64: _GodotBridgeableBuiltin {
     // _macroGodotGetPropInfo is implemented below for all `BinaryInteger`
-    // _typeHintStr is implemented below for all `BinaryInteger`
+    // _gtype is implemented below for all `BinaryInteger`
     
     /// Wrap a ``Int64``  into ``Variant?``.
     @_disfavoredOverload
@@ -180,7 +196,11 @@ extension Int64: _GodotBridgeableBuiltin {
 }
 
 public extension BinaryInteger {
-    /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used as an `@Exported` variable
+    static var _gtype: Variant.GType {
+        .int
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``BinaryInteger`` is used in API visible to Godot
     @inline(__always)
     @inlinable
     static func _macroGodotGetPropInfo(
@@ -197,12 +217,7 @@ public extension BinaryInteger {
             usage: usage
         )
     }
-    
-    /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
-    @inline(__always)
-    @inlinable
-    static var _typeHintStr: String { "int" }
-    
+
     /// Wrap an integer number  into ``Variant?``.
     @_disfavoredOverload
     func toVariant() -> Variant? {
@@ -228,7 +243,12 @@ public extension BinaryInteger {
 }
 
 extension Bool: _GodotBridgeableBuiltin {
-    /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used as an `@Exported` variable
+    /// Internal API.
+    public static var _gtype: Variant.GType {
+        .bool
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``Bool`` is used in API visible to Godot
     @inline(__always)
     @inlinable
     public static func _macroGodotGetPropInfo(
@@ -238,18 +258,13 @@ extension Bool: _GodotBridgeableBuiltin {
         usage: PropertyUsageFlags?
     ) -> PropInfo {
         _macroGodotGetPropInfoDefault(
-            propertyType: .bool,
+            propertyType: _gtype,
             name: name,
             hint: hint,
             hintStr: hintStr,
             usage: usage
         )
     }
-    
-    /// Internal API. For indicating that Godot` Array` of ``Bool`` has type `Array[bool]`
-    @inline(__always)
-    @inlinable
-    public static var _typeHintStr: String { "bool" }
     
     /// Wrap a ``Bool``  into ``Variant?``.
     @_disfavoredOverload
@@ -272,7 +287,11 @@ extension Bool: _GodotBridgeableBuiltin {
 }
 
 extension String: _GodotBridgeableBuiltin {
-    /// Internal API. Returns ``PropInfo`` for when any ``String`` is used as an `@Exported` variable
+    /// Internal API.
+    public static var _gtype: Variant.GType {
+        .string
+    }
+    /// Internal API. Returns ``PropInfo`` for when any ``String`` is used in API visible to Godot
     @inline(__always)
     @inlinable
     public static func _macroGodotGetPropInfo(
@@ -289,11 +308,6 @@ extension String: _GodotBridgeableBuiltin {
             usage: usage
         )
     }
-    
-    /// Internal API. For indicating that Godot` Array` of ``BinaryInteger`` has type `Array[int]`
-    @inline(__always)
-    @inlinable
-    public static var _typeHintStr: String { "String" }
     
     /// Wrap a ``String``  into ``Variant?``.
     @_disfavoredOverload
@@ -318,7 +332,7 @@ extension String: _GodotBridgeableBuiltin {
 
 extension Double: _GodotBridgeableBuiltin {
     // _macroGodotGetPropInfo is implemented below for all `BinaryFloatingPoint`
-    // _typeHintStr is implemented below for all `BinaryFloatingPoint`
+    // _gtype is implemented below for all `BinaryFloatingPoint`
     
     /// Wrap a ``Double``  into ``Variant?``.
     @_disfavoredOverload
@@ -341,7 +355,12 @@ extension Double: _GodotBridgeableBuiltin {
 }
 
 public extension BinaryFloatingPoint {
-    /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used as an `@Exported` variable
+    /// Internal API.
+    static var _gtype: Variant.GType {
+        .float
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``BinaryFloatingPoint`` is used in API visible to Godot
     @inline(__always)
     @inlinable
     static func _macroGodotGetPropInfo(
@@ -358,11 +377,6 @@ public extension BinaryFloatingPoint {
             usage: usage
         )
     }
-    
-    /// Internal API. For indicating that Godot` Array` of ``BinaryFloatingPoint`` has type `Array[float]`
-    @inline(__always)
-    @inlinable
-    static var _typeHintStr: String { "float" }
     
     /// Wrap a floating point number into ``Variant?``.
     @_disfavoredOverload
@@ -395,6 +409,7 @@ extension UInt8: _GodotBridgeableBuiltin {}
 extension Float: _GodotBridgeableBuiltin {}
 
 public extension RawRepresentable where RawValue: VariantConvertible {
+    @_disfavoredOverload
     func toVariant() -> Variant? {
         rawValue.toVariant()
     }
@@ -424,4 +439,8 @@ public extension RawRepresentable where RawValue: BinaryFloatingPoint {
     func toVariant() -> Variant {
         rawValue.toVariant()
     }
+}
+
+public extension Object {
+    static var _gtype: Variant.GType { .object }
 }

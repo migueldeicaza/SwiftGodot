@@ -202,6 +202,7 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual(dc, wrapDouble (dc))
         XCTAssertEqual(true, wrapBool (true))
         XCTAssertEqual(false, wrapBool (false))
+        XCTAssertEqual(2.toVariant(), 2.toVariant())
     }
 }
 
