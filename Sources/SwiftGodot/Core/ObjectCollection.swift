@@ -428,3 +428,18 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
     }
 }
 
+
+public extension Variant {
+    /// Initialize ``Variant`` by wrapping ``ObjectCollection``
+    convenience init<T>(_ from: ObjectCollection<T>) {
+        self.init(from.array)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``ObjectCollection?``, fails if it's `nil`
+    convenience init?<T>(_ from: ObjectCollection<T>?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+}

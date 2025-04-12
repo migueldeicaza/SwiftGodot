@@ -178,30 +178,14 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual(MemoryLayout<UnsafeRawPointersN9>.size, MemoryLayout<UnsafeRawPointer>.stride * 9, "UnsafeRawPointersN should have the same size as a N of UnsafeRawPointers")
     }
     
-    func wrapInt <A: VariantStorable>(_ argument: A) -> Int? {
-        Int (.init (argument))
-    }
-
-    func wrapString <A: VariantStorable>(_ argument: A) -> String? {
-        String (.init (argument))
-    }
-
-    func wrapDouble <A: VariantStorable>(_ argument: A) -> Double? {
-        Double (.init (argument))
-    }
-    
-    func wrapBool <A: VariantStorable>(_ argument: A) -> Bool? {
-        Bool (.init (argument))
-    }
-    
     func testVariants () {
         let dc = Double.pi
         
-        XCTAssertEqual (1, wrapInt (1))
-        XCTAssertEqual ("The Dog", wrapString ("The Dog"))
-        XCTAssertEqual(dc, wrapDouble (dc))
-        XCTAssertEqual(true, wrapBool (true))
-        XCTAssertEqual(false, wrapBool (false))
+        XCTAssertEqual (1, Int.fromVariant(1.toVariant()))
+        XCTAssertEqual ("The Dog", String.fromVariant("The Dog".toVariant()))
+        XCTAssertEqual(dc, Double.fromVariant(dc.toVariant()))
+        XCTAssertEqual(true, Bool.fromVariant(true.toVariant()))
+        XCTAssertEqual(false, Bool.fromVariant(false.toVariant()))
         XCTAssertEqual(2.toVariant(), 2.toVariant())
     }
 }

@@ -392,3 +392,18 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
         )
     }
 }
+
+public extension Variant {
+    /// Initialize ``Variant`` by wrapping ``VariantCollection``
+    convenience init<T>(_ from: VariantCollection<T>) {
+        self.init(from.array)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``VariantCollection?``, fails if it's `nil`
+    convenience init?<T>(_ from: VariantCollection<T>?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+}
