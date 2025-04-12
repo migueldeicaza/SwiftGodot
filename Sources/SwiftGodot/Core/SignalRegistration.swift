@@ -294,7 +294,7 @@ public extension Object {
             argument1.toVariant(),
             argument2.toVariant(),
             argument3.toVariant(),
-            argument4.toVariant(),
+            argument4.toVariant()
         )
     }
 
