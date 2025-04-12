@@ -944,7 +944,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p("public extension Variant") {
                 p("""
                 /// Initialize ``Variant`` by wrapping ``\(typeName)?``, fails if it's `nil`
-                convenience init(_ from: \(typeName)?) {
+                convenience init?(_ from: \(typeName)?) {
                     guard let from else {
                         return nil
                     }
