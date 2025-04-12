@@ -1,25 +1,16 @@
 /// A type representing expected errors that can happen during parsing `Arguments` in the call-site
 public enum ArgumentAccessError: Error, CustomStringConvertible {
     case indexOutOfBounds(index: Int, count: Int)
-    case mismatchingArrayElementType
-    case mismatchingType(expected: String, actual: String)
-    case invalidRawValue(value: String, typeName: String)
+    case variantConversionError(VariantConversionError)
     
     public var description: String {
         switch self {
         case .indexOutOfBounds(let index, let count):
-            return "Can't retrieve argument at index \(index), arguments count is \(count)"
-        case .mismatchingType(let expected, let actual):
-            return "Mismatching type, got `\(actual)` instead of `\(expected)`"
-        case .mismatchingArrayElementType:
-            return "Array got an element of unexpected type"
-        case .invalidRawValue(let value, let typeName):
-            return "`\(typeName)` doesn't have a value represented by `\(value)"
+            return "Arguments accessed at index \(index), while total count is \(count)"
+        case .variantConversionError(let error):
+            return error.description
         }
     }
-}
-
-public struct ArgumentConversionError: Error {
 }
 
 /// A lightweight non-copyable storage for arguments marshalled to implementations where a sequence of `Variant`s is expected.
@@ -36,7 +27,7 @@ public struct Arguments: ~Copyable {
             }
             
             /// Lazily reconstruct variant at `index`, throws an error if index is out ouf bounds
-            func argument(at index: Int) throws -> Variant? {
+            func argument(at index: Int) throws(ArgumentAccessError) -> Variant? {
                 if index >= 0 && index < count {
                     guard let ptr = pargs[index] else {
                         return nil
@@ -44,7 +35,7 @@ public struct Arguments: ~Copyable {
                     
                     return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
                 } else {
-                    throw ArgumentAccessError.indexOutOfBounds(index: index, count: count)
+                    throw .indexOutOfBounds(index: index, count: count)
                 }
             }
         }
@@ -107,10 +98,8 @@ public struct Arguments: ~Copyable {
             case .unsafeGodotArgs(let args):
                 do {
                     return try args.argument(at: index)
-                } catch let error as ArgumentAccessError {
-                    fatalError(error.description)
                 } catch {
-                    fatalError("\(error)")
+                    fatalError(error.description)
                 }
             }
         }
@@ -121,13 +110,13 @@ public struct Arguments: ~Copyable {
     /// Throws an error if `index` is out of bounds.
     /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
     /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
-    public func argument(ofType: Variant?.Type = Variant?.self, at index: Int) throws -> Variant? {
+    public func argument(ofType: Variant?.Type = Variant?.self, at index: Int) throws(ArgumentAccessError) -> Variant? {
         switch contents {
         case .array(let array):
             if index >= 0 && index < array.count {
                 return array[index]
             } else {
-                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
+                throw .indexOutOfBounds(index: index, count: array.count)
             }
         case .unsafeGodotArgs(let unsafeGodotArgs):
             return try unsafeGodotArgs.argument(at: index)
@@ -139,21 +128,23 @@ public struct Arguments: ~Copyable {
     /// Throws an error if `index` is out of bounds or argument is `nil`
     /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
     /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
-    public func argument(ofType: Variant.Type = Variant.self, at index: Int) throws -> Variant {
+    public func argument(ofType: Variant.Type = Variant.self, at index: Int) throws(ArgumentAccessError) -> Variant {
         let variantOrNil: Variant?
         switch contents {
         case .array(let array):
             if index >= 0 && index < array.count {
                 variantOrNil = array[index]
             } else {
-                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
+                throw .indexOutOfBounds(index: index, count: array.count)
             }
         case .unsafeGodotArgs(let unsafeGodotArgs):
             variantOrNil = try unsafeGodotArgs.argument(at: index)
         }
         
         guard let variant = variantOrNil else {
-            throw ArgumentAccessError.mismatchingType(expected: "non-nil Variant", actual: "nil")
+            throw .variantConversionError(
+                .unexpectedContent(parsing: Variant.self, from: nil)
+            )
         }
         
         return variant
@@ -167,327 +158,57 @@ public struct Arguments: ~Copyable {
     /// - Any element of underlying Godot Array couldn't be converted to `T`
     /// - `index` is out of bounds.
     ///
-    public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws -> [T] where T: _ArgumentConvertible {
-        let arg = try argument(ofType: Variant?.self, at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
-        }
-        
-        guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
-        }
-        
-        var result: [T] = []
-        result.reserveCapacity(array.count)
-        for element in array {
-            result.append(
-                try T.fromArgumentVariant(element)
-            )
-        }
-        return result
-    }
-    
-    /// Returns `Variant` or `nil` argument at  `index`.
-    ///
-    /// Throws an error if `index` is out of bounds.
-    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
-    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    @_disfavoredOverload
-    public func optionalVariantArgument(at index: Int) throws -> Variant? {
-        switch contents {
-        case .array(let array):
-            if index >= 0 && index < array.count {
-                return array[index]
-            } else {
-                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
+    public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws(ArgumentAccessError) -> [T] where T: VariantConvertible {
+        let variantOrNil = try argument(ofType: Variant?.self, at: index)
+        do {
+            let array = try GArray.fromVariantOrThrow(variantOrNil)
+            var result: [T] = []
+            result.reserveCapacity(array.count)
+            for element in array {
+                result.append(
+                    try T.fromVariantOrThrow(element)
+                )
             }
-        case .unsafeGodotArgs(let unsafeGodotArgs):
-            return try unsafeGodotArgs.argument(at: index)
-        }
-    }
-    
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    @_disfavoredOverload
-    public func variantArgument(at index: Int) throws -> Variant {
-        let variant: Variant?
-        switch contents {
-        case .array(let array):
-            if index >= 0 && index < array.count {
-                variant = array[index]
-            } else {
-                throw ArgumentAccessError.indexOutOfBounds(index: index, count: array.count)
-            }
-        case .unsafeGodotArgs(let unsafeGodotArgs):
-            variant = try unsafeGodotArgs.argument(at: index)
-        }
-        
-        guard let result = variant else {
-            throw ArgumentAccessError.mismatchingType(expected: "Variant", actual: "Variant?")
-        }
-        
-        return result
-    }
-    
-    /// Returns `T?` value wrapped in `Variant` argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is not `nil` but wraps a type other than `T`
-    /// - `index` is out of bounds.
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    @_disfavoredOverload
-    public func optionalArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
-        let arg = try optionalVariantArgument(at: index)
-        
-        if let variant = arg {
-            guard let result = T.unwrap(from: variant) else {
-                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
-            }
-            
             return result
-        } else {
-            return nil
+        } catch {
+            throw .variantConversionError(error)
         }
     }
-    
-    @available(*, deprecated, renamed: "optionalArgument(ofType:at:)", message: "Fixing typo")
-    @_disfavoredOverload
-    public func optionlArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
-        try optionalArgument(ofType: type, at: index)
-    }
-    
-    /// Returns `T?` value wrapped in `Variant` argument at `index`.  This method is a preferred overload for `T: Object`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is not `nil` but wraps a type other than `T`
-    /// - `index` is out of bounds.
-    @available(*, deprecated, message: "Old compatibility API")
-    @_disfavoredOverload
-    public func optionalArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
-        let arg = try optionalVariantArgument(at: index)
         
-        if let variant = arg {
-            guard let result = T.unwrap(from: variant) else {
-                throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
-            }
-            
-            return result
-        } else {
-            return nil
-        }
-    }
-    
-    @available(*, deprecated, renamed: "optionalArgument(ofType:at:)", message: "Fixing typo")
-    public func optionlArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T? {
-        try optionalArgument(ofType: type, at: index)
-    }
-    
     /// Returns `T` value wrapped in `Variant?` argument at `index`.
     ///
     /// Throws an error if:
     /// - `Variant?` contains a type from which `T` cannot be unwrapped
     /// - `index` is out of bounds.
-    public func argument<T: _ArgumentConvertible>(ofType type: T.Type = T.self, at index: Int) throws -> T {
-        return try T.fromArgumentVariant(
-            try argument(at: index)
-        )
-    }
+    public func argument<T: VariantConvertible>(ofType type: T.Type = T.self, at index: Int) throws(ArgumentAccessError) -> T {
+        let variant = try argument(ofType: Variant?.self, at: index)
         
-    /// Returns `T` value wrapped in `Variant` argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` contains a type other than `T`
-    /// - `index` is out of bounds.
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    @_disfavoredOverload
-    public func argument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> T {
-        let arg = try optionalVariantArgument(at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: "nil")
+        do {
+            return try T.fromVariantOrThrow(variant)
+        } catch {
+            throw .variantConversionError(error)
         }
-                
-        guard let result = T.unwrap(from: variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
-        }
-        
-        return result
     }
     
-    /// Returns `T` value wrapped in `Variant` argument at `index`. This method is a preferred overload for `T: Object`.
+    /// Returns a `enum` or `OptionSet` value wrapped in `Variant` argument at `index`.
     ///
     /// Throws an error if:
     /// - `Variant` is `nil`
-    /// - `Variant` contains a type other than `T`
+    /// - `Variant` wraps a type other than `T.RawValue`
     /// - `index` is out of bounds.
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    @_disfavoredOverload
-    public func argument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> T {
-        let arg = try optionalVariantArgument(at: index)
+    /// - `T` can't be constucted from `rawValue` unwrapped from `Variant`
+    public func argument<T>(ofType type: T.Type = T.self, at index: Int) throws(ArgumentAccessError) -> T where T: RawRepresentable, T.RawValue: VariantConvertible {
+        let variantOrNil = try argument(ofType: Variant?.self, at: index)
         
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: "nil")
-        }
-                
-        guard let result = T.unwrap(from: variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "\(T.self)", actual: String(describing: variant.gtype))
+        guard let variant = variantOrNil else {
+            throw .variantConversionError(.unexpectedContent(parsing: type, from: variantOrNil))
         }
         
-        return result
-    }
-    
-    /// Returns a `enum` or `OptionSet` `T` value wrapped in `Variant` argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `Int`
-    /// - `index` is out of bounds.
-    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
-    public func rawRepresentableArgument<T: RawRepresentable>(ofType type: T.Type = T.self, at index: Int) throws -> T where T.RawValue: BinaryInteger {
-        let arg = try argument(ofType: Variant?.self, at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "int", actual: "nil")
+        do {
+            return try T.fromVariantOrThrow(variant)
+        } catch {
+            throw .variantConversionError(error)
         }
-        
-        guard let rawValue = Int(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "int", actual: String(describing: variant.gtype))
-        }
-        
-        guard let result = T(rawValue: T.RawValue(rawValue)) else {
-            throw ArgumentAccessError.invalidRawValue(value: "\(rawValue)", typeName: "\(T.self)")
-        }
-        
-        return result
-    }
-    
-    /// Returns `[T]` value wrapped in `Variant` argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `Int`
-    /// - `index` is out of bounds.
-    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
-    @_disfavoredOverload
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    public func arrayArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
-        let arg = try argument(ofType: Variant?.self, at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
-        }
-        
-        guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
-        }
-        
-        var result: [T] = []
-        result.reserveCapacity(array.count)
-        for element in array {
-            guard let element else {
-                throw ArgumentAccessError.mismatchingArrayElementType
-            }
-            
-            guard let element = T.unwrap(from: element) else {
-                throw ArgumentAccessError.mismatchingArrayElementType
-            }
-        
-            result.append(element)
-        }
-        return result
-    }
-    
-    /// Returns `[T]` value wrapped in `Variant` argument at `index`.  This method is a preferred overload for `T: Object`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `Int`
-    /// - `index` is out of bounds.
-    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
-    @_disfavoredOverload
-    @available(*, deprecated, message: "Old compatibility API, use argument(ofType:at:)")
-    public func arrayArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> [T] {
-        let arg = try argument(ofType: Variant?.self, at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
-        }
-        
-        guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
-        }
-        
-        var result: [T] = []
-        result.reserveCapacity(array.count)
-        for element in array {
-            guard let element else {
-                throw ArgumentAccessError.mismatchingArrayElementType
-            }
-            
-            guard let element = T.unwrap(from: element) else {
-                throw ArgumentAccessError.mismatchingArrayElementType
-            }
-        
-            result.append(element)
-        }
-        return result
-    }
-    
-    /// Returns `VariantCollection<T>` (aka `TypedArray` of builtin Godot class) value wrapped in `Variant` argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `GArray`
-    /// - `index` is out of bounds.
-    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
-    /// - Passed argument is `GArray`, but contains a type other than `T` or is `nil`
-    public func variantCollectionArgument<T: VariantStorable>(ofType type: T.Type = T.self, at index: Int) throws -> VariantCollection<T> {
-        let arg = try argument(ofType: Variant?.self, at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
-        }
-        
-        guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
-        }
-        
-        guard let result = VariantCollection<T>(array) else {
-            throw ArgumentAccessError.mismatchingArrayElementType
-        }
-        
-        return result
-    }
-    
-    /// Returns `ObjectCollection<T>` (aka `TypedArray` of `Object`-inherited classes) value wrapped in `Variant` argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `GArray`
-    /// - `index` is out of bounds.
-    /// - `T` can't be constucted from `rawValue` equal to wrapped `Int`
-    /// - Passed argument is `GArray`, but contains a type other than `T`
-    ///
-    /// Note:
-    /// Unlike `VariantCollection`, Godot allows `nil` elements in this case.
-    public func objectCollectionArgument<T: Object>(ofType type: T.Type = T.self, at index: Int) throws -> ObjectCollection<T> {
-        let arg = try argument(ofType: Variant?.self, at: index)
-        
-        guard let variant = arg else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: "nil")
-        }
-        
-        guard let array = GArray(variant) else {
-            throw ArgumentAccessError.mismatchingType(expected: "GArray", actual: String(describing: variant.gtype))
-        }
-        
-        guard let result = ObjectCollection<T>(array) else {
-            throw ArgumentAccessError.mismatchingArrayElementType
-        }
-        
-        return result
     }
 }
 
@@ -516,89 +237,11 @@ public extension Array where Element == Variant? {
     }
 }
 
-/// Internal API. Needed for interaction with``Arguments`` in a generalised way. Allows to differentiate between `Variant`, `Variant?`, Builtin types, `Object` and `Object?` during static dispatch when used in the context of managing arguments marshaling to and from Godot.
-///
-/// Unlike ``VariantConvertible`` this type is used to treat weird quirks of interop of Godot and Swift Type system:
-/// 1. Godot has `Variant` type, which has nullable semantics, but represented as `Variant` and `Variant?` on Swift side incorporating nullability into Swift type system
-/// 2. Godot has `BuiltinClass` types, in the scope of interop they can never be passed as `nil`. If function takes `Array` - it's always an array.
-/// 3. Godot has `Object`-derived  types types. They can be either `nil` or not when used as argument.
-public protocol _ArgumentConvertible {
-    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed
-    static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self
-    
-    func toArgumentVariant() -> Variant?
-}
-
-public extension _ArgumentConvertible {
+public extension VariantConvertible {
     /// Extract from `Arguments` increasing `index` after complete. Useful for `repeat each` iteration.
-    static func fromArguments(_ arguments: borrowing Arguments, incrementingIndex index: inout Int) throws -> Self {
+    static func fromArguments(_ arguments: borrowing Arguments, incrementingIndex index: inout Int) throws(ArgumentAccessError) -> Self {
         defer { index += 1 }
         return try arguments.argument(at: index)
-    }
-}
-
-public extension _GodotBridgeableBuiltin {
-    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
-    static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
-        guard let variant = variantOrNil else {
-            throw ArgumentConversionError()
-        }
-        
-        guard let value = Self.fromVariant(variant) else {
-            throw ArgumentConversionError()
-        }
-        
-        return value
-    }
-    
-    func toArgumentVariant() -> Variant? {
-        toVariant()
-    }
-}
-
-extension VariantCollection: _ArgumentConvertible where Element: _ArgumentConvertible {
-    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation
-    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
-        guard let variant = variantOrNil else {
-            throw ArgumentConversionError()
-        }
-        
-        guard let array = GArray.fromVariant(variant) else {
-            throw ArgumentConversionError()
-        }
-        
-        guard let typedArray = Self(array) else {
-            throw ArgumentConversionError()
-        }
-        
-        return typedArray
-    }
-    
-    public func toArgumentVariant() -> Variant? {
-        array.toVariant()
-    }
-}
-
-extension ObjectCollection: _ArgumentConvertible where Element: _ArgumentConvertible {
-    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. BuiltinType on Godot side are not nullable, so we just throw to gracefully exit this situation.
-    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
-        guard let variant = variantOrNil else {
-            throw ArgumentConversionError()
-        }
-        
-        guard let array = GArray.fromVariant(variant) else {
-            throw ArgumentConversionError()
-        }
-        
-        guard let typedArray = Self(array) else {
-            throw ArgumentConversionError()
-        }
-        
-        return typedArray
-    }
-    
-    public func toArgumentVariant() -> Variant? {
-        array.toVariant()
     }
 }
 
@@ -609,59 +252,24 @@ public protocol _GodotOptionalBridgeable: VariantConvertible {
 }
 
 
-extension Object: _ArgumentConvertible, _GodotOptionalBridgeable {
-    /// Attempts to unwrap `Self` from `Variant?` throws a error if it failed. Objects are technically nullable but this overload will be used in a context where non-optional `Object` was explicitly requested.
-    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
-        guard let variant = variantOrNil else {
-            throw ArgumentConversionError()
-        }
-        
-        guard let value = Self.fromVariant(variant) else {
-            throw ArgumentConversionError()
-        }
-        
-        return value
-    }
-    
-    public func toArgumentVariant() -> Variant? {
-        toVariant()
-    }
+extension Object: _GodotOptionalBridgeable {
 }
 
-extension Variant: _ArgumentConvertible, _GodotOptionalBridgeable {
-    /// Attempts to unwrap `Variant` from `Variant?` throws if `nil`. `Variant` on Godot side do have nullable semantics but this overload is used in the context where non-optional `Variant` was explicitly requested
-    public static func fromArgumentVariant(
-        _ variantOrNil: Variant?
-    ) throws(ArgumentConversionError) -> Variant {
-        if let variant = variantOrNil {
-            return variant
-        } else {
-            throw ArgumentConversionError()
-        }
-    }
-    
-    public func toArgumentVariant() -> Variant? {
-        self
-    }
+extension Variant: _GodotOptionalBridgeable {    
 }
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
-extension Optional: _ArgumentConvertible where Wrapped: _GodotOptionalBridgeable {
-    /// Unwrap `Object?` or `Variant?` from `variant`. If it's `nil` - return `nil`. If it's not `nil`, and unwrapping failed, throw an error.
-    public static func fromArgumentVariant(_ variantOrNil: Variant?) throws(ArgumentConversionError) -> Self {
-        if let variant = variantOrNil {
-            guard let value = Wrapped.fromVariant(variant) else {
-                throw ArgumentConversionError()
-            }
-            
-            return value
-        } else {
-            return nil // Expected
-        }
+extension Optional: VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        // TODO: investigate a case where Variant can contain an object, but fails to unwrap it not because it's wrong type, but because it was nullified. We need to distinguish such case and return nil instead of throwing. It's an opposite of case where the incompatible object is contained inside Variant - then we indeed need to throw.
+        try Wrapped.fromVariantOrThrow(variant)
     }
-    
-    /// Wrap `Object?` into `Variant?` or pass `Variant?` as is
-    public func toArgumentVariant() -> Variant? {
-        map { $0.toVariant() }
+        
+    public static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self {
+        if let variant {
+            return try Wrapped.fromVariantOrThrow(variant)
+        } else {
+            return nil
+        }
     }
 }

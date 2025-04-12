@@ -5,46 +5,10 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
-/// Internal API. Variant.
+/// Internal API. VariantConvertible.
 @inline(__always)
 @inlinable
-public func _macroExportGet(_ value: Variant) -> Variant? {
-    return value
-}
-
-/// Internal API. Optional Variant.
-@inline(__always)
-@inlinable
-public func _macroExportGet(_ value: Variant?) -> Variant? {
-    return value
-}
-
-
-/// Internal API. Builtin type.
-@inline(__always)
-@inlinable
-public func _macroExportGet<T>(_ value: T) -> Variant? where T: _GodotBridgeableBuiltin {
-    return value.toVariant()
-}
-
-/// Internal API. Optional builtin type.
-@inline(__always)
-@inlinable
-public func _macroExportGet<T>(_ value: T?) -> Variant? where T: _GodotBridgeableBuiltin {
-    return value.toVariant()
-}
-
-/// Internal API. Object.
-@inline(__always)
-@inlinable
-public func _macroExportGet<T>(_ value: T) -> Variant? where T: Object {
-    return value.toVariant()
-}
-
-/// Internal API. Optional Object.
-@inline(__always)
-@inlinable
-public func _macroExportGet<T>(_ value: T?) -> Variant? where T: Object {
+public func _macroExportGet<T>(_ value: T?) -> Variant? where T: VariantConvertible {
     return value.toVariant()
 }
 
@@ -60,7 +24,7 @@ public func _macroExportGet<T>(
 /// Internal API. Closure
 @inline(__always)
 @inlinable
-public func _macroExportGet<each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+public func _macroExportGet<each Argument: VariantConvertible, Result: VariantConvertible>(
     _ value: @escaping (repeat each Argument) -> Result
 ) -> Variant? {
     return Callable { arguments in
@@ -71,7 +35,7 @@ public func _macroExportGet<each Argument: _ArgumentConvertible, Result: _Argume
                 repeat (each Argument).fromArguments(arguments, incrementingIndex: &currentIndex)
             )
             
-            return result.toArgumentVariant()
+            return result.toVariant()
         } catch {
             GD.printErr("Couldn't extract arguments to call closure. \(error)")
             return nil

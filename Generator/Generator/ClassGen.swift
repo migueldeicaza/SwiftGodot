@@ -626,25 +626,36 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
         
         if inherits == objectInherits {
-            p("/// Wrap ``\(cdef.name)`` into a ``Variant``")
-            p("public func toVariant() -> Variant") {
-                p ("Variant(self)")
-            }
-        
-            p("/// Attempt to unwrap ``\(cdef.name)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
-            p("public class func fromVariant(_ variant: Variant) -> Self?") {
-                p("variant.asObject(Self.self)")
+            p("""
+            /// Wrap ``\(cdef.name)`` into a ``Variant``
+            public func toVariant() -> Variant {
+                Variant(self)                
             }
             
-            p("/// Internal API")
-            p("public func _macroRcRef()") {
-                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            /// Wrap ``\(cdef.name)`` into a ``Variant?``
+            @_disfavoredOverload
+            public func toVariant() -> Variant? {
+                Variant(self)                
             }
             
-            p("/// Internal API")
-            p("public func _macroRcUnref()") {
-                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            /// Extract ``\(cdef.name)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+                guard let value = variant.asObject(Self.self) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
             }
+            
+            /// Internal API
+            public func _macroRcRef() {
+                // no-op, needed for virtual dispatch when RefCounted is stored as Object
+            }
+            
+            /// Internal API
+            public func _macroRcUnref() {
+                // no-op, needed for virtual dispatch when RefCounted is stored as Object
+            }
+            """)                        
         }
         
         if cdef.name == "RefCounted" {

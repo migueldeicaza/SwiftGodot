@@ -358,7 +358,26 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     }
 }
 
-public extension VariantCollection where Element: _GodotBridgeableBuiltin {
+extension VariantCollection: VariantConvertible where Element: _GodotBridgeableBuiltin {
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        array.toVariant()
+    }
+    
+    public func toVariant() -> Variant {
+        array.toVariant()
+    }
+    
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromVariantOrThrow(variant)
+
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
+    
     /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used as an `@Exported` variable
     @inlinable
     @inline(__always)

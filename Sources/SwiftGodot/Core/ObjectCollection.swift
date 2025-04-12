@@ -15,7 +15,7 @@ extension ObjectCollection: VariantStorable {
 }
 
 /// This represents a typed array of one of the built-in types from Godot
-public final class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+public final class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection, VariantConvertible {
     /// GDScript allows `nil`s in `Array[Object]`
     public typealias ArrayLiteralElement = Element?
     
@@ -414,4 +414,24 @@ public final class ObjectCollection<Element: Object>: Collection, ExpressibleByA
             usage: usage ?? .default
         )
     }
+    
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        array.toVariant()
+    }
+    
+    public func toVariant() -> Variant {
+        array.toVariant()
+    }
+    
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromVariantOrThrow(variant)
+
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
 }
+

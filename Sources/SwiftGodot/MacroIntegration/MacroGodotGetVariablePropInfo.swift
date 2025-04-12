@@ -173,7 +173,7 @@ public func _macroGodotGetPropInfo<Root, T>(
 /// Internal API. Closure.
 @inline(__always)
 @inlinable
-public func _macroGodotGetPropInfo<Root, each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+public func _macroGodotGetPropInfo<Root, each Argument: VariantConvertible, Result: VariantConvertible>(
     at keyPath: KeyPath<Root, (repeat each Argument) -> Result>,
     name: String,
     userHint: PropertyHint? = nil,

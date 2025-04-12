@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, VariantConvertible {
     static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
         var map: [GDExtensionVariantFromTypeConstructorFunc] = []
         
@@ -211,14 +211,20 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         case notFound
     }
     
-    /// Identity function. Always returns non-nil optional. Needed for static dispatch for certain features.
-    public static func fromVariant(_ variant: Variant) -> Variant? {
-        return variant
+    /// Identity function. Needed for static dispatch for certain features.
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Variant {
+        variant
     }
     
     /// Identity function. Needed for static dispatch for certain features.
     public func toVariant() -> Variant {
         return self
+    }
+    
+    /// Identity function. Needed for static dispatch for certain features.
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        self
     }
 
     /// Gets the value of a named key from a Variant.
@@ -381,6 +387,18 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible {
         gi.variant_get_type_name (GDExtensionVariantType (GDExtensionVariantType.RawValue(type.rawValue)), &res.content)
         let ret = GString.stringFromGStringPtr(ptr: &res.content)
         return ret ?? ""
+    }
+    
+    /// Extract `T` from this ``Variant`` or return nil if unsucessful.
+    public func into<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
+        type.fromVariant(self)
+    }
+}
+
+public extension Variant? {
+    /// Extract `T` from this ``Variant?`` or return nil if unsucessful.
+    func into<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {        
+        type.fromVariant(self)
     }
 }
 

@@ -5,19 +5,72 @@
 //  Created by Elijah Semyonov on 08/04/2025.
 //
 
+/// Error while trying to unwrap Variant
+public enum VariantConversionError: Error, CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .unexpectedContent(let requestedType, let actualContent):
+            return "Can't unwrap \(requestedType) from \(actualContent)"
+        case .integerOverflow(let requestedType, let value):
+            return "\(value) doesn't fit in \(requestedType)"
+        case .invalidRawValue(let requestedType, let value):
+            return "\(value) is not a valid rawValue for \(requestedType)"
+        }
+    }
+    
+    case unexpectedContent(requestedType: Any.Type, actualContent: String)
+    case integerOverflow(requestedType: Any.Type, value: Int64)
+    case invalidRawValue(requestedType: any RawRepresentable.Type, value: Any)
+    
+    public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: Variant?) -> Self {
+        unexpectedContent(
+            requestedType: type,
+            actualContent: from.map(\.description) ?? "nil"
+        )
+    }
+}
+
 /// Protocol for types that can be converted to and from ``Variant``.
 /// NOTE: this type is planned to supersede ``VariantStorable`` in the future.
 public protocol VariantConvertible {
-    /// Extract ``Self`` from a ``Variant``. Returns `nil` if it's not possible. E.g. another type is stored in the `variant`
-    static func fromVariant(_ variant: Variant) -> Self?
+    /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+    static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self
     
-    /// Converts the instance to a ``Variant``.
-    func toVariant() -> Variant
+    /// Extract ``Self`` from a ``Variant?``. Throws `VariantConversionError` if it's not possible.
+    static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self
+    
+    /// Converts the instance to a ``Variant?``.
+    func toVariant() -> Variant?
+}
+
+public extension VariantConvertible {
+    /// Default implementation for most of the cases where a type cannot be constructed from a nil Variant.
+    static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self {
+        throw .unexpectedContent(parsing: self, from: variant)
+    }
+    
+    /// Unwrap ``Self`` from a ``Variant``. Returns `nil` if it's not possible.
+    static func fromVariant(_ variant: Variant) -> Self? {
+        do {
+            return try fromVariantOrThrow(variant)
+        } catch {
+            return nil
+        }
+    }
+    
+    /// Unwrap ``Self`` from a ``Variant?``. Returns `nil` if it's not possible.
+    static func fromVariant(_ variant: Variant?) -> Self? {
+        do {
+            return try fromVariantOrThrow(variant)
+        } catch {
+            return nil
+        }
+    }
 }
 
 /// Internal API. Protocol for types that contains details on how it interacts with C GDExtension API.
-/// You could assume that to be the set of all Builtin Types and Object-derived Types. `Variant` is not included and processed in a special overload of functions where `_GodotBridgeable` shows up.
-public protocol _GodotBridgeable: VariantConvertible, _ArgumentConvertible {
+/// You could assume that to be the set of all Builtin Types, Object-derived Types, and Variant.
+public protocol _GodotBridgeable: VariantConvertible {
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
@@ -63,7 +116,11 @@ public extension _GodotBridgeableObject where Self: Object {
 
 public extension Optional where Wrapped: VariantConvertible {
     func toVariant() -> Variant? {
-        self?.toVariant()
+        if let self {
+            return self.toVariant()
+        } else {
+            return nil
+        }
     }
 }
 
@@ -92,14 +149,23 @@ extension Int64: _GodotBridgeableBuiltin {
     // _macroGodotGetPropInfo is implemented below for all `BinaryInteger`
     // _macroGodotGetPropInfoArrayType is implemented below for all `BinaryInteger`
     
+    /// Wrap a ``Int64``  into ``Variant?``.
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        Variant(self)
+    }
+    
     /// Wrap a ``Int64``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
-    /// Attempt to unwrap a ``Int64`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
-    public static func fromVariant(_ variant: Variant) -> Self? {
-        guard let value = Int64(variant) else { return nil }
+    /// Attempt to unwrap a ``Int64`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = Int64(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
         return value
     }
 }
@@ -128,26 +194,27 @@ public extension BinaryInteger {
     @inlinable
     static var _macroGodotGetPropInfoArrayType: String { "int" }
     
+    /// Wrap an integer number  into ``Variant?``.
+    @_disfavoredOverload
+    func toVariant() -> Variant? {
+        Int64(self).toVariant()
+    }
+    
     /// Wrap an integer number  into ``Variant``.
     func toVariant() -> Variant {
         Int64(self).toVariant()
     }
     
-    /// Attempt to unwrap an integer number from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`, or wrapped number doesn't fit the integer size.
-    static func fromVariant(_ variant: Variant) -> Self? {
-        guard let int = Int64.fromVariant(variant) else {
-            return nil
-        }
+    /// Attempt to unwrap an integer number from a `variant`. Throws `VariantConversionError` if it's not possible.
+    static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        let value = try Int64.fromVariantOrThrow(variant)
         
         // Fail gracefully if overflow happens
-        let result = Self(exactly: int)
-        
-        guard let result else {
-            GD.printErr("\(self) can't contain the value '\(int)'.")
-            return nil
+        if let result = Self(exactly: value) {
+            return result
+        } else {
+            throw VariantConversionError.integerOverflow(requestedType: self, value: value)
         }
-        
-        return result
     }
 }
 
@@ -175,14 +242,22 @@ extension Bool: _GodotBridgeableBuiltin {
     @inlinable
     public static var _macroGodotGetPropInfoArrayType: String { "bool" }
     
+    /// Wrap a ``Bool``  into ``Variant?``.
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        Variant(self)
+    }
+    
     /// Wrap a ``Bool``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
-    /// Attempt to unwrap a ``Bool`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
-    public static func fromVariant(_ variant: Variant) -> Self? {
-        guard let value = Bool(variant) else { return nil }
+    /// Attempt to unwrap a ``Bool`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = Bool(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
         return value
     }
 }
@@ -211,14 +286,23 @@ extension String: _GodotBridgeableBuiltin {
     @inlinable
     public static var _macroGodotGetPropInfoArrayType: String { "String" }
     
+    /// Wrap a ``String``  into ``Variant?``.
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        Variant(self)
+    }
+    
     /// Wrap a ``String``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
-    /// Attempt to unwrap a ``String`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
-    public static func fromVariant(_ variant: Variant) -> Self? {
-        guard let value = String(variant) else { return nil }
+    /// Attempt to unwrap a ``String`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = String(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
         return value
     }
 }
@@ -227,14 +311,22 @@ extension Double: _GodotBridgeableBuiltin {
     // _macroGodotGetPropInfo is implemented below for all `BinaryFloatingPoint`
     // _macroGodotGetPropInfoArrayType is implemented below for all `BinaryFloatingPoint`
     
+    /// Wrap a ``Double``  into ``Variant?``.
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        Variant(self)
+    }
+    
     /// Wrap a ``Double``  into ``Variant``.
     public func toVariant() -> Variant {
         Variant(self)
     }
     
-    /// Attempt to unwrap a ``Double`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`.
-    public static func fromVariant(_ variant: Variant) -> Self? {
-        guard let value = Double(variant) else { return nil }
+    /// Attempt to unwrap a ``Double`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = Double(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
         return value
     }
 }
@@ -263,14 +355,20 @@ public extension BinaryFloatingPoint {
     @inlinable
     static var _macroGodotGetPropInfoArrayType: String { "float" }
     
+    /// Wrap a floating point number into ``Variant?``.
+    @_disfavoredOverload
+    func toVariant() -> Variant? {
+        Double(self).toVariant()
+    }
+    
     /// Wrap a floating point number into ``Variant``.
     func toVariant() -> Variant {
         Double(self).toVariant()
     }
 
-    /// Attempt to unwrap a floating point number from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`
-    static func fromVariant(_ variant: Variant) -> Self? {
-        Double.fromVariant(variant).map { Self($0) }
+    /// Attempt to unwrap a floating point number from a `variant`. Throws `VariantConversionError` if it's not possible.
+    static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        Self(try Double.fromVariantOrThrow(variant))
     }
 }
 
@@ -287,21 +385,34 @@ extension UInt8: _GodotBridgeableBuiltin {}
     
 extension Float: _GodotBridgeableBuiltin {}
 
-public extension RawRepresentable where RawValue: BinaryInteger {
-    func toVariant() -> Variant {
-        Int64(rawValue).toVariant()
+public extension RawRepresentable where RawValue: VariantConvertible {
+    func toVariant() -> Variant? {
+        rawValue.toVariant()
     }
     
-    static func fromVariant(_ variant: Variant) -> Self? {
-        guard let rawValue = Int64.fromVariant(variant) else {
-            GD.printErr("Variant doesn't store `int`")
-            return nil
-        }
-        
-        guard let value = Self(rawValue: RawValue(rawValue)) else {
-            GD.printErr("\(rawValue) is not a valid `rawValue` for \(Self.self)")
-            return nil
+    static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        let rawValue = try RawValue.fromVariantOrThrow(variant)
+        guard let value = Self(rawValue: rawValue) else {
+            throw .invalidRawValue(requestedType: self, value: rawValue)
         }
         return value
+    }
+}
+
+public extension RawRepresentable where RawValue == String {
+    func toVariant() -> Variant {
+        rawValue.toVariant()
+    }
+}
+
+public extension RawRepresentable where RawValue: BinaryInteger {
+    func toVariant() -> Variant {
+        rawValue.toVariant()
+    }
+}
+
+public extension RawRepresentable where RawValue: BinaryFloatingPoint {
+    func toVariant() -> Variant {
+        rawValue.toVariant()
     }
 }

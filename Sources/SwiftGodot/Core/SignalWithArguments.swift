@@ -11,7 +11,7 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// Use the ``emit(...)`` method to emit a signal.
 /// You can also await the ``emitted`` property for waiting for a single emission of the signal.
 ///
-public class SignalWithArguments<each T: _ArgumentConvertible> {
+public class SignalWithArguments<each T: VariantConvertible> {
     var target: Object
     var signalName: StringName
     public init(target: Object, signalName: String) {
@@ -53,17 +53,14 @@ public class SignalWithArguments<each T: _ArgumentConvertible> {
     @discardableResult
     public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Object {
         let signalProxy = SignalProxy()
-        signalProxy.proxy = { args in
+        signalProxy.proxy = { arguments in
             var index = 0
             do {
                 callback(
-                    repeat try args.unwrapArgument(
-                        ofType: (each T).self,
-                        incrementingIndex: &index
-                    )
+                    repeat try (each T).fromArguments(arguments, incrementingIndex: &index)
                 )
             } catch {
-                GD.printErr("Error unpacking signal arguments: \(error)")
+                GD.printErr(error)
             }
         }
 
@@ -96,7 +93,7 @@ public class SignalWithArguments<each T: _ArgumentConvertible> {
         let args = GArray()
         args.append(Variant(signalName))
         for arg in repeat each t {
-            args.append(arg.toArgumentVariant())
+            args.append(arg.toVariant())
         }
         let result = target.callv(method: "emit_signal", argArray: args)
         guard let result else { return .ok }
@@ -119,24 +116,4 @@ public class SignalWithArguments<each T: _ArgumentConvertible> {
 
     }
 
-}
-
-extension Arguments {
-    enum UnpackError: Error {
-        /// The argument could not be coerced to the expected type.
-        case typeMismatch
-
-        /// The argument was nil.
-        case nilArgument
-    }
-    
-    func unwrapArgument<T>(ofType type: T.Type, incrementingIndex index: inout Int) throws -> T where T: _ArgumentConvertible {
-        defer {
-            index += 1
-        }
-        
-        return try T.fromArgumentVariant(
-            try argument(ofType: Variant?.self, at: index)
-        )
-    }
 }

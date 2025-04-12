@@ -5,48 +5,7 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
-/// Internal API.  Variant.
-@inline(__always)
-@inlinable
-public func _macroExportSet(
-    _ arguments: borrowing Arguments,
-    _ name: StaticString,
-    _ old: Variant,
-    _ set: (Variant) -> Void
-) -> Variant? {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
-    }
-
-    guard let variant = variantOrNil else {
-        GD.printErr("Unable to set `\(name)`, argument is nil")
-        return nil
-    }
-    
-    set(variant)
-    return nil
-}
-
-/// Internal API.  Optional Variant.
-@inline(__always)
-@inlinable
-public func _macroExportSet(
-    _ arguments: borrowing Arguments,
-    _ name: StaticString,
-    _ old: Variant?,
-    _ set: (Variant?) -> Void
-) -> Variant? {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
-    }
-    
-    set(variantOrNil)
-    return nil
-}
-
-/// Internal API.  Builtin types.
+/// Internal API.
 @inline(__always)
 @inlinable
 public func _macroExportSet<T>(
@@ -54,27 +13,19 @@ public func _macroExportSet<T>(
     _ name: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? where T: _GodotBridgeableBuiltin {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
+) -> Variant? where T: VariantConvertible {
+    do {
+        let value = try arguments.argument(ofType: T.self, at: 0)
+        
+        set(value)
+    } catch {
+        GD.printErr("\(error.description)")
     }
-
-    guard let variant = variantOrNil else {
-        GD.printErr("Unable to set `\(name)`, argument is nil")
-        return nil
-    }
-
-    guard let newValue = T.fromVariant(variant) else {
-        GD.printErr("Unable to set `\(name)`, argument is not \(T.self)")
-        return nil
-    }
-    
-    set(newValue)
+        
     return nil
 }
 
-/// Internal API.  Optional builtin types.
+/// Internal API. Optional builtin. We surface them as `Variant?`.
 @inline(__always)
 @inlinable
 public func _macroExportSet<T>(
@@ -83,38 +34,42 @@ public func _macroExportSet<T>(
     _ old: T?,
     _ set: (T?) -> Void
 ) -> Variant? where T: _GodotBridgeableBuiltin {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
+    do {
+        let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
+        
+        guard let variant = variantOrNil else {
+            // Expected nil, set to nil
+            set(nil)
+            return nil
+        }
+                
+        let value = try T.fromVariantOrThrow(variant)
+        set(value)
+    } catch let error as ArgumentAccessError {
+        GD.printErr(error.description)
+    } catch let error as VariantConversionError {
+        GD.printErr(error.description)
+    } catch {
+        GD.printErr("\(error)")
     }
-
-    guard let variant = variantOrNil else {
-        set(nil)
-        return nil
-    }
-
-    guard let newValue = T.fromVariant(variant) else {
-        GD.printErr("Unable to set `\(name)`, argument is not \(T.self)")
-        return nil
-    }
-    
-    set(newValue)
+        
     return nil
 }
 
 @inline(__always)
 @inlinable
-func proxyClosureViaCallable<each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+func proxyClosureViaCallable<each Argument: VariantConvertible, Result: VariantConvertible>(
     _ callable: Callable
 ) -> (repeat each Argument) -> Result {
     return { (arguments: repeat each Argument) -> Result in
         let array = GArray()
             
-        repeat array.append((each arguments).toArgumentVariant())
+        repeat array.append((each arguments).toVariant())
         
         do {
-            return try Result.fromArgumentVariant(callable.callv(arguments: array))
+            return try Result.fromVariantOrThrow(callable.callv(arguments: array))
         } catch {
+            // TODO: consider adding some API to construct fallback value for VariantConvertible for cases like this
             fatalError("Failed to proxy Callable: \(error). Unable to convert resulting Variant back to expected Swift type '\(Result.self)'.")
         }
     }
@@ -123,89 +78,19 @@ func proxyClosureViaCallable<each Argument: _ArgumentConvertible, Result: _Argum
 /// Internal API.  Closure.
 @inline(__always)
 @inlinable
-public func _macroExportSet<each Argument: _ArgumentConvertible, Result: _ArgumentConvertible>(
+public func _macroExportSet<each Argument: VariantConvertible, Result: VariantConvertible>(
     _ arguments: borrowing Arguments,
     _ name: StaticString,
     _ old: @escaping (repeat each Argument) -> Result,
     _ set: (@escaping (repeat each Argument) -> Result) -> Void
 ) -> Variant? {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
+    do {
+        let newCallable = try arguments.argument(ofType: Callable.self, at: 0)
+        
+        set(proxyClosureViaCallable(newCallable))
+    } catch {
+        GD.printErr(error.description)
     }
-
-    guard let variant = variantOrNil else {
-        return nil
-    }
-    
-    guard let newCallable = Callable.fromVariant(variant) else {
-        GD.printErr("Unable to set `\(name)`, argument is not Callable")
-        return nil
-    }
-    
-    
-    set(proxyClosureViaCallable(newCallable))
-    
-    return nil
-}
-
-/// Internal API. Objects.
-@inline(__always)
-@inlinable
-public func _macroExportSet<T>(
-    _ arguments: borrowing Arguments,
-    _ name: StaticString,
-    _ old: T,
-    _ set: (T) -> Void
-) -> Variant? where T: Object {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
-    }
-
-    guard let variant = variantOrNil else {
-        GD.printErr("Unable to set `\(name)`, argument is nil")
-        return nil
-    }
-
-    guard let newValue = T.fromVariant(variant) else {
-        GD.printErr("Unable to set `\(name)`, can't unwrap \(T.self) from Variant")
-        return nil
-    }
-    newValue._macroRcRef()
-    old._macroRcUnref()
-    set(newValue)
-    return nil
-}
-
-/// Internal API. Optional Objects.
-@inline(__always)
-@inlinable
-public func _macroExportSet<T>(
-    _ arguments: borrowing Arguments,
-    _ name: StaticString,
-    _ old: T?,
-    _ set: (T?) -> Void
-) -> Variant? where T: Object {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
-    }
-
-    guard let variant = variantOrNil else {
-        GD.printErr("Unable to set `\(name)`, argument is nil")
-        old?._macroRcUnref()
-        set(nil)
-        return nil
-    }
-
-    guard let newValue = T.fromVariant(variant) else {
-        GD.printErr("Unable to set `\(name)`, can't unwrap \(T.self) from Variant")
-        return nil
-    }
-    newValue._macroRcRef()
-    old?._macroRcUnref()
-    set(newValue)
     return nil
 }
 
@@ -217,7 +102,7 @@ public func _macroExportSet<T>(
     _ variableName: StaticString,
     _ old: VariantCollection<T>,
     _: (VariantCollection<T>) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: VariantStorable {
+) -> Variant? where T: VariantStorable, T: _GodotBridgeable {
     _macroExportSetGArrayCollection(arguments, variableName, old)
 }
 
@@ -229,7 +114,7 @@ public func _macroExportSet<T>(
     _ variableName: StaticString,
     _ old: ObjectCollection<T>,
     _: (ObjectCollection<T>) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: Object {
+) -> Variant? where T: Object, T: _GodotBridgeable {
     _macroExportSetGArrayCollection(arguments, variableName, old)
 }
 
@@ -238,35 +123,26 @@ public func _macroExportSet<T>(
 func _macroExportSetGArrayCollection<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
-    _ old: T
-) -> Variant? where T: GArrayCollection {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(variableName)`, no arguments")
+    _ collection: T
+) -> Variant? where T: GArrayCollection, T.Element: VariantConvertible, T.Element: VariantStorable {
+    do {
+        let newArray = try arguments.argument(ofType: GArray.self, at: 0)
+        guard newArray.isSameTyped(array: collection.array) else {
+            let oldType = Variant.GType(rawValue: collection.array.getTypedBuiltin()) ?? .nil
+            let newType = Variant.GType(rawValue: newArray.getTypedBuiltin()) ?? .nil
+            GD.printErr("Unable to set `\(variableName)`, incompatible types: old - \(oldType), new - \(newType)")
+            return nil
+        }
+        collection.array = newArray
         return nil
+    } catch {
+        GD.printErr(error.description)
     }
-
-    guard let variant = variantOrNil else {
-        GD.printErr("Unable to set `\(variableName)`, argument is `nil`")
-        return nil
-    }
-    guard let newArray = GArray(variant) else {
-        GD.printErr("Unable to set `\(variableName)`, argument is not Array. ")
-        return nil
-    }
-    
-    guard newArray.isSameTyped(array: old.array) else {
-        let oldType = Variant.GType(rawValue: old.array.getTypedBuiltin()) ?? .nil
-        let newType = Variant.GType(rawValue: newArray.getTypedBuiltin()) ?? .nil
-        GD.printErr("Unable to set `\(variableName)`, incompatible types: old - \(oldType), new - \(newType)")
-        return nil
-    }
-    
-    old.array = newArray
     
     return nil
 }
 
-/// Internal API.  CaseIterable enums with BinaryInteger RawValue.
+/// Internal API. RawRepresentable with VariantConvertible RawValue
 @inline(__always)
 @inlinable
 public func _macroExportSet<T>(
@@ -274,23 +150,14 @@ public func _macroExportSet<T>(
     _ name: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger  {
-    guard let variantOrNil = arguments.first else {
-        GD.printErr("Unable to set `\(name)`, no arguments")
-        return nil
-    }
-
-    guard let variant = variantOrNil else {
-        GD.printErr("Unable to set `\(name)`, argument is nil")
-        return nil
-    }
-
-    guard let newValue = T.fromVariant(variant) else {
-        GD.printErr("Unable to set `\(name)`, couldn't construct \(T.self) from \(variant.description)")
-        return nil
+) -> Variant? where T: RawRepresentable, T.RawValue: VariantConvertible {
+    do {
+        let value = try arguments.argument(ofType: T.self, at: 0)
+        set(value)
+    } catch {
+        GD.printErr(error.description)
     }
     
-    set(newValue)
     return nil
 }
 

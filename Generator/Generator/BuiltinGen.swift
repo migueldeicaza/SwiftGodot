@@ -813,15 +813,26 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             generateBuiltinOperators (p, bc, typeName: typeName)
             generateBuiltinConstants (p, bc, typeName: typeName)
                         
-            p("/// Wrap ``\(typeName)`` into a ``Variant``")
-            p("public func toVariant() -> Variant") {
-                p("Variant(self)")
+            p("""
+            /// Wrap ``\(typeName)`` into a ``Variant``
+            public func toVariant() -> Variant {
+                Variant(self)                
             }
             
-            p("/// Attempt to unwrap ``\(typeName)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
-            p("public static func fromVariant(_ variant: Variant) -> Self?") {
-                p("Self(variant)")
+            /// Wrap ``\(typeName)`` into a ``Variant?``
+            @_disfavoredOverload
+            public func toVariant() -> Variant? {
+                Variant(self)                
             }
+            
+            /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+                guard let value = Self(variant) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            """)
                         
             let propInfoPropertyType: String
             switch bc.name {
