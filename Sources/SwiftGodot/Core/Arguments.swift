@@ -259,15 +259,7 @@ public protocol _GodotOptionalBridgeable: _GodotBridgeable {
 extension Object: _GodotOptionalBridgeable {
 }
 
-extension Variant: _GodotOptionalBridgeable {
-    public static var _variantType: GType {
-        .nil
-    }
-    
-    public static var _godotTypeName: String {
-        "Variant"
-    }
-    
+extension Variant: _GodotOptionalBridgeable {    
 }
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.

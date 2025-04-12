@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, VariantConvertible {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
     static let toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
         var map: [GDExtensionTypeFromVariantConstructorFunc] = []
         
@@ -110,7 +110,8 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
     }
     
     /// Initialize ``Variant`` using inlinable payload or opaque handle managed by Builtin Type or Object.
-    init<Payload>(payload: inout Payload, constructor: GDExtensionVariantFromTypeConstructorFunc) {
+    init<Payload>(payload: Payload, constructor: GDExtensionVariantFromTypeConstructorFunc) {
+        var payload = payload
         withUnsafeMutablePointer(to: &content) { target in
             withUnsafeMutablePointer(to: &payload) { source in
                 constructor(target, source)
@@ -122,7 +123,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
     
     /// Initialize ``Variant`` by wrapping ``Object``
     public convenience init(_ from: Object) {
-        self.init(payload: &from.handle, constructor: Self.variantFromObject)
+        self.init(payload: from.handle, constructor: Self.variantFromObject)
     }
     
     /// Initialize ``Variant`` by wrapping ``Object?``, fails if it's `nil`
@@ -135,8 +136,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
     
     /// Initialize ``Variant`` by wrapping ``BinaryInteger``
     public convenience init(_ from: some BinaryInteger) {
-        var payload = Int64(from)
-        self.init(payload: &payload, constructor: Self.variantFromInt)
+        self.init(payload: Int64(from), constructor: Self.variantFromInt)
     }
     
     /// Initialize ``Variant`` by wrapping ``BinaryInteger?``, fails if it's `nil`
@@ -149,8 +149,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
     
     /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint``
     public convenience init(_ from: some BinaryFloatingPoint) {
-        var payload = Double(from)
-        self.init(payload: &payload, constructor: Self.variantFromDouble)
+        self.init(payload: Double(from), constructor: Self.variantFromDouble)
     }
     
     /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint?``, fails if it's `nil`
@@ -163,8 +162,8 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
     
     /// Initialize ``Variant`` by wrapping ``Bool``
     public convenience init(_ from: Bool) {
-        var payload: GDExtensionBool = from ? 1 : 0
-        self.init(payload: &payload, constructor: Self.variantFromBool)
+        let payload: GDExtensionBool = from ? 1 : 0
+        self.init(payload: payload, constructor: Self.variantFromBool)
     }
     
     /// Initialize ``Variant`` by wrapping ``Bool?``, fails if it's `nil`
@@ -448,6 +447,17 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, V
     /// Extract `T` from this ``Variant`` or return nil if unsucessful.
     public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
         type.fromVariant(self)
+    }
+    
+    
+    /// Internal API.
+    public static var _variantType: GType {
+        .nil
+    }
+    
+    /// Internal API.
+    public static var _godotTypeName: String {
+        "Variant"
     }
 }
 

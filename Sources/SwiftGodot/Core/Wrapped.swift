@@ -708,7 +708,7 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
     guard let ptr else { return 0 }
     let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
     guard let instance = original.value else { return 0 }
-    guard var info = _info?.pointee else { return 0 }
+    guard let info = _info?.pointee else { return 0 }
     guard let namePtr = info.name,
           let classNamePtr = info.class_name,
           let infoHintPtr = info.hint_string else {

@@ -940,12 +940,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 """) {
                     if isContentRepresented {
                         p("""
-                        self.init(payload: &from.content, constructor: \(typeName).variantFromSelf)
+                        self.init(payload: from.content, constructor: \(typeName).variantFromSelf)
                         """)
                     } else {
                         p("""
-                        var payload = from
-                        self.init(payload: &payload, constructor: \(typeName).variantFromSelf)
+                        self.init(payload: from, constructor: \(typeName).variantFromSelf)
                         """)
                     }
                 }
