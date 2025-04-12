@@ -816,23 +816,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             generateBuiltinConstants (p, bc, typeName: typeName)
                                                 
             isContentRepresented = storedMembers == nil
-            
-            // Bool? == true
-            if isContentRepresented == true {
-                p("""
-                func toVariantImpl() -> Variant {                    
-                    Variant(payload: &content, constructor: Self.variantFromSelf)
-                }
-                """)
-            } else {
-                p("""
-                func toVariantImpl() -> Variant {
-                    var payload = self
-                    return Variant(payload: &payload, constructor: Self.variantFromSelf)
-                }
-                """)
-            }
-            
+                        
             p("""
             
             static let variantFromSelf = gi.get_variant_from_type_constructor(\(typeEnum))!
@@ -840,13 +824,13 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             
             /// Wrap ``\(typeName)`` into a ``Variant``
             public func toVariant() -> Variant {
-                toVariantImpl()
+                Variant(self)
             }
             
             /// Wrap ``\(typeName)`` into a ``Variant?``
             @_disfavoredOverload
             public func toVariant() -> Variant? {
-                toVariantImpl()
+                Variant(self)
             }
             
             /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
@@ -897,7 +881,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             /// Internal API. For indicating that Godot `Array` of ``\(typeName)`` has type `Array[\(bc.name)]`
             @inline(__always)
             @inlinable
-            public static var _gtype: Variant.GType {
+            public static var _variantType: Variant.GType {
                 \(propInfoPropertyType) 
             }
             """)

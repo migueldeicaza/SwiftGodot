@@ -80,18 +80,24 @@ public extension VariantConvertible {
 }
 
 /// Internal API. Protocol for types that contains details on how it interacts with C GDExtension API.
-/// You could assume that to be the set of all Builtin Types, Object-derived Types.
+///
+/// Do not conform your types to this protocol.
+///
+/// Unlike ``VariantConvertible`` that contains information about how to convert specific type from ``Variant`` and back,
+/// and is the only required subset of functionality required to interact with Godot API, this protocol and ones that expand it contain information
+/// required for low-level interaction with Godot API.
+/// You could assume that to be the set of all Builtin Types, Object-derived Types and Swift Variant.
 public protocol _GodotBridgeable: VariantConvertible {
-    /// Internal API.
-    static var _gtype: Variant.GType { get }
+    /// Internal API. Variant type tag for this type.
+    static var _variantType: Variant.GType { get }
     
-    /// Internal API. Returns Godot type name for typed array
-    static var _typeNameHintStr: String { get }
+    /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `GArray` -> `Array`, `Object` -> `Object`
+    static var _godotTypeName: String { get }
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
 public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
-    /// Internal API. Return PropInfo when this class is used as an @Exported property.
+    /// Internal API.
     static func _macroGodotGetPropInfo(
         name: String,
         hint: PropertyHint?,
@@ -102,8 +108,8 @@ public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
 
 public extension _GodotBridgeableBuiltin {
     /// Internal API. Returns Godot type name for typed array.
-    static var _typeNameHintStr: String {
-        _gtype._typeNameHintStr
+    static var _godotTypeName: String {
+        _variantType._godotTypeName
     }
 }
 
@@ -115,7 +121,7 @@ public protocol _GodotBridgeableObject: _GodotBridgeable {
 
 public extension _GodotBridgeableObject where Self: Object {
     /// Internal API. Returns Godot type name for typed array.
-    static var _typeNameHintStr: String {
+    static var _godotTypeName: String {
         "\(self)"
     }
     
@@ -196,7 +202,7 @@ extension Int64: _GodotBridgeableBuiltin {
 }
 
 public extension BinaryInteger {
-    static var _gtype: Variant.GType {
+    static var _variantType: Variant.GType {
         .int
     }
     
@@ -244,7 +250,7 @@ public extension BinaryInteger {
 
 extension Bool: _GodotBridgeableBuiltin {
     /// Internal API.
-    public static var _gtype: Variant.GType {
+    public static var _variantType: Variant.GType {
         .bool
     }
     
@@ -258,7 +264,7 @@ extension Bool: _GodotBridgeableBuiltin {
         usage: PropertyUsageFlags?
     ) -> PropInfo {
         _macroGodotGetPropInfoDefault(
-            propertyType: _gtype,
+            propertyType: _variantType,
             name: name,
             hint: hint,
             hintStr: hintStr,
@@ -288,7 +294,7 @@ extension Bool: _GodotBridgeableBuiltin {
 
 extension String: _GodotBridgeableBuiltin {
     /// Internal API.
-    public static var _gtype: Variant.GType {
+    public static var _variantType: Variant.GType {
         .string
     }
     /// Internal API. Returns ``PropInfo`` for when any ``String`` is used in API visible to Godot
@@ -356,7 +362,7 @@ extension Double: _GodotBridgeableBuiltin {
 
 public extension BinaryFloatingPoint {
     /// Internal API.
-    static var _gtype: Variant.GType {
+    static var _variantType: Variant.GType {
         .float
     }
     
@@ -442,5 +448,5 @@ public extension RawRepresentable where RawValue: BinaryFloatingPoint {
 }
 
 public extension Object {
-    static var _gtype: Variant.GType { .object }
+    static var _variantType: Variant.GType { .object }
 }

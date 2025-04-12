@@ -489,8 +489,8 @@ extension Optional: VariantStorable where Wrapped: VariantStorable {
 }
 
 public extension Variant.GType {
-    /// Internal API. hintStr for when type is used inside an array
-    var _typeNameHintStr: String {
+    /// Internal API. Godot type name of the type with this variant tag.
+    var _godotTypeName: String {
         switch self {
         case .nil:
             fatalError("Unreachable")

@@ -260,11 +260,11 @@ extension Object: _GodotOptionalBridgeable {
 }
 
 extension Variant: _GodotOptionalBridgeable {
-    public static var _gtype: GType {
+    public static var _variantType: GType {
         .nil
     }
     
-    public static var _typeNameHintStr: String {
+    public static var _godotTypeName: String {
         "Variant"
     }
     
@@ -272,12 +272,12 @@ extension Variant: _GodotOptionalBridgeable {
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
 extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOptionalBridgeable {
-    public static var _gtype: Variant.GType {
-        Wrapped._gtype
+    public static var _variantType: Variant.GType {
+        Wrapped._variantType
     }
     
-    public static var _typeNameHintStr: String {
-        Wrapped._typeNameHintStr
+    public static var _godotTypeName: String {
+        Wrapped._godotTypeName
     }
     
     /// Variant?.some -> Variant?.some (never throws, see Variant.fromVariantOrThrow)

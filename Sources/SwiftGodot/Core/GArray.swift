@@ -17,14 +17,14 @@ extension GArray {
         let className: String
         
         if let type = type as? _GodotBridgeableObject.Type {
-            className = type._typeNameHintStr
+            className = type._godotTypeName
         } else {
             className = ""
         }
         
         self.init(
             base: GArray(),
-            type: Int32(T._gtype.rawValue),
+            type: Int32(T._variantType.rawValue),
             className: StringName(className),
             script: nil
         )

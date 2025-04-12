@@ -9,7 +9,7 @@
 
 /// This represents a typed array of one of the built-in types from Godot
 public final class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection, _GodotBridgeableBuiltin where Element: _GodotBridgeableBuiltin {
-    public static var _gtype: Variant.GType {
+    public static var _variantType: Variant.GType {
         .array
     }
     
@@ -45,7 +45,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     /// - `array` is not typed, and contains an element, other than `T`
     public init?(_ array: GArray) {
         if array.isTyped() {
-            if array.getTypedBuiltin() != Element._gtype.rawValue {
+            if array.getTypedBuiltin() != Element._variantType.rawValue {
                 return nil
             } else if !array.getTypedClassName().isEmpty() {
                 return nil
@@ -60,7 +60,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
                     return nil
                 }
                 
-                guard element.gtype == Element._gtype else {
+                guard element.gtype == Element._variantType else {
                     return nil
                 }
                 
@@ -385,9 +385,9 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
         PropInfo(
             propertyType: .array,
             propertyName: StringName(name),
-            className: StringName("Array[\(Element._typeNameHintStr)]"),
+            className: StringName("Array[\(Element._godotTypeName)]"),
             hint: hint ?? .arrayType,
-            hintStr: GString(hintStr ?? "\(Element._typeNameHintStr)"),
+            hintStr: GString(hintStr ?? "\(Element._godotTypeName)"),
             usage: usage ?? .default
         )
     }
