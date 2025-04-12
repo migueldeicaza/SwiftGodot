@@ -25,7 +25,7 @@ public enum VariantConversionError: Error, CustomStringConvertible {
     public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: Variant?) -> Self {
         unexpectedContent(
             requestedType: type,
-            actualContent: from.map(\.description) ?? "nil"
+            actualContent: from?.description ?? "nil"
         )
     }
 }
