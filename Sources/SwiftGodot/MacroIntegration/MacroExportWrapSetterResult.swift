@@ -1,5 +1,5 @@
 //
-//  _macroExportSet.swift
+//  MacroExportWrapSetterResult.swift
 //  SwiftGodot
 //
 //  Created by Elijah Semyonov on 09/04/2025.

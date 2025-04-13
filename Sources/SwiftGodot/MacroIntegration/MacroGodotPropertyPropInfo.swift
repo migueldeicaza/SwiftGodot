@@ -1,5 +1,5 @@
 //
-//  MacroGodotGet.swift
+//  MacroGodotPropertyPropInfo.swift
 //  SwiftGodot
 //
 //  Created by Elijah Semyonov on 10/04/2025.

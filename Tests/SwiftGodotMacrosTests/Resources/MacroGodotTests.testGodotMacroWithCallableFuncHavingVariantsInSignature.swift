@@ -7,15 +7,13 @@ private class TestNode: Node {
     func _mproxy_foo(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: Variant?.self, at: 0)
-            return SwiftGodot._macroCallableToVariant(foo(variant: arg0))
+            return SwiftGodot._wrapCallableResult(foo(variant: arg0))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `foo`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `foo`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -30,8 +28,10 @@ private class TestNode: Node {
         classInfo.registerMethod(
             name: "foo",
             flags: .default,
-            returnValue: _callablePropInfo(Variant?.self),
-            arguments: [_callablePropInfo(Variant?.self, name: "variant")],
+            returnValue: SwiftGodot._returnedPropInfo(Variant?.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Variant?.self, name: "variant")
+            ],
             function: TestNode._mproxy_foo
         )
     } ()

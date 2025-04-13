@@ -9,7 +9,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_bar(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(bar)
+        SwiftGodot._wrapGetterResult(bar)
     }
 
     override open class var classInitializer: Void {

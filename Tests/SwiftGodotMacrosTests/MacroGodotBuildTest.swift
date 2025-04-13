@@ -196,3 +196,18 @@ class DebugThing: SwiftGodot.Object {
         return
     }    
 }
+
+@Godot class MyThing: SwiftGodot.RefCounted {
+
+}
+
+@Godot class ObjectWithCallableReturningOptionalObject: SwiftGodot.Node {
+    @Callable func get_thing() -> MyThing? {
+        return nil
+    }
+}
+
+@Godot class ObjectWithCallableTakingOptionalBuiltin: SwiftGodot.Node {
+    @Callable func do_int(value: Int?) {  }
+    @Callable func do_string(value: String?) { }
+}

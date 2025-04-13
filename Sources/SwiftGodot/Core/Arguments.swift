@@ -109,7 +109,7 @@ public struct Arguments: ~Copyable {
     ///
     /// Throws an error if `index` is out of bounds.
     /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
-    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).    
     public func argument(ofType: Variant?.Type = Variant?.self, at index: Int) throws(ArgumentAccessError) -> Variant? {
         switch contents {
         case .array(let array):
@@ -188,6 +188,26 @@ public struct Arguments: ~Copyable {
                 return try T.fromVariantOrThrow(variant)
             } else {
                 return try T.fromVariantOrThrow(nil)
+            }
+        } catch {
+            throw .variantConversionError(error)
+        }
+    }
+    
+    /// Returns `T` value wrapped in `Variant?` argument at `index`.
+    ///
+    /// Throws an error if:
+    /// - `Variant?` contains a type from which `T` cannot be unwrapped
+    /// - `index` is out of bounds.
+    @_disfavoredOverload
+    public func argument<T: VariantConvertible>(ofType type: T?.Type = T?.self, at index: Int) throws(ArgumentAccessError) -> T? {
+        let variant = try argument(ofType: Variant?.self, at: index)
+        
+        do {
+            if let variant {
+                return try T.fromVariantOrThrow(variant)
+            } else {
+                return nil
             }
         } catch {
             throw .variantConversionError(error)

@@ -7,15 +7,13 @@ class MultiplierNode: Node {
     func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: [Int].self, at: 0)
-            return SwiftGodot._macroCallableToVariant(multiply(arg0))
+            return SwiftGodot._wrapCallableResult(multiply(arg0))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `multiply`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `multiply`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -30,8 +28,10 @@ class MultiplierNode: Node {
         classInfo.registerMethod(
             name: "multiply",
             flags: .default,
-            returnValue: _callablePropInfo(Int.self),
-            arguments: [_callablePropInfo([Int].self, name: "integers")],
+            returnValue: SwiftGodot._returnedPropInfo(Int.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo([Int].self, name: "integers")
+            ],
             function: MultiplierNode._mproxy_multiply
         )
     } ()

@@ -305,4 +305,40 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
+    
+    func testCallableReturningOptionalObject() {
+        assertExpansion(
+            of: """
+            @Godot class MyThing: SwiftGodot.RefCounted {
+
+            }
+
+            @Godot class OtherThing: SwiftGodot.Node {
+                @Callable func get_thing() -> MyThing? {
+                    return nil
+                }
+            }
+            """
+        )
+    }
+    
+    func testCallableTakingOptionalBuiltin() {
+        assertExpansion(
+            of: """
+            @Godot class MyThing: SwiftGodot.RefCounted {
+
+            }
+
+            @Godot class OtherThing: SwiftGodot.Node {
+                @Callable func do_string(value: String?) { }
+            
+                @Callable func do_int(value: Int?) {  }
+            
+                @Callable func get_thing() -> MyThing? {
+                    return nil
+                }
+            }
+            """
+        )
+    }
 }

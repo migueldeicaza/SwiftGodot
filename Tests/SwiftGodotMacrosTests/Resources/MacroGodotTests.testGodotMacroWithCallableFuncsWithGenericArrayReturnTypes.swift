@@ -5,7 +5,7 @@ class CallableCollectionsNode: Node {
     }
 
     func _mproxy_get_ages(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._macroCallableToVariant(get_ages())
+        return SwiftGodot._wrapCallableResult(get_ages())
 
     }
     func get_markers() -> Array<Marker3D> {
@@ -13,7 +13,7 @@ class CallableCollectionsNode: Node {
     }
 
     func _mproxy_get_markers(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._macroCallableToVariant(get_markers())
+        return SwiftGodot._wrapCallableResult(get_markers())
 
     }
 
@@ -29,15 +29,19 @@ class CallableCollectionsNode: Node {
         classInfo.registerMethod(
             name: "get_ages",
             flags: .default,
-            returnValue: _callablePropInfo(Array<Int>.self),
-            arguments: [],
+            returnValue: SwiftGodot._returnedPropInfo(Array<Int>.self),
+            arguments: [
+
+            ],
             function: CallableCollectionsNode._mproxy_get_ages
         )
         classInfo.registerMethod(
             name: "get_markers",
             flags: .default,
-            returnValue: _callablePropInfo(Array<Marker3D>.self),
-            arguments: [],
+            returnValue: SwiftGodot._returnedPropInfo(Array<Marker3D>.self),
+            arguments: [
+
+            ],
             function: CallableCollectionsNode._mproxy_get_markers
         )
     } ()

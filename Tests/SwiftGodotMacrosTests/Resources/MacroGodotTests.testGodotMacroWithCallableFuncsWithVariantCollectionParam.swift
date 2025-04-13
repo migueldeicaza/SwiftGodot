@@ -7,15 +7,13 @@ class SomeNode: Node {
     func _mproxy_square(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
-            return SwiftGodot._macroCallableToVariant(square(arg0))
+            return SwiftGodot._wrapCallableResult(square(arg0))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `square`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `square`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -30,8 +28,10 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: "square",
             flags: .default,
-            returnValue: _callablePropInfo(VariantCollection<Int>.self),
-            arguments: [_callablePropInfo(VariantCollection<Int>.self, name: "integers")],
+            returnValue: SwiftGodot._returnedPropInfo(VariantCollection<Int>.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(VariantCollection<Int>.self, name: "integers")
+            ],
             function: SomeNode._mproxy_square
         )
     } ()

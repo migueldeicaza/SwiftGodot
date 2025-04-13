@@ -47,7 +47,7 @@ public struct GodotCallable: PeerMacro {
         let callArgs = callArgsList.joined(separator: ", ")
         
         body += """
-        \(indentation)    return SwiftGodot._macroCallableToVariant(\(funcName)(\(callArgs)))
+        \(indentation)    return SwiftGodot._wrapCallableResult(\(funcName)(\(callArgs)))
         
         """
         
@@ -62,13 +62,11 @@ public struct GodotCallable: PeerMacro {
             func _mproxy_\(funcName)(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
                 do { // safe arguments access scope
             \(body)        
-                } catch let error as SwiftGodot.ArgumentAccessError {
-                    SwiftGodot.GD.printErr(error.description)
-                    return nil
                 } catch {
-                    SwiftGodot.GD.printErr("Error calling `\(funcName)`: \\(error)")
-                    return nil
+                    SwiftGodot.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
                 }
+            
+                return nil
             }
             """
         }

@@ -9,13 +9,13 @@ class Thing: SwiftGodot.Object {
     }
 
     func _mproxy_get_value(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(value)
+        SwiftGodot._wrapGetterResult(value)
     }
 
     func get_some() -> Int64 { 10 }
 
     func _mproxy_get_some(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._macroCallableToVariant(get_some())
+        return SwiftGodot._wrapCallableResult(get_some())
 
     }
 
@@ -44,8 +44,10 @@ class Thing: SwiftGodot.Object {
         classInfo.registerMethod(
             name: "get_some",
             flags: .default,
-            returnValue: _callablePropInfo(Int64.self),
-            arguments: [],
+            returnValue: SwiftGodot._returnedPropInfo(Int64.self),
+            arguments: [
+
+            ],
             function: Thing._mproxy_get_some
         )
     } ()

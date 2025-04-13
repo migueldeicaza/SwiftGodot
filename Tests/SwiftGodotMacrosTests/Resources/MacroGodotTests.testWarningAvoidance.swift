@@ -21,7 +21,7 @@ final class MyClass: Node {
     }
 
     func _mproxy_get_data(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(data)
+        SwiftGodot._wrapGetterResult(data)
     }
 
     override public class var classInitializer: Void {

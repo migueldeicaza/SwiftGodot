@@ -7,5 +7,5 @@ func _mproxy_set_greetings(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.V
 }
 
 func _mproxy_get_greetings(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-    SwiftGodot._macroExportGet(greetings)
+    SwiftGodot._wrapGetterResult(greetings)
 }

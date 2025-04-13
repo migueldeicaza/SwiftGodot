@@ -9,7 +9,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_name(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(name)
+        SwiftGodot._wrapGetterResult(name)
     }
     var rating: Float = 0.0
 
@@ -20,7 +20,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_rating(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(rating)
+        SwiftGodot._wrapGetterResult(rating)
     }
     var reviews: VariantCollection<String> = []
 
@@ -31,7 +31,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_reviews(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(reviews)
+        SwiftGodot._wrapGetterResult(reviews)
     }
     var checkIns: ObjectCollection<CheckIn> = []
 
@@ -42,7 +42,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_checkIns(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(checkIns)
+        SwiftGodot._wrapGetterResult(checkIns)
     }
     var address: String = ""
 
@@ -53,7 +53,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_address(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(address)
+        SwiftGodot._wrapGetterResult(address)
     }
     var daysOfOperation: VariantCollection<String> = []
 
@@ -64,7 +64,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_daysOfOperation(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(daysOfOperation)
+        SwiftGodot._wrapGetterResult(daysOfOperation)
     }
     var hours: VariantCollection<String> = []
 
@@ -75,7 +75,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_hours(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(hours)
+        SwiftGodot._wrapGetterResult(hours)
     }
     var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
 
@@ -86,7 +86,7 @@ class Garage: Node {
     }
 
     func _mproxy_get_insuranceProvidersAccepted(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(insuranceProvidersAccepted)
+        SwiftGodot._wrapGetterResult(insuranceProvidersAccepted)
     }
 
     override open class var classInitializer: Void {

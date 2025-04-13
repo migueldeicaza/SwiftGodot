@@ -1,30 +1,30 @@
 //
-//  MacroExportGet.swift
+//  MacroExportWrapGetterResult.swift
 //  SwiftGodot
 //
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
-/// Internal API. VariantConvertible.
+/// Internal API. _GodotBridgeable or _GodotBridgeable?
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(_ value: T?) -> Variant? where T: VariantConvertible {
+public func _wrapGetterResult<T>(_ value: T?) -> Variant? where T: _GodotBridgeable {
     return value.toVariant()
 }
 
-/// Internal API.  CaseIterable enum with BinaryInteger RawValue.
+/// Internal API.  OptionSet or enum with _GodotBridgeable RawValue
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: T
-) -> Variant? where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
+) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: _GodotBridgeable {
     value.rawValue.toVariant()
 }
 
 /// Internal API. Closure
 @inline(__always)
 @inlinable
-public func _macroExportGet<each Argument: VariantConvertible, Result: VariantConvertible>(
+public func _wrapGetterResult<each Argument: _GodotBridgeable, Result: _GodotBridgeable>(
     _ value: @escaping (repeat each Argument) -> Result
 ) -> Variant? {
     return Callable { arguments in
@@ -46,7 +46,7 @@ public func _macroExportGet<each Argument: VariantConvertible, Result: VariantCo
 /// Internal API.  VariantCollection.
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: VariantCollection<T>
 ) -> Variant? where T: _GodotBridgeableBuiltin {
     value.array.toVariant()
@@ -56,7 +56,7 @@ public func _macroExportGet<T>(
 /// Internal API.  ObjectCollection.
 @inline(__always)
 @inlinable
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: ObjectCollection<T>
 ) -> Variant? where T: Object {
     value.array.toVariant()
@@ -66,7 +66,7 @@ public func _macroExportGet<T>(
 
 /// Internal API.  Swift Array.
 @available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: [T]?
 ) -> Variant? {
     fatalError("Unreachable")
@@ -74,7 +74,7 @@ public func _macroExportGet<T>(
 
 /// Internal API.  Optional VariantCollection.
 @available(*, unavailable, message: "Optional VariantCollection is not supported by @Export macro")
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: VariantCollection<T>?
 ) -> Variant? where T: _GodotBridgeableBuiltin {
     fatalError("Unreachable")
@@ -82,7 +82,7 @@ public func _macroExportGet<T>(
 
 /// Internal API.  Optional ObjectCollection.
 @available(*, unavailable, message: "Optional ObjectCollection is not supported by @Export macro")
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: ObjectCollection<T>?
 ) -> Variant? where T: Object {
     fatalError("Unreachable")
@@ -91,15 +91,15 @@ public func _macroExportGet<T>(
 
 /// Internal API.  Optional CaseIterable enum with BinaryInteger RawValue.
 @available(*, unavailable, message: "Optional enums are not supported by @Export macro")
-public func _macroExportGet<T>(
+public func _wrapGetterResult<T>(
     _ value: T?
-) -> Variant? where T: RawRepresentable, T: CaseIterable {
+) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: _GodotBridgeable {
     fatalError("Unreachable")
 }
 
 /// Internal API. Catch-all overload for all unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload
-public func _macroExportGet(_ value: (any Any)?) -> Variant? {
+public func _wrapGetterResult(_ value: (any Any)?) -> Variant? {
     fatalError("Unreachable")
 }

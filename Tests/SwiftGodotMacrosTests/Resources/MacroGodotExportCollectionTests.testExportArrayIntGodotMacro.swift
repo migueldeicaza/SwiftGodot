@@ -9,7 +9,7 @@ class SomeNode: Node {
     }
 
     func _mproxy_get_someNumbers(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(someNumbers)
+        SwiftGodot._wrapGetterResult(someNumbers)
     }
 
     override open class var classInitializer: Void {

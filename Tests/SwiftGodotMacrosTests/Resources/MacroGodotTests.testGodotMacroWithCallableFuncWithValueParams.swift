@@ -5,15 +5,13 @@ class MathHelper: Node {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: Int.self, at: 0)
             let arg1 = try arguments.argument(ofType: Int.self, at: 1)
-            return SwiftGodot._macroCallableToVariant(multiply(arg0, by: arg1))
+            return SwiftGodot._wrapCallableResult(multiply(arg0, by: arg1))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `multiply`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `multiply`: \(error.description)")
         }
+
+        return nil
     }
     func divide(_ a: Float, by b: Float) -> Float { a / b }
 
@@ -21,15 +19,13 @@ class MathHelper: Node {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: Float.self, at: 0)
             let arg1 = try arguments.argument(ofType: Float.self, at: 1)
-            return SwiftGodot._macroCallableToVariant(divide(arg0, by: arg1))
+            return SwiftGodot._wrapCallableResult(divide(arg0, by: arg1))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `divide`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `divide`: \(error.description)")
         }
+
+        return nil
     }
     func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
 
@@ -37,15 +33,13 @@ class MathHelper: Node {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: Bool.self, at: 0)
             let arg1 = try arguments.argument(ofType: Bool.self, at: 1)
-            return SwiftGodot._macroCallableToVariant(areBothTrue(arg0, and: arg1))
+            return SwiftGodot._wrapCallableResult(areBothTrue(arg0, and: arg1))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `areBothTrue`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `areBothTrue`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -60,22 +54,31 @@ class MathHelper: Node {
         classInfo.registerMethod(
             name: "multiply",
             flags: .default,
-            returnValue: _callablePropInfo(Int.self),
-            arguments: [_callablePropInfo(Int.self, name: "a"), _callablePropInfo(Int.self, name: "b")],
+            returnValue: SwiftGodot._returnedPropInfo(Int.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Int.self, name: "a"),
+                SwiftGodot._argumentPropInfo(Int.self, name: "b")
+            ],
             function: MathHelper._mproxy_multiply
         )
         classInfo.registerMethod(
             name: "divide",
             flags: .default,
-            returnValue: _callablePropInfo(Float.self),
-            arguments: [_callablePropInfo(Float.self, name: "a"), _callablePropInfo(Float.self, name: "b")],
+            returnValue: SwiftGodot._returnedPropInfo(Float.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Float.self, name: "a"),
+                SwiftGodot._argumentPropInfo(Float.self, name: "b")
+            ],
             function: MathHelper._mproxy_divide
         )
         classInfo.registerMethod(
             name: "areBothTrue",
             flags: .default,
-            returnValue: _callablePropInfo(Bool.self),
-            arguments: [_callablePropInfo(Bool.self, name: "a"), _callablePropInfo(Bool.self, name: "b")],
+            returnValue: SwiftGodot._returnedPropInfo(Bool.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Bool.self, name: "a"),
+                SwiftGodot._argumentPropInfo(Bool.self, name: "b")
+            ],
             function: MathHelper._mproxy_areBothTrue
         )
     } ()

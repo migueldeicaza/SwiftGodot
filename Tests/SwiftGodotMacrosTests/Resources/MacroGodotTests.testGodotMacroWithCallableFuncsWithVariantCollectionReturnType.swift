@@ -6,7 +6,7 @@ class SomeNode: Node {
     }
 
     func _mproxy_getIntegerCollection(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._macroCallableToVariant(getIntegerCollection())
+        return SwiftGodot._wrapCallableResult(getIntegerCollection())
 
     }
 
@@ -22,8 +22,10 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: "getIntegerCollection",
             flags: .default,
-            returnValue: _callablePropInfo(VariantCollection<Int>.self),
-            arguments: [],
+            returnValue: SwiftGodot._returnedPropInfo(VariantCollection<Int>.self),
+            arguments: [
+
+            ],
             function: SomeNode._mproxy_getIntegerCollection
         )
     } ()

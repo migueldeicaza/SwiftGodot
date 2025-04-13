@@ -85,18 +85,20 @@ class GodotMacroProcessor {
         }
         let funcName = funcDecl.name.text
         
-        var arguments = funcDecl
+        let arguments = funcDecl
             .signature
             .parameterClause
             .parameters
             .map { parameter in
                 let typename = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 let name = getParamName(parameter)
-                return "_callablePropInfo(\(typename).self, name: \"\(name)\")"
+                return "SwiftGodot._argumentPropInfo(\(typename).self, name: \"\(name)\")"
             }
-            .joined(separator: ", ")
-        
-        arguments = "[\(arguments)]"
+            .map {
+                "        \($0)"
+            }
+            .joined(separator: ",\n")
+                
         let returnTypename: String
         if let type = funcDecl.signature.returnClause?.type {
             returnTypename = type.description.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -110,8 +112,10 @@ class GodotMacroProcessor {
             classInfo.registerMethod(
                 name: "\(funcName)", 
                 flags: .default, 
-                returnValue: _callablePropInfo(\(returnTypename).self), 
-                arguments: \(arguments), 
+                returnValue: SwiftGodot._returnedPropInfo(\(returnTypename).self), 
+                arguments: [
+            \(arguments)
+                ], 
                 function: \(className)._mproxy_\(funcName)
             )
             """)

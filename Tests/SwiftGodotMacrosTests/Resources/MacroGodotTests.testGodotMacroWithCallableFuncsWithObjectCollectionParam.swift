@@ -7,15 +7,13 @@ class SomeNode: Node {
     func _mproxy_printNames(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
-            return SwiftGodot._macroCallableToVariant(printNames(of: arg0))
+            return SwiftGodot._wrapCallableResult(printNames(of: arg0))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `printNames`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `printNames`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -30,8 +28,10 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: "printNames",
             flags: .default,
-            returnValue: _callablePropInfo(Swift.Void.self),
-            arguments: [_callablePropInfo(ObjectCollection<Node>.self, name: "nodes")],
+            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(ObjectCollection<Node>.self, name: "nodes")
+            ],
             function: SomeNode._mproxy_printNames
         )
     } ()

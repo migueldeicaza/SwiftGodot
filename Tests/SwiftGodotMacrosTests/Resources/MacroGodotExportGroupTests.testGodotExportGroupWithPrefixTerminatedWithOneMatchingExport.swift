@@ -9,7 +9,7 @@ public class Issue353: Node {
     }
 
     func _mproxy_get_prefix1_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(prefix1_prefixed_bool)
+        SwiftGodot._wrapGetterResult(prefix1_prefixed_bool)
     }
     var non_prefixed_bool: Bool = true
 
@@ -20,7 +20,7 @@ public class Issue353: Node {
     }
 
     func _mproxy_get_non_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(non_prefixed_bool)
+        SwiftGodot._wrapGetterResult(non_prefixed_bool)
     }
 
     override open class var classInitializer: Void {

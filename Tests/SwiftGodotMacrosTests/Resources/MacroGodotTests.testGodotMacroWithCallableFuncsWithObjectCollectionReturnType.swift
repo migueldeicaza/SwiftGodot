@@ -6,7 +6,7 @@ class SomeNode: Node {
     }
 
     func _mproxy_getNodeCollection(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._macroCallableToVariant(getNodeCollection())
+        return SwiftGodot._wrapCallableResult(getNodeCollection())
 
     }
 
@@ -22,8 +22,10 @@ class SomeNode: Node {
         classInfo.registerMethod(
             name: "getNodeCollection",
             flags: .default,
-            returnValue: _callablePropInfo(ObjectCollection<Node>.self),
-            arguments: [],
+            returnValue: SwiftGodot._returnedPropInfo(ObjectCollection<Node>.self),
+            arguments: [
+
+            ],
             function: SomeNode._mproxy_getNodeCollection
         )
     } ()

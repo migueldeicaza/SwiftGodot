@@ -9,7 +9,7 @@ class Car: Node {
     }
 
     func _mproxy_get_vins(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(vins)
+        SwiftGodot._wrapGetterResult(vins)
     }
     var years: VariantCollection<Int> = [1997]
 
@@ -20,7 +20,7 @@ class Car: Node {
     }
 
     func _mproxy_get_years(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(years)
+        SwiftGodot._wrapGetterResult(years)
     }
 
     override open class var classInitializer: Void {

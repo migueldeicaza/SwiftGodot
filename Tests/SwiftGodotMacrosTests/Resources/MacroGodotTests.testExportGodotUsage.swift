@@ -8,7 +8,7 @@ class Hi: Node {
     }
 
     func _mproxy_get_goodName(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportGet(goodName)
+        SwiftGodot._wrapGetterResult(goodName)
     }
 
     override open class var classInitializer: Void {

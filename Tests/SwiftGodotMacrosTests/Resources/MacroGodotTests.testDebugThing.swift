@@ -8,15 +8,13 @@ class DebugThing: SwiftGodot.Object {
     func _mproxy_do_thing(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
         do { // safe arguments access scope
             let arg0 = try arguments.argument(ofType: SwiftGodot.Variant?.self, at: 0)
-            return SwiftGodot._macroCallableToVariant(do_thing(value: arg0))
+            return SwiftGodot._wrapCallableResult(do_thing(value: arg0))
 
-        } catch let error as SwiftGodot.ArgumentAccessError {
-            SwiftGodot.GD.printErr(error.description)
-            return nil
         } catch {
-            SwiftGodot.GD.printErr("Error calling `do_thing`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `do_thing`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -32,8 +30,10 @@ class DebugThing: SwiftGodot.Object {
         classInfo.registerMethod(
             name: "do_thing",
             flags: .default,
-            returnValue: _callablePropInfo(SwiftGodot.Variant?.self),
-            arguments: [_callablePropInfo(SwiftGodot.Variant?.self, name: "value")],
+            returnValue: SwiftGodot._returnedPropInfo(SwiftGodot.Variant?.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(SwiftGodot.Variant?.self, name: "value")
+            ],
             function: DebugThing._mproxy_do_thing
         )
     } ()
