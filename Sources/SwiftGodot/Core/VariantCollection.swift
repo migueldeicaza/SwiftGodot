@@ -354,18 +354,49 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
         array.isReadOnly()
     }
     
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         array.toVariant()
     }
     
+    @inline(__always)
+    @inlinable
     public func toVariant() -> Variant {
         array.toVariant()
     }
     
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        array.toFastVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        array.toFastVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         let array = try GArray.fromVariantOrThrow(variant)
 
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromFastVariantOrThrow(variant)
+        
         guard let result = Self(array) else {
             throw .unexpectedContent(parsing: self, from: variant)
         }

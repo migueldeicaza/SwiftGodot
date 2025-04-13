@@ -34,7 +34,7 @@ public protocol ExtensionInterface {
 
 public extension ExtensionInterface {
     // Register any general Godot classes/methods here
-    public func initClasses() {
+    func initClasses() {
         SignalProxy.initClass()
     }
 }
@@ -86,6 +86,7 @@ class LibGodotExtensionInterface: ExtensionInterface {
 }
 
 /// The pointer to the Godot Extension Interface
+@usableFromInline
 var extensionInterface: ExtensionInterface!
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
@@ -171,6 +172,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     }
 }
 
+@usableFromInline
 struct GodotInterface {
     let mem_alloc: GDExtensionInterfaceMemAlloc
     let mem_realloc: GDExtensionInterfaceMemRealloc
@@ -237,10 +239,21 @@ struct GodotInterface {
     }
 
     let variant_new_nil: GDExtensionInterfaceVariantNewNil
-    let variant_new_copy: GDExtensionInterfaceVariantNewCopy
+    
+    @usableFromInline
+    let variant_new_copy: @convention(c) (
+        /* pDstVariant */ UnsafeMutableRawPointer?,
+        /* pSrcVariant */UnsafeRawPointer?
+    ) -> Void
+    
     let variant_evaluate: GDExtensionInterfaceVariantEvaluate
     let variant_hash: GDExtensionInterfaceVariantHash
-    let variant_destroy: GDExtensionInterfaceVariantDestroy
+    
+    @usableFromInline
+    let variant_destroy: @convention(c) (
+        /* pDstVariant */ UnsafeMutableRawPointer?
+    ) -> Void
+    
     let variant_get: GDExtensionInterfaceVariantGet
     let variant_set: GDExtensionInterfaceVariantSet
     let variant_get_type: GDExtensionInterfaceVariantGetType
@@ -295,6 +308,7 @@ struct GodotInterface {
     let editor_remove_plugin: GDExtensionInterfaceEditorRemovePlugin
 }
 
+@usableFromInline
 var gi: GodotInterface!
 
 func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddress) {

@@ -24,43 +24,106 @@ public enum VariantConversionError: Error, CustomStringConvertible {
     case integerOverflow(requestedType: Any.Type, value: Int64)
     case invalidRawValue(requestedType: any RawRepresentable.Type, value: Any)
     
+    @_disfavoredOverload
     public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: Variant?) -> Self {
         unexpectedContent(
             requestedType: type,
             actualContent: from?.description ?? "nil"
         )
     }
+    
+    public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: Variant) -> Self {
+        unexpectedContent(
+            requestedType: type,
+            actualContent: from.description
+        )
+    }
+    
+    @_disfavoredOverload
+    public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: borrowing FastVariant?) -> Self {
+        switch from {
+        case .some(let variant):
+            return unexpectedContent(
+                requestedType: type,
+                actualContent: variant.description
+            )
+        case .none:
+            return unexpectedNilContent(parsing: type)
+        }
+    }
+        
+    public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: borrowing FastVariant) -> Self {
+        unexpectedContent(
+            requestedType: type,
+            actualContent: from.description
+        )
+    }
+    
+    
+    public static func unexpectedNilContent<T>(parsing type: T.Type = T.self) -> Self {
+        unexpectedContent(
+            requestedType: type,
+            actualContent: "nil"
+        )
+    }
 }
 
 /// Protocol for types that can be converted to and from ``Variant?`` aka `Godot Variant`.
+/// Default implementations are provided for most of the functions.
 public protocol VariantConvertible {
-    /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.    
+    /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible. Has default implementation. Can be implemented manually to avoid proxying via `FastVariant`
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self
     
-    /// Extract ``Self`` from nil Variant. Throws `VariantConversionError` if it's not possible.
-    static func fromNilVariantOrThrow() throws(VariantConversionError) -> Self
+    /// Extract ``Self`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
+    static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self
     
-    /// Converts the instance to a ``Variant?``.
+    /// Extract ``Self`` from nil Variant. Throws `VariantConversionError` if it's not possible. Has default implementation.
+    static func fromNilOrThrow() throws(VariantConversionError) -> Self
+    
+    /// Converts the instance to a ``Variant?``. Has default implementation. Can be implemented manually to avoid proxying via `FastVariant`
     func toVariant() -> Variant?
+    
+    /// Converts the instance to a ``FastVariant?``.
+    func toFastVariant() -> FastVariant?
 }
 
 public extension VariantConvertible {
     /// Default implementation for most of the cases where a type cannot be constructed from a nil Variant.
-    static func fromNilVariantOrThrow() throws(VariantConversionError) -> Self {
-        throw .unexpectedContent(parsing: self, from: nil)
+    @inline(__always)
+    @inlinable
+    static func fromNilOrThrow() throws(VariantConversionError) -> Self {
+        throw .unexpectedNilContent(parsing: self)
     }
     
-    /// Default implementation for most of the cases where a type cannot be constructed from a nil Variant.
+    /// Default implementation.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload // always prefer calling non-nil
     static func fromVariantOrThrow(_ variant: Variant?) throws(VariantConversionError) -> Self {
         if let variant {
             return try fromVariantOrThrow(variant)
         } else {
-            return try fromNilVariantOrThrow()
+            return try fromNilOrThrow()
         }
     }
     
+    /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
+    static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        try fromFastVariantOrThrow(variant.toFastVariant())
+    }
+    
+    /// Converts the instance to a ``Variant?``.
+    @inline(__always)
+    @inlinable
+    func toVariant() -> Variant? {
+        Variant(takingOver: toFastVariant())
+    }
+    
     /// Unwrap ``Self`` from a ``Variant``. Returns `nil` if it's not possible.
+    @inline(__always)
+    @inlinable
     static func fromVariant(_ variant: Variant) -> Self? {
         do {
             return try fromVariantOrThrow(variant)
@@ -70,6 +133,8 @@ public extension VariantConvertible {
     }
     
     /// Unwrap ``Self`` from a ``Variant?``. Returns `nil` if it's not possible.
+    @inline(__always)
+    @inlinable
     static func fromVariant(_ variant: Variant?) -> Self? {
         do {
             return try fromVariantOrThrow(variant)
@@ -260,17 +325,37 @@ func _propInfoDefault(
 
 extension Int64: _GodotBridgeableBuiltin {
     /// Wrap a ``Int64``  into ``Variant?``.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         Variant(self)
     }
     
     /// Wrap a ``Int64``  into ``Variant``.
+    @inline(__always)
+    @inlinable
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Wrap a ``Int64``  into ``FastVariant?``.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        FastVariant(self)
+    }
+    
+    /// Wrap a ``Int64``  into ``FastVariant``.
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        FastVariant(self)
+    }
+    
     /// Initialze ``Int64`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``
+    @inline(__always)
     public init?(_ variant: Variant) {
         guard Self._variantType == variant.gtype else { return nil }
         self.init()
@@ -280,13 +365,39 @@ extension Int64: _GodotBridgeableBuiltin {
         }
     }
     
+    /// Initialze ``Int64`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``
+    @inline(__always)
+    public init?(_ variant: borrowing FastVariant) {
+        guard Self._variantType == variant.gtype else { return nil }
+        self.init()
+        
+        withUnsafeMutablePointer(to: &self) { pPayload in
+            variant.constructType(into: pPayload, constructor: Variant.intFromVariant)
+        }
+    }
+    
     /// Initialze ``Int64`` from ``Variant``. Fails if `variant` doesn't contain ``Int64`` or is `nil`
+    @inline(__always)
+    @inlinable
     public init?(_ variant: Variant?) {
         guard let variant else { return nil }
         self.init(variant)
     }
     
     /// Attempt to unwrap a ``Int64`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        guard let value = Int64(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return value
+    }
+    
+    /// Attempt to unwrap a ``Int64`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         guard let value = Int64(variant) else {
             throw .unexpectedContent(parsing: self, from: variant)
@@ -296,24 +407,47 @@ extension Int64: _GodotBridgeableBuiltin {
     }
 }
 
-public extension BinaryInteger {
+public extension BinaryInteger where Self: _GodotBridgeableBuiltin {
+    @inline(__always)
+    @inlinable
     static var _variantType: Variant.GType {
         .int
     }
 
     /// Wrap an integer number  into ``Variant?``.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     func toVariant() -> Variant? {
         Int64(self).toVariant()
     }
     
     /// Wrap an integer number  into ``Variant``.
+    @inline(__always)
+    @inlinable
     func toVariant() -> Variant {
         Int64(self).toVariant()
     }
     
+    /// Wrap an integer number  into ``FastVariant?``.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    func toFastVariant() -> FastVariant? {
+        Int64(self).toFastVariant()
+    }
+    
+    /// Wrap an integer number  into ``FastVariant``.
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant {
+        Int64(self).toFastVariant()
+    }
+    
     
     /// Initialze ``BinaryInteger`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``, or its value is too large for this ``BinaryInteger``
+    @inline(__always)
+    @inlinable
     init?(_ variant: Variant) {
         guard Self._variantType == variant.gtype else { return nil }
         guard let value = try? Self.fromVariantOrThrow(variant) else {
@@ -324,14 +458,56 @@ public extension BinaryInteger {
     }
     
     /// Initialze ``BinaryInteger`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``, its value is too large for this ``BinaryInteger``, or is `nil`
+    @inline(__always)
+    @inlinable
     init?(_ variant: Variant?) {
         guard let variant else { return nil }
         self.init(variant)
     }
     
+    /// Initialze ``BinaryInteger`` from ``FastVariant``. Fails if `variant` doesn't contain ``Int64``, or its value is too large for this ``BinaryInteger``
+    @inline(__always)
+    @inlinable
+    init?(_ variant: borrowing FastVariant) {
+        guard Self._variantType == variant.gtype else { return nil }
+        guard let value = try? Self.fromFastVariantOrThrow(variant) else {
+            return nil
+        }
+        
+        self = value
+    }
+    
+    /// Initialze ``BinaryInteger`` from ``FastVariant``. Fails if `variant` doesn't contain ``Int64``, its value is too large for this ``BinaryInteger``, or is `nil`
+    @inline(__always)
+    @inlinable
+    init?(_ variant: borrowing FastVariant?) {
+        switch variant {
+        case .some(let variant):
+            self.init(variant)
+        case .none:
+            return nil
+        }
+    }
+    
     /// Attempt to unwrap an integer number from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         let value = try Int64.fromVariantOrThrow(variant)
+        
+        // Fail gracefully if overflow happens
+        if let result = Self(exactly: value) {
+            return result
+        } else {
+            throw VariantConversionError.integerOverflow(requestedType: self, value: value)
+        }
+    }
+    
+    /// Attempt to unwrap an integer number from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
+    static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        let value = try Int64.fromFastVariantOrThrow(variant)
         
         // Fail gracefully if overflow happens
         if let result = Self(exactly: value) {
@@ -344,6 +520,8 @@ public extension BinaryInteger {
 
 extension Bool: _GodotBridgeableBuiltin {
     /// Internal API.
+    @inline(__always)
+    @inlinable
     public static var _variantType: Variant.GType {
         .bool
     }
@@ -367,17 +545,37 @@ extension Bool: _GodotBridgeableBuiltin {
     }
     
     /// Wrap a ``Bool``  into ``Variant?``.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         Variant(self)
     }
     
     /// Wrap a ``Bool``  into ``Variant``.
+    @inline(__always)
+    @inlinable
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Wrap a ``Bool``  into ``FastVariant?``.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        FastVariant(self)
+    }
+    
+    /// Wrap a ``Bool``  into ``FastVariant``.
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        FastVariant(self)
+    }
+    
     /// Initialze ``Bool`` from ``Variant``. Fails if `variant` doesn't contain ``Bool``
+    @inline(__always)
     public init?(_ variant: Variant) {
         guard Self._variantType == variant.gtype else { return nil }
         var payload: GDExtensionBool = 0
@@ -388,14 +586,52 @@ extension Bool: _GodotBridgeableBuiltin {
         self = payload != 0
     }
     
+    /// Initialze ``Bool`` from ``FastVariant``. Fails if `variant` doesn't contain ``Bool`` or is `nil`
+    @inline(__always)
+    @inlinable
+    public init?(_ variant: borrowing FastVariant?) {
+        switch variant {
+        case .some(let variant):
+            self.init(variant)
+        case .none:
+            return nil
+        }
+    }
+    
+    /// Initialze ``Bool`` from ``FastVariant``. Fails if `variant` doesn't contain ``Bool``
+    @inline(__always)
+    public init?(_ variant: borrowing FastVariant) {
+        guard Self._variantType == variant.gtype else { return nil }
+        var payload: GDExtensionBool = 0
+        withUnsafeMutablePointer(to: &payload) { pPayload in
+            variant.constructType(into: pPayload, constructor: Variant.boolFromVariant)
+        }
+        
+        self = payload != 0
+    }
+    
     /// Initialze ``Bool`` from ``Variant``. Fails if `variant` doesn't contain ``Bool`` or is `nil`
+    @inline(__always)
+    @inlinable
     public init?(_ variant: Variant?) {
         guard let variant else { return nil }
         self.init(variant)
     }
     
     /// Attempt to unwrap a ``Bool`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = Bool(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        return value
+    }
+    
+    /// Attempt to unwrap a ``Bool`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
         guard let value = Bool(variant) else {
             throw .unexpectedContent(parsing: self, from: variant)
         }
@@ -405,22 +641,45 @@ extension Bool: _GodotBridgeableBuiltin {
 
 extension String: _GodotBridgeableBuiltin {
     /// Internal API.
+    @inline(__always)
+    @inlinable
     public static var _variantType: Variant.GType {
         .string
     }
     
     /// Wrap a ``String``  into ``Variant?``.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         Variant(self)
     }
     
     /// Wrap a ``String``  into ``Variant``.
+    @inline(__always)
+    @inlinable
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Wrap a ``String``  into ``FastVariant?``.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        FastVariant(self)
+    }
+    
+    /// Wrap a ``String``  into ``FastVariant``.
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        FastVariant(self)
+    }
+    
     /// Initialze ``String`` from ``Variant``. Fails if `variant` doesn't contain ``String``
+    @inline(__always)
+    @inlinable
     public init?(_ variant: Variant) {
         guard let string = GString(variant) else {
             return nil
@@ -430,13 +689,63 @@ extension String: _GodotBridgeableBuiltin {
     }
     
     /// Initialze ``String`` from ``Variant``. Fails if `variant` doesn't contain ``String`` or is `nil`
+    @inline(__always)
+    @inlinable
     public init?(_ variant: Variant?) {
         guard let variant else { return nil }
         self.init(variant)
     }
     
+    
+    /// Initialze ``String`` from ``FastVariant``. Fails if `variant` doesn't contain ``String``
+    @inline(__always)
+    @inlinable
+    public init?(_ variant: borrowing FastVariant) {
+        guard let string = GString(variant) else {
+            return nil
+        }
+        
+        self = string.description
+    }
+    
+    /// Initialze ``String`` from ``FastVariant``. Fails if `variant` doesn't contain ``String`` or is `nil`
+    @inline(__always)
+    @inlinable
+    public init?(_ variant: borrowing FastVariant?) {
+        switch variant {
+        case .some(let variant):
+            self.init(variant)
+        case .none:
+            return nil
+        }
+    }
+    
     /// Attempt to unwrap a ``String`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = String(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return value
+    }
+    
+    /// Attempt to unwrap a ``String`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
+    public static func fromVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        guard let value = String(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return value
+    }
+    
+    /// Attempt to unwrap a ``String`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
         guard let value = String(variant) else {
             throw .unexpectedContent(parsing: self, from: variant)
         }
@@ -447,17 +756,37 @@ extension String: _GodotBridgeableBuiltin {
 
 extension Double: _GodotBridgeableBuiltin {
     /// Wrap a ``Double``  into ``Variant?``.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         Variant(self)
     }
     
     /// Wrap a ``Double``  into ``Variant``.
+    @inline(__always)
+    @inlinable
     public func toVariant() -> Variant {
         Variant(self)
     }
     
+    /// Wrap a ``Double``  into ``FastVariant?``.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        FastVariant(self)
+    }
+    
+    /// Wrap a ``Double``  into ``FastVariant``.
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        FastVariant(self)
+    }
+    
     /// Initialze ``Double`` from ``Variant``. Fails if `variant` doesn't contain ``Double``
+    @inline(__always)
     public init?(_ variant: Variant) {
         guard Self._variantType == variant.gtype else { return nil }
         self.init()
@@ -468,13 +797,49 @@ extension Double: _GodotBridgeableBuiltin {
     }
     
     /// Initialze ``Double`` from ``Variant``. Fails if `variant` doesn't contain ``Double`` or is `nil`
+    @inline(__always)
+    @inlinable
     public init?(_ variant: Variant?) {
         guard let variant else { return nil }
         self.init(variant)
     }
     
+    /// Initialze ``Double`` from ``FastVariant``. Fails if `variant` doesn't contain ``Double``
+    @inline(__always)
+    public init?(_ variant: borrowing FastVariant) {
+        guard Self._variantType == variant.gtype else { return nil }
+        self.init()
+        
+        withUnsafeMutablePointer(to: &self) { pPayload in
+            variant.constructType(into: pPayload, constructor: Variant.doubleFromVariant)
+        }
+    }
+    
+    /// Initialze ``Double`` from ``FastVariant``. Fails if `variant` doesn't contain ``Double`` or is `nil`
+    @inline(__always)
+    @inlinable
+    public init?(_ variant: borrowing FastVariant?) {        
+        switch variant {
+        case .some(let variant):
+            self.init(variant)
+        case .none:
+            return nil
+        }
+    }
+    
     /// Attempt to unwrap a ``Double`` from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        guard let value = Double(variant) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        return value
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Double {
         guard let value = Double(variant) else {
             throw .unexpectedContent(parsing: self, from: variant)
         }
@@ -482,38 +847,71 @@ extension Double: _GodotBridgeableBuiltin {
     }
 }
 
-public extension BinaryFloatingPoint {
+public extension BinaryFloatingPoint where Self: VariantConvertible  {
     /// Internal API.
+    @inline(__always)
+    @inlinable
     static var _variantType: Variant.GType {
         .float
     }
     
     /// Wrap a floating point number into ``Variant?``.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     func toVariant() -> Variant? {
         Double(self).toVariant()
     }
     
     /// Wrap a floating point number into ``Variant``.
+    @inline(__always)
+    @inlinable
     func toVariant() -> Variant {
         Double(self).toVariant()
     }
     
+    /// Wrap a floating point number into ``FastVariant?``.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    func toFastVariant() -> FastVariant? {
+        Double(self).toFastVariant()
+    }
+    
+    /// Wrap a floating point number into ``FastVariant``.
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant {
+        Double(self).toFastVariant()
+    }
+    
     /// Initialze ``BinaryFloatingPoint`` from ``Variant``. Fails if `variant` doesn't contain ``Double``
+    @inline(__always)
+    @inlinable
     init?(_ variant: Variant) {
         guard let value = Double(variant) else { return nil }
         self = Self(value)
     }
     
     /// Initialze ``BinaryFloatingPoint`` from ``Variant``. Fails if `variant` doesn't contain ``Double``, or is `nil`
+    @inline(__always)
+    @inlinable
     init?(_ variant: Variant?) {
         guard let variant else { return nil }
         self.init(variant)
     }
 
     /// Attempt to unwrap a floating point number from a `variant`. Throws `VariantConversionError` if it's not possible.
+    @inline(__always)
+    @inlinable
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         Self(try Double.fromVariantOrThrow(variant))
+    }
+    
+    @inline(__always)
+    @inlinable
+    static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        Self(try Double.fromFastVariantOrThrow(variant))
     }
 }
 
@@ -531,9 +929,18 @@ extension UInt8: _GodotBridgeableBuiltin {}
 extension Float: _GodotBridgeableBuiltin {}
 
 public extension RawRepresentable where RawValue: VariantConvertible {
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     func toVariant() -> Variant? {
         rawValue.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    func toFastVariant() -> FastVariant? {
+        rawValue.toFastVariant()
     }
     
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
@@ -546,19 +953,43 @@ public extension RawRepresentable where RawValue: VariantConvertible {
 }
 
 public extension RawRepresentable where RawValue == String {
+    @inline(__always)
+    @inlinable
     func toVariant() -> Variant {
         rawValue.toVariant()
     }
-}
-
-public extension RawRepresentable where RawValue: BinaryInteger {
-    func toVariant() -> Variant {
-        rawValue.toVariant()
+    
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant {
+        rawValue.toFastVariant()
     }
 }
 
-public extension RawRepresentable where RawValue: BinaryFloatingPoint {
+public extension RawRepresentable where RawValue: BinaryInteger, RawValue: _GodotBridgeableBuiltin {
+    @inline(__always)
+    @inlinable
     func toVariant() -> Variant {
         rawValue.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant {
+        rawValue.toFastVariant()
+    }
+}
+
+public extension RawRepresentable where RawValue: BinaryFloatingPoint, RawValue: _GodotBridgeableBuiltin  {
+    @inline(__always)
+    @inlinable
+    func toVariant() -> Variant {
+        rawValue.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant {
+        rawValue.toFastVariant()
     }
 }

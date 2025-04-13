@@ -143,7 +143,7 @@ public struct Arguments: ~Copyable {
         
         guard let variant = variantOrNil else {
             throw .variantConversionError(
-                .unexpectedContent(parsing: Variant.self, from: nil)
+                .unexpectedNilContent(parsing: Variant.self)
             )
         }
         
@@ -283,34 +283,61 @@ extension Variant: _GodotOptionalBridgeable {
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
 extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+    @inline(__always)
+    @inlinable
     public static func _argumentPropInfo(name: String) -> PropInfo {
         Wrapped._argumentPropInfo(name: name)
     }
     
+    @inline(__always)
+    @inlinable
     public static var _returnValuePropInfo: PropInfo {
         Wrapped._returnValuePropInfo
     }
     
+    @inline(__always)
+    @inlinable
     public static func _propInfo(name: String, hint: PropertyHint?, hintStr: String?, usage: PropertyUsageFlags?) -> PropInfo {
         Wrapped._propInfo(name: name, hint: hint, hintStr: hintStr, usage: usage)
     }
     
+    @inline(__always)
+    @inlinable
     public static var _variantType: Variant.GType {
         Wrapped._variantType
     }
     
+    @inline(__always)
+    @inlinable
     public static var _godotTypeName: String {
         Wrapped._godotTypeName
     }
     
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant? {
+        nil
+    }
+    
     /// Variant?.some -> Variant?.some (never throws, see Variant.fromVariantOrThrow)
     /// Variant?.some -> Object?.some or throw
+    @inline(__always)
+    @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         // TODO: investigate a case where Variant can contain an object, but fails to unwrap it not because it's wrong type, but because it was nullified. We need to distinguish such case and return nil instead of throwing. It's an opposite of case where the incompatible object is contained inside Variant - then we indeed need to throw.
         try Wrapped.fromVariantOrThrow(variant)
     }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Optional<Wrapped> {
+        try Wrapped.fromFastVariantOrThrow(variant)
+    }
         
     /// Variant?.none -> Object?.none
     /// Variant?.none -> Variant?.none
-    public static func fromNilVariantOrThrow() -> Self { nil }
+    /// FastVariant?.none -> FastVariant?.none
+    @inline(__always)
+    @inlinable
+    public static func fromNilOrThrow() -> Self { nil }
 }

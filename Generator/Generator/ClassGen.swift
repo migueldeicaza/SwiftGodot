@@ -628,19 +628,50 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         if inherits == objectInherits {
             p("""
             /// Wrap ``\(cdef.name)`` into a ``Variant``
+            @inline(__always)
+            @inlinable
             public func toVariant() -> Variant {
                 Variant(self)                
             }
             
             /// Wrap ``\(cdef.name)`` into a ``Variant?``
+            @inline(__always)
+            @inlinable
             @_disfavoredOverload
             public func toVariant() -> Variant? {
                 Variant(self)                
             }
             
             /// Extract ``\(cdef.name)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
             public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
                 guard let value = variant.asObject(Self.self) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            
+            /// Wrap ``\(cdef.name)`` into a ``FastVariant``
+            @inline(__always)
+            @inlinable
+            public func toFastVariant() -> FastVariant {
+                FastVariant(self)                
+            }
+            
+            /// Wrap ``\(cdef.name)`` into a ``FastVariant?``
+            @inline(__always)
+            @inlinable
+            @_disfavoredOverload
+            public func toFastVariant() -> FastVariant? {
+                FastVariant(self)                
+            }
+            
+            /// Extract ``\(cdef.name)`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
+            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
+                guard let value = variant.to(self) else {
                     throw .unexpectedContent(parsing: self, from: variant)
                 }
                 return value                

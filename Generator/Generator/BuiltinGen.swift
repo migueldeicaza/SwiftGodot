@@ -825,18 +825,48 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             static let selfFromVariant = gi.get_variant_to_type_constructor(\(typeEnum))!                            
             
             /// Wrap ``\(typeName)`` into a ``Variant``
+            @inline(__always)
+            @inlinable
             public func toVariant() -> Variant {
                 Variant(self)
             }
             
             /// Wrap ``\(typeName)`` into a ``Variant?``
+            @inline(__always)
+            @inlinable
             @_disfavoredOverload
             public func toVariant() -> Variant? {
                 Variant(self)
             }
             
+            /// Wrap ``\(typeName)`` into a ``FastVariant``
+            @inline(__always)
+            @inlinable
+            public func toFastVariant() -> FastVariant {
+                FastVariant(self)
+            }
+            
+            /// Wrap ``\(typeName)`` into a ``FastVariant?``
+            @inline(__always)
+            @inlinable
+            @_disfavoredOverload
+            public func toFastVariant() -> FastVariant? {
+                FastVariant(self)
+            }
+            
             /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
             public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+                guard let value = Self(variant) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            
+            @inline(__always)
+            @inlinable
+            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
                 guard let value = Self(variant) else {
                     throw .unexpectedContent(parsing: self, from: variant)
                 }
@@ -848,6 +878,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if isContentRepresented == true {
                 p("""
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
+                @inline(__always)                                
                 public convenience init?(_ variant: Variant) {
                     guard Self._variantType == variant.gtype else { return nil }
                     var content = \(typeName).zero
@@ -858,14 +889,35 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                @inline(__always)
+                @inlinable
                 public convenience init?(_ variant: Variant?) {
                     guard let variant else { return nil }
+                    self.init(variant)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
+                @inline(__always)                                
+                public convenience init?(_ variant: borrowing FastVariant) {
+                    guard Self._variantType == variant.gtype else { return nil }
+                    var content = \(typeName).zero
+                    withUnsafeMutablePointer(to: &content) { pPayload in
+                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                    }
+                    self.init(takingOver: content)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                @inline(__always)
+                @inlinable
+                public convenience init?(_ variant: borrowing FastVariant?) {                    
                     self.init(variant)
                 }
                 """)
             } else {
                 p("""
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
+                @inline(__always)                
                 public init?(_ variant: Variant) {
                     guard Self._variantType == variant.gtype else { return nil }
                     self.init()
@@ -876,9 +928,34 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                @inline(__always)
+                @inlinable
                 public init?(_ variant: Variant?) {
                     guard let variant else { return nil }
                     self.init(variant)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
+                @inline(__always)                
+                public init?(_ variant: borrowing FastVariant) {
+                    guard Self._variantType == variant.gtype else { return nil }
+                    self.init()
+                    
+                    withUnsafeMutablePointer(to: &self) { pPayload in
+                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                    }
+                }
+                
+                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                @inline(__always)
+                @inlinable
+                public init?(_ variant: borrowing FastVariant?) {
+                    switch variant {
+                    case .some(let variant):
+                        self.init(variant)
+                    case .none:
+                        return nil
+                    }
                 }
                 
                 """)
@@ -950,6 +1027,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             p("public extension Variant") {
                 p("""
                 /// Initialize ``Variant`` by wrapping ``\(typeName)?``, fails if it's `nil`
+                @inline(__always)
+                @inlinable
                 convenience init?(_ from: \(typeName)?) {
                     guard let from else {
                         return nil
@@ -958,7 +1037,36 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 }
                 
                 /// Initialize ``Variant`` by wrapping ``\(typeName)``
+                @inline(__always)
                 convenience init(_ from: \(typeName))
+                """) {
+                    if isContentRepresented {
+                        p("""
+                        self.init(payload: from.content, constructor: \(typeName).variantFromSelf)
+                        """)
+                    } else {
+                        p("""
+                        self.init(payload: from, constructor: \(typeName).variantFromSelf)
+                        """)
+                    }
+                }
+            }
+            
+            p("public extension FastVariant") {
+                p("""
+                /// Initialize ``FastVariant`` by wrapping ``\(typeName)?``, fails if it's `nil`
+                @inline(__always)
+                @inlinable
+                init?(_ from: \(typeName)?) {
+                    guard let from else {
+                        return nil
+                    }
+                    self.init(from)
+                }
+                
+                /// Initialize ``FastVariant`` by wrapping ``\(typeName)``
+                @inline(__always)
+                init(_ from: \(typeName))
                 """) {
                     if isContentRepresented {
                         p("""

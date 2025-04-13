@@ -13,7 +13,7 @@
 ///
 /// You can retrieve the type of a variant from the ``gtype`` property.
 ///
-/// A Variant takes up only 20 bytes and can store almost any engine datatype
+/// A Variant takes up only 24 bytes and can store almost any engine datatype
 /// inside of it. Variants are rarely used to hold information for long periods of
 /// time. Instead, they are used mainly for communication, editing, serialization and
 /// moving data around.
@@ -48,9 +48,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     static let doubleFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
     static let objectFromVariant =  gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
     
-    typealias ContentType = (Int, Int, Int)
-    var content: ContentType = Variant.zero
-    static var zero: ContentType = (0, 0, 0)
+    typealias ContentType = VariantContent
+    var content = Variant.zero
+    
+    static var zero: ContentType {
+        VariantContent.zero
+    }
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
     init?(copying otherContent: ContentType) {
@@ -70,6 +73,24 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         content = otherContent
 
         extensionInterface.variantInited(variant: self, content: &content)
+    }
+    
+    /// Initialize ``Variant`` by consuming ``FastVariant``
+    @inline(__always)
+    public init(takingOver fastVariant: consuming FastVariant) {
+        self.content = fastVariant.content
+        fastVariant.content = .zero
+    }
+    
+    /// Initialize ``Variant`` by consuming ``FastVariant?``. Fails if `fastVariant` is nil.
+    @inline(__always)
+    @inlinable
+    public convenience init?(takingOver fastVariant: consuming FastVariant?) {
+        guard let fastVariant else {
+            return nil
+        }
+        
+        self.init(takingOver: fastVariant)
     }
 
     deinit {
@@ -482,6 +503,27 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     /// Internal API.
     public static var _returnValuePropInfo: PropInfo {
         _propInfoDefault(propertyType: _variantType, name: "", usage: .nilIsVariant)
+    }
+    
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Variant {
+        Variant(takingOver: variant.copy())
+    }
+    
+    public func toFastVariant() -> FastVariant {
+        var newContent = VariantContent.zero
+        
+        withUnsafeMutablePointer(to: &newContent) { pNewContent in
+            withUnsafePointer(to: &content) { pCopiedContent in
+                gi.variant_new_copy(pNewContent, pCopiedContent)
+            }
+        }
+        
+        return FastVariant(unsafeTakingOver: newContent)
+    }
+    
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        toFastVariant()
     }
 }
 
