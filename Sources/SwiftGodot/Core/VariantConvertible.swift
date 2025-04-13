@@ -70,6 +70,18 @@ public enum VariantConversionError: Error, CustomStringConvertible {
 
 /// Protocol for types that can be converted to and from ``Variant?`` aka `Godot Variant`.
 /// Default implementations are provided for most of the functions.
+/// Example of implementation:
+/// ```
+/// extension Date: VariantConvertible {
+///     public func toFastVariant() -> FastVariant? {
+///         timeIntervalSince1970.toFastVariant()
+///     }
+///
+///     public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Date {
+///         Date(timeIntervalSince1970: try TimeInterval.fromFastVariantOrThrow(variant))
+///     }
+/// }
+/// ```
 public protocol VariantConvertible {
     /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible. Has default implementation. Can be implemented manually to avoid proxying via `FastVariant`
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self
