@@ -3,24 +3,24 @@ class Car: Node {
     var vins: VariantCollection<String> = ["00000000000000000"]
 
     func _mproxy_set_vins(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "vins", vins) {
+        SwiftGodot._invokeSetter(args, "vins", vins) {
             vins = $0
         }
     }
 
     func _mproxy_get_vins(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(vins)
+        SwiftGodot._invokeGetter(vins)
     }
     var years: VariantCollection<Int> = [1997]
 
     func _mproxy_set_years(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "years", years) {
+        SwiftGodot._invokeSetter(args, "years", years) {
             years = $0
         }
     }
 
     func _mproxy_get_years(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(years)
+        SwiftGodot._invokeGetter(years)
     }
 
     override open class var classInitializer: Void {

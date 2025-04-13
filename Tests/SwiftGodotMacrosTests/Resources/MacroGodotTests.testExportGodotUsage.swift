@@ -2,13 +2,13 @@ class Hi: Node {
     var goodName: String = "Supertop"
 
     func _mproxy_set_goodName(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "goodName", goodName) {
+        SwiftGodot._invokeSetter(args, "goodName", goodName) {
             goodName = $0
         }
     }
 
     func _mproxy_get_goodName(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(goodName)
+        SwiftGodot._invokeGetter(goodName)
     }
 
     override open class var classInitializer: Void {

@@ -1,11 +1,11 @@
 var greetings: VariantCollection<String> = []
 
 func _mproxy_set_greetings(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-    SwiftGodot._macroExportSet(args, "greetings", greetings) {
+    SwiftGodot._invokeSetter(args, "greetings", greetings) {
         greetings = $0
     }
 }
 
 func _mproxy_get_greetings(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-    SwiftGodot._wrapGetterResult(greetings)
+    SwiftGodot._invokeGetter(greetings)
 }

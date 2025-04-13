@@ -15,13 +15,13 @@ final class MyClass: Node {
     var data: MyData = .init()
 
     func _mproxy_set_data(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "data", data) {
+        SwiftGodot._invokeSetter(args, "data", data) {
             data = $0
         }
     }
 
     func _mproxy_get_data(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(data)
+        SwiftGodot._invokeGetter(data)
     }
 
     override public class var classInitializer: Void {

@@ -3,24 +3,24 @@ public class Issue353: Node {
     var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
 
     func _mproxy_set_prefix1_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "prefix1_prefixed_bool", prefix1_prefixed_bool) {
+        SwiftGodot._invokeSetter(args, "prefix1_prefixed_bool", prefix1_prefixed_bool) {
             prefix1_prefixed_bool = $0
         }
     }
 
     func _mproxy_get_prefix1_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(prefix1_prefixed_bool)
+        SwiftGodot._invokeGetter(prefix1_prefixed_bool)
     }
     var non_prefixed_bool: VariantCollection<Bool> = [false]
 
     func _mproxy_set_non_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "non_prefixed_bool", non_prefixed_bool) {
+        SwiftGodot._invokeSetter(args, "non_prefixed_bool", non_prefixed_bool) {
             non_prefixed_bool = $0
         }
     }
 
     func _mproxy_get_non_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(non_prefixed_bool)
+        SwiftGodot._invokeGetter(non_prefixed_bool)
     }
 
     override open class var classInitializer: Void {

@@ -519,13 +519,7 @@ extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOp
     public static var _godotTypeName: String {
         Wrapped._godotTypeName
     }
-    
-    @inline(__always)
-    @inlinable
-    public func toFastVariant() -> FastVariant? {
-        nil
-    }
-    
+
     /// Variant?.some -> Variant?.some (never throws, see Variant.fromVariantOrThrow)
     /// Variant?.some -> Object?.some or throw
     @inline(__always)
@@ -543,7 +537,6 @@ extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOp
         
     /// Variant?.none -> Object?.none
     /// Variant?.none -> Variant?.none
-    /// FastVariant?.none -> FastVariant?.none
     @inline(__always)
     @inlinable
     public static func fromNilOrThrow() -> Self { nil }

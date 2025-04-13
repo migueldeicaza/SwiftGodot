@@ -2,57 +2,57 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "vin", vin) {
+        SwiftGodot._invokeSetter(args, "vin", vin) {
             vin = $0
         }
     }
 
     func _mproxy_get_vin(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(vin)
+        SwiftGodot._invokeGetter(vin)
     }
     var ymms_year: Int = 1998
 
     func _mproxy_set_ymms_year(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "ymms_year", ymms_year) {
+        SwiftGodot._invokeSetter(args, "ymms_year", ymms_year) {
             ymms_year = $0
         }
     }
 
     func _mproxy_get_ymms_year(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(ymms_year)
+        SwiftGodot._invokeGetter(ymms_year)
     }
     var ymms_make: String = "Honda"
 
     func _mproxy_set_ymms_make(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "ymms_make", ymms_make) {
+        SwiftGodot._invokeSetter(args, "ymms_make", ymms_make) {
             ymms_make = $0
         }
     }
 
     func _mproxy_get_ymms_make(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(ymms_make)
+        SwiftGodot._invokeGetter(ymms_make)
     }
     var ymms_model: String = "Odyssey"
 
     func _mproxy_set_ymms_model(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "ymms_model", ymms_model) {
+        SwiftGodot._invokeSetter(args, "ymms_model", ymms_model) {
             ymms_model = $0
         }
     }
 
     func _mproxy_get_ymms_model(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(ymms_model)
+        SwiftGodot._invokeGetter(ymms_model)
     }
     var ymms_series: String = "LX"
 
     func _mproxy_set_ymms_series(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "ymms_series", ymms_series) {
+        SwiftGodot._invokeSetter(args, "ymms_series", ymms_series) {
             ymms_series = $0
         }
     }
 
     func _mproxy_get_ymms_series(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(ymms_series)
+        SwiftGodot._invokeGetter(ymms_series)
     }
 
     override open class var classInitializer: Void {

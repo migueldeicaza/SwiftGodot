@@ -8,24 +8,24 @@ class SomeNode: Node {
     var demo: Demo
 
     func _mproxy_set_demo(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "demo", demo) {
+        SwiftGodot._invokeSetter(args, "demo", demo) {
             demo = $0
         }
     }
 
     func _mproxy_get_demo(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(demo)
+        SwiftGodot._invokeGetter(demo)
     }
     var demo64: Demo64
 
     func _mproxy_set_demo64(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "demo64", demo64) {
+        SwiftGodot._invokeSetter(args, "demo64", demo64) {
             demo64 = $0
         }
     }
 
     func _mproxy_get_demo64(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(demo64)
+        SwiftGodot._invokeGetter(demo64)
     }
 
     override open class var classInitializer: Void {

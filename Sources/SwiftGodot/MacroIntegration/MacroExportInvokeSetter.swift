@@ -1,5 +1,5 @@
 //
-//  MacroExportWrapSetterResult.swift
+//  MacroExportInvokeSetter.swift
 //  SwiftGodot
 //
 //  Created by Elijah Semyonov on 09/04/2025.
@@ -8,7 +8,7 @@
 /// Internal API.
 @inline(__always)
 @inlinable
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ name: StaticString,
     _ old: T,
@@ -28,7 +28,7 @@ public func _macroExportSet<T>(
 /// Internal API. Optional builtin. We surface them as `Variant?`.
 @inline(__always)
 @inlinable
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ name: StaticString,
     _ old: T?,
@@ -78,7 +78,7 @@ func proxyClosureViaCallable<each Argument: VariantConvertible, Result: VariantC
 /// Internal API.  Closure.
 @inline(__always)
 @inlinable
-public func _macroExportSet<each Argument: VariantConvertible, Result: VariantConvertible>(
+public func _invokeSetter<each Argument: VariantConvertible, Result: VariantConvertible>(
     _ arguments: borrowing Arguments,
     _ name: StaticString,
     _ old: @escaping (repeat each Argument) -> Result,
@@ -97,30 +97,30 @@ public func _macroExportSet<each Argument: VariantConvertible, Result: VariantCo
 /// Internal API. VariantCollections.
 @inline(__always)
 @inlinable
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: VariantCollection<T>,
     _: (VariantCollection<T>) -> Void // ignored, old.array is reassigned
 ) -> Variant? where T: _GodotBridgeableBuiltin {
-    _macroExportSetGArrayCollection(arguments, variableName, old)
+    _invokeSetterGArrayCollection(arguments, variableName, old)
 }
 
 /// Internal API. ObjectCollections.
 @inline(__always)
 @inlinable
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: ObjectCollection<T>,
     _: (ObjectCollection<T>) -> Void // ignored, old.array is reassigned
 ) -> Variant? where T: Object {
-    _macroExportSetGArrayCollection(arguments, variableName, old)
+    _invokeSetterGArrayCollection(arguments, variableName, old)
 }
 
 @inline(__always)
 @inlinable
-func _macroExportSetGArrayCollection<T>(
+func _invokeSetterGArrayCollection<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ collection: T
@@ -145,7 +145,7 @@ func _macroExportSetGArrayCollection<T>(
 /// Internal API. RawRepresentable with VariantConvertible RawValue
 @inline(__always)
 @inlinable
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ name: StaticString,
     _ old: T,
@@ -165,7 +165,7 @@ public func _macroExportSet<T>(
 
 /// Internal API. Optional VariantCollection.
 @available(*, unavailable, message: "The Optional VariantCollection is not supported by @Export macro")
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: VariantCollection<T>?,
@@ -176,7 +176,7 @@ public func _macroExportSet<T>(
 
 /// Internal API. Optional ObjectCollection.
 @available(*, unavailable, message: "The Optional ObjectCollection is not supported by @Export macro")
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: ObjectCollection<T>?,
@@ -188,7 +188,7 @@ public func _macroExportSet<T>(
 /// Internal API. Swift Array.
 @available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
 @_disfavoredOverload
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: [T]?,
@@ -200,7 +200,7 @@ public func _macroExportSet<T>(
 /// Internal API. Swift Array.
 @available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
 @_disfavoredOverload
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: [T],
@@ -212,7 +212,7 @@ public func _macroExportSet<T>(
 /// Internal API. Catch-all-overload for optional unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: T?,
@@ -224,7 +224,7 @@ public func _macroExportSet<T>(
 /// Internal API. Catch-all-overload for unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload
-public func _macroExportSet<T>(
+public func _invokeSetter<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ old: T,

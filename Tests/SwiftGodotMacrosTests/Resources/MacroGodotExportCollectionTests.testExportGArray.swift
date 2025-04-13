@@ -3,13 +3,13 @@ class SomeNode: Node {
     var someArray: GArray = GArray()
 
     func _mproxy_set_someArray(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "someArray", someArray) {
+        SwiftGodot._invokeSetter(args, "someArray", someArray) {
             someArray = $0
         }
     }
 
     func _mproxy_get_someArray(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(someArray)
+        SwiftGodot._invokeGetter(someArray)
     }
 
     override open class var classInitializer: Void {

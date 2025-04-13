@@ -16,7 +16,7 @@ public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
         func _mproxy_get_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-            SwiftGodot._wrapGetterResult(\(identifier))                        
+            SwiftGodot._invokeGetter(\(identifier))                        
         }                        
         """
     }
@@ -24,7 +24,7 @@ public struct GodotExport: PeerMacro {
     static func makeSetAccessor(identifier: String) -> String {
         """
         func _mproxy_set_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-            SwiftGodot._macroExportSet(args, "\(identifier)", \(identifier)) {
+            SwiftGodot._invokeSetter(args, "\(identifier)", \(identifier)) {
                 \(identifier) = $0
             }
         }

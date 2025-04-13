@@ -3,46 +3,46 @@ class Car: Node {
     var vins: ObjectCollection<Node> = []
 
     func _mproxy_set_vins(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "vins", vins) {
+        SwiftGodot._invokeSetter(args, "vins", vins) {
             vins = $0
         }
     }
 
     func _mproxy_get_vins(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(vins)
+        SwiftGodot._invokeGetter(vins)
     }
     var years: ObjectCollection<Node> = []
 
     func _mproxy_set_years(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "years", years) {
+        SwiftGodot._invokeSetter(args, "years", years) {
             years = $0
         }
     }
 
     func _mproxy_get_years(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(years)
+        SwiftGodot._invokeGetter(years)
     }
     var makes: ObjectCollection<Node> = []
 
     func _mproxy_set_makes(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "makes", makes) {
+        SwiftGodot._invokeSetter(args, "makes", makes) {
             makes = $0
         }
     }
 
     func _mproxy_get_makes(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(makes)
+        SwiftGodot._invokeGetter(makes)
     }
     var models: ObjectCollection<Node> = []
 
     func _mproxy_set_models(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "models", models) {
+        SwiftGodot._invokeSetter(args, "models", models) {
             models = $0
         }
     }
 
     func _mproxy_get_models(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(models)
+        SwiftGodot._invokeGetter(models)
     }
 
     override open class var classInitializer: Void {

@@ -3,13 +3,13 @@ class Garage: Node {
     var bar: VariantCollection<Bool> = [false]
 
     func _mproxy_set_bar(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "bar", bar) {
+        SwiftGodot._invokeSetter(args, "bar", bar) {
             bar = $0
         }
     }
 
     func _mproxy_get_bar(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(bar)
+        SwiftGodot._invokeGetter(bar)
     }
 
     override open class var classInitializer: Void {

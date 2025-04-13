@@ -3,24 +3,24 @@ class ArrayTest: Node {
    var firstNames: VariantCollection<String> = ["Thelonius"]
 
    func _mproxy_set_firstNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._macroExportSet(args, "firstNames", firstNames) {
+       SwiftGodot._invokeSetter(args, "firstNames", firstNames) {
            firstNames = $0
        }
    }
 
    func _mproxy_get_firstNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._wrapGetterResult(firstNames)
+       SwiftGodot._invokeGetter(firstNames)
    }
    var lastNames: VariantCollection<String> = ["Monk"]
 
    func _mproxy_set_lastNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._macroExportSet(args, "lastNames", lastNames) {
+       SwiftGodot._invokeSetter(args, "lastNames", lastNames) {
            lastNames = $0
        }
    }
 
    func _mproxy_get_lastNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._wrapGetterResult(lastNames)
+       SwiftGodot._invokeGetter(lastNames)
    }
 
     override open class var classInitializer: Void {

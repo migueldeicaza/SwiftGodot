@@ -3,46 +3,46 @@ class Car: Node {
     var vin: String = ""
 
     func _mproxy_set_vin(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "vin", vin) {
+        SwiftGodot._invokeSetter(args, "vin", vin) {
             vin = $0
         }
     }
 
     func _mproxy_get_vin(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(vin)
+        SwiftGodot._invokeGetter(vin)
     }
     var year: Int = 1997
 
     func _mproxy_set_year(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "year", year) {
+        SwiftGodot._invokeSetter(args, "year", year) {
             year = $0
         }
     }
 
     func _mproxy_get_year(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(year)
+        SwiftGodot._invokeGetter(year)
     }
     var make: String = "HONDA"
 
     func _mproxy_set_make(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "make", make) {
+        SwiftGodot._invokeSetter(args, "make", make) {
             make = $0
         }
     }
 
     func _mproxy_get_make(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(make)
+        SwiftGodot._invokeGetter(make)
     }
     var model: String = "ACCORD"
 
     func _mproxy_set_model(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "model", model) {
+        SwiftGodot._invokeSetter(args, "model", model) {
             model = $0
         }
     }
 
     func _mproxy_get_model(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(model)
+        SwiftGodot._invokeGetter(model)
     }
 
     override open class var classInitializer: Void {

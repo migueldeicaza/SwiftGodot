@@ -3,90 +3,90 @@ class Garage: Node {
     var name: String = ""
 
     func _mproxy_set_name(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "name", name) {
+        SwiftGodot._invokeSetter(args, "name", name) {
             name = $0
         }
     }
 
     func _mproxy_get_name(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(name)
+        SwiftGodot._invokeGetter(name)
     }
     var rating: Float = 0.0
 
     func _mproxy_set_rating(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "rating", rating) {
+        SwiftGodot._invokeSetter(args, "rating", rating) {
             rating = $0
         }
     }
 
     func _mproxy_get_rating(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(rating)
+        SwiftGodot._invokeGetter(rating)
     }
     var reviews: VariantCollection<String> = []
 
     func _mproxy_set_reviews(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "reviews", reviews) {
+        SwiftGodot._invokeSetter(args, "reviews", reviews) {
             reviews = $0
         }
     }
 
     func _mproxy_get_reviews(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(reviews)
+        SwiftGodot._invokeGetter(reviews)
     }
     var checkIns: ObjectCollection<CheckIn> = []
 
     func _mproxy_set_checkIns(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "checkIns", checkIns) {
+        SwiftGodot._invokeSetter(args, "checkIns", checkIns) {
             checkIns = $0
         }
     }
 
     func _mproxy_get_checkIns(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(checkIns)
+        SwiftGodot._invokeGetter(checkIns)
     }
     var address: String = ""
 
     func _mproxy_set_address(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "address", address) {
+        SwiftGodot._invokeSetter(args, "address", address) {
             address = $0
         }
     }
 
     func _mproxy_get_address(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(address)
+        SwiftGodot._invokeGetter(address)
     }
     var daysOfOperation: VariantCollection<String> = []
 
     func _mproxy_set_daysOfOperation(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "daysOfOperation", daysOfOperation) {
+        SwiftGodot._invokeSetter(args, "daysOfOperation", daysOfOperation) {
             daysOfOperation = $0
         }
     }
 
     func _mproxy_get_daysOfOperation(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(daysOfOperation)
+        SwiftGodot._invokeGetter(daysOfOperation)
     }
     var hours: VariantCollection<String> = []
 
     func _mproxy_set_hours(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "hours", hours) {
+        SwiftGodot._invokeSetter(args, "hours", hours) {
             hours = $0
         }
     }
 
     func _mproxy_get_hours(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(hours)
+        SwiftGodot._invokeGetter(hours)
     }
     var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
 
     func _mproxy_set_insuranceProvidersAccepted(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "insuranceProvidersAccepted", insuranceProvidersAccepted) {
+        SwiftGodot._invokeSetter(args, "insuranceProvidersAccepted", insuranceProvidersAccepted) {
             insuranceProvidersAccepted = $0
         }
     }
 
     func _mproxy_get_insuranceProvidersAccepted(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(insuranceProvidersAccepted)
+        SwiftGodot._invokeGetter(insuranceProvidersAccepted)
     }
 
     override open class var classInitializer: Void {

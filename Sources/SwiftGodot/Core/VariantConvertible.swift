@@ -306,12 +306,16 @@ public extension _GodotBridgeableObject where Self: Object {
 }
 
 public extension Optional where Wrapped: VariantConvertible {
+    @inline(__always)
+    @inlinable
     func toVariant() -> Variant? {
-        if let self {
-            return self.toVariant()
-        } else {
-            return nil
-        }
+        self?.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant? {
+        self?.toFastVariant()
     }
 }
 

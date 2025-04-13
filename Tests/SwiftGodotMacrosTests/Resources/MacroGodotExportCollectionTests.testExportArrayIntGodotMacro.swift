@@ -3,13 +3,13 @@ class SomeNode: Node {
     var someNumbers: VariantCollection<Int> = []
 
     func _mproxy_set_someNumbers(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "someNumbers", someNumbers) {
+        SwiftGodot._invokeSetter(args, "someNumbers", someNumbers) {
             someNumbers = $0
         }
     }
 
     func _mproxy_get_someNumbers(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(someNumbers)
+        SwiftGodot._invokeGetter(someNumbers)
     }
 
     override open class var classInitializer: Void {

@@ -55,6 +55,6 @@ final class MacroIntegrationTests: GodotTestCase {
             a + b
         }
         
-        XCTAssertEqual(_wrapGetterResult(closure)?.gtype, .callable)
+        XCTAssertEqual(_invokeGetter(closure)?.gtype, .callable)
     }
 }

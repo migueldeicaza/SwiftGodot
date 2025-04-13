@@ -3,24 +3,24 @@ class Car: Node {
     var make: String = "Mazda"
 
     func _mproxy_set_make(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "make", make) {
+        SwiftGodot._invokeSetter(args, "make", make) {
             make = $0
         }
     }
 
     func _mproxy_get_make(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(make)
+        SwiftGodot._invokeGetter(make)
     }
     var model: String = "RX7"
 
     func _mproxy_set_model(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._macroExportSet(args, "model", model) {
+        SwiftGodot._invokeSetter(args, "model", model) {
             model = $0
         }
     }
 
     func _mproxy_get_model(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._wrapGetterResult(model)
+        SwiftGodot._invokeGetter(model)
     }
 
     override open class var classInitializer: Void {
