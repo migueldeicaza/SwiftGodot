@@ -204,26 +204,6 @@ public struct Arguments: ~Copyable {
         }
     }
     
-    /// Returns ``FastVariant`` or `nil` argument at  `index`.
-    ///
-    /// Throws an error if `index` is out of bounds.
-    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
-    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
-    @inline(__always)
-    @inlinable
-    public func argument(ofType: FastVariant?.Type = FastVariant?.self, at index: Int) throws(ArgumentAccessError) -> FastVariant? {
-        switch contents {
-        case .array(let array):
-            if index >= 0 && index < array.count {
-                return array[index]?.toFastVariant()
-            } else {
-                throw .indexOutOfBounds(index: index, count: array.count)
-            }
-        case .unsafeGodotArguments(let unsafeGodotArgs):
-            return try unsafeGodotArgs.copy(FastVariant.self, at: index)
-        }
-    }
-    
     /// Borrow ``FastVariant`` at `index` to perform some action on it and return result.
     /// This function is the fastest one if you just need to extract something from the arguments without taking ownership over `Variant` copies.
     @inline(__always)
@@ -324,7 +304,27 @@ public struct Arguments: ~Copyable {
         return variant
     }
     
-    /// Returns `[T]` value wrapped in `Variant` argument at `index`.
+    /// Returns ``FastVariant`` or `nil` argument at  `index`.
+    ///
+    /// Throws an error if `index` is out of bounds.
+    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    @inline(__always)
+    @inlinable
+    public func argument(ofType: FastVariant?.Type = FastVariant?.self, at index: Int) throws(ArgumentAccessError) -> FastVariant? {
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                return array[index]?.toFastVariant()
+            } else {
+                throw .indexOutOfBounds(index: index, count: array.count)
+            }
+        case .unsafeGodotArguments(let unsafeGodotArgs):
+            return try unsafeGodotArgs.copy(FastVariant.self, at: index)
+        }
+    }
+    
+    /// Returns `[T]` value wrapped in  argument at `index`.
     ///
     /// Throws an error if:
     /// - `Variant` is `nil`
@@ -362,42 +362,54 @@ public struct Arguments: ~Copyable {
         }
     }
         
-    /// Returns `T` value wrapped in `Variant?` argument at `index`.
+    /// Returns `T` value wrapped argument at `index`.
     ///
     /// Throws an error if:
     /// - `Variant?` contains a type from which `T` cannot be unwrapped
     /// - `index` is out of bounds.
     @inline(__always)
     @inlinable
-    public func argument<T: VariantConvertible>(ofType type: T.Type = T.self, at index: Int) throws(ArgumentAccessError) -> T {
-        let variant = try argument(ofType: FastVariant?.self, at: index)
-        
-        do {
-            return try T.fromFastVariantOrThrow(variant)
-        } catch {
-            throw .variantConversionError(error)
+    public func argument<T>(ofType type: T.Type = T.self, at index: Int) throws(ArgumentAccessError) -> T where T: VariantConvertible {
+        try withBorrowedFastVariant(at: index) { variantOrNil in
+            extract(T.self, from: variantOrNil)
         }
     }
     
-    /// Returns `T` value wrapped in `Variant?` argument at `index`.
+    @inline(__always)
+    @inlinable
+    func extract<T>(_ type: T.Type = T.self, from variantOrNil: borrowing FastVariant?) -> Result<T, ArgumentAccessError> where T: VariantConvertible {
+        do {
+            return .success(try T.fromFastVariantOrThrow(variantOrNil))
+        } catch {
+            return .failure(.variantConversionError(error))
+        }
+    }
+    
+    /// Returns `T?` value wrapped in argument at `index`.
     ///
     /// Throws an error if:
-    /// - `Variant?` contains a type from which `T` cannot be unwrapped
+    /// - `Variant?` contains a type from which `T?` cannot be unwrapped
     /// - `index` is out of bounds.
     @inline(__always)
     @inlinable
-    @_disfavoredOverload
-    public func argument<T: VariantConvertible>(ofType type: T?.Type = T?.self, at index: Int) throws(ArgumentAccessError) -> T? {
-        let variant = try argument(ofType: FastVariant?.self, at: index)
-        
+    public func argument<T>(ofType type: T?.Type = T?.self, at index: Int) throws(ArgumentAccessError) -> T? where T: VariantConvertible {
+        try withBorrowedFastVariant(at: index) { variantOrNil in
+            extract(T?.self, from: variantOrNil)
+        }
+    }
+    
+    @inline(__always)
+    @inlinable
+    func extract<T>(_ type: T?.Type = T?.self, from variantOrNil: borrowing FastVariant?) -> Result<T?, ArgumentAccessError> where T: VariantConvertible {
         do {
-            if let variant {
-                return try T.fromFastVariantOrThrow(variant)
-            } else {
-                return nil
+            switch variantOrNil {
+            case .some(let variant):
+                return .success(try T.fromFastVariantOrThrow(variant))
+            case .none:
+                return .success(nil)
             }
         } catch {
-            throw .variantConversionError(error)
+            return .failure(.variantConversionError(error))
         }
     }
     
