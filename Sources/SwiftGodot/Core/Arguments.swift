@@ -430,8 +430,7 @@ public struct Arguments: ~Copyable {
                 throw .variantConversionError(error)
             }
         case .none:
-            throw .variantConversionError(.unexpectedContent(parsing: type, from: variantOrNil))
-            
+            throw .variantConversionError(.unexpectedContent(parsing: type, from: variantOrNil))            
         }
     }
 }
@@ -439,7 +438,7 @@ public struct Arguments: ~Copyable {
 /// Execute `body` and return the result of executing it taking temporary storage keeping Godot managed `Variant`s stored in `pargs`.
 @inline(__always)
 @inlinable
-func withArguments<T>(pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, _ body: (borrowing Arguments) -> T) -> T {
+func withArguments<T: ~Copyable>(pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, _ body: (borrowing Arguments) -> T) -> T {
     let arguments = Arguments(pargs: pargs, argc: argc)
     let result = body(arguments)
     return result
@@ -447,7 +446,7 @@ func withArguments<T>(pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, _ b
 
 @inline(__always)
 @inlinable
-func withArguments<T>(from array: [Variant?], _ body: (borrowing Arguments) -> T) -> T {
+func withArguments<T: ~Copyable>(from array: [Variant?], _ body: (borrowing Arguments) -> T) -> T {
     body(Arguments(from: array))
 }
 
