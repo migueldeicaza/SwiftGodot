@@ -6,6 +6,20 @@
 //
 
 public extension Callable {
+    /// Initialize ``Callable`` using Swift closure, for example:
+    /// ```
+    /// var callable = Callable { (a: Int, b: Int, c: String) -> String in
+    ///     return [String](repeating: c, count: a + b).joined(separator: " ")
+    /// }
+    ///
+    /// var result = callable.call(
+    ///    1.toVariant(),
+    ///    2.toVariant(),
+    ///    "Amazing!".toVariant()
+    /// )
+    /// ```
+    ///
+    /// If arguments with which ``Callable`` was called didn't match the Swift ones, a error will be logged
     convenience init<each Argument, R>(
         _ callback: @escaping (repeat each Argument) -> R,
     ) where repeat each Argument: _GodotBridgeable, R: _GodotBridgeable {
