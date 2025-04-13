@@ -86,18 +86,16 @@ public struct Arguments: ~Copyable {
                     let result: Result<T, ArgumentAccessError>
                     
                     if let ptr = pargs[index] {
-                        var variant = FastVariant(
+                        var fastVariant = FastVariant(
                             unsafelyBorrowing: ptr
                                 .assumingMemoryBound(to: VariantContent.self)
                                 .pointee
                         )
+                                                
+                        result = use(fastVariant)
                         
                         /// Prevent `FastVariant` from destroying content owned by Godot Variant
-                        defer {
-                            variant?.content = .zero
-                        }
-                        
-                        result = use(variant)
+                        fastVariant?.content = .zero
                     } else {
                         result = use(nil)
                     }
@@ -222,11 +220,10 @@ public struct Arguments: ~Copyable {
                 
                 if let variant {
                     var fastVariant = FastVariant(unsafelyBorrowing: variant.content)
-                    /// Prevent `FastVariant` from destroying content owned by Godot Variant
-                    defer {
-                        fastVariant?.content = .zero
-                    }
                     result = use(fastVariant)
+                    
+                    /// Prevent `FastVariant` from destroying content owned by Godot Variant
+                    fastVariant?.content = .zero
                 } else {
                     result = use(nil)
                 }
