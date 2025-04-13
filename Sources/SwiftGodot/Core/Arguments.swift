@@ -81,8 +81,10 @@ public struct Arguments: ~Copyable {
             func withBorrowedFastVariant<T>(
                 at index: Int,
                 use: (borrowing FastVariant?) -> Result<T, ArgumentAccessError>
-            ) -> Result<T, ArgumentAccessError> {
+            ) throws(ArgumentAccessError) -> T {
                 if index >= 0 && index < count {
+                    let result: Result<T, ArgumentAccessError>
+                    
                     if let ptr = pargs[index] {
                         var variant = FastVariant(
                             unsafelyBorrowing: ptr
@@ -95,12 +97,19 @@ public struct Arguments: ~Copyable {
                             variant?.content = .zero
                         }
                         
-                        return use(variant)
+                        result = use(variant)
                     } else {
-                        return use(nil)
+                        result = use(nil)
+                    }
+                    
+                    switch result {
+                    case .success(let success):
+                        return success
+                    case .failure(let error):
+                        throw error
                     }
                 } else {
-                    return .failure(.indexOutOfBounds(index: index, count: count))
+                    throw .indexOutOfBounds(index: index, count: count)
                 }
             }
         }
@@ -222,28 +231,37 @@ public struct Arguments: ~Copyable {
     public func withBorrowedFastVariant<T>(
         at index: Int,
         use: (borrowing FastVariant?) -> Result<T, ArgumentAccessError>
-    ) -> Result<T, ArgumentAccessError> {
+    ) throws(ArgumentAccessError) -> T {
         switch contents {
         case .array(let array):
             if index >= 0 && index < array.count {
                 let variant = array[index]
                 // That's a weird case, but it's fine!
                 // We'll just borrow content of `Variant` into `FastVariant`
+                let result: Result<T, ArgumentAccessError>
+                
                 if let variant {
                     var fastVariant = FastVariant(unsafelyBorrowing: variant.content)
                     /// Prevent `FastVariant` from destroying content owned by Godot Variant
                     defer {
                         fastVariant?.content = .zero
                     }
-                    return use(fastVariant)
+                    result = use(fastVariant)
                 } else {
-                    return use(nil)
+                    result = use(nil)
+                }
+                
+                switch result {
+                case .success(let success):
+                    return success
+                case .failure(let failure):
+                    throw failure
                 }
             } else {
-                return .failure(.indexOutOfBounds(index: index, count: array.count))
+                throw .indexOutOfBounds(index: index, count: array.count)
             }
         case .unsafeGodotArguments(let unsafeGodotArguments):
-            return unsafeGodotArguments.withBorrowedFastVariant(at: index, use: use)
+            return try unsafeGodotArguments.withBorrowedFastVariant(at: index, use: use)
         }
     }
     
@@ -316,38 +334,31 @@ public struct Arguments: ~Copyable {
     @inline(__always)
     @inlinable
     public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws(ArgumentAccessError) -> [T] where T: VariantConvertible {
-        let result = withBorrowedFastVariant(at: index) { variantOrNil -> Result<[T], ArgumentAccessError> in
-            switch variantOrNil {
-            case .none:
-                return .failure(.variantConversionError(.unexpectedNilContent(parsing: [T].self)))
-            case .some(let variant):
-                return extract([T].self, from: variant)
-            }
-        }
-        
-        switch result {
-        case .success(let array):
-            return array
-        case .failure(let error):
-            throw error
+        try withBorrowedFastVariant(at: index) { variantOrNil in
+            extract([T].self, from: variantOrNil)
         }
     }
         
     @inline(__always)
     @inlinable
-    func extract<T>(_ type: [T].Type = [T].self, from variant: borrowing FastVariant) -> Result<[T], ArgumentAccessError> where T: VariantConvertible {
-        do {
-            let array = try GArray.fromFastVariantOrThrow(variant)
-            var result: [T] = []
-            result.reserveCapacity(array.count)
-            for element in array {
-                result.append(
-                    try T.fromVariantOrThrow(element)
-                )
+    func extract<T>(_ type: [T].Type = [T].self, from variantOrNil: borrowing FastVariant?) -> Result<[T], ArgumentAccessError> where T: VariantConvertible {
+        switch variantOrNil {
+        case .none:
+            return .failure(.variantConversionError(.unexpectedNilContent(parsing: [T].self)))
+        case .some(let variant):
+            do {
+                let array = try GArray.fromFastVariantOrThrow(variant)
+                var result: [T] = []
+                result.reserveCapacity(array.count)
+                for element in array {
+                    result.append(
+                        try T.fromVariantOrThrow(element)
+                    )
+                }
+                return .success(result)
+            } catch {
+                return .failure(.variantConversionError(error))
             }
-            return .success(result)
-        } catch {
-            return .failure(.variantConversionError(error))
         }
     }
         
