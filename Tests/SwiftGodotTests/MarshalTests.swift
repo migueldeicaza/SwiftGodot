@@ -253,7 +253,7 @@ final class MarshalTests: GodotTestCase {
         result = callable.call(
             true.toVariant(),
             "YES!".toVariant(),
-            collection.toVariant(),
+            collection.toVariant()
         )
                 
         XCTAssertEqual(result.to(String.self), "YES!")
@@ -261,14 +261,14 @@ final class MarshalTests: GodotTestCase {
         result = callable.call(
             false.toVariant(),
             "Whatever".toVariant(),
-            collection.toVariant(),
+            collection.toVariant()
         )
                 
         XCTAssertEqual(result.to(String.self), "Never Gonna Give You Up")
         
         result = callable.call(
             false.toVariant(),
-            "Whatever".toVariant(),
+            "Whatever".toVariant()
         )
         
         // Wrong parameters logged
@@ -281,7 +281,7 @@ final class MarshalTests: GodotTestCase {
         
         _ = callable.call(
             1.toVariant(),
-            2.toVariant(),
+            2.toVariant()
         )
     }
 }
