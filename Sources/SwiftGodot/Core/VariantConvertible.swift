@@ -272,6 +272,7 @@ extension Int64: _GodotBridgeableBuiltin {
     
     /// Initialze ``Int64`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``
     public init?(_ variant: Variant) {
+        guard Self._variantType == variant.gtype else { return nil }
         self.init()
         
         withUnsafeMutablePointer(to: &self) { pPayload in
@@ -314,6 +315,7 @@ public extension BinaryInteger {
     
     /// Initialze ``BinaryInteger`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``, or its value is too large for this ``BinaryInteger``
     init?(_ variant: Variant) {
+        guard Self._variantType == variant.gtype else { return nil }
         guard let value = try? Self.fromVariantOrThrow(variant) else {
             return nil
         }
@@ -377,8 +379,8 @@ extension Bool: _GodotBridgeableBuiltin {
     
     /// Initialze ``Bool`` from ``Variant``. Fails if `variant` doesn't contain ``Bool``
     public init?(_ variant: Variant) {
+        guard Self._variantType == variant.gtype else { return nil }
         var payload: GDExtensionBool = 0
-        
         withUnsafeMutablePointer(to: &payload) { pPayload in
             variant.constructType(into: pPayload, constructor: Variant.boolFromVariant)
         }
@@ -457,6 +459,7 @@ extension Double: _GodotBridgeableBuiltin {
     
     /// Initialze ``Double`` from ``Variant``. Fails if `variant` doesn't contain ``Double``
     public init?(_ variant: Variant) {
+        guard Self._variantType == variant.gtype else { return nil }
         self.init()
         
         withUnsafeMutablePointer(to: &self) { pPayload in

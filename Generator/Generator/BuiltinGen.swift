@@ -867,6 +867,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p("""
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
                 public init?(_ variant: Variant) {
+                    guard Self._variantType == variant.gtype else { return nil }
                     self.init()
                     
                     withUnsafeMutablePointer(to: &self) { pPayload in
