@@ -21,7 +21,7 @@ public extension Callable {
     ///
     /// If arguments with which ``Callable`` was called didn't match the Swift ones, a error will be logged
     convenience init<each Argument, R>(
-        _ callback: @escaping (repeat each Argument) -> R,
+        _ callback: @escaping (repeat each Argument) -> R
     ) where repeat each Argument: _GodotBridgeable, R: _GodotBridgeable {
         self.init { arguments in
             proxyCallableToSwiftClosure(arguments: arguments, closure: callback)
@@ -43,7 +43,7 @@ public extension Callable {
     ///
     /// If arguments with which ``Callable`` was called didn't match the Swift ones, a error will be logged
     convenience init<each Argument>(
-        _ callback: @escaping (repeat each Argument) -> Void,
+        _ callback: @escaping (repeat each Argument) -> Void
     ) where repeat each Argument: _GodotBridgeable {
         self.init { arguments in
             proxyCallableToSwiftClosure(arguments: arguments, closure: callback)
