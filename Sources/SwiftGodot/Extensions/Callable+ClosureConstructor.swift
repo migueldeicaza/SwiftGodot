@@ -27,6 +27,28 @@ public extension Callable {
             proxyCallableToSwiftClosure(arguments: arguments, closure: callback)
         }
     }
+    
+    
+    /// Initialize ``Callable`` using Swift closure returning `Void`, for example:
+    /// ```
+    /// var callable = Callable { (a: Int, b: Int) in
+    ///     GD.print(a + b)
+    /// }
+    ///
+    /// callable.call(
+    ///    1.toVariant(),
+    ///    2.toVariant(),
+    /// )
+    /// ```
+    ///
+    /// If arguments with which ``Callable`` was called didn't match the Swift ones, a error will be logged
+    convenience init<each Argument>(
+        _ callback: @escaping (repeat each Argument) -> Void,
+    ) where repeat each Argument: _GodotBridgeable {
+        self.init { arguments in
+            proxyCallableToSwiftClosure(arguments: arguments, closure: callback)
+        }
+    }
 }
 
 private func proxyCallableToSwiftClosure<each Argument, R>(
@@ -46,3 +68,21 @@ private func proxyCallableToSwiftClosure<each Argument, R>(
         return nil
     }
 }
+
+private func proxyCallableToSwiftClosure<each Argument>(
+    arguments: borrowing Arguments,
+    closure: (repeat each Argument) -> Void
+) -> Variant? where repeat each Argument: _GodotBridgeable {
+    var index = 0
+    
+    do {
+        try closure(
+            repeat (each Argument).fromArguments(arguments, incrementingIndex: &index)
+        )
+    } catch {
+        GD.printErr("`Callable` invocation error: \(error.description)")
+    }
+    
+    return nil
+}
+

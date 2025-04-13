@@ -249,6 +249,16 @@ final class MarshalTests: GodotTestCase {
         
         // Wrong parameters logged
         XCTAssertEqual(result, nil)
+        
+        
+        callable = Callable { (a: Int, b: Int) in
+             GD.print(a + b)
+         }
+        
+        _ = callable.call(
+            1.toVariant(),
+            2.toVariant(),
+        )
     }
 }
 
