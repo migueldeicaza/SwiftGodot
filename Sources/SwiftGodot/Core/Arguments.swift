@@ -3,12 +3,17 @@ public enum ArgumentAccessError: Error, CustomStringConvertible {
     case indexOutOfBounds(index: Int, count: Int)
     case variantConversionError(VariantConversionError)
     
+    /// Feel free to fill it with something
+    case custom(payload: Any)
+    
     public var description: String {
         switch self {
         case .indexOutOfBounds(let index, let count):
             return "Arguments accessed at index \(index), while total count is \(count)"
         case .variantConversionError(let error):
             return error.description
+        case .custom(let payload):
+            return "\(payload)"
         }
     }
 }
@@ -17,25 +22,85 @@ public enum ArgumentAccessError: Error, CustomStringConvertible {
 /// If you need a copy of `Variant`s inside, you can construct an array using `Array.init(_ args: borrowing Arguments)`
 /// Elements can be accessed using subscript operator.
 public struct Arguments: ~Copyable {
+    @usableFromInline
     enum Contents {
-        struct UnsafeGodotArgs {
+        @usableFromInline
+        struct UnsafeGodotArguments {
+            @usableFromInline
             let pargs: UnsafePointer<UnsafeRawPointer?>
+            
+            @usableFromInline
             let count: Int
             
             var first: Variant?? {
-                try? argument(at: 0)
+                try? copy(at: 0)
             }
             
-            /// Lazily reconstruct variant at `index`, throws an error if index is out ouf bounds
-            func argument(at index: Int) throws(ArgumentAccessError) -> Variant? {
+            /// Lazily reconstruct ``Variant?`` from `index`, throws an error if index is out ouf bounds
+            @inline(__always)
+            @inlinable
+            func copy(_ variantType: Variant.Type = Variant.self, at index: Int) throws(ArgumentAccessError) -> Variant? {
                 if index >= 0 && index < count {
                     guard let ptr = pargs[index] else {
                         return nil
                     }
                     
-                    return Variant(copying: ptr.assumingMemoryBound(to: Variant.ContentType.self).pointee)
+                    return Variant(
+                        copying: ptr
+                            .assumingMemoryBound(to: VariantContent.self)
+                            .pointee
+                    )
                 } else {
                     throw .indexOutOfBounds(index: index, count: count)
+                }
+            }
+            
+            /// Lazily reconstruct ``FastVariant?`` at `index`, throws an error if index is out ouf bounds
+            @inline(__always)
+            @inlinable
+            func copy(_ variantType: FastVariant.Type = FastVariant.self, at index: Int) throws(ArgumentAccessError) -> FastVariant? {
+                if index >= 0 && index < count {
+                    guard let ptr = pargs[index] else {
+                        return nil
+                    }
+                    
+                    return FastVariant(
+                        copying: ptr
+                            .assumingMemoryBound(to: VariantContent.self)
+                            .pointee
+                    )
+                } else {
+                    throw .indexOutOfBounds(index: index, count: count)
+                }
+            }
+            
+            /// Borrow ``FastVariant`` at `index` to perform some action on it and return some result.
+            /// This function avoids making redundant copy of underlying `VariantContent`.
+            @inline(__always)
+            @inlinable
+            func withBorrowedFastVariant<T>(
+                at index: Int,
+                use: (borrowing FastVariant?) -> Result<T, ArgumentAccessError>
+            ) -> Result<T, ArgumentAccessError> {
+                if index >= 0 && index < count {
+                    if let ptr = pargs[index] {
+                        var variant = FastVariant(
+                            unsafelyBorrowing: ptr
+                                .assumingMemoryBound(to: VariantContent.self)
+                                .pointee
+                        )
+                        
+                        /// Prevent `FastVariant` from destroying content owned by Godot Variant
+                        defer {
+                            variant?.content = .zero
+                        }
+                        
+                        return use(variant)
+                    } else {
+                        return use(nil)
+                    }
+                } else {
+                    return .failure(.indexOutOfBounds(index: index, count: count))
                 }
             }
         }
@@ -44,17 +109,24 @@ public struct Arguments: ~Copyable {
         case array([Variant?])
         
         /// Godot passed internally managed buffer, retrieve values lazily
-        case unsafeGodotArgs(UnsafeGodotArgs)
+        case unsafeGodotArguments(UnsafeGodotArguments)
     }
     
+    @usableFromInline
     let contents: Contents
+    
+    @inline(__always)
+    @usableFromInline
+    init(contents: Contents) {
+        self.contents = contents
+    }
     
     /// Arguments count
     public var count: Int {
         switch contents {
         case .array(let array):
             return array.count
-        case .unsafeGodotArgs(let contents):
+        case .unsafeGodotArguments(let contents):
             return contents.count
         }
     }
@@ -65,27 +137,27 @@ public struct Arguments: ~Copyable {
     /// `.none` means that there is no arguments at all
     public var first: Variant?? {
         switch contents {
-        case .unsafeGodotArgs(let contents):
-            return try? contents.argument(at: 0)
+        case .unsafeGodotArguments(let contents):
+            return try? contents.copy(at: 0)
         case .array(let array):
             return array.first
         }
     }
     
+    @inline(__always)
+    @usableFromInline
     init(from array: [Variant?]) {
         contents = .array(array)
     }
     
+    @inline(__always)
+    @usableFromInline
     init(pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64) {
         if let pargs, argc > 0 {
-            contents = .unsafeGodotArgs(.init(pargs: pargs, count: Int(argc)))
+            contents = .unsafeGodotArguments(.init(pargs: pargs, count: Int(argc)))
         } else {
             contents = .array([])
         }
-    }
-    
-    init() {
-        contents = .array([])
     }
     
     /// Subscript operator to allow expressions like `arguments[2]`.
@@ -95,9 +167,9 @@ public struct Arguments: ~Copyable {
             switch contents {
             case .array(let array):
                 return array[index]
-            case .unsafeGodotArgs(let args):
+            case .unsafeGodotArguments(let args):
                 do {
-                    return try args.argument(at: index)
+                    return try args.copy(at: index)
                 } catch {
                     fatalError(error.description)
                 }
@@ -105,7 +177,7 @@ public struct Arguments: ~Copyable {
         }
     }
     
-    /// Returns `Variant` or `nil` argument at  `index`.
+    /// Returns ``Variant`` or `nil` argument at  `index`.
     ///
     /// Throws an error if `index` is out of bounds.
     /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
@@ -118,16 +190,70 @@ public struct Arguments: ~Copyable {
             } else {
                 throw .indexOutOfBounds(index: index, count: array.count)
             }
-        case .unsafeGodotArgs(let unsafeGodotArgs):
-            return try unsafeGodotArgs.argument(at: index)
+        case .unsafeGodotArguments(let unsafeGodotArgs):
+            return try unsafeGodotArgs.copy(at: index)
         }
     }
     
-    /// Returns `Variant`  argument at  `index`.
+    /// Returns ``FastVariant`` or `nil` argument at  `index`.
+    ///
+    /// Throws an error if `index` is out of bounds.
+    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    @inline(__always)
+    @inlinable
+    public func argument(ofType: FastVariant?.Type = FastVariant?.self, at index: Int) throws(ArgumentAccessError) -> FastVariant? {
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                return array[index]?.toFastVariant()
+            } else {
+                throw .indexOutOfBounds(index: index, count: array.count)
+            }
+        case .unsafeGodotArguments(let unsafeGodotArgs):
+            return try unsafeGodotArgs.copy(FastVariant.self, at: index)
+        }
+    }
+    
+    /// Borrow ``FastVariant`` at `index` to perform some action on it and return result.
+    /// This function is the fastest one if you just need to extract something from the arguments without taking ownership over `Variant` copies.
+    @inline(__always)
+    @inlinable
+    public func withBorrowedFastVariant<T>(
+        at index: Int,
+        use: (borrowing FastVariant?) -> Result<T, ArgumentAccessError>
+    ) -> Result<T, ArgumentAccessError> {
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                let variant = array[index]
+                // That's a weird case, but it's fine!
+                // We'll just borrow content of `Variant` into `FastVariant`
+                if let variant {
+                    var fastVariant = FastVariant(unsafelyBorrowing: variant.content)
+                    /// Prevent `FastVariant` from destroying content owned by Godot Variant
+                    defer {
+                        fastVariant?.content = .zero
+                    }
+                    return use(fastVariant)
+                } else {
+                    return use(nil)
+                }
+            } else {
+                return .failure(.indexOutOfBounds(index: index, count: array.count))
+            }
+        case .unsafeGodotArguments(let unsafeGodotArguments):
+            return unsafeGodotArguments.withBorrowedFastVariant(at: index, use: use)
+        }
+    }
+    
+    /// Returns ``Variant``  argument at  `index`.
     ///
     /// Throws an error if `index` is out of bounds or argument is `nil`
     /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
     /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    @inline(__always)
+    @inlinable
     public func argument(ofType: Variant.Type = Variant.self, at index: Int) throws(ArgumentAccessError) -> Variant {
         let variantOrNil: Variant?
         switch contents {
@@ -137,12 +263,42 @@ public struct Arguments: ~Copyable {
             } else {
                 throw .indexOutOfBounds(index: index, count: array.count)
             }
-        case .unsafeGodotArgs(let unsafeGodotArgs):
-            variantOrNil = try unsafeGodotArgs.argument(at: index)
+        case .unsafeGodotArguments(let unsafeGodotArgs):
+            variantOrNil = try unsafeGodotArgs.copy(Variant.self, at: index)
         }
         
         guard let variant = variantOrNil else {
             throw .variantConversionError(
+                .unexpectedNilContent(parsing: Variant.self)
+            )
+        }
+        
+        return variant
+    }
+    
+    /// Returns ``FastVariant``  argument at  `index`.
+    ///
+    /// Throws an error if `index` is out of bounds or argument is `nil`
+    /// This function is similar to `subscript[_ index: Int]`, but throws an error instead of crashing,
+    /// It can be handy in the contexts where crash during OOB is inconvenient (parsing arguments of a call from Godot side, for example).
+    @inline(__always)
+    @inlinable
+    public func argument(ofType: FastVariant.Type = FastVariant.self, at index: Int) throws(ArgumentAccessError) -> FastVariant {
+        let variantOrNil: FastVariant?
+        switch contents {
+        case .array(let array):
+            if index >= 0 && index < array.count {
+                variantOrNil = array[index]?.toFastVariant()
+            } else {
+                throw .indexOutOfBounds(index: index, count: array.count)
+            }
+        case .unsafeGodotArguments(let unsafeGodotArgs):
+            variantOrNil = try unsafeGodotArgs.copy(FastVariant.self, at: index)
+        }
+        
+        guard let variant = variantOrNil else {
+            throw .variantConversionError(
+                // We report Variant here to not bother with ~Copyable in the `ArgumentAccessError`. It's purely for logging.
                 .unexpectedNilContent(parsing: Variant.self)
             )
         }
@@ -157,11 +313,31 @@ public struct Arguments: ~Copyable {
     /// - `Variant` wraps a type other than `Array`
     /// - Any element of underlying Godot Array couldn't be converted to `T`
     /// - `index` is out of bounds.
-    ///
+    @inline(__always)
+    @inlinable
     public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws(ArgumentAccessError) -> [T] where T: VariantConvertible {
-        let variantOrNil = try argument(ofType: Variant?.self, at: index)
+        let result = withBorrowedFastVariant(at: index) { variantOrNil -> Result<[T], ArgumentAccessError> in
+            switch variantOrNil {
+            case .none:
+                return .failure(.variantConversionError(.unexpectedNilContent(parsing: [T].self)))
+            case .some(let variant):
+                return extract([T].self, from: variant)
+            }
+        }
+        
+        switch result {
+        case .success(let array):
+            return array
+        case .failure(let error):
+            throw error
+        }
+    }
+        
+    @inline(__always)
+    @inlinable
+    func extract<T>(_ type: [T].Type = [T].self, from variant: borrowing FastVariant) -> Result<[T], ArgumentAccessError> where T: VariantConvertible {
         do {
-            let array = try GArray.fromVariantOrThrow(variantOrNil)
+            let array = try GArray.fromFastVariantOrThrow(variant)
             var result: [T] = []
             result.reserveCapacity(array.count)
             for element in array {
@@ -169,9 +345,9 @@ public struct Arguments: ~Copyable {
                     try T.fromVariantOrThrow(element)
                 )
             }
-            return result
+            return .success(result)
         } catch {
-            throw .variantConversionError(error)
+            return .failure(.variantConversionError(error))
         }
     }
         
@@ -180,15 +356,13 @@ public struct Arguments: ~Copyable {
     /// Throws an error if:
     /// - `Variant?` contains a type from which `T` cannot be unwrapped
     /// - `index` is out of bounds.
+    @inline(__always)
+    @inlinable
     public func argument<T: VariantConvertible>(ofType type: T.Type = T.self, at index: Int) throws(ArgumentAccessError) -> T {
-        let variant = try argument(ofType: Variant?.self, at: index)
+        let variant = try argument(ofType: FastVariant?.self, at: index)
         
         do {
-            if let variant {
-                return try T.fromVariantOrThrow(variant)
-            } else {
-                return try T.fromVariantOrThrow(nil)
-            }
+            return try T.fromFastVariantOrThrow(variant)
         } catch {
             throw .variantConversionError(error)
         }
@@ -199,13 +373,15 @@ public struct Arguments: ~Copyable {
     /// Throws an error if:
     /// - `Variant?` contains a type from which `T` cannot be unwrapped
     /// - `index` is out of bounds.
+    @inline(__always)
+    @inlinable
     @_disfavoredOverload
     public func argument<T: VariantConvertible>(ofType type: T?.Type = T?.self, at index: Int) throws(ArgumentAccessError) -> T? {
-        let variant = try argument(ofType: Variant?.self, at: index)
+        let variant = try argument(ofType: FastVariant?.self, at: index)
         
         do {
             if let variant {
-                return try T.fromVariantOrThrow(variant)
+                return try T.fromFastVariantOrThrow(variant)
             } else {
                 return nil
             }
@@ -221,28 +397,36 @@ public struct Arguments: ~Copyable {
     /// - `Variant` wraps a type other than `T.RawValue`
     /// - `index` is out of bounds.
     /// - `T` can't be constucted from `rawValue` unwrapped from `Variant`
+    @inline(__always)
+    @inlinable
     public func argument<T>(ofType type: T.Type = T.self, at index: Int) throws(ArgumentAccessError) -> T where T: RawRepresentable, T.RawValue: VariantConvertible {
-        let variantOrNil = try argument(ofType: Variant?.self, at: index)
+        let variantOrNil = try argument(ofType: FastVariant?.self, at: index)
         
-        guard let variant = variantOrNil else {
+        switch variantOrNil {
+        case .some(let variant):
+            do {
+                return try T.fromFastVariantOrThrow(variant)
+            } catch {
+                throw .variantConversionError(error)
+            }
+        case .none:
             throw .variantConversionError(.unexpectedContent(parsing: type, from: variantOrNil))
-        }
-        
-        do {
-            return try T.fromVariantOrThrow(variant)
-        } catch {
-            throw .variantConversionError(error)
+            
         }
     }
 }
 
 /// Execute `body` and return the result of executing it taking temporary storage keeping Godot managed `Variant`s stored in `pargs`.
+@inline(__always)
+@inlinable
 func withArguments<T>(pargs: UnsafePointer<UnsafeRawPointer?>?, argc: Int64, _ body: (borrowing Arguments) -> T) -> T {
     let arguments = Arguments(pargs: pargs, argc: argc)
     let result = body(arguments)
     return result
 }
 
+@inline(__always)
+@inlinable
 func withArguments<T>(from array: [Variant?], _ body: (borrowing Arguments) -> T) -> T {
     body(Arguments(from: array))
 }
@@ -252,10 +436,10 @@ public extension Array where Element == Variant? {
         switch args.contents {
         case .array(let array):
             self = array
-        case .unsafeGodotArgs(let args):
+        case .unsafeGodotArguments(let args):
             self = (0..<args.count).map { index in
                 // OOB should never happen in this scenaro
-                try! args.argument(at: index)
+                try! args.copy(at: index)
             }
         }
     }

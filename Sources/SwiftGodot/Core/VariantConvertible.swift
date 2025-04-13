@@ -107,6 +107,19 @@ public extension VariantConvertible {
         }
     }
     
+    /// Default implementation.
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload // always prefer calling non-nil
+    static func fromFastVariantOrThrow(_ variant: borrowing FastVariant?) throws(VariantConversionError) -> Self {
+        switch variant {
+        case .some(let variant):
+            return try fromFastVariantOrThrow(variant)
+        case .none:
+            return try fromNilOrThrow()
+        }        
+    }
+    
     /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
     @inline(__always)
     @inlinable
@@ -945,6 +958,14 @@ public extension RawRepresentable where RawValue: VariantConvertible {
     
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         let rawValue = try RawValue.fromVariantOrThrow(variant)
+        guard let value = Self(rawValue: rawValue) else {
+            throw .invalidRawValue(requestedType: self, value: rawValue)
+        }
+        return value
+    }
+    
+    static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        let rawValue = try RawValue.fromFastVariantOrThrow(variant)
         guard let value = Self(rawValue: rawValue) else {
             throw .invalidRawValue(requestedType: self, value: rawValue)
         }

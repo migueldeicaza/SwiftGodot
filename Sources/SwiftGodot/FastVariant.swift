@@ -44,9 +44,8 @@ struct VariantContent: Equatable {
 }
 
 /// Sibling of ``Variant`` for cases where performance is critical.
-/// It's a zero-memory-overhead wrapper around actual 24-bytes `Variant` payload with added construction and cleanup semantics
-/// It doesn't require heap allocation but it's a move-only type so it's more cumbersome.
-/// This type is guaranteed to contain a non-nil Godot Variant payload in the context accessible to users of this type.
+/// It doesn't require heap allocation but it's a move-only type so it's more cumbersome to work with.
+/// This type is guaranteed to contain a non-nil Godot Variant payload.
 public struct FastVariant: ~Copyable {
     @usableFromInline
     var content: VariantContent
@@ -86,6 +85,41 @@ public struct FastVariant: ~Copyable {
         self.content = content
     }
     
+    /// Initialize by requested an owned copy of the `VariantContent`. Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
+    @inline(__always)
+    @usableFromInline
+    init?(copying copiedContent: VariantContent) {
+        guard !copiedContent.isZero else {
+            return nil
+        }
+        
+        var content = VariantContent.zero
+        withUnsafePointer(to: copiedContent) { pCopiedContent in
+            gi.variant_new_copy(&content, pCopiedContent)
+        }
+        
+        guard !content.isZero else {
+            return nil
+        }
+        
+        self.content = content
+    }
+    
+    /// Temporarily borrows `VariantContent` to provide API for extracting something from it. Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
+    ///
+    /// ### WARNING
+    /// Do not leak such instance to user world! It's used exclusively for extracting some type from within ``Arguments`` and the content should be set to zero after to avoid double-destroying the
+    /// variant that is actually owned by Godot.
+    @inline(__always)
+    @usableFromInline
+    init?(unsafelyBorrowing borrowedContent: VariantContent) {
+        guard !borrowedContent.isZero else {
+            return nil
+        }
+                
+        content = borrowedContent
+    }
+    
     /// Initialize ``FastVariant`` with raw `VariantContent`, assuming ownership over it. Assumes `VariantContent` doesn't represent Godot nil.
     @inline(__always)
     @usableFromInline
@@ -110,7 +144,7 @@ public struct FastVariant: ~Copyable {
     @inlinable
     deinit {
         if content.isZero {
-            // Was consumed
+            // Was consumed, or cleaned-up explicitly
             return
         }
         

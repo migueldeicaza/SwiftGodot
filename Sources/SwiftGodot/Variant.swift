@@ -48,7 +48,10 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     static let doubleFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
     static let objectFromVariant =  gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
     
+    @usableFromInline
     typealias ContentType = VariantContent
+    
+    @usableFromInline
     var content = Variant.zero
     
     static var zero: ContentType {
@@ -56,6 +59,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
+    @usableFromInline
     init?(copying otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
         
@@ -79,6 +83,8 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     @inline(__always)
     public init(takingOver fastVariant: consuming FastVariant) {
         self.content = fastVariant.content
+        
+        // avoid double destroy after `fastVariant` goes out of scope
         fastVariant.content = .zero
     }
     
