@@ -131,18 +131,33 @@ final class MarshalTests: GodotTestCase {
         let testNode = TestNode()
         
         let result = testNode.foo(Callable({ arguments in
-            guard let arg0 = arguments[0], let arg1 = arguments[1] else {
+            do {
+                let a = try arguments.argument(ofType: Int.self, at: 0)
+                let b = try arguments.argument(ofType: Int.self, at: 1)
+                return (a * b).toVariant()
+            } catch {
                 return nil
             }
-            
-            guard let a = Int(arg0), let b = Int(arg1) else {
-                return nil
-            }
-            
-            return Variant(a * b)
         }), a: 11, b: 6)
         
         XCTAssertTrue(result == 66)
+        
+        let anotherResult = testNode.call(
+            method: "foo",
+            Callable({ arguments in
+                do {
+                    let a = try arguments.argument(ofType: Int.self, at: 0)
+                    let b = try arguments.argument(ofType: Int.self, at: 1)
+                    return (a - b).toVariant()
+                } catch {
+                    return nil
+                }
+            }).toVariant(),
+            55.toVariant(),
+            22.toVariant(),
+        ).to(Int.self)
+        
+        XCTAssertEqual(anotherResult, 33)
     }
     
     func testSwiftArrays() {
@@ -188,6 +203,52 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual(true, Bool.fromVariant(true.toVariant()))
         XCTAssertEqual(false, Bool.fromVariant(false.toVariant()))
         XCTAssertEqual(2.toVariant(), 2.toVariant())
+    }
+    
+    func testCallableViaSwiftClosure() {
+        var callable = Callable { (a: Int, b: Int, c: String) -> String in
+            return [String](repeating: c, count: a + b).joined(separator: " ")
+        }
+        
+        var result = callable.call(
+            1.toVariant(),
+            2.toVariant(),
+            "Amazing!".toVariant()
+        )
+                
+        XCTAssertEqual(result.to(String.self), "Amazing! Amazing! Amazing!")
+        
+        callable = Callable { (yes: Bool, ifYes: String, array: VariantCollection<String>) -> String in
+            yes ? ifYes : array.joined(separator: " ")
+        }
+        
+        let collection: VariantCollection<String> = [
+            "Never", "Gonna", "Give", "You", "Up"
+        ]
+        
+        result = callable.call(
+            true.toVariant(),
+            "YES!".toVariant(),
+            collection.toVariant(),
+        )
+                
+        XCTAssertEqual(result.to(String.self), "YES!")
+        
+        result = callable.call(
+            false.toVariant(),
+            "Whatever".toVariant(),
+            collection.toVariant(),
+        )
+                
+        XCTAssertEqual(result.to(String.self), "Never Gonna Give You Up")
+        
+        result = callable.call(
+            false.toVariant(),
+            "Whatever".toVariant(),
+        )
+        
+        // Wrong parameters logged
+        XCTAssertEqual(result, nil)
     }
 }
 
