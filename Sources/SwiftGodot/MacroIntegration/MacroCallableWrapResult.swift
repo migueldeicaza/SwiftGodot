@@ -5,17 +5,17 @@
 //  Created by Elijah Semyonov on 11/04/2025.
 //
 
-/// Internal API. _GodotBridgeableBuiltin.
+/// Internal API. VariantConvertible.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: T) -> Variant? where T: _GodotBridgeableBuiltin {
+public func _wrapCallableResult<T>(_ value: T) -> Variant? where T: VariantConvertible {
     value.toVariant()
 }
 
-/// Internal API. _GodotBridgeableBuiltin?.
+/// Internal API. VariantConvertible?.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: T?) -> Variant? where T: _GodotBridgeableBuiltin {
+public func _wrapCallableResult<T>(_ value: T?) -> Variant? where T: VariantConvertible {
     value.toVariant()
 }
 

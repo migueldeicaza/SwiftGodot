@@ -17,6 +17,16 @@ final class MacroIntegrationTests: GodotTestCase {
             case two = 2
         }
         
+        struct Wow: VariantConvertible {
+            static func fromFastVariantOrThrow(_ variant: borrowing SwiftGodot.FastVariant) throws(SwiftGodot.VariantConversionError) -> Wow {
+                Wow()
+            }
+            
+            func toFastVariant() -> SwiftGodot.FastVariant? {
+                nil
+            }
+        }
+        
         class NoMacroExample {
             var meshInstance: MeshInstance3D? = nil
             var variant = 1.toVariant()
@@ -31,8 +41,12 @@ final class MacroIntegrationTests: GodotTestCase {
             var variantCollection = VariantCollection<Int>()
             var objectCollection = ObjectCollection<MeshInstance2D>()
             var enumExample = EnumExample.two
+            var wow = Wow()
+            var optionalWow = Wow()
         }
         
+        XCTAssertEqual(_propInfo(at: \NoMacroExample.wow, name: "").propertyType, .nil)
+        XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalWow, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalVariant, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.garray, name: "").propertyType, .array)

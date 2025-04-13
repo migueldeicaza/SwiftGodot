@@ -3,17 +3,12 @@ public enum ArgumentAccessError: Error, CustomStringConvertible {
     case indexOutOfBounds(index: Int, count: Int)
     case variantConversionError(VariantConversionError)
     
-    /// Feel free to fill it with something
-    case custom(payload: Any)
-    
     public var description: String {
         switch self {
         case .indexOutOfBounds(let index, let count):
             return "Arguments accessed at index \(index), while total count is \(count)"
         case .variantConversionError(let error):
-            return error.description
-        case .custom(let payload):
-            return "\(payload)"
+            return error.description        
         }
     }
 }
@@ -430,7 +425,7 @@ public struct Arguments: ~Copyable {
                 throw .variantConversionError(error)
             }
         case .none:
-            throw .variantConversionError(.unexpectedContent(parsing: type, from: variantOrNil))            
+            throw .variantConversionError(.unexpectedContent(parsing: type, from: variantOrNil))
         }
     }
 }

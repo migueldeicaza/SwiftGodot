@@ -23,7 +23,27 @@ public func _argumentPropInfo(
     name: String = ""
 ) -> PropInfo {
     // Same as Optional Variant.
-    _argumentPropInfo(Variant?.self, name: name)
+    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+}
+
+/// Internal API. Optional VariantConvertible user type.
+@inline(__always)
+@inlinable
+public func _argumentPropInfo<T>(
+    _ type: T?.Type = T?.self,
+    name: String = ""
+) -> PropInfo {
+    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+}
+
+/// Internal API. VariantConvertible user type.
+@inline(__always)
+@inlinable
+public func _argumentPropInfo<T>(
+    _ type: T.Type = T.self,
+    name: String = ""
+) -> PropInfo where T: VariantConvertible {
+    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Builtin Type.

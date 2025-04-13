@@ -5,10 +5,10 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
-/// Internal API. _GodotBridgeable or _GodotBridgeable?
+/// Internal API. Optional and non-optional VariantConvertible user types.
 @inline(__always)
 @inlinable
-public func _invokeGetter<T>(_ value: T?) -> Variant? where T: _GodotBridgeable {
+public func _invokeGetter<T>(_ value: T?) -> Variant? where T: VariantConvertible {
     value.toVariant()
 }
 
@@ -17,14 +17,14 @@ public func _invokeGetter<T>(_ value: T?) -> Variant? where T: _GodotBridgeable 
 @inlinable
 public func _invokeGetter<T>(
     _ value: T
-) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: _GodotBridgeable {
+) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: VariantConvertible {
     value.rawValue.toVariant()
 }
 
 /// Internal API. Closure
 @inline(__always)
 @inlinable
-public func _invokeGetter<each Argument: _GodotBridgeable, Result: _GodotBridgeable>(
+public func _invokeGetter<each Argument: VariantConvertible, Result: VariantConvertible>(
     _ value: @escaping (repeat each Argument) -> Result
 ) -> Variant? {
     return Callable { arguments in
@@ -93,7 +93,7 @@ public func _invokeGetter<T>(
 @available(*, unavailable, message: "Optional enums are not supported by @Export macro")
 public func _invokeGetter<T>(
     _ value: T?
-) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: _GodotBridgeable {
+) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: VariantConvertible {
     fatalError("Unreachable")
 }
 

@@ -2,6 +2,22 @@ import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
 
+extension Date: VariantConvertible {
+    public func toFastVariant() -> FastVariant? {
+        timeIntervalSince1970.toFastVariant()
+    }
+    
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Date {
+        Date(timeIntervalSince1970: try TimeInterval.fromFastVariantOrThrow(variant))
+    }
+}
+
+@Godot
+class NodeUsingSwiftDate: Node {
+    @Export
+    var date: Date = .now
+}
+
 @Godot
 private class TestNode: Node {
     @Export
@@ -39,7 +55,7 @@ private class TestNode: Node {
 final class MarshalTests: GodotTestCase {
     
     override static var godotSubclasses: [Wrapped.Type] {
-        return [TestNode.self]
+        return [TestNode.self, NodeUsingSwiftDate.self]
     }
     
     func testExportedClosure() {
@@ -69,7 +85,15 @@ final class MarshalTests: GodotTestCase {
         }.toVariant())
         
         XCTAssertEqual(node.closure(2, 3, 4), 24)
+    }
+    
+    func testDateNode() {
+        let node = NodeUsingSwiftDate()
+        let date = Date.now
         
+        _ = node.call(method: "set_date", (date.timeIntervalSince1970 + 1).toVariant())
+        
+        XCTAssertEqual(node.date, Date(timeIntervalSince1970: date.timeIntervalSince1970 + 1))
     }
 
     func testClassesMethodsPerformance() {

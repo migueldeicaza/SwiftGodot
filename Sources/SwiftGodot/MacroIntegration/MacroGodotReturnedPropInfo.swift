@@ -11,7 +11,7 @@
 public func _returnedPropInfo(
     _ type: Variant?.Type = Variant?.self
 ) -> PropInfo {
-    return Variant._propInfo(name: "", hint: nil, hintStr: nil, usage: .nilIsVariant)
+    Variant._propInfo(name: "", hint: nil, hintStr: nil, usage: .nilIsVariant)
 }
 
 /// Internal API. Variant.
@@ -20,9 +20,29 @@ public func _returnedPropInfo(
 public func _returnedPropInfo(
     _ type: Variant.Type = Variant.self
 ) -> PropInfo {
-    // Same as Optional Variant.
-    _returnedPropInfo(Variant?.self)
+    Variant._propInfo(name: "", hint: nil, hintStr: nil, usage: .nilIsVariant)
 }
+
+/// Internal API. VariantConvertible user type.
+@inline(__always)
+@inlinable
+@_disfavoredOverload
+public func _returnedPropInfo<T>(
+    _ type: T.Type = T.self
+) -> PropInfo where T: VariantConvertible {
+    Variant._propInfo(name: "", hint: nil, hintStr: nil, usage: .nilIsVariant)
+}
+
+/// Internal API. Optional VariantConvertible user type.
+@inline(__always)
+@inlinable
+@_disfavoredOverload
+public func _returnedPropInfo<T>(
+    _ type: T?.Type = T?.self
+) -> PropInfo where T: VariantConvertible {
+    Variant._propInfo(name: "", hint: nil, hintStr: nil, usage: .nilIsVariant)
+}
+
 
 /// Internal API. Builtin Type.
 @inline(__always)

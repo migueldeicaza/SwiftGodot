@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 09/04/2025.
 //
 
-/// Internal API.
+/// Internal API. VariantConvertible.
 @inline(__always)
 @inlinable
 public func _invokeSetter<T>(
@@ -15,9 +15,7 @@ public func _invokeSetter<T>(
     _ set: (T) -> Void
 ) -> Variant? where T: VariantConvertible {
     do {
-        let value = try arguments.argument(ofType: T.self, at: 0)
-        
-        set(value)
+        set(try arguments.argument(ofType: T.self, at: 0))
     } catch {
         GD.printErr("\(error.description)")
     }
@@ -25,7 +23,7 @@ public func _invokeSetter<T>(
     return nil
 }
 
-/// Internal API. Optional builtin. We surface them as `Variant?`.
+/// Internal API. Optional VariantConvertible.
 @inline(__always)
 @inlinable
 public func _invokeSetter<T>(
@@ -33,7 +31,7 @@ public func _invokeSetter<T>(
     _ name: StaticString,
     _ old: T?,
     _ set: (T?) -> Void
-) -> Variant? where T: _GodotBridgeableBuiltin {
+) -> Variant? where T: VariantConvertible {
     do {
         let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
         
@@ -55,6 +53,99 @@ public func _invokeSetter<T>(
         
     return nil
 }
+
+/// Internal API. Variant.
+@inline(__always)
+@inlinable
+public func _invokeSetter(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: Variant,
+    _ set: (Variant) -> Void
+) -> Variant? {
+    do {
+        set(try arguments.argument(ofType: Variant.self, at: 0))
+    } catch {
+        GD.printErr("\(error.description)")
+    }
+        
+    return nil
+}
+
+/// Internal API. Variant?.
+@inline(__always)
+@inlinable
+public func _invokeSetter(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: Variant?,
+    _ set: (Variant?) -> Void
+) -> Variant? {
+    do {
+        set(try arguments.argument(ofType: Variant?.self, at: 0))
+    } catch {
+        GD.printErr("\(error.description)")
+    }
+        
+    return nil
+}
+
+/// Internal API. Object.
+@inline(__always)
+@inlinable
+public func _invokeSetter<T>(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: T,
+    _ set: (T) -> Void
+) -> Variant? where T: Object {
+    do {
+        let value = try arguments.argument(ofType: T.self, at: 0)
+        value._macroRcRef()
+        set(value)
+        old._macroRcUnref()
+    } catch {
+        GD.printErr("\(error.description)")
+    }
+        
+    return nil
+}
+
+/// Internal API. Object?.
+@inline(__always)
+@inlinable
+public func _invokeSetter<T>(
+    _ arguments: borrowing Arguments,
+    _ name: StaticString,
+    _ old: T?,
+    _ set: (T?) -> Void
+) -> Variant? where T: Object {
+    do {
+        let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
+        
+        guard let variant = variantOrNil else {
+            // Expected nil, set to nil
+            old?._macroRcUnref()
+            set(nil)
+            return nil
+        }
+                
+        let value = try T.fromVariantOrThrow(variant)
+        value._macroRcRef()
+        set(value)
+        old?._macroRcUnref()
+    } catch let error as ArgumentAccessError {
+        GD.printErr(error.description)
+    } catch let error as VariantConversionError {
+        GD.printErr(error.description)
+    } catch {
+        GD.printErr("\(error)")
+    }
+        
+    return nil
+}
+
+
 
 @inline(__always)
 @inlinable

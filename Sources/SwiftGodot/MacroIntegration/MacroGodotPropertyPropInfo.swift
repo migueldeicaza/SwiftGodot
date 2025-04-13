@@ -41,6 +41,42 @@ public func _propInfo<Root>(
     )
 }
 
+/// Internal API. VariantConvertible user type.
+@inline(__always)
+@inlinable
+public func _propInfo<Root, T>(
+    at keyPath: KeyPath<Root, T>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: VariantConvertible {
+    Variant._propInfo(
+        name: name,
+        hint: userHint,
+        hintStr: userHintStr,
+        usage: userUsage
+    )
+}
+
+/// Internal API. Optional VariantConvertible user type.
+@inline(__always)
+@inlinable
+public func _propInfo<Root, T>(
+    at keyPath: KeyPath<Root, T?>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: VariantConvertible {
+    Variant._propInfo(
+        name: name,
+        hint: userHint,
+        hintStr: userHintStr,
+        usage: userUsage
+    )
+}
+
 /// Internal API. Builtin type.
 @inline(__always)
 @inlinable
