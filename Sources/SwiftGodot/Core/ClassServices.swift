@@ -29,8 +29,6 @@
 ///
 /// ```
 public class ClassInfo<T:Object> {
-    public typealias Function = (T) -> (borrowing Arguments) -> Variant?
-    
     var name: StringName
     
     /// Initializes a ClassInfo structure to register operations with Godot
@@ -215,7 +213,13 @@ public class ClassInfo<T:Object> {
     ///  - setterName: the name of the method for providing setter functionality
     ///  - getterFunction: Swift getter function
     ///  - setterFunction: Swift setter function
-    public func registerPropertyWithGetterSetter(_ info: PropInfo, getterName: StringName, setterName: StringName, getterFunction: @escaping Function, setterFunction: @escaping Function) {
+    public func registerPropertyWithGetterSetter(
+        _ info: PropInfo,
+        getterName: StringName,
+        setterName: StringName,
+        getterFunction: @escaping (T) -> (borrowing Arguments) -> Variant?,
+        setterFunction: @escaping (T) -> (borrowing Arguments) -> Variant?
+    ) {
         registerMethod(name: getterName, flags: .default, returnValue: info, arguments: [], function: getterFunction)
         registerMethod(name: setterName, flags: .default, returnValue: nil, arguments: [info], function: setterFunction)
         registerProperty(info, getter: getterName, setter: setterName)
