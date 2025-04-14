@@ -82,7 +82,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     /// Initialize ``Variant`` by consuming ``FastVariant``
     @inline(__always)
     public init(takingOver fastVariant: consuming FastVariant) {
-        self.content = fastVariant.content
+        content = fastVariant.content
         
         // avoid double destroy after `fastVariant` goes out of scope
         fastVariant.content = .zero
