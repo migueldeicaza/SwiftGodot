@@ -178,7 +178,7 @@ final class MarshalTests: GodotTestCase {
                 }
             }).toVariant(),
             55.toVariant(),
-            22.toVariant(),
+            22.toVariant()
         ).to(Int.self)
         
         XCTAssertEqual(anotherResult, 33)

@@ -108,8 +108,9 @@ public struct FastVariant: ~Copyable {
     /// Temporarily borrows `VariantContent` to provide API for extracting something from it. Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
     ///
     /// ### WARNING
-    /// Do not leak such instance to user world! It's used exclusively for extracting some type from within ``Arguments`` and the content should be set to zero after to avoid double-destroying the
-    /// variant that is actually owned by Godot.
+    /// Only `borrowing` instance initalized this way is allowed in user world!
+    /// It's used exclusively for extracting some type from within ``Arguments`` and the content should be set to zero after to avoid destroying the
+    /// variant that is actually owned by Godot. We do it correctly. 
     @inline(__always)
     @usableFromInline
     init?(unsafelyBorrowing borrowedContent: VariantContent) {
