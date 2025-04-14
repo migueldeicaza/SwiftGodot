@@ -349,7 +349,7 @@ func generateBuiltinOperators (_ p: Printer,
             guard let (operatorCode, swiftOperator) = infixOperatorMap (op.name) else {
                 continue
             }
-            p.staticVar (name: ptrName, type: "GDExtensionPtrOperatorEvaluator") {
+            p.staticLet(name: ptrName, type: "GDExtensionPtrOperatorEvaluator") {
                 let rightTypeCode = builtinTypecode (right)
                 let leftTypeCode = builtinTypecode (godotTypeName)
                 p ("return gi.variant_get_ptr_operator_evaluator (\(operatorCode), \(leftTypeCode), \(rightTypeCode))!")
@@ -459,7 +459,7 @@ func generateBuiltinMethods (_ p: Printer,
     
         let ptrName = "method_\(m.name)"
         
-        p.staticVar (name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
+        p.staticLet(name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
             p ("let name = StringName (\"\(m.name)\")")
             p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.content, \(m.hash))!")
         }
@@ -513,13 +513,13 @@ func generateBuiltinMethods (_ p: Printer,
     }
     if bc.isKeyed {
         let variantType = builtinTypecode(bc.name)
-        p.staticVar (visibility: "private ", name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
+        p.staticLet(visibility: "private ", name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
             p ("return gi.variant_get_ptr_keyed_getter (\(variantType))!")
         }
-        p.staticVar (visibility: "private ", name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
+        p.staticLet(visibility: "private ", name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
             p ("return gi.variant_get_ptr_keyed_setter (\(variantType))!")
         }
-        p.staticVar (visibility: "private ", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
+        p.staticLet(visibility: "private ", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
@@ -553,10 +553,10 @@ func generateBuiltinMethods (_ p: Printer,
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
         let variantType = builtinTypecode (bc.name)
-        p.staticVar (visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
+        p.staticLet(visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
             p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
         }
-        p.staticVar (visibility: "private ", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
+        p.staticLet(visibility: "private ", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
             p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
         }
         p (" public subscript (index: Int64) -> \(godotType)") {
@@ -726,7 +726,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 #endif
             }
             if bc.hasDestructor {
-                p.staticVar (name: "destructor", type: "GDExtensionPtrDestructor") {
+                p.staticLet(name: "destructor", type: "GDExtensionPtrDestructor") {
                     p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
                 }
                 

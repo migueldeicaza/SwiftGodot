@@ -502,7 +502,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         assert (!method.isVirtual)
         switch generatedMethodKind {
         case .classMethod:
-            p.staticVar(visibility: staticVarVisibility, cached: true, name: bindName, type: "GDExtensionMethodBindPtr") {
+            p.staticLet(visibility: staticVarVisibility, name: bindName, type: "GDExtensionMethodBindPtr") {
                 p ("let methodName = StringName(\"\(method.name)\")")
             
                 p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
@@ -512,7 +512,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 }
             }
         case .utilityFunction:
-            p.staticVar(visibility: staticVarVisibility, cached: true, name: bindName, type: "GDExtensionPtrUtilityFunction") {
+            p.staticLet(visibility: staticVarVisibility, name: bindName, type: "GDExtensionPtrUtilityFunction") {
                 p ("let methodName = StringName(\"\(method.name)\")")
                 p ("return withUnsafePointer(to: &methodName.content)", arg: " ptr in") {
                     p ("return gi.variant_get_ptr_utility_function(ptr, \(methodHash))!")
