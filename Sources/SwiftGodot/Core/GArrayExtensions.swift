@@ -34,9 +34,7 @@ extension GArray: CustomDebugStringConvertible {
         )
     }
     
-    /// Allows subscription array as in `array[0]`.
-    /// Will not be selected as default overload for `TypedArray` subscript.
-    @_disfavoredOverload
+    /// Allows subscription array as in `array[0]`.    
     public subscript(index: Int) -> Variant? {
         get {
             guard let ret = gi.array_operator_index(&content, Int64 (index)) else {

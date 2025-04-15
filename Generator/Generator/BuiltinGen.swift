@@ -95,9 +95,10 @@ func generateBuiltinCtors (_ p: Printer,
 
     for m in ctors {
         var args = ""
+        var visibility = "public"
         
-        let constructorName = "constructor\(m.index)"
-        p ("static let \(constructorName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor(\(typeEnum), \(m.index))!\n")
+        let ptrName = "constructor\(m.index)"
+        p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
         
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
@@ -107,21 +108,13 @@ func generateBuiltinCtors (_ p: Printer,
         if let desc = m.description, desc != "" {
             doc (p, bc, desc)
         }
-        
-        let arguments = (m.arguments ?? []).map {
-            // must not fail
-            try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
+        if args == "" {
+            if !isStruct {
+                visibility.append(" required")
+            }
         }
         
-        let initTokens = [
-            "public",
-            arguments.isEmpty && bc.name == "Array" ? "convenience" : nil,
-            "init"
-        ]
-            .compactMap { (s: String?) in s }
-            .joined(separator: " ")
-        
-        p ("\(initTokens)(\(args))") {
+        p ("\(visibility) init (\(args))") {
             // Determine if we have a constructors whose sole job is to initialize the members
             // of the struct, in that case, just do that, do not call into Godot.
             if let margs = m.arguments, let members, margs.count == members.count {
@@ -182,22 +175,19 @@ func generateBuiltinCtors (_ p: Printer,
                 }
             }
             
+            let arguments = (m.arguments ?? []).map {
+                // must not fail
+                try! MethodArgument(from: $0, typeName: typeName, methodName: "#constructor\(m.index)", options: .builtInClassOptions)
+            }
+            
             if arguments.isEmpty {
-                if bc.name == "Array" {
-                    p("""
-                    var content = \(typeName).zero
-                    \(typeName).\(constructorName)(&\(ptr), nil)
-                    self.init(takingOver: content)    
-                    """)
-                } else {
-                    preparingArguments(p, arguments: arguments) {
-                        p("\(typeName).\(constructorName)(&\(ptr), nil)")
-                    }
+                preparingArguments(p, arguments: arguments) {
+                    p ("\(typeName).\(ptrName)(&\(ptr), nil)")
                 }
             } else {
                 preparingArguments(p, arguments: arguments) {
                     aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
-                        p("\(typeName).\(constructorName)(&\(ptr), pArgs)")
+                        p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
                     }
                 }
             }
@@ -599,7 +589,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
                 
-        var conformances: [String] = ["_GodotBridgeableBuiltin", "_GodotTypedArrayElement"]
+        var conformances: [String] = ["_GodotBridgeableBuiltin"]
         if kind == .isStruct {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
@@ -633,16 +623,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         
         var isContentRepresented: Bool? = nil
         
-        let heading = [
-            "public",
-            (bc.name == "Array" || kind == .isStruct) ? nil : "final",
-            kind == .isStruct ? "struct" : "class",
-            typeName
-        ]
-            .compactMap { (s: String?) in s }
-            .joined(separator: " ")
-        
-        p ("\(heading)\(proto)") {
+        p ("public \(kind == .isStruct ? "struct" : "final class") \(typeName)\(proto)") {
             if bc.name == "String" {
                 p("""
                 public required init(_ string: String) {
@@ -871,113 +852,68 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             @_disfavoredOverload
             public func toFastVariant() -> FastVariant? {
                 FastVariant(self)
-            }                                    
-            """)
-            
-            if bc.name != "Array" { // In extension due to non-finality
-                p("""
-                /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
-                @inline(__always)
-                @inlinable
-                public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
-                    guard let value = Self(variant) else {
-                        throw .unexpectedContent(parsing: self, from: variant)
-                    }
-                    return value                
-                }
-                
-                /// Extract ``\(typeName)`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
-                @inline(__always)
-                @inlinable
-                public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
-                    guard let value = Self(variant) else {
-                        throw .unexpectedContent(parsing: self, from: variant)
-                    }
-                    return value                
-                }    
-                """)
             }
             
-            if isContentRepresented == true {
-                if bc.name == "Array" {
-                    p("""
-                    /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
-                    @inline(__always)                                
-                    public required convenience init?(_ variant: Variant) {
-                        guard Self._variantType == variant.gtype else { return nil }
-                        var content = \(typeName).zero
-                        withUnsafeMutablePointer(to: &content) { pPayload in
-                            variant.constructType(into: pPayload, constructor: \(typeName).selfFromVariant)                        
-                        }
-                        self.init(takingOver: content)
-                    }
-                    
-                    /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
-                    @inline(__always)
-                    @inlinable
-                    public required convenience init?(_ variant: Variant?) {
-                        guard let variant else { return nil }
-                        self.init(variant)
-                    }
-                    
-                    /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
-                    @inline(__always)                                
-                    public required convenience init?(_ variant: borrowing FastVariant) {
-                        guard Self._variantType == variant.gtype else { return nil }
-                        var content = \(typeName).zero
-                        withUnsafeMutablePointer(to: &content) { pPayload in
-                            variant.constructType(into: pPayload, constructor: \(typeName).selfFromVariant)                        
-                        }
-                        self.init(takingOver: content)
-                    }
-                    
-                    /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
-                    @inline(__always)
-                    @inlinable
-                    public required convenience init?(_ variant: borrowing FastVariant?) {                    
-                        self.init(variant)
-                    }
-                    """)
-                } else {
-                    p("""
-                    /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
-                    @inline(__always)                                
-                    public convenience init?(_ variant: Variant) {
-                        guard Self._variantType == variant.gtype else { return nil }
-                        var content = \(typeName).zero
-                        withUnsafeMutablePointer(to: &content) { pPayload in
-                            variant.constructType(into: pPayload, constructor: \(typeName).selfFromVariant)                        
-                        }
-                        self.init(takingOver: content)
-                    }
-                    
-                    /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
-                    @inline(__always)
-                    @inlinable
-                    public convenience init?(_ variant: Variant?) {
-                        guard let variant else { return nil }
-                        self.init(variant)
-                    }
-                    
-                    /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
-                    @inline(__always)                                
-                    public convenience init?(_ variant: borrowing FastVariant) {
-                        guard Self._variantType == variant.gtype else { return nil }
-                        var content = \(typeName).zero
-                        withUnsafeMutablePointer(to: &content) { pPayload in
-                            variant.constructType(into: pPayload, constructor: \(typeName).selfFromVariant)                        
-                        }
-                        self.init(takingOver: content)
-                    }
-                    
-                    /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
-                    @inline(__always)
-                    @inlinable
-                    public convenience init?(_ variant: borrowing FastVariant?) {                    
-                        self.init(variant)
-                    }
-                    """)
+            /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+                guard let value = Self(variant) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
                 }
+                return value                
+            }
+            
+            @inline(__always)
+            @inlinable
+            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
+                guard let value = Self(variant) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            
+            """)
+            
+            if isContentRepresented == true {
+                p("""
+                /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
+                @inline(__always)                                
+                public convenience init?(_ variant: Variant) {
+                    guard Self._variantType == variant.gtype else { return nil }
+                    var content = \(typeName).zero
+                    withUnsafeMutablePointer(to: &content) { pPayload in
+                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                    }
+                    self.init(takingOver: content)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                @inline(__always)
+                @inlinable
+                public convenience init?(_ variant: Variant?) {
+                    guard let variant else { return nil }
+                    self.init(variant)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
+                @inline(__always)                                
+                public convenience init?(_ variant: borrowing FastVariant) {
+                    guard Self._variantType == variant.gtype else { return nil }
+                    var content = \(typeName).zero
+                    withUnsafeMutablePointer(to: &content) { pPayload in
+                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                    }
+                    self.init(takingOver: content)
+                }
+                
+                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
+                @inline(__always)
+                @inlinable
+                public convenience init?(_ variant: borrowing FastVariant?) {                    
+                    self.init(variant)
+                }
+                """)
             } else {
                 p("""
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
@@ -1141,32 +1077,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                         self.init(payload: from, constructor: \(typeName).variantFromSelf)
                         """)
                     }
-                }
-            }
-            
-            if bc.name == "Array" {
-                p("public extension _GodotBridgeableBuiltin where Self: GArray") {
-                    p("""
-                    /// Extract ``Self``. Throws `VariantConversionError` if it's not possible.
-                    @inline(__always)
-                    @inlinable
-                    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
-                        guard let value = Self(variant) else {
-                            throw .unexpectedContent(parsing: self, from: variant)
-                        }
-                        return value                
-                    }
-                    
-                    /// Extract ``Self`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
-                    @inline(__always)
-                    @inlinable
-                    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
-                        guard let value = Self(variant) else {
-                            throw .unexpectedContent(parsing: self, from: variant)
-                        }
-                        return value                
-                    }    
-                    """)
                 }
             }
         }
