@@ -7,25 +7,47 @@ enum Demo64: Int64, CaseIterable {
 class SomeNode: Node {
     var demo: Demo
 
-    func _mproxy_set_demo(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "demo", demo) {
-            demo = $0
+    static func _mproxy_set_demo(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for demo: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "demo", object.demo) {
+            object.demo = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_demo(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(demo)
+    static func _mproxy_get_demo(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for demo: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.demo)
     }
     var demo64: Demo64
 
-    func _mproxy_set_demo64(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "demo64", demo64) {
-            demo64 = $0
+    static func _mproxy_set_demo64(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for demo64: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "demo64", object.demo64) {
+            object.demo64 = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_demo64(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(demo64)
+    static func _mproxy_get_demo64(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for demo64: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.demo64)
     }
 
     override open class var classInitializer: Void {
@@ -37,8 +59,9 @@ class SomeNode: Node {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \SomeNode.demo,
                 name: "demo",
                 userHint: .enum,
@@ -50,8 +73,9 @@ class SomeNode: Node {
             getterFunction: SomeNode._mproxy_get_demo,
             setterFunction: SomeNode._mproxy_set_demo
         )
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \SomeNode.demo64,
                 name: "demo64",
                 userHint: .enum,

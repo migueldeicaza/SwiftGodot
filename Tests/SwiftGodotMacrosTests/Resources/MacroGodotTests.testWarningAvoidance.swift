@@ -14,14 +14,25 @@ final class MyData: Resource {
 final class MyClass: Node {
     var data: MyData = .init()
 
-    func _mproxy_set_data(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "data", data) {
-            data = $0
+    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "data", object.data) {
+            object.data = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_data(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(data)
+    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.data)
     }
 
     override public class var classInitializer: Void {
@@ -33,8 +44,9 @@ final class MyClass: Node {
         let className = StringName("MyClass")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MyClass> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \MyClass.data,
                 name: "data",
                 userHint: nil,

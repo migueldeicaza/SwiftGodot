@@ -17,8 +17,12 @@ class OtherThing: SwiftGodot.Node {
         return nil
     }
 
-    func _mproxy_get_thing(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._wrapCallableResult(get_thing())
+    static func _mproxy_get_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `get_thing`: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.get_thing())
 
     }
 
@@ -31,7 +35,8 @@ class OtherThing: SwiftGodot.Node {
         let className = StringName("OtherThing")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<OtherThing> (name: className)
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "get_thing",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(MyThing?.self),

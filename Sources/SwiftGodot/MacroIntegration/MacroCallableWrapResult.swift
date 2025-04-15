@@ -8,80 +8,80 @@
 /// Internal API. VariantConvertible.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: T) -> Variant? where T: VariantConvertible {
-    value.toVariant()
+public func _wrapCallableResult<T>(_ value: T) -> FastVariant? where T: VariantConvertible {
+    value.toFastVariant()
 }
 
 /// Internal API. VariantConvertible?.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: T?) -> Variant? where T: VariantConvertible {
-    value.toVariant()
+public func _wrapCallableResult<T>(_ value: T?) -> FastVariant? where T: VariantConvertible {
+    value.toFastVariant()
 }
 
 /// Internal API. Object.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: T) -> Variant? where T: Object {
-    value.toVariant()
+public func _wrapCallableResult<T>(_ value: T) -> FastVariant? where T: Object {
+    value.toFastVariant()
 }
 
 /// Internal API. Object?.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: T?) -> Variant? where T: Object {
-    value.toVariant()
+public func _wrapCallableResult<T>(_ value: T?) -> FastVariant? where T: Object {
+    value.toFastVariant()
 }
 
 /// Internal API. Variant
 @inline(__always)
 @inlinable
-public func _wrapCallableResult(_ value: Variant) -> Variant? {
-    return value
+public func _wrapCallableResult(_ value: Variant) -> FastVariant? {
+    return value.toFastVariant()
 }
 
 /// Internal API. Variant?
 @inline(__always)
 @inlinable
-public func _wrapCallableResult(_ value: Variant?) -> Variant? {
-    return value
+public func _wrapCallableResult(_ value: Variant?) -> FastVariant? {
+    return value.toFastVariant()
 }
 
 /// Internal API. Swift Array.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: [T]) -> Variant? where T: _GodotBridgeable {
+public func _wrapCallableResult<T>(_ value: [T]) -> FastVariant? where T: _GodotBridgeable {
     let array = GArray(T.self)
     for element in value {
         array.append(element.toVariant())
     }
     
-    return array.toVariant()
+    return array.toFastVariant()
 }
 
 /// Internal API. ObjectCollection.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: ObjectCollection<T>) -> Variant? where T: _GodotBridgeable {
-    value.array.toVariant()
+public func _wrapCallableResult<T>(_ value: ObjectCollection<T>) -> FastVariant? where T: _GodotBridgeable {
+    value.array.toFastVariant()
 }
 
 /// Internal API. VariantCollection.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: VariantCollection<T>) -> Variant? where T: _GodotBridgeable {
-    value.array.toVariant()
+public func _wrapCallableResult<T>(_ value: VariantCollection<T>) -> FastVariant? where T: _GodotBridgeable {
+    value.array.toFastVariant()
 }
 
 /// Internal API. Void.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult(_ value: Void) -> Variant? {
+public func _wrapCallableResult(_ value: Void) -> FastVariant? {
     return nil
 }
 
 @available(*, unavailable, message: "Type cannot be returned from @Callable")
 @_disfavoredOverload
-public func _wrapCallableResult<T>(_ value: T?) -> Variant? {
+public func _wrapCallableResult<T>(_ value: T?) -> FastVariant? {
     fatalError("Unreachable")
 }

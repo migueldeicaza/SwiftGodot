@@ -1,14 +1,25 @@
 class Hi: Node {
     var goodName: String = "Supertop"
 
-    func _mproxy_set_goodName(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "goodName", goodName) {
-            goodName = $0
+    static func _mproxy_set_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "goodName", object.goodName) {
+            object.goodName = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_goodName(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(goodName)
+    static func _mproxy_get_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.goodName)
     }
 
     override open class var classInitializer: Void {
@@ -20,8 +31,9 @@ class Hi: Node {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Hi> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \Hi.goodName,
                 name: "good_name",
                 userHint: nil,

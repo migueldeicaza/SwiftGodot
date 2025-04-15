@@ -4,10 +4,14 @@ class MultiplierNode: Node {
         integers.reduce(into: 1) { $0 *= $1 }
     }
 
-    func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_multiply(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `multiply`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: [Int].self, at: 0)
-            return SwiftGodot._wrapCallableResult(multiply(arg0))
+            return SwiftGodot._wrapCallableResult(object.multiply(arg0))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `multiply`: \(error.description)")
@@ -25,7 +29,8 @@ class MultiplierNode: Node {
         let className = StringName("MultiplierNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MultiplierNode> (name: className)
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "multiply",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Int.self),

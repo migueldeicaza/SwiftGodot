@@ -4,10 +4,14 @@ private class TestNode: Node {
         return variant
     }
 
-    func _mproxy_foo(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_foo(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `foo`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Variant?.self, at: 0)
-            return SwiftGodot._wrapCallableResult(foo(variant: arg0))
+            return SwiftGodot._wrapCallableResult(object.foo(variant: arg0))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `foo`: \(error.description)")
@@ -25,7 +29,8 @@ private class TestNode: Node {
         let className = StringName("TestNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<TestNode> (name: className)
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "foo",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Variant?.self),

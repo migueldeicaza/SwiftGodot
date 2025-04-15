@@ -64,7 +64,7 @@ class GodotMacroProcessor {
         injectClassInfo()
         ctor.append(
             """
-            classInfo.addPropertyGroup(name: "\(name)", prefix: "\(prefix)")\n
+            SwiftGodot._addPropertyGroup(className: className, name: "\(name)", prefix: "\(prefix)")\n
             """
         )
     }
@@ -73,7 +73,7 @@ class GodotMacroProcessor {
         injectClassInfo()
         ctor.append(
             """
-            classInfo.addPropertySubgroup(name: "\(name)", prefix: "\(prefix)")\n
+            SwiftGodot._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")\n
             """
         )
     }
@@ -109,7 +109,8 @@ class GodotMacroProcessor {
                 
         injectClassInfo()
         ctor.append("""
-            classInfo.registerMethod(
+            SwiftGodot._registerMethod(
+                className: className,
                 name: "\(funcName)", 
                 flags: .default, 
                 returnValue: SwiftGodot._returnedPropInfo(\(returnTypename).self), 
@@ -232,8 +233,9 @@ class GodotMacroProcessor {
             
             injectClassInfo()
             ctor.append("""
-            classInfo.registerPropertyWithGetterSetter(
-                SwiftGodot._propInfo(
+            SwiftGodot._registerPropertyWithGetterSetter(
+                className: className,
+                info: SwiftGodot._propInfo(
             \(argsStr)
                 ),
                 getterName: "\(getterName)\",

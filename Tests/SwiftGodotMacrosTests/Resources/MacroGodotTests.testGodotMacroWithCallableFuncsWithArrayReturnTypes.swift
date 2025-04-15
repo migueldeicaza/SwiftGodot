@@ -4,16 +4,24 @@ class CallableCollectionsNode: Node {
         [1, 2, 3, 4]
     }
 
-    func _mproxy_get_ages(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._wrapCallableResult(get_ages())
+    static func _mproxy_get_ages(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `get_ages`: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.get_ages())
 
     }
     func get_markers() -> [Marker3D] {
         [.init(), .init(), .init()]
     }
 
-    func _mproxy_get_markers(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._wrapCallableResult(get_markers())
+    static func _mproxy_get_markers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `get_markers`: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.get_markers())
 
     }
 
@@ -26,7 +34,8 @@ class CallableCollectionsNode: Node {
         let className = StringName("CallableCollectionsNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "get_ages",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo([Int].self),
@@ -35,7 +44,8 @@ class CallableCollectionsNode: Node {
             ],
             function: CallableCollectionsNode._mproxy_get_ages
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "get_markers",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo([Marker3D].self),

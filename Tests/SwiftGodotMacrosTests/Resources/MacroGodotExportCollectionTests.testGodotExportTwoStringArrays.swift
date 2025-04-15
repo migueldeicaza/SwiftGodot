@@ -2,25 +2,47 @@ import SwiftGodot
 class ArrayTest: Node {
    var firstNames: VariantCollection<String> = ["Thelonius"]
 
-   func _mproxy_set_firstNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._invokeSetter(args, "firstNames", firstNames) {
-           firstNames = $0
+   static func _mproxy_set_firstNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+       guard let object = _unwrap(self, pInstance: pInstance) else {
+           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(pInstance)")
+           return nil
        }
+
+       SwiftGodot._invokeSetter(arguments, "firstNames", object.firstNames) {
+           object.firstNames = $0
+       }
+       return nil
    }
 
-   func _mproxy_get_firstNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._invokeGetter(firstNames)
+   static func _mproxy_get_firstNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+       guard let object = _unwrap(self, pInstance: pInstance) else {
+           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(pInstance)")
+           return nil
+       }
+
+       return SwiftGodot._invokeGetter(object.firstNames)
    }
    var lastNames: VariantCollection<String> = ["Monk"]
 
-   func _mproxy_set_lastNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._invokeSetter(args, "lastNames", lastNames) {
-           lastNames = $0
+   static func _mproxy_set_lastNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+       guard let object = _unwrap(self, pInstance: pInstance) else {
+           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(pInstance)")
+           return nil
        }
+
+       SwiftGodot._invokeSetter(arguments, "lastNames", object.lastNames) {
+           object.lastNames = $0
+       }
+       return nil
    }
 
-   func _mproxy_get_lastNames(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-       SwiftGodot._invokeGetter(lastNames)
+   static func _mproxy_get_lastNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+       guard let object = _unwrap(self, pInstance: pInstance) else {
+           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(pInstance)")
+           return nil
+       }
+
+       return SwiftGodot._invokeGetter(object.lastNames)
    }
 
     override open class var classInitializer: Void {
@@ -32,8 +54,9 @@ class ArrayTest: Node {
         let className = StringName("ArrayTest")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<ArrayTest> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \ArrayTest.firstNames,
                 name: "first_names",
                 userHint: nil,
@@ -45,8 +68,9 @@ class ArrayTest: Node {
             getterFunction: ArrayTest._mproxy_get_firstNames,
             setterFunction: ArrayTest._mproxy_set_firstNames
         )
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \ArrayTest.lastNames,
                 name: "last_names",
                 userHint: nil,

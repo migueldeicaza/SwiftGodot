@@ -2,20 +2,35 @@
 class Thing: SwiftGodot.Object {
     var value: Int64 = 0
 
-    func _mproxy_set_value(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "value", value) {
-            value = $0
+    static func _mproxy_set_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for value: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "value", object.value) {
+            object.value = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_value(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(value)
+    static func _mproxy_get_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for value: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.value)
     }
 
     func get_some() -> Int64 { 10 }
 
-    func _mproxy_get_some(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._wrapCallableResult(get_some())
+    static func _mproxy_get_some(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `get_some`: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.get_some())
 
     }
 
@@ -28,8 +43,9 @@ class Thing: SwiftGodot.Object {
         let className = StringName("Thing")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Thing> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \Thing.value,
                 name: "value",
                 userHint: nil,
@@ -41,7 +57,8 @@ class Thing: SwiftGodot.Object {
             getterFunction: Thing._mproxy_get_value,
             setterFunction: Thing._mproxy_set_value
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "get_some",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Int64.self),

@@ -1,11 +1,15 @@
 class MathHelper: Node {
     func multiply(_ a: Int, by b: Int) -> Int { a * b}
 
-    func _mproxy_multiply(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_multiply(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `multiply`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Int.self, at: 0)
             let arg1 = try arguments.argument(ofType: Int.self, at: 1)
-            return SwiftGodot._wrapCallableResult(multiply(arg0, by: arg1))
+            return SwiftGodot._wrapCallableResult(object.multiply(arg0, by: arg1))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `multiply`: \(error.description)")
@@ -15,11 +19,15 @@ class MathHelper: Node {
     }
     func divide(_ a: Float, by b: Float) -> Float { a / b }
 
-    func _mproxy_divide(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_divide(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `divide`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Float.self, at: 0)
             let arg1 = try arguments.argument(ofType: Float.self, at: 1)
-            return SwiftGodot._wrapCallableResult(divide(arg0, by: arg1))
+            return SwiftGodot._wrapCallableResult(object.divide(arg0, by: arg1))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `divide`: \(error.description)")
@@ -29,11 +37,15 @@ class MathHelper: Node {
     }
     func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
 
-    func _mproxy_areBothTrue(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_areBothTrue(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `areBothTrue`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Bool.self, at: 0)
             let arg1 = try arguments.argument(ofType: Bool.self, at: 1)
-            return SwiftGodot._wrapCallableResult(areBothTrue(arg0, and: arg1))
+            return SwiftGodot._wrapCallableResult(object.areBothTrue(arg0, and: arg1))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `areBothTrue`: \(error.description)")
@@ -51,7 +63,8 @@ class MathHelper: Node {
         let className = StringName("MathHelper")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<MathHelper> (name: className)
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "multiply",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Int.self),
@@ -61,7 +74,8 @@ class MathHelper: Node {
             ],
             function: MathHelper._mproxy_multiply
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "divide",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Float.self),
@@ -71,7 +85,8 @@ class MathHelper: Node {
             ],
             function: MathHelper._mproxy_divide
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "areBothTrue",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Bool.self),

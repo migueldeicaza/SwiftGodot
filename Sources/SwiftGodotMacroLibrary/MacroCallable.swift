@@ -31,6 +31,12 @@ public struct GodotCallable: PeerMacro {
         // Is there are no arguments, there is no do-catch scope to sanitize arguments access
         let indentation = parameters.isEmpty ? "" : "    "
         
+        body += """
+        \(indentation)    guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+        \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(pInstance)")
+        \(indentation)        return nil
+        \(indentation)    }
+        """
         for (index, parameter) in parameters.enumerated() {
             let ptype = parameter.type.description
             
@@ -47,19 +53,19 @@ public struct GodotCallable: PeerMacro {
         let callArgs = callArgsList.joined(separator: ", ")
         
         body += """
-        \(indentation)    return SwiftGodot._wrapCallableResult(\(funcName)(\(callArgs)))
+        \(indentation)    return SwiftGodot._wrapCallableResult(object.\(funcName)(\(callArgs)))
         
         """
         
         if parameters.isEmpty {
             return """
-            func _mproxy_\(funcName)(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
             \(body)                
             }
             """
         } else {
             return """
-            func _mproxy_\(funcName)(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
                 do { // safe arguments access scope
             \(body)        
                 } catch {

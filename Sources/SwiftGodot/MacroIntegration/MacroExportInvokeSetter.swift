@@ -13,7 +13,7 @@ public func _invokeSetter<T>(
     _ name: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? where T: VariantConvertible {
+) -> FastVariant? where T: VariantConvertible {
     do {
         set(try arguments.argument(ofType: T.self, at: 0))
     } catch {
@@ -31,7 +31,7 @@ public func _invokeSetter<T>(
     _ name: StaticString,
     _ old: T?,
     _ set: (T?) -> Void
-) -> Variant? where T: VariantConvertible {
+) -> FastVariant? where T: VariantConvertible {
     do {
         let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
         
@@ -62,7 +62,7 @@ public func _invokeSetter(
     _ name: StaticString,
     _ old: Variant,
     _ set: (Variant) -> Void
-) -> Variant? {
+) -> FastVariant? {
     do {
         set(try arguments.argument(ofType: Variant.self, at: 0))
     } catch {
@@ -80,7 +80,7 @@ public func _invokeSetter(
     _ name: StaticString,
     _ old: Variant?,
     _ set: (Variant?) -> Void
-) -> Variant? {
+) -> FastVariant? {
     do {
         set(try arguments.argument(ofType: Variant?.self, at: 0))
     } catch {
@@ -98,7 +98,7 @@ public func _invokeSetter<T>(
     _ name: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? where T: Object {
+) -> FastVariant? where T: Object {
     do {
         let value = try arguments.argument(ofType: T.self, at: 0)
         value._macroRcRef()
@@ -119,7 +119,7 @@ public func _invokeSetter<T>(
     _ name: StaticString,
     _ old: T?,
     _ set: (T?) -> Void
-) -> Variant? where T: Object {
+) -> FastVariant? where T: Object {
     do {
         let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
         
@@ -174,7 +174,7 @@ public func _invokeSetter<each Argument: VariantConvertible, Result: VariantConv
     _ name: StaticString,
     _ old: @escaping (repeat each Argument) -> Result,
     _ set: (@escaping (repeat each Argument) -> Result) -> Void
-) -> Variant? {
+) -> FastVariant? {
     do {
         let newCallable = try arguments.argument(ofType: Callable.self, at: 0)
         
@@ -193,7 +193,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: VariantCollection<T>,
     _: (VariantCollection<T>) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: _GodotBridgeableBuiltin {
+) -> FastVariant? where T: _GodotBridgeableBuiltin {
     _invokeSetterGArrayCollection(arguments, variableName, old)
 }
 
@@ -205,7 +205,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: ObjectCollection<T>,
     _: (ObjectCollection<T>) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: Object {
+) -> FastVariant? where T: Object {
     _invokeSetterGArrayCollection(arguments, variableName, old)
 }
 
@@ -215,7 +215,7 @@ func _invokeSetterGArrayCollection<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ collection: T
-) -> Variant? where T: GArrayCollection, T.Element: _GodotBridgeable {
+) -> FastVariant? where T: GArrayCollection, T.Element: _GodotBridgeable {
     do {
         let newArray = try arguments.argument(ofType: GArray.self, at: 0)
         guard newArray.isSameTyped(array: collection.array) else {
@@ -241,7 +241,7 @@ public func _invokeSetter<T>(
     _ name: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? where T: RawRepresentable, T.RawValue: VariantConvertible {
+) -> FastVariant? where T: RawRepresentable, T.RawValue: VariantConvertible {
     do {
         let value = try arguments.argument(ofType: T.self, at: 0)
         set(value)
@@ -261,7 +261,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: VariantCollection<T>?,
     _: (VariantCollection<T>?) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: _GodotBridgeableBuiltin {
+) -> FastVariant? where T: _GodotBridgeableBuiltin {
     fatalError("Unreachable")
 }
 
@@ -272,7 +272,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: ObjectCollection<T>?,
     _: (ObjectCollection<T>?) -> Void // ignored, old.array is reassigned
-) -> Variant? where T: Object {
+) -> FastVariant? where T: Object {
     fatalError("Unreachable")
 }
 
@@ -284,7 +284,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: [T]?,
     _ set: ([T]?) -> Void
-) -> Variant? {
+) -> FastVariant? {
     fatalError("Unreachable")
 }
 
@@ -296,7 +296,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: [T],
     _ set: ([T]) -> Void
-) -> Variant? {
+) -> FastVariant? {
     fatalError("Unreachable")
 }
 
@@ -308,7 +308,7 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: T?,
     _ set: (T?) -> Void
-) -> Variant? {
+) -> FastVariant? {
     fatalError("Unreachable")
 }
 
@@ -320,6 +320,6 @@ public func _invokeSetter<T>(
     _ variableName: StaticString,
     _ old: T,
     _ set: (T) -> Void
-) -> Variant? {
+) -> FastVariant? {
     fatalError("Unreachable")
 }

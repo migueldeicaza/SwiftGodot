@@ -2,25 +2,47 @@
 public class Issue353: Node {
     var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
 
-    func _mproxy_set_prefix1_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "prefix1_prefixed_bool", prefix1_prefixed_bool) {
-            prefix1_prefixed_bool = $0
+    static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "prefix1_prefixed_bool", object.prefix1_prefixed_bool) {
+            object.prefix1_prefixed_bool = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_prefix1_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(prefix1_prefixed_bool)
+    static func _mproxy_get_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.prefix1_prefixed_bool)
     }
     var non_prefixed_bool: VariantCollection<Bool> = [false]
 
-    func _mproxy_set_non_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "non_prefixed_bool", non_prefixed_bool) {
-            non_prefixed_bool = $0
+    static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "non_prefixed_bool", object.non_prefixed_bool) {
+            object.non_prefixed_bool = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_non_prefixed_bool(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(non_prefixed_bool)
+    static func _mproxy_get_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.non_prefixed_bool)
     }
 
     override open class var classInitializer: Void {
@@ -32,9 +54,10 @@ public class Issue353: Node {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)
-        classInfo.addPropertyGroup(name: "Group With a Prefix", prefix: "prefix1")
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._addPropertyGroup(className: className, name: "Group With a Prefix", prefix: "prefix1")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \Issue353.prefix1_prefixed_bool,
                 name: "prefix1_prefixed_bool",
                 userHint: nil,
@@ -46,8 +69,9 @@ public class Issue353: Node {
             getterFunction: Issue353._mproxy_get_prefix1_prefixed_bool,
             setterFunction: Issue353._mproxy_set_prefix1_prefixed_bool
         )
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \Issue353.non_prefixed_bool,
                 name: "non_prefixed_bool",
                 userHint: nil,

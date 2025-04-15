@@ -2,14 +2,25 @@
 class Garage: Node {
     var bar: VariantCollection<Bool> = [false]
 
-    func _mproxy_set_bar(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "bar", bar) {
-            bar = $0
+    static func _mproxy_set_bar(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for bar: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "bar", object.bar) {
+            object.bar = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_bar(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(bar)
+    static func _mproxy_get_bar(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for bar: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.bar)
     }
 
     override open class var classInitializer: Void {
@@ -21,9 +32,10 @@ class Garage: Node {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
-        classInfo.addPropertyGroup(name: "Example", prefix: "example")
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._addPropertyGroup(className: className, name: "Example", prefix: "example")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \Garage.bar,
                 name: "bar",
                 userHint: nil,

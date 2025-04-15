@@ -8,8 +8,8 @@
 /// Internal API. Optional and non-optional VariantConvertible user types.
 @inline(__always)
 @inlinable
-public func _invokeGetter<T>(_ value: T?) -> Variant? where T: VariantConvertible {
-    value.toVariant()
+public func _invokeGetter<T>(_ value: T?) -> FastVariant? where T: VariantConvertible {
+    value.toFastVariant()
 }
 
 /// Internal API.  OptionSet or enum with _GodotBridgeable RawValue
@@ -17,8 +17,8 @@ public func _invokeGetter<T>(_ value: T?) -> Variant? where T: VariantConvertibl
 @inlinable
 public func _invokeGetter<T>(
     _ value: T
-) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: VariantConvertible {
-    value.rawValue.toVariant()
+) -> FastVariant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: VariantConvertible {
+    value.rawValue.toFastVariant()
 }
 
 /// Internal API. Closure
@@ -26,7 +26,7 @@ public func _invokeGetter<T>(
 @inlinable
 public func _invokeGetter<each Argument: VariantConvertible, Result: VariantConvertible>(
     _ value: @escaping (repeat each Argument) -> Result
-) -> Variant? {
+) -> FastVariant? {
     return Callable { arguments in
         do {
             var currentIndex = 0
@@ -40,7 +40,7 @@ public func _invokeGetter<each Argument: VariantConvertible, Result: VariantConv
             GD.printErr("Couldn't extract arguments to call closure. \(error)")
             return nil
         }
-    }.toVariant()
+    }.toFastVariant()
 }
 
 /// Internal API.  VariantCollection.
@@ -48,8 +48,8 @@ public func _invokeGetter<each Argument: VariantConvertible, Result: VariantConv
 @inlinable
 public func _invokeGetter<T>(
     _ value: VariantCollection<T>
-) -> Variant? where T: _GodotBridgeableBuiltin {
-    value.array.toVariant()
+) -> FastVariant? where T: _GodotBridgeableBuiltin {
+    value.array.toFastVariant()
 }
 
 
@@ -58,8 +58,8 @@ public func _invokeGetter<T>(
 @inlinable
 public func _invokeGetter<T>(
     _ value: ObjectCollection<T>
-) -> Variant? where T: Object {
-    value.array.toVariant()
+) -> FastVariant? where T: Object {
+    value.array.toFastVariant()
 }
 
 // MARK: Failures with diagnostics
@@ -68,7 +68,7 @@ public func _invokeGetter<T>(
 @available(*, unavailable, message: "Swift Array is not supported by @Export macro, use VariantCollection or ObjectCollection")
 public func _invokeGetter<T>(
     _ value: [T]?
-) -> Variant? {
+) -> FastVariant? {
     fatalError("Unreachable")
 }
 
@@ -76,7 +76,7 @@ public func _invokeGetter<T>(
 @available(*, unavailable, message: "Optional VariantCollection is not supported by @Export macro")
 public func _invokeGetter<T>(
     _ value: VariantCollection<T>?
-) -> Variant? where T: _GodotBridgeableBuiltin {
+) -> FastVariant? where T: _GodotBridgeableBuiltin {
     fatalError("Unreachable")
 }
 
@@ -84,7 +84,7 @@ public func _invokeGetter<T>(
 @available(*, unavailable, message: "Optional ObjectCollection is not supported by @Export macro")
 public func _invokeGetter<T>(
     _ value: ObjectCollection<T>?
-) -> Variant? where T: Object {
+) -> FastVariant? where T: Object {
     fatalError("Unreachable")
 }
 
@@ -93,13 +93,13 @@ public func _invokeGetter<T>(
 @available(*, unavailable, message: "Optional enums are not supported by @Export macro")
 public func _invokeGetter<T>(
     _ value: T?
-) -> Variant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: VariantConvertible {
+) -> FastVariant? where T: RawRepresentable, T.RawValue: BinaryInteger, T.RawValue: VariantConvertible {
     fatalError("Unreachable")
 }
 
 /// Internal API. Catch-all overload for all unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload
-public func _invokeGetter(_ value: (any Any)?) -> Variant? {
+public func _invokeGetter(_ value: (any Any)?) -> FastVariant? {
     fatalError("Unreachable")
 }

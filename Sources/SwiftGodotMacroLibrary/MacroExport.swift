@@ -15,18 +15,29 @@ import SwiftSyntaxMacros
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
-        func _mproxy_get_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-            SwiftGodot._invokeGetter(\(identifier))                        
+        static func _mproxy_get_\(identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            guard let object = _unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(pInstance)")
+                return nil
+            }
+        
+            return SwiftGodot._invokeGetter(object.\(identifier))            
         }                        
         """
     }
     
     static func makeSetAccessor(identifier: String) -> String {
         """
-        func _mproxy_set_\(identifier)(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-            SwiftGodot._invokeSetter(args, "\(identifier)", \(identifier)) {
-                \(identifier) = $0
+        static func _mproxy_set_\(identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            guard let object = _unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(pInstance)")
+                return nil
             }
+        
+            SwiftGodot._invokeSetter(arguments, "\(identifier)", object.\(identifier)) {
+                object.\(identifier) = $0
+            }        
+            return nil
         }
         """
     }

@@ -7,6 +7,7 @@
 
 @_implementationOnly import GDExtension
 
+
 /// Provides support to expose Swift methods and signals to the Godot runtime, making it callable
 /// from its runtime and scripting language.
 ///

@@ -2,14 +2,25 @@
 class SomeNode: Node {
     var someNumbers: VariantCollection<Int> = []
 
-    func _mproxy_set_someNumbers(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "someNumbers", someNumbers) {
-            someNumbers = $0
+    static func _mproxy_set_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for someNumbers: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "someNumbers", object.someNumbers) {
+            object.someNumbers = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_someNumbers(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(someNumbers)
+    static func _mproxy_get_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for someNumbers: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.someNumbers)
     }
 
     override open class var classInitializer: Void {
@@ -21,8 +32,9 @@ class SomeNode: Node {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \SomeNode.someNumbers,
                 name: "some_numbers",
                 userHint: nil,

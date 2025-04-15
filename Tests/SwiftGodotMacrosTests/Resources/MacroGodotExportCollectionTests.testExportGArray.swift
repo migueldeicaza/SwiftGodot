@@ -2,14 +2,25 @@
 class SomeNode: Node {
     var someArray: GArray = GArray()
 
-    func _mproxy_set_someArray(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeSetter(args, "someArray", someArray) {
-            someArray = $0
+    static func _mproxy_set_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for someArray: failed to unwrap instance \(pInstance)")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "someArray", object.someArray) {
+            object.someArray = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_someArray(args: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        SwiftGodot._invokeGetter(someArray)
+    static func _mproxy_get_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for someArray: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.someArray)
     }
 
     override open class var classInitializer: Void {
@@ -21,8 +32,9 @@ class SomeNode: Node {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerPropertyWithGetterSetter(
-            SwiftGodot._propInfo(
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
                 at: \SomeNode.someArray,
                 name: "some_array",
                 userHint: nil,

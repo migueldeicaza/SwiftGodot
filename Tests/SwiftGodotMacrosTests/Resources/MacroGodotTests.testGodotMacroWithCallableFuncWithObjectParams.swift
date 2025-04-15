@@ -1,16 +1,24 @@
 class Castro: Node {
     func deleteEpisode() {}
 
-    func _mproxy_deleteEpisode(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
-        return SwiftGodot._wrapCallableResult(deleteEpisode())
+    static func _mproxy_deleteEpisode(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `deleteEpisode`: failed to unwrap instance \(pInstance)")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.deleteEpisode())
 
     }
     func subscribe(podcast: Podcast) {}
 
-    func _mproxy_subscribe(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_subscribe(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `subscribe`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
-            return SwiftGodot._wrapCallableResult(subscribe(podcast: arg0))
+            return SwiftGodot._wrapCallableResult(object.subscribe(podcast: arg0))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `subscribe`: \(error.description)")
@@ -20,10 +28,14 @@ class Castro: Node {
     }
     func perhapsSubscribe(podcast: Podcast?) {}
 
-    func _mproxy_perhapsSubscribe(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_perhapsSubscribe(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Podcast?.self, at: 0)
-            return SwiftGodot._wrapCallableResult(perhapsSubscribe(podcast: arg0))
+            return SwiftGodot._wrapCallableResult(object.perhapsSubscribe(podcast: arg0))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: \(error.description)")
@@ -33,10 +45,14 @@ class Castro: Node {
     }
     func removeSilences(from: Variant) {}
 
-    func _mproxy_removeSilences(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_removeSilences(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `removeSilences`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Variant.self, at: 0)
-            return SwiftGodot._wrapCallableResult(removeSilences(from: arg0))
+            return SwiftGodot._wrapCallableResult(object.removeSilences(from: arg0))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `removeSilences`: \(error.description)")
@@ -46,10 +62,14 @@ class Castro: Node {
     }
     func getLatestEpisode(podcast: Podcast) -> Episode {}
 
-    func _mproxy_getLatestEpisode(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_getLatestEpisode(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
-            return SwiftGodot._wrapCallableResult(getLatestEpisode(podcast: arg0))
+            return SwiftGodot._wrapCallableResult(object.getLatestEpisode(podcast: arg0))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: \(error.description)")
@@ -59,11 +79,15 @@ class Castro: Node {
     }
     func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
 
-    func _mproxy_queue(arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.Variant? {
+    static func _mproxy_queue(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `queue`: failed to unwrap instance \(pInstance)")
+                return nil
+            }
             let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
             let arg1 = try arguments.argument(ofType: Podcast.self, at: 1)
-            return SwiftGodot._wrapCallableResult(queue(arg0, after: arg1))
+            return SwiftGodot._wrapCallableResult(object.queue(arg0, after: arg1))
 
         } catch {
             SwiftGodot.GD.printErr("Error calling `queue`: \(error.description)")
@@ -81,7 +105,8 @@ class Castro: Node {
         let className = StringName("Castro")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Castro> (name: className)
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "deleteEpisode",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
@@ -90,7 +115,8 @@ class Castro: Node {
             ],
             function: Castro._mproxy_deleteEpisode
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "subscribe",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
@@ -99,7 +125,8 @@ class Castro: Node {
             ],
             function: Castro._mproxy_subscribe
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "perhapsSubscribe",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
@@ -108,7 +135,8 @@ class Castro: Node {
             ],
             function: Castro._mproxy_perhapsSubscribe
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "removeSilences",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
@@ -117,7 +145,8 @@ class Castro: Node {
             ],
             function: Castro._mproxy_removeSilences
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "getLatestEpisode",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Episode.self),
@@ -126,7 +155,8 @@ class Castro: Node {
             ],
             function: Castro._mproxy_getLatestEpisode
         )
-        classInfo.registerMethod(
+        SwiftGodot._registerMethod(
+            className: className,
             name: "queue",
             flags: .default,
             returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
