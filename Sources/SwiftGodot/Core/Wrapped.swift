@@ -651,7 +651,13 @@ func createFunc (_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointe
         print ("SwiftGodot.createFunc: The wrapped value did not contain a type: \(typeAny)")
         return nil
     }
+
     let o = type.init ()
+    // We are the createFunc, and we have no other owner to this object but ourselves
+    // we need to make this a strong reference, or it dies before we return
+    if let handle = o.handle, let wrapper = liveSubtypedObjects[handle] {
+        wrapper.strongify()
+    }
     return UnsafeMutableRawPointer (mutating: o.handle)
 }
 
@@ -685,7 +691,7 @@ func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutab
 //    }
 //    print ("SWIFT: Destroying object, userData: \(typeAny) objectHandle: \(objectHandle)")
 //    #endif
-    
+
     guard let objectHandle else { return }
     // Release the unmanaged reference that was retained in bindGodotInstance()
     Unmanaged<WrappedReference>.fromOpaque(objectHandle).release()
@@ -763,9 +769,9 @@ func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeM
 // does not go away while the object is in use.
 func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?, _ reference: UInt8) -> UInt8 {
     guard let binding else { return 0 }
-
     let ref = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
     weak var refCounted = ref.value as? RefCounted
+
     guard let rc = refCounted?.getReferenceCount() else {
         // unreference() was called by Wrapped.deinit, so we allow the object to be destroyed.
         return 1
