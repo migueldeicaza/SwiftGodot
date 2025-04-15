@@ -89,8 +89,7 @@ public struct Arguments: ~Copyable {
                                                 
                         result = use(fastVariant)
                         
-                        /// Prevent `FastVariant` from destroying content owned by Godot Variant
-                        fastVariant?.content = .zero
+                        fastVariant?.unsafelyForget()
                     } else {
                         result = use(nil)
                     }

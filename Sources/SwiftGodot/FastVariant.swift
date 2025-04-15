@@ -85,6 +85,20 @@ public struct FastVariant: ~Copyable {
         self.content = content
     }
     
+    /// ### WARNING
+    /// Delicate API
+    ///
+    /// Zero the `content` to avoid `variant_destroy` during `deinit`.
+    ///
+    /// Assumes that this ``FastVariant`` was either
+    /// 1. constructed by ``init(unsafelyBorrowing:)``
+    /// 2. has its ownership passed to Godot in ``GArray.setFastVariant(_:at:)``
+    @inline(__always)
+    @inlinable
+    mutating func unsafelyForget() {
+        content = .zero
+    }
+    
     /// Initialize by requested an owned copy of the `VariantContent`. Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
     @inline(__always)
     @usableFromInline
@@ -104,13 +118,19 @@ public struct FastVariant: ~Copyable {
         
         self.content = content
     }
-    
-    /// Temporarily borrows `VariantContent` to provide API for extracting something from it. Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
-    ///
+        
     /// ### WARNING
+    /// Delicate API.
+    ///
+    /// Temporarily borrows `VariantContent` owned by Godot
+    /// to provide convenient API for extracting something from it.
+    /// Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
+    ///
     /// Only `borrowing` instance initalized this way is allowed in user world!
-    /// It's used exclusively for extracting some type from within ``Arguments`` and the content should be set to zero after to avoid destroying the
-    /// variant that is actually owned by Godot. We do it correctly. 
+    /// Used in:
+    /// ``Arguments``, ``GArray.withFastVariant(at:)``
+    ///
+    /// Call ``unsafelyForget()`` after you are done.
     @inline(__always)
     @usableFromInline
     init?(unsafelyBorrowing borrowedContent: VariantContent) {
@@ -258,14 +278,7 @@ public struct FastVariant: ~Copyable {
         return str ?? ""
     }
     
-    ///
-    /// Attempts to cast the Variant into a SwiftGodot.Object, if the variant contains a value of type `.object`, then
-    // this will return the object.  If the variant contains the nil value, or the content of the variant is not
-    /// a `.object, the value `nil` is returned.
-    ///
-    /// - Parameter type: the desired type eg. `.asObject(Node.self)`
-    /// - Returns: nil on error, or the type on success
-    ///
+    /// Extract `T: Object` from this ``FastVariant?`` or return nil if unsucessful.
     @inline(__always)
     public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
         guard gtype == .object else {
@@ -281,6 +294,13 @@ public struct FastVariant: ~Copyable {
         return ret
     }
     
+    /// Extract `T` from this ``FastVariant`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
+        type.fromFastVariant(self)
+    }
+    
     @inline(__always)
     @usableFromInline
     func constructType(
@@ -294,5 +314,21 @@ public struct FastVariant: ~Copyable {
         withUnsafeMutablePointer(to: &content) { pVariantContent in
             constructor(pPayload, pVariantContent)
         }
+    }
+}
+
+extension Optional where Wrapped == FastVariant, Wrapped: ~Copyable {
+    /// Extract `T` from this ``FastVariant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
+        type.fromFastVariant(self)
+    }
+    
+    /// Extract `T: Object` from this ``FastVariant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
+        type.fromFastVariant(self)
     }
 }

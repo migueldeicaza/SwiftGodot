@@ -150,22 +150,28 @@ public extension VariantConvertible {
     @inline(__always)
     @inlinable
     static func fromVariant(_ variant: Variant) -> Self? {
-        do {
-            return try fromVariantOrThrow(variant)
-        } catch {
-            return nil
-        }
+        try? fromVariantOrThrow(variant)
     }
     
     /// Unwrap ``Self`` from a ``Variant?``. Returns `nil` if it's not possible.
     @inline(__always)
     @inlinable
     static func fromVariant(_ variant: Variant?) -> Self? {
-        do {
-            return try fromVariantOrThrow(variant)
-        } catch {
-            return nil
-        }
+        try? fromVariantOrThrow(variant)
+    }
+    
+    /// Unwrap ``Self`` from a ``FastVariant``. Returns `nil` if it's not possible.
+    @inline(__always)
+    @inlinable
+    static func fromFastVariant(_ variant: borrowing FastVariant) -> Self? {
+        try? fromFastVariantOrThrow(variant)
+    }
+    
+    /// Unwrap ``Self`` from a ``FastVariant?``. Returns `nil` if it's not possible.
+    @inline(__always)
+    @inlinable
+    static func fromFastVariant(_ variant: borrowing FastVariant?) -> Self? {
+        try? fromFastVariantOrThrow(variant)
     }
 }
 

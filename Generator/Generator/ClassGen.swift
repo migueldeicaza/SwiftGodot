@@ -549,7 +549,7 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
     }
 }
 
-let objectInherits = "Wrapped, _GodotBridgeableObject"
+let objectInherits = "Wrapped, _GodotBridgeableObject, _GodotTypedArrayElement"
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     // Determine if it is a singleton, but exclude EditorInterface

@@ -11,7 +11,7 @@ import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class ObjectCollectionTests: GodotTestCase {
+final class TypedArrayTests: GodotTestCase {
     func testAppendingElementStoresInArray() {
         let sut: ObjectCollection<Node> = []
         let node = Node()
@@ -69,6 +69,53 @@ final class ObjectCollectionTests: GodotTestCase {
         
         XCTAssertEqual(sut.count, 1, "The collection count should be 1 after a Variant was appended to the \(GArray.self)")
         XCTAssertEqual(sut[0], node, "The first element in the collection should be the appended node")
+    }
+    
+    func testArrayConstructors() {
+        let array = GArray()
+        array.append(10.toVariant())
+        array.append(20.toVariant())
+        let typedArray = TypedArray(Int.self, from: array)
+        guard let typedArray else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(typedArray.getTypedBuiltin(), Variant.GType.int.rawValue)
+        XCTAssertEqual(typedArray.count, 2)
+                
+        array.append("String".toVariant())
+        array.append(20.toVariant())
+        let anotherTypedArray = TypedArray(Int.self, from: array)
+                
+        XCTAssertNil(anotherTypedArray)
+    }
+    
+    func testArraySharedStorage() {
+        let array = GArray()
+        array.append(10.toVariant())
+        array.append(20.toVariant())
+        
+        guard let typedArray = TypedArray(Int.self, from: array) else {
+            XCTFail()
+            return
+        }
+        
+        array.append(40.toVariant())
+        
+        XCTAssertEqual(typedArray.count, 2)
+        
+        let array2 = GArray(from: typedArray)
+        
+        array2.append("String".toVariant()) // Godot will log error due to array being typed
+        XCTAssertEqual(array2.count, 2)
+        
+        guard let array3 = TypedArray(Int.self, from: array2) else {
+            XCTFail()
+            return
+        }
+        array3.append(40.toVariant())
+        XCTAssertEqual(array3.count, array2.count)
     }
 }
 

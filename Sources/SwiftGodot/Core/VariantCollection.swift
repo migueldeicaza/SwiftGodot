@@ -31,7 +31,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     }
     
     /// Initializes the collection with an empty typed GArray
-    public init () {
+    public init() {
         array = GArray (Element.self)
     }
     

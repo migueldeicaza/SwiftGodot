@@ -269,7 +269,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     ///
     /// - Parameter type: the desired type eg. `.asObject(Node.self)`
     /// - Returns: nil on error, or the type on success
-    ///
+    @inline(__always)
     public func asObject<T: Object> (_ type: T.Type = T.self) -> T? {
         guard gtype == .object else {
             return nil
@@ -484,6 +484,11 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         type.fromVariant(self)
     }
     
+    /// Extract `T: Object` from this ``Variant`` or return nil if unsucessful.
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
+        type.fromVariant(self)
+    }
+    
     
     /// Internal API.
     public static var _variantType: GType {
@@ -535,6 +540,8 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
 
 extension Variant? {
     /// Extract `T` from this ``Variant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
     public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
         type.fromVariant(self)
     }
@@ -545,6 +552,13 @@ extension Variant? {
         } else {
             return Variant.zero
         }
+    }
+    
+    /// Extract `T: Object` from this ``Variant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
+        type.fromVariant(self)
     }
 }
 
