@@ -35,7 +35,7 @@ extension SwiftSyntax.AttributeSyntax {
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
-        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> Variant? {
+        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> SwiftGodot.Variant? {
             _macroExportGet(\(identifier))                        
         }                        
         """
@@ -43,7 +43,7 @@ public struct GodotExport: PeerMacro {
     
     static func makeSetAccessor(identifier: String) -> String {
         """
-        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> Variant? {
+        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> SwiftGodot.Variant? {
             _macroExportSet(args, "\(identifier)", \(identifier)) {
                 \(identifier) = $0
             }
