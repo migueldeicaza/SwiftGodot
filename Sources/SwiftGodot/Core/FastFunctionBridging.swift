@@ -110,7 +110,7 @@ public func _registerMethod(
 @inline(__always)
 public func _unwrap<T: Object>(
     _ type: T.Type = T.self,
-    pInstance: UnsafeRawPointer?,
+    pInstance: UnsafeRawPointer?
 ) -> T? {
     guard let pInstance else {
         return nil
