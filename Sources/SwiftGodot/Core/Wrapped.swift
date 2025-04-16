@@ -154,21 +154,31 @@ open class Wrapped: Equatable, Identifiable, Hashable {
 #endif
 
             if self is RefCounted {
-                var queue = false
-                freeLock.withLockVoid {
-                    if Wrapped.deferred == nil {
-                        Wrapped.deferred = Callable ({ (args: borrowing Arguments) in
-                            releasePendingObjects()
-                            return nil
-                        })
+                if swiftGodotOperational {
+                    var queue = false
+                    freeLock.withLockVoid {
+                        if Wrapped.deferred == nil {
+                            Wrapped.deferred = Callable ({ (args: borrowing Arguments) in
+                                releasePendingObjects()
+                                return nil
+                            })
+                        }
+                        pendingReleaseHandles.append(handle)
+                        if pendingReleaseHandles.count == 1 {
+                            queue = true
+                        }
                     }
-                    pendingReleaseHandles.append(handle)
-                    if pendingReleaseHandles.count == 1 {
-                        queue = true
+                    if queue {
+                        Wrapped.deferred?.callDeferred()
                     }
-                }
-                if queue {
-                    Wrapped.deferred?.callDeferred()
+                } else {
+                    // This is the case where we are not running in the main loop, so we
+                    // need to call the unreference method directly
+                    var result: Bool = false
+                    gi.object_method_bind_ptrcall(RefCounted.method_unreference, UnsafeMutableRawPointer(mutating: handle), nil, &result)
+                    if result {
+                        gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
+                    }
                 }
             }
         }

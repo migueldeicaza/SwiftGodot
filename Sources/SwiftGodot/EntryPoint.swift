@@ -109,12 +109,18 @@ public func setExtensionInterface(interface: ExtensionInterface) {
     loadGodotInterface(unsafeBitCast(interface.getProcAddr(), to: GDExtensionInterfaceGetProcAddress.self))
 }
 
+// Used to determine if the extension can rely on calling Godot
+var swiftGodotOperational: Bool = false
+
 // Extension initialization callback
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
     guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
     if level == .scene {
         extensionInterface.initClasses()
+    }
+    if level == .core {
+        swiftGodotOperational = true
     }
     guard let userData else { return }
     guard let callback = extensionInitCallbacks[OpaquePointer(userData)] else { return }
@@ -132,6 +138,7 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     if level == .core {
         // Last one, remove
         extensionDeInitCallbacks.removeValue(forKey: key)
+        swiftGodotOperational = false
     }
 }
 
