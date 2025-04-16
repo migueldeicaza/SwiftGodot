@@ -281,7 +281,7 @@ func generateMethods (_ p: Printer,
     }
     
     if virtuals.count > 0 {
-        p ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
+        p ("override class func getVirtualDispatcher(name: StringName) -> GDExtensionClassCallVirtual?"){
             p ("guard implementedOverrides().contains(name) else { return nil }")
             p ("switch name.description") {
                 for name in virtuals.keys.sorted() {

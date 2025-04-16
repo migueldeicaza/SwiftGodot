@@ -460,8 +460,8 @@ func generateBuiltinMethods (_ p: Printer,
         let ptrName = "method_\(m.name)"
         
         p.staticLet(name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
-            p ("let name = StringName (\"\(m.name)\")")
-            p ("return gi.variant_get_ptr_builtin_method (\(typeEnum), &name.content, \(m.hash))!")
+            p ("var name = FastStringName(\"\(m.name)\")")
+            p ("return gi.variant_get_ptr_builtin_method(\(typeEnum), &name.content, \(m.hash))!")
         }
         
         for arg in m.arguments ?? [] {
