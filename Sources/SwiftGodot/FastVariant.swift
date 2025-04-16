@@ -92,7 +92,7 @@ public struct FastVariant: ~Copyable {
     ///
     /// Assumes that this ``FastVariant`` was either
     /// 1. constructed by ``init(unsafelyBorrowing:)``
-    /// 2. has its ownership passed to Godot in ``GArray.setFastVariant(_:at:)``
+    /// 2. has its ownership passed to Godot, for example in ``GArray.setFastVariant(_:at:)``
     @inline(__always)
     @inlinable
     mutating func unsafelyForget() {
