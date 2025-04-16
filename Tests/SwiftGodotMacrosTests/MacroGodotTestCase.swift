@@ -30,8 +30,8 @@ class MacroGodotTestCase: XCTestCase {
     
     /// Set it to local path to regenerate expansions test data in case the macro was updated
     let regeneratedResourcesPath: String? =
-//        nil
-        URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources").path()
+        nil
+//        URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources").path()
         
     
     func regenerateExpansionResource(input: String, outputUrl: URL) {
