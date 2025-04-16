@@ -714,13 +714,25 @@ extension String: _GodotBridgeableBuiltin {
     
     /// Initialze ``String`` from ``Variant``. Fails if `variant` doesn't contain ``String``
     @inline(__always)
-    @inlinable
     public init?(_ variant: Variant) {
-        guard let string = GString(variant) else {
+        switch variant.gtype {
+        case .string:
+            /// Avoid allocating `GString` wrapper at least
+            var content = GString.zero
+            variant.constructType(into: &content, constructor: GString.selfFromVariant)
+            self = GString.toString(pContent: &content)
+            GString.destructor(&content)
+        case .stringName:
+            /// It's going through the ``PackedByteArray`` already, it's a death from the thousand cuts.
+            // TODO: should we print a warning and question feasibility of this?
+            guard let string = StringName(variant)?.description else {
+                return nil
+            }
+            
+            self = string
+        default:
             return nil
         }
-        
-        self = string.description
     }
     
     /// Initialze ``String`` from ``Variant``. Fails if `variant` doesn't contain ``String`` or is `nil`
@@ -734,13 +746,25 @@ extension String: _GodotBridgeableBuiltin {
     
     /// Initialze ``String`` from ``FastVariant``. Fails if `variant` doesn't contain ``String``
     @inline(__always)
-    @inlinable
     public init?(_ variant: borrowing FastVariant) {
-        guard let string = GString(variant) else {
+        switch variant.gtype {
+        case .string:
+            /// Avoid allocating `GString` wrapper at least
+            var content = GString.zero
+            variant.constructType(into: &content, constructor: GString.selfFromVariant)
+            self = GString.toString(pContent: &content)
+            GString.destructor(&content)
+        case .stringName:
+            /// It's going through the ``PackedByteArray`` already, it's a death from the thousand cuts.
+            // TODO: should we print a warning and question feasibility of this?
+            guard let string = StringName(variant)?.description else {
+                return nil
+            }
+            
+            self = string
+        default:
             return nil
         }
-        
-        self = string.description
     }
     
     /// Initialze ``String`` from ``FastVariant``. Fails if `variant` doesn't contain ``String`` or is `nil`

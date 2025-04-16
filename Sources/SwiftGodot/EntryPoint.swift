@@ -186,6 +186,7 @@ struct GodotInterface {
     let print_script_error_with_message: GDExtensionInterfacePrintScriptErrorWithMessage
     let string_new_with_utf8_chars: GDExtensionInterfaceStringNewWithUtf8Chars
     let string_to_utf8_chars: GDExtensionInterfaceStringToUtf8Chars
+    let string_name_new_with_latin1_chars: GDExtensionInterfaceStringNameNewWithLatin1Chars
 
     let get_native_struct_size: GDExtensionInterfaceGetNativeStructSize
 
@@ -340,6 +341,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 
         string_new_with_utf8_chars: load("string_new_with_utf8_chars"),
         string_to_utf8_chars: load("string_to_utf8_chars"),
+        string_name_new_with_latin1_chars: load("string_name_new_with_latin1_chars"),
 
         get_native_struct_size: load("get_native_struct_size"),
 

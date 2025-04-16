@@ -240,9 +240,12 @@ public struct FastVariant: ~Copyable {
     
     /// Initialize ``FastVariant`` by wrapping ``String``
     @inline(__always)
-    @inlinable
     public init(_ from: String) {
-        self.init(GString(from))
+        /// Avoid allocating `GString` wrapper at least
+        var stringContent = GString.zero
+        gi.string_new_with_utf8_chars(&stringContent, from)
+        self.init(payload: stringContent, constructor: GString.variantFromSelf)
+        GString.destructor(&stringContent)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``String?``, fails if it's `nil`

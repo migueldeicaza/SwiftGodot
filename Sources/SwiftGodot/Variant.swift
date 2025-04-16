@@ -217,7 +217,11 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     
     /// Initialize ``Variant`` by wrapping ``String``
     public convenience init(_ from: String) {
-        self.init(GString(from))
+        /// Avoid allocating `GString` wrapper at least
+        var stringContent = GString.zero
+        gi.string_new_with_utf8_chars(&stringContent, from)
+        self.init(payload: stringContent, constructor: GString.variantFromSelf)
+        GString.destructor(&stringContent)
     }
     
     /// Initialize ``Variant`` by wrapping ``String?``, fails if it's `nil`
@@ -487,8 +491,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     /// Extract `T: Object` from this ``Variant`` or return nil if unsucessful.
     public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
         type.fromVariant(self)
-    }
-    
+    }    
     
     /// Internal API.
     public static var _variantType: GType {
