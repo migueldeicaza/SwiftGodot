@@ -290,6 +290,16 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
+    func testStaticFunction() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Callable static func get_some() -> Int64 { 10 }
+            }
+            """
+        )
+    }
+    
     func testDebugThing() {
         assertExpansion(
             of: """

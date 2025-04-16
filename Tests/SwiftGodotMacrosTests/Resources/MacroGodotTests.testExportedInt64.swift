@@ -61,7 +61,7 @@ class Thing: SwiftGodot.Object {
             className: className,
             name: "get_some",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Int64.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Int64.self),
             arguments: [
 
             ],

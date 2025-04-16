@@ -33,7 +33,7 @@ private class TestNode: Node {
             className: className,
             name: "foo",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Variant?.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Variant?.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Variant?.self, name: "variant")
             ],

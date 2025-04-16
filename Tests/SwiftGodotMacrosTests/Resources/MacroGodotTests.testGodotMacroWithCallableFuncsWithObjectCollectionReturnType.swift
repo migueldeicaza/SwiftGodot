@@ -27,7 +27,7 @@ class SomeNode: Node {
             className: className,
             name: "getNodeCollection",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(ObjectCollection<Node>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(ObjectCollection<Node>.self),
             arguments: [
 
             ],

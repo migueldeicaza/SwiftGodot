@@ -241,24 +241,6 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         }
         
         return result
-    }        
-    
-    /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used in API visible to Godot
-    @inline(__always)
-    @inlinable
-    public static func _propInfo(
-        name: String,
-        hint: PropertyHint?,
-        hintStr: String?,
-        usage: PropertyUsageFlags?
-    ) -> PropInfo {
-        _propInfoDefault(
-            propertyType: .nil, // Godot treats .nil as Godot Variant
-            name: name,
-            hint: hint,
-            hintStr: hintStr,
-            usage: usage
-        )
     }
     
     /// Returns true if the variant is not an object, or the object is missing from the lookup table
@@ -503,6 +485,23 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         "Variant"
     }
     
+    /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used in API visible to Godot
+    @inline(__always)
+    @inlinable
+    public static func _propInfo(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _propInfoDefault(
+            propertyType: .nil, // Godot treats .nil as Godot Variant
+            name: name,
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage ?? .nilIsVariant
+        )
+    }
     
     /// Internal API.
     /// According to:

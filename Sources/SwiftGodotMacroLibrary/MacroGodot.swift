@@ -106,14 +106,21 @@ class GodotMacroProcessor {
             returnTypename = "Swift.Void"
         }
                 
-                
+        
+        let flags: String
+        if funcDecl.hasClassOrStaticModifier {
+            flags = ".static"
+        } else {
+            flags = ".default"
+        }
+        
         injectClassInfo()
         ctor.append("""
             SwiftGodot._registerMethod(
                 className: className,
                 name: "\(funcName)", 
-                flags: .default, 
-                returnValue: SwiftGodot._returnedPropInfo(\(returnTypename).self), 
+                flags: \(flags), 
+                returnValue: SwiftGodot._returnValuePropInfo(\(returnTypename).self), 
                 arguments: [
             \(arguments)
                 ], 
@@ -239,9 +246,9 @@ class GodotMacroProcessor {
             \(argsStr)
                 ),
                 getterName: "\(getterName)\",
-                setterName: "\(setterName)",
+                setterName: "\(setterName)",                
                 getterFunction: \(className).\(proxyGetterName),
-                setterFunction: \(className).\(proxySetterName)
+                setterFunction: \(className).\(proxySetterName)                
             )
             """)
         }

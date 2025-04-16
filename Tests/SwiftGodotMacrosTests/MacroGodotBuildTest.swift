@@ -211,3 +211,15 @@ class DebugThing: SwiftGodot.Object {
     @Callable func do_int(value: Int?) {  }
     @Callable func do_string(value: String?) { }
 }
+
+@Godot class ObjectWithStaticFunctions: SwiftGodot.Node {
+    @Callable
+    class func bar(_ value: Variant?) -> Variant? {
+        return value
+    }
+    
+    @Callable
+    static func staticFunc(_ something: String) -> Bool {
+        something.isEmpty
+    }
+}

@@ -12,7 +12,7 @@ public func _argumentPropInfo(
     _ type: Variant?.Type = Variant?.self,
     name: String = ""
 ) -> PropInfo {
-    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    return Variant._argumentPropInfo(name: name)
 }
 
 /// Internal API. Variant.
@@ -23,7 +23,7 @@ public func _argumentPropInfo(
     name: String = ""
 ) -> PropInfo {
     // Same as Optional Variant.
-    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    return Variant._argumentPropInfo(name: name)
 }
 
 /// Internal API. Optional VariantConvertible user type.
@@ -33,7 +33,7 @@ public func _argumentPropInfo<T>(
     _ type: T?.Type = T?.self,
     name: String = ""
 ) -> PropInfo {
-    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    return Variant._argumentPropInfo(name: name)
 }
 
 /// Internal API. VariantConvertible user type.
@@ -43,7 +43,7 @@ public func _argumentPropInfo<T>(
     _ type: T.Type = T.self,
     name: String = ""
 ) -> PropInfo where T: VariantConvertible {
-    return Variant._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    return Variant._argumentPropInfo(name: name)
 }
 
 /// Internal API. Builtin Type.
@@ -53,7 +53,7 @@ public func _argumentPropInfo<T>(
     _ type: T.Type = T.self,
     name: String = ""
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    T._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    T._argumentPropInfo(name: name)
 }
 
 /// Internal API. Optional Builtin Type.
@@ -74,7 +74,7 @@ public func _argumentPropInfo<T>(
     _ type: T.Type = T.self,
     name: String = ""
 ) -> PropInfo where T: Object {
-    T._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    T._argumentPropInfo(name: name)
 }
 
 /// Internal API. Optional object.
@@ -84,7 +84,7 @@ public func _argumentPropInfo<T>(
     _ type: T?.Type = T?.self,
     name: String = ""
 ) -> PropInfo where T: Object {
-    T._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    T._argumentPropInfo(name: name)
 }
 
 /// Internal API. Swift Builtin Array.

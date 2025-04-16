@@ -67,7 +67,7 @@ class MathHelper: Node {
             className: className,
             name: "multiply",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Int.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Int.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Int.self, name: "a"),
                 SwiftGodot._argumentPropInfo(Int.self, name: "b")
@@ -78,7 +78,7 @@ class MathHelper: Node {
             className: className,
             name: "divide",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Float.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Float.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Float.self, name: "a"),
                 SwiftGodot._argumentPropInfo(Float.self, name: "b")
@@ -89,7 +89,7 @@ class MathHelper: Node {
             className: className,
             name: "areBothTrue",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Bool.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Bool.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Bool.self, name: "a"),
                 SwiftGodot._argumentPropInfo(Bool.self, name: "b")

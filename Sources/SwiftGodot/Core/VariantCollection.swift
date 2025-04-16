@@ -422,6 +422,20 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
             usage: usage ?? .default
         )
     }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used in API visible to Godot
+    @inlinable
+    @inline(__always)
+    public static var _returnValuePropInfo: PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: "",
+            className: "Array[\(Element._godotTypeName)]",
+            hint: .arrayType,
+            hintStr: "\(Element._godotTypeName)",
+            usage: .default
+        )
+    }
 }
 
 public extension Variant {

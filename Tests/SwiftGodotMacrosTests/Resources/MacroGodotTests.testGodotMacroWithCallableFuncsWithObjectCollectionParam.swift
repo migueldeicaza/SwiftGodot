@@ -33,7 +33,7 @@ class SomeNode: Node {
             className: className,
             name: "printNames",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(ObjectCollection<Node>.self, name: "nodes")
             ],

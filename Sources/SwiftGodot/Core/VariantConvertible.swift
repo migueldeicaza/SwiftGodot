@@ -279,7 +279,7 @@ public extension _GodotBridgeableObject where Self: Object {
         "\(self)"
     }
     
-    /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used in API visible to Godot
+    /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used as a property in API visible to Godot
     @inline(__always)
     @inlinable
     static func _propInfo(
@@ -288,6 +288,14 @@ public extension _GodotBridgeableObject where Self: Object {
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
+        var hint = hint
+        var hintStr = hintStr
+        
+        if self is Node.Type && hint == nil && hintStr == nil {
+            hint = .nodeType
+            hintStr = _godotTypeName
+        }
+        
         return _propInfoDefault(
             propertyType: _variantType,
             name: name,

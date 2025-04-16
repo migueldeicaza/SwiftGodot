@@ -408,6 +408,19 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
         )
     }
     
+    @inline(__always)
+    @inlinable
+    public static var _returnValuePropInfo: PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: "",
+            className: "Array[\(Element.self)]",
+            hint: .arrayType,
+            hintStr: "\(Element.self)",
+            usage: .default
+        )
+    }
+    
     
     @inline(__always)
     @inlinable

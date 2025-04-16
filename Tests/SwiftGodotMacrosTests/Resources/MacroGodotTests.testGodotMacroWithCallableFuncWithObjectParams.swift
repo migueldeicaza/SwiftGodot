@@ -109,7 +109,7 @@ class Castro: Node {
             className: className,
             name: "deleteEpisode",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
 
             ],
@@ -119,7 +119,7 @@ class Castro: Node {
             className: className,
             name: "subscribe",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Podcast.self, name: "podcast")
             ],
@@ -129,7 +129,7 @@ class Castro: Node {
             className: className,
             name: "perhapsSubscribe",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Podcast?.self, name: "podcast")
             ],
@@ -139,7 +139,7 @@ class Castro: Node {
             className: className,
             name: "removeSilences",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Variant.self, name: "from")
             ],
@@ -149,7 +149,7 @@ class Castro: Node {
             className: className,
             name: "getLatestEpisode",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Episode.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Episode.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Podcast.self, name: "podcast")
             ],
@@ -159,7 +159,7 @@ class Castro: Node {
             className: className,
             name: "queue",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Podcast.self, name: "podcast"),
                 SwiftGodot._argumentPropInfo(Podcast.self, name: "preceedingPodcast")

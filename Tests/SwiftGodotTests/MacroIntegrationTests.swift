@@ -48,6 +48,7 @@ final class MacroIntegrationTests: GodotTestCase {
         XCTAssertEqual(_propInfo(at: \NoMacroExample.wow, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalWow, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
+        XCTAssertEqual(_propInfo(at: \NoMacroExample.variant, name: "").usage, .nilIsVariant)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalVariant, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.garray, name: "").propertyType, .array)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.object, name: "").propertyType, .object)

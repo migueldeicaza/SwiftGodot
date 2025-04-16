@@ -39,7 +39,7 @@ class OtherThing: SwiftGodot.Node {
             className: className,
             name: "get_thing",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(MyThing?.self),
+            returnValue: SwiftGodot._returnValuePropInfo(MyThing?.self),
             arguments: [
 
             ],

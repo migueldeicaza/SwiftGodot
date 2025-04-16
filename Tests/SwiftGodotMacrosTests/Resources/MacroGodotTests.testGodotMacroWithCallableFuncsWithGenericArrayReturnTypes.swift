@@ -38,7 +38,7 @@ class CallableCollectionsNode: Node {
             className: className,
             name: "get_ages",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Array<Int>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Array<Int>.self),
             arguments: [
 
             ],
@@ -48,7 +48,7 @@ class CallableCollectionsNode: Node {
             className: className,
             name: "get_markers",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Array<Marker3D>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Array<Marker3D>.self),
             arguments: [
 
             ],

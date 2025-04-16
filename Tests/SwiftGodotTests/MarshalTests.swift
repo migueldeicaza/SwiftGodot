@@ -50,6 +50,16 @@ private class TestNode: Node {
     func bar(_ value: Variant?) -> Variant? {
         return value
     }
+    
+    @Callable
+    static func staticFunc(_ something: String) -> Bool {
+        something.isEmpty
+    }
+    
+    @Callable
+    class func classFunc(something: String) -> Int {
+        something.count
+    }
 }
 
 final class MarshalTests: GodotTestCase {
@@ -95,7 +105,7 @@ final class MarshalTests: GodotTestCase {
         
         XCTAssertEqual(node.date, Date(timeIntervalSince1970: date.timeIntervalSince1970 + 1))
     }
-
+    
     func testClassesMethodsPerformance() {
         let node = TestNode()
         let child = TestNode()

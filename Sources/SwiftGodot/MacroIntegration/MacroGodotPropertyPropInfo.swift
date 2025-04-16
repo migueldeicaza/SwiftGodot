@@ -114,20 +114,6 @@ public func _propInfo<Root, T>(
     )
 }
 
-// Add sane defaults if no explicit arguments were passed
-@inline(__always)
-@usableFromInline
-func improveObjectVariablePropInfo<T>(
-    objectType: T.Type = T.self,
-    userHint: inout PropertyHint?,
-    userHintStr: inout String?
-) where T: Object {
-    if objectType is Node.Type && userHint == nil && userHintStr == nil {
-        userHint = .nodeType
-        userHintStr = "\(T.self)"
-    }
-}
-
 /// Internal API. Object.
 @inline(__always)
 @inlinable
@@ -138,10 +124,7 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    var userHint = userHint
-    var userHintStr = userHintStr
-    improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
-    return T._propInfo(
+    T._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -159,10 +142,7 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    var userHint = userHint
-    var userHintStr = userHintStr
-    improveObjectVariablePropInfo(objectType: T.self, userHint: &userHint, userHintStr: &userHintStr)
-    return T._propInfo(        
+    T._propInfo(        
         name: name,
         hint: userHint,
         hintStr: userHintStr,

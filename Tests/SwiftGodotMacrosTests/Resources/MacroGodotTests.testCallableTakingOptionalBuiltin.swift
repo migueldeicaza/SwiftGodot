@@ -75,7 +75,7 @@ class OtherThing: SwiftGodot.Node {
             className: className,
             name: "do_string",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(String?.self, name: "value")
             ],
@@ -85,7 +85,7 @@ class OtherThing: SwiftGodot.Node {
             className: className,
             name: "do_int",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Swift.Void.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Int?.self, name: "value")
             ],
@@ -95,7 +95,7 @@ class OtherThing: SwiftGodot.Node {
             className: className,
             name: "get_thing",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(MyThing?.self),
+            returnValue: SwiftGodot._returnValuePropInfo(MyThing?.self),
             arguments: [
 
             ],

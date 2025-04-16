@@ -35,7 +35,7 @@ class DebugThing: SwiftGodot.Object {
             className: className,
             name: "do_thing",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(SwiftGodot.Variant?.self),
+            returnValue: SwiftGodot._returnValuePropInfo(SwiftGodot.Variant?.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(SwiftGodot.Variant?.self, name: "value")
             ],

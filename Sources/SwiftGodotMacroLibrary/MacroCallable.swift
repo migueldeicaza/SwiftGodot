@@ -12,9 +12,29 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+extension FunctionDeclSyntax {
+    var hasClassOrStaticModifier: Bool {
+        modifiers.contains { modifier in
+            switch modifier.name.tokenKind {
+            case .keyword(let keyword):
+                switch keyword {
+                case .static, .class:
+                    return true
+                default:
+                    return false
+                }
+            default:
+                return false
+            }
+        }
+    }
+}
+
 public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
         let funcName = funcDecl.name.text
+        
+        let isStatic = funcDecl.hasClassOrStaticModifier
         
         if let effects = funcDecl.signature.effectSpecifiers,
            effects.asyncSpecifier?.presence == .present ||
@@ -31,12 +51,17 @@ public struct GodotCallable: PeerMacro {
         // Is there are no arguments, there is no do-catch scope to sanitize arguments access
         let indentation = parameters.isEmpty ? "" : "    "
         
-        body += """
-        \(indentation)    guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-        \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(pInstance)")
-        \(indentation)        return nil
-        \(indentation)    }
-        """
+        if !isStatic {
+            body += """
+            \(indentation)    guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(pInstance)")
+            \(indentation)        return nil
+            \(indentation)    }
+            """
+        }
+        
+        let objectOrSelf = isStatic ? "self" : "object"
+        
         for (index, parameter) in parameters.enumerated() {
             let ptype = parameter.type.description
             
@@ -53,7 +78,7 @@ public struct GodotCallable: PeerMacro {
         let callArgs = callArgsList.joined(separator: ", ")
         
         body += """
-        \(indentation)    return SwiftGodot._wrapCallableResult(object.\(funcName)(\(callArgs)))
+        \(indentation)    return SwiftGodot._wrapCallableResult(\(objectOrSelf).\(funcName)(\(callArgs)))
         
         """
         

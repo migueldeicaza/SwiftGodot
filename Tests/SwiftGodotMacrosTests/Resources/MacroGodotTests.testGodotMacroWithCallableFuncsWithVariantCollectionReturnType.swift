@@ -27,7 +27,7 @@ class SomeNode: Node {
             className: className,
             name: "getIntegerCollection",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(VariantCollection<Int>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(VariantCollection<Int>.self),
             arguments: [
 
             ],

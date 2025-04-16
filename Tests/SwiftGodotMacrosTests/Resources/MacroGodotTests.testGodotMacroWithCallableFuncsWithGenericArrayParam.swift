@@ -33,7 +33,7 @@ class MultiplierNode: Node {
             className: className,
             name: "multiply",
             flags: .default,
-            returnValue: SwiftGodot._returnedPropInfo(Int.self),
+            returnValue: SwiftGodot._returnValuePropInfo(Int.self),
             arguments: [
                 SwiftGodot._argumentPropInfo(Array<Int>.self, name: "integers")
             ],
