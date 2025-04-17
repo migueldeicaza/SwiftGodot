@@ -1,6 +1,6 @@
 <div align="center">
   <h1>SwiftGodot</h1>
-  <img src="https://github.com/user-attachments/assets/c537aefa-561d-413c-a563-8aac1b1758ba" width="200">
+  <img src="Resources/SwiftGodotLogo.svg" width="200">
 </div>
 <br>
 
