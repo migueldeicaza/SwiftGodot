@@ -1,6 +1,6 @@
 <div align="center">
   <h1>SwiftGodot</h1>
-  ![SwiftGodotLogo](Resources/SwiftGodotLogo.svg)
+  <img src="Resources/SwiftGodotLogo.svg" width="200">
 </div>
 <br>
 
