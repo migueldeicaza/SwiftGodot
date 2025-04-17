@@ -279,7 +279,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     public static func construct(type: Variant.GType) -> Result<Variant?,CallErrorType> {
         var newContent: ContentType = Variant.zero
         var err = GDExtensionCallError()
-        gi.variant_construct(GDExtensionVariantType(rawValue: UInt32(type.rawValue)), &newContent, nil, 0, &err)
+        gi.variant_construct(GDExtensionVariantType(rawValue: Int32(type.rawValue)), &newContent, nil, 0, &err)
         if err.error != GDEXTENSION_CALL_OK {
             return .failure(toCallErrorType(err.error))
         }
