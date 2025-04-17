@@ -260,13 +260,7 @@ public extension _GodotBridgeableBuiltin {
     }
 }
 
-/// Internal API. Subset protocol for all Object-derived types.
-/// This is a special case due to Swift type system not allowing default implementation using `Self` for non-final classes.
-/// It's needed to allow statically dispatching macro functions in the context of `Object` and its subclasses.
-public protocol _GodotBridgeableObject: _GodotBridgeable {
-}
-
-public extension _GodotBridgeableObject where Self: Object {
+public extension _GodotBridgeable where Self: Object {
     /// Internal API. Default implementation.
     @inline(__always)
     @inlinable

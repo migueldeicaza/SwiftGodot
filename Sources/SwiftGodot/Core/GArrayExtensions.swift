@@ -20,7 +20,7 @@ extension GArray: CustomDebugStringConvertible {
     public convenience init<T: _GodotBridgeable>(_ type: T.Type = T.self) {
         let className: String
         
-        if let type = type as? _GodotBridgeableObject.Type {
+        if let type = type as? Object.Type {
             className = type._godotTypeName
         } else {
             className = ""
