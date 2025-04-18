@@ -4,7 +4,7 @@ class Car: Node {
 
     static func _mproxy_set_vehicle_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vehicle_make: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for vehicle_make: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -16,7 +16,7 @@ class Car: Node {
 
     static func _mproxy_get_vehicle_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vehicle_make: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for vehicle_make: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -26,7 +26,7 @@ class Car: Node {
 
     static func _mproxy_set_vehicle_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vehicle_model: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for vehicle_model: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -38,7 +38,7 @@ class Car: Node {
 
     static func _mproxy_get_vehicle_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vehicle_model: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for vehicle_model: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 

@@ -4,7 +4,7 @@ class ArrayTest: Node {
 
    static func _mproxy_set_firstNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
-           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(pInstance)")
+           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(String(describing: pInstance))")
            return nil
        }
 
@@ -16,7 +16,7 @@ class ArrayTest: Node {
 
    static func _mproxy_get_firstNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
-           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(pInstance)")
+           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(String(describing: pInstance))")
            return nil
        }
 
@@ -26,7 +26,7 @@ class ArrayTest: Node {
 
    static func _mproxy_set_lastNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
-           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(pInstance)")
+           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(String(describing: pInstance))")
            return nil
        }
 
@@ -38,7 +38,7 @@ class ArrayTest: Node {
 
    static func _mproxy_get_lastNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
-           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(pInstance)")
+           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(String(describing: pInstance))")
            return nil
        }
 

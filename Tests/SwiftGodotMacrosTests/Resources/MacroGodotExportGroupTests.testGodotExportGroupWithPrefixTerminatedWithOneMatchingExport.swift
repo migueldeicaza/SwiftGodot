@@ -4,7 +4,7 @@ public class Issue353: Node {
 
     static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -16,7 +16,7 @@ public class Issue353: Node {
 
     static func _mproxy_get_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -26,7 +26,7 @@ public class Issue353: Node {
 
     static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -38,7 +38,7 @@ public class Issue353: Node {
 
     static func _mproxy_get_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 

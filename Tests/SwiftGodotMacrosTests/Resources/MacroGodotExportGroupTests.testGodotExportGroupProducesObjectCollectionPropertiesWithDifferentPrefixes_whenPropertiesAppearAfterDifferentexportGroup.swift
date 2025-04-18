@@ -4,7 +4,7 @@ class Car: Node {
 
     static func _mproxy_set_vins(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vins: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for vins: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -16,7 +16,7 @@ class Car: Node {
 
     static func _mproxy_get_vins(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vins: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for vins: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -26,7 +26,7 @@ class Car: Node {
 
     static func _mproxy_set_years(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for years: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for years: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -38,7 +38,7 @@ class Car: Node {
 
     static func _mproxy_get_years(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for years: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for years: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -48,7 +48,7 @@ class Car: Node {
 
     static func _mproxy_set_makes(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for makes: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for makes: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -60,7 +60,7 @@ class Car: Node {
 
     static func _mproxy_get_makes(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for makes: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for makes: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -70,7 +70,7 @@ class Car: Node {
 
     static func _mproxy_set_models(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for models: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for models: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -82,7 +82,7 @@ class Car: Node {
 
     static func _mproxy_get_models(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for models: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for models: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 

@@ -3,7 +3,7 @@ class Hi: Node {
 
     static func _mproxy_set_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -15,7 +15,7 @@ class Hi: Node {
 
     static func _mproxy_get_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 

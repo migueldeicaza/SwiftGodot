@@ -9,7 +9,7 @@ class SomeNode: Node {
 
     static func _mproxy_set_demo(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for demo: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for demo: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -21,7 +21,7 @@ class SomeNode: Node {
 
     static func _mproxy_get_demo(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for demo: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for demo: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -31,7 +31,7 @@ class SomeNode: Node {
 
     static func _mproxy_set_demo64(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for demo64: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for demo64: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -43,7 +43,7 @@ class SomeNode: Node {
 
     static func _mproxy_get_demo64(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for demo64: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling getter for demo64: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
