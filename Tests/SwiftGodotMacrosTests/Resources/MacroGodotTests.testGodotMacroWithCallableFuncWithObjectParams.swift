@@ -3,7 +3,7 @@ class Castro: Node {
 
     static func _mproxy_deleteEpisode(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling `deleteEpisode`: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling `deleteEpisode`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
         return SwiftGodot._wrapCallableResult(object.deleteEpisode())
@@ -14,7 +14,7 @@ class Castro: Node {
     static func _mproxy_subscribe(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `subscribe`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `subscribe`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
@@ -31,7 +31,7 @@ class Castro: Node {
     static func _mproxy_perhapsSubscribe(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: Podcast?.self, at: 0)
@@ -48,7 +48,7 @@ class Castro: Node {
     static func _mproxy_removeSilences(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `removeSilences`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `removeSilences`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: Variant.self, at: 0)
@@ -65,7 +65,7 @@ class Castro: Node {
     static func _mproxy_getLatestEpisode(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
@@ -82,7 +82,7 @@ class Castro: Node {
     static func _mproxy_queue(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `queue`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `queue`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)

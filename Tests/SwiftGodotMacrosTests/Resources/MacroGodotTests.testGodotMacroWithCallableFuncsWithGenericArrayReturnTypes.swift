@@ -6,7 +6,7 @@ class CallableCollectionsNode: Node {
 
     static func _mproxy_get_ages(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling `get_ages`: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling `get_ages`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
         return SwiftGodot._wrapCallableResult(object.get_ages())
@@ -18,7 +18,7 @@ class CallableCollectionsNode: Node {
 
     static func _mproxy_get_markers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling `get_markers`: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling `get_markers`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
         return SwiftGodot._wrapCallableResult(object.get_markers())

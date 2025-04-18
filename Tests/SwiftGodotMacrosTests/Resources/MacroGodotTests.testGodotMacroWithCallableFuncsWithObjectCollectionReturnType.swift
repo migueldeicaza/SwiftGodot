@@ -7,7 +7,7 @@ class SomeNode: Node {
 
     static func _mproxy_getNodeCollection(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling `getNodeCollection`: failed to unwrap instance \(pInstance)")
+            SwiftGodot.GD.printErr("Error calling `getNodeCollection`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
         return SwiftGodot._wrapCallableResult(object.getNodeCollection())

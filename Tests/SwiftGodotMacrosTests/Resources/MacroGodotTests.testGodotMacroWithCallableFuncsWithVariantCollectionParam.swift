@@ -7,7 +7,7 @@ class SomeNode: Node {
     static func _mproxy_square(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `square`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `square`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)

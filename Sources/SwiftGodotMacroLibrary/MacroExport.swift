@@ -17,7 +17,7 @@ public struct GodotExport: PeerMacro {
         """
         static func _mproxy_get_\(identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
             guard let object = _unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(pInstance)")
+                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(String(describing: pInstance))")
                 return nil
             }
         
@@ -30,7 +30,7 @@ public struct GodotExport: PeerMacro {
         """
         static func _mproxy_set_\(identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
             guard let object = _unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(pInstance)")
+                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(String(describing: pInstance))")
                 return nil
             }
         

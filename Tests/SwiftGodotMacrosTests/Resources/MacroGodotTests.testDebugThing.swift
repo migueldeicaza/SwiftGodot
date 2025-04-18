@@ -8,7 +8,7 @@ class DebugThing: SwiftGodot.Object {
     static func _mproxy_do_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
             guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `do_thing`: failed to unwrap instance \(pInstance)")
+                SwiftGodot.GD.printErr("Error calling `do_thing`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: SwiftGodot.Variant?.self, at: 0)
