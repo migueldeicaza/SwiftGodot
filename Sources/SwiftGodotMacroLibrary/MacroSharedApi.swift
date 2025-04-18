@@ -50,6 +50,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case unsupportedCallableEffect
     case noSupportForOptionalEnums
     case staticMembers
+    case nameCollision(String, DeclSyntax, DeclSyntax)
     
     var severity: DiagnosticSeverity {
         return .error
@@ -83,7 +84,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Export(.enum) does not support optional values for the enumeration"
         case .staticMembers:
             "`static` and `class` members are not supported"
-            
+        case .nameCollision(let name, let lhs, let rhs):
+            "Same name `\(name)` for two different declarations. GDScript doesn't support it."
         }
     }
     
@@ -96,7 +98,6 @@ enum MacroError: Error {
     case typeName(FunctionParameterSyntax)
     case missingParameterName(FunctionParameterSyntax)
     case noVariablesFound(VariableDeclSyntax)
-    case noTypeFound(VariableDeclSyntax)
     case unsupportedType(VariableDeclSyntax)
     case propertyGetSet
     
@@ -108,8 +109,6 @@ enum MacroError: Error {
             return "Missing a parameter name \(p)"
         case .noVariablesFound(let v):
             return "No variables were found on \(v)"
-        case .noTypeFound(let v):
-            return "No type was found \(v)"
         case .unsupportedType(let v):
             return "This type is not supported in the macro binding \(v)"
         case .propertyGetSet:

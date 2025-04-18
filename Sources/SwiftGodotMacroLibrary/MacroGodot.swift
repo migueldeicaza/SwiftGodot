@@ -17,7 +17,10 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 class GodotMacroProcessor {
+    var existingMembers: [String: DeclSyntax] = [:]
+    
     var propertyDeclarations: [PropertyDeclarationKey: String] = [:]
+    
     struct PropertyDeclarationKey: Hashable {
         let typeName: String
         let parameterElementTypeName: String?
@@ -40,6 +43,11 @@ class GodotMacroProcessor {
         className = classDecl.name.text
     }
     
+    func checkNameCollision(_ name: String, for decl: DeclSyntax) throws {
+        if let existingDecl = existingMembers.updateValue(decl, forKey: name) {
+            throw GodotMacroError.nameCollision(name, decl, existingDecl)
+        }
+    }
     
     func classInitSignals(_ declSyntax: MacroExpansionDeclSyntax) throws {
         guard declSyntax.macroName.tokenKind == .identifier("signal") else {
@@ -132,6 +140,8 @@ class GodotMacroProcessor {
                 function: \(className)._mproxy_\(funcName)
             )
             """)
+        
+        try checkNameCollision(funcName, for: DeclSyntax(funcDecl))
     }
       
 
@@ -260,6 +270,9 @@ class GodotMacroProcessor {
                 setterFunction: \(className).\(proxySetterName)                
             )
             """)
+            
+            try checkNameCollision(getterName, for: DeclSyntax(varDecl))
+            try checkNameCollision(setterName, for: DeclSyntax(varDecl))
         }
     }
     
@@ -294,7 +307,9 @@ class GodotMacroProcessor {
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
 
             injectClassInfo()
-            ctor.append("\(typeName).register(\"\(name.camelCaseToSnakeCase())\", info: classInfo)")
+            let godotName = name.camelCaseToSnakeCase()
+            ctor.append("\(typeName).register(\"\(godotName)\", info: classInfo)")
+            try checkNameCollision(godotName, for: DeclSyntax(varDecl))
         }
     }
 

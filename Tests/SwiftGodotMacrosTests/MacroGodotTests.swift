@@ -256,6 +256,20 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
+    func testNewSignalMacro() {
+        assertExpansion(
+            of: """
+            @Godot
+            class Demo: Node3D {
+                @Signal var burp: SimpleSignal
+            
+                @Signal var livesChanged: SignalWithArguments<Int>
+            }
+
+            """
+        )
+    }
+    
     func testExportGodotUsage() {
         assertExpansion(
             of: """
@@ -351,4 +365,40 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
+    
+    func testFuncCollision() {
+        assertExpansion(
+            of: """
+            @Godot class OtherThing: SwiftGodot.Node {            
+                @Callable func foo(value: Int?) { }
+            
+                @Callable func foo() -> MyThing? {
+                    return nil
+                }
+            }
+            """,
+            diagnostics: [
+                .init(message: "Same name `foo` for two different declarations. GDScript doesn't support it.", line: 1, column: 1)
+            ]
+        )
+    }
+    
+    func testFuncAndGetterCollision() {
+        assertExpansion(
+            of: """
+            @Godot class OtherThing: SwiftGodot.Node {            
+                @Export
+                var foo: Int = 0
+            
+                @Callable func get_foo() -> MyThing? {
+                    return nil
+                }
+            }
+            """,
+            diagnostics: [
+                .init(message: "Same name `get_foo` for two different declarations. GDScript doesn't support it.", line: 1, column: 1)
+            ]
+        )
+    }
+
 }
