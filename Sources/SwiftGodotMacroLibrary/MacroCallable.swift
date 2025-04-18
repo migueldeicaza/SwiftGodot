@@ -54,7 +54,7 @@ public struct GodotCallable: PeerMacro {
         if !isStatic {
             body += """
             \(indentation)    guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(pInstance)")
+            \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
             \(indentation)        return nil
             \(indentation)    }
             """
