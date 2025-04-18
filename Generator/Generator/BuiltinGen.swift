@@ -911,7 +911,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 @inline(__always)
                 @inlinable
                 public convenience init?(_ variant: borrowing FastVariant?) {                    
-                    self.init(variant)
+                    switch variant {
+                    case .some(let variant):
+                        self.init(variant)
+                    case .none:
+                        return nil
+                    }
                 }
                 """)
             } else {
