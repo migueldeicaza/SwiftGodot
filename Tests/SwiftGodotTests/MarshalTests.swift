@@ -50,16 +50,6 @@ private class TestNode: Node {
     func bar(_ value: Variant?) -> Variant? {
         return value
     }
-    
-    @Callable
-    static func staticFunc(_ something: String) -> Bool {
-        something.isEmpty
-    }
-    
-    @Callable
-    class func classFunc(something: String) -> Int {
-        something.count
-    }
 }
 
 final class MarshalTests: GodotTestCase {

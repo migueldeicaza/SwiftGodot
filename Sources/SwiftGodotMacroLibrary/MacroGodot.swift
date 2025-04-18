@@ -83,6 +83,11 @@ class GodotMacroProcessor {
         guard hasCallableAttribute(funcDecl.attributes) else {
             return
         }
+        
+        if funcDecl.hasClassOrStaticModifier {
+            throw GodotMacroError.staticMembers
+        }
+        
         let funcName = funcDecl.name.text
         
         let arguments = funcDecl
@@ -142,6 +147,10 @@ class GodotMacroProcessor {
     // Returns true if it used "tryCase"
     func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
         assert(hasExportAttribute(varDecl.attributes))
+        
+        if varDecl.hasClassOrStaticModifier {
+            throw GodotMacroError.staticMembers
+        }
                 
         guard !varDecl.bindings.isEmpty else {
             throw GodotMacroError.noVariablesFound
@@ -256,6 +265,10 @@ class GodotMacroProcessor {
     
     // Returns true if it used "tryCase"
     func processSignalVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
+        if varDecl.hasClassOrStaticModifier {
+            throw GodotMacroError.staticMembers
+        }
+        
         guard let last = varDecl.bindings.last else {
             throw GodotMacroError.noVariablesFound
         }

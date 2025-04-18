@@ -12,6 +12,24 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+extension VariableDeclSyntax {
+    var hasClassOrStaticModifier: Bool {
+        modifiers.contains { modifier in
+            switch modifier.name.tokenKind {
+            case .keyword(let keyword):
+                switch keyword {
+                case .static, .class:
+                    return true
+                default:
+                    return false
+                }
+            default:
+                return false
+            }
+        }
+    }
+}
+
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
