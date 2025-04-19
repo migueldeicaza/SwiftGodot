@@ -10,9 +10,9 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// and ``disconnect(_:)`` to drop the connection.
 /// Use the ``emit(...)`` method to emit a signal.
 /// You can also await the ``emitted`` property for waiting for a single emission of the signal.
-public class SignalWithArguments<each T: _GodotBridgeable> {
-    var target: Object
-    var signalName: StringName
+public struct SignalWithArguments<each T: _GodotBridgeable> {
+    weak var target: Object?
+    let signalName: StringName
     
     public init(target: Object, signalName: String) {
         self.target = target
@@ -61,14 +61,14 @@ public class SignalWithArguments<each T: _GodotBridgeable> {
     @discardableResult
     public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Callable {
         let callable = Callable(callback)
-        let error = target.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))        
+        let error = target?.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
         return callable
     }
 
     /// Disconnects a signal that was previously connected, the return value from calling
     /// ``connect(flags:_:)``
     public func disconnect(_ token: Callable) {
-        target.disconnect(signal: signalName, callable: token)
+        target?.disconnect(signal: signalName, callable: token)
     }
 
     /// Emit the signal (with required arguments, if there are any)
@@ -90,6 +90,10 @@ public class SignalWithArguments<each T: _GodotBridgeable> {
         for arg in repeat each t {
             args.append(arg.toVariant())
         }
+        
+        guard let target else {
+            return GodotError.failed
+        }
         let result = target.callv(method: "emit_signal", argArray: args)
         guard let result else { return .ok }
         guard let errorCode = Int(result) else { return .ok }
@@ -104,12 +108,15 @@ public class SignalWithArguments<each T: _GodotBridgeable> {
                 let signalProxy = SignalProxy()
                 signalProxy.proxy = { _ in c.resume() }
                 let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
+                
+                guard let target else {
+                    c.resume()
+                    return
+                }
+                
                 let r = target.connect(signal: signalName, callable: callable, flags: UInt32(Object.ConnectFlags.oneShot.rawValue))
                 if r != .ok { print("Warning, error connecting to signal, code: \(r)") }
             }
-
         }
-
     }
-
 }
