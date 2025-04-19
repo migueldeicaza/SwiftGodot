@@ -30,7 +30,7 @@ class DebugThing: SwiftGodot.Object {
         let className = StringName("DebugThing")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<DebugThing> (name: className)
-        SignalWithArguments<Swift.Int>.register("lives_changed", info: classInfo)
+        SignalWithArguments<Swift.Int>.register(as: "lives_changed", in: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "do_thing",

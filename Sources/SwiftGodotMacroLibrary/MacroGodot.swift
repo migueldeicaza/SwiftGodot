@@ -61,7 +61,9 @@ class GodotMacroProcessor {
         guard let signalName = firstArg.expression.signalName() else {
             return
         }
+        
         injectClassInfo()
+                
         ctor.append("classInfo.registerSignal(")
         ctor.append("name: \(className).\(signalName.swiftName).name,")
         ctor.append("arguments: \(className).\(signalName.swiftName).arguments")
@@ -308,7 +310,7 @@ class GodotMacroProcessor {
 
             injectClassInfo()
             let godotName = name.camelCaseToSnakeCase()
-            ctor.append("\(typeName).register(\"\(godotName)\", info: classInfo)")
+            ctor.append("\(typeName).register(as: \"\(godotName)\", in: className)")
             try checkNameCollision(godotName, for: DeclSyntax(varDecl))
         }
     }

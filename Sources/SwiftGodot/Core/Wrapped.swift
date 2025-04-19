@@ -393,7 +393,8 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.recreate_instance_func = recreateFunc
     info.validate_property_func = validatePropertyFunc
     info.is_exposed = 1
-    userTypes [name.description] = { ptr in
+    
+    userTypes[name.description] = { ptr in
         return type.init(nativeHandle: ptr)
     }
     

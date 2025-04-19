@@ -20,16 +20,24 @@ class NodeUsingSwiftDate: Node {
 
 @Godot
 private class TestNode: Node {
+    var intTaken: Int?
+    
     @Export
     var closure: (Int, Int, Int) -> Int = { (a: Int, b: Int, c: Int) -> Int in
         return a + b + c
     }
+    
+    @Signal var someSignal: SignalWithArguments<Int>
     
     @Callable
     func double(_ ints: [Int]) -> [Double] {
         return ints.map {
             Double($0) * 2.0
         }
+    }
+    
+    func funcTakingInt(_ int: Int) {
+        intTaken = int
     }
     
     
@@ -117,6 +125,22 @@ final class MarshalTests: GodotTestCase {
                 XCTAssertEqual(node.call(method: getChildCountName), Variant(0))
             }
         }
+    }
+    
+    func testSignals(){
+        let node = TestNode()
+        var value: Int = 0
+        
+        node.someSignal.connect { int in
+            value = int
+        }
+        node.someSignal.emit(5)
+        XCTAssertEqual(value, 5)
+        
+        node.someSignal.connect(node.funcTakingInt)
+        node.someSignal.emit(10)
+        XCTAssertEqual(node.intTaken, 10)
+                
     }
     
     func testBuiltinsTypesMethodsPerformance() {

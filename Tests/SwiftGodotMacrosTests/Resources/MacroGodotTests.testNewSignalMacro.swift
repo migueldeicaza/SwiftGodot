@@ -13,7 +13,7 @@ class Demo: Node3D {
         let className = StringName("Demo")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Demo> (name: className)
-        SimpleSignal.register("burp", info: classInfo)
-        SignalWithArguments<Int>.register("lives_changed", info: classInfo)
+        SimpleSignal.register(as: "burp", in: className)
+        SignalWithArguments<Int>.register(as: "lives_changed", in: className)
     } ()
 }

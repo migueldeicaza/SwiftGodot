@@ -18,6 +18,27 @@ struct BridgedFunctionInfo {
 }
 
 /// Internal API.
+public func _registerSignal(_ signalName: StringName, in className: StringName, arguments: [PropInfo] = []) {
+    withUnsafeTemporaryAllocation(of: GDExtensionPropertyInfo.self, capacity: arguments.count) { bufferPtr in
+        guard let ptr = bufferPtr.baseAddress else {
+            GD.print("Swift.withUnsafeTemporaryAllocation failed at `ClassInfo.registerSignal`")
+            return
+        }
+        
+        withExtendedLifetime(arguments) {
+            for (index, argument) in arguments.enumerated() {
+                bufferPtr.initializeElement(at: index, to: argument.makeNativeStruct())
+            }
+            
+            // without withExtendedLifetime compiler can eagerly drop `arguments` here, it's not aware of `makeNativeStruct` pointers
+            
+            gi.classdb_register_extension_class_signal (extensionInterface.getLibrary(), &className.content, &signalName.content, ptr, GDExtensionInt(arguments.count))
+            bufferPtr.deinitialize()
+        }
+    }
+}
+
+/// Internal API.
 public func _addPropertyGroup(className: StringName, name: String, prefix: String) {
     let gname = GString(stringLiteral: name)
     let gprefix = GString(stringLiteral: prefix)

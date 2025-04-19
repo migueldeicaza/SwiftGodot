@@ -10,10 +10,10 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// and ``disconnect(_:)`` to drop the connection.
 /// Use the ``emit(...)`` method to emit a signal.
 /// You can also await the ``emitted`` property for waiting for a single emission of the signal.
-///
 public class SignalWithArguments<each T: _GodotBridgeable> {
     var target: Object
     var signalName: StringName
+    
     public init(target: Object, signalName: String) {
         self.target = target
         self.signalName = StringName(signalName)
@@ -22,55 +22,53 @@ public class SignalWithArguments<each T: _GodotBridgeable> {
     /// Register this signal with the Godot runtime.
     // TODO: the @Signal macro could optionally accept a list of argument names, so that we could register them as well.
     public static func register<C: Object>(_ signalName: String, info: ClassInfo<C>) {
-        let arguments = expandArguments(repeat (each T).self)
-        info.registerSignal(name: StringName(signalName), arguments: arguments)
+        info.registerSignal(name: StringName(signalName), arguments: argumentPropInfos)
+    }
+    
+    /// Register ``SignalWithArguments`` with a set of arguments inferred from generic clause as a signal named `signalName` in a class named `className`.
+    public static func register(as signalName: StringName, in className: StringName) {
+        _registerSignal(signalName, in: className, arguments: argumentPropInfos)
     }
 
     /// Expand a list of argument types into a list of PropInfo objects
-    static func expandArguments<each ArgType: _GodotBridgeable>(_ type: repeat (each ArgType).Type) -> [PropInfo] {
+    static var argumentPropInfos: [PropInfo] {
         var arguments = [PropInfo]()
         var i = 1
         
-        for argument in repeat (each type)._argumentPropInfo(name: "arg\(i)") {
+        for argument in repeat (each T)._argumentPropInfo(name: "arg\(i)") {
             arguments.append(argument)
             i += 1
         }
         
         return arguments
     }
-
+    
     /// Connects the signal to the specified callback
     /// To disconnect, call the disconnect method, with the returned token on success
     ///
     /// - Parameters:
     /// - callback: the method to invoke when this signal is raised
     /// - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).
-    /// - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.
+    /// - Returns: ``Callable`` that can be used to ``disconnect(_:)`` from the signal. Or ignored altogether.
     ///
+    /// ### Example
+    /// ```
+    /// // someSignal: SignalWithArguments<String, Bool>
+    /// someSignal.connect { string, bool in
+    ///      // do something
+    /// }
+    /// ```
     @discardableResult
-    public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Object {
-        let signalProxy = SignalProxy()
-        signalProxy.proxy = { arguments in
-            var index = 0
-            do {
-                callback(
-                    repeat try (each T).fromArguments(arguments, incrementingIndex: &index)
-                )
-            } catch {
-                GD.printErr(error)
-            }
-        }
-
-        let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
-        let r = target.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
-        if r != .ok { GD.printErr("Warning, error connecting to signal, code: \(r)") }
-        return signalProxy
+    public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Callable {
+        let callable = Callable(callback)
+        let error = target.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))        
+        return callable
     }
 
     /// Disconnects a signal that was previously connected, the return value from calling
     /// ``connect(flags:_:)``
-    public func disconnect(_ token: Object) {
-        target.disconnect(signal: signalName, callable: Callable(object: token, method: SignalProxy.proxyName))
+    public func disconnect(_ token: Callable) {
+        target.disconnect(signal: signalName, callable: token)
     }
 
     /// Emit the signal (with required arguments, if there are any)
@@ -99,6 +97,7 @@ public class SignalWithArguments<each T: _GodotBridgeable> {
     }
 
     /// You can await this property to wait for the signal to be emitted once.
+    @available(*, deprecated, message: "This is inherently unsafe because if the signal never fires the coroutine state of `async` function leaks, capturing all its context required for next continuation forever, use callbacks instead")
     public var emitted: Void {
         get async {
             await withCheckedContinuation { c in
