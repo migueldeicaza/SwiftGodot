@@ -485,6 +485,35 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
+    
+    func test_unsafe_strings_leaks() {
+        checkLeaks {
+            for _ in 0...1_000 {
+                var string = ""
+                for i in 0...Int.random(in: 10...15) {
+                    string += "\(i)"
+                }
+                
+                let a = GString(string)
+                let b = StringName(string)
+                let c = Variant(a)
+                let d = FastVariant(a)
+                let e = Variant(string)
+                let f = FastVariant(string)
+                let g = Variant(b)
+                let h = FastVariant(b)
+                                
+                XCTAssertEqual(a.description, string)
+                XCTAssertEqual(b.description, string)
+                XCTAssertEqual(c.to(String.self), string)
+                XCTAssertEqual(d.to(String.self), string)
+                XCTAssertEqual(e.description, string)
+                XCTAssertEqual(f.description, string)
+                XCTAssertEqual(g.to(String.self), string)
+                XCTAssertEqual(h.to(String.self), string)                
+            }
+        }
+    }
   
     // https://github.com/migueldeicaza/SwiftGodot/issues/544
     func test_544_leak() {

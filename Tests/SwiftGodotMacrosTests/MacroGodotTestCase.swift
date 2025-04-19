@@ -31,7 +31,7 @@ class MacroGodotTestCase: XCTestCase {
     /// Set it to local path to regenerate expansions test data in case the macro was updated
     let regeneratedResourcesPath: String? =
         nil
-        //URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources").path()
+//        URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources").path()
         
     
     func regenerateExpansionResource(input: String, outputUrl: URL) {
@@ -52,7 +52,7 @@ class MacroGodotTestCase: XCTestCase {
     
     /// Compare expansion of `input`  with contents of `TestData/TestCaseClassName.functioName.expected`
     /// If `MacroGodotTestCase.regeneratedResourcesPath` is not `nil`, it will regenerate the expected output into that path instead
-    func assertExpansion(of input: String, file: StaticString = #file, line: UInt = #line, function: String = #function) {
+    func assertExpansion(of input: String, file: StaticString = #file, line: UInt = #line, function: String = #function, diagnostics: [DiagnosticSpec] = []) {
         let resourceName = "\(Self.self).\(function.dropLast(2))"
         
         if let regeneratedResourcesPath {
@@ -71,38 +71,11 @@ class MacroGodotTestCase: XCTestCase {
             return
         }
         
-        assertExpansion(of: input, into: output, file: file, line: line)
+        assertExpansion(of: input, into: output, file: file, line: line, diagnostics: diagnostics)
     }
     
-    /// Runs comparison of expansion of `input` into `output` using `Self.macros`. If `generateNew` is true, copies the body of new test content into the clipboard (macOS only, other OS will do nothing)
-    func assertExpansion(generateNew: Bool = false, of input: String, into output: String, file: StaticString = #file, line: UInt = #line) {
-        if generateNew {
-            let file = Parser.parse(source: input)
-            
-            let context = BasicMacroExpansionContext(
-                sourceFiles: [file: .init(moduleName: "test", fullFilePath: "test.swift")]
-            )
-
-            let expandedSourceFile = file.expand(macros: Self.macros, contextGenerator: { _ in context }, indentationWidth: .spaces(4))
-            
-            let testBody = """
-            assertExpansion(
-                of: \"""
-            \(indentCodeLiteral(input))
-                \""",
-                into: \"""
-            \(indentCodeLiteral(expandedSourceFile.description))
-                \"""
-            )
-            """
-            
-            #if canImport(AppKit)
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(testBody, forType: .string)
-            #endif
-            XCTFail()
-        }
-        
-        assertMacroExpansion(input, expandedSource: output, macros: Self.macros, file: file, line: line)
+    /// Runs comparison of expansion of `input` into `output` using `Self.macros`.
+    func assertExpansion(of input: String, into output: String, file: StaticString = #file, line: UInt = #line, diagnostics: [DiagnosticSpec]) {
+        assertMacroExpansion(input, expandedSource: output, diagnostics: diagnostics, macros: Self.macros, file: file, line: line)
     }
 }

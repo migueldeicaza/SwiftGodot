@@ -2,25 +2,47 @@
 public class Issue353: Node {
     var prefix1_prefixed_bool: Bool = true
 
-    func _mproxy_set_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "prefix1_prefixed_bool", prefix1_prefixed_bool) {
-            prefix1_prefixed_bool = $0
+    static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "prefix1_prefixed_bool", object.prefix1_prefixed_bool) {
+            object.prefix1_prefixed_bool = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_prefix1_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(prefix1_prefixed_bool)
+    static func _mproxy_get_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.prefix1_prefixed_bool)
     }
     var non_prefixed_bool: Bool = true
 
-    func _mproxy_set_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "non_prefixed_bool", non_prefixed_bool) {
-            non_prefixed_bool = $0
+    static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "non_prefixed_bool", object.non_prefixed_bool) {
+            object.non_prefixed_bool = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_non_prefixed_bool(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(non_prefixed_bool)
+    static func _mproxy_get_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.non_prefixed_bool)
     }
 
     override open class var classInitializer: Void {
@@ -32,26 +54,34 @@ public class Issue353: Node {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Issue353> (name: className)
-        classInfo.addPropertyGroup(name: "Group With a Prefix", prefix: "prefix1")
-        let _pprefix1_prefixed_bool = PropInfo (
-            propertyType: .bool,
-            propertyName: "prefix1_prefixed_bool",
+        SwiftGodot._addPropertyGroup(className: className, name: "Group With a Prefix", prefix: "prefix1")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get__prefixed_bool", flags: .default, returnValue: _pprefix1_prefixed_bool, arguments: [], function: Issue353._mproxy_get_prefix1_prefixed_bool)
-        classInfo.registerMethod (name: "_mproxy_set__prefixed_bool", flags: .default, returnValue: nil, arguments: [_pprefix1_prefixed_bool], function: Issue353._mproxy_set_prefix1_prefixed_bool)
-        classInfo.registerProperty (_pprefix1_prefixed_bool, getter: "_mproxy_get__prefixed_bool", setter: "_mproxy_set__prefixed_bool")
-        let _pnon_prefixed_bool = PropInfo (
-            propertyType: .bool,
-            propertyName: "non_prefixed_bool",
+            info: SwiftGodot._propInfo(
+                at: \Issue353.prefix1_prefixed_bool,
+                name: "prefix1_prefixed_bool",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get__prefixed_bool",
+            setterName: "set__prefixed_bool",
+            getterFunction: Issue353._mproxy_get_prefix1_prefixed_bool,
+            setterFunction: Issue353._mproxy_set_prefix1_prefixed_bool
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_non_prefixed_bool", flags: .default, returnValue: _pnon_prefixed_bool, arguments: [], function: Issue353._mproxy_get_non_prefixed_bool)
-        classInfo.registerMethod (name: "_mproxy_set_non_prefixed_bool", flags: .default, returnValue: nil, arguments: [_pnon_prefixed_bool], function: Issue353._mproxy_set_non_prefixed_bool)
-        classInfo.registerProperty (_pnon_prefixed_bool, getter: "_mproxy_get_non_prefixed_bool", setter: "_mproxy_set_non_prefixed_bool")
+            info: SwiftGodot._propInfo(
+                at: \Issue353.non_prefixed_bool,
+                name: "non_prefixed_bool",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_non_prefixed_bool",
+            setterName: "set_non_prefixed_bool",
+            getterFunction: Issue353._mproxy_get_non_prefixed_bool,
+            setterFunction: Issue353._mproxy_set_non_prefixed_bool
+        )
     } ()
 }

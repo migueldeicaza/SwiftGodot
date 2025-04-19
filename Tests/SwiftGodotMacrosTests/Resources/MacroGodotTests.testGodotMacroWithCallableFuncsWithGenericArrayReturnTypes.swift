@@ -4,26 +4,24 @@ class CallableCollectionsNode: Node {
         [1, 2, 3, 4]
     }
 
-    func _mproxy_get_ages(arguments: borrowing Arguments) -> Variant? {
-        let result = get_ages()
-        return Variant(
-            result.reduce(into: GArray(Int.self)) { array, element in
-                array.append(Variant(element))
-            }
-        )
+    static func _mproxy_get_ages(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `get_ages`: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.get_ages())
 
     }
     func get_markers() -> Array<Marker3D> {
         [.init(), .init(), .init()]
     }
 
-    func _mproxy_get_markers(arguments: borrowing Arguments) -> Variant? {
-        let result = get_markers()
-        return Variant(
-            result.reduce(into: GArray(Marker3D.self)) { array, element in
-                array.append(Variant(element))
-            }
-        )
+    static func _mproxy_get_markers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `get_markers`: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.get_markers())
 
     }
 
@@ -35,10 +33,26 @@ class CallableCollectionsNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("CallableCollectionsNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
         let classInfo = ClassInfo<CallableCollectionsNode> (name: className)
-        classInfo.registerMethod(name: StringName("get_ages"), flags: .default, returnValue: prop_0, arguments: [], function: CallableCollectionsNode._mproxy_get_ages)
-        let prop_1 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Marker3D]"), hint: .arrayType, hintStr: "Marker3D", usage: .default)
-        classInfo.registerMethod(name: StringName("get_markers"), flags: .default, returnValue: prop_1, arguments: [], function: CallableCollectionsNode._mproxy_get_markers)
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "get_ages",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Array<Int>.self),
+            arguments: [
+
+            ],
+            function: CallableCollectionsNode._mproxy_get_ages
+        )
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "get_markers",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Array<Marker3D>.self),
+            arguments: [
+
+            ],
+            function: CallableCollectionsNode._mproxy_get_markers
+        )
     } ()
 }

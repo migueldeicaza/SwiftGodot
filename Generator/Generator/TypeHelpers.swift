@@ -131,7 +131,7 @@ var core_types = [
 ]
 
 func isCoreType (name: String) -> Bool {
-    core_types.contains(name)
+    core_types.contains(reverseMapTypeName(name)) || name.hasPrefix("VariantCollection<") || name.hasPrefix("ObjectCollection<")
 }
 
 func isPrimitiveType (name: String) -> Bool {
@@ -150,6 +150,20 @@ func mapTypeName (_ name: String) -> String {
     }
     return name
 }
+
+func reverseMapTypeName (_ name: String) -> String {
+    if name == "GString" {
+        return "String"
+    }
+    if name == "GArray" {
+        return "Array"
+    }
+    if name == "GDictionary" {
+        return "Dictionary"
+    }
+    return name
+}
+
 func mapTypeNameDoc (_ name: String) -> String {
     if name == "String" {
         return "String"

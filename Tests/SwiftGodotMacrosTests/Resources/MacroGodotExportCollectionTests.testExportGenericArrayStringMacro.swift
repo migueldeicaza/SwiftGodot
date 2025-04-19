@@ -1,11 +1,22 @@
 var greetings: VariantCollection<String> = []
 
-func _mproxy_set_greetings(args: borrowing Arguments) -> Variant? {
-    _macroExportSet(args, "greetings", greetings) {
-        greetings = $0
+static func _mproxy_set_greetings(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+    guard let object = _unwrap(self, pInstance: pInstance) else {
+        SwiftGodot.GD.printErr("Error calling getter for greetings: failed to unwrap instance \(String(describing: pInstance))")
+        return nil
     }
+
+    SwiftGodot._invokeSetter(arguments, "greetings", object.greetings) {
+        object.greetings = $0
+    }
+    return nil
 }
 
-func _mproxy_get_greetings(args: borrowing Arguments) -> Variant? {
-    _macroExportGet(greetings)
+static func _mproxy_get_greetings(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+    guard let object = _unwrap(self, pInstance: pInstance) else {
+        SwiftGodot.GD.printErr("Error calling getter for greetings: failed to unwrap instance \(String(describing: pInstance))")
+        return nil
+    }
+
+    return SwiftGodot._invokeGetter(object.greetings)
 }

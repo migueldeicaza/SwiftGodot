@@ -4,18 +4,20 @@ class SomeNode: Node {
         nodes.forEach { print($0.name) }
     }
 
-    func _mproxy_printNames(arguments: borrowing Arguments) -> Variant? {
+    static func _mproxy_printNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
-            let arg0: ObjectCollection<Node> = try arguments.objectCollectionArgument(ofType: Node.self, at: 0)
-            printNames(of: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
-            return nil
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `printNames`: failed to unwrap instance \(String(describing: pInstance))")
+                return nil
+            }
+            let arg0 = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
+            return SwiftGodot._wrapCallableResult(object.printNames(of: arg0))
+
         } catch {
-            GD.printErr("Error calling `printNames`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `printNames`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -26,11 +28,16 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "nodes", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
-        let printNamesArgs = [
-            prop_0,
-        ]
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod(name: StringName("printNames"), flags: .default, returnValue: nil, arguments: printNamesArgs, function: SomeNode._mproxy_printNames)
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "printNames",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(ObjectCollection<Node>.self, name: "nodes")
+            ],
+            function: SomeNode._mproxy_printNames
+        )
     } ()
 }

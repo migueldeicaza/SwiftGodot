@@ -10,10 +10,10 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// and ``disconnect(_:)`` to drop the connection.
 /// Use the ``emit(...)`` method to emit a signal.
 /// You can also await the ``emitted`` property for waiting for a single emission of the signal.
-///
-public class SignalWithArguments<each T: VariantStorable> {
-    var target: Object
-    var signalName: StringName
+public struct SignalWithArguments<each T: _GodotBridgeable> {
+    weak var target: Object?
+    let signalName: StringName
+    
     public init(target: Object, signalName: String) {
         self.target = target
         self.signalName = StringName(signalName)
@@ -22,56 +22,53 @@ public class SignalWithArguments<each T: VariantStorable> {
     /// Register this signal with the Godot runtime.
     // TODO: the @Signal macro could optionally accept a list of argument names, so that we could register them as well.
     public static func register<C: Object>(_ signalName: String, info: ClassInfo<C>) {
-        let arguments = expandArguments(repeat (each T).self)
-        info.registerSignal(name: StringName(signalName), arguments: arguments)
+        info.registerSignal(name: StringName(signalName), arguments: argumentPropInfos)
+    }
+    
+    /// Register ``SignalWithArguments`` with a set of arguments inferred from generic clause as a signal named `signalName` in a class named `className`.
+    public static func register(as signalName: StringName, in className: StringName) {
+        _registerSignal(signalName, in: className, arguments: argumentPropInfos)
     }
 
     /// Expand a list of argument types into a list of PropInfo objects
-    /// Note: it doesn't currently seem to be possible to constrain
-    /// the type of the pack expansion to be ``VariantStorable.Type``, but
-    /// we know that it always will be, so we can force cast it.
-    static func expandArguments<each ArgType>(_ type: repeat each ArgType) -> [PropInfo] {
-        var args = [PropInfo]()
-        var argC = 1
-        for arg in repeat each type {
-            let a = arg as! any VariantStorable.Type
-            args.append(a.propInfo(name: "arg\(argC)"))
-            argC += 1
-
+    static var argumentPropInfos: [PropInfo] {
+        var arguments = [PropInfo]()
+        var i = 1
+        
+        for argument in repeat (each T)._argumentPropInfo(name: "arg\(i)") {
+            arguments.append(argument)
+            i += 1
         }
-        return args
+        
+        return arguments
     }
-
+    
     /// Connects the signal to the specified callback
     /// To disconnect, call the disconnect method, with the returned token on success
     ///
     /// - Parameters:
     /// - callback: the method to invoke when this signal is raised
     /// - flags: Optional, can be also added to configure the connection's behavior (see ``Object/ConnectFlags`` constants).
-    /// - Returns: an object token that can be used to disconnect the object from the target on success, or the error produced by Godot.
+    /// - Returns: ``Callable`` that can be used to ``disconnect(_:)`` from the signal. Or ignored altogether.
     ///
+    /// ### Example
+    /// ```
+    /// // someSignal: SignalWithArguments<String, Bool>
+    /// someSignal.connect { string, bool in
+    ///      // do something
+    /// }
+    /// ```
     @discardableResult
-    public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Object {
-        let signalProxy = SignalProxy()
-        signalProxy.proxy = { args in
-            var index = 0
-            do {
-                callback(repeat try args.unwrap(ofType: (each T).self, index: &index))
-            } catch {
-                print("Error unpacking signal arguments: \(error)")
-            }
-        }
-
-        let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
-        let r = target.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
-        if r != .ok { print("Warning, error connecting to signal, code: \(r)") }
-        return signalProxy
+    public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Callable {
+        let callable = Callable(callback)
+        let error = target?.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
+        return callable
     }
 
     /// Disconnects a signal that was previously connected, the return value from calling
     /// ``connect(flags:_:)``
-    public func disconnect(_ token: Object) {
-        target.disconnect(signal: signalName, callable: Callable(object: token, method: SignalProxy.proxyName))
+    public func disconnect(_ token: Callable) {
+        target?.disconnect(signal: signalName, callable: token)
     }
 
     /// Emit the signal (with required arguments, if there are any)
@@ -91,7 +88,11 @@ public class SignalWithArguments<each T: VariantStorable> {
         let args = GArray()
         args.append(Variant(signalName))
         for arg in repeat each t {
-            args.append(Variant(arg))
+            args.append(arg.toVariant())
+        }
+        
+        guard let target else {
+            return GodotError.failed
         }
         let result = target.callv(method: "emit_signal", argArray: args)
         guard let result else { return .ok }
@@ -100,63 +101,22 @@ public class SignalWithArguments<each T: VariantStorable> {
     }
 
     /// You can await this property to wait for the signal to be emitted once.
+    @available(*, deprecated, message: "This is inherently unsafe because if the signal never fires the coroutine state of `async` function leaks, capturing all its context required for next continuation forever, use callbacks instead")
     public var emitted: Void {
         get async {
             await withCheckedContinuation { c in
                 let signalProxy = SignalProxy()
                 signalProxy.proxy = { _ in c.resume() }
                 let callable = Callable(object: signalProxy, method: SignalProxy.proxyName)
+                
+                guard let target else {
+                    c.resume()
+                    return
+                }
+                
                 let r = target.connect(signal: signalName, callable: callable, flags: UInt32(Object.ConnectFlags.oneShot.rawValue))
                 if r != .ok { print("Warning, error connecting to signal, code: \(r)") }
             }
-
         }
-
-    }
-
-}
-
-extension Arguments {
-    enum UnpackError: Error {
-        /// The argument could not be coerced to the expected type.
-        case typeMismatch
-
-        /// The argument was nil.
-        case nilArgument
-    }
-
-    /// Unpack an argument as a specific type.
-    /// We throw a runtime error if the argument is not of the expected type,
-    /// or if there are not enough arguments to unpack.
-    func unwrap<T: VariantStorable>(ofType type: T.Type, index: inout Int) throws -> T {
-        let argument = try optionalVariantArgument(at: index)
-        index += 1
-
-        // if the argument was nil, throw error
-        guard let argument else {
-            throw UnpackError.nilArgument
-        }
-
-        // NOTE:
-        // Ideally we could just call T.unpack(from: argument) here.
-        // Unfortunately, T.unpack is dispatched statically, but we don't
-        // have the full dynamic type information for T when we're compiling.
-        // The only thing we know about type T is that it conforms to VariantStorable.
-        // We don't know if inherits from Object, so the compiler will always pick the
-        // default non-object implementation of T.unpack.
-
-        // try to unpack the variant as the expected type
-        let value: T?
-        if (argument.gtype == .object) && (T.Representable.godotType == .object) {
-            value = argument.asObject(Object.self) as? T
-        } else {
-            value = T(argument)
-        }
-
-        guard let value else {
-            throw UnpackError.typeMismatch
-        }
-
-        return value
     }
 }

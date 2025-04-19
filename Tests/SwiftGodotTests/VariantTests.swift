@@ -22,8 +22,9 @@ final class VariantTests: GodotTestCase {
     func testWrap() {
         let x: Node? = Node()
         let _ = Variant(x)
-        
     }
+    
+    
     func testVariantCall() {
         let string = "Hello Hello Hello Hello"
         let variant = Variant(string)
@@ -151,6 +152,18 @@ final class VariantTests: GodotTestCase {
         let node = Node()
         XCTAssertTrue (Variant (node) == Variant (node))
         XCTAssertFalse (Variant (node) == Variant (Node ()))
+    }
+    
+    func testNoMisconversions() {
+        let variant = Vector2(x: 1, y: 2).toVariant()
+        
+        XCTAssertNil(variant.to(Bool.self))
+        XCTAssertNil(variant.to(Int.self))
+        XCTAssertNil(variant.to(Int32.self))
+        XCTAssertNil(variant.to(UInt8.self)) // Still Int! We differentiate `Bool` and `BinaryInteger`.
+        XCTAssertNil(variant.to(String.self))
+        XCTAssertNil(variant.to(Float.self))
+        XCTAssertNil(variant.to(Double.self))
     }
     
 }

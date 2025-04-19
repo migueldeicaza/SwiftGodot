@@ -181,3 +181,40 @@ class SomeNode: Node {
         nodes.forEach { print($0?.name ?? "") }
     }
 }
+
+@Godot
+class DebugThing: SwiftGodot.Object {
+    @Signal var livesChanged: SignalWithArguments<Swift.Int>
+    
+    @Callable
+    func do_thing(value: Swift.Int) -> SwiftGodot.Variant? {
+        return nil
+    }
+    
+    @Callable
+    func explicitVoid(value: Swift.Int) -> Void {
+        return
+    }    
+}
+
+@Godot class MyThing: SwiftGodot.RefCounted {
+
+}
+
+@Godot class ObjectWithCallableReturningOptionalObject: SwiftGodot.Node {
+    @Callable func get_thing() -> MyThing? {
+        return nil
+    }
+}
+
+@Godot class ObjectWithCallableTakingOptionalBuiltin: SwiftGodot.Node {
+    @Callable func do_int(value: Int?) {  }
+    @Callable func do_string(value: String?) { }
+}
+
+@Godot class ObjectWithFunctionTakingAndReturningOptionalVariant: SwiftGodot.Node {
+    @Callable
+    func bar(_ value: Variant?) -> Variant? {
+        return value
+    }
+}

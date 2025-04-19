@@ -7,6 +7,7 @@
 
 @_implementationOnly import GDExtension
 
+
 /// Provides support to expose Swift methods and signals to the Godot runtime, making it callable
 /// from its runtime and scripting language.
 ///
@@ -46,15 +47,24 @@ public class ClassInfo<T:Object> {
     /// - Parameters:
     ///  - name: the name we want to use to register the signal
     ///  - arguments: an array of PropInfo structures that describe each argument that must be passed to the signal
-    public func registerSignal (name: StringName, arguments propInfo: [PropInfo] = []) {
-        let propPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: propInfo.count)
-        var i = 0
-        for prop in propInfo {
-            propPtr [i] = prop.makeNativeStruct()
-            i += 1
+    public func registerSignal (name signalName: StringName, arguments: [PropInfo] = []) {
+        withUnsafeTemporaryAllocation(of: GDExtensionPropertyInfo.self, capacity: arguments.count) { bufferPtr in
+            guard let ptr = bufferPtr.baseAddress else {
+                GD.print("Swift.withUnsafeTemporaryAllocation failed at `ClassInfo.registerSignal`")
+                return
+            }
+            
+            withExtendedLifetime(arguments) {
+                for (index, argument) in arguments.enumerated() {
+                    bufferPtr.initializeElement(at: index, to: argument.makeNativeStruct())
+                }
+                
+                // without withExtendedLifetime compiler can eagerly drop `arguments` here, it's not aware of `makeNativeStruct` pointers
+                
+                gi.classdb_register_extension_class_signal (extensionInterface.getLibrary(), &name.content, &signalName.content, ptr, GDExtensionInt(arguments.count))
+                bufferPtr.deinitialize()
+            }
         }
-        gi.classdb_register_extension_class_signal (extensionInterface.getLibrary(), &self.name.content, &name.content, propPtr, GDExtensionInt(propInfo.count))
-        propPtr.deallocate()
     }
     
     // Here so we can box the function pointer
@@ -133,6 +143,8 @@ public class ClassInfo<T:Object> {
         if let returnValue {
             retInfo = returnValue.makeNativeStruct()
         }
+        
+        // TODO: leaks, never deallocated
         let userdata = UnsafeMutablePointer<FunctionInfo>.allocate(capacity: 1)
         userdata.initialize(to: .init(function, retType: returnValue?.propertyType))
         
@@ -186,11 +198,32 @@ public class ClassInfo<T:Object> {
     ///  - info: PropInfo describing the property you wil register
     ///  - getter: the name of the method you have already registered and will provide the getter functionality
     ///  - setter: the name of the method you have already registered and will provide the setter functionality
-    public func registerProperty (_ info: PropInfo, getter: StringName, setter: StringName){
+    public func registerProperty (_ info: PropInfo, getter: StringName, setter: StringName) {
         var pinfo = GDExtensionPropertyInfo ()
         pinfo = info.makeNativeStruct()
         
         gi.classdb_register_extension_class_property (extensionInterface.getLibrary(), &self.name.content, &pinfo, &setter.content, &getter.content)
+    }
+    
+    /// Registers the property in the class with the information provided in `info` and corresponding getter and setter functions.
+    /// It's a convenience function that calls``registerProperty`` and ``registerMethod`` for getter and setter
+    ///
+    /// - Parameters:
+    ///  - info: PropInfo describing the property you wil register
+    ///  - getterName: the name of the method for providing getter functionality
+    ///  - setterName: the name of the method for providing setter functionality
+    ///  - getterFunction: Swift getter function
+    ///  - setterFunction: Swift setter function
+    public func registerPropertyWithGetterSetter(
+        _ info: PropInfo,
+        getterName: StringName,
+        setterName: StringName,
+        getterFunction: @escaping (T) -> (borrowing Arguments) -> Variant?,
+        setterFunction: @escaping (T) -> (borrowing Arguments) -> Variant?
+    ) {
+        registerMethod(name: getterName, flags: .default, returnValue: info, arguments: [], function: getterFunction)
+        registerMethod(name: setterName, flags: .default, returnValue: nil, arguments: [info], function: setterFunction)
+        registerProperty(info, getter: getterName, setter: setterName)
     }
 }
 
@@ -202,7 +235,7 @@ public struct PropInfo: CustomDebugStringConvertible {
     public var propertyType: Variant.GType
     /// The name for the property
     public var propertyName: StringName
-    /// The class name where this is defined
+    /// The special identifier needed in some cases: class name for `.object` props, Array[typename] for typed Arrays, empty otherwise
     public var className: StringName
     /// Property Hint for this property
     public var hint: PropertyHint
@@ -219,6 +252,10 @@ public struct PropInfo: CustomDebugStringConvertible {
         self.hintStr = hintStr
         self.usage = usage
     }
+    
+    // TODO: violates invariant
+    /// ``withUnsafeMutablePointer`` doc says:
+    /// Do not store or return the pointer for later use.
     func makeNativeStruct () -> GDExtensionPropertyInfo {
         withUnsafeMutablePointer(to: &propertyName.content) { propertyNamePtr in
             withUnsafeMutablePointer(to: &className.content) { classNamePtr in

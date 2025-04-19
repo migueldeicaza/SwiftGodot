@@ -2,14 +2,25 @@
 class Garage: Node {
     var bar: Bool = false
 
-    func _mproxy_set_bar(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "bar", bar) {
-            bar = $0
+    static func _mproxy_set_bar(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for bar: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "bar", object.bar) {
+            object.bar = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_bar(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(bar)
+    static func _mproxy_get_bar(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for bar: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.bar)
     }
 
     override open class var classInitializer: Void {
@@ -21,16 +32,20 @@ class Garage: Node {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
-        classInfo.addPropertyGroup(name: "Example", prefix: "example")
-        let _pbar = PropInfo (
-            propertyType: .bool,
-            propertyName: "bar",
+        SwiftGodot._addPropertyGroup(className: className, name: "Example", prefix: "example")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_bar", flags: .default, returnValue: _pbar, arguments: [], function: Garage._mproxy_get_bar)
-        classInfo.registerMethod (name: "_mproxy_set_bar", flags: .default, returnValue: nil, arguments: [_pbar], function: Garage._mproxy_set_bar)
-        classInfo.registerProperty (_pbar, getter: "_mproxy_get_bar", setter: "_mproxy_set_bar")
+            info: SwiftGodot._propInfo(
+                at: \Garage.bar,
+                name: "bar",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_bar",
+            setterName: "set_bar",
+            getterFunction: Garage._mproxy_get_bar,
+            setterFunction: Garage._mproxy_set_bar
+        )
     } ()
 }

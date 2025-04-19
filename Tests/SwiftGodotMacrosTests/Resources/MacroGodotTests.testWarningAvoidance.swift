@@ -14,14 +14,25 @@ final class MyData: Resource {
 final class MyClass: Node {
     var data: MyData = .init()
 
-    func _mproxy_set_data(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "data", data) {
-            data = $0
+    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "data", object.data) {
+            object.data = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_data(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(data)
+    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.data)
     }
 
     override public class var classInitializer: Void {
@@ -32,16 +43,20 @@ final class MyClass: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MyClass")
         assert(ClassDB.classExists(class: className))
-        let _pdata = PropInfo (
-            propertyType: .object,
-            propertyName: "data",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
         let classInfo = ClassInfo<MyClass> (name: className)
-        classInfo.registerMethod (name: "_mproxy_get_data", flags: .default, returnValue: _pdata, arguments: [], function: MyClass._mproxy_get_data)
-        classInfo.registerMethod (name: "_mproxy_set_data", flags: .default, returnValue: nil, arguments: [_pdata], function: MyClass._mproxy_set_data)
-        classInfo.registerProperty (_pdata, getter: "_mproxy_get_data", setter: "_mproxy_set_data")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \MyClass.data,
+                name: "data",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_data",
+            setterName: "set_data",
+            getterFunction: MyClass._mproxy_get_data,
+            setterFunction: MyClass._mproxy_set_data
+        )
     } ()
 }

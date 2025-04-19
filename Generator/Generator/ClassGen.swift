@@ -281,7 +281,7 @@ func generateMethods (_ p: Printer,
     }
     
     if virtuals.count > 0 {
-        p ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
+        p ("override class func getVirtualDispatcher(name: StringName) -> GDExtensionClassCallVirtual?"){
             p ("guard implementedOverrides().contains(name) else { return nil }")
             p ("switch name.description") {
                 for name in virtuals.keys.sorted() {
@@ -510,7 +510,7 @@ func generateSignals (_ p: Printer,
 func getSignalType(_ signal: JGodotSignal) -> String {
     var argTypes: [String] = []
     for signalArgument in signal.arguments ?? [] {
-        let godotType = getGodotType(signalArgument)
+        let godotType = getGodotType(signalArgument)        
         if !godotType.isEmpty && godotType != "Variant" {
             var t = godotType
             if !isCoreType(name: t) && !isPrimitiveType(name: signalArgument.type) {
@@ -587,7 +587,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     p (typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p.staticVar(visibility: "public ", cached: true, name: "shared", type: cdef.name) {
+            p.staticLet(visibility: "public ", name: "shared", type: cdef.name) {
                 p ("return withUnsafePointer (to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
                     p ("lookupObject (nativeHandle: gi.global_get_singleton (ptr)!, ownsRef: false)!")
                 }
@@ -626,25 +626,67 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
         
         if inherits == objectInherits {
-            p("/// Wrap ``\(cdef.name)`` into a ``Variant``")
-            p("public func toVariant() -> Variant") {
-                p ("Variant(self)")
-            }
-        
-            p("/// Attempt to unwrap ``\(cdef.name)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
-            p("public class func fromVariant(_ variant: Variant) -> Self?") {
-                p("variant.asObject(Self.self)")
+            p("""
+            /// Wrap ``\(cdef.name)`` into a ``Variant``
+            @inline(__always)
+            @inlinable
+            public func toVariant() -> Variant {
+                Variant(self)                
             }
             
-            p("/// Internal API")
-            p("public func _macroRcRef()") {
-                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            /// Wrap ``\(cdef.name)`` into a ``Variant?``
+            @inline(__always)
+            @inlinable
+            @_disfavoredOverload
+            public func toVariant() -> Variant? {
+                Variant(self)                
             }
             
-            p("/// Internal API")
-            p("public func _macroRcUnref()") {
-                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            /// Extract ``\(cdef.name)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+                guard let value = variant.asObject(Self.self) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
             }
+            
+            /// Wrap ``\(cdef.name)`` into a ``FastVariant``
+            @inline(__always)
+            @inlinable
+            public func toFastVariant() -> FastVariant {
+                FastVariant(self)                
+            }
+            
+            /// Wrap ``\(cdef.name)`` into a ``FastVariant?``
+            @inline(__always)
+            @inlinable
+            @_disfavoredOverload
+            public func toFastVariant() -> FastVariant? {
+                FastVariant(self)                
+            }
+            
+            /// Extract ``\(cdef.name)`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
+            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
+                guard let value = variant.to(self) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            
+            /// Internal API
+            public func _macroRcRef() {
+                // no-op, needed for virtual dispatch when RefCounted is stored as Object
+            }
+            
+            /// Internal API
+            public func _macroRcUnref() {
+                // no-op, needed for virtual dispatch when RefCounted is stored as Object
+            }
+            """)
         }
         
         if cdef.name == "RefCounted" {

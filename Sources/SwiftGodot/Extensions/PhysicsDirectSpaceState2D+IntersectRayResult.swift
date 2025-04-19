@@ -6,12 +6,12 @@
 //
 
 private extension GDictionary {
-    func unwrap<T: VariantStorable>(key: String) -> T? {
+    func unwrap<T: VariantConvertible>(key: String) -> T? {
         guard let variant = self[key] else {
             GD.pushWarning("There was no Variant for key: \(key)")
             return nil
         }
-        guard let result = T.unwrap(from: variant) else {
+        guard let result = T.fromVariant(variant) else {
             GD.pushWarning("\(T.self).unwrap(from: \(variant)) was nil")
             return nil
         }
@@ -43,7 +43,7 @@ extension PhysicsDirectSpaceState2D {
                   let position: Vector2 = dictionary.unwrap(key: "position"),
                   let normal: Vector2 = dictionary.unwrap(key: "normal"),
                   let colliderVariant = dictionary["collider"],
-                  let collider = T.unwrap(from: colliderVariant),
+                  let collider = T.fromVariant(colliderVariant),
                   let colliderId: Int = dictionary.unwrap(key: "collider_id"),
                   let rid: RID = dictionary.unwrap(key: "rid"),
                   let shape: Int = dictionary.unwrap(key: "shape") else {

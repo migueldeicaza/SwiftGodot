@@ -21,7 +21,8 @@ final class MacroGodotTests: MacroGodotTestCase {
             "Godot": GodotMacro.self,
             "Callable": GodotCallable.self,
             "Export": GodotExport.self,
-            "signal": SignalMacro.self
+            "signal": SignalMacro.self,
+            "Signal": SignalAttachmentMacro.self
         ]
     }
     
@@ -256,6 +257,20 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
+    func testNewSignalMacro() {
+        assertExpansion(
+            of: """
+            @Godot
+            class Demo: Node3D {
+                @Signal var burp: SimpleSignal
+            
+                @Signal var livesChanged: SignalWithArguments<Int>
+            }
+
+            """
+        )
+    }
+    
     func testExportGodotUsage() {
         assertExpansion(
             of: """
@@ -289,4 +304,162 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
+    
+    func testStaticFunction() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Callable static func get_some() -> Int64 { 10 }
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testClassFunction() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Callable class func get_some() -> Int64 { 10 }
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testStaticExport() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export
+                static var int = 10
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testClassExport() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export
+                class var int = 10
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testClassSignal() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Signal
+                class var int: SimpleSignal
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testStaticSignal() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Signal
+                static var int: SimpleSignal
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testDebugThing() {
+        assertExpansion(
+            of: """
+            @Godot
+            class DebugThing: SwiftGodot.Object {
+                @Signal var livesChanged: SignalWithArguments<Swift.Int>
+            
+                @Callable
+                func do_thing(value: SwiftGodot.Variant?) -> SwiftGodot.Variant? {
+                    return nil
+                }
+            }
+            """
+        )
+    }
+    
+    func testCallableReturningOptionalObject() {
+        assertExpansion(
+            of: """
+            @Godot class MyThing: SwiftGodot.RefCounted {
+
+            }
+
+            @Godot class OtherThing: SwiftGodot.Node {
+                @Callable func get_thing() -> MyThing? {
+                    return nil
+                }
+            }
+            """
+        )
+    }
+    
+    func testCallableTakingOptionalBuiltin() {
+        assertExpansion(
+            of: """
+            @Godot class MyThing: SwiftGodot.RefCounted {
+
+            }
+
+            @Godot class OtherThing: SwiftGodot.Node {
+                @Callable func do_string(value: String?) { }
+            
+                @Callable func do_int(value: Int?) {  }
+            
+                @Callable func get_thing() -> MyThing? {
+                    return nil
+                }
+            }
+            """
+        )
+    }
+    
+    func testFuncCollision() {
+        assertExpansion(
+            of: """
+            @Godot class OtherThing: SwiftGodot.Node {            
+                @Callable func foo(value: Int?) { }
+            
+                @Callable func foo() -> MyThing? {
+                    return nil
+                }
+            }
+            """,
+            diagnostics: [
+                .init(message: "Same name `foo` for two different declarations. GDScript doesn't support it.", line: 1, column: 1)
+            ]
+        )
+    }
+    
+    func testFuncAndGetterCollision() {
+        assertExpansion(
+            of: """
+            @Godot class OtherThing: SwiftGodot.Node {            
+                @Export
+                var foo: Int = 0
+            
+                @Callable func get_foo() -> MyThing? {
+                    return nil
+                }
+            }
+            """,
+            diagnostics: [
+                .init(message: "Same name `get_foo` for two different declarations. GDScript doesn't support it.", line: 1, column: 1)
+            ]
+        )
+    }
+
 }

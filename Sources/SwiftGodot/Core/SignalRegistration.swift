@@ -20,7 +20,7 @@ public struct SignalWithNoArguments {
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
 @available(*, deprecated, message: "Use the @Signal macro instead.")
-public struct SignalWith1Argument<Argument: VariantStorable> {
+public struct SignalWith1Argument<Argument: _GodotBridgeable> {
     public let name: StringName
     public let arguments: [PropInfo]
     
@@ -39,8 +39,8 @@ public struct SignalWith1Argument<Argument: VariantStorable> {
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
 @available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith2Arguments<
-    Argument1: VariantStorable,
-    Argument2: VariantStorable
+    Argument1: _GodotBridgeable,
+    Argument2: _GodotBridgeable
 > {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -62,9 +62,9 @@ public struct SignalWith2Arguments<
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
 @available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith3Arguments<
-    Argument1: VariantStorable,
-    Argument2: VariantStorable,
-    Argument3: VariantStorable
+    Argument1: _GodotBridgeable,
+    Argument2: _GodotBridgeable,
+    Argument3: _GodotBridgeable
 > {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -88,10 +88,10 @@ public struct SignalWith3Arguments<
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
 @available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith4Arguments<
-    Argument1: VariantStorable,
-    Argument2: VariantStorable,
-    Argument3: VariantStorable,
-    Argument4: VariantStorable
+    Argument1: _GodotBridgeable,
+    Argument2: _GodotBridgeable,
+    Argument3: _GodotBridgeable,
+    Argument4: _GodotBridgeable
 > {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -117,11 +117,11 @@ public struct SignalWith4Arguments<
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
 @available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith5Arguments<
-    Argument1: VariantStorable,
-    Argument2: VariantStorable,
-    Argument3: VariantStorable,
-    Argument4: VariantStorable,
-    Argument5: VariantStorable
+    Argument1: _GodotBridgeable,
+    Argument2: _GodotBridgeable,
+    Argument3: _GodotBridgeable,
+    Argument4: _GodotBridgeable,
+    Argument5: _GodotBridgeable
 > {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -149,12 +149,12 @@ public struct SignalWith5Arguments<
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
 @available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith6Arguments<
-    Argument1: VariantStorable,
-    Argument2: VariantStorable,
-    Argument3: VariantStorable,
-    Argument4: VariantStorable,
-    Argument5: VariantStorable,
-    Argument6: VariantStorable
+    Argument1: _GodotBridgeable,
+    Argument2: _GodotBridgeable,
+    Argument3: _GodotBridgeable,
+    Argument4: _GodotBridgeable,
+    Argument5: _GodotBridgeable,
+    Argument6: _GodotBridgeable
 > {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -206,8 +206,8 @@ public extension Object {
     ///  - Example: emit(signal: Player.scored, 12)
     @discardableResult
     @available(*, deprecated, message: "Use the @Signal macro instead.")
-    func emit<A: VariantStorable>(signal: SignalWith1Argument<A>, _ argument: A) -> GodotError {
-        emitSignal(signal.name, .init(argument))
+    func emit<A: _GodotBridgeable>(signal: SignalWith1Argument<A>, _ argument: A) -> GodotError {
+        emitSignal(signal.name, argument.toVariant())
     }
 
     /// Connects a signal to a callable method
@@ -227,12 +227,12 @@ public extension Object {
     ///  - Example: emit(signal: Player.scored, 12, "hooray")
     @discardableResult
     @available(*, deprecated, message: "Use the @Signal macro instead.")
-    func emit<A: VariantStorable, B: VariantStorable>(
+    func emit<A: _GodotBridgeable, B: _GodotBridgeable>(
         signal: SignalWith2Arguments<A, B>,
         _ argument1: A,
         _ argument2: B
     ) -> GodotError {
-        emitSignal(signal.name, .init(argument1), .init(argument2))
+        emitSignal(signal.name, argument1.toVariant(), argument2.toVariant())
     }
 
     /// Connects a signal to a callable method
@@ -252,13 +252,13 @@ public extension Object {
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self)
     @discardableResult
     @available(*, deprecated, message: "Use the @Signal macro instead.")
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable>(
+    func emit<A: _GodotBridgeable, B: _GodotBridgeable, C: _GodotBridgeable>(
         signal: SignalWith3Arguments<A, B, C>,
         _ argument1: A,
         _ argument2: B,
         _ argument3: C
     ) -> GodotError {
-        emitSignal(signal.name, .init(argument1), .init(argument2), .init(argument3))
+        emitSignal(signal.name, argument1.toVariant(), argument2.toVariant(), argument3.toVariant())
     }
 
     /// Connects a signal to a callable method
@@ -282,7 +282,7 @@ public extension Object {
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self, 4)
     @discardableResult
     @available(*, deprecated, message: "Use the @Signal macro instead.")
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable>(
+    func emit<A: _GodotBridgeable, B: _GodotBridgeable, C: _GodotBridgeable, D: _GodotBridgeable>(
         signal: SignalWith4Arguments<A, B, C, D>,
         _ argument1: A,
         _ argument2: B,
@@ -291,10 +291,10 @@ public extension Object {
     ) -> GodotError {
         emitSignal(
             signal.name,
-            .init(argument1),
-            .init(argument2),
-            .init(argument3),
-            .init(argument4)
+            argument1.toVariant(),
+            argument2.toVariant(),
+            argument3.toVariant(),
+            argument4.toVariant()
         )
     }
 
@@ -319,7 +319,7 @@ public extension Object {
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self, 4, "another_one")
     @discardableResult
     @available(*, deprecated, message: "Use the @Signal macro instead.")
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable, E: VariantStorable>(
+    func emit<A: _GodotBridgeable, B: _GodotBridgeable, C: _GodotBridgeable, D: _GodotBridgeable, E: _GodotBridgeable>(
         signal: SignalWith5Arguments<A, B, C, D, E>,
         _ argument1: A,
         _ argument2: B,
@@ -329,11 +329,11 @@ public extension Object {
     ) -> GodotError {
         emitSignal(
             signal.name,
-            .init(argument1),
-            .init(argument2),
-            .init(argument3),
-            .init(argument4),
-            .init(argument5)
+            argument1.toVariant(),
+            argument2.toVariant(),
+            argument3.toVariant(),
+            argument4.toVariant(),
+            argument5.toVariant()
         )
     }
 
@@ -358,7 +358,7 @@ public extension Object {
     ///  - Example: emit(signal: Player.scored, 12, "hooray", self, 4, reason)
     @discardableResult
     @available(*, deprecated, message: "Use the @Signal macro instead.")
-    func emit<A: VariantStorable, B: VariantStorable, C: VariantStorable, D: VariantStorable, E: VariantStorable, F: VariantStorable>(
+    func emit<A: _GodotBridgeable, B: _GodotBridgeable, C: _GodotBridgeable, D: _GodotBridgeable, E: _GodotBridgeable, F: _GodotBridgeable>(
         signal: SignalWith6Arguments<A, B, C, D, E, F>,
         _ argument1: A,
         _ argument2: B,
@@ -369,12 +369,12 @@ public extension Object {
     ) -> GodotError {
         emitSignal(
             signal.name,
-            .init(argument1),
-            .init(argument2),
-            .init(argument3),
-            .init(argument4),
-            .init(argument5),
-            .init(argument6)
+            argument1.toVariant(),
+            argument2.toVariant(),
+            argument3.toVariant(),
+            argument4.toVariant(),
+            argument5.toVariant(),
+            argument6.toVariant()
         )
     }
 
@@ -397,13 +397,13 @@ public extension Object {
 
 extension PropInfo {
     fileprivate init(
-        propertyType: (some VariantStorable).Type,
+        propertyType: (some _GodotBridgeable).Type,
         propertyName: StringName
     ) {
         self.init(
-            propertyType: propertyType.Representable.godotType,
+            propertyType: propertyType._variantType,
             propertyName: propertyName,
-            className: propertyType.Representable.godotType == .object ? .init(String(describing: propertyType.self)) : "",
+            className: propertyType._variantType == .object ? .init(String(describing: propertyType.self)) : "",
             hint: .none,
             hintStr: "",
             usage: .default
