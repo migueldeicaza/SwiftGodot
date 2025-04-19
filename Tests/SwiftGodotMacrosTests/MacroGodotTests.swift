@@ -21,7 +21,8 @@ final class MacroGodotTests: MacroGodotTestCase {
             "Godot": GodotMacro.self,
             "Callable": GodotCallable.self,
             "Export": GodotExport.self,
-            "signal": SignalMacro.self
+            "signal": SignalMacro.self,
+            "Signal": SignalAttachmentMacro.self
         ]
     }
     
@@ -310,7 +311,67 @@ final class MacroGodotTests: MacroGodotTestCase {
             @Godot class Hi: Node {
                 @Callable static func get_some() -> Int64 { 10 }
             }
-            """
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testClassFunction() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Callable class func get_some() -> Int64 { 10 }
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testStaticExport() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export
+                static var int = 10
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testClassExport() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export
+                class var int = 10
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testClassSignal() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Signal
+                class var int: SimpleSignal
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+        )
+    }
+    
+    func testStaticSignal() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Signal
+                static var int: SimpleSignal
+            }
+            """,
+            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
         )
     }
     

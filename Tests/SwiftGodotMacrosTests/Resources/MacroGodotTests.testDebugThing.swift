@@ -1,6 +1,10 @@
 
 class DebugThing: SwiftGodot.Object {
-    @Signal var livesChanged: SignalWithArguments<Swift.Int>
+    var livesChanged: SignalWithArguments<Swift.Int> {
+        get {
+            SignalWithArguments<Swift.Int>(target: self, signalName: "lives_changed")
+        }
+    }
     func do_thing(value: SwiftGodot.Variant?) -> SwiftGodot.Variant? {
         return nil
     }

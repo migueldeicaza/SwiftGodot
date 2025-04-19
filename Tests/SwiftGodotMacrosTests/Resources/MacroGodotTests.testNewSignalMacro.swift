@@ -1,8 +1,16 @@
 
 class Demo: Node3D {
-    @Signal var burp: SimpleSignal
+    var burp: SimpleSignal {
+        get {
+            SimpleSignal(target: self, signalName: "burp")
+        }
+    }
 
-    @Signal var livesChanged: SignalWithArguments<Int>
+    var livesChanged: SignalWithArguments<Int> {
+        get {
+            SignalWithArguments<Int>(target: self, signalName: "lives_changed")
+        }
+    }
 
     override open class var classInitializer: Void {
         let _ = super.classInitializer
