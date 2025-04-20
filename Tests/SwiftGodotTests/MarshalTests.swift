@@ -253,6 +253,28 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual(2.toVariant(), 2.toVariant())
     }
     
+    func testUnwrapping() {
+        func wrap<T: VariantConvertible>(_ value: T) -> Variant? {
+            return value.toVariant()
+        }
+        
+        let variant = wrap(TestNode())
+        
+        let node0 = TestNode.fromVariant(variant)
+        let node1 = variant.to(TestNode.self)
+        
+        XCTAssertNotNil(node0)
+        XCTAssertTrue(node0 === node1)
+        
+        let object0 = Object.fromVariant(variant)
+        let object1 = variant.to(Object.self)
+        
+        XCTAssertNotNil(object0)
+        XCTAssertTrue(object0 === object1)
+        
+        node0?.queueFree()
+    }
+    
     func testCallableViaSwiftClosure() {
         var callable = Callable { (a: Int, b: Int, c: String) -> String in
             return [String](repeating: c, count: a + b).joined(separator: " ")
