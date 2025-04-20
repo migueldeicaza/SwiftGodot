@@ -94,7 +94,8 @@ Note that all the functions above return `Bool?` because there is no guaruantee 
 1. ``Variant?`` is actually not `nil`
 2. ``Variant`` even if it's not `nil`, contains a ``Bool``
 
-`variant.to(Type.self)`, `Type.fromVariant(variant)` return `T?`
+`variant.to(Type.self)`, `Type.fromVariant(variant)` return `T?`.
+
 `Type.init(variant)` or just `Type(variant)` is a [failable initializer](https://developer.apple.com/swift/blog/?id=17) 
 If the variant does not contain the type you are requesting the result of the call is `nil`.
 
