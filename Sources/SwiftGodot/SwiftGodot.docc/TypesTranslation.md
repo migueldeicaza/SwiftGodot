@@ -5,8 +5,8 @@ This document contains information on how type translation happens between Swift
 Scenarios when Godot to/from Swift translations happen:
 
 * `@Callable`
-    - `argument` when called by Godot: Godot -> Swift.
-    - `return value` when called by Godot: Swift -> Godot.
+    - `argument` when called by Godot: Godot -> Swift
+    - `return value` when called by Godot: Swift -> Godot
 * `@Export`
     - `gotten value` when called by Godot: Swift -> Godot
     - `set value` when called by Godot: Godot -> Swift
@@ -18,6 +18,7 @@ Scenarios when Godot to/from Swift translations happen:
     ```    
     - `argument when` called: Godot -> Swift
     - `return value` called: Swift -> Godot
+
     Calling such callable is identical to Godot calling `@Callable` function.
 
 If nothing in the type section is specified about the scenarios, it means the type is allowed in all of those.
@@ -79,19 +80,18 @@ Int32.fromVariant(Int.max.toVariant()) // is `nil`
 @Godot class CustomNode: Node {
     @Export var variable = 130
     // Godot will see `int variable`
+
+    @Callable
+    func foo(a: Int32, b: UInt16, c: Int, d: UInt) {
+    }
+    // Godot will see `void foo(a: int, b: int, c: int, d: int)`
 }
 ```
 #### Swift `BinaryInteger?` – Godot `Variant`
 ```swift
 @Godot class CustomNode: Node {
     @Export var variable: Int? = 150
-    // Godot will see `Variant variable`
-
-
-    @Callable
-    func foo(a: Int32, b: UInt16, c: Int, d: UInt) {
-    }
-    // Godot will see `void foo(a: int, b: int, c: int, d: int)`
+    // Godot will see `Variant variable`    
 }
 ```
 ---
@@ -239,14 +239,32 @@ _NOT_ toll-free bridging. Requires a heap allocation of `Variant` every time non
 
 ---
 
-#### SwiftGodot non-``Object`` types - Godot builtin types
+#### SwiftGodot dumb types - Corresponding Godot builtin types
 Toll-free bridging.
-All Godot builtin types such as: ``GArray``, ``Projection``, ``Vector3``, etc.
+All dumb Godot builtin types such as: ``Projection``, ``Vector3``, that basically just contain numbers and are represented as Swift `struct`.
 
-These types appear exactly as they are in Godot:
-``Projection`` is `Projection`, ``Vector3`` is `Vector3`.
+```swift
+@Godot class CustomNode: Node {
+    @Export var variable = Vector3()
+    // Godot will see `Array variable`
+}
+```
 
-Only `GString`(Godot `String`), `GArray` (Godot `Array`), and `GDictionary`(Godot `Dictionary`) are renamed to avoid collision with native Swift types.
+#### SwiftGodot ``Optional`` dumb types - Godot `Variant`
+Toll-free bridging.
+```swift
+@Godot class CustomNode: Node {
+    @Export var variable: Vector3? = nil 
+    // Godot will see `Variant variable`
+}
+```
+---
+#### SwiftGodot non-`Object` reference types - Corresponding Godot builtin types
+_NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the value is translated from `Godot` to `Swift`.
+
+All built-in types of Godot which are represented as Swift `class` such as: ``GArray``, ``GDictionary``, ``RID``, ``PackedFloat32Array``, etc.
+
+These types appear exactly as they are in Godot except `GString`(Godot `String`), `GArray` (Godot `Array`), and `GDictionary`(Godot `Dictionary`), which are renamed to avoid collision with native Swift types.
 
 ```swift
 @Godot class CustomNode: Node {
@@ -255,8 +273,8 @@ Only `GString`(Godot `String`), `GArray` (Godot `Array`), and `GDictionary`(Godo
 }
 ```
 
-#### SwiftGodot ``Optional`` non-``Object`` types - Godot `Variant`
-Toll-free bridging.
+#### SwiftGodot ``Optional`` reference types - Godot `Variant`
+_NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the non-nil value is translated from `Godot` to `Swift`.
 ```swift
 @Godot class CustomNode: Node {
     @Export var variable: GArray? = nil 
@@ -265,8 +283,10 @@ Toll-free bridging.
 ```
 ---
 
-#### SwiftGodot ``Object``-derived types - Godot `Object`-derived types
-Toll-free bridging.
+#### SwiftGodot ``Object``-derived types - Corresponding Godot types
+_Almost_ toll-free bridging:
+Allocation only happens when Godot object never seen by Swift shows up during Godot -> Swift translation.
+
 All Godot class types such as: ``Object``, ``Node``, ``Camera3D``, ``Resource``, etc.
 
 These types appear exactly as they are in Godot, no exceptions!
@@ -281,7 +301,9 @@ Guaranteed to be non-nil.
 ```
 
 #### SwiftGodot ``Optional`` ``Object``-derived types - Godot `Object`-derived types
-Toll-free bridging.
+_Almost_ toll-free bridging:
+Allocation only happens when Godot object never seen by Swift shows up during Godot -> Swift translation.
+
 ```swift
 @Godot class CustomNode: Node {
     @Export var variable: Camera3D? = nil
@@ -296,7 +318,9 @@ Toll-free bridging.
 
 # Your custom types
 #### ``Optional`` and non-optional `@Godot` classes - Godot `Object`-derived types
-Toll-free bridging.
+_Almost_ toll-free bridging.
+Allocation only happens when type is initialized. That's how classes work in Swift.
+
 All classes using `@Godot` will be visible in Godot exactly as you name it.
 ```swift
 @Godot class CustomNode: Node {    
@@ -314,7 +338,7 @@ All classes using `@Godot` will be visible in Godot exactly as you name it.
 #### ``Optional`` and non-optional VariantConvertible - Godot `Variant`
 _Maybe_ toll-free bridging:
 1. The conversion runtime doesn't require allocations.
-2. Cost of converions depends on how expensive your `VariantConvertible` implementation is. Conversion will happened every time the type is translated back and forth between Swift and Godot.
+2. Cost of conversions depends on how expensive your `VariantConvertible` implementation is. Conversion will happened every time the type is translated back and forth between Swift and Godot.
 
 You can conform your own types to `VariantConvertible`. They will be visible as `Variant`.
 ```swift
