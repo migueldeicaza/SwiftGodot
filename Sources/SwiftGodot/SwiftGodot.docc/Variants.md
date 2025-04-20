@@ -11,18 +11,18 @@ that derive from ``Object``).
 
 ## Creating Variant values
 
-You can create Variants from types that conform to the VariantConvertible 
+You can create ``Variant``s from types that conform to the ``VariantConvertible`` 
 protocol. 
 
 This includes the following types:
 
-* Godot's native types: GString, Vector, Rect, Transform, Plane, Quaternion,
-  AABB,  Basis, Projection, Int64, NodePaths, RIDs, Callable, GDictionary, Array
+* Godot's native types: ``GString``, ``Vector``, ``Rect``, ``Transform``, ``Plane``, ``Quaternion``,
+  ``AABB``,  ``Basis``, ``Projection``, ``Int64``, ``NodePaths``, ``RIDs``, ``Callable``, ``GDictionary``, ``Array``
   and PackedArrays. 
-* Swift types that SwiftGodot adds convenience conformances for: Bool, Int, String and Float
-* Godot's objects: e.g. Node, Area2D
-* Your own subclasses of SwiftGodot.Object type.
-* Other types that you can manually conform to VariantConvertible.
+* Swift types that SwiftGodot adds convenience conformances for: ``Bool``, ``Int`` (and all signed/unsigned width varieties such as `UInt32`, `Int16`), ``String``, ``Float`` and ``Double``,
+* Godot's objects: e.g. ``Node``, ``Area2D``
+* Your own subclasses of ``Object`` type.
+* Other types that you can manually conform to ``VariantConvertible``.
 
 You can construct a ``Variant`` using these approaches, they are identical:
 ```swift
