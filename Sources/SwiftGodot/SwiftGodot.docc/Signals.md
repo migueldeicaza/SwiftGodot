@@ -28,9 +28,9 @@ For example, to connect to the ``Node/ready`` signal, you call its connect
 method, like this:
 
 ```
-func setupBot (robot: Node) {
+func setupBot(robot: Node) {
     robot.ready.connect {
-        print ("The robot's node is ready")
+        print("The robot's node is ready")
     }
 }
 ```
@@ -39,23 +39,22 @@ Since signals in Godot can include parameters, each signal in Godot
 surfaces a connect method that takes as an argument a function with the
 precise signature that it will be invoked with.
 
-
 If you want to stop receiving notifications, you can disconnect from the
 object, to do so, you must keep around the token returned by the connect
 method, like this:
 
 ```swift
 class Demo: Node {
-    var readyToken: Object
+    var readyToken: Callable
 
-    func setup () {
+    func setup() {
         readyToken = robot.ready.connect {
-            print ("Ready")
+            print("Ready")
         }
     }
 
-    func teardown () {
-        robot.ready.disconnect (readyToken)
+    func teardown() {
+        robot.ready.disconnect(readyToken)
     }
 }
 ```
@@ -63,7 +62,7 @@ class Demo: Node {
 ## One-shot signals
 
 One common idiom in Godot code is to wait for a signal to be raised before 
-continuing execution.   For example, you might want to wait for a timeout
+continuing execution. For example, you might want to wait for a timeout
 or an action.
 
 In those cases, you can await the `emitted` property of the generated
