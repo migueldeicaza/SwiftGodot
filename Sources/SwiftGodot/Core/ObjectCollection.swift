@@ -115,7 +115,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
         }
         
         var handle: UnsafeMutableRawPointer? = nil
-        variant.constructType(into: &handle, constructor: Variant.objectFromVariant)        
+        variant.constructType(into: &handle, constructor: Object.selfFromVariant)        
         
         guard let handle = handle else {
             fatalError("Could not unwrap variant as object.")

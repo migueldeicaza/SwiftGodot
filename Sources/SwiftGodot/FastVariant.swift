@@ -177,7 +177,7 @@ public struct FastVariant: ~Copyable {
     /// Initialize ``FastVariant`` by wrapping ``Object``
     @inline(__always)
     public init(_ from: Object) {
-        self.init(payload: from.handle, constructor: Variant.variantFromObject)
+        self.init(payload: from.handle, constructor: Object.variantFromSelf)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``Object?``, fails if it's `nil`
@@ -192,7 +192,7 @@ public struct FastVariant: ~Copyable {
     /// Initialize ``FastVariant`` by wrapping ``BinaryInteger``
     @inline(__always)
     public init(_ from: some BinaryInteger) {
-        self.init(payload: Int64(from), constructor: Variant.variantFromInt)
+        self.init(payload: Int64(from), constructor: VariantGodotInterface.variantFromInt)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``BinaryInteger?``, fails if it's `nil`
@@ -208,7 +208,7 @@ public struct FastVariant: ~Copyable {
     /// Initialize ``FastVariant`` by wrapping ``BinaryFloatingPoint``
     @inline(__always)
     public init(_ from: some BinaryFloatingPoint) {
-        self.init(payload: Double(from), constructor: Variant.variantFromDouble)
+        self.init(payload: Double(from), constructor: VariantGodotInterface.variantFromDouble)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``BinaryFloatingPoint?``, fails if it's `nil`
@@ -225,7 +225,7 @@ public struct FastVariant: ~Copyable {
     @inline(__always)
     public init(_ from: Bool) {
         let payload: GDExtensionBool = from ? 1 : 0
-        self.init(payload: payload, constructor: Variant.variantFromBool)
+        self.init(payload: payload, constructor: VariantGodotInterface.variantFromBool)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``Bool?``, fails if it's `nil`
@@ -289,7 +289,7 @@ public struct FastVariant: ~Copyable {
         }
 
         var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
-        constructType(into: &objectHandle, constructor: Variant.objectFromVariant)
+        constructType(into: &objectHandle, constructor: Object.selfFromVariant)
         guard let objectHandle else {
             return nil
         }

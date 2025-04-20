@@ -729,12 +729,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             }
             if bc.hasDestructor {
                 p.staticProperty(isStored: true, name: "destructor", type: "GDExtensionPtrDestructor") {
-                    p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
+                    p("return gi.variant_get_ptr_destructor(\(typeEnum))!")
                 }
                 
-                p ("deinit"){
-                    p ("if content != \(typeName).zero") {
-                        p ("\(typeName).destructor (&content)")
+                p("deinit"){
+                    p("if content != \(typeName).zero") {
+                        p("\(typeName).destructor(&content)")
                     }
                 }
             }
@@ -747,6 +747,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("// Contains a binary blob where this type information is stored")
                 p ("public var content: ContentType\(initialize)")
                 p ("// Used to initialize empty types")
+                
+                // It's just a POD type, so no worries about it being a static property
                 p ("public static let zero: ContentType \(initialize)")
                 p ("// Convenience type that matches the build configuration storage needs")
                 p ("public typealias ContentType = \(storage)")
@@ -821,11 +823,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                                                 
             isContentRepresented = storedMembers == nil
             
-            p.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionInterfaceGetVariantFromTypeConstructor") {
+            p.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionVariantFromTypeConstructorFunc") {
                 p("gi.get_variant_from_type_constructor(\(typeEnum))!")
             }
             
-            p.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionInterfaceGetVariantToTypeConstructor") {
+            p.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionTypeFromVariantConstructorFunc") {
                 p("gi.get_variant_to_type_constructor(\(typeEnum))!")
             }
                                                 

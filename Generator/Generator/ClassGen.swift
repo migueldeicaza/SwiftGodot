@@ -584,7 +584,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     
     generateSignalDocAppendix (p, cdef: cdef, signals: cdef.signals)
     // class or extension (for Object)
-    p (typeDecl) {
+    p(typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
             p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
@@ -626,6 +626,14 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
         
         if inherits == objectInherits {
+            p.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionVariantFromTypeConstructorFunc") {
+                p("gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!")
+            }
+            
+            p.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionTypeFromVariantConstructorFunc") {
+                p("gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!")
+            }
+            
             p("""
             /// Wrap ``\(cdef.name)`` into a ``Variant``
             @inline(__always)
@@ -732,5 +740,26 @@ extension Generator {
             p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
         }
         p ("]")
+    }
+    
+    /// Variant itself is manally implemented, so we vary our `staticProperty` behavior here
+    /// Most of constructors sit in corresponding builtin types.
+    /// We can't extend native types to add static storage
+    func generateVariantGodotInterface(_ p: Printer) {
+        p("enum VariantGodotInterface") {
+            for (fromType, fromVariant, type) in [
+                ("variantFromBool", "boolFromVariant", "GDEXTENSION_VARIANT_TYPE_BOOL"),
+                ("variantFromInt", "intFromVariant", "GDEXTENSION_VARIANT_TYPE_INT"),
+                ("variantFromDouble", "doubleFromVariant", "GDEXTENSION_VARIANT_TYPE_FLOAT"),
+            ] {
+                p.staticProperty(isStored: true, name: fromType, type: "GDExtensionVariantFromTypeConstructorFunc") {
+                    p("gi.get_variant_from_type_constructor(\(type))!")
+                }
+                
+                p.staticProperty(isStored: true, name: fromVariant, type: "GDExtensionTypeFromVariantConstructorFunc") {
+                    p("gi.get_variant_to_type_constructor(\(type))!")
+                }
+            }
+        }
     }
 }

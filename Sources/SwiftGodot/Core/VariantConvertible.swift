@@ -424,7 +424,7 @@ extension Int64: _GodotBridgeableBuiltin {
         self.init()
         
         withUnsafeMutablePointer(to: &self) { pPayload in
-            variant.constructType(into: pPayload, constructor: Variant.intFromVariant)
+            variant.constructType(into: pPayload, constructor: VariantGodotInterface.intFromVariant)
         }
     }
     
@@ -435,7 +435,7 @@ extension Int64: _GodotBridgeableBuiltin {
         self.init()
         
         withUnsafeMutablePointer(to: &self) { pPayload in
-            variant.constructType(into: pPayload, constructor: Variant.intFromVariant)
+            variant.constructType(into: pPayload, constructor: VariantGodotInterface.intFromVariant)
         }
     }
     
@@ -643,7 +643,7 @@ extension Bool: _GodotBridgeableBuiltin {
         guard Self._variantType == variant.gtype else { return nil }
         var payload: GDExtensionBool = 0
         withUnsafeMutablePointer(to: &payload) { pPayload in
-            variant.constructType(into: pPayload, constructor: Variant.boolFromVariant)
+            variant.constructType(into: pPayload, constructor: VariantGodotInterface.boolFromVariant)
         }
         
         self = payload != 0
@@ -667,7 +667,7 @@ extension Bool: _GodotBridgeableBuiltin {
         guard Self._variantType == variant.gtype else { return nil }
         var payload: GDExtensionBool = 0
         withUnsafeMutablePointer(to: &payload) { pPayload in
-            variant.constructType(into: pPayload, constructor: Variant.boolFromVariant)
+            variant.constructType(into: pPayload, constructor: VariantGodotInterface.boolFromVariant)
         }
         
         self = payload != 0
@@ -879,7 +879,7 @@ extension Double: _GodotBridgeableBuiltin {
         self.init()
         
         withUnsafeMutablePointer(to: &self) { pPayload in
-            variant.constructType(into: pPayload, constructor: Variant.doubleFromVariant)
+            variant.constructType(into: pPayload, constructor: VariantGodotInterface.doubleFromVariant)
         }
     }
     
@@ -898,7 +898,7 @@ extension Double: _GodotBridgeableBuiltin {
         self.init()
         
         withUnsafeMutablePointer(to: &self) { pPayload in
-            variant.constructType(into: pPayload, constructor: Variant.doubleFromVariant)
+            variant.constructType(into: pPayload, constructor: VariantGodotInterface.doubleFromVariant)
         }
     }
     

@@ -38,16 +38,6 @@
 /// Modifications to a container will modify all references to it.
 
 public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
-    static let variantFromBool = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_BOOL)!
-    static let variantFromInt = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_INT)!
-    static let variantFromDouble = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
-    static let variantFromObject = gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
-    
-    static let boolFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_BOOL)!
-    static let intFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_INT)!
-    static let doubleFromVariant = gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_FLOAT)!
-    static let objectFromVariant =  gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!
-    
     @usableFromInline
     typealias ContentType = VariantContent
     
@@ -164,7 +154,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     
     /// Initialize ``Variant`` by wrapping ``Object``
     public convenience init(_ from: Object) {
-        self.init(payload: from.handle, constructor: Self.variantFromObject)
+        self.init(payload: from.handle, constructor: Object.variantFromSelf)
     }
     
     /// Initialize ``Variant`` by wrapping ``Object?``, fails if it's `nil`
@@ -177,7 +167,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     
     /// Initialize ``Variant`` by wrapping ``BinaryInteger``
     public convenience init(_ from: some BinaryInteger) {
-        self.init(payload: Int64(from), constructor: Self.variantFromInt)
+        self.init(payload: Int64(from), constructor: VariantGodotInterface.variantFromInt)
     }
     
     /// Initialize ``Variant`` by wrapping ``BinaryInteger?``, fails if it's `nil`
@@ -190,7 +180,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     
     /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint``
     public convenience init(_ from: some BinaryFloatingPoint) {
-        self.init(payload: Double(from), constructor: Self.variantFromDouble)
+        self.init(payload: Double(from), constructor: VariantGodotInterface.variantFromDouble)
     }
     
     /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint?``, fails if it's `nil`
@@ -204,7 +194,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     /// Initialize ``Variant`` by wrapping ``Bool``
     public convenience init(_ from: Bool) {
         let payload: GDExtensionBool = from ? 1 : 0
-        self.init(payload: payload, constructor: Self.variantFromBool)
+        self.init(payload: payload, constructor: VariantGodotInterface.variantFromBool)
     }
     
     /// Initialize ``Variant`` by wrapping ``Bool?``, fails if it's `nil`
@@ -262,7 +252,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         }
 
         var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
-        constructType(into: &objectHandle, constructor: Self.objectFromVariant)
+        constructType(into: &objectHandle, constructor: Object.selfFromVariant)
         guard let objectHandle else {
             return nil
         }
