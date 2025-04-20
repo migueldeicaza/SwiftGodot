@@ -12,22 +12,20 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-extension SwiftSyntax.AttributeSyntax {
-    /// @Export(.enum)
-    var hasFirstEnumArgument: Bool {
-        guard let arguments else {
-            return false
-        }
-        
-        switch arguments {
-        case .argumentList(let labeledExprList):
-            guard let firstLabeledExpr = labeledExprList.first else {
+extension VariableDeclSyntax {
+    var hasClassOrStaticModifier: Bool {
+        modifiers.contains { modifier in
+            switch modifier.name.tokenKind {
+            case .keyword(let keyword):
+                switch keyword {
+                case .static, .class:
+                    return true
+                default:
+                    return false
+                }
+            default:
                 return false
             }
-            
-            return firstLabeledExpr.description.trimmingCharacters(in: .whitespacesAndNewlines) == ".enum"
-        default:
-            return false
         }
     }
 }
@@ -35,18 +33,29 @@ extension SwiftSyntax.AttributeSyntax {
 public struct GodotExport: PeerMacro {
     static func makeGetAccessor(identifier: String) -> String {
         """
-        func _mproxy_get_\(identifier)(args: borrowing Arguments) -> Variant? {
-            _macroExportGet(\(identifier))                        
+        static func _mproxy_get_\(identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            guard let object = _unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(String(describing: pInstance))")
+                return nil
+            }
+        
+            return SwiftGodot._invokeGetter(object.\(identifier))            
         }                        
         """
     }
     
     static func makeSetAccessor(identifier: String) -> String {
         """
-        func _mproxy_set_\(identifier)(args: borrowing Arguments) -> Variant? {
-            _macroExportSet(args, "\(identifier)", \(identifier)) {
-                \(identifier) = $0
+        static func _mproxy_set_\(identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            guard let object = _unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling getter for \(identifier): failed to unwrap instance \\(String(describing: pInstance))")
+                return nil
             }
+        
+            SwiftGodot._invokeSetter(arguments, "\(identifier)", object.\(identifier)) {
+                object.\(identifier) = $0
+            }        
+            return nil
         }
         """
     }

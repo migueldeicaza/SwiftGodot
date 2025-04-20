@@ -7,15 +7,12 @@
 
 @_implementationOnly import GDExtension
 
-extension VariantCollection: VariantStorable {
-    public typealias Representable = GArray
-    public func toVariantRepresentable() -> GArray {
-        array
-    }
-}
-
 /// This represents a typed array of one of the built-in types from Godot
-public class VariantCollection<Element: VariantStorable>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+public final class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection, _GodotBridgeableBuiltin where Element: _GodotBridgeableBuiltin {
+    public static var _variantType: Variant.GType {
+        .array
+    }
+    
     public typealias ArrayLiteralElement = Element
     
     /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
@@ -25,16 +22,16 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// Initializes the collection using an array literal, for example: `let variantCollection: VariantCollection<Int> = [0]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
         array = elements.reduce(into: .init(Element.self)) {
-            $0.append(Variant($1))
+            $0.append($1.toVariant())
         }
     }
     
     init (content: Int64) {
-        array = GArray(alreadyOwnedContent: content)
+        array = GArray(takingOver: content)
     }
     
     /// Initializes the collection with an empty typed GArray
-    public init () {
+    public init() {
         array = GArray (Element.self)
     }
     
@@ -48,7 +45,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// - `array` is not typed, and contains an element, other than `T`
     public init?(_ array: GArray) {
         if array.isTyped() {
-            if array.getTypedBuiltin() != Element.Representable.godotType.rawValue {
+            if array.getTypedBuiltin() != Element._variantType.rawValue {
                 return nil
             } else if !array.getTypedClassName().isEmpty() {
                 return nil
@@ -63,7 +60,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
                     return nil
                 }
                 
-                guard element.gtype == Element.Representable.godotType else {
+                guard element.gtype == Element._variantType else {
                     return nil
                 }
                 
@@ -84,7 +81,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     }
     
     func unwrap(_ variant: Variant) -> Element {
-        guard let element = Element(variant) else {
+        guard let element = Element.fromVariant(variant) else {
             fatalError("VariantCollection<\(Element.self)> got a variant with gtype = \(variant.gtype)")
         }
         return element
@@ -100,7 +97,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
             return unwrap(variant)
         }
         set {
-            array[index] = Variant(newValue)
+            array[index] = newValue.toVariant()
         }
     }
     
@@ -144,7 +141,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     
     /// Appends an element at the end of the array. See also ``pushFront(value:)``.
     public final func pushBack (value: Element) {
-        array.pushBack(value: Variant(value))
+        array.pushBack(value: value.toVariant())
     }
     
     /// Adds an element at the beginning of the array. See also ``pushBack(value:)``.
@@ -152,17 +149,17 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// > Note: On large arrays, this method is much slower than ``pushBack(value:)`` as it will reindex all the array's elements every time it's called. The larger the array, the slower ``pushFront(value:)`` will be.
     ///
     public final func pushFront (value: Element) {
-        array.pushFront (value: Variant(value))
+        array.pushFront (value: value.toVariant())
     }
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
     public final func append(_ value: Element) {
-        array.append (Variant(value))
+        array.append (value.toVariant())
     }
     
     @available(*, deprecated, renamed: "append(_:)", message: "Renamed for consistency with other array methods.")
     public final func append (value: Element) {
-        array.append (Variant(value))
+        array.append (value.toVariant())
     }
     
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
@@ -180,7 +177,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// > Note: On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
     ///
     public final func insert (position: Int64, value: Element)-> Int64 {
-        array.insert (position: position, value: Variant(value))
+        array.insert (position: position, value: value.toVariant())
     }
     
     /// Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use ``erase(value:)`` instead.
@@ -204,7 +201,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// > Note: Do not erase entries while iterating over the array.
     ///
     public final func erase (value: Element) {
-        array.erase (value: Variant(value))
+        array.erase (value: value.toVariant())
     }
     
     /// Returns the first element of the array. Prints an error and returns `null` if the array is empty.
@@ -232,17 +229,17 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     
     /// Searches the array for a value and returns its index or `-1` if not found. Optionally, the initial search index can be passed.
     public final func find (what: Element, from: Int64 = 0)-> Int64 {
-        array.find (what: Variant(what), from: from)
+        array.find (what: what.toVariant(), from: from)
     }
     
     /// Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
     public final func rfind (what: Element, from: Int64 = -1)-> Int64 {
-        array.rfind (what: Variant(what), from: from)
+        array.rfind (what: what.toVariant(), from: from)
     }
     
     /// Returns the number of times an element is in the array.
     public final func count (value: Element)-> Int64 {
-        array.count (value: Variant(value))
+        array.count (value: value.toVariant())
     }
     
     /// Returns `true` if the array contains the given value.
@@ -250,7 +247,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// > Note: This is equivalent to using the `in` operator as follows:
     ///
     public final func has (value: Element)-> Bool {
-        array.has (value: Variant(value))
+        array.has (value: value.toVariant())
     }
     
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
@@ -306,7 +303,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// > Note: Calling ``bsearch(value:before:)`` on an unsorted array results in unexpected behavior.
     ///
     public final func bsearch (value: Element, before: Bool = true)-> Int64 {
-        array.bsearch(value: Variant(value), before: before)
+        array.bsearch(value: value.toVariant(), before: before)
     }
     
     /// Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a `before` specifier can be passed. If `false`, the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return `true` if the first argument is less than the second, and return `false` otherwise.
@@ -314,7 +311,7 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     /// > Note: Calling ``bsearchCustom(value:`func`:before:)`` on an unsorted array results in unexpected behavior.
     ///
     public final func bsearchCustom (value: Element, `func`: Callable, before: Bool = true)-> Int64 {
-        array.bsearchCustom(value: Variant(value), func: `func`, before: before)
+        array.bsearchCustom(value: value.toVariant(), func: `func`, before: before)
     }
     
     /// Reverses the order of the elements in the array.
@@ -356,5 +353,102 @@ public class VariantCollection<Element: VariantStorable>: Collection, Expressibl
     public final func isReadOnly ()-> Bool {
         array.isReadOnly()
     }
+    
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        array.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public func toVariant() -> Variant {
+        array.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        array.toFastVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        array.toFastVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromVariantOrThrow(variant)
 
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromFastVariantOrThrow(variant)
+        
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used in API visible to Godot
+    @inlinable
+    @inline(__always)
+    public static func _propInfo(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: StringName(name),
+            className: StringName("Array[\(Element._godotTypeName)]"),
+            hint: hint ?? .arrayType,
+            hintStr: GString(hintStr ?? "\(Element._godotTypeName)"),
+            usage: usage ?? .default
+        )
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used in API visible to Godot
+    @inlinable
+    @inline(__always)
+    public static var _returnValuePropInfo: PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: "",
+            className: "Array[\(Element._godotTypeName)]",
+            hint: .arrayType,
+            hintStr: "\(Element._godotTypeName)",
+            usage: .default
+        )
+    }
+}
+
+public extension Variant {
+    /// Initialize ``Variant`` by wrapping ``VariantCollection``
+    convenience init<T>(_ from: VariantCollection<T>) {
+        self.init(from.array)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``VariantCollection?``, fails if it's `nil`
+    convenience init?<T>(_ from: VariantCollection<T>?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
 }

@@ -189,7 +189,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         var sc: StringName.ContentType = StringName.zero
         
         if gi.object_get_class_name (handle, extensionInterface.getLibrary(), &sc) != 0 {
-            let sn = StringName(alreadyOwnedContent: sc)
+            let sn = StringName(takingOver: sc)
             return sn
         }
         return ""
@@ -393,7 +393,8 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.recreate_instance_func = recreateFunc
     info.validate_property_func = validatePropertyFunc
     info.is_exposed = 1
-    userTypes [name.description] = { ptr in
+    
+    userTypes[name.description] = { ptr in
         return type.init(nativeHandle: ptr)
     }
     
@@ -708,7 +709,7 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
     guard let ptr else { return 0 }
     let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
     guard let instance = original.value else { return 0 }
-    guard var info = _info?.pointee else { return 0 }
+    guard let info = _info?.pointee else { return 0 }
     guard let namePtr = info.name,
           let classNamePtr = info.class_name,
           let infoHintPtr = info.hint_string else {
@@ -891,7 +892,7 @@ struct CallableWrapper {
         
     func invoke(arguments: borrowing Arguments, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
         if let methodRet = function(arguments) {
-            retPtr!.storeBytes(of: methodRet.content, as: type (of: methodRet.content))
+            gi.variant_new_copy(retPtr, &methodRet.content)            
         }
         err?.pointee.error = GDEXTENSION_CALL_OK
     }

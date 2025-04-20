@@ -2,14 +2,25 @@
 class SomeNode: Node {
     var someArray: GArray = GArray()
 
-    func _mproxy_set_someArray(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "someArray", someArray) {
-            someArray = $0
+    static func _mproxy_set_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for someArray: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "someArray", object.someArray) {
+            object.someArray = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_someArray(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(someArray)
+    static func _mproxy_get_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for someArray: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.someArray)
     }
 
     override open class var classInitializer: Void {
@@ -20,16 +31,20 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let _psomeArray = PropInfo (
-            propertyType: .array,
-            propertyName: "someArray",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod (name: "_mproxy_get_someArray", flags: .default, returnValue: _psomeArray, arguments: [], function: SomeNode._mproxy_get_someArray)
-        classInfo.registerMethod (name: "_mproxy_set_someArray", flags: .default, returnValue: nil, arguments: [_psomeArray], function: SomeNode._mproxy_set_someArray)
-        classInfo.registerProperty (_psomeArray, getter: "_mproxy_get_someArray", setter: "_mproxy_set_someArray")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \SomeNode.someArray,
+                name: "some_array",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_some_array",
+            setterName: "set_some_array",
+            getterFunction: SomeNode._mproxy_get_someArray,
+            setterFunction: SomeNode._mproxy_set_someArray
+        )
     } ()
 }

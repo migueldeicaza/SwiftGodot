@@ -9,6 +9,6 @@
 
 // If our exported Collections conform to this protocol, then we can use the same Macro code while exporting them
 @usableFromInline
-protocol GArrayCollection: Collection where Element: VariantStorable {
+protocol GArrayCollection: Collection where Element: _GodotBridgeable {
     var array: GArray { nonmutating set get }
 }

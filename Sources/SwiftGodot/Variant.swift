@@ -13,7 +13,7 @@
 ///
 /// You can retrieve the type of a variant from the ``gtype`` property.
 ///
-/// A Variant takes up only 20 bytes and can store almost any engine datatype
+/// A Variant takes up only 24 bytes and can store almost any engine datatype
 /// inside of it. Variants are rarely used to hold information for long periods of
 /// time. Instead, they are used mainly for communication, editing, serialization and
 /// moving data around.
@@ -38,36 +38,18 @@
 /// Modifications to a container will modify all references to it.
 
 public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
-    static let fromTypeMap: [GDExtensionVariantFromTypeConstructorFunc] = {
-        var map: [GDExtensionVariantFromTypeConstructorFunc] = []
-        
-        // stub for GDEXTENSION_VARIANT_TYPE_NIL
-        map.append({ _, _ in })
-        
-        for vtype in GDEXTENSION_VARIANT_TYPE_NIL.rawValue + 1 ..< GDEXTENSION_VARIANT_TYPE_VARIANT_MAX.rawValue {
-            map.append(gi.get_variant_from_type_constructor(GDExtensionVariantType(rawValue: vtype))!)
-        }
-        return map
-    }()
+    @usableFromInline
+    typealias ContentType = VariantContent
     
-    static let toTypeMap: [GDExtensionTypeFromVariantConstructorFunc] = {
-        var map: [GDExtensionTypeFromVariantConstructorFunc] = []
-        
-        // stub for GDEXTENSION_VARIANT_TYPE_NIL
-        map.append({ _, _ in })
-        
-        for vtype in GDEXTENSION_VARIANT_TYPE_NIL.rawValue + 1 ..< GDEXTENSION_VARIANT_TYPE_VARIANT_MAX.rawValue {
-            map.append(gi.get_variant_to_type_constructor(GDExtensionVariantType(rawValue: vtype))!)
-        }
-        
-        return map
-    }()
+    @usableFromInline
+    var content = Variant.zero
     
-    typealias ContentType = (Int, Int, Int)
-    var content: ContentType = Variant.zero
-    static var zero: ContentType = (0, 0, 0)
+    static var zero: ContentType {
+        VariantContent.zero
+    }
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
+    @usableFromInline
     init?(copying otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
         
@@ -78,13 +60,33 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         extensionInterface.variantInited(variant: self, content: &content)
     }
     
-    /// Initializes using `ContentType` and assuming that this `Variant` is sole owner of this content now.
+    /// Initialize with existing `ContentType` assuming this ``Variant`` owns it since now. Fails if `content` represents Godot Nil.
     init?(takingOver otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
         
-        self.content = otherContent
+        content = otherContent
 
         extensionInterface.variantInited(variant: self, content: &content)
+    }
+    
+    /// Initialize ``Variant`` by consuming ``FastVariant``
+    @inline(__always)
+    public init(takingOver fastVariant: consuming FastVariant) {
+        content = fastVariant.content
+        
+        // avoid double destroy after `fastVariant` goes out of scope
+        fastVariant.content = .zero
+    }
+    
+    /// Initialize ``Variant`` by consuming ``FastVariant?``. Fails if `fastVariant` is nil.
+    @inline(__always)
+    @inlinable
+    public convenience init?(takingOver fastVariant: consuming FastVariant?) {
+        guard let fastVariant else {
+            return nil
+        }
+        
+        self.init(takingOver: fastVariant)
     }
 
     deinit {
@@ -116,20 +118,108 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         extensionInterface.variantInited(variant: self, content: &content)
     }
     
-    convenience public init(_ value: some VariantStorable) {
-        self.init(representable: value.toVariantRepresentable())
-    }
-    
-    private init<T: VariantRepresentable>(representable value: T) {
-        let godotType = T.godotType
-        
-        withUnsafeMutablePointer(to: &content) { selfPtr in
-            var mutableValue = value.content
-            withUnsafeMutablePointer(to: &mutableValue) { ptr in
-                Variant.fromTypeMap [Int (godotType.rawValue)] (selfPtr, ptr)
+    /// Initialize ``Variant`` using inlinable payload or opaque handle managed by Builtin Type or Object.
+    @inline(__always)
+    @usableFromInline
+    init<Payload>(
+        payload: Payload,
+        constructor: @convention(c) (
+            /* pVariantContent */ UnsafeMutableRawPointer?,
+            /* pPayload */ UnsafeMutableRawPointer?
+        ) -> Void
+    ) {
+        var payload = payload
+        withUnsafeMutablePointer(to: &content) { pVariantContent in
+            withUnsafeMutablePointer(to: &payload) { pPayload in
+                constructor(pVariantContent, pPayload)
             }
         }
+        
         extensionInterface.variantInited(variant: self, content: &content)
+    }
+    
+    @inline(__always)
+    @usableFromInline
+    func constructType(
+        into pPayload: UnsafeMutableRawPointer,
+        constructor: @convention(c) (
+            /* pPayload */ UnsafeMutableRawPointer?,
+            /* pVariantContent */ UnsafeMutableRawPointer?
+        ) -> Void
+    ) {
+        withUnsafeMutablePointer(to: &content) { pVariantContent in
+            constructor(pPayload, pVariantContent)
+        }
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Object``
+    public convenience init(_ from: Object) {
+        self.init(payload: from.handle, constructor: Object.variantFromSelf)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Object?``, fails if it's `nil`
+    public convenience init?(_ from: Object?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryInteger``
+    public convenience init(_ from: some BinaryInteger) {
+        self.init(payload: Int64(from), constructor: VariantGodotInterface.variantFromInt)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryInteger?``, fails if it's `nil`
+    public convenience init?(_ from: (some BinaryInteger)?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint``
+    public convenience init(_ from: some BinaryFloatingPoint) {
+        self.init(payload: Double(from), constructor: VariantGodotInterface.variantFromDouble)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``BinaryFloatingPoint?``, fails if it's `nil`
+    public convenience init?(_ from: (some BinaryFloatingPoint)?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Bool``
+    public convenience init(_ from: Bool) {
+        let payload: GDExtensionBool = from ? 1 : 0
+        self.init(payload: payload, constructor: VariantGodotInterface.variantFromBool)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``Bool?``, fails if it's `nil`
+    public convenience init?(_ from: Bool?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``String``
+    public convenience init(_ from: String) {
+        /// Avoid allocating `GString` wrapper at least
+        var stringContent = GString.zero
+        gi.string_new_with_utf8_chars(&stringContent, from)
+        self.init(payload: stringContent, constructor: GString.variantFromSelf)
+        GString.destructor(&stringContent)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``String?``, fails if it's `nil`
+    public convenience init?(_ from: String?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
     }
     
     /// This describes the type of the data wrapped by this variant
@@ -141,12 +231,6 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         }
         
         return result
-    }
-    
-    func toType (_ type: GType, dest: UnsafeMutableRawPointer) {
-        withUnsafeMutablePointer(to: &content) { selfPtr in
-            Variant.toTypeMap [Int (type.rawValue)] (dest, selfPtr)
-        }
     }
     
     /// Returns true if the variant is not an object, or the object is missing from the lookup table
@@ -161,18 +245,18 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     ///
     /// - Parameter type: the desired type eg. `.asObject(Node.self)`
     /// - Returns: nil on error, or the type on success
-    ///
+    @inline(__always)
     public func asObject<T: Object> (_ type: T.Type = T.self) -> T? {
         guard gtype == .object else {
             return nil
         }
 
-        var value: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
-        toType(.object, dest: &value)
-        guard let value else {
+        var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
+        constructType(into: &objectHandle, constructor: Object.selfFromVariant)
+        guard let objectHandle else {
             return nil
         }
-        let ret: T? = lookupObject(nativeHandle: value, ownsRef: false)
+        let ret: T? = lookupObject(nativeHandle: objectHandle, ownsRef: false)
         return ret
     }
     
@@ -193,13 +277,20 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         case notFound
     }
     
-
-    public static func fromVariant(_ variant: Variant) -> Variant? {
-        return variant
+    /// Identity function. Needed for static dispatch for certain features.
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Variant {
+        variant
     }
     
+    /// Identity function. Needed for static dispatch for certain features.
     public func toVariant() -> Variant {
         return self
+    }
+    
+    /// Identity function. Needed for static dispatch for certain features.
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        self
     }
 
     /// Gets the value of a named key from a Variant.
@@ -363,9 +454,97 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         let ret = GString.stringFromGStringPtr(ptr: &res.content)
         return ret ?? ""
     }
+    
+    /// Extract `T` from this ``Variant`` or return nil if unsucessful.
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
+        type.fromVariant(self)
+    }
+    
+    /// Extract `T: Object` from this ``Variant`` or return nil if unsucessful.
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
+        type.fromVariant(self)
+    }    
+    
+    /// Internal API.
+    public static var _variantType: GType {
+        .nil
+    }
+    
+    /// Internal API.
+    public static var _godotTypeName: String {
+        "Variant"
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``Variant`` or ``Variant?`` is used in API visible to Godot
+    @inline(__always)
+    @inlinable
+    public static func _propInfo(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _propInfoDefault(
+            propertyType: .nil, // Godot treats .nil as Godot Variant
+            name: name,
+            hint: hint,
+            hintStr: hintStr,
+            usage: usage ?? .nilIsVariant
+        )
+    }
+    
+    /// Internal API.
+    /// According to:
+    /// - https://github.com/godotengine/godot/issues/67544#issuecomment-1382229216
+    /// - https://github.com/godotengine/godot/blob/b6e06038f8a373f7fb8d26e92d5f06887e459598/core/doc_data.cpp#L85
+    /// It's `.nil` with hint = `.nilIsVariant` in returned value prop info
+    /// And `.nil` with hint = `.none` in argument prop info
+    public static func _argumentPropInfo(name: String) -> PropInfo {
+        _propInfoDefault(propertyType: _variantType, name: name)
+    }
+    
+    /// Internal API.
+    public static var _returnValuePropInfo: PropInfo {
+        _propInfoDefault(propertyType: _variantType, name: "", usage: .nilIsVariant)
+    }
+    
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Variant {
+        Variant(takingOver: variant.copy())
+    }
+    
+    public func toFastVariant() -> FastVariant {
+        var newContent = VariantContent.zero
+        
+        withUnsafeMutablePointer(to: &newContent) { pNewContent in
+            withUnsafePointer(to: &content) { pCopiedContent in
+                gi.variant_new_copy(pNewContent, pCopiedContent)
+            }
+        }
+        
+        return FastVariant(unsafeTakingOver: newContent)
+    }
+    
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        toFastVariant()
+    }
 }
 
-extension Optional where Wrapped == Variant {
+extension Variant? {
+    /// Extract `T` from this ``Variant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: VariantConvertible {
+        type.fromVariant(self)
+    }
+    
+    /// Extract `T: Object` from this ``Variant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
+        type.fromVariant(self)
+    }
+    
     var content: Variant.ContentType {
         if let wrapped = self {
             return wrapped.content
@@ -375,22 +554,88 @@ extension Optional where Wrapped == Variant {
     }
 }
 
-extension Optional: VariantStorable where Wrapped: VariantStorable {
-    public typealias Representable = Wrapped.Representable
-    
-    public func toVariantRepresentable() -> Wrapped.Representable {
-        if let wrapped = self {
-            return wrapped.toVariantRepresentable()
-        }
-        // It's not needed and is just a wrong abstraction of internal implementation leaking into the public API
-        fatalError("It's illegal to construct a `Variant` from `Variant?`, unwrap it or pass it as it is.")
-    }
-    
-    public init?(_ variant: Variant) {
-        if let wrapped = Wrapped(variant) {
-            self = .some(wrapped)
-        } else {
-            return nil
+public extension Variant.GType {
+    /// Internal API. Godot type name of the type with this variant tag.
+    var _godotTypeName: String {
+        switch self {
+        case .nil:
+            fatalError("Unreachable")
+        case .bool:
+            return "bool"
+        case .int:
+            return "int"
+        case .float:
+            return "float"
+        case .string:
+            return "String"
+        case .vector2:
+            return "Vector2"
+        case .vector2i:
+            return "Vector2i"
+        case .rect2:
+            return "Rect2"
+        case .rect2i:
+            return "Rect2i"
+        case .vector3:
+            return "Vector3"
+        case .vector3i:
+            return "Vector3i"
+        case .transform2d:
+            return "Transform2D"
+        case .vector4:
+            return "Vector4"
+        case .vector4i:
+            return "Vector4i"
+        case .plane:
+            return "Plane"
+        case .quaternion:
+            return "Quaternion"
+        case .aabb:
+            return "AABB"
+        case .basis:
+            return "Basis"
+        case .transform3d:
+            return "Transform3D"
+        case .projection:
+            return "Projection"
+        case .color:
+            return "Color"
+        case .stringName:
+            return "StringName"
+        case .nodePath:
+            return "NodePath"
+        case .rid:
+            return "RID"
+        case .object:
+            fatalError("Unreachable")
+        case .callable:
+            return "Callable"
+        case .signal:
+            return "Signal"
+        case .dictionary:
+            return "Dictionary"
+        case .array:
+            return "Array"
+        case .packedByteArray:
+            return "PackedByteArray"
+        case .packedInt32Array:
+            return "PackedInt32Array"
+        case .packedInt64Array:
+            return "PackedInt64Array"
+        case .packedFloat32Array:
+            return "PackedFloat32Array"
+        case .packedFloat64Array:
+            return "PackedFloat64Array"
+        case .packedStringArray:
+            return "PackedStringArray"
+        case .packedVector2Array:
+            return "PackedVector2Array"
+        case .packedVector3Array:
+            return "PackedVector3Array"
+        case .packedColorArray:
+            return "PackedColorArray"
+        case .packedVector4Array:
+            return "PackedVector4Array"
         }
     }
 }

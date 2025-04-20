@@ -2,47 +2,91 @@
 class Car: Node {
     var vin: String = ""
 
-    func _mproxy_set_vin(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "vin", vin) {
-            vin = $0
+    static func _mproxy_set_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for vin: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "vin", object.vin) {
+            object.vin = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_vin(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(vin)
+    static func _mproxy_get_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for vin: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.vin)
     }
     var year: Int = 1997
 
-    func _mproxy_set_year(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "year", year) {
-            year = $0
+    static func _mproxy_set_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for year: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "year", object.year) {
+            object.year = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_year(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(year)
+    static func _mproxy_get_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for year: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.year)
     }
     var make: String = "HONDA"
 
-    func _mproxy_set_make(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "make", make) {
-            make = $0
+    static func _mproxy_set_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for make: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "make", object.make) {
+            object.make = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_make(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(make)
+    static func _mproxy_get_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for make: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.make)
     }
     var model: String = "ACCORD"
 
-    func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "model", model) {
-            model = $0
+    static func _mproxy_set_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for model: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "model", object.model) {
+            object.model = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(model)
+    static func _mproxy_get_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for model: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.model)
     }
 
     override open class var classInitializer: Void {
@@ -54,48 +98,64 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "VIN", prefix: "")
-        let _pvin = PropInfo (
-            propertyType: .string,
-            propertyName: "vin",
+        SwiftGodot._addPropertyGroup(className: className, name: "VIN", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_vin", flags: .default, returnValue: _pvin, arguments: [], function: Car._mproxy_get_vin)
-        classInfo.registerMethod (name: "_mproxy_set_vin", flags: .default, returnValue: nil, arguments: [_pvin], function: Car._mproxy_set_vin)
-        classInfo.registerProperty (_pvin, getter: "_mproxy_get_vin", setter: "_mproxy_set_vin")
-        classInfo.addPropertyGroup(name: "YMM", prefix: "")
-        let _pyear = PropInfo (
-            propertyType: .int,
-            propertyName: "year",
+            info: SwiftGodot._propInfo(
+                at: \Car.vin,
+                name: "vin",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_vin",
+            setterName: "set_vin",
+            getterFunction: Car._mproxy_get_vin,
+            setterFunction: Car._mproxy_set_vin
+        )
+        SwiftGodot._addPropertyGroup(className: className, name: "YMM", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_year", flags: .default, returnValue: _pyear, arguments: [], function: Car._mproxy_get_year)
-        classInfo.registerMethod (name: "_mproxy_set_year", flags: .default, returnValue: nil, arguments: [_pyear], function: Car._mproxy_set_year)
-        classInfo.registerProperty (_pyear, getter: "_mproxy_get_year", setter: "_mproxy_set_year")
-        let _pmake = PropInfo (
-            propertyType: .string,
-            propertyName: "make",
+            info: SwiftGodot._propInfo(
+                at: \Car.year,
+                name: "year",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_year",
+            setterName: "set_year",
+            getterFunction: Car._mproxy_get_year,
+            setterFunction: Car._mproxy_set_year
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_make", flags: .default, returnValue: _pmake, arguments: [], function: Car._mproxy_get_make)
-        classInfo.registerMethod (name: "_mproxy_set_make", flags: .default, returnValue: nil, arguments: [_pmake], function: Car._mproxy_set_make)
-        classInfo.registerProperty (_pmake, getter: "_mproxy_get_make", setter: "_mproxy_set_make")
-        let _pmodel = PropInfo (
-            propertyType: .string,
-            propertyName: "model",
+            info: SwiftGodot._propInfo(
+                at: \Car.make,
+                name: "make",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_make",
+            setterName: "set_make",
+            getterFunction: Car._mproxy_get_make,
+            setterFunction: Car._mproxy_set_make
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-        classInfo.registerMethod (name: "_mproxy_set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-        classInfo.registerProperty (_pmodel, getter: "_mproxy_get_model", setter: "_mproxy_set_model")
+            info: SwiftGodot._propInfo(
+                at: \Car.model,
+                name: "model",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_model",
+            setterName: "set_model",
+            getterFunction: Car._mproxy_get_model,
+            setterFunction: Car._mproxy_set_model
+        )
     } ()
     
 }

@@ -15,7 +15,7 @@ private class TestProp: Node {
     var changeThisVariable: Int = 1
 
     override func _validateProperty(_ prop: inout PropInfo) -> Bool {
-        if prop.propertyName == "changeThisVariable" {
+        if prop.propertyName == "change_this_variable" {
             prop.usage.insert(.group)
             return true
         }
@@ -38,7 +38,7 @@ final class TestProperty: GodotTestCase {
             guard let flagsV = prop["usage"], let iflags = Int(flagsV) else { continue }
             let flags = PropertyUsageFlags(rawValue: iflags)
 
-            if name == "changeThisVariable", flags.contains(.group) {
+            if name == "change_this_variable", flags.contains(.group) {
                 found = true
             }
         }

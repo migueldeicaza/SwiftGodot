@@ -2,25 +2,47 @@
 class Car: Node {
     var makes: ObjectCollection<Node> = []
 
-    func _mproxy_set_makes(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "makes", makes) {
-            makes = $0
+    static func _mproxy_set_makes(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for makes: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "makes", object.makes) {
+            object.makes = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_makes(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(makes)
+    static func _mproxy_get_makes(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for makes: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.makes)
     }
     var model: ObjectCollection<Node> = []
 
-    func _mproxy_set_model(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "model", model) {
-            model = $0
+    static func _mproxy_set_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for model: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "model", object.model) {
+            object.model = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_model(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(model)
+    static func _mproxy_get_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for model: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.model)
     }
 
     override open class var classInitializer: Void {
@@ -32,26 +54,34 @@ class Car: Node {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Car> (name: className)
-        classInfo.addPropertyGroup(name: "Vehicle", prefix: "")
-        let _pmakes = PropInfo (
-            propertyType: .array,
-            propertyName: "makes",
-            className: StringName("Array[Node]"),
-            hint: .arrayType,
-            hintStr: "Node",
-            usage: .default)
-        classInfo.registerMethod (name: "get_makes", flags: .default, returnValue: _pmakes, arguments: [], function: Car._mproxy_get_makes)
-        classInfo.registerMethod (name: "set_makes", flags: .default, returnValue: nil, arguments: [_pmakes], function: Car._mproxy_set_makes)
-        classInfo.registerProperty (_pmakes, getter: "get_makes", setter: "set_makes")
-        let _pmodel = PropInfo (
-            propertyType: .array,
-            propertyName: "model",
-            className: StringName("Array[Node]"),
-            hint: .arrayType,
-            hintStr: "Node",
-            usage: .default)
-        classInfo.registerMethod (name: "get_model", flags: .default, returnValue: _pmodel, arguments: [], function: Car._mproxy_get_model)
-        classInfo.registerMethod (name: "set_model", flags: .default, returnValue: nil, arguments: [_pmodel], function: Car._mproxy_set_model)
-        classInfo.registerProperty (_pmodel, getter: "get_model", setter: "set_model")
+        SwiftGodot._addPropertyGroup(className: className, name: "Vehicle", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Car.makes,
+                name: "makes",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_makes",
+            setterName: "set_makes",
+            getterFunction: Car._mproxy_get_makes,
+            setterFunction: Car._mproxy_set_makes
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Car.model,
+                name: "model",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_model",
+            setterName: "set_model",
+            getterFunction: Car._mproxy_get_model,
+            setterFunction: Car._mproxy_set_model
+        )
     } ()
 }

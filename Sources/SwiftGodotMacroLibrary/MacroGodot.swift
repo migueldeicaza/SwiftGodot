@@ -17,7 +17,10 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 class GodotMacroProcessor {
+    var existingMembers: [String: DeclSyntax] = [:]
+    
     var propertyDeclarations: [PropertyDeclarationKey: String] = [:]
+    
     struct PropertyDeclarationKey: Hashable {
         let typeName: String
         let parameterElementTypeName: String?
@@ -40,110 +43,11 @@ class GodotMacroProcessor {
         className = classDecl.name.text
     }
     
-    func lookupPropParam (parameterTypeName: String, parameterElementTypeName: String? = nil, parameterName: String) -> String {
-        let key = PropertyDeclarationKey(
-            typeName: parameterTypeName.hasSuffix("?") ? String(parameterTypeName.dropLast()) : parameterTypeName,
-            parameterElementTypeName: parameterElementTypeName,
-            parameterName: parameterName
-        )
-        if let v = propertyDeclarations [key] {
-            return v
+    func checkNameCollision(_ name: String, for decl: DeclSyntax) throws {
+        if let existingDecl = existingMembers.updateValue(decl, forKey: name) {
+            throw GodotMacroError.nameCollision(name, decl, existingDecl)
         }
-        let propType = godotTypeToProp (typeName: parameterTypeName)
-        
-        let name = "prop_\(propertyDeclarations.count)"
-        
-        let className: String
-        let hintStr: String
-        let hint = propType == ".array" ? ".arrayType" : ".none"
-        
-        if propType == ".array",
-           let parameterElementTypeName {
-            let godotArrayElementTypeName: String
-            
-            if let gType = godotVariants[parameterElementTypeName],
-               let fromGType = godotArrayElementType(gType: gType) {
-                godotArrayElementTypeName = fromGType
-            } else {
-                godotArrayElementTypeName = parameterElementTypeName
-            }
-            
-            className = "Array[\(godotArrayElementTypeName)]"
-            hintStr = godotArrayElementTypeName
-        } else if propType == ".object" {
-            className = parameterTypeName
-            hintStr = ""
-        } else {
-            className = ""
-            hintStr = ""
-        }
-        
-        // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
-        // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\(parameterName)\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: .default)\n")
-        propertyDeclarations [key] = name
-        return name
     }
-
-    func lookupPropReturn (parameterTypeName: String, genericParameterTypeNames: [String], parameterName: String) -> String {
-        let key = PropertyDeclarationKey(
-            typeName: parameterTypeName,
-            genericParameterNames: genericParameterTypeNames,
-            parameterName: parameterName
-        )
-        if let v = propertyDeclarations [key] {
-            return v
-        }
-        
-        let propType: String
-        let className: String
-        let hintStr: String
-        
-        if let gArrayCollectionElementTypeName = genericParameterTypeNames.first {
-            let godotArrayElementTypeName: String
-            if let gType = godotVariants[gArrayCollectionElementTypeName], let fromGType = godotArrayElementType(gType: gType) {
-                godotArrayElementTypeName = fromGType
-            } else {
-                godotArrayElementTypeName = gArrayCollectionElementTypeName
-            }
-            
-            propType = godotTypeToProp (typeName: "GArray")
-            className = "Array[\(godotArrayElementTypeName)]"
-            hintStr = godotArrayElementTypeName
-        } else {
-            propType = godotTypeToProp (typeName: parameterTypeName)
-            
-            if propType == ".object" {
-                className = parameterTypeName
-            } else {
-                className = ""
-            }
-            hintStr = ""
-        }
-        
-        let name = "prop_\(propertyDeclarations.count)"
-        
-        let hint: String
-        if propType == ".array" && hintStr != "" {
-            hint = ".arrayType"
-        } else {
-            hint = ".none"
-        }
-        
-        let usage: String
-        if propType == ".nil" {
-            usage = ".nilIsVariant"
-        } else {
-            usage = ".default"
-        }
-        
-        // TODO: perhaps for these prop infos that are parameters to functions, we should not bother making them unique
-        // and instead share all the Ints, all the Floats and so on.
-        ctor.append ("    let \(name) = PropInfo (propertyType: \(propType), propertyName: \"\", className: StringName(\"\(className)\"), hint: \(hint), hintStr: \"\(hintStr)\", usage: \(usage))\n")
-        propertyDeclarations [key] = name
-        return name
-    }
-    
     
     func classInitSignals(_ declSyntax: MacroExpansionDeclSyntax) throws {
         guard declSyntax.macroName.tokenKind == .identifier("signal") else {
@@ -157,7 +61,9 @@ class GodotMacroProcessor {
         guard let signalName = firstArg.expression.signalName() else {
             return
         }
+        
         injectClassInfo()
+                
         ctor.append("classInfo.registerSignal(")
         ctor.append("name: \(className).\(signalName.swiftName).name,")
         ctor.append("arguments: \(className).\(signalName.swiftName).arguments")
@@ -168,7 +74,7 @@ class GodotMacroProcessor {
         injectClassInfo()
         ctor.append(
             """
-            classInfo.addPropertyGroup(name: "\(name)", prefix: "\(prefix)")\n
+            SwiftGodot._addPropertyGroup(className: className, name: "\(name)", prefix: "\(prefix)")\n
             """
         )
     }
@@ -177,7 +83,7 @@ class GodotMacroProcessor {
         injectClassInfo()
         ctor.append(
             """
-            classInfo.addPropertySubgroup(name: "\(name)", prefix: "\(prefix)")\n
+            SwiftGodot._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")\n
             """
         )
     }
@@ -187,79 +93,81 @@ class GodotMacroProcessor {
         guard hasCallableAttribute(funcDecl.attributes) else {
             return
         }
+        
+        if funcDecl.hasClassOrStaticModifier {
+            throw GodotMacroError.staticMembers
+        }
+        
         let funcName = funcDecl.name.text
-        var funcArgs = ""
-        var retProp: String? = nil
-        if let (retType, generics, _) = getIdentifier (funcDecl.signature.returnClause?.type) {
-            retProp = lookupPropReturn(
-                parameterTypeName: retType,
-                genericParameterTypeNames: generics,
-                parameterName: ""
-            )
-        }
-
-        for parameter in funcDecl.signature.parameterClause.parameters {
-            guard let ptype = getTypeName(parameter) else {
-                throw MacroError.typeName (parameter)
+        
+        let arguments = funcDecl
+            .signature
+            .parameterClause
+            .parameters
+            .map { parameter in
+                let typename = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                let name = getParamName(parameter)
+                return "SwiftGodot._argumentPropInfo(\(typename).self, name: \"\(name)\")"
             }
-            let pname = getParamName(parameter)
-            let propInfo = lookupPropParam(
-                parameterTypeName: ptype,
-                parameterElementTypeName: parameter.arrayElementTypeName ?? parameter.variantCollectionElementTypeName ?? parameter.objectCollectionElementTypeName,
-                parameterName: pname
-            )
-            if funcArgs == "" {
-                funcArgs = "    let \(funcName)Args = [\n"
+            .map {
+                "        \($0)"
             }
-            funcArgs.append ("        \(propInfo),\n")
+            .joined(separator: ",\n")
+                
+        let returnTypename: String
+        if let type = funcDecl.signature.returnClause?.type {
+            returnTypename = type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            returnTypename = "Swift.Void"
         }
-        if funcArgs != "" {
-            funcArgs.append ("    ]\n")
+                
+        
+        let flags: String
+        if funcDecl.hasClassOrStaticModifier {
+            flags = ".static"
+        } else {
+            flags = ".default"
         }
-        ctor.append (funcArgs)
+        
         injectClassInfo()
-        ctor.append ("    classInfo.registerMethod(name: StringName(\"\(funcName)\"), flags: .default, returnValue: \(retProp ?? "nil"), arguments: \(funcArgs == "" ? "[]" : "\(funcName)Args"), function: \(className)._mproxy_\(funcName))\n")
+        ctor.append("""
+            SwiftGodot._registerMethod(
+                className: className,
+                name: "\(funcName)", 
+                flags: \(flags), 
+                returnValue: SwiftGodot._returnValuePropInfo(\(returnTypename).self), 
+                arguments: [
+            \(arguments)
+                ], 
+                function: \(className)._mproxy_\(funcName)
+            )
+            """)
+        
+        try checkNameCollision(funcName, for: DeclSyntax(funcDecl))
     }
       
 
-    func processVariable(_ varDecl: VariableDeclSyntax, previousGroupPrefix: String?, previousSubgroupPrefix: String?) throws -> Bool {
-        if varDecl.isGArrayCollection {
-            try processGArrayCollectionVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
-        } else if hasExportAttribute(varDecl.attributes) {
-            return try processExportVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
+    func processVariable(_ varDecl: VariableDeclSyntax, previousGroupPrefix: String?, previousSubgroupPrefix: String?) throws {
+        if hasExportAttribute(varDecl.attributes) {
+            try processExportVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
         } else if hasSignalAttribute(varDecl.attributes) {
             try processSignalVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
         }
-            
-        return false
     }
 
     
     // Returns true if it used "tryCase"
-    func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws -> Bool {
+    func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
         assert(hasExportAttribute(varDecl.attributes))
         
-        var usedTryCase = false
-        guard let last = varDecl.bindings.last else {
+        if varDecl.hasClassOrStaticModifier {
+            throw GodotMacroError.staticMembers
+        }
+                
+        guard !varDecl.bindings.isEmpty else {
             throw GodotMacroError.noVariablesFound
         }
-        guard var type = last.typeAnnotation?.type else {
-            throw GodotMacroError.noTypeFound(varDecl)
-        }
-        if let optSyntax = type.as (OptionalTypeSyntax.self) {
-            type = optSyntax.wrappedType
-        }
-        guard varDecl.isSwiftArray == false else {
-            throw GodotMacroError.requiresGArrayCollection
-        }
-        guard let typeName = type.as (IdentifierTypeSyntax.self)?.name.text else {
-            throw GodotMacroError.unsupportedType(varDecl)
-        }
-
-        guard let ta = last.typeAnnotation?.type.description.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) else {
-            throw GodotMacroError.noTypeFound(varDecl)
-        }
-
+        
         let exportAttr = varDecl.attributes.first?.as(AttributeSyntax.self)
 
         // We cornered ourselves by not having named parameters for the first two arguments
@@ -269,8 +177,10 @@ class GodotMacroProcessor {
         // hint, and in that case, the second can be a hint
         let hintExpr = labeledExpressionList?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
         let hintStrExpr = hintExpr == nil ? nil : labeledExpressionList?.dropFirst().first
-
-        let usageExpr = labeledExpressionList?.first(where: { ($0 as? LabeledExprSyntax)?.label?.description == "usage"})
+        
+        let usageExpr = labeledExpressionList?.first { labelExpr in
+            labelExpr.description == "usage"
+        }
 
         for singleVar in varDecl.bindings {
             guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
@@ -281,8 +191,8 @@ class GodotMacroProcessor {
             let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
             let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
-            let setterName = "_mproxy_set_\(varNameWithoutPrefix)"
-            let getterName = "_mproxy_get_\(varNameWithoutPrefix)"
+            let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
+            let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             
             if let accessors = singleVar.accessorBlock {
                 if CodeBlockSyntax (accessors) != nil {
@@ -320,139 +230,60 @@ class GodotMacroProcessor {
                     }
                 }
             }
-            let mappedType = godotTypeToProp (typeName: typeName)
-            let pinfo = "_p\(varNameWithPrefix)"
-            let isEnum = hintExpr?.description == "enum"
-
             
-            let propType = isEnum ? ".int" : mappedType
-            let fallback = isEnum ? "tryCase (\(ta).self)" : "\"\""
-            let usageFallback = ".default"
-            if isEnum {
-                usedTryCase = true
-            }
-
-            ctor.append (
-    """
-    let \(pinfo) = PropInfo (
-        propertyType: \(propType),
-        propertyName: "\(varNameWithPrefix)",
-        className: className,
-        hint: .\(hintExpr?.description ?? "none"),
-        hintStr: \(hintStrExpr?.description ?? fallback),
-        usage: \(usageExpr?.expression.description ?? usageFallback))
-    
-    """)
+            var args: [String] = [
+                "at: \\\(className).\(varNameWithPrefix)",
+                "name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
+            ]
             
-            injectClassInfo()
-            ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
-            ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
-            ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
-        }
-        if usedTryCase {
-            return true
-        }
-        return false
-    }
-    
-    func processGArrayCollectionVariable(_ varDecl: VariableDeclSyntax, prefix: String?) throws {
-        guard hasExportAttribute(varDecl.attributes) else {
-            return
-        }
-        guard let last = varDecl.bindings.last else {
-            throw GodotMacroError.noVariablesFound
-        }
-        
-        guard let type = last.typeAnnotation?.type else {
-            throw GodotMacroError.noTypeFound(varDecl)
-        }
-        
-        guard !type.is (OptionalTypeSyntax.self) else {
-            throw GodotMacroError.requiresNonOptionalGArrayCollection
-        }
-        
-        guard let elementTypeName = varDecl.gArrayCollectionElementTypeName else {
-            return
-        }
-        
-        for singleVar in varDecl.bindings {
-            guard let ips = singleVar.pattern.as(IdentifierPatternSyntax.self) else {
-                throw GodotMacroError.expectedIdentifier(singleVar)
-            }
-            let varNameWithPrefix = ips.identifier.text
-            let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
-            
-            let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
-            let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
-            let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
-            let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
-            
-            if let accessors = singleVar.accessorBlock {
-                if CodeBlockSyntax (accessors) != nil {
-                    throw MacroError.propertyGetSet
-                }
-                if let block = AccessorBlockSyntax (accessors) {
-                    var hasSet = false
-                    var hasGet = false
-                    switch block.accessors {
-                    case .accessors(let list):
-                        for accessor in list {
-                            switch accessor.accessorSpecifier.tokenKind {
-                            case .keyword(let val):
-                                switch val {
-                                case .didSet, .willSet:
-                                    hasSet = true
-                                    hasGet = true
-                                case .set:
-                                    hasSet = true
-                                case .get:
-                                    hasGet = true
-                                default:
-                                    break
-                                }
-                            default:
-                                break
-                            }
-                        }
-                    default:
-                        throw MacroError.propertyGetSet
-                    }
-                    
-                    if hasSet == false || hasGet == false {
-                        throw MacroError.propertyGetSet
-                    }
-                }
-            }
-            let pinfo = "_p\(varNameWithPrefix)"
-            let godotArrayElementTypeName: String
-            if let gType = godotVariants[elementTypeName], let fromGType = godotArrayElementType(gType: gType) {
-                godotArrayElementTypeName = fromGType
+            if let hint = hintExpr?.description {
+                args.append("userHint: .\(hint)")
             } else {
-                godotArrayElementTypeName = elementTypeName
+                args.append("userHint: nil")
             }
             
-            let godotArrayTypeName = "Array[\(godotArrayElementTypeName)]"
-            ctor.append (
-    """
-    let \(pinfo) = PropInfo (
-        propertyType: \(godotTypeToProp(typeName: "GArray")),
-        propertyName: "\(varNameWithPrefix.camelCaseToSnakeCase())",
-        className: StringName("\(godotArrayTypeName)"),
-        hint: .arrayType,
-        hintStr: "\(godotArrayElementTypeName)",
-        usage: .default)\n
-    """)
-
+            if let hintStr = hintStrExpr?.description {
+                args.append("userHintStr: \(hintStr)")
+            } else {
+                args.append("userHintStr: nil")
+            }
+            
+            if let usage = usageExpr?.expression.description {
+                args.append("userUsage: \(usage)")
+            } else {
+                args.append("userUsage: nil")
+            }
+            
+            let argsStr = args
+                .map { String(repeating: " ", count: 8) + $0 }
+                .joined(separator: ",\n")
+            
+            
             injectClassInfo()
-            ctor.append("    classInfo.registerMethod (name: \"\(getterName)\", flags: .default, returnValue: \(pinfo), arguments: [], function: \(className).\(proxyGetterName))\n")
-            ctor.append("    classInfo.registerMethod (name: \"\(setterName)\", flags: .default, returnValue: nil, arguments: [\(pinfo)], function: \(className).\(proxySetterName))\n")
-            ctor.append("    classInfo.registerProperty (\(pinfo), getter: \"\(getterName)\", setter: \"\(setterName)\")\n")
+            ctor.append("""
+            SwiftGodot._registerPropertyWithGetterSetter(
+                className: className,
+                info: SwiftGodot._propInfo(
+            \(argsStr)
+                ),
+                getterName: "\(getterName)\",
+                setterName: "\(setterName)",                
+                getterFunction: \(className).\(proxyGetterName),
+                setterFunction: \(className).\(proxySetterName)                
+            )
+            """)
+            
+            try checkNameCollision(getterName, for: DeclSyntax(varDecl))
+            try checkNameCollision(setterName, for: DeclSyntax(varDecl))
         }
     }
-    
     
     // Returns true if it used "tryCase"
     func processSignalVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
+        if varDecl.hasClassOrStaticModifier {
+            throw GodotMacroError.staticMembers
+        }
+        
         guard let last = varDecl.bindings.last else {
             throw GodotMacroError.noVariablesFound
         }
@@ -478,7 +309,9 @@ class GodotMacroProcessor {
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
 
             injectClassInfo()
-            ctor.append("\(typeName).register(\"\(name.camelCaseToSnakeCase())\", info: classInfo)")
+            let godotName = name.camelCaseToSnakeCase()
+            ctor.append("\(typeName).register(as: \"\(godotName)\", in: className)")
+            try checkNameCollision(godotName, for: DeclSyntax(varDecl))
         }
     }
 
@@ -505,7 +338,6 @@ class GodotMacroProcessor {
     """
         var previousGroupPrefix: String? = nil
         var previousSubgroupPrefix: String? = nil
-        var needTrycase = false
         for member in classDecl.memberBlock.members.enumerated() {
             let decl = member.element.decl
             let macroExpansion = MacroExpansionDeclSyntax(decl)
@@ -519,27 +351,16 @@ class GodotMacroProcessor {
             } else if let funcDecl = FunctionDeclSyntax(decl) {
                 try processFunction (funcDecl)
             } else if let varDecl = VariableDeclSyntax(decl) {
-                if try processVariable(
+                try processVariable(
                     varDecl,
                     previousGroupPrefix: previousGroupPrefix,
                     previousSubgroupPrefix: previousSubgroupPrefix
-                ) {
-                    needTrycase = true
-                }
+                )
             } else if let macroExpansion {
                 try classInitSignals(macroExpansion)
             }
         }
 
-        if needTrycase {
-            ctor.append (
-            """
-            func tryCase <T : RawRepresentable & CaseIterable> (_ type: T.Type) -> GString {
-                GString (type.allCases.map { v in "\\(v):\\(v.rawValue)" }.joined(separator: ","))
-            }
-            func tryCase <T : RawRepresentable> (_ type: T.Type) -> String { "" }
-            """)
-        }
         ctor.append("} ()\n")
         return ctor
     }

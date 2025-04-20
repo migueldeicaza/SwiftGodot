@@ -1,14 +1,25 @@
 class Hi: Node {
     var goodName: String = "Supertop"
 
-    func _mproxy_set_goodName(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "goodName", goodName) {
-            goodName = $0
+    static func _mproxy_set_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "goodName", object.goodName) {
+            object.goodName = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_goodName(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(goodName)
+    static func _mproxy_get_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.goodName)
     }
 
     override open class var classInitializer: Void {
@@ -19,16 +30,20 @@ class Hi: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
-        let _pgoodName = PropInfo (
-            propertyType: .string,
-            propertyName: "goodName",
-            className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
         let classInfo = ClassInfo<Hi> (name: className)
-        classInfo.registerMethod (name: "_mproxy_get_goodName", flags: .default, returnValue: _pgoodName, arguments: [], function: Hi._mproxy_get_goodName)
-        classInfo.registerMethod (name: "_mproxy_set_goodName", flags: .default, returnValue: nil, arguments: [_pgoodName], function: Hi._mproxy_set_goodName)
-        classInfo.registerProperty (_pgoodName, getter: "_mproxy_get_goodName", setter: "_mproxy_set_goodName")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Hi.goodName,
+                name: "good_name",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_good_name",
+            setterName: "set_good_name",
+            getterFunction: Hi._mproxy_get_goodName,
+            setterFunction: Hi._mproxy_set_goodName
+        )
     } ()
 }

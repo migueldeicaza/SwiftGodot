@@ -5,9 +5,12 @@ class SomeNode: Node {
         return result
     }
 
-    func _mproxy_getNodeCollection(arguments: borrowing Arguments) -> Variant? {
-        let result = getNodeCollection()
-        return Variant(result)
+    static func _mproxy_getNodeCollection(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `getNodeCollection`: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.getNodeCollection())
 
     }
 
@@ -19,8 +22,16 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[Node]"), hint: .arrayType, hintStr: "Node", usage: .default)
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod(name: StringName("getNodeCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getNodeCollection)
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "getNodeCollection",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(ObjectCollection<Node>.self),
+            arguments: [
+
+            ],
+            function: SomeNode._mproxy_getNodeCollection
+        )
     } ()
 }

@@ -2,91 +2,179 @@
 class Garage: Node {
     var name: String = ""
 
-    func _mproxy_set_name(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "name", name) {
-            name = $0
+    static func _mproxy_set_name(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for name: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "name", object.name) {
+            object.name = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_name(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(name)
+    static func _mproxy_get_name(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for name: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.name)
     }
     var rating: Float = 0.0
 
-    func _mproxy_set_rating(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "rating", rating) {
-            rating = $0
+    static func _mproxy_set_rating(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for rating: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "rating", object.rating) {
+            object.rating = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_rating(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(rating)
+    static func _mproxy_get_rating(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for rating: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.rating)
     }
     var reviews: VariantCollection<String> = []
 
-    func _mproxy_set_reviews(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "reviews", reviews) {
-            reviews = $0
+    static func _mproxy_set_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for reviews: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "reviews", object.reviews) {
+            object.reviews = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_reviews(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(reviews)
+    static func _mproxy_get_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for reviews: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.reviews)
     }
     var checkIns: ObjectCollection<CheckIn> = []
 
-    func _mproxy_set_checkIns(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "checkIns", checkIns) {
-            checkIns = $0
+    static func _mproxy_set_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for checkIns: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "checkIns", object.checkIns) {
+            object.checkIns = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_checkIns(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(checkIns)
+    static func _mproxy_get_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for checkIns: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.checkIns)
     }
     var address: String = ""
 
-    func _mproxy_set_address(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "address", address) {
-            address = $0
+    static func _mproxy_set_address(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for address: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "address", object.address) {
+            object.address = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_address(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(address)
+    static func _mproxy_get_address(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for address: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.address)
     }
     var daysOfOperation: VariantCollection<String> = []
 
-    func _mproxy_set_daysOfOperation(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "daysOfOperation", daysOfOperation) {
-            daysOfOperation = $0
+    static func _mproxy_set_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for daysOfOperation: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "daysOfOperation", object.daysOfOperation) {
+            object.daysOfOperation = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_daysOfOperation(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(daysOfOperation)
+    static func _mproxy_get_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for daysOfOperation: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.daysOfOperation)
     }
     var hours: VariantCollection<String> = []
 
-    func _mproxy_set_hours(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "hours", hours) {
-            hours = $0
+    static func _mproxy_set_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for hours: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "hours", object.hours) {
+            object.hours = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_hours(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(hours)
+    static func _mproxy_get_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for hours: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.hours)
     }
     var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
 
-    func _mproxy_set_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
-        _macroExportSet(args, "insuranceProvidersAccepted", insuranceProvidersAccepted) {
-            insuranceProvidersAccepted = $0
+    static func _mproxy_set_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for insuranceProvidersAccepted: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
         }
+
+        SwiftGodot._invokeSetter(arguments, "insuranceProvidersAccepted", object.insuranceProvidersAccepted) {
+            object.insuranceProvidersAccepted = $0
+        }
+        return nil
     }
 
-    func _mproxy_get_insuranceProvidersAccepted(args: borrowing Arguments) -> Variant? {
-        _macroExportGet(insuranceProvidersAccepted)
+    static func _mproxy_get_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = _unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling getter for insuranceProvidersAccepted: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+
+        return SwiftGodot._invokeGetter(object.insuranceProvidersAccepted)
     }
 
     override open class var classInitializer: Void {
@@ -98,88 +186,120 @@ class Garage: Node {
         let className = StringName("Garage")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Garage> (name: className)
-        classInfo.addPropertyGroup(name: "Front Page", prefix: "")
-        let _pname = PropInfo (
-            propertyType: .string,
-            propertyName: "name",
+        SwiftGodot._addPropertyGroup(className: className, name: "Front Page", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_name", flags: .default, returnValue: _pname, arguments: [], function: Garage._mproxy_get_name)
-        classInfo.registerMethod (name: "_mproxy_set_name", flags: .default, returnValue: nil, arguments: [_pname], function: Garage._mproxy_set_name)
-        classInfo.registerProperty (_pname, getter: "_mproxy_get_name", setter: "_mproxy_set_name")
-        let _prating = PropInfo (
-            propertyType: .float,
-            propertyName: "rating",
+            info: SwiftGodot._propInfo(
+                at: \Garage.name,
+                name: "name",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_name",
+            setterName: "set_name",
+            getterFunction: Garage._mproxy_get_name,
+            setterFunction: Garage._mproxy_set_name
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_rating", flags: .default, returnValue: _prating, arguments: [], function: Garage._mproxy_get_rating)
-        classInfo.registerMethod (name: "_mproxy_set_rating", flags: .default, returnValue: nil, arguments: [_prating], function: Garage._mproxy_set_rating)
-        classInfo.registerProperty (_prating, getter: "_mproxy_get_rating", setter: "_mproxy_set_rating")
-        classInfo.addPropertyGroup(name: "More Details", prefix: "")
-        let _previews = PropInfo (
-            propertyType: .array,
-            propertyName: "reviews",
-            className: StringName("Array[String]"),
-            hint: .arrayType,
-            hintStr: "String",
-            usage: .default)
-        classInfo.registerMethod (name: "get_reviews", flags: .default, returnValue: _previews, arguments: [], function: Garage._mproxy_get_reviews)
-        classInfo.registerMethod (name: "set_reviews", flags: .default, returnValue: nil, arguments: [_previews], function: Garage._mproxy_set_reviews)
-        classInfo.registerProperty (_previews, getter: "get_reviews", setter: "set_reviews")
-        let _pcheckIns = PropInfo (
-            propertyType: .array,
-            propertyName: "check_ins",
-            className: StringName("Array[CheckIn]"),
-            hint: .arrayType,
-            hintStr: "CheckIn",
-            usage: .default)
-        classInfo.registerMethod (name: "get_check_ins", flags: .default, returnValue: _pcheckIns, arguments: [], function: Garage._mproxy_get_checkIns)
-        classInfo.registerMethod (name: "set_check_ins", flags: .default, returnValue: nil, arguments: [_pcheckIns], function: Garage._mproxy_set_checkIns)
-        classInfo.registerProperty (_pcheckIns, getter: "get_check_ins", setter: "set_check_ins")
-        let _paddress = PropInfo (
-            propertyType: .string,
-            propertyName: "address",
+            info: SwiftGodot._propInfo(
+                at: \Garage.rating,
+                name: "rating",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_rating",
+            setterName: "set_rating",
+            getterFunction: Garage._mproxy_get_rating,
+            setterFunction: Garage._mproxy_set_rating
+        )
+        SwiftGodot._addPropertyGroup(className: className, name: "More Details", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            hint: .none,
-            hintStr: "",
-            usage: .default)
-        classInfo.registerMethod (name: "_mproxy_get_address", flags: .default, returnValue: _paddress, arguments: [], function: Garage._mproxy_get_address)
-        classInfo.registerMethod (name: "_mproxy_set_address", flags: .default, returnValue: nil, arguments: [_paddress], function: Garage._mproxy_set_address)
-        classInfo.registerProperty (_paddress, getter: "_mproxy_get_address", setter: "_mproxy_set_address")
-        classInfo.addPropertyGroup(name: "Hours and Insurance", prefix: "")
-        let _pdaysOfOperation = PropInfo (
-            propertyType: .array,
-            propertyName: "days_of_operation",
-            className: StringName("Array[String]"),
-            hint: .arrayType,
-            hintStr: "String",
-            usage: .default)
-        classInfo.registerMethod (name: "get_days_of_operation", flags: .default, returnValue: _pdaysOfOperation, arguments: [], function: Garage._mproxy_get_daysOfOperation)
-        classInfo.registerMethod (name: "set_days_of_operation", flags: .default, returnValue: nil, arguments: [_pdaysOfOperation], function: Garage._mproxy_set_daysOfOperation)
-        classInfo.registerProperty (_pdaysOfOperation, getter: "get_days_of_operation", setter: "set_days_of_operation")
-        let _phours = PropInfo (
-            propertyType: .array,
-            propertyName: "hours",
-            className: StringName("Array[String]"),
-            hint: .arrayType,
-            hintStr: "String",
-            usage: .default)
-        classInfo.registerMethod (name: "get_hours", flags: .default, returnValue: _phours, arguments: [], function: Garage._mproxy_get_hours)
-        classInfo.registerMethod (name: "set_hours", flags: .default, returnValue: nil, arguments: [_phours], function: Garage._mproxy_set_hours)
-        classInfo.registerProperty (_phours, getter: "get_hours", setter: "set_hours")
-        let _pinsuranceProvidersAccepted = PropInfo (
-            propertyType: .array,
-            propertyName: "insurance_providers_accepted",
-            className: StringName("Array[InsuranceProvider]"),
-            hint: .arrayType,
-            hintStr: "InsuranceProvider",
-            usage: .default)
-        classInfo.registerMethod (name: "get_insurance_providers_accepted", flags: .default, returnValue: _pinsuranceProvidersAccepted, arguments: [], function: Garage._mproxy_get_insuranceProvidersAccepted)
-        classInfo.registerMethod (name: "set_insurance_providers_accepted", flags: .default, returnValue: nil, arguments: [_pinsuranceProvidersAccepted], function: Garage._mproxy_set_insuranceProvidersAccepted)
-        classInfo.registerProperty (_pinsuranceProvidersAccepted, getter: "get_insurance_providers_accepted", setter: "set_insurance_providers_accepted")
+            info: SwiftGodot._propInfo(
+                at: \Garage.reviews,
+                name: "reviews",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_reviews",
+            setterName: "set_reviews",
+            getterFunction: Garage._mproxy_get_reviews,
+            setterFunction: Garage._mproxy_set_reviews
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Garage.checkIns,
+                name: "check_ins",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_check_ins",
+            setterName: "set_check_ins",
+            getterFunction: Garage._mproxy_get_checkIns,
+            setterFunction: Garage._mproxy_set_checkIns
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Garage.address,
+                name: "address",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_address",
+            setterName: "set_address",
+            getterFunction: Garage._mproxy_get_address,
+            setterFunction: Garage._mproxy_set_address
+        )
+        SwiftGodot._addPropertyGroup(className: className, name: "Hours and Insurance", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Garage.daysOfOperation,
+                name: "days_of_operation",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_days_of_operation",
+            setterName: "set_days_of_operation",
+            getterFunction: Garage._mproxy_get_daysOfOperation,
+            setterFunction: Garage._mproxy_set_daysOfOperation
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Garage.hours,
+                name: "hours",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_hours",
+            setterName: "set_hours",
+            getterFunction: Garage._mproxy_get_hours,
+            setterFunction: Garage._mproxy_set_hours
+        )
+        SwiftGodot._registerPropertyWithGetterSetter(
+            className: className,
+            info: SwiftGodot._propInfo(
+                at: \Garage.insuranceProvidersAccepted,
+                name: "insurance_providers_accepted",
+                userHint: nil,
+                userHintStr: nil,
+                userUsage: nil
+            ),
+            getterName: "get_insurance_providers_accepted",
+            setterName: "set_insurance_providers_accepted",
+            getterFunction: Garage._mproxy_get_insuranceProvidersAccepted,
+            setterFunction: Garage._mproxy_set_insuranceProvidersAccepted
+        )
     } ()
 }

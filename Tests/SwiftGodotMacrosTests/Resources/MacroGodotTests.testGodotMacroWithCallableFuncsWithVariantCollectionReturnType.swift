@@ -5,9 +5,12 @@ class SomeNode: Node {
         return result
     }
 
-    func _mproxy_getIntegerCollection(arguments: borrowing Arguments) -> Variant? {
-        let result = getIntegerCollection()
-        return Variant(result)
+    static func _mproxy_getIntegerCollection(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `getIntegerCollection`: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.getIntegerCollection())
 
     }
 
@@ -19,8 +22,16 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let prop_0 = PropInfo (propertyType: .array, propertyName: "", className: StringName("Array[int]"), hint: .arrayType, hintStr: "int", usage: .default)
         let classInfo = ClassInfo<SomeNode> (name: className)
-        classInfo.registerMethod(name: StringName("getIntegerCollection"), flags: .default, returnValue: prop_0, arguments: [], function: SomeNode._mproxy_getIntegerCollection)
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "getIntegerCollection",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(VariantCollection<Int>.self),
+            arguments: [
+
+            ],
+            function: SomeNode._mproxy_getIntegerCollection
+        )
     } ()
 }

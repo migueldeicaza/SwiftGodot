@@ -1,86 +1,99 @@
 class Castro: Node {
     func deleteEpisode() {}
 
-    func _mproxy_deleteEpisode(arguments: borrowing Arguments) -> Variant? {
-        deleteEpisode()
-        return nil
+    static func _mproxy_deleteEpisode(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+            SwiftGodot.GD.printErr("Error calling `deleteEpisode`: failed to unwrap instance \(String(describing: pInstance))")
+            return nil
+        }
+        return SwiftGodot._wrapCallableResult(object.deleteEpisode())
+
     }
     func subscribe(podcast: Podcast) {}
 
-    func _mproxy_subscribe(arguments: borrowing Arguments) -> Variant? {
+    static func _mproxy_subscribe(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
-            let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
-            subscribe(podcast: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
-            return nil
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `subscribe`: failed to unwrap instance \(String(describing: pInstance))")
+                return nil
+            }
+            let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
+            return SwiftGodot._wrapCallableResult(object.subscribe(podcast: arg0))
+
         } catch {
-            GD.printErr("Error calling `subscribe`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `subscribe`: \(error.description)")
         }
+
+        return nil
     }
     func perhapsSubscribe(podcast: Podcast?) {}
 
-    func _mproxy_perhapsSubscribe(arguments: borrowing Arguments) -> Variant? {
+    static func _mproxy_perhapsSubscribe(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
-            let arg0: Podcast? = try arguments.optionlArgument(ofType: Podcast.self, at: 0)
-            perhapsSubscribe(podcast: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
-            return nil
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: failed to unwrap instance \(String(describing: pInstance))")
+                return nil
+            }
+            let arg0 = try arguments.argument(ofType: Podcast?.self, at: 0)
+            return SwiftGodot._wrapCallableResult(object.perhapsSubscribe(podcast: arg0))
+
         } catch {
-            GD.printErr("Error calling `perhapsSubscribe`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `perhapsSubscribe`: \(error.description)")
         }
+
+        return nil
     }
     func removeSilences(from: Variant) {}
 
-    func _mproxy_removeSilences(arguments: borrowing Arguments) -> Variant? {
+    static func _mproxy_removeSilences(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
-            let arg0: Variant = try arguments.variantArgument(at: 0)
-            removeSilences(from: arg0)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
-            return nil
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `removeSilences`: failed to unwrap instance \(String(describing: pInstance))")
+                return nil
+            }
+            let arg0 = try arguments.argument(ofType: Variant.self, at: 0)
+            return SwiftGodot._wrapCallableResult(object.removeSilences(from: arg0))
+
         } catch {
-            GD.printErr("Error calling `removeSilences`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `removeSilences`: \(error.description)")
         }
+
+        return nil
     }
     func getLatestEpisode(podcast: Podcast) -> Episode {}
 
-    func _mproxy_getLatestEpisode(arguments: borrowing Arguments) -> Variant? {
+    static func _mproxy_getLatestEpisode(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
-            let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
-            let result = getLatestEpisode(podcast: arg0)
-            return Variant(result)
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: failed to unwrap instance \(String(describing: pInstance))")
+                return nil
+            }
+            let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
+            return SwiftGodot._wrapCallableResult(object.getLatestEpisode(podcast: arg0))
 
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
-            return nil
         } catch {
-            GD.printErr("Error calling `getLatestEpisode`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `getLatestEpisode`: \(error.description)")
         }
+
+        return nil
     }
     func queue(_ podcast: Podcast, after preceedingPodcast: Podcast) {}
 
-    func _mproxy_queue(arguments: borrowing Arguments) -> Variant? {
+    static func _mproxy_queue(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         do { // safe arguments access scope
-            let arg0: Podcast = try arguments.argument(ofType: Podcast.self, at: 0)
-            let arg1: Podcast = try arguments.argument(ofType: Podcast.self, at: 1)
-            queue(arg0, after: arg1)
-            return nil
-        } catch let error as ArgumentAccessError {
-            GD.printErr(error.description)
-            return nil
+            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
+                SwiftGodot.GD.printErr("Error calling `queue`: failed to unwrap instance \(String(describing: pInstance))")
+                return nil
+            }
+            let arg0 = try arguments.argument(ofType: Podcast.self, at: 0)
+            let arg1 = try arguments.argument(ofType: Podcast.self, at: 1)
+            return SwiftGodot._wrapCallableResult(object.queue(arg0, after: arg1))
+
         } catch {
-            GD.printErr("Error calling `queue`: \(error)")
-            return nil
+            SwiftGodot.GD.printErr("Error calling `queue`: \(error.description)")
         }
+
+        return nil
     }
 
     override open class var classInitializer: Void {
@@ -92,31 +105,66 @@ class Castro: Node {
         let className = StringName("Castro")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<Castro> (name: className)
-        classInfo.registerMethod(name: StringName("deleteEpisode"), flags: .default, returnValue: nil, arguments: [], function: Castro._mproxy_deleteEpisode)
-        let prop_0 = PropInfo (propertyType: .object, propertyName: "podcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
-        let subscribeArgs = [
-            prop_0,
-        ]
-        classInfo.registerMethod(name: StringName("subscribe"), flags: .default, returnValue: nil, arguments: subscribeArgs, function: Castro._mproxy_subscribe)
-        let perhapsSubscribeArgs = [
-            prop_0,
-        ]
-        classInfo.registerMethod(name: StringName("perhapsSubscribe"), flags: .default, returnValue: nil, arguments: perhapsSubscribeArgs, function: Castro._mproxy_perhapsSubscribe)
-        let prop_1 = PropInfo (propertyType: .nil, propertyName: "from", className: StringName(""), hint: .none, hintStr: "", usage: .default)
-        let removeSilencesArgs = [
-            prop_1,
-        ]
-        classInfo.registerMethod(name: StringName("removeSilences"), flags: .default, returnValue: nil, arguments: removeSilencesArgs, function: Castro._mproxy_removeSilences)
-        let prop_2 = PropInfo (propertyType: .object, propertyName: "", className: StringName("Episode"), hint: .none, hintStr: "", usage: .default)
-        let getLatestEpisodeArgs = [
-            prop_0,
-        ]
-        classInfo.registerMethod(name: StringName("getLatestEpisode"), flags: .default, returnValue: prop_2, arguments: getLatestEpisodeArgs, function: Castro._mproxy_getLatestEpisode)
-        let prop_3 = PropInfo (propertyType: .object, propertyName: "preceedingPodcast", className: StringName("Podcast"), hint: .none, hintStr: "", usage: .default)
-        let queueArgs = [
-            prop_0,
-            prop_3,
-        ]
-        classInfo.registerMethod(name: StringName("queue"), flags: .default, returnValue: nil, arguments: queueArgs, function: Castro._mproxy_queue)
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "deleteEpisode",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
+            arguments: [
+
+            ],
+            function: Castro._mproxy_deleteEpisode
+        )
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "subscribe",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Podcast.self, name: "podcast")
+            ],
+            function: Castro._mproxy_subscribe
+        )
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "perhapsSubscribe",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Podcast?.self, name: "podcast")
+            ],
+            function: Castro._mproxy_perhapsSubscribe
+        )
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "removeSilences",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Variant.self, name: "from")
+            ],
+            function: Castro._mproxy_removeSilences
+        )
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "getLatestEpisode",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Episode.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Podcast.self, name: "podcast")
+            ],
+            function: Castro._mproxy_getLatestEpisode
+        )
+        SwiftGodot._registerMethod(
+            className: className,
+            name: "queue",
+            flags: .default,
+            returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
+            arguments: [
+                SwiftGodot._argumentPropInfo(Podcast.self, name: "podcast"),
+                SwiftGodot._argumentPropInfo(Podcast.self, name: "preceedingPodcast")
+            ],
+            function: Castro._mproxy_queue
+        )
     } ()
 }

@@ -281,7 +281,7 @@ func generateMethods (_ p: Printer,
     }
     
     if virtuals.count > 0 {
-        p ("override class func getVirtualDispatcher (name: StringName) -> GDExtensionClassCallVirtual?"){
+        p ("override class func getVirtualDispatcher(name: StringName) -> GDExtensionClassCallVirtual?"){
             p ("guard implementedOverrides().contains(name) else { return nil }")
             p ("switch name.description") {
                 for name in virtuals.keys.sorted() {
@@ -510,7 +510,7 @@ func generateSignals (_ p: Printer,
 func getSignalType(_ signal: JGodotSignal) -> String {
     var argTypes: [String] = []
     for signalArgument in signal.arguments ?? [] {
-        let godotType = getGodotType(signalArgument)
+        let godotType = getGodotType(signalArgument)        
         if !godotType.isEmpty && godotType != "Variant" {
             var t = godotType
             if !isCoreType(name: t) && !isPrimitiveType(name: signalArgument.type) {
@@ -584,12 +584,12 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     
     generateSignalDocAppendix (p, cdef: cdef, signals: cdef.signals)
     // class or extension (for Object)
-    p (typeDecl) {
+    p(typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p.staticVar(visibility: "public ", cached: true, name: "shared", type: cdef.name) {
-                p ("return withUnsafePointer (to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
-                    p ("lookupObject (nativeHandle: gi.global_get_singleton (ptr)!, ownsRef: false)!")
+            p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
+                p ("return withUnsafePointer(to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
+                    p ("lookupObject(nativeHandle: gi.global_get_singleton(ptr)!, ownsRef: false)!")
                 }
             }
         }
@@ -626,25 +626,75 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
         
         if inherits == objectInherits {
-            p("/// Wrap ``\(cdef.name)`` into a ``Variant``")
-            p("public func toVariant() -> Variant") {
-                p ("Variant(self)")
-            }
-        
-            p("/// Attempt to unwrap ``\(cdef.name)`` from a `variant`. Returns `nil` if it's impossible. For example, other type is stored inside a `variant`")
-            p("public class func fromVariant(_ variant: Variant) -> Self?") {
-                p("variant.asObject(Self.self)")
+            p.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionVariantFromTypeConstructorFunc") {
+                p("gi.get_variant_from_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!")
             }
             
-            p("/// Internal API")
-            p("public func _macroRcRef()") {
-                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            p.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionTypeFromVariantConstructorFunc") {
+                p("gi.get_variant_to_type_constructor(GDEXTENSION_VARIANT_TYPE_OBJECT)!")
             }
             
-            p("/// Internal API")
-            p("public func _macroRcUnref()") {
-                p("// no-op, needed for virtual dispatch when RefCounted is stored as Object")
+            p("""
+            /// Wrap ``\(cdef.name)`` into a ``Variant``
+            @inline(__always)
+            @inlinable
+            public func toVariant() -> Variant {
+                Variant(self)                
             }
+            
+            /// Wrap ``\(cdef.name)`` into a ``Variant?``
+            @inline(__always)
+            @inlinable
+            @_disfavoredOverload
+            public func toVariant() -> Variant? {
+                Variant(self)                
+            }
+            
+            /// Extract ``\(cdef.name)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+                guard let value = variant.asObject(Self.self) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            
+            /// Wrap ``\(cdef.name)`` into a ``FastVariant``
+            @inline(__always)
+            @inlinable
+            public func toFastVariant() -> FastVariant {
+                FastVariant(self)                
+            }
+            
+            /// Wrap ``\(cdef.name)`` into a ``FastVariant?``
+            @inline(__always)
+            @inlinable
+            @_disfavoredOverload
+            public func toFastVariant() -> FastVariant? {
+                FastVariant(self)                
+            }
+            
+            /// Extract ``\(cdef.name)`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
+            @inline(__always)
+            @inlinable
+            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
+                guard let value = variant.to(self) else {
+                    throw .unexpectedContent(parsing: self, from: variant)
+                }
+                return value                
+            }
+            
+            /// Internal API
+            public func _macroRcRef() {
+                // no-op, needed for virtual dispatch when RefCounted is stored as Object
+            }
+            
+            /// Internal API
+            public func _macroRcUnref() {
+                // no-op, needed for virtual dispatch when RefCounted is stored as Object
+            }
+            """)
         }
         
         if cdef.name == "RefCounted" {
@@ -690,5 +740,26 @@ extension Generator {
             p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
         }
         p ("]")
+    }
+    
+    /// Variant itself is manally implemented, so we vary our `staticProperty` behavior here
+    /// Most of constructors sit in corresponding builtin types.
+    /// We can't extend native types to add static storage
+    func generateVariantGodotInterface(_ p: Printer) {
+        p("enum VariantGodotInterface") {
+            for (fromType, fromVariant, type) in [
+                ("variantFromBool", "boolFromVariant", "GDEXTENSION_VARIANT_TYPE_BOOL"),
+                ("variantFromInt", "intFromVariant", "GDEXTENSION_VARIANT_TYPE_INT"),
+                ("variantFromDouble", "doubleFromVariant", "GDEXTENSION_VARIANT_TYPE_FLOAT"),
+            ] {
+                p.staticProperty(isStored: true, name: fromType, type: "GDExtensionVariantFromTypeConstructorFunc") {
+                    p("gi.get_variant_from_type_constructor(\(type))!")
+                }
+                
+                p.staticProperty(isStored: true, name: fromVariant, type: "GDExtensionTypeFromVariantConstructorFunc") {
+                    p("gi.get_variant_to_type_constructor(\(type))!")
+                }
+            }
+        }
     }
 }

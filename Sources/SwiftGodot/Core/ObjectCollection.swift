@@ -7,15 +7,8 @@
 
 @_implementationOnly import GDExtension
 
-extension ObjectCollection: VariantStorable {
-    public typealias Representable = GArray
-    public func toVariantRepresentable() -> GArray {
-        array
-    }
-}
-
 /// This represents a typed array of one of the built-in types from Godot
-public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLiteral, GArrayCollection {
+public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection, VariantConvertible where Element: Object {
     /// GDScript allows `nil`s in `Array[Object]`
     public typealias ArrayLiteralElement = Element?
     
@@ -122,7 +115,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
         }
         
         var handle: UnsafeMutableRawPointer? = nil
-        variant.toType(.object, dest: &handle)
+        variant.constructType(into: &handle, constructor: Object.selfFromVariant)        
         
         guard let handle = handle else {
             fatalError("Could not unwrap variant as object.")
@@ -142,7 +135,7 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
             return unwrap(variant)            
         }
         set {
-            array[index] = Variant(newValue)
+            array[index] = newValue.toVariant()
         }
     }
     
@@ -395,5 +388,103 @@ public class ObjectCollection<Element: Object>: Collection, ExpressibleByArrayLi
     /// Returns `true` if the array is read-only. See ``makeReadOnly()``. Arrays are automatically read-only if declared with `const` keyword.
     public final func isReadOnly ()-> Bool {
         array.isReadOnly()
+    }
+        
+    @inline(__always)
+    @inlinable
+    public static func _propInfo(        
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: StringName(name),
+            className: StringName("Array[\(Element.self)]"),
+            hint: hint ?? .arrayType,
+            hintStr: GString(hintStr ?? "\(Element.self)"),
+            usage: usage ?? .default
+        )
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static var _returnValuePropInfo: PropInfo {
+        PropInfo(
+            propertyType: .array,
+            propertyName: "",
+            className: "Array[\(Element.self)]",
+            hint: .arrayType,
+            hintStr: "\(Element.self)",
+            usage: .default
+        )
+    }
+    
+    
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toVariant() -> Variant? {
+        array.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public func toVariant() -> Variant {
+        array.toVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    @_disfavoredOverload
+    public func toFastVariant() -> FastVariant? {
+        array.toFastVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public func toFastVariant() -> FastVariant {
+        array.toFastVariant()
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromVariantOrThrow(variant)
+
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
+    
+    @inline(__always)
+    @inlinable
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
+        let array = try GArray.fromFastVariantOrThrow(variant)
+        
+        guard let result = Self(array) else {
+            throw .unexpectedContent(parsing: self, from: variant)
+        }
+        
+        return result
+    }
+}
+
+
+public extension Variant {
+    /// Initialize ``Variant`` by wrapping ``ObjectCollection``
+    convenience init<T>(_ from: ObjectCollection<T>) {
+        self.init(from.array)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``ObjectCollection?``, fails if it's `nil`
+    convenience init?<T>(_ from: ObjectCollection<T>?) {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
     }
 }
