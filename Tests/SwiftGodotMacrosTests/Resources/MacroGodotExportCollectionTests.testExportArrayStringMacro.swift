@@ -1,4 +1,4 @@
-var greetings: VariantCollection<String> = []
+var greetings: TypedArray<String> = []
 
 static func _mproxy_set_greetings(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
     guard let object = _unwrap(self, pInstance: pInstance) else {

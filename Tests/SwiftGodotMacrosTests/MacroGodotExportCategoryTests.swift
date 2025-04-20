@@ -91,121 +91,63 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
         )
     }
     
-    func testGodotExportGroupProducesVariantCollectionPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {
+    func testGodotExportGroupProducesTypedArrayPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertExpansion(
             of: """
             @Godot
             class Car: Node {
-                @Export var vins: VariantCollection<String> = ["00000000000000000"]
+                @Export var vins: TypedArray<String> = ["00000000000000000"]
                 #exportGroup("YMMS")
-                @Export var years: VariantCollection<Int> = [1997]
+                @Export var years: TypedArray<Int> = [1997]
             }
             """
         )
     }
     
-    func testGodotExportGroupOnlyProducesVariantCollectionPropertiesWithPrefixes_whenPropertiesAppearAfterexportGroup() {
+    func testGodotExportGroupOnlyProducesTypedArrayPropertiesWithPrefixes_whenPropertiesAppearAfterexportGroup() {
         assertExpansion(
             of: """
             @Godot
             class Car: Node {
-                @Export var vins: VariantCollection<String> = ["00000000000000000"]
+                @Export var vins: TypedArray<String> = ["00000000000000000"]
                 #exportGroup("YMMS")
-                @Export var years: VariantCollection<Int> = [1997]
+                @Export var years: TypedArray<Int> = [1997]
             }
             """
         )
     }
     
-    func testGodotExportGroupProducesVariantCollectionPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
+    func testGodotExportGroupProducesTypedArrayPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
         assertExpansion(
             of: """
             @Godot
             class Car: Node {
-                @Export var vins: VariantCollection<String> = ["00000000000000000"]
-                @Export var years: VariantCollection<Int> = [1997]
+                @Export var vins: TypedArray<String> = ["00000000000000000"]
+                @Export var years: TypedArray<Int> = [1997]
                 #exportGroup("Pointless")
             }
             """
         )
     }
     
-    func testGodotExportGroupProducesVariantCollectionPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentexportGroup() {
+    func testGodotExportGroupProducesTypedArrayPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentexportGroup() {
         assertExpansion(
             of: """
             @Godot
             class Car: Node {
                 #exportGroup("VIN")
-                @Export var vins: VariantCollection<String> = [""]
+                @Export var vins: TypedArray<String> = [""]
                 #exportGroup("YMM")
-                @Export var years: VariantCollection<Int> = [1997]
-                @Export var makes: VariantCollection<String> = ["HONDA"]
-                @Export var models: VariantCollection<String> = ["ACCORD"]
+                @Export var years: TypedArray<Int> = [1997]
+                @Export var makes: TypedArray<String> = ["HONDA"]
+                @Export var models: TypedArray<String> = ["ACCORD"]
                 
             }
             """
         )
-    }
+    }        
     
-    // TODO: and ObjectCollection as well ...
-    
-    func testGodotExportGroupProducesObjectCollectionPropertiesWithPrefixes_whenAllPropertiesAppearAfterexportGroup() {
-        assertExpansion(
-            of: """
-            @Godot
-            class Car: Node {
-                #exportGroup("Vehicle")
-                @Export var makes: ObjectCollection<Node> = []
-                @Export var model: ObjectCollection<Node> = []
-            }
-            """
-        )
-    }
-    
-    func testGodotExportGroupOnlyProducesObjectCollectionPropertiesWithPrefixes_whenPropertiesAppearAfterexportGroup() {
-        assertExpansion(
-            of: """
-            @Godot
-            class Car: Node {
-                @Export var vins: ObjectCollection<Node> = []
-                #exportGroup("YMMS")
-                @Export var years: ObjectCollection<Node> = []
-            }
-            """
-        )
-    }
-    
-    func testGodotExportGroupProducesObjectCollectionPropertiesWithoutPrefixes_whenAllPropertiesAppearAfterexportGroup() {
-        assertExpansion(
-            of: """
-            @Godot
-            class Car: Node {
-                @Export var vins: ObjectCollection<Node> = []
-                @Export var years: ObjectCollection<Node> = []
-                #exportGroup("Pointless")
-            }
-            """
-        )
-    }
-    
-    func testGodotExportGroupProducesObjectCollectionPropertiesWithDifferentPrefixes_whenPropertiesAppearAfterDifferentexportGroup() {
-        assertExpansion(
-            of: """
-            @Godot
-            class Car: Node {
-                #exportGroup("VIN")
-                @Export var vins: ObjectCollection<Node> = []
-                #exportGroup("YMM")
-                @Export var years: ObjectCollection<Node> = []
-                @Export var makes: ObjectCollection<Node> = []
-                @Export var models: ObjectCollection<Node> = []
-                
-            }
-            """
-        )
-    }
-    
-    func testGodotExportGroupProducesPropertiesWithDifferentPrefixes_whenMixingVariantCollectionObjectCollectionAndNormalVariableProperties() {
+    func testGodotExportGroupProducesPropertiesWithDifferentPrefixes_whenMixingTypedArrayTypedArrayAndNormalVariableProperties() {
         assertExpansion(
             of: """
             @Godot
@@ -214,13 +156,13 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
                 @Export var name: String = ""
                 @Export var rating: Float = 0.0
                 #exportGroup("More Details")
-                @Export var reviews: VariantCollection<String> = []
-                @Export var checkIns: ObjectCollection<CheckIn> = []
+                @Export var reviews: TypedArray<String> = []
+                @Export var checkIns: TypedArray<CheckIn> = []
                 @Export var address: String = ""
                 #exportGroup("Hours and Insurance")
-                @Export var daysOfOperation: VariantCollection<String> = []
-                @Export var hours: VariantCollection<String> = []
-                @Export var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
+                @Export var daysOfOperation: TypedArray<String> = []
+                @Export var hours: TypedArray<String> = []
+                @Export var insuranceProvidersAccepted: TypedArray<InsuranceProvider> = []
             }
             """
         )
@@ -257,7 +199,7 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             @Godot
             class Garage: Node {
                 #exportGroup("Example", prefix: "example")
-                @Export var bar: VariantCollection<Bool> = [false]
+                @Export var bar: TypedArray<Bool> = [false]
             }
             """
         )
@@ -269,8 +211,8 @@ final class MacroGodotExportGroupTests: MacroGodotTestCase {
             @Godot
             public class Issue353: Node {
                 #exportGroup("Group With a Prefix", prefix: "prefix1")
-                @Export var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
-                @Export var non_prefixed_bool: VariantCollection<Bool> = [false]
+                @Export var prefix1_prefixed_bool: TypedArray<Bool> = [false]
+                @Export var non_prefixed_bool: TypedArray<Bool> = [false]
             }
             """            
         )

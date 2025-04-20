@@ -59,20 +59,6 @@ public func _wrapCallableResult<T>(_ value: [T]) -> FastVariant? where T: _Godot
     return array.toFastVariant()
 }
 
-/// Internal API. ObjectCollection.
-@inline(__always)
-@inlinable
-public func _wrapCallableResult<T>(_ value: ObjectCollection<T>) -> FastVariant? where T: _GodotBridgeable {
-    value.array.toFastVariant()
-}
-
-/// Internal API. VariantCollection.
-@inline(__always)
-@inlinable
-public func _wrapCallableResult<T>(_ value: VariantCollection<T>) -> FastVariant? where T: _GodotBridgeable {
-    value.array.toFastVariant()
-}
-
 /// Internal API. Void.
 @inline(__always)
 @inlinable

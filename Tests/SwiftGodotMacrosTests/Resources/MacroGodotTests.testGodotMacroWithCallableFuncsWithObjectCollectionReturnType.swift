@@ -1,7 +1,7 @@
 
 class SomeNode: Node {
-    func getNodeCollection() -> ObjectCollection<Node> {
-        let result: ObjectCollection<Node> = [Node(), Node()]
+    func getNodeCollection() -> TypedArray<Node> {
+        let result: TypedArray<Node> = [Node(), Node()]
         return result
     }
 
@@ -27,7 +27,7 @@ class SomeNode: Node {
             className: className,
             name: "getNodeCollection",
             flags: .default,
-            returnValue: SwiftGodot._returnValuePropInfo(ObjectCollection<Node>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(TypedArray<Node>.self),
             arguments: [
 
             ],

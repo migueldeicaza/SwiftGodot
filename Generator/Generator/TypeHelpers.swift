@@ -131,7 +131,7 @@ var core_types = [
 ]
 
 func isCoreType (name: String) -> Bool {
-    core_types.contains(reverseMapTypeName(name)) || name.hasPrefix("VariantCollection<") || name.hasPrefix("ObjectCollection<")
+    core_types.contains(reverseMapTypeName(name)) || name.hasPrefix("TypedArray<") || name.hasPrefix("TypedArray<")
 }
 
 func isPrimitiveType (name: String) -> Bool {
@@ -353,9 +353,9 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             let nested = SimpleType(type: nestedTypeName, meta: nil)
 
             if classMap [nestedTypeName] != nil {
-                return "ObjectCollection<\(getGodotType (nested))>"
+                return "TypedArray<\(getGodotType (nested))>"
             } else {
-                return "VariantCollection<\(getGodotType (nested))>"
+                return "TypedArray<\(getGodotType (nested))>"
             }
         }
         if t.type.starts (with: "bitfield::") {

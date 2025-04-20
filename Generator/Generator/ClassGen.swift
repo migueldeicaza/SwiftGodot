@@ -28,9 +28,9 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
         let nestedTypeName = String (t.dropFirst(12))
         let simple = SimpleType(type: nestedTypeName)
         if classMap [nestedTypeName] != nil {
-            return "ObjectCollection<\(getGodotType (simple))>(\(initCollection))"
+            return "TypedArray<\(getGodotType (simple))>(\(initCollection))"
         } else {
-            return "VariantCollection<\(getGodotType (simple))>(\(initCollection))"
+            return "TypedArray<\(getGodotType (simple))>(\(initCollection))"
         }
     case "enum::Error":
         return ".ok"
@@ -158,8 +158,8 @@ func generateVirtualProxy (_ p: Printer,
                 let derefField: String
                 let derefType: String
                 if ret.type.starts(with: "typedarray::") {
-                    derefField = "array.content"
-                    derefType = "type (of: ret.array.content)"
+                    derefField = "wrapped.content"
+                    derefType = "type (of: ret.wrapped.content)"
                 } else if classMap [ret.type] != nil {
                     derefField = "handle"
                     derefType = "UnsafeRawPointer?.self"
@@ -170,7 +170,7 @@ func generateVirtualProxy (_ p: Printer,
                 
                 let target: String
                 if ret.type.starts (with: "typedarray::") {
-                    target = "array.content"
+                    target = "wrapped.content"
                 } else {
                     target = classMap [ret.type] != nil ? "handle" : "content"
                 }
@@ -549,7 +549,7 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
     }
 }
 
-let objectInherits = "Wrapped, _GodotBridgeable"
+let objectInherits = "Wrapped, _GodotBridgeable, _GodotTypedArrayElement"
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     // Determine if it is a singleton, but exclude EditorInterface

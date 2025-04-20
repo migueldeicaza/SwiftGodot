@@ -75,7 +75,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
         case .unknownError(let e):
             "Unknown nested error processing this directive: \(e)"
         case .requiresVariantArrayCollection:
-            "@Export attribute can not be applied to Array types, use a VariantCollection, or an ObjectCollection instead"
+            "@Export attribute can not be applied to Array types, use a TypedArray, or an TypedArray instead"
         case .requiresNonOptionalVariantArrayCollection:
             "@Export optional Collections are not supported"
         case .unsupportedCallableEffect:
@@ -84,7 +84,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Export(.enum) does not support optional values for the enumeration"
         case .staticMembers:
             "`static` and `class` members are not supported"
-        case .nameCollision(let name, let lhs, let rhs):
+        case .nameCollision(let name, _, _):
             "Same name `\(name)` for two different declarations. GDScript doesn't support it."
         }
     }
@@ -148,9 +148,9 @@ func hasCallableAttribute (_ attrs: AttributeListSyntax?) -> Bool {
 }
 
 func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
-    guard !parameter.isVariantCollection,
+    guard !parameter.isTypedArray,
           !parameter.isSwiftArray,
-          !parameter.isObjectCollection else {
+          !parameter.isTypedArray else {
         return "VariantArray"
     }
     

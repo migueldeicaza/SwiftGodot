@@ -219,7 +219,7 @@ final class MarshalTests: GodotTestCase {
             return
         }
         
-        guard let collection = VariantCollection<Double>(variant) else {
+        guard let collection = TypedArray<Double>(variant) else {
             XCTFail()
             return
         }
@@ -288,11 +288,11 @@ final class MarshalTests: GodotTestCase {
                 
         XCTAssertEqual(result.to(String.self), "Amazing! Amazing! Amazing!")
         
-        callable = Callable { (yes: Bool, ifYes: String, array: VariantCollection<String>) -> String in
+        callable = Callable { (yes: Bool, ifYes: String, array: TypedArray<String>) -> String in
             yes ? ifYes : array.joined(separator: " ")
         }
         
-        let collection: VariantCollection<String> = [
+        let collection: TypedArray<String> = [
             "Never", "Gonna", "Give", "You", "Up"
         ]
         

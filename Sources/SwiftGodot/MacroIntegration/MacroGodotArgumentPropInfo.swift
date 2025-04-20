@@ -94,7 +94,7 @@ public func _argumentPropInfo<T>(
     _ type: [T].Type = [T].self,
     name: String = ""
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    VariantCollection<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    TypedArray<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
 }
 
 /// Internal API. Swift Object Array.
@@ -104,27 +104,7 @@ public func _argumentPropInfo<T>(
     _ type: [T].Type = [T].self,
     name: String = ""
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
-}
-
-/// Internal API. VariantCollection.
-@inline(__always)
-@inlinable
-public func _argumentPropInfo<T>(
-    _ type: VariantCollection<T>.Type = VariantCollection<T>.self,
-    name: String = ""
-) -> PropInfo where T: _GodotBridgeableBuiltin {
-    VariantCollection<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
-}
-
-/// Internal API. ObjectCollection.
-@inline(__always)
-@inlinable
-public func _argumentPropInfo<T>(
-    _ type: ObjectCollection<T>.Type = ObjectCollection<T>.self,
-    name: String = ""
-) -> PropInfo where T: Object {
-    ObjectCollection<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    TypedArray<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
 }
 
 @available(*, unavailable, message: "Void type arguments are not supported")

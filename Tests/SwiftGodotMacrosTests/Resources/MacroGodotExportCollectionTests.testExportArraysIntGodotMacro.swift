@@ -1,6 +1,6 @@
 
 class SomeNode: Node {
-    var someNumbers: VariantCollection<Int> = []
+    var someNumbers: TypedArray<Int> = []
 
     static func _mproxy_set_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -22,7 +22,7 @@ class SomeNode: Node {
 
         return SwiftGodot._invokeGetter(object.someNumbers)
     }
-    var someOtherNumbers: VariantCollection<Int> = []
+    var someOtherNumbers: TypedArray<Int> = []
 
     static func _mproxy_set_someOtherNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {

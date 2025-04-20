@@ -230,7 +230,7 @@ final class Geometry2DTests: GodotTestCase {
     func testPolygonIntersection () throws {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
-        var r: VariantCollection<PackedVector2Array>
+        var r: TypedArray<PackedVector2Array>
         
         a.pushBack (value: Vector2 (x: 30, y: 60))
         a.pushBack (value: Vector2 (x: 70, y: 5))
@@ -305,7 +305,7 @@ final class Geometry2DTests: GodotTestCase {
     func testMergePolygons () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
-        var r: VariantCollection<PackedVector2Array>
+        var r: TypedArray<PackedVector2Array>
         
         a.pushBack (value: Vector2 (x: 225, y: 180))
         a.pushBack (value: Vector2 (x: 160, y: 230))
@@ -379,7 +379,7 @@ final class Geometry2DTests: GodotTestCase {
     func testClipPolygons () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
-        var r: VariantCollection<PackedVector2Array>
+        var r: TypedArray<PackedVector2Array>
         
         a.pushBack (value: Vector2 (x: 225, y: 180))
         a.pushBack (value: Vector2 (x: 160, y: 230))
@@ -445,7 +445,7 @@ final class Geometry2DTests: GodotTestCase {
     func testExcludePolygons () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
-        var r: VariantCollection<PackedVector2Array>
+        var r: TypedArray<PackedVector2Array>
         
         a.pushBack (value: Vector2 (x: 225, y: 180))
         a.pushBack (value: Vector2 (x: 160, y: 230))
@@ -499,7 +499,7 @@ final class Geometry2DTests: GodotTestCase {
     func testIntersectPolylineWithPolygon () {
         let l = PackedVector2Array ()
         let p = PackedVector2Array ()
-        var r: VariantCollection<PackedVector2Array>
+        var r: TypedArray<PackedVector2Array>
         
         l.pushBack (value: Vector2 (x: 100, y: 90))
         l.pushBack (value: Vector2 (x: 120, y: 250))
@@ -547,7 +547,7 @@ final class Geometry2DTests: GodotTestCase {
     func testClipPolylineWithPolygon () {
         let l = PackedVector2Array ()
         let p = PackedVector2Array ()
-        var r: VariantCollection<PackedVector2Array>
+        var r: TypedArray<PackedVector2Array>
         
         l.pushBack (value: Vector2 (x: 70, y: 140))
         l.pushBack (value: Vector2 (x: 160, y: 320))

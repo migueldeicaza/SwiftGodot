@@ -311,7 +311,7 @@ Allocation only happens when Godot object never seen by Swift shows up during Go
 }
 ```
 
-#### `VariantCollection` and `ObjectCollection`
+#### `TypedArray` and `TypedArray`
 🚧 TODO 🚧
 
 ---

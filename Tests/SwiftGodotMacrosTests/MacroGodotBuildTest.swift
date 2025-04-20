@@ -12,8 +12,8 @@ import SwiftGodot
 @Godot
 class Demo1: Object {
     @Export var demo: VariantArray = VariantArray()
-    @Export var greetings: VariantCollection<String> = []
-    @Export var servers: ObjectCollection<AudioServer> = []
+    @Export var greetings: TypedArray<String> = []
+    @Export var servers: TypedArray<AudioServer> = []
 }
 
 @Godot
@@ -52,64 +52,64 @@ class Demo5: Node {
 @Godot
 class Demo6: Node {
     @Export
-    var greetings: VariantCollection<String> = []
+    var greetings: TypedArray<String> = []
 }
 
 @Godot
 class Demo7: Node {
     @Export var someArray: VariantArray = VariantArray()
-    @Export var someNumbers: VariantCollection<Int> = []
+    @Export var someNumbers: TypedArray<Int> = []
 }
 
 @Godot
 class Demo8: Node {
-    @Export var someNumbers: VariantCollection<Int> = []
-    @Export var someOtherNumbers: VariantCollection<Int> = []
+    @Export var someNumbers: TypedArray<Int> = []
+    @Export var someOtherNumbers: TypedArray<Int> = []
 }
 
 @Godot
 class Demo9: Node {
-    @Export var someNumbers: VariantCollection<Int> = []
+    @Export var someNumbers: TypedArray<Int> = []
 }
 
 @Godot
 class Demo10: Node {
-   @Export var firstNames: VariantCollection<String> = ["Thelonius"]
-   @Export var lastNames: VariantCollection<String> = ["Monk"]
+   @Export var firstNames: TypedArray<String> = ["Thelonius"]
+   @Export var lastNames: TypedArray<String> = ["Monk"]
 }
 
 @Godot
 class Demo11: Node {
-    @Export var greetings: ObjectCollection<Node3D> = []
+    @Export var greetings: TypedArray<Node3D> = []
 }
 
 @Godot
 class Demo12: Node {
-    @Export var greetings: ObjectCollection<Node3D> = []
+    @Export var greetings: TypedArray<Node3D> = []
 }
 
 @Godot
 class Demo13: Node {
     #exportGroup("Vehicle")
-    @Export var makes: ObjectCollection<Node> = []
-    @Export var model: ObjectCollection<Node> = []
+    @Export var makes: TypedArray<Node> = []
+    @Export var model: TypedArray<Node> = []
 }
 
 @Godot
 class Demo14: Node {
-    @Export var vins: ObjectCollection<Node> = []
+    @Export var vins: TypedArray<Node> = []
     #exportGroup("YMMS")
-    @Export var years: ObjectCollection<Node> = []
+    @Export var years: TypedArray<Node> = []
 }
 
 @Godot
 class Demo15: Node {
     #exportGroup("VIN")
-    @Export var vins: ObjectCollection<Node> = []
+    @Export var vins: TypedArray<Node> = []
     #exportGroup("YMM")
-    @Export var years: ObjectCollection<Node> = []
-    @Export var makes: ObjectCollection<Node> = []
-    @Export var models: ObjectCollection<Node> = []
+    @Export var years: TypedArray<Node> = []
+    @Export var makes: TypedArray<Node> = []
+    @Export var models: TypedArray<Node> = []
     
 }
 
@@ -119,20 +119,20 @@ class Demo16: Node {
     @Export var demoName: String = ""
     @Export var rating: Float = 0.0
     #exportGroup("More Details")
-    @Export var reviews: VariantCollection<String> = []
-    @Export var checkIns: ObjectCollection<Object> = []
+    @Export var reviews: TypedArray<String> = []
+    @Export var checkIns: TypedArray<Object> = []
     @Export var address: String = ""
     #exportGroup("Hours and Insurance")
-    @Export var daysOfOperation: VariantCollection<String> = []
-    @Export var hours: VariantCollection<String> = []
-    @Export var insuranceProvidersAccepted: ObjectCollection<Object> = []
+    @Export var daysOfOperation: TypedArray<String> = []
+    @Export var hours: TypedArray<String> = []
+    @Export var insuranceProvidersAccepted: TypedArray<Object> = []
 }
 
 @Godot
 public class Demo17: Node {
     #exportGroup("Group With a Prefix", prefix: "prefix1")
-    @Export var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
-    @Export var non_prefixed_bool: VariantCollection<Bool> = [false]
+    @Export var prefix1_prefixed_bool: TypedArray<Bool> = [false]
+    @Export var non_prefixed_bool: TypedArray<Bool> = [false]
 }
 
 @Godot class Demo18: Node {
@@ -172,12 +172,12 @@ final class Demo21: Node {
 @Godot
 class SomeNode: Node {
     @Callable
-    func printNames(of nodes: ObjectCollection<Node>) {
+    func printNames(of nodes: TypedArray<Node>) {
         nodes.forEach { print($0?.name ?? "") }
     }
     
     @Callable
-    func printWhatever(of nodes: ObjectCollection<Node>, string: String, int: Int) {
+    func printWhatever(of nodes: TypedArray<Node>, string: String, int: Int) {
         nodes.forEach { print($0?.name ?? "") }
     }
 }

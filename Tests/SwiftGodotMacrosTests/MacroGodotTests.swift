@@ -107,14 +107,14 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
-    func testGodotMacroWithCallableFuncsWithVariantCollectionReturnType() {
+    func testGodotMacroWithCallableFuncsWithTypedArrayReturnType() {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
                 @Callable
-                func getIntegerCollection() -> VariantCollection<Int> {
-                    let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
+                func getIntegerCollection() -> TypedArray<Int> {
+                    let result: TypedArray<Int> = [0, 1, 1, 2, 3, 5, 8]
                     return result
                 }
             }
@@ -122,48 +122,19 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
-    func testGodotMacroWithCallableFuncsWithVariantCollectionParam() {
+    func testGodotMacroWithCallableFuncsWithTypedArrayParam() {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
                 @Callable
-                func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
-                    integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
+                func square(_ integers: TypedArray<Int>) -> TypedArray<Int> {
+                    integers.map { $0 * $0 }.reduce(into: TypedArray<Int>()) { $0.append(value: $1) }
                 }
             }
             """
         )
-    }
-    
-    func testGodotMacroWithCallableFuncsWithObjectCollectionReturnType() {
-        assertExpansion(
-            of: """
-            @Godot
-            class SomeNode: Node {
-                @Callable
-                func getNodeCollection() -> ObjectCollection<Node> {
-                    let result: ObjectCollection<Node> = [Node(), Node()]
-                    return result
-                }
-            }
-            """
-        )
-    }
-    
-    func testGodotMacroWithCallableFuncsWithObjectCollectionParam() {        
-        assertExpansion(
-            of: """
-            @Godot
-            class SomeNode: Node {
-                @Callable
-                func printNames(of nodes: ObjectCollection<Node>) {
-                    nodes.forEach { print($0.name) }
-                }
-            }
-            """
-        )
-    }
+    }   
     
     func testGodotMacroWithCallableFuncsWithArrayParam() {
         assertExpansion(

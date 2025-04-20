@@ -12,17 +12,17 @@ import SwiftGodotTestability
 @Godot
 fileprivate class TestObject: Object {
     @Callable
-    func countObjects(_ objects: ObjectCollection<TestObject>) -> Int {
+    func countObjects(_ objects: TypedArray<TestObject>) -> Int {
         return objects.count
     }
     
     @Callable
-    func countBuiltins(_ builtins: VariantCollection<Int>) -> Int {
+    func countBuiltins(_ builtins: TypedArray<Int>) -> Int {
         return builtins.count
     }
     
     @Callable
-    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: VariantArray, variant: Variant?) -> Int? {
+    func countMixed(builtins: TypedArray<Int>, _ objects: TypedArray<RefCounted>, array: VariantArray, variant: Variant?) -> Int? {
         return builtins.count + objects.count + array.count
     }
 }
@@ -117,7 +117,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject()
         let object2 = TestObject()
         
-        let objectsArray = ObjectCollection<TestObject>()
+        let objectsArray = TypedArray<TestObject>()
         objectsArray.append(nil) // 1
         objectsArray.append(object0) // 2
         objectsArray.append(object1) // 3
@@ -179,7 +179,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testExplicitlyTypedBuiltinArray() {
         let testObject = TestObject()
         
-        let builtinsArray = VariantCollection<Int>()
+        let builtinsArray = TypedArray<Int>()
         builtinsArray.append(1)
         builtinsArray.append(2)
         builtinsArray.append(3)
@@ -194,7 +194,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let builtins = VariantArray(Int.self)
         builtins.append(Variant(1)) // 1
         
-        let objects = ObjectCollection<RefCounted>()
+        let objects = TypedArray<RefCounted>()
         objects.append(nil) // 2
         objects.append(RefCounted()) // 3
         

@@ -31,28 +31,23 @@ private extension VariableDeclSyntax {
         return type
     }
     
-    /// Returns `true` if type is a `VariantCollection<Element>`
-    var isVariantCollection: Bool {
-        type?.isVariantCollection == true
+    /// Returns `true` if type is a `TypedArray<Element>`
+    var isTypedArray: Bool {
+        type?.isTypedArray == true
     }
     
-    /// Returns `true` if type is a `ObjectCollection<Element>`
-    var isObjectCollection: Bool {
-        type?.isObjectCollection == true
-    }
-    
-    /// Returns `"Element"` for `VariantCollection<Element>`
+    /// Returns `"Element"` for `TypedArray<Element>`
     var variantCollectionElementTypeName: String? {
-        guard isVariantCollection else {
+        guard isTypedArray else {
             return nil
         }
         
         return type?.variantCollectionElementTypeName ?? genericInitializerElementTypeName
     }
     
-    /// Returns `"Element"` for `ObjectCollection<Element>`
+    /// Returns `"Element"` for `TypedArray<Element>`
     var objectCollectionElementTypeName: String? {
-        guard isObjectCollection else {
+        guard isTypedArray else {
             return nil
         }
         
@@ -121,7 +116,7 @@ extension TypeSyntax {
     }
     
     var isVariantArrayCollection: Bool {
-        isVariantCollection || isObjectCollection
+        isTypedArray || isTypedArray
     }
     
     var gArrayCollectionElementTypeName: String? {
@@ -139,17 +134,13 @@ private extension TypeSyntax {
         self.as(IdentifierTypeSyntax.self)?.name.text == "Array"
     }
     
-    var isVariantCollection: Bool {
-        self.as(IdentifierTypeSyntax.self)?.name.text == "VariantCollection"
-    }
-    
-    var isObjectCollection: Bool {
-        self.as(IdentifierTypeSyntax.self)?.name.text == "ObjectCollection"
+    var isTypedArray: Bool {
+        self.as(IdentifierTypeSyntax.self)?.name.text == "TypedArray"
     }
     
     var variantCollectionIdentifier: IdentifierTypeSyntax? {
         guard let identifier = self.as(IdentifierTypeSyntax.self),
-              identifier.name.text == "VariantCollection" else {
+              identifier.name.text == "TypedArray" else {
             return nil
         }
         return identifier
@@ -166,7 +157,7 @@ private extension TypeSyntax {
     
     var objectCollectionIdentifier: IdentifierTypeSyntax? {
         guard let identifier = self.as(IdentifierTypeSyntax.self),
-              identifier.name.text == "ObjectCollection" else {
+              identifier.name.text == "TypedArray" else {
             return nil
         }
         return identifier
@@ -214,28 +205,23 @@ extension FunctionParameterSyntax {
         type.arrayElementTypeName
     }
     
-    /// Returns `true` if type is a `VariantCollection<Element>`
-    var isVariantCollection: Bool {
-        type.isVariantCollection == true
+    /// Returns `true` if type is a `TypedArray<Element>`
+    var isTypedArray: Bool {
+        type.isTypedArray == true
     }
     
-    /// Returns `true` if type is a `ObjectCollection<Element>`
-    var isObjectCollection: Bool {
-        type.isObjectCollection == true
-    }
-    
-    /// Returns `"Element"` for `VariantCollection<Element>`
+    /// Returns `"Element"` for `TypedArray<Element>`
     var variantCollectionElementTypeName: String? {
-        guard isVariantCollection else {
+        guard isTypedArray else {
             return nil
         }
         
         return type.variantCollectionElementTypeName
     }
     
-    /// Returns `"Element"` for `ObjectCollection<Element>`
+    /// Returns `"Element"` for `TypedArray<Element>`
     var objectCollectionElementTypeName: String? {
-        guard isObjectCollection else {
+        guard isTypedArray else {
             return nil
         }
         

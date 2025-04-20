@@ -1,6 +1,6 @@
 import SwiftGodot
 class ArrayTest: Node {
-   var firstNames: VariantCollection<String> = ["Thelonius"]
+   var firstNames: TypedArray<String> = ["Thelonius"]
 
    static func _mproxy_set_firstNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -22,7 +22,7 @@ class ArrayTest: Node {
 
        return SwiftGodot._invokeGetter(object.firstNames)
    }
-   var lastNames: VariantCollection<String> = ["Monk"]
+   var lastNames: TypedArray<String> = ["Monk"]
 
    static func _mproxy_set_lastNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {

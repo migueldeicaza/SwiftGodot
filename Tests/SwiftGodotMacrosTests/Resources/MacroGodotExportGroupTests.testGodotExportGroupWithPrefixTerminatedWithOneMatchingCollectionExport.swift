@@ -1,6 +1,6 @@
 
 public class Issue353: Node {
-    var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
+    var prefix1_prefixed_bool: TypedArray<Bool> = [false]
 
     static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -22,7 +22,7 @@ public class Issue353: Node {
 
         return SwiftGodot._invokeGetter(object.prefix1_prefixed_bool)
     }
-    var non_prefixed_bool: VariantCollection<Bool> = [false]
+    var non_prefixed_bool: TypedArray<Bool> = [false]
 
     static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {

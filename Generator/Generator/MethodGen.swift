@@ -126,7 +126,7 @@ struct MethodArgument {
         /// e.g. Object.handle
         case objectRef(isOptional: Bool)
         
-        /// e.g. ObjectCollection<Object>, VariantCollection<Float>
+        /// e.g. TypedArray<Object>, TypedArray<Float>
         case typedArray(String)
         
         /// Implicit GString -> String
@@ -280,7 +280,7 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
             case .rawValue:
                 accessor = "\(argument.name).rawValue"
             case .typedArray:
-                accessor = "\(argument.name).array.content"
+                accessor = "\(argument.name).wrapped.content"
             case .cPointer:
                 accessor = "\(argument.name)"
             case .directPromoted(let promotedType):
@@ -678,7 +678,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             //print ("OBJ RETURN: \(className) \(method.name)")
             return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result, ownsRef: true)\(returnOptional ? "" : "!")"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
-            let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
+            let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"
         } else if godotReturnType?.starts(with: "enum::") ?? false {
             return "return \(returnType) (rawValue: _result)!"

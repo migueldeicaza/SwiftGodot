@@ -299,15 +299,15 @@ To surface arrays in Godot, use a strong type for it, for example:
 
 ```
 @Export
-var myResources: VariantCollection<Resource>
+var myResources: TypedArray<Resource>
 ```
 
 Alternatively, if you want to surface an array of Godot objects, or even your
-own subclasses of those, use `ObjectCollection<YourCustomType>`, for example:
+own subclasses of those, use `TypedArray<YourCustomType>`, for example:
 
 ```
 @Export
-var myNodes: ObjectCollection<MySpinnerCube>
+var myNodes: TypedArray<MySpinnerCube>
 ```
 
 ### Enumeration Values

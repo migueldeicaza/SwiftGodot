@@ -1,7 +1,7 @@
 
 class SomeNode: Node {
-    func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
-        integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
+    func square(_ integers: TypedArray<Int>) -> TypedArray<Int> {
+        integers.map { $0 * $0 }.reduce(into: TypedArray<Int>()) { $0.append(value: $1) }
     }
 
     static func _mproxy_square(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
@@ -10,7 +10,7 @@ class SomeNode: Node {
                 SwiftGodot.GD.printErr("Error calling `square`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
-            let arg0 = try arguments.argument(ofType: VariantCollection<Int>.self, at: 0)
+            let arg0 = try arguments.argument(ofType: TypedArray<Int>.self, at: 0)
             return SwiftGodot._wrapCallableResult(object.square(arg0))
 
         } catch {
@@ -33,9 +33,9 @@ class SomeNode: Node {
             className: className,
             name: "square",
             flags: .default,
-            returnValue: SwiftGodot._returnValuePropInfo(VariantCollection<Int>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(TypedArray<Int>.self),
             arguments: [
-                SwiftGodot._argumentPropInfo(VariantCollection<Int>.self, name: "integers")
+                SwiftGodot._argumentPropInfo(TypedArray<Int>.self, name: "integers")
             ],
             function: SomeNode._mproxy_square
         )

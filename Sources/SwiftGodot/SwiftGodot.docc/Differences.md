@@ -40,9 +40,9 @@ can be managed by Godot (Variants or Objects).
 In addition, there are two special kinds of strongly-typed versions of the
 VariantArray:
 
-* ``VariantCollection`` that holds any ``Variant`` instances.
+* ``TypedArray`` that holds any ``Variant`` instances.
 
-* ``ObjectCollection`` that holds any ``Object`` instances.
+* ``TypedArray`` that holds any ``Object`` instances.
 
 ## GDScript Helper Functions
 

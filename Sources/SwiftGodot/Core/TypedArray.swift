@@ -22,16 +22,19 @@ enum ArrayTyping {
 /// let otherArray: TypedArray<Object> = [nil, nil, Object()]
 /// let otherElement = otherArray[2] // It's `Object?`, Godot DOES NOT guarantee that Array of `Object`-derived types contains non-`nil` values.
 /// ```
-public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin where DeclaredElement: _GodotTypedArrayElement {
-    public static var _variantType: Variant.GType {
-        .array
-    }
-    
+public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable
+where DeclaredElement: _GodotTypedArrayElement {
     public typealias Index = Int
     public typealias Element = DeclaredElement.ActualTypedArrayElement
+    public typealias ArrayLiteralElement = Element
     
     @usableFromInline
     let wrapped: VariantArray
+    
+    @available(*, deprecated, message: "Don't use it. It's an implementation detail.")
+    public var array: VariantArray {
+        wrapped
+    }
         
     /// Initialize ``TypedArray`` from existing ``VariantArray``.
     /// If ``VariantArray`` is typed and its type is exactly the same as ``DeclaredElement`` the created instance will reference the same storage.
@@ -87,6 +90,28 @@ public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomA
         }
     }
     
+    init(takingOver content: VariantArray.ContentType) {
+        self.init(from: VariantArray(takingOver: content))
+    }
+    
+    /// Initialise ``TypedArray`` from the array literal.
+    /// For example:
+    /// ```
+    /// func foo(_ array: TypedArray<Int>) {
+    /// }
+    ///
+    /// foo([1, 2, 3, 4, 5])
+    /// ```
+    public init(arrayLiteral elements: Element...) {
+        self.init()
+        
+        resize(size: Int64(elements.count))
+        
+        for element in elements {
+            append(element)
+        }
+    }
+    
     /// Initialize an empty ``TypedArray`` of given `type`.
     ///
     /// For example:
@@ -103,6 +128,14 @@ public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomA
             className: "",
             script: nil
         )
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(hash())
+    }
+    
+    public static func ==(lhs: Self, rhs: Self) {
+        lhs.wrapped == rhs.wrapped
     }
     
     public var debugDescription: String {
@@ -139,8 +172,36 @@ public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomA
         }
     }
     
+    /// Initialze ``TypedArray`` from ``Variant``. Fails if `variant` doesn't contain ``VariantArray``
+    @inline(__always)
+    public init?(_ variant: Variant) {
+        guard Self._variantType == variant.gtype else { return nil }
+        var content = VariantArray.zero
+        withUnsafeMutablePointer(to: &content) { pPayload in
+            variant.constructType(into: pPayload, constructor: VariantArray.selfFromVariant)
+        }
+        self.init(takingOver: content)
+    }
     
-    /// Con
+    /// Initialze ``TypedArray`` from ``Variant``. Fails if `variant` doesn't contain ``VariantArray`` or is `nil`
+    @inline(__always)
+    @inlinable
+    public init?(_ variant: Variant?) {
+        guard let variant else { return nil }
+        self.init(variant)
+    }
+    
+    /// Initialze ``TypedArray`` from ``FastVariant``. Fails if `variant` doesn't contain ``VariantArray``
+    @inline(__always)
+    public init?(_ variant: borrowing FastVariant) {
+        guard Self._variantType == variant.gtype else { return nil }
+        var content = VariantArray.zero
+        withUnsafeMutablePointer(to: &content) { pPayload in
+            variant.constructType(into: pPayload, constructor: VariantArray.selfFromVariant)
+        }
+        self.init(takingOver: content)
+    }
+        
     @inline(__always)
     @inlinable
     @_disfavoredOverload
@@ -181,7 +242,11 @@ public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomA
         return Self(from: array)
     }
     
-    /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used in API visible to Godot
+    public static var _variantType: Variant.GType {
+        .array
+    }
+    
+    /// Internal API. Returns ``PropInfo`` for when any ``TypedArray`` is used in API visible to Godot
     @inlinable
     @inline(__always)
     public static func _propInfo(
@@ -200,7 +265,7 @@ public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomA
         )
     }
     
-    /// Internal API. Returns ``PropInfo`` for when any ``VariantCollection`` is used in API visible to Godot
+    /// Internal API. Returns ``PropInfo`` for when any ``TypedArray`` is used in API visible to Godot
     @inlinable
     @inline(__always)
     public static var _returnValuePropInfo: PropInfo {
@@ -214,7 +279,7 @@ public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomA
         )
     }
     
-    // MARK: VariantArray proxying
+    // MARK: - VariantArray proxying
     
     /// Returns the number of elements in the array.
     @inline(__always)
@@ -609,9 +674,40 @@ public protocol _GodotTypedArrayElement: _GodotBridgeable {
     associatedtype ActualTypedArrayElement: _GodotBridgeable
 }
 
-public extension _GodotTypedArrayElement where Self: _GodotOptionalBridgeable {
+public extension _GodotTypedArrayElement where Self: Object, Self: _GodotOptionalBridgeable {
     /// Internal API.
     /// Actual collection element of `TypedArray<Element>` where `Element` is `_GodotOptionalBridgeable`, such as `Object`-derived, or `Variant` is `Element?`.
     /// This is merely a translation of Godot semantics into the Swift world.
     typealias ActualTypedArrayElement = Self?
 }
+
+public extension Variant {
+    /// Initialize ``Variant`` by wrapping ``TypedArray``
+    convenience init<T>(_ from: TypedArray<T>) where T: _GodotBridgeable {
+        self.init(from.wrapped)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``TypedArray?``, fails if it's `nil`
+    convenience init?<T>(_ from: TypedArray<T>?) where T: _GodotBridgeable {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+}
+
+public extension FastVariant {
+    /// Initialize ``FastVariant`` by wrapping ``TypedArray``
+    init<T>(_ from: TypedArray<T>) where T: _GodotBridgeable {
+        self.init(from.wrapped)
+    }
+    
+    /// Initialize ``FastVariant`` by wrapping ``TypedArray?``, fails if it's `nil`
+    init?<T>(_ from: TypedArray<T>?) where T: _GodotBridgeable {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+}
+

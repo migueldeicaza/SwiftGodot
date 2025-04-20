@@ -184,8 +184,8 @@ Now your method can be invoked from the Godot editor or from scripts written in 
 
 The functions can be any of the types that can be wrapped in a
 [Variant](Variant.md) including the core Swift data types for integers and
-floats, the Godot Object subclasses as well as ``VariantCollection`` and
-``ObjectCollection``.
+floats, the Godot Object subclasses as well as ``TypedArray`` and
+``TypedArray``.
 
 The `@Callable` macro only works in your class definition, and will not work
 on Swift class extensions.

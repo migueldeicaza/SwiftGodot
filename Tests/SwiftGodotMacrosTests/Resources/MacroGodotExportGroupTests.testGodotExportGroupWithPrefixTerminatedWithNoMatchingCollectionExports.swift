@@ -1,6 +1,6 @@
 
 class Garage: Node {
-    var bar: VariantCollection<Bool> = [false]
+    var bar: TypedArray<Bool> = [false]
 
     static func _mproxy_set_bar(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
