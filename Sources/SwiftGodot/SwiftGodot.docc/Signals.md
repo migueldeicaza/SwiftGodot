@@ -59,40 +59,6 @@ class Demo: Node {
 }
 ```
 
-## One-shot signals
-
-One common idiom in Godot code is to wait for a signal to be raised before 
-continuing execution. For example, you might want to wait for a timeout
-or an action.
-
-In those cases, you can await the `emitted` property of the generated
-signal, like this:
-
-```swift
-func waitTimer (scene: SceneTree) async {
-    // Creates the timer
-    let timer = scene.createTimer (timeSec: 3)
-
-    // Wait until the timer fires
-    await timer.timeout.emitted
-
-    print ("Done waiting!")
-}
-```
-
-If you do not have an async function, you can await your signal with
-the following idiom:
-
-```swift
-func waitSomething (scene: SceneTree) {
-    // Creates a task, but executes on the main actor
-    Task { @MainActor in
-        await timer.timeout.emitted
-        print ("happy on the main thread")
-    }    
-}
-```
-
 ## Declaring your own Signals
 
 It is also possible to define your own signals to broadcast them, both
