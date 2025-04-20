@@ -157,6 +157,8 @@ Toll-free bridging.
 - Returned value from `@Callable` function
 - Returned value from Swift closure
 
+#### Swift ``Array``
+🚧 TODO 🚧
 
 ---
 #### Swift enum - Godot `int`, Godot `String`, Godot `bool`
@@ -286,6 +288,10 @@ Toll-free bridging.
     // Godot will see `Camera3D variable`
 }
 ```
+
+#### `VariantCollection` and `ObjectCollection`
+🚧 TODO 🚧
+
 ---
 
 # Your custom types
@@ -306,7 +312,11 @@ All classes using `@Godot` will be visible in Godot exactly as you name it.
 ```
 
 #### ``Optional`` and non-optional VariantConvertible - Godot `Variant`
-You can conform your own classes to `VariantConvertible`. They will be visible as `Variant`.
+_Maybe_ toll-free bridging:
+1. The conversion runtime doesn't require allocations.
+2. Cost of converions depends on how expensive your `VariantConvertible` implementation is. Conversion will happened every time the type is translated back and forth between Swift and Godot.
+
+You can conform your own types to `VariantConvertible`. They will be visible as `Variant`.
 ```swift
 extension Date: VariantConvertible {
     public func toFastVariant() -> FastVariant? {
@@ -320,9 +330,9 @@ extension Date: VariantConvertible {
 
 @Godot class CustomNode: Node {
     @Export var variable0: Date? = nil
-    // Godot will see `Variant variable`
+    // Godot will see `Variant variable0`
 
     @Export var variable1 = Date.now
-    // Godot will see `Variant variable`
+    // Godot will see `Variant variable1`
 }
 ```
