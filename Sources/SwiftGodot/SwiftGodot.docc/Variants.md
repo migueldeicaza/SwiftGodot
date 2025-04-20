@@ -11,7 +11,7 @@ that derive from ``Object``).
 
 ## Creating Variant values
 
-You can create Variants from types that conform to the VariantStorable 
+You can create Variants from types that conform to the VariantConvertible 
 protocol. 
 
 This includes the following types:
@@ -22,7 +22,7 @@ This includes the following types:
 * Swift types that SwiftGodot adds convenience conformances for: Bool, Int, String and Float
 * Godot's objects: e.g. Node, Area2D
 * Your own subclasses of SwiftGodot.Object type.
-* Other types that you can manually conform to VariantStorable.
+* Other types that you can manually conform to VariantConvertible.
 
 You wrap your data type by calling one of the ``Variant`` constructors, and then
 you can pass this variant to Godot functions that expect a ``Variant``.
@@ -30,14 +30,14 @@ you can pass this variant to Godot functions that expect a ``Variant``.
 For example, to pass the value `true`:
 
 ```swift
-let trueVaraint = Variant (true)
+let trueVaraint = Variant(true)
 ```
 
 You can get a string representation of a variant by calling ``Variant``'s
 ``Variant/description`` method:
 
 ```swift
-print (trueVariant.description)
+print(trueVariant.description)
 ```
 
 If you have a ``Variant`` and want to extract its value, you typically use this
@@ -48,9 +48,10 @@ pattern:
 /// a boolean value.   Otherwise it will contain the boolean stored in the
 /// variant.
 func getBoolValue (variant: Variant) -> Bool? {
-    guard let boolValue = Bool (variant) else {
+    guard let boolValue = Bool(variant) else {
         return nil
     }
+
     return boolValue
 }
 ```
@@ -150,7 +151,7 @@ func decode(variant: Variant) -> [(String, Int)]? {
 ## Extracting values from Variants
 
 If you know the kind of return that a variant will return, you can invoke the
-failing initializer for that specific type for most structures. Every VariantStorable
+failing initializer for that specific type for most structures. Every VariantConvertible
 will have an `init(_ variant: Variant)` implementation.
 
 For example, this is how you could get a Vector2 from a variant:

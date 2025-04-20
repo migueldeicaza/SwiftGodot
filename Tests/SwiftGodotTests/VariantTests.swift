@@ -101,7 +101,7 @@ final class VariantTests: GodotTestCase {
                               
     }
     
-    func testInitVariantStorable () {
+    func tesetInitVariantConvertible() {
         var variant: Variant
         
         // Builtin struct
@@ -131,9 +131,9 @@ final class VariantTests: GodotTestCase {
         XCTAssertEqual (unwrappedSprite?.offset.y, 4)
         
         // Custom type
-        let string = "VariantStorable"
+        let string = "VariantConvertible"
         variant = Variant (string)
-        XCTAssertEqual (variant.description, "VariantStorable")
+        XCTAssertEqual (variant.description, "VariantConvertible")
         XCTAssertEqual (variant.gtype, Variant.GType.string)
         let newString = String (variant)
         XCTAssertEqual (string, newString)
