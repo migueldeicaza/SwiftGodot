@@ -587,7 +587,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     p (typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p.staticLet(visibility: "public ", name: "shared", type: cdef.name) {
+            p.staticLet(visibility: "public", cached: true, name: "shared", type: cdef.name) {
                 p ("return withUnsafePointer (to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
                     p ("lookupObject (nativeHandle: gi.global_get_singleton (ptr)!, ownsRef: false)!")
                 }

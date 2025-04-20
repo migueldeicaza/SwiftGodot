@@ -40,6 +40,7 @@ let jsonFile = args.count > 1 ? args[1] : defaultExtensionApiJsonUrl.path
 var generatorOutput = args.count > 2 ? args[2] : defaultGeneratorOutputlUrl.path
 var docRoot = args.count > 3 ? args[3] : defaultDocRootUrl.path
 let outputDir = args.count > 2 ? args[2] : generatorOutput
+let generateResettableCache = false
 
 // IF we want one file per type, or a smaller number of
 // files that are combined.

@@ -498,7 +498,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let documentationVisibilityAttribute: String?
     if let methodHash = method.optionalHash {
         // get_class and unreference are also called by Wrapped
-        let staticVarVisibility = if bindName != "method_get_class" && bindName != "method_unreference" { "fileprivate " } else { "" }
+        let staticVarVisibility = if bindName != "method_get_class" && bindName != "method_unreference" { "fileprivate" } else { "" }
         assert (!method.isVirtual)
         switch generatedMethodKind {
         case .classMethod:

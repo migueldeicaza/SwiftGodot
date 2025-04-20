@@ -70,8 +70,36 @@ class Printer {
     }
 
     // Prints a variable definition
-    func staticLet(visibility: String = "", name: String, type: String, block: () -> Void) {
-        b("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)
+    func staticLet(visibility: String = "", cached: Bool = true, name: String, type: String, block: () -> ()) {
+        var visibility = visibility
+        if !visibility.isEmpty {
+            visibility = "\(visibility) "
+        }
+        if !cached {
+            b ("\(visibility)static var \(name): \(type)", suffix: "", block: block)
+            return
+        }
+        
+        if generateResettableCache {
+            p ("private static var _c_\(name): \(type)? = nil")
+            p ("private static var _g_\(name): UInt16 = 0")
+            b("\(visibility)static var \(name): \(type) ") {
+                self("if _g_\(name) == swiftGodotLibraryGeneration") {
+                    self("if let _c_\(name)") {
+                        self("return _c_\(name)")
+                    }
+                }
+                p ("_g_\(name) = swiftGodotLibraryGeneration")
+                self("func load () -> \(type)") {
+                    block()
+                }
+                self("let ret = load ()")
+                self("_c_\(name) = ret")
+                self("return ret")
+            }
+        } else {
+            b("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)
+        }
     }
 
     // Prints a block, automatically indents the code in the closure

@@ -513,13 +513,13 @@ func generateBuiltinMethods (_ p: Printer,
     }
     if bc.isKeyed {
         let variantType = builtinTypecode(bc.name)
-        p.staticLet(visibility: "private ", name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
+        p.staticLet(visibility: "private", name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
             p ("return gi.variant_get_ptr_keyed_getter (\(variantType))!")
         }
-        p.staticLet(visibility: "private ", name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
+        p.staticLet(visibility: "private", name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
             p ("return gi.variant_get_ptr_keyed_setter (\(variantType))!")
         }
-        p.staticLet(visibility: "private ", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
+        p.staticLet(visibility: "private", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
@@ -553,10 +553,10 @@ func generateBuiltinMethods (_ p: Printer,
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
         let variantType = builtinTypecode (bc.name)
-        p.staticLet(visibility: "private ", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
+        p.staticLet(visibility: "private", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
             p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
         }
-        p.staticLet(visibility: "private ", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
+        p.staticLet(visibility: "private", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
             p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
         }
         p (" public subscript (index: Int64) -> \(godotType)") {
@@ -819,6 +819,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                                                 
             isContentRepresented = storedMembers == nil
                         
+            
+            // TODO: static let is `var` due to Xogot two different runtime static storage issue, perhaps it makes sense to explore SPM traits to vary that behavior?
             p("""
             
             static let variantFromSelf = gi.get_variant_from_type_constructor(\(typeEnum))!
