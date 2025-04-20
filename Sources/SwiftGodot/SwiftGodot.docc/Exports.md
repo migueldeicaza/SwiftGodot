@@ -31,22 +31,38 @@ One of the fundamental benefits of exporting member variables is to have them
 visible and editable in the editor. This way, artists and game designers can
 modify values that later influence how the program runs. For this, a special export syntax is provided.
 
-Exporting can only be applied to ``Variant``-compatible types.  The Godot
-core-structures and classes, as well as objects that subclass ``Object``.
+`@Export` can be applied to non-static, non-class variables with following types:
+1. ``VariantConvertible`` types and their ``Optional``s such as: 
+1.1. Swift primitive types (``Bool``, ``String``, ``Int``, ``Double``, ``Float``, any width signed and unsigned version ``BinaryInteger`` (such as ``UInt32``, ``Int64``).
+1.2. All builtin Godot types present in ``SwiftGodot``, such as ``GArray``, ``Vector3``, ``Callable``, ``Signal``
+1.3. All ``Object``-derived types including your own types.
+1.4. Your custom ``VariantConvertible`` types.
+2. Any Swift closures taking `VariantConvertible` arguments and returning `Void` or `VariantConvertible` value without `async` specifier.
+3. Any ``CaseIterable`` enum having integer `RawValue`
 
-The `@Export` macro only works in your class definition, and will not work
-on Swift class extensions.
+The `@Export` macro only works in your `@Godot` class declaration, and will not work on Swift class extensions.
+
+```swift
+// Correct
+@Godot
+class YourClass {
+    @Export var int = 42
+}
+
+// Incorrect
+extension YourClass {
+    @Export var anotherInt = 48
+}
+```
 
 ### Basic Usage
-
-Exporting can work with fields and properties.
 
 ```swift
 @Export
 var number: Int
 
 @Export
-var AnotherNumber { get { ... } set { ... }
+var anotherNumber { get { ... } set { ... } }
 ```
 
 Exported members can specify a default value:
@@ -229,7 +245,7 @@ Since Godot 4.0, nodes can be directly exported without having to use NodePaths.
 
 ```swift
 @Export
-public Node Node { get; set; }
+public Node node { get; set; }
 ```
 
 Custom node classes can also be used, see C# global classes.
@@ -246,16 +262,13 @@ public override func _ready()
 }
 ```
 
-If you find yourself that you do not want to provide manual get/set properties
-in your export, and want to have an optional for one of the Object types, you 
-can use something like this:
+Subclasses of `Node` type will have their `.nodeType` automatically filled, so that Editor will allow
+only ``Camera3D`` subtypes to be set to the following exported property:
 
 ```swift
-@Export(.nodeType, "Camera3D")
+@Export // no need to write @Export(.nodeType, "Camera3D")
 var camera: Camera3D? = nil
 ```
-
-The parameter to `.nodeType` needs to match the type of the object.
 
 ### Resources
 
@@ -299,9 +312,7 @@ var myNodes: ObjectCollection<MySpinnerCube>
 
 ### Enumeration Values
 
-To surface enumeration values, use the `@Export(.enum)` marker on your variable,
-and it is important that your enumeration conforms to `CaseIterable` and one of
-the integral types, like this:
+To surface enumeration values, you need to use a ``CaseIterable`` enum with `RawValue` conforming to ``BinaryInteger``
 
 ```
 enum MyEnum: Int, CaseIterable {
@@ -311,7 +322,7 @@ enum MyEnum: Int, CaseIterable {
 
 @Godot
 class Sample: Node {
-    @Export(.enum)
+    @Export // no need to use @Export(.enum), it will be filled automatically
     var myValue: MyEnum
 }
 ```
