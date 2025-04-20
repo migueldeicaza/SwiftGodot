@@ -11,20 +11,21 @@ that derive from ``Object``).
 
 ## Creating Variant values
 
-You can create ``Variant``s from types that conform to the ``VariantConvertible`` 
-protocol. 
+You can create ``Variant``s from types that conform to the
+``VariantConvertible`` protocol. 
 
 This includes the following types:
 
 * Godot's native types: ``GString``, ``Vector``, ``Rect``, ``Transform``, ``Plane``, ``Quaternion``,
   ``AABB``,  ``Basis``, ``Projection``, ``Int64``, ``NodePaths``, ``RIDs``, ``Callable``, ``GDictionary``, ``Array``
-  and PackedArrays. 
+  and PackedArrays.  
 * Swift types that SwiftGodot adds convenience conformances for: ``Bool``, ``Int`` (and all signed/unsigned width varieties such as `UInt32`, `Int16`), ``String``, ``Float`` and ``Double``,
 * Godot's objects: e.g. ``Node``, ``Area2D``
 * Your own subclasses of ``Object`` type.
 * Other types that you can manually conform to ``VariantConvertible``.
 
 You can construct a ``Variant`` using these approaches, they are identical:
+
 ```swift
 let trueVaraint = Variant(true)
 let falseVariant = false.toVariant()
@@ -86,7 +87,6 @@ func boolsUnwrapped(variant: Variant?) -> Int {
 
 print(boolsUnwrapped(true.toVariant()) // prints 5! We unwrapped our `true` 5 times!
 ```
-
 
 
 Note that all the functions above return `Bool?` because there is no guaruantee that
@@ -230,6 +230,39 @@ func decode(variant: Variant) -> [(String, Int)]? {
     return result
 }
 ```
+
+## Extracting Godot-derived objects from Variants
+
+You can use the same principles to turn a Godot object encoded into a Variant
+into a SwiftGodot object that you used above like `Node.fromVariant()` or you
+can use the `.asObject()` method on the variant to get the object back.
+
+For example:
+
+```swift
+func getNode (variant: Variant) -> Node? {
+    guard let node = variant.asObject (Node.self)) else {
+	  return nil
+    }
+    return node
+}
+```
+
+Or you can use the alternative version:
+
+```swift
+func getNode (variant: Variant) -> Node? {
+    guard let node = Node.fromVariant(variant) else {
+	  return nil
+    }
+    return node
+}
+```
+
+The reason why we do not surface object constructors that take a variant, is
+that we need to ensure that for any given Godot-object, only a single
+SwiftGodot.Object exists.  
+
 
 ## Accessing Array Elements
 
