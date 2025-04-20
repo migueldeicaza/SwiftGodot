@@ -154,6 +154,66 @@ final class VariantTests: GodotTestCase {
         XCTAssertFalse (Variant (node) == Variant (Node ()))
     }
     
+    func testUnwrappingApi() {
+        func someFunctionTakingBool(_ bool: Bool?, successCount: inout Int) {
+            if let bool {
+                successCount += 1
+                
+                print("\(bool) again!")
+            }
+        }
+
+        func boolsUnwrapped(variant: Variant?) -> Int {
+            var successCount = 0
+            
+            if let boolValue = Bool(variant) {
+                print("I'm \(boolValue)!")
+                successCount += 1
+            }
+            
+            if let boolValue = Bool.fromVariant(variant) {
+                print("Still \(boolValue)...")
+                successCount += 1
+            }
+            
+            if let boolValue = variant.to(Bool.self) {
+                print("Nothing changed, it's \(boolValue)")
+                successCount += 1
+            }
+            
+            if let boolValue: Bool = variant.to() {
+                print("Oh, I see you enjoy Swift type inferrence! I'm \(boolValue)")
+                successCount += 1
+            }                        
+            
+            someFunctionTakingBool(variant.to(), successCount: &successCount)
+
+            return successCount
+        }
+        
+        XCTAssertEqual(boolsUnwrapped(variant: true.toVariant()), 5)
+        
+        let variants = [
+            Vector3.back.toVariant(),
+            Vector3.right.toVariant(),
+            Vector3.up.toVariant(),
+        ]
+                            
+        do {
+            var result = Vector3()
+            for variant in variants {
+                result += try Vector3.fromVariantOrThrow(variant)
+            }
+            // use result
+            XCTAssertEqual(result.x, 1.0, accuracy: 0e-5)
+            XCTAssertEqual(result.y, 1.0, accuracy: 0e-5)
+            XCTAssertEqual(result.z, 1.0, accuracy: 0e-5)
+        } catch {
+            // error is guaranteed typed `VariantConversionError`
+            XCTFail(error.description)
+        }
+    }
+    
     func testNoMisconversions() {
         let variant = Vector2(x: 1, y: 2).toVariant()
         

@@ -24,13 +24,10 @@ This includes the following types:
 * Your own subclasses of SwiftGodot.Object type.
 * Other types that you can manually conform to VariantConvertible.
 
-You wrap your data type by calling one of the ``Variant`` constructors, and then
-you can pass this variant to Godot functions that expect a ``Variant``.
-
-For example, to pass the value `true`:
-
+You can construct a ``Variant`` using these approaches, they are identical:
 ```swift
 let trueVaraint = Variant(true)
+let falseVariant = false.toVariant()
 ```
 
 You can get a string representation of a variant by calling ``Variant``'s
@@ -40,26 +37,110 @@ You can get a string representation of a variant by calling ``Variant``'s
 print(trueVariant.description)
 ```
 
-If you have a ``Variant`` and want to extract its value, you typically use this
-pattern:
+If you have a ``Variant`` and want to extract its value, there are some patterns which you can use interchangeably,
+they are functionally identical:
 
 ```swift
-/// This method will return nil if the Variant provided does not contain
-/// a boolean value.   Otherwise it will contain the boolean stored in the
-/// variant.
-func getBoolValue (variant: Variant) -> Bool? {
-    guard let boolValue = Bool(variant) else {
-        return nil
+func someFunctionTakingBool(_ bool: Bool?, successCount: inout Int) {
+    if let bool {
+        successCount += 1
+        
+        print("\(bool) again!")
     }
+}
 
-    return boolValue
+func boolsUnwrapped(variant: Variant?) -> Int {
+    var successCount = 0
+    
+    // 1. Type.init(_ variant: Variant)
+    // Available for all types except `Object`-derived
+    if let boolValue = Bool(variant) {
+        print("I'm \(boolValue)!")
+        successCount += 1
+    }
+    
+    // 2. Type.fromVariant
+    if let boolValue = Bool.fromVariant(variant) {
+        print("Still \(boolValue)...")
+        successCount += 1
+    }
+    
+    // 3. Variant.to(Type.self)
+    if let boolValue = variant.to(Bool.self) {
+        print("Nothing changed, it's \(boolValue)")
+        successCount += 1
+    }
+    
+    // 4. The (3) option is even more useful when Swift can deduct the type you want to convert to!
+    // Here Swift understands that `variant.to()` should unwrap `Bool` because on the left part says `: Bool`.
+    if let boolValue: Bool = variant.to() {
+        print("Oh, I see you enjoy Swift type inferrence! I'm \(boolValue)")
+        successCount += 1
+    }
+    
+    // 5. (3) can work even if type is specified somewhere else! 
+    someFunctionTakingBool(variant.to(), successCount: &successCount)
+
+    return successCount
+}
+
+print(boolsUnwrapped(true.toVariant()) // prints 5! We unwrapped our `true` 5 times!
+```
+
+
+
+Note that all the functions above return `Bool?` because there is no guaruantee that 
+``Variant?`` is actually not `nil`.
+``Variant`` even if it's not `nil`, contains a ``Bool``
+
+`variant.to(Type.self)`, `Type.fromVariant(variant)` return `T?`
+`Type.init(variant)` or just `Type(variant)` is a [failable initializer](https://developer.apple.com/swift/blog/?id=17) 
+If the variant does not contain the type you are requesting the result of the call is `nil`.
+
+So in general unwrapping a variant can use the following pattern:
+
+```swift
+if let string = String.fromVariant(variant) {
+    // do something with `String`!
+    print(string)
 }
 ```
 
-SwiftGodot provides convenience [failable
-initializers](https://developer.apple.com/swift/blog/?id=17) for all the types
-that can be stored in a Variant.  If the variant does not contain the type you
-are requesting the result of the call is `nil`.
+or this:
+
+```swift
+guard let vector0 = Vector3.fromVariant(variant0) else {
+    return
+}
+
+guard let vector1 = Vector3.fromVariant(variant1) else {
+    return
+}
+
+// We are guaranteed to have both vectors now! 
+let vector2 = vector0 + vector1
+```
+
+You can also use throwing version of those APIs:
+
+```swift
+let variants = [
+    Vector3.back.toVariant(),
+    Vector3.right.toVariant(),
+    Vector3.up.toVariant(),
+]
+                    
+do {
+    var result = Vector3()
+    for variant in variants {
+        result += try Vector3.fromVariantOrThrow(variant)
+    }
+    // use result    
+} catch {
+    // error is guaranteed typed `VariantConversionError`
+    print(error.description)
+}
+```
 
 
 ## Common Usage Patterns
@@ -148,62 +229,17 @@ func decode(variant: Variant) -> [(String, Int)]? {
 }
 ```
 
-## Extracting values from Variants
-
-If you know the kind of return that a variant will return, you can invoke the
-failing initializer for that specific type for most structures. Every VariantConvertible
-will have an `init(_ variant: Variant)` implementation.
-
-For example, this is how you could get a Vector2 from a variant:
-
-```swift
-func distance (variant: Variant) -> Float? {
-    guard let vector = Vector2 (variant) else {
-	return nil
-    }
-    return vector.length ()
-}
-```
-
-Notice that this might return `nil`, which would be the case if the variant
-contains a different type than the one you were expecting. You can check the
-type of the variant by accessing the `.gtype` property of the variant.
-
-## Extracting Godot-derived objects from Variants
-
-Godot-derived objects are slightly different. If you know you have a
-``Object`` stored in the variant, you can call the ``Variant/asObject(_:)``
-instead.  This is a generic method, so you would invoke it like this:
-
-```swift
-func getNode (variant: Variant) -> Node? {
-    guard let node = variant.asObject (Node.self)) else {
-	  return nil
-    }
-    return node
-}
-```
-
-Swift type inference can also be used, so you can avoid specifying the type if
-the compiler can infer the type, like here:
-
-```swift
-func getNode (variant: Variant) -> Node? {
-    var node: Node?
-    node = variant.asObject ()
-    return node
-}
-```
-
-The reason to rely on calling the `asObject` method rather than having a
-constructor for the type that takes a variant (like the case for the non-object
-types) is that the method can ensure that only one instance of your objects is surfaced to Swift. 
-
 ## Accessing Array Elements
 
 Some of the variant types contain arrays, either objects, or a particular
 packed version of those.   You can access the individual elements of the
 those with a convenient subscript provided on the array.
+
+```swift
+func foo(_ array: GArray) {
+    let variant = array[4] // returns Variant? since Godot arrays can store `nil`s
+}
+```
 
 ## Calling Variant Methods
 

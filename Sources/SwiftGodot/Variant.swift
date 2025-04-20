@@ -538,19 +538,19 @@ extension Variant? {
         type.fromVariant(self)
     }
     
+    /// Extract `T: Object` from this ``Variant?`` or return nil if unsucessful.
+    @inline(__always)
+    @inlinable
+    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
+        type.fromVariant(self)
+    }
+    
     var content: Variant.ContentType {
         if let wrapped = self {
             return wrapped.content
         } else {
             return Variant.zero
         }
-    }
-    
-    /// Extract `T: Object` from this ``Variant?`` or return nil if unsucessful.
-    @inline(__always)
-    @inlinable
-    public func to<T>(_ type: T.Type = T.self) -> T? where T: Object {
-        type.fromVariant(self)
     }
 }
 
