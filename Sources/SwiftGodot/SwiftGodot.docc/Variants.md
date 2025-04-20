@@ -89,9 +89,10 @@ print(boolsUnwrapped(true.toVariant()) // prints 5! We unwrapped our `true` 5 ti
 
 
 
-Note that all the functions above return `Bool?` because there is no guaruantee that 
-``Variant?`` is actually not `nil`.
-``Variant`` even if it's not `nil`, contains a ``Bool``
+Note that all the functions above return `Bool?` because there is no guaruantee that
+
+1. ``Variant?`` is actually not `nil`
+2. ``Variant`` even if it's not `nil`, contains a ``Bool``
 
 `variant.to(Type.self)`, `Type.fromVariant(variant)` return `T?`
 `Type.init(variant)` or just `Type(variant)` is a [failable initializer](https://developer.apple.com/swift/blog/?id=17) 
