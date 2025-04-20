@@ -82,6 +82,32 @@ public enum VariantConversionError: Error, CustomStringConvertible {
 ///     }
 /// }
 /// ```
+///
+/// All Godot API types and all the primitive Swift types (such as ``Bool``, ``String``, ``Int``, ``UInt`` of any length, ``Float``, ``Double``) implement it.
+/// ``Variant`` and ``FastVariant`` implement it too.
+///
+/// Where are multiple ways to unwrap and unwrap such types, which are functionally identicaly, just use one that suites you more:
+/// ```
+/// let variant: Variant? // or `FastVariant?`
+///
+/// // To Int:
+/// variant.to(Int.self)
+/// Int.fromVariant(variant)
+///
+/// // From Int:
+/// Variant(42)
+/// 42.toVariant()
+///
+/// // To Object:
+/// variant.to(Object.self)
+/// Object.fromVariant(variant)
+///
+/// // From Object:
+/// Variant(Object())
+/// // Note that there is no `Object(variant)` because there can already be an instance of the wrapped object somewhere else in Swift runtime
+/// // `init` of class types in Swift can't return another existing instance
+///
+/// ```
 public protocol VariantConvertible {
     /// Extract ``Self`` from a ``Variant``. Throws `VariantConversionError` if it's not possible. Has default implementation. Can be implemented manually to avoid proxying via `FastVariant`
     static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self
