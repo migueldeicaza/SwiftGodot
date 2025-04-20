@@ -41,7 +41,7 @@ private final class ABCX: AStar3D {
 
 final class AStarTests: GodotTestCase {
     
-    override class var godotSubclasses: [Wrapped.Type] {
+    override class var godotSubclasses: [Object.Type] {
         return [ABCX.self]
     }
     

@@ -338,7 +338,7 @@ public struct Arguments: ~Copyable {
             return .failure(.variantConversionError(.unexpectedNilContent(parsing: [T].self)))
         case .some(let variant):
             do {
-                let array = try GArray.fromFastVariantOrThrow(variant)
+                let array = try VariantArray.fromFastVariantOrThrow(variant)
                 var result: [T] = []
                 result.reserveCapacity(array.count)
                 for element in array {

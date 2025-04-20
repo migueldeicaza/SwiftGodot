@@ -21,7 +21,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "String":
         return "String ()"
     case "Array":
-        return "GArray ()"
+        return "VariantArray ()"
     case "Dictionary":
         return "GDictionary ()"
     case let t where t.starts (with: "typedarray::"):
@@ -185,7 +185,7 @@ func generateVirtualProxy (_ p: Printer,
                     case "String":
                         p ("ret.content = GString.zero")
                     case "Array":
-                        p ("ret.content = GArray.zero")
+                        p ("ret.content = VariantArray.zero")
                     default:
                         p ("ret.content = \(type).zero")
                     }
@@ -197,7 +197,7 @@ func generateVirtualProxy (_ p: Printer,
 
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
 // Notice that the type is looked up as the original Godot name, not
-// the mapped name (it is "Array", not "GArray"):
+// the mapped name (it is "Array", not "VariantArray"):
 let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
     "Array": ["resize"],
@@ -236,7 +236,7 @@ let omittedMethodsList: [String: Set<String>] = [
 
 // Dictionary used to explicitly tell the generator to replace the first argument label with "_ "
 let omittedFirstArgLabelList: [String: Set<String>] = [
-    "GArray": ["append"],
+    "VariantArray": ["append"],
     "PackedColorArray": ["append"],
     "PackedFloat64Array": ["append"],
     "PackedInt64Array": ["append"],

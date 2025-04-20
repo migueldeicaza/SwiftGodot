@@ -213,7 +213,7 @@ public protocol _GodotBridgeable: VariantConvertible {
     /// Internal API. Variant type tag for this type.
     static var _variantType: Variant.GType { get }
     
-    /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `GArray` -> `Array`, `Object` -> `Object`
+    /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `VariantArray` -> `Array`, `Object` -> `Object`
     static var _godotTypeName: String { get }
     
     /// Internal API. PropInfo for this type when it's used as an argument.
@@ -234,10 +234,14 @@ public protocol _GodotBridgeable: VariantConvertible {
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
-public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
+public protocol _GodotBridgeableBuiltin: _GodotBridgeable, _GodotTypedArrayElement {
 }
 
 public extension _GodotBridgeableBuiltin {
+    /// Internal API.
+    /// Actual collection element of `TypedArray<Element>` where `Element` is `_GodotBridgeableBuiltin`. It is always `Element` itself. Godot doesn't allow `null` values in such arrays.
+    typealias ActualTypedArrayElement = Self
+    
     /// Internal API. Returns Godot type name for typed array.
     @inline(__always)
     @inlinable

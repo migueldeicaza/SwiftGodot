@@ -85,7 +85,7 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
         // The only thing we can do with them is iterate them,
         // which means that we can build up an array of them, so we
         // then use callv to call the emit_signal method.
-        let args = GArray()
+        let args = VariantArray()
         args.append(Variant(signalName))
         for arg in repeat each t {
             args.append(arg.toVariant())

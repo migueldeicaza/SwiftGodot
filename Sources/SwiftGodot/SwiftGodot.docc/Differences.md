@@ -32,13 +32,13 @@ Here is a list of the current data type mappings:
 |---------------|-----------------|
 | string        | GString         |
 | dictionary    | GDictionary     |
-| array         | GArray          |
+| array         | VariantArray          |
 
-The ``GArray`` is a type-erased array that can hold any sort of element that
+The ``VariantArray`` is a type-erased array that can hold any sort of element that
 can be managed by Godot (Variants or Objects).
 
 In addition, there are two special kinds of strongly-typed versions of the
-GArray:
+VariantArray:
 
 * ``VariantCollection`` that holds any ``Variant`` instances.
 

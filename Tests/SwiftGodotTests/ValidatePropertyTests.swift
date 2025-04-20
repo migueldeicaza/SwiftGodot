@@ -24,7 +24,7 @@ private class TestProp: Node {
 }
 
 final class TestProperty: GodotTestCase {
-    override static var godotSubclasses: [Wrapped.Type] {
+    override static var godotSubclasses: [Object.Type] {
         return [TestProp.self]
     }
 

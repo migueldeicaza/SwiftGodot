@@ -137,7 +137,7 @@ func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: A
                 }
             case "Array":
                 if dv == "[]" {
-                    def = " = GArray ()"
+                    def = " = VariantArray ()"
                 } else {
                     // Tracked: https://github.com/migueldeicaza/SwiftGodot/issues/7
                     dvMissing ("arrays with values")

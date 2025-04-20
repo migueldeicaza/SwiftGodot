@@ -13,8 +13,8 @@ extension VariableDeclSyntax {
         type?.isSwiftArray == true
     }
     
-    var isGArrayCollection: Bool {
-        type?.isGArrayCollection == true
+    var isVariantArrayCollection: Bool {
+        type?.isVariantArrayCollection == true
     }
     
     var gArrayCollectionElementTypeName: String? {
@@ -120,7 +120,7 @@ extension TypeSyntax {
         }
     }
     
-    var isGArrayCollection: Bool {
+    var isVariantArrayCollection: Bool {
         isVariantCollection || isObjectCollection
     }
     
@@ -197,11 +197,11 @@ extension FunctionDeclSyntax {
             .arrayElementTypeName
     }
     
-    var isReturnedTypeGArrayCollection: Bool {
+    var isReturnedTypeVariantArrayCollection: Bool {
         signature
             .returnClause?
             .type
-            .isGArrayCollection == true
+            .isVariantArrayCollection == true
     }
 }
 

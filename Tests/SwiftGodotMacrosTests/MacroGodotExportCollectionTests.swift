@@ -54,12 +54,12 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
         )
     }
     
-    func testExportGArray() {
+    func testExportVariantArray() {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
-                @Export var someArray: GArray = GArray()
+                @Export var someArray: VariantArray = VariantArray()
             }
             """
         )

@@ -155,7 +155,7 @@ class GodotEncoder: Encoder {
         var codingPath: [any CodingKey] = []
         var userInfo: [CodingUserInfoKey: Any]
 
-        var storage = GArray()
+        var storage = VariantArray()
 
         var data: Variant? {
             return Variant(storage)
@@ -400,7 +400,7 @@ final class MemoryLeakTests: GodotTestCase {
     }
     
     func testThatItLeaksIndeed() {
-        let array = GArray()
+        let array = VariantArray()
         
         checkLeaks(useUnoReverseCard: true) {
             array.append(Variant(10))
@@ -543,7 +543,7 @@ final class MemoryLeakTests: GodotTestCase {
     }
     
     func test_array_leaks() {
-        let array = GArray()
+        let array = VariantArray()
         array.append(Variant("S"))
         array.append(Variant("M"))
         

@@ -141,7 +141,7 @@ func proxyClosureViaCallable<each Argument: VariantConvertible, Result: VariantC
     _ callable: Callable
 ) -> (repeat each Argument) -> Result {
     return { (arguments: repeat each Argument) -> Result in
-        let array = GArray()
+        let array = VariantArray()
             
         repeat array.append((each arguments).toVariant())
         
@@ -181,7 +181,7 @@ public func _invokeSetter<T>(
     _ old: VariantCollection<T>,
     _: (VariantCollection<T>) -> Void // ignored, old.array is reassigned
 ) where T: _GodotBridgeableBuiltin {
-    _invokeSetterGArrayCollection(arguments, variableName, old)
+    _invokeSetterVariantArrayCollection(arguments, variableName, old)
 }
 
 /// Internal API. ObjectCollections.
@@ -193,18 +193,18 @@ public func _invokeSetter<T>(
     _ old: ObjectCollection<T>,
     _: (ObjectCollection<T>) -> Void // ignored, old.array is reassigned
 ) where T: Object {
-    _invokeSetterGArrayCollection(arguments, variableName, old)
+    _invokeSetterVariantArrayCollection(arguments, variableName, old)
 }
 
 @inline(__always)
 @inlinable
-func _invokeSetterGArrayCollection<T>(
+func _invokeSetterVariantArrayCollection<T>(
     _ arguments: borrowing Arguments,
     _ variableName: StaticString,
     _ collection: T
-) where T: GArrayCollection, T.Element: _GodotBridgeable {
+) where T: VariantArrayCollection, T.Element: _GodotBridgeable {
     do {
-        let newArray = try arguments.argument(ofType: GArray.self, at: 0)
+        let newArray = try arguments.argument(ofType: VariantArray.self, at: 0)
         guard newArray.isSameTyped(array: collection.array) else {
             let oldType = Variant.GType(rawValue: collection.array.getTypedBuiltin()) ?? .nil
             let newType = Variant.GType(rawValue: newArray.getTypedBuiltin()) ?? .nil

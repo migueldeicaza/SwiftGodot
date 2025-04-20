@@ -22,7 +22,7 @@ private class TestSignalNode: Node {
 
 final class SignalTests: GodotTestCase {
     
-    override static var godotSubclasses: [Wrapped.Type] {
+    override static var godotSubclasses: [Object.Type] {
         return [TestSignalNode.self]
     }
     

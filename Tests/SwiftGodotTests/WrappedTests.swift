@@ -11,7 +11,7 @@ import SwiftGodotTestability
 
 final class WrappedTests: GodotTestCase {
     
-    override class var godotSubclasses: [Wrapped.Type] {
+    override class var godotSubclasses: [Object.Type] {
         return [SubtypedNode.self]
     }
     

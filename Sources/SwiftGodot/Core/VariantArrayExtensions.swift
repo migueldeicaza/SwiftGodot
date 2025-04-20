@@ -10,13 +10,41 @@
 public enum ArrayError {
     case outOfRange
 }
-extension GArray: CustomDebugStringConvertible {
+
+
+@available(*, deprecated, renamed: "VariantArray", message: "GArray was renamed to `VariantArray` to better communicate its semantics")
+public typealias GArray = VariantArray
+
+extension VariantArray: CustomDebugStringConvertible {
     public var debugDescription: String {
         "[\(map { $0?.description ?? "nil"}.joined(separator: ", "))]"
     }
     
-    /// Initializes an empty, but typed `GArray`. For example: `GArray(Node.self)`
-    /// - Parameter type: `T` the type of the elements in the GArray, must conform to `_GodotBridgeable`.
+    /// Return the typing information suitable for Swift metatype magic.
+    var typing: ArrayTyping {
+        let rawValue = getTypedBuiltin()
+        guard let gtype = Variant.GType(rawValue: getTypedBuiltin()) else {
+            fatalError("Unknown variant type rawValue: \(rawValue)")
+        }
+        
+        switch gtype {
+        case .nil:
+            return .untyped
+        case .object:
+            let className = getTypedClassName().description
+            guard let metatype = typeOfClass(named: className) else {
+                GD.printErr("Unknown class name: \(className).")
+                return .untyped
+            }
+            
+            return .object(metatype)
+        default:
+            return .builtin(gtype)
+        }
+    }
+    
+    /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node.self)`
+    /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotBridgeable`.
     public convenience init<T: _GodotBridgeable>(_ type: T.Type = T.self) {
         let className: String
         
@@ -27,7 +55,7 @@ extension GArray: CustomDebugStringConvertible {
         }
         
         self.init(
-            base: GArray(),
+            base: VariantArray(),
             type: Int32(T._variantType.rawValue),
             className: StringName(className),
             script: nil
@@ -66,9 +94,9 @@ extension GArray: CustomDebugStringConvertible {
     }
     
     /// Borrows ``FastVariant`` at `index` to perform some action on it.
-    public func withFastVariant<R>(at index: Int, _ body: (borrowing FastVariant?) -> R?) -> R? {
+    public func withFastVariant<R>(at index: Int, _ body: (borrowing FastVariant?) -> R) -> R {
         guard let ret = gi.array_operator_index(&content, Int64 (index)) else {
-            return nil
+            return body(nil)
         }
         
         let ptr = ret.assumingMemoryBound(to: VariantContent.self)
@@ -76,7 +104,7 @@ extension GArray: CustomDebugStringConvertible {
         
         let result = body(variant)
         
-        variant?.content = .zero // Avoid destroying a variant owned by Godot
+        variant?.unsafelyForget()
         
         return result
     }

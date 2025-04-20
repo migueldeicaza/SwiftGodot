@@ -8,28 +8,28 @@
 @_implementationOnly import GDExtension
 
 /// This represents a typed array of one of the built-in types from Godot
-public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection, VariantConvertible where Element: Object {
+public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLiteral, VariantArrayCollection, VariantConvertible where Element: Object {
     /// GDScript allows `nil`s in `Array[Object]`
     public typealias ArrayLiteralElement = Element?
     
-    /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
+    /// The underlying VariantArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
     /// In general you should not be modifying this property directly
-    public var array: GArray
+    public var array: VariantArray
 
     // Explanation: we already own this reference, and what we were doing here was
     // creating a nested array that was taking a reference.
     //
-    // I should add support to the generator to produce a GArray internal constructor
+    // I should add support to the generator to produce a VariantArray internal constructor
     // that can take this existing reference, rather than calling the constructor that
     // makes the copy.
     init (content: Int64) {
-        array = GArray (content: content)
+        array = VariantArray (content: content)
         var copy = content
         // Array took a reference, we do not need to take it.
-        GArray.destructor (&copy)
+        VariantArray.destructor (&copy)
     }
     
-    /// Initializes the collection from an existing `GArray`.
+    /// Initializes the collection from an existing `VariantArray`.
     ///
     /// If `array` is already properly typed - just wraps it.
     /// If it's not properly typed - promotes it to typed.
@@ -37,7 +37,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
     /// Fails if:
     /// - `array` is typed to other than `T`.
     /// - `array` is not typed, and contains an element, other than `T?`
-    public init?(_ array: GArray) {
+    public init?(_ array: VariantArray) {
         // TODO: (es) I have a strong feeling that type-check of the elements can be done in a better way.
         
         if array.isTyped() {
@@ -46,7 +46,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
             }
         }
         
-        let newArray = GArray(Element.self)
+        let newArray = VariantArray(Element.self)
         
         for element in array {
             if let element {
@@ -65,7 +65,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
     
     /// Initializes the collection using an array literal, for example: `let objectCollection: ObjectCollection<Node> = [Node()]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
-        array = elements.reduce(into: GArray(Element.self)) { array, element in
+        array = elements.reduce(into: VariantArray(Element.self)) { array, element in
             array.append(
                 element.map { object in // Object? -> Variant?
                     Variant(object)
@@ -76,7 +76,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
     
     /// Initializes the collection using an array
     public init(_ elements: [Element?]) {
-        array = elements.reduce(into: GArray(Element.self)) { array, element in
+        array = elements.reduce(into: VariantArray(Element.self)) { array, element in
             array.append(
                 element.map { object in // Object? -> Variant?
                     Variant(object)
@@ -93,15 +93,15 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
         }
     }
     
-    /// Initializes the collection with an empty typed GArray
+    /// Initializes the collection with an empty typed VariantArray
     init () {
-        array = GArray (Element.self)
+        array = VariantArray (Element.self)
         initType()
     }
     
-    /// Creates a new instance from the given variant if it contains a GArray
+    /// Creates a new instance from the given variant if it contains a VariantArray
     public required init? (_ variant: Variant) {
-        if let array = GArray (variant) {
+        if let array = VariantArray (variant) {
             self.array = array
             initType()
         } else {
@@ -115,7 +115,7 @@ public final class ObjectCollection<Element>: Collection, ExpressibleByArrayLite
         }
         
         var handle: UnsafeMutableRawPointer? = nil
-        variant.constructType(into: &handle, constructor: Object.selfFromVariant)        
+        variant.constructType(into: &handle, constructor: Object.selfFromVariant)
         
         guard let handle = handle else {
             fatalError("Could not unwrap variant as object.")

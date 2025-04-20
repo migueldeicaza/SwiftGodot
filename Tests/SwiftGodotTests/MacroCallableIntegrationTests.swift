@@ -22,7 +22,7 @@ fileprivate class TestObject: Object {
     }
     
     @Callable
-    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: GArray, variant: Variant?) -> Int? {
+    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: VariantArray, variant: Variant?) -> Int? {
         return builtins.count + objects.count + array.count
     }
 }
@@ -33,7 +33,7 @@ fileprivate class TestObject2: TestObject { // for checking inheritance
 
 final class MacroCallableIntegrationTests: GodotTestCase {
     
-    override static var godotSubclasses: [Wrapped.Type] {
+    override static var godotSubclasses: [Object.Type] {
         return [TestObject.self, TestObject2.self]
     }
     
@@ -44,7 +44,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject2()
         let object2 = TestObject()
         
-        let objectsArray = GArray()
+        let objectsArray = VariantArray()
         objectsArray.append(nil)
         objectsArray.append(Variant(object0))
         objectsArray.append(Variant(object1))
@@ -66,7 +66,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject2()
         let object2 = TestObject()
         
-        let objectsArray = GArray()
+        let objectsArray = VariantArray()
         objectsArray.append(nil)
         objectsArray.append(Variant(object0))
         objectsArray.append(Variant(object1))
@@ -90,7 +90,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject2()
         let object2 = TestObject()
         
-        let objectsArray = GArray(TestObject.self)
+        let objectsArray = VariantArray(TestObject.self)
         objectsArray.append(nil) // 1
         objectsArray.append(Variant(object0)) // 2
         objectsArray.append(Variant(object1)) // 3
@@ -135,7 +135,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testImplicitlyTypingBuiltinsArray() {
         let testObject = TestObject()
         
-        let builtinsArray = GArray()
+        let builtinsArray = VariantArray()
         builtinsArray.append(Variant(1))
         builtinsArray.append(Variant(2))
         builtinsArray.append(Variant(3))
@@ -148,7 +148,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testImplicitTypingOfUntypedBuiltinArrayFailure() {
         let testObject = TestObject()
         
-        let array = GArray()
+        let array = VariantArray()
         array.append(nil)
         array.append(Variant(1))
         array.append(Variant(2))
@@ -165,7 +165,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
         let testObject = TestObject()
         
-        let builtinsArray = GArray(Int.self)
+        let builtinsArray = VariantArray(Int.self)
         builtinsArray.append(Variant(1))
         builtinsArray.append(Variant(2))
         builtinsArray.append(Variant(3))
@@ -191,14 +191,14 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testCountMixed() {
         let testObject = TestObject()
         
-        let builtins = GArray(Int.self)
+        let builtins = VariantArray(Int.self)
         builtins.append(Variant(1)) // 1
         
         let objects = ObjectCollection<RefCounted>()
         objects.append(nil) // 2
         objects.append(RefCounted()) // 3
         
-        let variants = GArray()
+        let variants = VariantArray()
         variants.append(nil) // 4
         variants.append(Variant(RefCounted())) // 5
         variants.append(Variant("Foo")) // 6

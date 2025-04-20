@@ -31,7 +31,7 @@ func getIdentifier (_ typeSyntax: TypeSyntax?) -> (typeName: String, generics: [
         return (typeName: identifier.name.text, generics: genericTypeNames, isOptional: opt)
     } else if let array = typeSyntax.as(ArrayTypeSyntax.self),
        let elementTypeName = array.element.as(IdentifierTypeSyntax.self)?.name.text {
-        return (typeName: "GArray", generics: [elementTypeName], isOptional: opt)
+        return (typeName: "VariantArray", generics: [elementTypeName], isOptional: opt)
     }
     return nil
 }
@@ -40,8 +40,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case requiresClass
     case requiresVar
     case requiresFunction
-    case requiresGArrayCollection
-    case requiresNonOptionalGArrayCollection
+    case requiresVariantArrayCollection
+    case requiresNonOptionalVariantArrayCollection
     case noVariablesFound    
     case noTypeFound(VariableDeclSyntax)
     case unsupportedType(VariableDeclSyntax)
@@ -74,9 +74,9 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Export expected an identifier, instead got \(e)"
         case .unknownError(let e):
             "Unknown nested error processing this directive: \(e)"
-        case .requiresGArrayCollection:
+        case .requiresVariantArrayCollection:
             "@Export attribute can not be applied to Array types, use a VariantCollection, or an ObjectCollection instead"
-        case .requiresNonOptionalGArrayCollection:
+        case .requiresNonOptionalVariantArrayCollection:
             "@Export optional Collections are not supported"
         case .unsupportedCallableEffect:
             "@Callable does not support asynchronous or throwing functions"
@@ -151,7 +151,7 @@ func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
     guard !parameter.isVariantCollection,
           !parameter.isSwiftArray,
           !parameter.isObjectCollection else {
-        return "GArray"
+        return "VariantArray"
     }
     
     if let typeName = parameter.type.as (IdentifierTypeSyntax.self)?.name.text {
@@ -185,7 +185,7 @@ var godotVariants = [
     "Double": ".float",
     "Bool": ".bool",
     "AABB": ".aabb",
-    "GArray": ".array",
+    "VariantArray": ".array",
     "Basis": ".basis",
     "Callable": ".callable",
     "Color": ".color",

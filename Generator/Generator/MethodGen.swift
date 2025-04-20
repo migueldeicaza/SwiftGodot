@@ -120,7 +120,7 @@ struct MethodArgument {
         /// e.g. Godot Variant to Swift Variant?
         case variant
         
-        /// e.g. GArray.content
+        /// e.g. VariantArray.content
         case contentRef
         
         /// e.g. Object.handle

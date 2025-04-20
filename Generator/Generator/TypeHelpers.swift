@@ -143,7 +143,7 @@ func mapTypeName (_ name: String) -> String {
         return "GString"
     }
     if name == "Array" {
-        return "GArray"
+        return "VariantArray"
     }
     if name == "Dictionary" {
         return "GDictionary"
@@ -155,7 +155,7 @@ func reverseMapTypeName (_ name: String) -> String {
     if name == "GString" {
         return "String"
     }
-    if name == "GArray" {
+    if name == "VariantArray" {
         return "Array"
     }
     if name == "GDictionary" {
@@ -317,7 +317,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     case "Dictionary":
         return "GDictionary"
     case "Array":
-        return "GArray"
+        return "VariantArray"
     case "void*":
         return "OpaquePointer?"
     case "const Glyph*":

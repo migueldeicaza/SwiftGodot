@@ -51,7 +51,7 @@ public func _wrapCallableResult(_ value: Variant?) -> FastVariant? {
 @inline(__always)
 @inlinable
 public func _wrapCallableResult<T>(_ value: [T]) -> FastVariant? where T: _GodotBridgeable {
-    let array = GArray(T.self)
+    let array = VariantArray(T.self)
     for element in value {
         array.append(element.toVariant())
     }

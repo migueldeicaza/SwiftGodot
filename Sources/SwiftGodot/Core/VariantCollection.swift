@@ -8,16 +8,16 @@
 @_implementationOnly import GDExtension
 
 /// This represents a typed array of one of the built-in types from Godot
-public final class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, GArrayCollection, _GodotBridgeableBuiltin where Element: _GodotBridgeableBuiltin {
+public final class VariantCollection<Element>: Collection, ExpressibleByArrayLiteral, VariantArrayCollection, _GodotBridgeableBuiltin where Element: _GodotBridgeableBuiltin {
     public static var _variantType: Variant.GType {
         .array
     }
     
     public typealias ArrayLiteralElement = Element
     
-    /// The underlying GArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
+    /// The underlying VariantArray, passed to the Godot client, and reassigned by the Godot client via the proxy accessors
     /// In general you should not be modifying this property directly
-    public var array: GArray
+    public var array: VariantArray
 
     /// Initializes the collection using an array literal, for example: `let variantCollection: VariantCollection<Int> = [0]`
     public required init(arrayLiteral elements: ArrayLiteralElement...) {
@@ -27,23 +27,23 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     }
     
     init (content: Int64) {
-        array = GArray(takingOver: content)
+        array = VariantArray(takingOver: content)
     }
     
-    /// Initializes the collection with an empty typed GArray
+    /// Initializes the collection with an empty typed VariantArray
     public init() {
-        array = GArray (Element.self)
+        array = VariantArray (Element.self)
     }
     
-    /// Initializes the collection from an existing `GArray`.
+    /// Initializes the collection from an existing `VariantArray`.
     ///
     /// If `array` is already properly typed - just wraps it.
-    /// If it's not typed - wraps a newly created `GArray` and copies each `Variant` from `array`, checking its type.
+    /// If it's not typed - wraps a newly created `VariantArray` and copies each `Variant` from `array`, checking its type.
     ///
     /// Fails if:
     /// - `array` is typed to other than `T`.
     /// - `array` is not typed, and contains an element, other than `T`
-    public init?(_ array: GArray) {
+    public init?(_ array: VariantArray) {
         if array.isTyped() {
             if array.getTypedBuiltin() != Element._variantType.rawValue {
                 return nil
@@ -53,7 +53,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
                 self.array = array
             }
         } else {
-            let newArray = GArray(Element.self)
+            let newArray = VariantArray(Element.self)
             
             for element in array {
                 guard let element else {
@@ -71,9 +71,9 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
         }
     }
     
-    /// Creates a new instance from the given variant if it contains a GArray
+    /// Creates a new instance from the given variant if it contains a VariantArray
     public required init? (_ variant: Variant) {
-        if let array = GArray (variant) {
+        if let array = VariantArray (variant) {
             self.array = array
         } else {
             return nil
@@ -133,7 +133,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
 
     /// Returns a hashed 32-bit integer value representing the array and its contents.
     ///
-    /// > Note: ``GArray``s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does _not_ imply the arrays are equal, because different arrays can have identical hash values due to hash collisions.
+    /// > Note: ``VariantArray``s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does _not_ imply the arrays are equal, because different arrays can have identical hash values due to hash collisions.
     ///
     public final func hash ()-> Int64 {
         array.hash ()
@@ -325,16 +325,16 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     }
     
     /// Returns `true` if the array is typed the same as `array`.
-    public final func isSameTyped (array: GArray)-> Bool {
+    public final func isSameTyped (array: VariantArray)-> Bool {
         return array.isSameTyped(array: array)
     }
     
-    /// Returns the ``Variant.GType`` constant for a typed array. If the ``GArray`` is not typed, returns ``Variant.GType/`nil```.
+    /// Returns the ``Variant.GType`` constant for a typed array. If the ``VariantArray`` is not typed, returns ``Variant.GType/`nil```.
     public final func getTypedBuiltin ()-> Int64 {
         array.getTypedBuiltin()
     }
     
-    /// Returns a class name of a typed ``GArray`` of type ``Variant.GType/object``.
+    /// Returns a class name of a typed ``VariantArray`` of type ``Variant.GType/object``.
     public final func getTypedClassName ()-> StringName {
         array.getTypedClassName()
     }
@@ -383,7 +383,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     @inline(__always)
     @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
-        let array = try GArray.fromVariantOrThrow(variant)
+        let array = try VariantArray.fromVariantOrThrow(variant)
 
         guard let result = Self(array) else {
             throw .unexpectedContent(parsing: self, from: variant)
@@ -395,7 +395,7 @@ public final class VariantCollection<Element>: Collection, ExpressibleByArrayLit
     @inline(__always)
     @inlinable
     public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
-        let array = try GArray.fromFastVariantOrThrow(variant)
+        let array = try VariantArray.fromFastVariantOrThrow(variant)
         
         guard let result = Self(array) else {
             throw .unexpectedContent(parsing: self, from: variant)

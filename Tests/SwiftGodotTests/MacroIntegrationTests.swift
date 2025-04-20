@@ -31,7 +31,7 @@ final class MacroIntegrationTests: GodotTestCase {
             var meshInstance: MeshInstance3D? = nil
             var variant = 1.toVariant()
             var optionalVariant: Variant?
-            var garray: GArray = GArray()
+            var garray: VariantArray = VariantArray()
             var object = Object() as Object?
             var lala = [42, 31].min() ?? 10
             lazy var someNode = {

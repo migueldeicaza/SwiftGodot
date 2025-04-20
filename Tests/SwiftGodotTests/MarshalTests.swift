@@ -62,7 +62,7 @@ private class TestNode: Node {
 
 final class MarshalTests: GodotTestCase {
     
-    override static var godotSubclasses: [Wrapped.Type] {
+    override static var godotSubclasses: [Object.Type] {
         return [TestNode.self, NodeUsingSwiftDate.self]
     }
     
@@ -210,7 +210,7 @@ final class MarshalTests: GodotTestCase {
     
     func testSwiftArrays() {
         let testNode = TestNode()
-        let array = GArray(Int.self)
+        let array = VariantArray(Int.self)
         array.append(Variant(20))
         array.append(Variant(40))
         

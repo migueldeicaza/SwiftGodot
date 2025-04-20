@@ -36,7 +36,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 print ("Error: Not all parameters were initialized.")
                 return 0
             }
-            var types: [GDExtension.InitializationLevel: [Wrapped.Type]] = [:]
+            var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
             types[.core] = \(coreTypes)
             types[.editor] = \(editorTypes)
             types[.scene] = \(sceneTypes)
