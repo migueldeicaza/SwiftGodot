@@ -40,6 +40,7 @@ Going in depth with SwiftGodot:
 - <doc:BindingNodes>
 - <doc:RunningInEditor>
 - <doc:MemoryManagement>
+- <doc:TypesTranslation>
 
 ### Platform Integration
 
