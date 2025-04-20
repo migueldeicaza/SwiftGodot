@@ -98,8 +98,10 @@ func generateBuiltinCtors (_ p: Printer,
         var visibility = "public"
         
         let ptrName = "constructor\(m.index)"
-        p ("static var \(ptrName): GDExtensionPtrConstructor = gi.variant_get_ptr_constructor (\(typeEnum), \(m.index))!\n")
-        
+        p.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrConstructor") {
+            p("gi.variant_get_ptr_constructor(\(typeEnum), \(m.index))!")
+        }
+            
         for arg in m.arguments ?? [] {
             if args != "" { args += ", " }
             args += getArgumentDeclaration(arg, omitLabel: false, kind: .builtInField, isOptional: arg.type == "Variant")
@@ -349,7 +351,7 @@ func generateBuiltinOperators (_ p: Printer,
             guard let (operatorCode, swiftOperator) = infixOperatorMap (op.name) else {
                 continue
             }
-            p.staticLet(name: ptrName, type: "GDExtensionPtrOperatorEvaluator") {
+            p.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrOperatorEvaluator") {
                 let rightTypeCode = builtinTypecode (right)
                 let leftTypeCode = builtinTypecode (godotTypeName)
                 p ("return gi.variant_get_ptr_operator_evaluator (\(operatorCode), \(leftTypeCode), \(rightTypeCode))!")
@@ -459,7 +461,7 @@ func generateBuiltinMethods (_ p: Printer,
     
         let ptrName = "method_\(m.name)"
         
-        p.staticLet(name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
+        p.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
             p ("var name = FastStringName(\"\(m.name)\")")
             p ("return gi.variant_get_ptr_builtin_method(\(typeEnum), &name.content, \(m.hash))!")
         }
@@ -513,13 +515,13 @@ func generateBuiltinMethods (_ p: Printer,
     }
     if bc.isKeyed {
         let variantType = builtinTypecode(bc.name)
-        p.staticLet(visibility: "private", name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
+        p.staticProperty(visibility: "private", isStored: true, name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
             p ("return gi.variant_get_ptr_keyed_getter (\(variantType))!")
         }
-        p.staticLet(visibility: "private", name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
+        p.staticProperty(visibility: "private", isStored: true, name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
             p ("return gi.variant_get_ptr_keyed_setter (\(variantType))!")
         }
-        p.staticLet(visibility: "private", name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
+        p.staticProperty(visibility: "private", isStored: true, name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
             p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
@@ -553,10 +555,10 @@ func generateBuiltinMethods (_ p: Printer,
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
         let variantType = builtinTypecode (bc.name)
-        p.staticLet(visibility: "private", name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
+        p.staticProperty(visibility: "private", isStored: true, name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
             p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
         }
-        p.staticLet(visibility: "private", name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
+        p.staticProperty(visibility: "private", isStored: true, name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
             p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
         }
         p (" public subscript (index: Int64) -> \(godotType)") {
@@ -726,7 +728,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 #endif
             }
             if bc.hasDestructor {
-                p.staticLet(name: "destructor", type: "GDExtensionPtrDestructor") {
+                p.staticProperty(isStored: true, name: "destructor", type: "GDExtensionPtrDestructor") {
                     p ("return gi.variant_get_ptr_destructor (\(typeEnum))!")
                 }
                 
@@ -818,14 +820,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             generateBuiltinConstants (p, bc, typeName: typeName)
                                                 
             isContentRepresented = storedMembers == nil
-                        
             
-            // TODO: static let is `var` due to Xogot two different runtime static storage issue, perhaps it makes sense to explore SPM traits to vary that behavior?
+            p.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionInterfaceGetVariantFromTypeConstructor") {
+                p("gi.get_variant_from_type_constructor(\(typeEnum))!")
+            }
+            
+            p.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionInterfaceGetVariantToTypeConstructor") {
+                p("gi.get_variant_to_type_constructor(\(typeEnum))!")
+            }
+                                                
             p("""
-            
-            static let variantFromSelf = gi.get_variant_from_type_constructor(\(typeEnum))!
-            static let selfFromVariant = gi.get_variant_to_type_constructor(\(typeEnum))!                            
-            
             /// Wrap ``\(typeName)`` into a ``Variant``
             @inline(__always)
             @inlinable
