@@ -45,14 +45,6 @@ public func _invokeGetter<each Argument: VariantConvertible, Result: VariantConv
 
 // MARK: Failures with diagnostics
 
-/// Internal API.  Swift Array.
-@available(*, unavailable, message: "Swift Array is not supported by @Export macro, use TypedArray or TypedArray")
-public func _invokeGetter<T>(
-    _ value: [T]?
-) -> FastVariant? {
-    fatalError("Unreachable")
-}
-
 /// Internal API.  Optional CaseIterable enum with BinaryInteger RawValue.
 @available(*, unavailable, message: "Optional enums are not supported by @Export macro")
 public func _invokeGetter<T>(

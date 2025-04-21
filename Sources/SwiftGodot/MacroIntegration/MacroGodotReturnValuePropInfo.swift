@@ -81,24 +81,6 @@ public func _returnValuePropInfo<T>(
     T._returnValuePropInfo
 }
 
-/// Internal API. Swift Builtin Array.
-@inline(__always)
-@inlinable
-public func _returnValuePropInfo<T>(
-    _ type: [T].Type = [T].self
-) -> PropInfo where T: _GodotBridgeableBuiltin {
-    TypedArray<T>._returnValuePropInfo
-}
-
-/// Internal API. Swift Object Array.
-@inline(__always)
-@inlinable
-public func _returnValuePropInfo<T>(
-    _ type: [T].Type = [T].self
-) -> PropInfo where T: Object {
-    TypedArray<T?>._returnValuePropInfo
-}
-
 /// Internal API. Void.
 @inline(__always)
 @inlinable

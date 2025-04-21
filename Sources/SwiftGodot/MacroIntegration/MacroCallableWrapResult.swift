@@ -47,18 +47,6 @@ public func _wrapCallableResult(_ value: Variant?) -> FastVariant? {
     return value.toFastVariant()
 }
 
-/// Internal API. Swift Array.
-@inline(__always)
-@inlinable
-public func _wrapCallableResult<T>(_ value: [T]) -> FastVariant? where T: _GodotBridgeable {
-    let array = VariantArray(T.self)
-    for element in value {
-        array.append(element.toVariant())
-    }
-    
-    return array.toFastVariant()
-}
-
 /// Internal API. Void.
 @inline(__always)
 @inlinable

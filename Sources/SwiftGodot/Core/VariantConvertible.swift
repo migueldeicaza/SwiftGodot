@@ -17,12 +17,21 @@ public enum VariantConversionError: Error, CustomStringConvertible {
             return "\(value) doesn't fit in \(requestedType)"
         case .invalidRawValue(let requestedType, let value):
             return "\(value) is not a valid rawValue for \(requestedType)"
+        case .custom(let error):
+            if let error {
+                return "Custom type conversion error: \(error)"
+            } else {
+                return "Custom type conversion error."
+            }
         }
     }
     
     case unexpectedContent(requestedType: Any.Type, actualContent: String)
     case integerOverflow(requestedType: Any.Type, value: Int64)
     case invalidRawValue(requestedType: any RawRepresentable.Type, value: Any)
+    
+    /// Intended for ``GodotBuiltinConvertible`` and ``VariantConvertible`` implementations of user.
+    case custom(error: (any Error)?)
     
     @_disfavoredOverload
     public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: Variant?) -> Self {

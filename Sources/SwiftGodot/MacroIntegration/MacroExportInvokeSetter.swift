@@ -191,31 +191,6 @@ public func _invokeSetter<T>(
 }
 
 // MARK: Failures with diagnostics
-
-/// Internal API. Swift Array.
-@available(*, unavailable, message: "Swift Array is not supported by @Export macro, use TypedArray or TypedArray")
-@_disfavoredOverload
-public func _invokeSetter<T>(
-    _ arguments: borrowing Arguments,
-    _ variableName: StaticString,
-    _ old: [T]?,
-    _ set: ([T]?) -> Void
-) {
-    fatalError("Unreachable")
-}
-
-/// Internal API. Swift Array.
-@available(*, unavailable, message: "Swift Array is not supported by @Export macro, use TypedArray or TypedArray")
-@_disfavoredOverload
-public func _invokeSetter<T>(
-    _ arguments: borrowing Arguments,
-    _ variableName: StaticString,
-    _ old: [T],
-    _ set: ([T]) -> Void
-) {
-    fatalError("Unreachable")
-}
-
 /// Internal API. Catch-all-overload for optional unsupported types.
 @available(*, unavailable, message: "The type is not supported by @Export macro")
 @_disfavoredOverload
