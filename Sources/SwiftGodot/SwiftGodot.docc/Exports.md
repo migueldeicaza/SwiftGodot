@@ -297,18 +297,22 @@ properties are still editable. This can be used in conjunction with a script in 
 
 To surface arrays in Godot, use a strong type for it, for example:
 
-```
+```swift
 @Export
-var myResources: TypedArray<Resource>
+var myResources: TypedArray<Vector3>
 ```
 
-Alternatively, if you want to surface an array of Godot objects, or even your
-own subclasses of those, use `TypedArray<YourCustomType>`, for example:
+Alternatively, if you want to surface an array of Godot objects, or even your own subclasses of those, use `TypedArray<YourCustomType?>`, for example:
 
-```
+```swift
 @Export
-var myNodes: TypedArray<MySpinnerCube>
+var myNodes: TypedArray<MySpinnerCube?>
 ```
+
+### ⚠️ Note ⚠️
+
+`Object` derived types require optional `Element` type.
+That's due to Godot absence of guarantee that that `Array[Object]` doesn't contain `nil`s.
 
 ### Enumeration Values
 
