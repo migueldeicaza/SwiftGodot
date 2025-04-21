@@ -7,5 +7,5 @@
 
 @_implementationOnly import GDExtension
 
-@available(*, deprecated, renamed: "TypedArray", message: "`VariantCollection` was removed and replaced with source-compatible `TypedArray`")
+@available(*, deprecated, renamed: "TypedArray", message: "`VariantCollection` was removed and replaced with `TypedArray`")
 public typealias VariantCollection = TypedArray
