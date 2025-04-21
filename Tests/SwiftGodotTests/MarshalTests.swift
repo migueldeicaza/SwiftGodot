@@ -29,6 +29,10 @@ private class TestNode: Node {
     
     @Signal var someSignal: SignalWithArguments<Int>
     
+    @Export
+    var swiftArray = [1, 2, 3, 4, 5]
+    
+    
     @Callable
     func double(_ ints: [Int]) -> [Double] {
         return ints.map {
@@ -227,6 +231,14 @@ final class MarshalTests: GodotTestCase {
         XCTAssertEqual(collection[0], 40.0)
         XCTAssertEqual(collection[1], 80.0)
         
+        _ = testNode.call(method: "set_swift_array", TypedArray<Int>([9, 4, 8]).toVariant())
+        
+        XCTAssertEqual([9, 4, 8], testNode.swiftArray)
+        
+        _ = testNode.call(method: "set_swift_array", [12, 1, 9].toVariant())
+        
+        XCTAssertEqual([12, 1, 9], testNode.swiftArray)
+        
     }
     
     func testSomeVariantConvertible() {
@@ -300,7 +312,7 @@ final class MarshalTests: GodotTestCase {
             2.toVariant(),
             "Amazing!".toVariant()
         )
-                
+        
         XCTAssertEqual(result.to(String.self), "Amazing! Amazing! Amazing!")
         
         callable = Callable { (yes: Bool, ifYes: String, array: TypedArray<String>) -> String in
@@ -316,7 +328,7 @@ final class MarshalTests: GodotTestCase {
             "YES!".toVariant(),
             collection.toVariant()
         )
-                
+        
         XCTAssertEqual(result.to(String.self), "YES!")
         
         result = callable.call(
@@ -324,7 +336,7 @@ final class MarshalTests: GodotTestCase {
             "Whatever".toVariant(),
             collection.toVariant()
         )
-                
+        
         XCTAssertEqual(result.to(String.self), "Never Gonna Give You Up")
         
         result = callable.call(
@@ -337,8 +349,8 @@ final class MarshalTests: GodotTestCase {
         
         
         callable = Callable { (a: Int, b: Int) in
-             GD.print(a + b)
-         }
+            GD.print(a + b)
+        }
         
         _ = callable.call(
             1.toVariant(),
