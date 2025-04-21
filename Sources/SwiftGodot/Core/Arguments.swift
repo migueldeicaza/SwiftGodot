@@ -314,44 +314,6 @@ public struct Arguments: ~Copyable {
             return try unsafeGodotArgs.copy(FastVariant.self, at: index)
         }
     }
-    
-    /// Returns `[T]` value wrapped in  argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `Array`
-    /// - Any element of underlying Godot Array couldn't be converted to `T`
-    /// - `index` is out of bounds.
-    @inline(__always)
-    @inlinable
-    public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws(ArgumentAccessError) -> [T] where T: VariantConvertible {
-        try withBorrowedFastVariant(at: index) { variantOrNil in
-            extract([T].self, from: variantOrNil)
-        }
-    }
-        
-    @inline(__always)
-    @inlinable
-    func extract<T>(_ type: [T].Type = [T].self, from variantOrNil: borrowing FastVariant?) -> Result<[T], ArgumentAccessError> where T: VariantConvertible {
-        switch variantOrNil {
-        case .none:
-            return .failure(.variantConversionError(.unexpectedNilContent(parsing: [T].self)))
-        case .some(let variant):
-            do {
-                let array = try VariantArray.fromFastVariantOrThrow(variant)
-                var result: [T] = []
-                result.reserveCapacity(array.count)
-                for element in array {
-                    result.append(
-                        try T.fromVariantOrThrow(element)
-                    )
-                }
-                return .success(result)
-            } catch {
-                return .failure(.variantConversionError(error))
-            }
-        }
-    }
         
     /// Returns `T` value wrapped argument at `index`.
     ///
