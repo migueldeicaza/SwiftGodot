@@ -40,6 +40,9 @@ public protocol _TypedArrayElement: _GodotBridgeable {
 
 /// This type represents typed Godot array, such as `Array[int]` or `Array[Object]`.
 ///
+/// In Swift it serves as a type-safe view into underlying ``VariantArray`` stored in `array` property.
+/// It guarantees that only `Element` types are in there.
+///
 /// The `Element` reflects semantics of how Godot treats nullability.
 /// Allowed elements are:
 /// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
@@ -72,7 +75,7 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
     public typealias Index = Int
     public typealias ArrayLiteralElement = Element
 
-    /// Reference to underlying `VariantArray` which is guaranteed to be typed.
+    /// Reference to underlying `VariantArray` which is guaranteed to containing only `Element`s and nothing else.
     public let array: VariantArray
         
     /// Initialize ``TypedArray`` from existing ``VariantArray``.
@@ -138,11 +141,21 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
     /// foo([1, 2, 3, 4, 5])
     /// ```
     public init(arrayLiteral elements: Element...) {
-        self.init()
+        self.init(elements)
+    }
+    
+    /// Initialise ``TypedArray`` from the Swift `Element` array.
+    /// For example:
+    /// ```
+    /// let array: [Int] = [1, 2, 3, 4, 5]
+    /// let typedArray = TypedArray(array)
+    /// ```
+    ///
+    /// This operation is O(n) as it requires creating and copying contents of Swift array.
+    public init(_ array: [Element]) {
+        self.init(Element.self)
         
-        resize(size: Int64(elements.count))
-        
-        for element in elements {
+        for element in array {
             append(element)
         }
     }
@@ -151,9 +164,9 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
     ///
     /// For example:
     /// ```
-    /// let array = TypedArray(Node.self)
+    /// let array = TypedArray(Node?.self)
     /// // same as
-    /// let anotherArray = TypedArray<Node>()
+    /// let anotherArray = TypedArray<Node?>()
     /// ```
     public init(_ type: Element.Type = Element.self) {
         // TODO: we can minimize amount of allocations here, but let's name the constructors first
@@ -173,6 +186,10 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
         lhs.array == rhs.array
     }
     
+    /// Provides debug description of this instance:
+    /// ```
+    /// print(TypedArray([1, 2, 3, 4, 5, 6, 7]) // prints [1, 2, 3, 4, 5, 6, 7]
+    /// ```
     public var debugDescription: String {
         array.debugDescription
     }

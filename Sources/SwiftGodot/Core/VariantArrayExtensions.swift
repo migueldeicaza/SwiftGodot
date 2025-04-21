@@ -16,6 +16,13 @@ public enum ArrayError {
 public typealias GArray = VariantArray
 
 extension VariantArray: CustomDebugStringConvertible {
+    /// Provides debug description of this instance:
+    /// ```
+    /// let array = VariantArray()
+    /// array.append(1)
+    /// array.append(2)
+    /// print(array) // prints [1, 2]
+    /// ```
     public var debugDescription: String {
         "[\(map { $0?.description ?? "nil"}.joined(separator: ", "))]"
     }
