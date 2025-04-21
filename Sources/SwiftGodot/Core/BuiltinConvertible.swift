@@ -75,7 +75,7 @@ extension GodotBuiltinConvertible {
     
     /// Internal API. Default implementation.
     /// Proxy the required low-level implementation via `GodotBuiltin`.
-    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> GodotBuiltinConvertible {
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         try fromGodotBuiltinOrThrow(
             GodotBuiltin.fromVariantOrThrow(variant)
         )
