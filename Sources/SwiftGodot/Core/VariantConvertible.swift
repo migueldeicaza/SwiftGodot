@@ -214,7 +214,7 @@ public protocol _GodotBridgeable: VariantConvertible {
     static var _variantType: Variant.GType { get }
     
     /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `VariantArray` -> `Array`, `Object` -> `Object`
-    static var _godotTypeName: String { get }
+    static var _builtinOrClassName: String { get }
     
     /// Internal API. PropInfo for this type when it's used as an argument.
     static func _argumentPropInfo(
@@ -234,19 +234,23 @@ public protocol _GodotBridgeable: VariantConvertible {
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
-public protocol _GodotBridgeableBuiltin: _GodotBridgeable, _GodotTypedArrayElement {
+public protocol _GodotBridgeableBuiltin: _TypedArrayElement {
 }
 
 public extension _GodotBridgeableBuiltin {
-    /// Internal API.
-    /// Actual collection element of `TypedArray<Element>` where `Element` is `_GodotBridgeableBuiltin`. It is always `Element` itself. Godot doesn't allow `null` values in such arrays.
-    typealias ActualTypedArrayElement = Self
+    /// Internal API. Required for `TypedArray` implementation.
+    typealias _NonOptionalType = Self
+    
+    /// Internal API. Required for cases where Godot expects empty `StringName` for builtin types and actual class name for `.object`-types
+    public static var _className: StringName {
+        StringName("")
+    }
     
     /// Internal API. Returns Godot type name for typed array.
     @inline(__always)
     @inlinable
-    static var _godotTypeName: String {
-        _variantType._godotTypeName
+    static var _builtinOrClassName: String {
+        _variantType._builtinOrClassName                
     }
     
     /// Internal API. Default implementation.
@@ -291,6 +295,8 @@ public extension _GodotBridgeableBuiltin {
 }
 
 public extension _GodotBridgeable where Self: Object {
+    public typealias TypedArrayElement = Self?
+    
     /// Internal API. Default implementation.
     @inline(__always)
     @inlinable
@@ -299,7 +305,7 @@ public extension _GodotBridgeable where Self: Object {
     /// Internal API. Default implementation.
     @inline(__always)
     @inlinable
-    static var _godotTypeName: String {
+    static var _builtinOrClassName: String {
         "\(self)"
     }
     
@@ -317,13 +323,13 @@ public extension _GodotBridgeable where Self: Object {
         
         if self is Node.Type && hint == nil && hintStr == nil {
             hint = .nodeType
-            hintStr = _godotTypeName
+            hintStr = _builtinOrClassName
         }
         
         return _propInfoDefault(
             propertyType: _variantType,
             name: name,
-            className: StringName(_godotTypeName),
+            className: StringName(_builtinOrClassName),
             hint: hint,
             hintStr: hintStr,
             usage: usage
@@ -339,7 +345,7 @@ public extension _GodotBridgeable where Self: Object {
         _propInfoDefault(
             propertyType: _variantType,
             name: name,
-            className: StringName(_godotTypeName)
+            className: StringName(_builtinOrClassName)
         )
     }
     
@@ -350,7 +356,7 @@ public extension _GodotBridgeable where Self: Object {
         _propInfoDefault(
             propertyType: _variantType,
             name: "",
-            className: StringName(_godotTypeName)
+            className: StringName(_builtinOrClassName)
         )
     }
 }

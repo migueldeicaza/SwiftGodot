@@ -7,57 +7,92 @@
 
 @_implementationOnly import GDExtension
 
+@usableFromInline
 enum ArrayTyping {
     case untyped
     case builtin(Variant.GType)
     case object(Object.Type)
 }
 
-/// This type represents typed Godot array, such as `Array[int]` or `Array[Object]`.
-/// It reflects semantics of how Godot treats nullability.
-/// ```
-/// let array: TypedArray<Int> = [1, 2, 3, 4, 5]
-/// let element = array[1] // It's `Int`, Godot guarantees that Array of builtin type elements doesn't contain `nil` values.
+/// Internal API.
+/// Do not conform your types to this protocol.
+/// Protocol implemented by types that are allowed to be `TypedArray` element.
+/// This protocol is implemented by:
+/// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
+/// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.
 ///
-/// let otherArray: TypedArray<Object> = [nil, nil, Object()]
-/// let otherElement = otherArray[2] // It's `Object?`, Godot DOES NOT guarantee that Array of `Object`-derived types contains non-`nil` values.
+/// # Compilation troubleshooting
+///
+/// #### ❌ `Type 'ObjectType' does not conform to protocol '_TypedArrayElement'`
+/// You used `TypedArray<ObjectType>`.
+/// You should use `TypedArray<ObjectType?>` instead.
+/// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
+///
+/// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
+/// You used `TypedArray<SomeType?>`.
+/// You should use `TypedArray<SomeType>` instead.
+/// Godot guarantees non-nullability of `Array[SomeType]` elements.
+public protocol _TypedArrayElement: _GodotBridgeable {
+    associatedtype _NonOptionalType: _GodotBridgeable
+    
+    static var _className: StringName { get }
+}
+
+/// This type represents typed Godot array, such as `Array[int]` or `Array[Object]`.
+///
+/// The `Element` reflects semantics of how Godot treats nullability.
+/// Allowed elements are:
+/// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
+/// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.
+///
+/// Example:
 /// ```
-public struct TypedArray<DeclaredElement>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable
-where DeclaredElement: _GodotTypedArrayElement {
+/// var array: TypedArray<Int> = [1, 2, 3, 4, 5]
+/// let element = array[1] // It's `Int`, Godot guarantees that Array of builtin type elements doesn't contain `nil` values.
+/// array.append(nil) // Illegal.
+///
+/// let otherArray: TypedArray<Object?> = [nil, nil, Object()]
+/// let otherElement = otherArray[2] // It's `Object?`
+///
+/// let oneMoreArray: TypedArray<Object> // Illegal, Godot can't guarantee that `Array[Object]` contains only non-null `Object`-s, use `TypedArray<Object?>`
+/// ```
+///
+/// # Compilation troubleshooting
+///
+/// #### ❌ `Type 'ObjectType' does not conform to protocol '_TypedArrayElement'`
+/// You used `TypedArray<ObjectType>`.
+/// You should use `TypedArray<ObjectType?>` instead.
+/// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
+///
+/// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
+/// You used `TypedArray<SomeType?>`.
+/// You should use `TypedArray<SomeType>` instead.
+/// Godot guarantees non-nullability of `Array[SomeType]` elements.
+public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable {
     public typealias Index = Int
-    public typealias Element = DeclaredElement.ActualTypedArrayElement
     public typealias ArrayLiteralElement = Element
-    
-    @usableFromInline
-    let wrapped: VariantArray
-    
-    @available(*, deprecated, message: "Don't use it. It's an implementation detail.")
-    public var array: VariantArray {
-        wrapped
-    }
+
+    /// Reference to underlying `VariantArray` which is guaranteed to be typed.
+    public let array: VariantArray
         
     /// Initialize ``TypedArray`` from existing ``VariantArray``.
     /// If ``VariantArray`` is typed and its type is exactly the same as ``DeclaredElement`` the created instance will reference the same storage.
     /// If not, a new ``Array`` to wrap will be created by following Godot rules of array type narrowing:
     /// - If array could be converted successfully - it returns a typed array containing the same elements.
-    /// - If not - it returns an empty array.
+    /// - If not - it returns an empty typed array.
     /// See: ``VariantArray.init(base:type:className:script:)``
+    @inline(__always)
+    @inlinable
     public init(from array: VariantArray) {
         switch array.typing {
         case .untyped:
             let count = array.count
             let className: StringName
-            
-            if let objectType = Element.self as? Object.Type {
-                className = objectType.godotClassName
-            } else {
-                className = ""
-            }
-            
-            wrapped = VariantArray(
+                        
+            self.array = VariantArray(
                 base: array,
-                type: Int32(DeclaredElement._variantType.rawValue),
-                className: className,
+                type: Int32(Element._variantType.rawValue),
+                className: Element._className,
                 script: nil
             )
             
@@ -65,25 +100,25 @@ where DeclaredElement: _GodotTypedArrayElement {
             assert(gtype != .object)
             assert(gtype != .nil)
             if gtype != Element._variantType {
-                wrapped = VariantArray(
+                self.array = VariantArray(
                     base: array,
-                    type: Int32(DeclaredElement._variantType.rawValue),
+                    type: Int32(Element._variantType.rawValue),
                     className: "",
                     script: nil
                 )
             } else {
-                wrapped = array
+                self.array = array
             }
         case .object(let objectType):
-            if objectType == DeclaredElement.self {
+            if objectType == Element.self {
                 // objectType stored inside array is same as DeclaredElement.self
                 // Wrap the existing storage
-                wrapped = array
+                self.array = array
             } else {
-                wrapped = VariantArray(
+                self.array = VariantArray(
                     base: array,
-                    type: Int32(DeclaredElement._variantType.rawValue),
-                    className: "",
+                    type: Int32(Element._variantType.rawValue),
+                    className: Element._className,
                     script: nil
                 )
             }
@@ -120,12 +155,12 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// // same as
     /// let anotherArray = TypedArray<Node>()
     /// ```
-    public init(_ type: DeclaredElement.Type = DeclaredElement.self) {
+    public init(_ type: Element.Type = Element.self) {
         // TODO: we can minimize amount of allocations here, but let's name the constructors first
-        wrapped = VariantArray(
+        array = VariantArray(
             base: VariantArray(),
-            type: Int32(DeclaredElement._variantType.rawValue),
-            className: "",
+            type: Int32(Element._variantType.rawValue),
+            className: Element._className,
             script: nil
         )
     }
@@ -135,11 +170,11 @@ where DeclaredElement: _GodotTypedArrayElement {
     }
     
     public static func ==(lhs: Self, rhs: Self) {
-        lhs.wrapped == rhs.wrapped
+        lhs.array == rhs.array
     }
     
     public var debugDescription: String {
-        wrapped.debugDescription
+        array.debugDescription
     }
     
     public var startIndex: Int {
@@ -147,7 +182,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     }
     
     public var endIndex: Int {
-        wrapped.count
+        array.count
     }
         
     public subscript(position: Int) -> Element {
@@ -158,17 +193,17 @@ where DeclaredElement: _GodotTypedArrayElement {
                 do {
                     return try Element.fromFastVariantOrThrow(variant)
                 } catch {
-                    fatalError("Fatal error during subscript/get `TypedArray<\(Element.self)>[\(position)]` wrapping \(wrapped.debugDescription) at index \(position). Type invariant violated. \(error.description)")
+                    fatalError("Fatal error during subscript/get `TypedArray<\(Element.self)>[\(position)]` wrapping \(array.debugDescription) at index \(position). Type invariant violated. \(error.description)")
                 }
             }
             
-            return wrapped.withFastVariant(at: position) { variant in
+            return array.withFastVariant(at: position) { variant in
                 subscriptGetUnwrap(variant, at: position)
             }
         }
         
         set {
-            wrapped.setFastVariant(newValue.toFastVariant(), at: position)
+            array.setFastVariant(newValue.toFastVariant(), at: position)
         }
     }
     
@@ -206,26 +241,26 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
-        wrapped.toVariant()
+        array.toVariant()
     }
     
     @inline(__always)
     @inlinable
     public func toVariant() -> Variant {
-        wrapped.toVariant()
+        array.toVariant()
     }
     
     @inline(__always)
     @inlinable
     @_disfavoredOverload
     public func toFastVariant() -> FastVariant? {
-        wrapped.toFastVariant()
+        array.toFastVariant()
     }
     
     @inline(__always)
     @inlinable
     public func toFastVariant() -> FastVariant {
-        wrapped.toFastVariant()
+        array.toFastVariant()
     }
     
     @inline(__always)
@@ -258,9 +293,9 @@ where DeclaredElement: _GodotTypedArrayElement {
         PropInfo(
             propertyType: .array,
             propertyName: StringName(name),
-            className: StringName("Array[\(Element._godotTypeName)]"),
+            className: StringName("Array[\(Element._builtinOrClassName)]"),
             hint: hint ?? .arrayType,
-            hintStr: GString(hintStr ?? "\(Element._godotTypeName)"),
+            hintStr: GString(hintStr ?? "\(Element._builtinOrClassName)"),
             usage: usage ?? .default
         )
     }
@@ -272,9 +307,9 @@ where DeclaredElement: _GodotTypedArrayElement {
         PropInfo(
             propertyType: .array,
             propertyName: "",
-            className: "Array[\(Element._godotTypeName)]",
+            className: "Array[\(Element._builtinOrClassName)]",
             hint: .arrayType,
-            hintStr: "\(Element._godotTypeName)",
+            hintStr: "\(Element._builtinOrClassName)",
             usage: .default
         )
     }
@@ -285,21 +320,21 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func size() -> Int64 {
-        return wrapped.size()
+        return array.size()
     }
 
     /// Returns `true` if the array is empty.
     @inline(__always)
     @inlinable
     public func isEmpty() -> Bool {
-        wrapped.isEmpty()
+        array.isEmpty()
     }
     
     /// Clears the array. This is equivalent to using ``resize(size:)`` with a size of `0`.
     @inline(__always)
     @inlinable
     public func clear() {
-        wrapped.clear()
+        array.clear()
     }
 
     /// Returns a hashed 32-bit integer value representing the array and its contents.
@@ -309,7 +344,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func hash() -> Int64 {
-        wrapped.hash()
+        array.hash()
     }
     
     /// Adds an element at the beginning of the array. See also ``pushBack(value:)``.
@@ -319,14 +354,14 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func pushFront(value: Element) {
-        wrapped.pushFront(value: value.toVariant())
+        array.pushFront(value: value.toVariant())
     }
     
     /// Appends an element at the end of the array (alias of ``pushBack(value:)``).
     @inline(__always)
     @inlinable
     public func append(_ value: Element) {
-        wrapped.append(value.toVariant())
+        array.append(value.toVariant())
     }
     
     /// Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are `null`. Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
@@ -336,7 +371,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func resize(size: Int64) -> Int64 {
-        wrapped.resize(size: size)
+        array.resize(size: size)
     }
     
     /// Inserts a new element at a given position in the array. The position must be valid, or at the end of the array (`pos == size()`). Returns ``GodotError/ok`` on success, or one of the other ``GodotError`` values if the operation failed.
@@ -348,7 +383,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func insert(position: Int64, value: Element) -> Int64 {
-        wrapped.insert(position: position, value: value.toVariant())
+        array.insert(position: position, value: value.toVariant())
     }
     
     /// Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use ``erase(value:)`` instead.
@@ -362,7 +397,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func removeAt(position: Int64) {
-        wrapped.removeAt(position: position)
+        array.removeAt(position: position)
     }
 
     /// Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use ``removeAt(position:)`` instead.
@@ -376,7 +411,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func erase(value: Element) {
-        wrapped.erase(value: value.toVariant())
+        array.erase(value: value.toVariant())
     }
     
     /// Returns the first element of the array. Prints an error and returns `null` if the array is empty.
@@ -385,8 +420,8 @@ where DeclaredElement: _GodotTypedArrayElement {
     ///
     @inline(__always)
     @inlinable
-    public func front() -> Element? where DeclaredElement: _GodotBridgeableBuiltin {
-        wrapped.front().to()
+    public func front() -> Element? where Element: _GodotBridgeableBuiltin {
+        array.front().to()
     }
     
     /// Returns the first element of the array. Prints an error and returns `null` if the array is empty.
@@ -395,9 +430,9 @@ where DeclaredElement: _GodotTypedArrayElement {
     ///
     @inline(__always)
     @inlinable
-    public func front() -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    public func front() -> Element where Element._NonOptionalType: Object {
         unwrapOrCrash(
-            wrapped.front().to()
+            array.front().to()
         )
     }
     
@@ -406,8 +441,8 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// > Note: Calling this function is not the same as writing `array[-1]`. If the array is empty, accessing by index will pause project execution when running from the editor.
     @inline(__always)
     @inlinable
-    public func back() -> Element? where DeclaredElement: _GodotBridgeableBuiltin {
-        wrapped.back().to()
+    public func back() -> Element? where Element: _GodotBridgeableBuiltin {
+        array.back().to()
     }
     
     /// Returns the last element of the array. Prints an error and returns `null` if the array is empty.
@@ -416,25 +451,25 @@ where DeclaredElement: _GodotTypedArrayElement {
     ///
     @inline(__always)
     @inlinable
-    public func back() -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    public func back() -> Element where Element._NonOptionalType: Object {
         unwrapOrCrash(
-            wrapped.back()
+            array.back()
         )
     }
     
     /// Returns a random value from the target array. Prints an error and returns `null` if the array is empty.
     @inline(__always)
     @inlinable
-    public func pickRandom() -> Element? where DeclaredElement: _GodotBridgeableBuiltin {
-        wrapped.pickRandom().to()
+    public func pickRandom() -> Element? where Element: _GodotBridgeableBuiltin {
+        array.pickRandom().to()
     }
     
     /// Returns a random value from the target array. Prints an error and returns `null` if the array is empty.
     @inline(__always)
     @inlinable
-    public func pickRandom() -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    public func pickRandom() -> Element where Element._NonOptionalType: Object {
         unwrapOrCrash(
-            wrapped.pickRandom()
+            array.pickRandom()
         )
     }
     
@@ -442,21 +477,21 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func find(what: Element, from: Int64 = 0) -> Int64 {
-        wrapped.find(what: what.toVariant(), from: from)
+        array.find(what: what.toVariant(), from: from)
     }
     
     /// Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
     @inline(__always)
     @inlinable
     public func rfind(what: Element, from: Int64 = -1) -> Int64 {
-        wrapped.rfind(what: what.toVariant(), from: from)
+        array.rfind(what: what.toVariant(), from: from)
     }
     
     /// Returns the number of times an element is in the array.
     @inline(__always)
     @inlinable
     public func count(value: Element) -> Int64 {
-        wrapped.count(value: value.toVariant())
+        array.count(value: value.toVariant())
     }
     
     /// Returns `true` if the array contains the given value.
@@ -466,21 +501,21 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func has(value: Element) -> Bool {
-        wrapped.has(value: value.toVariant())
+        array.has(value: value.toVariant())
     }
     
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
     @inline(__always)
     @inlinable
-    public func popBack() -> Element? where DeclaredElement: _GodotBridgeableBuiltin {
-        wrapped.popBack().to()
+    public func popBack() -> Element? where Element: _GodotBridgeableBuiltin {
+        array.popBack().to()
     }
     
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
     @inline(__always)
     @inlinable
-    public func popBack() -> Element where DeclaredElement: _GodotOptionalBridgeable {
-        unwrapOrCrash(wrapped.popBack().to())
+    public func popBack() -> Element where Element._NonOptionalType: Object {
+        unwrapOrCrash(array.popBack().to())
     }
     
     /// Removes and returns the first element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popBack()``.
@@ -488,8 +523,8 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// > Note: On large arrays, this method is much slower than ``popBack()`` as it will reindex all the array's elements every time it's called. The larger the array, the slower ``popFront()`` will be.
     @inline(__always)
     @inlinable
-    public func popFront() -> Element? where DeclaredElement: _GodotBridgeableBuiltin {
-        wrapped.popFront().to()
+    public func popFront() -> Element? where Element: _GodotBridgeableBuiltin {
+        array.popFront().to()
     }
     
     /// Removes and returns the first element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popBack()``.
@@ -498,9 +533,9 @@ where DeclaredElement: _GodotTypedArrayElement {
     ///
     @inline(__always)
     @inlinable
-    public func popFront() -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    public func popFront() -> Element where Element._NonOptionalType: Object {
         unwrapOrCrash(
-            wrapped.popFront()
+            array.popFront()
         )
     }
     
@@ -509,8 +544,8 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     @inline(__always)
     @inlinable
-    public func popAt(position: Int64) -> Element? where DeclaredElement: _GodotBridgeableBuiltin {
-        wrapped.popAt(position: position).to()
+    public func popAt(position: Int64) -> Element? where Element: _GodotBridgeableBuiltin {
+        array.popAt(position: position).to()
     }
     
     /// Removes and returns the element of the array at index `position`. If negative, `position` is considered relative to the end of the array. Leaves the array untouched and returns `null` if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
@@ -518,9 +553,9 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     @inline(__always)
     @inlinable
-    public func popAt(position: Int64) -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    public func popAt(position: Int64) -> Element where Element._NonOptionalType: Object {
         unwrapOrCrash(
-            wrapped.popAt(position: position),
+            array.popAt(position: position),
             at: position
         )
     }
@@ -530,7 +565,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
     @inline(__always)
     @usableFromInline
-    func unwrapOrCrash(_ variant: Variant?, invoking function: StaticString = #function, at index: Int64? = nil) -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    func unwrapOrCrash(_ variant: Variant?, invoking function: StaticString = #function, at index: Int64? = nil) -> Element {
         do {
             return try Element.fromVariantOrThrow(variant)
         } catch {
@@ -543,7 +578,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
     @inline(__always)
     @usableFromInline
-    func unwrapOrCrash(_ variant: borrowing FastVariant?, invoking function: StaticString = #function, at index: Int64? = nil) -> Element where DeclaredElement: _GodotOptionalBridgeable {
+    func unwrapOrCrash(_ variant: borrowing FastVariant?, invoking function: StaticString = #function, at index: Int64? = nil) -> Element {
         do {
             return try Element.fromFastVariantOrThrow(variant)
         } catch {
@@ -555,7 +590,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inlinable
     func typeInvariantViolation(invoking function: StaticString, error: VariantConversionError, at index: Int64?) -> Never {
         let atIndex = index.map { " at index \($0)" } ?? ""
-        fatalError("Fatal error during `TypedArray<\(Element.self)>.popAt` from \(wrapped.debugDescription)\(atIndex). Type invariant violated. \(error.description)")
+        fatalError("Fatal error during `TypedArray<\(Element.self)>.popAt` from \(array.debugDescription)\(atIndex). Type invariant violated. \(error.description)")
     }
     
     /// Sorts the array.
@@ -569,7 +604,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func sort() {
-        wrapped.sort()
+        array.sort()
     }
     
     /// Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either `true` or `false`. For two elements `a` and `b`, if the given method returns `true`, element `b` will be after element `a` in the array.
@@ -581,14 +616,14 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func sortCustom(`func`: Callable) {
-        wrapped.sortCustom(func: `func`)
+        array.sortCustom(func: `func`)
     }
     
     /// Shuffles the array such that the items will have a random order. This method uses the global random number generator common to methods such as ``@GlobalScope.randi``. Call ``@GlobalScope.randomize`` to ensure that a new seed will be used each time if you want non-reproducible shuffling.
     @inline(__always)
     @inlinable
     public func shuffle() {
-        wrapped.shuffle()
+        array.shuffle()
     }
         
     /// Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a `before` specifier can be passed. If `false`, the returned index comes after all existing entries of the value in the array.
@@ -598,7 +633,7 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func bsearch(value: Element, before: Bool = true) -> Int64 {
-        wrapped.bsearch(value: value.toVariant(), before: before)
+        array.bsearch(value: value.toVariant(), before: before)
     }
     
     /// Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a `before` specifier can be passed. If `false`, the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return `true` if the first argument is less than the second, and return `false` otherwise.
@@ -608,21 +643,21 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func bsearchCustom(value: Element, `func`: Callable, before: Bool = true) -> Int64 {
-        wrapped.bsearchCustom(value: value.toVariant(), func: `func`, before: before)
+        array.bsearchCustom(value: value.toVariant(), func: `func`, before: before)
     }
     
     /// Reverses the order of the elements in the array.
     @inline(__always)
     @inlinable
     public func reverse() {
-        wrapped.reverse()
+        array.reverse()
     }
     
     /// Returns `true` if the array is typed the same as `array`.
     @inline(__always)
     @inlinable
     public func isSameTyped(array: VariantArray) -> Bool {
-        return wrapped.isSameTyped(array: array)
+        return array.isSameTyped(array: array)
     }
     
     /// Returns the ``Variant.GType`` constant for a typed array.
@@ -647,44 +682,28 @@ where DeclaredElement: _GodotTypedArrayElement {
     @inline(__always)
     @inlinable
     public func getTypedScript() -> Variant? {
-        wrapped.getTypedScript()
+        array.getTypedScript()
     }
         
     /// Makes the array read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
     @inline(__always)
     @inlinable
     public func makeReadOnly() {
-        wrapped.makeReadOnly()
+        array.makeReadOnly()
     }
         
     /// Returns `true` if the array is read-only. See ``makeReadOnly()``. Arrays are automatically read-only if declared with `const` keyword.
     @inline(__always)
     @inlinable
     public func isReadOnly()-> Bool {
-        wrapped.isReadOnly()
+        array.isReadOnly()
     }
-}
-
-/// Internal API. Protocol intended for types that can be an element of typed Godot `Array`.
-public protocol _GodotTypedArrayElement: _GodotBridgeable {
-    /// Internal API.
-    /// Actual element which is contained in the TypedArray.
-    /// Godot has special treatment of `Object`-derived types and can't enforce them not being nullable.
-    /// So `Array[Object]` is array of nullable objects.    
-    associatedtype ActualTypedArrayElement: _GodotBridgeable
-}
-
-public extension _GodotTypedArrayElement where Self: Object, Self: _GodotOptionalBridgeable {
-    /// Internal API.
-    /// Actual collection element of `TypedArray<Element>` where `Element` is `_GodotOptionalBridgeable`, such as `Object`-derived, or `Variant` is `Element?`.
-    /// This is merely a translation of Godot semantics into the Swift world.
-    typealias ActualTypedArrayElement = Self?
 }
 
 public extension Variant {
     /// Initialize ``Variant`` by wrapping ``TypedArray``
     convenience init<T>(_ from: TypedArray<T>) where T: _GodotBridgeable {
-        self.init(from.wrapped)
+        self.init(from.array)
     }
     
     /// Initialize ``Variant`` by wrapping ``TypedArray?``, fails if it's `nil`
@@ -699,7 +718,7 @@ public extension Variant {
 public extension FastVariant {
     /// Initialize ``FastVariant`` by wrapping ``TypedArray``
     init<T>(_ from: TypedArray<T>) where T: _GodotBridgeable {
-        self.init(from.wrapped)
+        self.init(from.array)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``TypedArray?``, fails if it's `nil`

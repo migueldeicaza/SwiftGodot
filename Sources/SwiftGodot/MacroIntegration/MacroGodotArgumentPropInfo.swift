@@ -104,7 +104,7 @@ public func _argumentPropInfo<T>(
     _ type: [T].Type = [T].self,
     name: String = ""
 ) -> PropInfo where T: Object {
-    TypedArray<T>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
+    TypedArray<T?>._propInfo(name: name, hint: nil, hintStr: nil, usage: nil)
 }
 
 @available(*, unavailable, message: "Void type arguments are not supported")

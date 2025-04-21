@@ -37,7 +37,9 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable, _GodotOptionalBridgeable {
+    public typealias TypedArrayElement = Variant?
+    
     @usableFromInline
     typealias ContentType = VariantContent
     
@@ -471,7 +473,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
     
     /// Internal API.
-    public static var _godotTypeName: String {
+    public static var _builtinOrClassName: String {
         "Variant"
     }
     
@@ -556,7 +558,7 @@ extension Variant? {
 
 public extension Variant.GType {
     /// Internal API. Godot type name of the type with this variant tag.
-    var _godotTypeName: String {
+    var _builtinOrClassName: String {
         switch self {
         case .nil:
             fatalError("Unreachable")

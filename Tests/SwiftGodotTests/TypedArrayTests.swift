@@ -9,7 +9,7 @@ final class TypedArrayTests: GodotTestCase {
         sut.append(111)
         
         XCTAssertEqual(sut.count, 1, "The \(VariantArray.self) behind the collection should have one element after one element has been appended")
-        guard let variant = sut.wrapped[0] else {
+        guard let variant = sut.array[0] else {
             XCTFail()
             return
         }
@@ -20,7 +20,7 @@ final class TypedArrayTests: GodotTestCase {
         let sut: TypedArray<Int> = [333]
 
         XCTAssertEqual(sut.count, 1, "The \(VariantArray.self) behind the collection should have one element after being initialized with one element")
-        guard let variant = sut.wrapped[0] else {
+        guard let variant = sut.array[0] else {
             XCTFail()
             return
         }
@@ -30,7 +30,7 @@ final class TypedArrayTests: GodotTestCase {
     func testArrayCanBeModifiedOutsideOfTheCollection() {
         let sut: TypedArray<Int> = []
         
-        sut.wrapped.append(Variant(222))
+        sut.array.append(Variant(222))
         
         XCTAssertEqual(sut.count, 1, "The collection count should be 1 after appending an element")
         XCTAssertEqual(sut[0], 222, "After 222 is appended to the \(VariantArray.self), the first value should be to 222")

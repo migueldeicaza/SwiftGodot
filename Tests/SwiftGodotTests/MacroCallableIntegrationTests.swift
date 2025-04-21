@@ -12,7 +12,7 @@ import SwiftGodotTestability
 @Godot
 fileprivate class TestObject: Object {
     @Callable
-    func countObjects(_ objects: TypedArray<TestObject>) -> Int {
+    func countObjects(_ objects: TypedArray<TestObject?>) -> Int {
         return objects.count
     }
     
@@ -22,7 +22,7 @@ fileprivate class TestObject: Object {
     }
     
     @Callable
-    func countMixed(builtins: TypedArray<Int>, _ objects: TypedArray<RefCounted>, array: VariantArray, variant: Variant?) -> Int? {
+    func countMixed(builtins: TypedArray<Int>, _ objects: TypedArray<RefCounted?>, array: VariantArray, variant: Variant?) -> Int? {
         return builtins.count + objects.count + array.count
     }
 }
@@ -74,9 +74,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(Variant(object2))
         objectsArray.append(nil)
         objectsArray.append(Variant(RefCounted())) // this one causes the failure
-        
-        // Fails, prints into console and returns nil due to RefCounted not being TestObject
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), nil)
+                
+        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), 0.toVariant())
         testObject.free()
         object0.free()
         object1.free()
@@ -117,7 +116,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject()
         let object2 = TestObject()
         
-        let objectsArray = TypedArray<TestObject>()
+        let objectsArray = TypedArray<TestObject?>()
         objectsArray.append(nil) // 1
         objectsArray.append(object0) // 2
         objectsArray.append(object1) // 3
@@ -158,7 +157,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         array.append(Variant(4))
         
         // Fails, prints into console and returns nil due to typed builtin array not allowing nils
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), nil)
+        XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), 0.toVariant())
         testObject.free()
     }
     
@@ -194,7 +193,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let builtins = VariantArray(Int.self)
         builtins.append(Variant(1)) // 1
         
-        let objects = TypedArray<RefCounted>()
+        let objects = TypedArray<RefCounted?>()
         objects.append(nil) // 2
         objects.append(RefCounted()) // 3
         

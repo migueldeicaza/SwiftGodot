@@ -39,7 +39,7 @@ final class MacroIntegrationTests: GodotTestCase {
             }()
             var wop = 42 as Int?
             var variantCollection = TypedArray<Int>()
-            var objectCollection = TypedArray<MeshInstance2D>()
+            var objectCollection = TypedArray<MeshInstance2D?>()
             var enumExample = EnumExample.two
             var wow = Wow()
             var optionalWow = Wow()

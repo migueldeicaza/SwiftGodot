@@ -280,7 +280,7 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
             case .rawValue:
                 accessor = "\(argument.name).rawValue"
             case .typedArray:
-                accessor = "\(argument.name).wrapped.content"
+                accessor = "\(argument.name).array.content"
             case .cPointer:
                 accessor = "\(argument.name)"
             case .directPromoted(let promotedType):

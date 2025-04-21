@@ -353,7 +353,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             let nested = SimpleType(type: nestedTypeName, meta: nil)
 
             if classMap [nestedTypeName] != nil {
-                return "TypedArray<\(getGodotType (nested))>"
+                return "TypedArray<\(getGodotType (nested))?>"
             } else {
                 return "TypedArray<\(getGodotType (nested))>"
             }

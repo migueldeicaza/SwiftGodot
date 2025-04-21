@@ -21,6 +21,7 @@ extension VariantArray: CustomDebugStringConvertible {
     }
     
     /// Return the typing information suitable for Swift metatype magic.
+    @usableFromInline
     var typing: ArrayTyping {
         let rawValue = getTypedBuiltin()
         guard let gtype = Variant.GType(rawValue: getTypedBuiltin()) else {
@@ -31,7 +32,7 @@ extension VariantArray: CustomDebugStringConvertible {
         case .nil:
             return .untyped
         case .object:
-            let className = getTypedClassName().description
+            let className = getTypedClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
                 GD.printErr("Unknown class name: \(className).")
                 return .untyped
@@ -49,7 +50,7 @@ extension VariantArray: CustomDebugStringConvertible {
         let className: String
         
         if let type = type as? Object.Type {
-            className = type._godotTypeName
+            className = type._builtinOrClassName
         } else {
             className = ""
         }

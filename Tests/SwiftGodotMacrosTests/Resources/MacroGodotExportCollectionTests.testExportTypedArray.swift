@@ -1,4 +1,4 @@
-let greetings: TypedArray<String> = []
+var greetings: TypedArray<Node3D> = []
 
 static func _mproxy_set_greetings(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
     guard let object = _unwrap(self, pInstance: pInstance) else {

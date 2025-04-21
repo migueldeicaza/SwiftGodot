@@ -229,6 +229,21 @@ final class MarshalTests: GodotTestCase {
         
     }
     
+    func testSomeVariantConvertible() {
+        
+        func returnsVariant() -> FastVariant? {
+            return nil
+        }
+        
+        let result = returnsVariant()
+        
+        // I can just unwrap it in place:
+        let int = result.to(Int.self)
+        
+        // Or I can store it for long-term use as `Variant`
+        let variant = Variant(takingOver: result)
+    }
+    
     func testCallableMethodReturningVariant() {
         let testNode = TestNode()
         

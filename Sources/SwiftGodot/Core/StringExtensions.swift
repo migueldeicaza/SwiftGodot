@@ -19,6 +19,11 @@ extension StringName: CustomStringConvertible, Hashable {
         return buffer.getStringFromUtf8().description
     }
     
+    @usableFromInline
+    var asciiDescription: String {
+        toAsciiBuffer().getStringFromAscii()
+    }
+    
     public func hash (into hasher: inout Hasher) {
         hasher.combine (hash ())
     }

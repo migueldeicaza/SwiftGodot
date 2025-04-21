@@ -96,7 +96,7 @@ public func _returnValuePropInfo<T>(
 public func _returnValuePropInfo<T>(
     _ type: [T].Type = [T].self
 ) -> PropInfo where T: Object {
-    TypedArray<T>._returnValuePropInfo
+    TypedArray<T?>._returnValuePropInfo
 }
 
 /// Internal API. Void.

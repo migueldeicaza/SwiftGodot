@@ -13,7 +13,7 @@ import SwiftGodot
 class Demo1: Object {
     @Export var demo: VariantArray = VariantArray()
     @Export var greetings: TypedArray<String> = []
-    @Export var servers: TypedArray<AudioServer> = []
+    @Export var servers: TypedArray<AudioServer?> = []
 }
 
 @Godot
@@ -80,36 +80,36 @@ class Demo10: Node {
 
 @Godot
 class Demo11: Node {
-    @Export var greetings: TypedArray<Node3D> = []
+    @Export var greetings: TypedArray<Node3D?> = []
 }
 
 @Godot
 class Demo12: Node {
-    @Export var greetings: TypedArray<Node3D> = []
+    @Export var greetings: TypedArray<Node3D?> = []
 }
 
 @Godot
 class Demo13: Node {
     #exportGroup("Vehicle")
-    @Export var makes: TypedArray<Node> = []
-    @Export var model: TypedArray<Node> = []
+    @Export var makes: TypedArray<Node?> = []
+    @Export var model: TypedArray<Node?> = []
 }
 
 @Godot
 class Demo14: Node {
-    @Export var vins: TypedArray<Node> = []
+    @Export var vins: TypedArray<Node?> = []
     #exportGroup("YMMS")
-    @Export var years: TypedArray<Node> = []
+    @Export var years: TypedArray<Node?> = []
 }
 
 @Godot
 class Demo15: Node {
     #exportGroup("VIN")
-    @Export var vins: TypedArray<Node> = []
+    @Export var vins: TypedArray<Node?> = []
     #exportGroup("YMM")
-    @Export var years: TypedArray<Node> = []
-    @Export var makes: TypedArray<Node> = []
-    @Export var models: TypedArray<Node> = []
+    @Export var years: TypedArray<Node?> = []
+    @Export var makes: TypedArray<Node?> = []
+    @Export var models: TypedArray<Node?> = []
     
 }
 
@@ -120,12 +120,12 @@ class Demo16: Node {
     @Export var rating: Float = 0.0
     #exportGroup("More Details")
     @Export var reviews: TypedArray<String> = []
-    @Export var checkIns: TypedArray<Object> = []
+    @Export var checkIns: TypedArray<Object?> = []
     @Export var address: String = ""
     #exportGroup("Hours and Insurance")
     @Export var daysOfOperation: TypedArray<String> = []
     @Export var hours: TypedArray<String> = []
-    @Export var insuranceProvidersAccepted: TypedArray<Object> = []
+    @Export var insuranceProvidersAccepted: TypedArray<Object?> = []
 }
 
 @Godot
@@ -172,12 +172,14 @@ final class Demo21: Node {
 @Godot
 class SomeNode: Node {
     @Callable
-    func printNames(of nodes: TypedArray<Node>) {
+    func printNames(of nodes: TypedArray<Node?>) {
+        let node0 = nodes[0]
+        
         nodes.forEach { print($0?.name ?? "") }
     }
     
     @Callable
-    func printWhatever(of nodes: TypedArray<Node>, string: String, int: Int) {
+    func printWhatever(of nodes: TypedArray<Node?>, string: String, int: Int) {
         nodes.forEach { print($0?.name ?? "") }
     }
 }
