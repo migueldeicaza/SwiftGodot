@@ -160,16 +160,14 @@ public struct FastVariant: ~Copyable {
         
         return FastVariant(unsafeTakingOver: newContent)
     }
-    
-    @inline(__always)
-    @inlinable
+        
     deinit {
+        var content = content
         if content.isZero {
             // Was consumed, or cleaned-up explicitly
             return
         }
-        
-        var content = content
+                
         if !extensionInterface.variantShouldDeinit(content: &content) { return }
         gi.variant_destroy(&content)
     }
