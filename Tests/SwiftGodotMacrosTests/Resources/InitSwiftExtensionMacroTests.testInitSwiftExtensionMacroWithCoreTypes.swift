@@ -4,14 +4,14 @@
         return 0
     }
     var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
-    types[.core] = [ChrysalisNode.self]
-    types[.editor] = []
-    types[.scene] = []
-    types[.servers] = []
+    types[.core] = [ChrysalisNode.self].topologicallySorted()
+    types[.editor] = [].topologicallySorted()
+    types[.scene] = [].topologicallySorted()
+    types[.servers] = [].topologicallySorted()
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
-        types[level]?.forEach (register)
+        types[level]?.forEach(register)
     }, deInitHook: { level in
-        types[level]?.forEach (unregister)
+        types[level]?.reversed().forEach(unregister)
     })
     return 1
 }

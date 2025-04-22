@@ -40,6 +40,34 @@ final class WrappedTests: GodotTestCase {
         await scene.processFrame.emitted
         checker.assertDisposed ()
     }
+    
+    func testTopologicalSort() {
+        class A: Object {
+        }
+        
+        class B: A {
+        }
+        
+        class C: B {
+        }
+        
+        class D: C {
+        }
+        
+        class E: D {
+            
+        }
+        
+        let expected = [A.self, B.self, C.self, D.self, E.self].map {
+            ObjectIdentifier($0)
+        }
+        
+        let output = [C.self, E.self, D.self, A.self, B.self]
+            .topologicallySorted()            
+            .map { ObjectIdentifier($0) }
+        
+        XCTAssertEqual(expected, output)
+    }
 
 }
 

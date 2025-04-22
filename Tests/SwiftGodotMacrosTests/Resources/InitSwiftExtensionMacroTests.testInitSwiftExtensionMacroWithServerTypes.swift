@@ -4,14 +4,14 @@
         return 0
     }
     var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
-    types[.core] = []
-    types[.editor] = []
-    types[.scene] = []
-    types[.servers] = [ButterflyNode.self]
+    types[.core] = [].topologicallySorted()
+    types[.editor] = [].topologicallySorted()
+    types[.scene] = [].topologicallySorted()
+    types[.servers] = [ButterflyNode.self].topologicallySorted()
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
-        types[level]?.forEach (register)
+        types[level]?.forEach(register)
     }, deInitHook: { level in
-        types[level]?.forEach (unregister)
+        types[level]?.reversed().forEach(unregister)
     })
     return 1
 }
