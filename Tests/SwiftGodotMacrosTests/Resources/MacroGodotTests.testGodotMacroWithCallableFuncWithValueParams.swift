@@ -62,7 +62,7 @@ class MathHelper: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MathHelper")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<MathHelper> (name: className)
+        let classInfo = ClassInfo<MathHelper>(name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "multiply",

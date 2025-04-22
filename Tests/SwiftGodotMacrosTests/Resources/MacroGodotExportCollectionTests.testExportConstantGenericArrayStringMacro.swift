@@ -2,7 +2,7 @@ let greetings: TypedArray<String> = []
 
 static func _mproxy_set_greetings(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
     guard let object = _unwrap(self, pInstance: pInstance) else {
-        SwiftGodot.GD.printErr("Error calling getter for greetings: failed to unwrap instance \(String(describing: pInstance))")
+        SwiftGodot.GD.printErr("Error calling setter for greetings: failed to unwrap instance \(String(describing: pInstance))")
         return nil
     }
 

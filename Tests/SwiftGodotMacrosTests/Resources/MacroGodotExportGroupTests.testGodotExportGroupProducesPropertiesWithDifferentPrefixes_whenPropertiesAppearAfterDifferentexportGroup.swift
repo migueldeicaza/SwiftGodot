@@ -4,7 +4,7 @@ class Car: Node {
 
     static func _mproxy_set_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for vin: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for vin: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -26,7 +26,7 @@ class Car: Node {
 
     static func _mproxy_set_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for year: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for year: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -48,7 +48,7 @@ class Car: Node {
 
     static func _mproxy_set_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for make: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for make: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -70,7 +70,7 @@ class Car: Node {
 
     static func _mproxy_set_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for model: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for model: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -97,7 +97,7 @@ class Car: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Car> (name: className)
+        let classInfo = ClassInfo<Car>(name: className)
         SwiftGodot._addPropertyGroup(className: className, name: "VIN", prefix: "")
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,

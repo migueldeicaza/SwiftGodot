@@ -283,7 +283,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 @Callable static func get_some() -> Int64 { 10 }
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -294,7 +294,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 @Callable class func get_some() -> Int64 { 10 }
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -306,7 +306,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 static var int = 10
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -318,7 +318,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 class var int = 10
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -330,7 +330,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 class var int: SimpleSignal
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -342,7 +342,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 static var int: SimpleSignal
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     

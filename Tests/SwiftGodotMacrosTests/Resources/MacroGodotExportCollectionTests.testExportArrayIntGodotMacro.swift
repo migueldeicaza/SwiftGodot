@@ -4,7 +4,7 @@ class SomeNode: Node {
 
     static func _mproxy_set_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for someNumbers: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for someNumbers: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -31,7 +31,7 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<SomeNode> (name: className)
+        let classInfo = ClassInfo<SomeNode>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(

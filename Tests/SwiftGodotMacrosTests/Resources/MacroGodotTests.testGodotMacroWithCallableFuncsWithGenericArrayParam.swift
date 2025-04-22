@@ -28,7 +28,7 @@ class MultiplierNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MultiplierNode")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<MultiplierNode> (name: className)
+        let classInfo = ClassInfo<MultiplierNode>(name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "multiply",

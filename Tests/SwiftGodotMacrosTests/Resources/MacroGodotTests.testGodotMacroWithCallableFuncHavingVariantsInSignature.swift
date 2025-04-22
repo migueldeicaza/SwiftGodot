@@ -28,7 +28,7 @@ private class TestNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("TestNode")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<TestNode> (name: className)
+        let classInfo = ClassInfo<TestNode>(name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "foo",

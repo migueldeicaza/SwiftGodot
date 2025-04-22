@@ -34,7 +34,7 @@ class OtherThing: SwiftGodot.Node {
     private static let _initializeClass: Void = {
         let className = StringName("OtherThing")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<OtherThing> (name: className)
+        let classInfo = ClassInfo<OtherThing>(name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "get_thing",

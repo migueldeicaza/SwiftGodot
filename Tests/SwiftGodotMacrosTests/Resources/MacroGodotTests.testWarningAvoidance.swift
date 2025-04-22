@@ -16,7 +16,7 @@ final class MyClass: Node {
 
     static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -43,7 +43,7 @@ final class MyClass: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MyClass")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<MyClass> (name: className)
+        let classInfo = ClassInfo<MyClass>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(

@@ -28,7 +28,7 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<SomeNode> (name: className)
+        let classInfo = ClassInfo<SomeNode>(name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "square",

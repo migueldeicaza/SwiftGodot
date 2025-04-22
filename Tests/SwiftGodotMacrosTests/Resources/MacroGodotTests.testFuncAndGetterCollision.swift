@@ -3,7 +3,7 @@ class OtherThing: SwiftGodot.Node {
 
     static func _mproxy_set_foo(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for foo: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for foo: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 

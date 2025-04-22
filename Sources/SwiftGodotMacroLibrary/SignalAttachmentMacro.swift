@@ -10,7 +10,6 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct SignalAttachmentMacro: AccessorMacro {
-    
     enum ProviderDiagnostic: Error, DiagnosticMessage {
         case invalidDeclaration
         case missingTypeAnnotation
@@ -31,10 +30,11 @@ public struct SignalAttachmentMacro: AccessorMacro {
         }
     }
     
-    public static func expansion(of node: AttributeSyntax,
-                                 providingAccessorsOf declaration: some DeclSyntaxProtocol,
-                                 in context: some MacroExpansionContext) throws -> [AccessorDeclSyntax]
-    {
+    public static func expansion(
+        of node: AttributeSyntax,
+        providingAccessorsOf declaration: some DeclSyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> [AccessorDeclSyntax] {
         guard let varDecl = declaration.as(VariableDeclSyntax.self) else {
             let invalidUsageErr = Diagnostic(node: node.root, message: ProviderDiagnostic.invalidDeclaration)
             context.diagnose(invalidUsageErr)

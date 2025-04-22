@@ -4,7 +4,7 @@ class ArrayTest: Node {
 
    static func _mproxy_set_firstNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
-           SwiftGodot.GD.printErr("Error calling getter for firstNames: failed to unwrap instance \(String(describing: pInstance))")
+           SwiftGodot.GD.printErr("Error calling setter for firstNames: failed to unwrap instance \(String(describing: pInstance))")
            return nil
        }
 
@@ -26,7 +26,7 @@ class ArrayTest: Node {
 
    static func _mproxy_set_lastNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
        guard let object = _unwrap(self, pInstance: pInstance) else {
-           SwiftGodot.GD.printErr("Error calling getter for lastNames: failed to unwrap instance \(String(describing: pInstance))")
+           SwiftGodot.GD.printErr("Error calling setter for lastNames: failed to unwrap instance \(String(describing: pInstance))")
            return nil
        }
 
@@ -53,7 +53,7 @@ class ArrayTest: Node {
     private static let _initializeClass: Void = {
         let className = StringName("ArrayTest")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<ArrayTest> (name: className)
+        let classInfo = ClassInfo<ArrayTest>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(

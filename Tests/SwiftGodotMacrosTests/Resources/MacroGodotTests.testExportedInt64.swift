@@ -4,7 +4,7 @@ class Thing: SwiftGodot.Object {
 
     static func _mproxy_set_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for value: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for value: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -42,7 +42,7 @@ class Thing: SwiftGodot.Object {
     private static let _initializeClass: Void = {
         let className = StringName("Thing")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Thing> (name: className)
+        let classInfo = ClassInfo<Thing>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(

@@ -12,45 +12,19 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-
-/// Given a TypeSyntax, returns the type, the list of generics associated with it, and whether it is an optional type or not
-func getIdentifier (_ typeSyntax: TypeSyntax?) -> (typeName: String, generics: [String], isOptional: Bool)? {
-    guard var typeSyntax else { return nil }
-    var opt = false
-    if let optSyntax = typeSyntax.as (OptionalTypeSyntax.self) {
-        typeSyntax = optSyntax.wrappedType
-        opt = true
-    }
-    if let identifier = typeSyntax.as(IdentifierTypeSyntax.self) {
-        let genericTypeNames: [String] = identifier
-            .genericArgumentClause?
-            .arguments
-            .compactMap { GenericArgumentSyntax ($0) }
-            .compactMap { $0.argument.as(IdentifierTypeSyntax.self) }
-            .map { $0.name.text } ?? []
-        return (typeName: identifier.name.text, generics: genericTypeNames, isOptional: opt)
-    } else if let array = typeSyntax.as(ArrayTypeSyntax.self),
-       let elementTypeName = array.element.as(IdentifierTypeSyntax.self)?.name.text {
-        return (typeName: "VariantArray", generics: [elementTypeName], isOptional: opt)
-    }
-    return nil
-}
-
 enum GodotMacroError: Error, DiagnosticMessage {
-    case requiresClass
-    case requiresVar
-    case requiresFunction
-    case requiresVariantArrayCollection
-    case requiresNonOptionalVariantArrayCollection
-    case noVariablesFound    
-    case noTypeFound(VariableDeclSyntax)
-    case unsupportedType(VariableDeclSyntax)
-    case expectedIdentifier(PatternBindingListSyntax.Element)
+    case godotMacroNotOnClass
+    case exportMacroNotOnVariable
+    case callableMacroNotOnFunction
+    case noSignalType(String)
+    case noIdentifier(PatternBindingListSyntax.Element)
     case unknownError(Error)
-    case unsupportedCallableEffect
-    case noSupportForOptionalEnums
-    case staticMembers
-    case nameCollision(String, DeclSyntax, DeclSyntax)
+    case callableMacroOnThrowingOrAsyncFunction
+    case unsupportedStaticMember
+    case exportMacroOnReadonlyVariable(String)
+    case nameCollision(String)
+    case legacySignalMacroUnexpectedArgumentsSyntax
+    case legacySignalMacroTooManyArguments
     
     var severity: DiagnosticSeverity {
         return .error
@@ -58,34 +32,30 @@ enum GodotMacroError: Error, DiagnosticMessage {
 
     var message: String {
         switch self {
-        case .requiresClass:
+        case .exportMacroOnReadonlyVariable:
+            "@Export attribute can only be applied to mutable stored or computed { get set } property"
+        case .godotMacroNotOnClass:
             "@Godot attribute can only be applied to a class"
-        case .requiresVar:
+        case .exportMacroNotOnVariable:
             "@Export attribute can only be applied to variables"
-        case .requiresFunction:
+        case .callableMacroNotOnFunction:
             "@Callable attribute can only be applied to functions"
-        case .noVariablesFound:
-            "@Export no variables found"
-        case .noTypeFound(let v):
-            "@Export no type was found \(v)"
-        case .unsupportedType (let v):
-            "@Export the type \(v) is not supported"
-        case .expectedIdentifier(let e):
-            "@Export expected an identifier, instead got \(e)"
+        case .noIdentifier(let e):
+            "Unexpected binding pattern \(e). \(IdentifierPatternSyntax.self) expected"
         case .unknownError(let e):
             "Unknown nested error processing this directive: \(e)"
-        case .requiresVariantArrayCollection:
-            "@Export attribute can not be applied to Array types, use a TypedArray, or an TypedArray instead"
-        case .requiresNonOptionalVariantArrayCollection:
-            "@Export optional Collections are not supported"
-        case .unsupportedCallableEffect:
+        case .callableMacroOnThrowingOrAsyncFunction:
             "@Callable does not support asynchronous or throwing functions"
-        case .noSupportForOptionalEnums:
-            "@Export(.enum) does not support optional values for the enumeration"
-        case .staticMembers:
-            "`static` and `class` members are not supported"
-        case .nameCollision(let name, _, _):
+        case .unsupportedStaticMember:
+            "`static` or `class` member is not supported"
+        case .nameCollision(let name):
             "Same name `\(name)` for two different declarations. GDScript doesn't support it."
+        case .noSignalType(let name):
+            "`\(name)` missing explicit `SignalWithArguments<...>` or `SimpleSignal` type annotation required for @Signal macro"
+        case .legacySignalMacroUnexpectedArgumentsSyntax:
+            "Failed to parse arguments. Define arguments in the form [\"argumentName\": Type.self]"
+        case .legacySignalMacroTooManyArguments:
+            "Too many arguments in the arguments dictionary. A maximum of 6 are supported."
         }
     }
     
@@ -117,128 +87,12 @@ enum MacroError: Error {
     }
 }
 
-/// Returns true if the declarartion has the '@name' attribute
-func hasAttribute (_ name: String, _ attrs: AttributeListSyntax?) -> Bool {
-    guard let attrs else { return false }
-    let match = attrs.contains {
-        guard case let .attribute(attribute) = $0 else {
-            return false
-        }
-        if attribute.attributeName.as (IdentifierTypeSyntax.self)?.name.text == name {
-            return true
-        }
-        return false
-    }
-    return match
-}
-
-/// True if the attribtue list syntax has an attribute name 'Export'
-func hasExportAttribute (_ attrs: AttributeListSyntax?) -> Bool {
-    hasAttribute ("Export", attrs)
-}
-
-/// True if the attribtue list syntax has an attribute name 'Signal'
-func hasSignalAttribute (_ attrs: AttributeListSyntax?) -> Bool {
-    hasAttribute ("Signal", attrs)
-}
-
-/// True if the attribtue list syntax has an attribute name 'Callable'
-func hasCallableAttribute (_ attrs: AttributeListSyntax?) -> Bool {
-    hasAttribute ("Callable", attrs)
-}
-
-func getTypeName(_ parameter: FunctionParameterSyntax) -> String? {
-    guard !parameter.isTypedArray,
-          !parameter.isSwiftArray,
-          !parameter.isTypedArray else {
-        return "VariantArray"
-    }
-    
-    if let typeName = parameter.type.as (IdentifierTypeSyntax.self)?.name.text {
-        // `TypeName`
-        return typeName
-    } else if let optionalWrappedType = parameter.type.as(OptionalTypeSyntax.self)?.wrappedType {
-        // `TypeName?`
-        // only `Variant?` is supported now
-        if optionalWrappedType.as(IdentifierTypeSyntax.self)?.name.text == "Variant" {
-            return "Variant?"
-        } else if let typeName = optionalWrappedType.as(IdentifierTypeSyntax.self)?.name.text {
-            return "\(typeName)?"
-        }
-        return nil
-    } else {
-        return nil
-    }
-}
-
-func getParamName(_ parameter: FunctionParameterSyntax) -> String {
-    parameter.secondName?.text ?? parameter.firstName.text
-}
-
-var godotVariants = [
-    "Int": ".int",
-    "Int64": ".int",
-    "Int32": ".int",
-    "Int16": ".int",
-    "Int8": ".int",
-    "Float": ".float",
-    "Double": ".float",
-    "Bool": ".bool",
-    "AABB": ".aabb",
-    "VariantArray": ".array",
-    "Basis": ".basis",
-    "Callable": ".callable",
-    "Color": ".color",
-    "GDictionary": ".dictionary",
-    "NodePath": ".nodePath",
-    "PackedByteArray": ".packedByteArray",
-    "PackedColorArray": ".packedColorArray",
-    "PackedFloat32Array": ".packedFloat32Array",
-    "PackedFloat64Array": ".packedFloat64Array",
-    "PackedInt32Array": ".packedInt32Array",
-    "PackedInt64Array": ".packedInt64Array",
-    "PackedStringArray": ".packedStringArray",
-    "PackedVector2Array": ".packedVector2Array",
-    "PackedVector3Array": ".packedVector3Array",
-    "PackedVector4Array": ".packedVector4Array",
-    "Plane": ".plane",
-    "Projection": ".projection",
-    "Quaternion": ".quaternion",
-    "RID": ".rid",
-    "Rect2": ".rect2",
-    "Rect2i": ".rect2i",
-    "Signal": ".signal",
-    "String": ".string",
-    "StringName": ".stringName",
-    "Transform2D": ".transform2d",
-    "Transform3D": ".transform3d",
-    "Vector2": ".vector2",
-    "Vector2i": ".vector2i",
-    "Vector3": ".vector3",
-    "Vector3i": ".vector3i",
-    "Vector4": ".vector4",
-    "Vector4i": ".vector4i",
-    
-    // According to:
-    // - https://github.com/godotengine/godot/issues/67544#issuecomment-1382229216
-    // - https://github.com/godotengine/godot/blob/b6e06038f8a373f7fb8d26e92d5f06887e459598/core/doc_data.cpp#L85
-    // It's `.nil` with hint = `.nilIsVariant` in returned value prop info
-    // And `.nil` with hint = `.none` in argument prop info    
-    "Variant": ".nil",
-    "Variant?": ".nil",
-]
-
-func godotTypeToProp (typeName: String) -> String {
-    godotVariants [typeName] ?? ".object"
-}
-
 struct SignalName {
     let godotName: String
     let swiftName: String
 }
 
 extension ExprSyntax {
-    
     func signalName() -> SignalName? {
         // Extract the signalName parameter if it's wrapped in quotes, eg: "name"
         if let stringLiteralExpr = StringLiteralExprSyntax(self),
