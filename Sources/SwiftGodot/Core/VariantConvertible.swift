@@ -766,9 +766,9 @@ extension String: _GodotBridgeableBuiltin {
         case .string:
             /// Avoid allocating `GString` wrapper at least
             var content = GString.zero
-            variant.constructType(into: &content, constructor: GString.selfFromVariant)
+            variant.constructType(into: &content, constructor: GodotInterfaceForString.selfFromVariant)
             self = GString.toString(pContent: &content)
-            GString.destructor(&content)
+            GodotInterfaceForString.destructor(&content)
         case .stringName:
             /// It's going through the ``PackedByteArray`` already, it's a death from the thousand cuts.
             // TODO: should we print a warning and question feasibility of this?
@@ -798,9 +798,9 @@ extension String: _GodotBridgeableBuiltin {
         case .string:
             /// Avoid allocating `GString` wrapper at least
             var content = GString.zero
-            variant.constructType(into: &content, constructor: GString.selfFromVariant)
+            variant.constructType(into: &content, constructor: GodotInterfaceForString.selfFromVariant)
             self = GString.toString(pContent: &content)
-            GString.destructor(&content)
+            GodotInterfaceForString.destructor(&content)
         case .stringName:
             /// It's going through the ``PackedByteArray`` already, it's a death from the thousand cuts.
             // TODO: should we print a warning and question feasibility of this?

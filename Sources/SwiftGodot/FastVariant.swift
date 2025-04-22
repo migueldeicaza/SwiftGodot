@@ -242,8 +242,8 @@ public struct FastVariant: ~Copyable {
         /// Avoid allocating `GString` wrapper at least
         var stringContent = GString.zero
         gi.string_new_with_utf8_chars(&stringContent, from)
-        self.init(payload: stringContent, constructor: GString.variantFromSelf)
-        GString.destructor(&stringContent)
+        self.init(payload: stringContent, constructor: GodotInterfaceForString.variantFromSelf)
+        GodotInterfaceForString.destructor(&stringContent)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``String?``, fails if it's `nil`
@@ -271,11 +271,11 @@ public struct FastVariant: ~Copyable {
     /// String description of this ``FastVariant``
     public var description: String {
         var content = content
-        var ret = GDExtensionStringPtr (bitPattern: 0xdeaddead)
-        gi.variant_stringify (&content, &ret)
+        var ret = GDExtensionStringPtr(bitPattern: 0xdeaddead)
+        gi.variant_stringify(&content, &ret)
         
         let str = stringFromGodotString(&ret)
-        GString.destructor (&ret)
+        GodotInterfaceForString.destructor(&ret)
         return str ?? ""
     }
     

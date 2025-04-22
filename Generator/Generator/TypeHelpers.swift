@@ -369,17 +369,26 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
 /// "content", given a godotType name of those, this returns a pair
 /// containing the Swift-type that is used to store this, and a suitable initialization
 /// value for it.
-func getBuiltinStorage (_ name: String) -> (String, String) {
+func getBuiltinStorage (_ name: String, asComputedProperty: Bool) -> (String, String) {
     guard let size = builtinSizes [name] else {
         fatalError()
     }
+    
+    func rightHandExpression(_ valueLiteral: String) -> String {
+        if asComputedProperty {
+            return " { \(valueLiteral) }"
+        } else {
+            return " = \(valueLiteral)"
+        }
+    }
+    
     switch size {
     case 4, 0:
-        return ("Int32", " = 0")
+        return ("Int32", rightHandExpression("0"))
     case 8:
-        return ("Int64", " = 0")
+        return ("Int64", rightHandExpression("0"))
     case 16:
-        return ("(Int64, Int64)", " = (0, 0)")
+        return ("(Int64, Int64)", rightHandExpression("(0, 0)"))
     default:
         fatalError()
     }

@@ -230,7 +230,7 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
         guard Self._variantType == variant.gtype else { return nil }
         var content = VariantArray.zero
         withUnsafeMutablePointer(to: &content) { pPayload in
-            variant.constructType(into: pPayload, constructor: VariantArray.selfFromVariant)
+            variant.constructType(into: pPayload, constructor: GodotInterfaceForArray.selfFromVariant)
         }
         self.init(takingOver: content)
     }
@@ -249,7 +249,7 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
         guard Self._variantType == variant.gtype else { return nil }
         var content = VariantArray.zero
         withUnsafeMutablePointer(to: &content) { pPayload in
-            variant.constructType(into: pPayload, constructor: VariantArray.selfFromVariant)
+            variant.constructType(into: pPayload, constructor: GodotInterfaceForArray.selfFromVariant)
         }
         self.init(takingOver: content)
     }

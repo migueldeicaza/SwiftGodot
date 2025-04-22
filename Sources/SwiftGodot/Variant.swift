@@ -212,8 +212,8 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         /// Avoid allocating `GString` wrapper at least
         var stringContent = GString.zero
         gi.string_new_with_utf8_chars(&stringContent, from)
-        self.init(payload: stringContent, constructor: GString.variantFromSelf)
-        GString.destructor(&stringContent)
+        self.init(payload: stringContent, constructor: GodotInterfaceForString.variantFromSelf)
+        GodotInterfaceForString.destructor(&stringContent)
     }
     
     /// Initialize ``Variant`` by wrapping ``String?``, fails if it's `nil`
@@ -267,7 +267,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         gi.variant_stringify (&content, &ret)
         
         let str = stringFromGodotString(&ret)
-        GString.destructor (&ret)
+        GodotInterfaceForString.destructor(&ret)
         return str ?? ""
     }
     

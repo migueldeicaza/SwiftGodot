@@ -82,6 +82,6 @@ public struct FastStringName: ~Copyable {
         }
         
         var content = content
-        StringName.destructor(&content)
+        GodotInterfaceForStringName.destructor(&content)
     }
 }

@@ -23,6 +23,12 @@ class Printer {
         self.name = name
         self.addPreamble = addPreamble
     }
+    
+    /// Local printer that is not intended to be written into the file
+    init() {
+        name = ""
+        addPreamble = false
+    }
 
     fileprivate static let preamble =
         """
@@ -107,7 +113,7 @@ class Printer {
         b(str, arg: arg, suffix: suffix, block: block)
     }
 
-    func save(_ file: String) {
+    func save(_ file: String) {        
         let output = (addPreamble ? Self.preamble : "") + result
 
         let existing = try? String(contentsOfFile: file)
