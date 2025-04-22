@@ -15,8 +15,12 @@ import SwiftSyntaxMacros
 enum GodotMacroError: Error, DiagnosticMessage {
     case godotMacroNotOnClass
     case exportMacroNotOnVariable
+    case signalMacroNotOnVariable
     case callableMacroNotOnFunction
-    case noSignalType(String)
+    case signalMacroNoType(String)
+    case signalMacroAccessorBlock(String)
+    case signalMacroInitializer(String)
+    case signalMacroMultipleBindings
     case noIdentifier(PatternBindingListSyntax.Element)
     case unknownError(Error)
     case callableMacroOnThrowingOrAsyncFunction
@@ -31,13 +35,15 @@ enum GodotMacroError: Error, DiagnosticMessage {
     }
 
     var message: String {
-        switch self {
+        switch self {        
         case .exportMacroOnReadonlyVariable:
             "@Export attribute can only be applied to mutable stored or computed { get set } property"
         case .godotMacroNotOnClass:
             "@Godot attribute can only be applied to a class"
         case .exportMacroNotOnVariable:
             "@Export attribute can only be applied to variables"
+        case .signalMacroNotOnVariable:
+            "@Signal attribute can only be applied to variables"
         case .callableMacroNotOnFunction:
             "@Callable attribute can only be applied to functions"
         case .noIdentifier(let e):
@@ -50,12 +56,18 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "`static` or `class` member is not supported"
         case .nameCollision(let name):
             "Same name `\(name)` for two different declarations. GDScript doesn't support it."
-        case .noSignalType(let name):
+        case .signalMacroNoType(let name):
             "`\(name)` missing explicit `SignalWithArguments<...>` or `SimpleSignal` type annotation required for @Signal macro"
         case .legacySignalMacroUnexpectedArgumentsSyntax:
             "Failed to parse arguments. Define arguments in the form [\"argumentName\": Type.self]"
         case .legacySignalMacroTooManyArguments:
             "Too many arguments in the arguments dictionary. A maximum of 6 are supported."
+        case .signalMacroInitializer(let name):
+            "@Signal attribute can not be applied to `\(name)` with an intitializer expression"
+        case .signalMacroAccessorBlock(let name):
+            "@Signal attribute can not be applied to `\(name)` with acccessor block"
+        case .signalMacroMultipleBindings:
+            "@Signal attribute can not be applied to declaration with multiple bindings. It's an Swift `AccessorMacro` restriction."
         }
     }
     

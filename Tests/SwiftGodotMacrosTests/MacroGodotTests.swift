@@ -432,5 +432,18 @@ final class MacroGodotTests: MacroGodotTestCase {
             ]
         )
     }
+    
+    func testMultipleSignalBindings() {
+        assertExpansion(
+            of: """
+            @Godot class OtherThing: SwiftGodot.Node {            
+                @Signal var signal0: SimpleSignal, signal1: SimpleSignal
+            }
+            """,
+            diagnostics: [
+                .init(message: "accessor macro can only be applied to a single variable", line: 2, column: 5)
+            ]
+        )
+    }
 
 }

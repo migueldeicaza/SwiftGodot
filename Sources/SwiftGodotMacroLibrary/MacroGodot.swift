@@ -229,7 +229,7 @@ class GodotMacroProcessor {
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
             
             guard let typeAnnotation = binding.typeAnnotation else {
-                throw GodotMacroError.noSignalType(nameWithPrefix)
+                throw GodotMacroError.signalMacroNoType(nameWithPrefix)
             }
             
             let typeName = typeAnnotation.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
