@@ -53,7 +53,6 @@ class Car: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Car>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(
@@ -83,5 +82,5 @@ class Car: Node {
             setterFunction: Car._mproxy_set_year
         )
         SwiftGodot._addPropertyGroup(className: className, name: "Pointless", prefix: "")
-    } ()
+    }()
 }

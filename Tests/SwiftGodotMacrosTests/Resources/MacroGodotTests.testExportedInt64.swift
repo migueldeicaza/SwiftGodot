@@ -42,7 +42,6 @@ class Thing: SwiftGodot.Object {
     private static let _initializeClass: Void = {
         let className = StringName("Thing")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Thing>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(
@@ -67,5 +66,5 @@ class Thing: SwiftGodot.Object {
             ],
             function: Thing._mproxy_get_some
         )
-    } ()
+    }()
 }

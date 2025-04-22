@@ -20,8 +20,7 @@ class Demo: Node3D {
     private static let _initializeClass: Void = {
         let className = StringName("Demo")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Demo>(name: className)
         SimpleSignal.register(as: "burp", in: className)
         SignalWithArguments<Int>.register(as: "lives_changed", in: className)
-    } ()
+    }()
 }

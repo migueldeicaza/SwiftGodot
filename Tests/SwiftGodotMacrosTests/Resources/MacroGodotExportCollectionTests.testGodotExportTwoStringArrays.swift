@@ -53,7 +53,6 @@ class ArrayTest: Node {
     private static let _initializeClass: Void = {
         let className = StringName("ArrayTest")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<ArrayTest>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(
@@ -82,5 +81,5 @@ class ArrayTest: Node {
             getterFunction: ArrayTest._mproxy_get_lastNames,
             setterFunction: ArrayTest._mproxy_set_lastNames
         )
-    } ()
+    }()
 }

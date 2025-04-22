@@ -53,7 +53,6 @@ class Car: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Car")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Car>(name: className)
         SwiftGodot._addPropertyGroup(className: className, name: "Vehicle", prefix: "")
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -83,5 +82,5 @@ class Car: Node {
             getterFunction: Car._mproxy_get_model,
             setterFunction: Car._mproxy_set_model
         )
-    } ()
+    }()
 }

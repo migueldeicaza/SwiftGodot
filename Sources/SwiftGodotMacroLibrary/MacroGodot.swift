@@ -18,7 +18,8 @@ import SwiftSyntaxMacros
 
 class GodotMacroProcessor {
     var existingMembers: [String: DeclSyntax] = [:]
-    
+        
+    let classInitializerPrinter = CodePrinter()
     let classDecl: ClassDeclSyntax
     let className: String
     
@@ -46,30 +47,25 @@ class GodotMacroProcessor {
             return
         }
         
-        injectClassInfo()
-                
-        ctor.append("classInfo.registerSignal(")
-        ctor.append("name: \(className).\(signalName.swiftName).name,")
-        ctor.append("arguments: \(className).\(signalName.swiftName).arguments")
-        ctor.append(")")
+        classInitializerPrinter("""
+        SwiftGodot._registerSignal(
+            \(className).\(signalName.swiftName).name, 
+            in: className, 
+            arguments: \(className).\(signalName.swiftName).arguments
+        )
+        """)
     }
     
     func processExportGroup(name: String, prefix: String) {
-        injectClassInfo()
-        ctor.append(
-            """
-            SwiftGodot._addPropertyGroup(className: className, name: "\(name)", prefix: "\(prefix)")\n
-            """
-        )
+        classInitializerPrinter("""
+        SwiftGodot._addPropertyGroup(className: className, name: "\(name)", prefix: "\(prefix)")
+        """)
     }
     
     func processExportSubgroup(name: String, prefix: String) {
-        injectClassInfo()
-        ctor.append(
-            """
-            SwiftGodot._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")\n
-            """
-        )
+        classInitializerPrinter("""
+        SwiftGodot._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")
+        """)
     }
         
     func processFunction(_ funcDecl: FunctionDeclSyntax) throws {
@@ -83,14 +79,13 @@ class GodotMacroProcessor {
         
         let funcName = funcDecl.name.text
         
+        let p = classInitializerPrinter
+                        
         let arguments = funcDecl
             .parameters
             .map { parameter in
                 let typename = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)                
                 return "SwiftGodot._argumentPropInfo(\(typename).self, name: \"\(parameter.internalName)\")"
-            }
-            .map {
-                "        \($0)"
             }
             .joined(separator: ",\n")
                 
@@ -109,19 +104,18 @@ class GodotMacroProcessor {
             flags = ".default"
         }
         
-        injectClassInfo()
-        ctor.append("""
-            SwiftGodot._registerMethod(
-                className: className,
-                name: "\(funcName)", 
-                flags: \(flags), 
-                returnValue: SwiftGodot._returnValuePropInfo(\(returnTypename).self), 
-                arguments: [
-            \(arguments)
-                ], 
-                function: \(className)._mproxy_\(funcName)
-            )
+        p("SwiftGodot._registerMethod", .parentheses) {
+            p("""
+            className: className,
+            name: "\(funcName)", 
+            flags: \(flags), 
+            returnValue: SwiftGodot._returnValuePropInfo(\(returnTypename).self),    
             """)
+            p("arguments: ", .square, afterBlock: ",") {
+                p(arguments)
+            }
+            p("function: \(className)._mproxy_\(funcName)")
+        }
         
         try checkNameCollision(funcName, for: DeclSyntax(funcDecl))
     }
@@ -199,24 +193,22 @@ class GodotMacroProcessor {
                 args.append("userUsage: nil")
             }
             
-            let argsStr = args
-                .map { String(repeating: " ", count: 8) + $0 }
-                .joined(separator: ",\n")
+            let argsStr = args.joined(separator: ",\n")
             
-            
-            injectClassInfo()
-            ctor.append("""
-            SwiftGodot._registerPropertyWithGetterSetter(
-                className: className,
-                info: SwiftGodot._propInfo(
-            \(argsStr)
-                ),
+            let p = classInitializerPrinter
+                        
+            p("SwiftGodot._registerPropertyWithGetterSetter", .parentheses) {
+                p("className: className,")
+                p("info: SwiftGodot._propInfo", .parentheses, afterBlock: ",") {
+                    p(argsStr)
+                }
+                p("""
                 getterName: "\(getterName)\",
                 setterName: "\(setterName)",                
                 getterFunction: \(className).\(proxyGetterName),
-                setterFunction: \(className).\(proxySetterName)                
-            )
-            """)
+                setterFunction: \(className).\(proxySetterName)  
+                """)
+            }
             
             try checkNameCollision(getterName, for: DeclSyntax(varDecl))
             try checkNameCollision(setterName, for: DeclSyntax(varDecl))
@@ -241,60 +233,52 @@ class GodotMacroProcessor {
             }
             
             let typeName = typeAnnotation.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
-
-            injectClassInfo()
+            
             let godotName = name.camelCaseToSnakeCase()
-            ctor.append("\(typeName).register(as: \"\(godotName)\", in: className)")
+            
+            classInitializerPrinter("""
+            \(typeName).register(as: \"\(godotName)\", in: className)
+            """)
+            
             try checkNameCollision(godotName, for: DeclSyntax(varDecl))
         }
     }
 
-    
-    var ctor: String = ""
-    var genMethods: [String] = []
-    var injected = false
-
-    func injectClassInfo() {
-        if injected { return }
-        injected = true
-        ctor += """
-            let classInfo = ClassInfo<\(className)>(name: className)\n
-        """
-    }
-
-    func processType () throws -> String {
-        ctor = """
-        private static let _initializeClass: Void = {
+    func processType() throws -> String {
+        let p = classInitializerPrinter
+        
+        try p("private static let _initializeClass: Void = ", .curly, afterBlock: "()") {
+            p("""
             let className = StringName("\(className)")
-            assert(ClassDB.classExists(class: className))\n
-        """
-        var previousGroupPrefix: String? = nil
-        var previousSubgroupPrefix: String? = nil
-        for member in classDecl.memberBlock.members.enumerated() {
-            let decl = member.element.decl
-            let macroExpansion = MacroExpansionDeclSyntax(decl)
-            
-            if let name = macroExpansion?.exportGroupName {
-                previousGroupPrefix = macroExpansion?.exportGroupPrefix ?? ""
-                processExportGroup(name: name, prefix: previousGroupPrefix ?? "")
-            } else if let name = macroExpansion?.exportSubgroupName {
-                previousSubgroupPrefix = macroExpansion?.exportSubgroupPrefix ?? ""
-                processExportSubgroup(name: name, prefix: previousSubgroupPrefix ?? "")
-            } else if let funcDecl = FunctionDeclSyntax(decl) {
-                try processFunction (funcDecl)
-            } else if let varDecl = VariableDeclSyntax(decl) {
-                try processVariable(
-                    varDecl,
-                    previousGroupPrefix: previousGroupPrefix,
-                    previousSubgroupPrefix: previousSubgroupPrefix
-                )
-            } else if let macroExpansion {
-                try classInitSignals(macroExpansion)
+            assert(ClassDB.classExists(class: className))
+            """)
+            var previousGroupPrefix: String? = nil
+            var previousSubgroupPrefix: String? = nil
+            for member in classDecl.memberBlock.members.enumerated() {
+                let decl = member.element.decl
+                let macroExpansion = MacroExpansionDeclSyntax(decl)
+                
+                if let name = macroExpansion?.exportGroupName {
+                    previousGroupPrefix = macroExpansion?.exportGroupPrefix ?? ""
+                    processExportGroup(name: name, prefix: previousGroupPrefix ?? "")
+                } else if let name = macroExpansion?.exportSubgroupName {
+                    previousSubgroupPrefix = macroExpansion?.exportSubgroupPrefix ?? ""
+                    processExportSubgroup(name: name, prefix: previousSubgroupPrefix ?? "")
+                } else if let funcDecl = FunctionDeclSyntax(decl) {
+                    try processFunction (funcDecl)
+                } else if let varDecl = VariableDeclSyntax(decl) {
+                    try processVariable(
+                        varDecl,
+                        previousGroupPrefix: previousGroupPrefix,
+                        previousSubgroupPrefix: previousSubgroupPrefix
+                    )
+                } else if let macroExpansion {
+                    try classInitSignals(macroExpansion)
+                }
             }
         }
-
-        ctor.append("} ()\n")
-        return ctor
+        
+        return classInitializerPrinter.result
     }
 
 }

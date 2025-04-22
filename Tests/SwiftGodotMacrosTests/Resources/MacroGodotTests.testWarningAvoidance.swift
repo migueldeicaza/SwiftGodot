@@ -9,7 +9,7 @@ final class MyData: Resource {
     private static let _initializeClass: Void = {
         let className = StringName("MyData")
         assert(ClassDB.classExists(class: className))
-    } ()
+    }()
 }
 final class MyClass: Node {
     var data: MyData = .init()
@@ -43,7 +43,6 @@ final class MyClass: Node {
     private static let _initializeClass: Void = {
         let className = StringName("MyClass")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<MyClass>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(
@@ -58,5 +57,5 @@ final class MyClass: Node {
             getterFunction: MyClass._mproxy_get_data,
             setterFunction: MyClass._mproxy_set_data
         )
-    } ()
+    }()
 }

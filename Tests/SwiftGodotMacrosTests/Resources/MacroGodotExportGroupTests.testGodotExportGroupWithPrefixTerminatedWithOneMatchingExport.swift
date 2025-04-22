@@ -53,7 +53,6 @@ public class Issue353: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Issue353>(name: className)
         SwiftGodot._addPropertyGroup(className: className, name: "Group With a Prefix", prefix: "prefix1")
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -83,5 +82,5 @@ public class Issue353: Node {
             getterFunction: Issue353._mproxy_get_non_prefixed_bool,
             setterFunction: Issue353._mproxy_set_non_prefixed_bool
         )
-    } ()
+    }()
 }

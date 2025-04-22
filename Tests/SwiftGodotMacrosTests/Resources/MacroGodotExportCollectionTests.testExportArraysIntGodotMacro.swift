@@ -53,7 +53,6 @@ class SomeNode: Node {
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<SomeNode>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(
@@ -82,5 +81,5 @@ class SomeNode: Node {
             getterFunction: SomeNode._mproxy_get_someOtherNumbers,
             setterFunction: SomeNode._mproxy_set_someOtherNumbers
         )
-    } ()
+    }()
 }

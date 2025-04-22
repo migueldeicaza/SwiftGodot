@@ -30,7 +30,6 @@ class Hi: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Hi>(name: className)
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodot._propInfo(
@@ -45,5 +44,5 @@ class Hi: Node {
             getterFunction: Hi._mproxy_get_goodName,
             setterFunction: Hi._mproxy_set_goodName
         )
-    } ()
+    }()
 }
