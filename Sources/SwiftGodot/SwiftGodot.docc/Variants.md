@@ -296,3 +296,23 @@ func printSize (myArray: Variant) {
     }
 }
 ```
+
+# Under the hood
+
+SwiftGodot surfaces Variants in two ways, one is `Variant` that we have
+discussed above extensively which is a class type, and this is necessary for
+ensuring that the variants release the underlying data when they are no longer
+in use.   
+
+SwiftGodot surfaces the Variant type in returns and as input parameters to its
+API.   
+
+There is an advanced ``FastVariant`` type that uses Swift's `~Copyable` support
+that creates a lightweight Variant, and is essentially the same as the C++
+counterpart in terms of performance.  This is used internally in SwiftGodot, and
+you can convert back and forth from the Variant types, this means that there are
+fewer heap allocations and you do not incur on the overhead of
+automatic-reference counting, and instead use Swift's built-in type ownership support.
+
+The longer-term plan is to make it so that our APIs can take both Variant and
+FastVariant.
