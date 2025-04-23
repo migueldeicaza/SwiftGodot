@@ -168,12 +168,12 @@ final class AABBTests: GodotTestCase {
     
     func testGetSupport () {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
-        XCTAssertEqual (aabb.getSupport (dir: Vector3 (x: 1, y: 0, z: 0)), Vector3 (x: 2.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
-        XCTAssertEqual (aabb.getSupport (dir: Vector3 (x: 0.5, y: 1, z: 0)), Vector3 (x: 2.5, y: 7, z: -2.5), "getSupport() should return the expected value.")
-        XCTAssertEqual (aabb.getSupport (dir: Vector3 (x: 0.5, y: 1, z: -400)), Vector3 (x: 2.5, y: 7, z: -2.5), "getSupport() should return the expected value.")
-        XCTAssertEqual (aabb.getSupport (dir: Vector3 (x: 0, y: -1, z: 0)), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
-        XCTAssertEqual (aabb.getSupport (dir: Vector3 (x: 0, y: -0.1, z: 0)), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
-        XCTAssertEqual (aabb.getSupport (dir: Vector3 ()), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value with a null vector.")
+        XCTAssertEqual (aabb.getSupport (direction: Vector3 (x: 1, y: 0, z: 0)), Vector3 (x: 2.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
+        XCTAssertEqual (aabb.getSupport (direction: Vector3 (x: 0.5, y: 1, z: 0)), Vector3 (x: 2.5, y: 7, z: -2.5), "getSupport() should return the expected value.")
+        XCTAssertEqual (aabb.getSupport (direction: Vector3 (x: 0.5, y: 1, z: -400)), Vector3 (x: 2.5, y: 7, z: -2.5), "getSupport() should return the expected value.")
+        XCTAssertEqual (aabb.getSupport (direction: Vector3 (x: 0, y: -1, z: 0)), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
+        XCTAssertEqual (aabb.getSupport (direction: Vector3 (x: 0, y: -0.1, z: 0)), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
+        XCTAssertEqual (aabb.getSupport (direction: Vector3 ()), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value with a null vector.")
     }
     
     func testGrow () {
