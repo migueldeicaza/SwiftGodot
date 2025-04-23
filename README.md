@@ -27,6 +27,7 @@ Tutorials and Documentation:
 * [Tutorials and walkthroughs](https://migueldeicaza.github.io/SwiftGodotDocs/tutorials/swiftgodot-tutorials/)
 * SwiftGodot port of [KenneyNL's StarterKit 3D Platformer](https://github.com/lorenalexm/Starter-Kit-3D-Platformer-Swift)
 * WIP: SwiftGodot port of C# Udemy tutorial: [GridBasedPuzzleGameTutorial](https://gitlab.com/dracks/gridbasedpuzzlegametutorial)
+* [SwiftGodot template project](https://github.com/elijah-semyonov/SwiftGodotTemplate) with a Editor plugin allowing recompiling with a single button tap (macOS, ARM)
 
 Of interest to the community:
 * Running Godot in VisionPro using [GodotVision](https://github.com/kevinw/GodotVision)
