@@ -81,6 +81,15 @@ public func _returnValuePropInfo<T>(
     T._returnValuePropInfo
 }
 
+/// Internal API. [Object]. It's the only case where non-optional object array can be used.
+@inline(__always)
+@inlinable
+public func _returnValuePropInfo<T>(
+    _ type: [T].Type = [T].self
+) -> PropInfo where T: Object {
+    [T?]._returnValuePropInfo
+}
+
 /// Internal API. Void.
 @inline(__always)
 @inlinable
