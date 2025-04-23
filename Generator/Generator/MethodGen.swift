@@ -499,6 +499,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     if let methodHash = method.optionalHash {
         // get_class and unreference are also called by Wrapped
         let staticVarVisibility = if bindName != "method_get_class" && bindName != "method_unreference" { "fileprivate" } else { "" }
+        assert (!method.isVirtual)
         switch generatedMethodKind {
         case .classMethod:
             p.staticProperty(visibility: staticVarVisibility, isStored: true, name: bindName, type: "GDExtensionMethodBindPtr") {
@@ -518,9 +519,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 }
             }
         }
-    }
-
-    if !method.isVirtual {
+        
         // If this is an internal, and being reference by a property, hide it
         if usedMethods.contains (method.name) {
             inlineAttribute = "@inline(__always)"
@@ -542,6 +541,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         
         documentationVisibilityAttribute = nil
     } else {
+        assert(method.isVirtual)
+        
         inlineAttribute = nil
         // virtual overwrittable method
         finalAttribute = nil
@@ -594,9 +595,6 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                                 declType = "var"
                             }
                         }
-                        if method.isVirtual {
-                            declType = "var"
-                        }
                         return "\(declType) _result: \(returnType) = \(makeDefaultInit(godotType: godotReturnType))"
                     }
                 }
@@ -630,11 +628,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 } else if builtinSizes [godotReturnType] != nil {
                     ptrResult = "&_result.content"
                 } else {
-                    if method.isVirtual {
-                        ptrResult = "&_result"
-                    } else {
-                        ptrResult = "&_result.handle"
-                    }
+                    ptrResult = "&_result.handle"
                 }
             }
         } else {
