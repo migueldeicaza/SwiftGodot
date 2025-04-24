@@ -110,23 +110,23 @@ extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgea
 }
 
 
-//extension Dictionary: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _GodotContainerTypingParameter, VariantConvertible where Key: _GodotContainerTypingParameter & Hashable, Value: _GodotContainerTypingParameter {
-//    /// Converts `[Key: Value]` into `TypedDictionary<Key, Value>`
-//    ///
-//    /// This is O(n) operation.
-//    ///
-//    /// Godot dictionary will be created and copied per-element.
-//    public func toGodotBuiltin() -> TypedDictionary<Key, Value> {
-//        TypedDictionary(self)
-//    }
-//    
-//    /// Convert `TypedDictionary<Key, Value>` into Swift `[Key: Value]`
-//    ///
-//    /// This is O(n) operation.
-//    ///
-//    /// Swift dictionary will be created and copied per-element.
-//    public static func fromGodotBuiltinOrThrow(_ value: TypedDictionary<Key, Value>) throws(VariantConversionError) -> [Key: Value] {
-//        // Via Swift.Array.init<S>(_ s: S) where Element == S.Element, S : Sequence
-//        Dictionary(uniqueKeysWithValues: value)
-//    }
-//}
+extension Dictionary: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _GodotContainerTypingParameter, VariantConvertible where Key: _GodotContainerTypingParameter & Hashable, Value: _GodotContainerTypingParameter {
+    /// Converts `[Key: Value]` into `TypedDictionary<Key, Value>`
+    ///
+    /// This is O(n) operation.
+    ///
+    /// Godot dictionary will be created and copied per-element.
+    public func toGodotBuiltin() -> TypedDictionary<Key, Value> {
+        TypedDictionary(self)
+    }
+    
+    /// Convert `TypedDictionary<Key, Value>` into Swift `[Key: Value]`
+    ///
+    /// This is O(n) operation.
+    ///
+    /// Swift dictionary will be created and copied per-element.
+    public static func fromGodotBuiltinOrThrow(_ value: TypedDictionary<Key, Value>) throws(VariantConversionError) -> [Key: Value] {
+        // TypedDictionary is Sequence<Key, Value>
+        Dictionary(uniqueKeysWithValues: value)
+    }
+}
