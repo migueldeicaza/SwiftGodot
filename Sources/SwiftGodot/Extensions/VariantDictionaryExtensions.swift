@@ -54,7 +54,9 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
         }
     }
     
-    public subscript(key: some VariantConvertible) -> FastVariant? {
+    /// Subscript operator using arbitary ``VariantConvertible?`` type as a key.
+    /// Works with ``FastVariant?``
+    public subscript(key: (some VariantConvertible)?) -> FastVariant? {
         get {
             let key = key.toFastVariant()
             
@@ -78,37 +80,30 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
                     return nil
                 }
             }
-            var keyContent = key?.content ?? .zero
-                        
         }
     
         consuming set {
             let key = key.toFastVariant()
             switch newValue {
             case .some(let newValue):
+                var newValueContent = newValue.content
                 switch key {
                 case .some(let key):
-                    var newValueContent = newValue.content
                     var keyContent = key.content
-                    
                     GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &newValueContent)
                 case .none:
-                    var newValueContent = newValue.content
                     var keyContent = VariantContent.zero
-                    
                     GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &newValueContent)
                 }
             case .none:
+                var newValueContent = VariantContent.zero
                 switch key {
                 case .some(let key):
                     var keyContent = key.content
-                    
-                    var nilContent = VariantContent.zero
-                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &nilContent)
+                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &newValueContent)
                 case .none:
                     var keyContent = VariantContent.zero
-                    var nilContent = VariantContent.zero
-                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &nilContent)
+                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &newValueContent)
                 }
             }
         }
