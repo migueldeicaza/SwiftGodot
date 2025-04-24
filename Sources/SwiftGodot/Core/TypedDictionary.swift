@@ -29,4 +29,57 @@
 /// Godot guarantees non-nullability of `SomeType` when used as `Key` or `Value`.
 public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter> {
     public let dictionary: VariantDictionary
+    
+    @inline(__always)
+    @usableFromInline
+    static func isTypingCompatible(with dictionary: VariantDictionary) -> Bool {
+        // Check that Key is compatible
+        switch dictionary.keyTyping {
+        case .builtin(let gtype):
+            assert(gtype != .object)
+            
+            if gtype != Key._variantType {
+                return false
+            }
+        case .object(let objectType):
+            if objectType != Key._NonOptionalType.self {
+                return false
+            }
+        }
+        
+        // Check that Value is compatible
+        switch dictionary.valueTyping {
+        case .builtin(let gtype):
+            assert(gtype != .object)
+            
+            if gtype != Value._variantType {
+                return false
+            }
+        case .object(let objectType):
+            if objectType != Value._NonOptionalType.self {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    @inline(__always)
+    @inlinable
+    public init(from dictionary: VariantDictionary) {
+        if Self.isTypingCompatible(with: dictionary) {
+            // wrap the existing storage
+            self.dictionary = dictionary
+        } else {
+            self.dictionary = VariantDictionary(
+                base: dictionary,
+                keyType: Int32(Key._variantType.rawValue),
+                keyClassName: Key._className,
+                keyScript: nil,
+                valueType: Int32(Value._variantType.rawValue),
+                valueClassName: Value._className,
+                valueScript: nil
+            )
+        }
+    }
 }
