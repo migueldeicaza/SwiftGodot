@@ -30,9 +30,9 @@
 /// - Can work as an exported property, so the editor can edit it universally.
 /// - Can be used for dictionaries, arrays, parsers, etc.
 ///
-/// > Note: Containers (``VariantArray`` and ``GDictionary``): Both are implemented using variants.
-/// A ``GDictionary`` can match any datatype used as key to any other datatype.  An ``VariantArray``
-/// just holds an array of Variants.  A ``Variant`` can also hold a ``GDictionary`` and an ``VariantArray``
+/// > Note: Containers (``VariantArray`` and ``VariantDictionary``): Both are implemented using variants.
+/// A ``VariantDictionary`` can match any datatype used as key to any other datatype.  An ``VariantArray``
+/// just holds an array of Variants.  A ``Variant`` can also hold a ``VariantDictionary`` and an ``VariantArray``
 /// inside.
 ///
 /// Modifications to a container will modify all references to it.

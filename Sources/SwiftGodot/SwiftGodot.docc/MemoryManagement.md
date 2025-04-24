@@ -4,7 +4,7 @@ SwiftGodot surfaces various Godot types into the Swift universe in various ways:
 
 - Structures: things like ``Rect2`` or ``Plane``.
 - Simple classes that have their lifecyle managed in a way similar to Swift 
-(``Callable``, ``VariantArray``, ``GDictionary``) 
+(``Callable``, ``VariantArray``, ``VariantDictionary``) 
 - <doc:Variants>: these are objects that can wrap every other Godot type and are
   used to pass values around in Godot.
 - ``Object``-derived classes: this is what makes up the bulk of Godot classes, things like ``Node``, ``Resource``, ``Image`` and so on.

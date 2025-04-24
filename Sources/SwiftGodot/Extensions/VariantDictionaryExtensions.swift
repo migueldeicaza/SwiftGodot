@@ -5,15 +5,18 @@
 //  Created by Miguel de Icaza on 9/23/23.
 //
 
-extension GDictionary: CustomDebugStringConvertible, CustomStringConvertible {
+@available(*, deprecated, renamed: "VariantDictionary", message: "GDictionary was renamed to `VariantDictionary` to better communicate its semantics")
+public typealias GDictionary = VariantArray
+
+extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertible {
     /// Convenience subscript that uses a String as the key to access the
     /// elements in the dictionary.   Merely wraps this on a Variant.
-    public subscript (key: String) -> Variant? {
+    public subscript(key: String) -> Variant? {
         get {
-            return self [Variant (key)]
+            return self[Variant (key)]
         }
         set {
-            self [Variant (key)] = newValue
+            self[Variant(key)] = newValue
         }
     }
     
@@ -21,20 +24,20 @@ extension GDictionary: CustomDebugStringConvertible, CustomStringConvertible {
     /// elements in the dictionary.   Merely wraps this on a Variant.
     public subscript (key: StringName) -> Variant? {
         get {
-            return self [Variant (key)]
+            return self[Variant(key)]
         }
         set {
-            self [Variant (key)] = newValue
+            self[Variant(key)] = newValue
         }
     }
 
     /// Renders the dictionary using the `Variant`'s `description` method.
     public var debugDescription: String {
-        Variant (self).description
+        Variant(self).description
     }
 
     /// Renders the dictionary using the `Variant`'s `description` method.
     public var description: String {
-        Variant (self).description
+        Variant(self).description
     }
 }

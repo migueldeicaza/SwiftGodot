@@ -92,7 +92,7 @@ class GodotEncoder: Encoder {
         var storage: [String:GodotEncodingContainer] = [:]
 
         var data: Variant? {
-            let dict = GDictionary()
+            let dict = VariantDictionary()
             for (k,v) in storage {
                 dict[k] = v.data
             }
@@ -412,7 +412,7 @@ final class MemoryLeakTests: GodotTestCase {
         func oneIteration(object: Object) {
             let list = object.getPropertyList()
             let it = list.makeIterator()
-            for prop: GDictionary? in it {
+            for prop: VariantDictionary? in it {
                 _ = prop
             }
         }
@@ -683,7 +683,7 @@ final class MemoryLeakTests: GodotTestCase {
     
     func test_dictionary_leaks() {
         checkLeaks {
-            let dictionary = GDictionary()
+            let dictionary = VariantDictionary()
             
             for i in 0 ..< 1_000 {
                 let variant = Variant("value\(i)")

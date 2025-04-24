@@ -295,9 +295,9 @@ Toll-free bridging.
 #### SwiftGodot non-`Object` reference types - Corresponding Godot builtin types
 _NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the value is translated from `Godot` to `Swift`.
 
-All built-in types of Godot which are represented as Swift `class` such as: ``VariantArray``, ``GDictionary``, ``RID``, ``PackedFloat32Array``, etc.
+All built-in types of Godot which are represented as Swift `class` such as: ``VariantArray``, ``VariantDictionary``, ``RID``, ``PackedFloat32Array``, etc.
 
-These types appear exactly as they are in Godot except `GString`(Godot `String`), `VariantArray` (Godot `Array`), and `GDictionary`(Godot `Dictionary`), which are renamed to avoid collision with native Swift types.
+These types appear exactly as they are in Godot except `GString`(Godot `String`), `VariantArray` (Godot `Array`), and `VariantDictionary`(Godot `Dictionary`), which are renamed to avoid collision with native Swift types.
 
 ```swift
 @Godot class CustomNode: Node {

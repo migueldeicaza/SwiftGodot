@@ -146,7 +146,7 @@ func mapTypeName (_ name: String) -> String {
         return "VariantArray"
     }
     if name == "Dictionary" {
-        return "GDictionary"
+        return "VariantDictionary"
     }
     return name
 }
@@ -158,7 +158,7 @@ func reverseMapTypeName (_ name: String) -> String {
     if name == "VariantArray" {
         return "Array"
     }
-    if name == "GDictionary" {
+    if name == "VariantDictionary" {
         return "Dictionary"
     }
     return name
@@ -172,7 +172,7 @@ func mapTypeNameDoc (_ name: String) -> String {
         return "GType"
     }
     if name == "Dictionary" {
-        return "GDictionary"
+        return "VariantDictionary"
     }
     return mapTypeName (name)
 }
@@ -315,7 +315,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             return "GString"
         }
     case "Dictionary":
-        return "GDictionary"
+        return "VariantDictionary"
     case "Array":
         return "VariantArray"
     case "void*":

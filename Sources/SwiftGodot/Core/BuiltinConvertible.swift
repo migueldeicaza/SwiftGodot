@@ -6,7 +6,7 @@
 //
 
 /// This is a type which you can use if you want to export your custom type as specific builtin Godot type such as
-/// `VariantArray`, `TypedArray`, `GDictionary`, etc.
+/// `VariantArray`, `TypedArray`, `VariantDictionary`, etc.
 /// Unlike ``VariantConvertible`` instances of your types will be visible in Godot not as `Variant`, but specific builtin you chose.
 public protocol GodotBuiltinConvertible: _GodotBridgeableBuiltin {
     /// The exact builtin type which is used as a proxy to represent this type in Godot world

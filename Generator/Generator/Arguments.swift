@@ -104,7 +104,7 @@ func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: A
                 }
             case "Dictionary":
                 if dv == "{}" {
-                    def = " = GDictionary ()"
+                    def = " = VariantDictionary ()"
                 } else {
                     dvMissing (argumentType)
                 }

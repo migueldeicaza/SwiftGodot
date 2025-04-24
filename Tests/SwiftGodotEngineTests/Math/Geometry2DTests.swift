@@ -207,7 +207,7 @@ final class Geometry2DTests: GodotTestCase {
     }
 
     func testMakeAtlas () {
-        var result: GDictionary
+        var result: VariantDictionary
         
         let r = PackedVector2Array ()
         r.pushBack (value: Vector2 (x: 2, y: 2))

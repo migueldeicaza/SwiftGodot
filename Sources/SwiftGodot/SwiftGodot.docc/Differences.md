@@ -31,7 +31,7 @@ Here is a list of the current data type mappings:
 | GDScript type | SwiftGodot Name       |
 |---------------|-----------------------|
 | String        | GString               |
-| Dictionary    | GDictionary           |
+| Dictionary    | VariantDictionary           |
 | Array         | VariantArray          |
 | Array[Element]| TypedArray            |
 

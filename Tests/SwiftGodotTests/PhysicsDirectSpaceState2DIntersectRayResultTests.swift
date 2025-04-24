@@ -13,8 +13,8 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
     func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() throws {
         let collider: Object = GridMap()
         
-        let dictionary: GDictionary = {
-            let dictionary = GDictionary()
+        let dictionary: VariantDictionary = {
+            let dictionary = VariantDictionary()
             dictionary["position"] = Variant(Vector2(x: 1, y: 2))
             dictionary["normal"] = Variant(Vector2(x: 4, y: 5))
             dictionary["collider"] = Variant(collider)
@@ -37,8 +37,8 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
     func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
         let collider: Object = GridMap()
         
-        let dictionary: GDictionary = {
-            let dictionary = GDictionary()
+        let dictionary: VariantDictionary = {
+            let dictionary = VariantDictionary()
             dictionary["position"] = Variant(Vector2(x: 1, y: 2))
             dictionary["normal"] = Variant(Vector2(x: 4, y: 5))
 //            dictionary["collider"] = Variant(collider)

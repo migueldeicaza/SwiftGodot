@@ -16,7 +16,7 @@ enum TypingParameter {
 
 /// Internal API.
 /// Do not conform your types to this protocol.
-/// Protocol implemented by types that are allowed to be `TypedArray.Element` and `TypedDictionary` `Key` or `Value`.
+/// Protocol implemented by types that are allowed to be `TypedArray` `Element` and `TypedDictionary` `Key` or `Value`.
 /// This protocol is implemented by:
 /// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
 /// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.

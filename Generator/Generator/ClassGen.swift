@@ -23,7 +23,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "Array":
         return "VariantArray ()"
     case "Dictionary":
-        return "GDictionary ()"
+        return "VariantDictionary ()"
     case let t where t.starts (with: "typedarray::"):
         let nestedTypeName = String (t.dropFirst(12))
         let simple = SimpleType(type: nestedTypeName)
