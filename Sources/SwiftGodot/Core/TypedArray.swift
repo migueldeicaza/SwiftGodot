@@ -502,7 +502,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     ///
     @inline(__always)
     @inlinable
-    public func front() -> Element where Element._NonOptionalType: Object {
+    public func front() -> Element where Element._NonOptionalType: _GodotNullableBridgeable {
         unwrapOrCrash(
             array.front().to()
         )
@@ -523,7 +523,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     ///
     @inline(__always)
     @inlinable
-    public func back() -> Element where Element._NonOptionalType: Object {
+    public func back() -> Element where Element._NonOptionalType: _GodotNullableBridgeable {
         unwrapOrCrash(
             array.back()
         )
@@ -539,7 +539,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     /// Returns a random value from the target array. Prints an error and returns `null` if the array is empty.
     @inline(__always)
     @inlinable
-    public func pickRandom() -> Element where Element._NonOptionalType: Object {
+    public func pickRandom() -> Element where Element._NonOptionalType: _GodotNullableBridgeable {
         unwrapOrCrash(
             array.pickRandom()
         )
@@ -586,7 +586,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     /// Removes and returns the last element of the array. Returns `null` if the array is empty, without printing an error message. See also ``popFront()``.
     @inline(__always)
     @inlinable
-    public func popBack() -> Element where Element._NonOptionalType: Object {
+    public func popBack() -> Element where Element._NonOptionalType: _GodotNullableBridgeable {
         unwrapOrCrash(array.popBack().to())
     }
     
@@ -605,7 +605,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     ///
     @inline(__always)
     @inlinable
-    public func popFront() -> Element where Element._NonOptionalType: Object {
+    public func popFront() -> Element where Element._NonOptionalType: _GodotNullableBridgeable {
         unwrapOrCrash(
             array.popFront()
         )
@@ -625,7 +625,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     /// > Note: On large arrays, this method can be slower than ``popBack()`` as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower ``popAt(position:)`` will be.
     @inline(__always)
     @inlinable
-    public func popAt(position: Int64) -> Element where Element._NonOptionalType: Object {
+    public func popAt(position: Int64) -> Element where Element._NonOptionalType: _GodotNullableBridgeable {
         unwrapOrCrash(
             array.popAt(position: position),
             at: position
@@ -662,7 +662,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     @inlinable
     func typeInvariantViolation(invoking function: StaticString, error: VariantConversionError, at index: Int64?) -> Never {
         let atIndex = index.map { " at index \($0)" } ?? ""
-        fatalError("Fatal error during `TypedArray<\(Element.self)>.popAt` from \(array.debugDescription)\(atIndex). Type invariant violated. \(error.description)")
+        fatalError("Fatal error during `TypedArray<\(Element.self)>.\(function)` from \(array.debugDescription)\(atIndex). Type invariant violated. \(error.description)")
     }
     
     /// Sorts the array.

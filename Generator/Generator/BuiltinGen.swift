@@ -622,6 +622,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if bc.operators.contains(where: { op in op.name == "==" && op.rightType == bc.name }) {
                 conformances.append ("Equatable")
             }
+            
+            if bc.methods?.contains(where: { method in
+                method.name == "hash"
+            }) == true {
+                conformances.append("Hashable")
+            }
         }
 
         if bc.name == "String" || bc.name == "StringName" || bc.name == "NodePath" {
@@ -860,6 +866,14 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             
             gip.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionTypeFromVariantConstructorFunc") {
                 gip("gi.get_variant_to_type_constructor(\(typeEnum))!")
+            }
+            
+            if kind == .isClass && conformances.contains("Hashable") {
+                p("""
+                public func hash(into hasher: inout Hasher) {
+                    hasher.combine(hash())
+                }
+                """)
             }
                                                 
             p("""

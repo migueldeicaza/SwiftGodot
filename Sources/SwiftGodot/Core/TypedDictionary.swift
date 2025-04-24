@@ -74,6 +74,103 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         self.init(from: VariantDictionary(takingOver: content))
     }
     
+    /// Initialise ``TypedDictionary`` from the Swift `[Key: Value]` dictionary.
+    /// For example:
+    /// ```
+    /// let dictionary: [Int: Int] = [1: 2, 2: 3, 3: 3, 4: 4, 5:5]
+    /// let typedDictionary = TypedDictionary(typedDictionary)
+    /// ```
+    ///
+    /// This operation is O(n) as it requires full copy of Swift dictionary.
+    public init(_ dictionary: [Key: Value]) where Key: Hashable {
+        self.init()
+        
+        for (key, value) in dictionary {
+            set(value, at: key)
+        }
+    }
+    
+    /// Initialize an empty ``TypedDictionary`` of given `keyType` and `valueType`.
+    ///
+    /// For example:
+    /// ```
+    /// let dictionary = TypedDictionary(keyType: Node?.self, valueType: String.self)
+    /// // same as
+    /// let anotherDictionary = TypedArray<Node?, String>()
+    /// ```
+    public init(keyType: Key.Type = Key.self, valueType: Value.Type = Value.self) {
+        // TODO: we can minimize amount of allocations here, but let's name the constructors first
+        self.dictionary = VariantDictionary(
+            base: VariantDictionary(),
+            keyType: Int32(Key._variantType.rawValue),
+            keyClassName: Key._className,
+            keyScript: nil,
+            valueType: Int32(Value._variantType.rawValue),
+            valueClassName: Value._className,
+            valueScript: nil
+        )
+    }
+            
+    /// Subscript operator for where `Value` is Godot builtin type.
+    /// Such dictionaries don't allow `nil` values.
+    /// It will erase a value with `key` instead.
+    ///
+    /// ```
+    /// let dictionary: TypedDictionary<Int, String>
+    /// dictionay[10] = nil // will erase a value with key `10` if any
+    /// ```
+    public subscript(key: Key) -> Value? where Value: _GodotBridgeableBuiltin {
+        get {
+            let variant = dictionary[key]
+            return Value.fromFastVariant(variant)
+        }
+        
+        set {
+            if newValue == nil {
+                dictionary.erase(fastKey: key.toFastVariant())
+            } else {
+                dictionary[key] = newValue.toFastVariant()
+            }
+        }
+    }
+    
+    /// Subscript operator for where `Value` is `Object`, or its subtype, or `Variant?`
+    /// Such dictionaries allow `nil` values.
+    ///
+    /// ```
+    /// let dictionary: TypedDictionary<Int, Object?>
+    /// dictionay[10] = nil // will store `nil` value
+    /// ```
+    ///
+    /// To erase value from the dictionary use ``erase(key:)``
+    public subscript(key: Key) -> Value where Value._NonOptionalType: _GodotNullableBridgeable {
+        get {
+            let variant = dictionary[key]
+            
+            // `Value` is `Object?` or `Variant?`
+            // Unwrapping it produces `nil` via `Value?.fromNilOrThrow` call
+            // It only throws if incompatible Object type was stored.
+            // This is a error which should be fixed if it happens.
+            return unwrapOrCrash(variant, at: key)
+        }
+        
+        set {
+            dictionary[key] = newValue.toFastVariant()
+        }
+    }
+    
+    /// Set `value` at given `key`.
+    ///
+    /// Example:
+    /// ```
+    /// dictionary.set(10, at: 20)
+    /// // same thing
+    /// dictionary[20] = 10
+    /// ```
+    public func set(_ value: Value, at key: Key) {
+        dictionary[key] = value.toFastVariant()
+    }
+    
     /// Initialize ``TypedDictionary`` from existing ``VariantDictionary``.
     /// If ``VariantDictionary`` is typed and its type is exactly `Key`:`Value` the created instance will reference the same storage.
     /// If not, a new ``VariantDictionary`` to wrap will be created by following Godot rules of dictionary type narrowing:
@@ -258,6 +355,172 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
                 usage: .default
             )
         }
+    }
+    
+    // MARK: - Proxy VariantDictionary
+    
+    /* Methods */
+    
+    /// Returns the number of entries in the dictionary. Empty dictionaries (`{ }`) always return `0`. See also ``isEmpty()``.
+    public func size() -> Int64 {
+        return dictionary.size()
+    }
+    
+    /// Returns `true` if the dictionary is empty (its size is `0`). See also ``size()``.
+    public func isEmpty() -> Bool {
+        return dictionary.isEmpty()
+    }
+    
+    /// Clears the dictionary, removing all entries from it.
+    public func clear() {
+        dictionary.clear()
+    }
+    
+    /// Assigns elements of another `dictionary` into the dictionary. Resizes the dictionary to match `dictionary`. Performs type conversions if the dictionary is typed.
+    public func assign(dictionary otherDictionary: VariantDictionary) {
+        dictionary.assign(dictionary: otherDictionary)
+    }
+    
+    /// Sorts the dictionary in-place by key. This can be used to ensure dictionaries with the same contents produce equivalent results when getting the ``keys()``, getting the ``values()``, and converting to a string. This is also useful when wanting a JSON representation consistent with what is in memory, and useful for storing on a database that requires dictionaries to be sorted.
+    public func sort() {
+        dictionary.sort()
+    }
+    
+    /// Adds entries from `dictionary` to this dictionary. By default, duplicate keys are not copied over, unless `overwrite` is `true`.
+    ///
+    /// > Note: ``merge(dictionary:overwrite:)`` is _not_ recursive. Nested dictionaries are considered as keys that can be overwritten or not depending on the value of `overwrite`, but they will never be merged together.
+    ///
+    public func merge(dictionary otherDictionary: VariantDictionary, overwrite: Bool = false) {
+        dictionary.merge(dictionary: otherDictionary, overwrite: overwrite)
+        
+    }
+    
+    /// Returns a copy of this dictionary merged with the other `dictionary`. By default, duplicate keys are not copied over, unless `overwrite` is `true`. See also ``merge(dictionary:overwrite:)``.
+    ///
+    /// This method is useful for quickly making dictionaries with default values:
+    ///
+    public func merged(dictionary otherDictionary: VariantDictionary, overwrite: Bool = false) -> VariantDictionary {
+        dictionary.merged(dictionary: otherDictionary, overwrite: overwrite)
+    }
+    
+    /// Returns `true` if the dictionary contains an entry with the given `key`.
+    ///
+    /// In GDScript, this is equivalent to the `in` operator:
+    ///
+    /// > Note: This method returns `true` as long as the `key` exists, even if its corresponding value is `null`.
+    ///
+    public func has(key: Key) -> Bool {
+        dictionary.has(key: key.toVariant())
+    }
+    
+    /// Returns `true` if the dictionary contains all keys in the given `keys` array.
+    public func hasAll(keys: VariantArray) -> Bool {
+        dictionary.hasAll(keys: keys)
+    }
+    
+    /// Finds and returns the first key whose associated value is equal to `value`, or `null` if it is not found.
+    ///
+    /// > Note: `null` is also a valid key. If inside the dictionary, ``findKey(value:)`` may give misleading results.
+    ///
+    public func findKey(value: Variant?) -> Variant? {
+        return dictionary.findKey(value: value)
+    }
+    
+    /// Removes the dictionary entry by key, if it exists. Returns `true` if the given `key` existed in the dictionary, otherwise `false`.
+    ///
+    /// > Note: Do not erase entries while iterating over the dictionary. You can iterate over the ``keys()`` array instead.
+    ///
+    public func erase(key: Key) -> Bool {
+        dictionary.erase(key: key.toVariant())
+    }
+    
+    /// Returns the list of keys in the dictionary.
+    public func keys() -> TypedArray<Key> {
+        TypedArray(from: dictionary.keys())
+    }
+    
+    /// Returns the list of values in this dictionary.
+    public func values() -> TypedArray<Value> {
+        TypedArray(from: dictionary.values())
+    }
+    
+    /// Creates and returns a new copy of the dictionary. If `deep` is `true`, inner ``VariantDictionary`` and ``VariantArray`` keys and values are also copied, recursively.
+    public func duplicate(deep: Bool = false) -> Self {
+        Self(from: dictionary.duplicate(deep: deep))
+    }
+    
+    /// Returns `true` if the dictionary is typed the same as `dictionary`.
+    public func isSameTyped(dictionary otherDictionary: VariantDictionary) -> Bool {
+        otherDictionary.isSameTyped(dictionary: dictionary)
+    }
+    
+    /// Returns `true` if the dictionary's keys are typed the same as `dictionary`'s keys.
+    public func isSameTypedKey(dictionary otherDictionary: VariantDictionary) -> Bool {
+        dictionary.isSameTypedKey(dictionary: otherDictionary)
+    }
+    
+    /// Returns `true` if the dictionary's values are typed the same as `dictionary`'s values.
+    public func isSameTypedValue(dictionary otherDictionary: VariantDictionary) -> Bool {
+        dictionary.isSameTypedValue(dictionary: otherDictionary)
+    }
+    
+    /// Returns the ``Script`` instance associated with this typed dictionary's keys, or `null` if it does not exist. See also ``isTypedKey()``.
+    public func getTypedKeyScript() -> Variant? {
+        dictionary.getTypedKeyScript()
+    }
+    
+    /// Returns the ``Script`` instance associated with this typed dictionary's values, or `null` if it does not exist. See also ``isTypedValue()``.
+    public func getTypedValueScript() -> Variant? {
+        dictionary.getTypedValueScript()
+    }
+    
+    /// Makes the dictionary read-only, i.e. disables modification of the dictionary's contents. Does not apply to nested content, e.g. content of nested dictionaries.
+    public func makeReadOnly() {
+        dictionary.makeReadOnly()
+    }
+    
+    /// Returns `true` if the dictionary is read-only. See ``makeReadOnly()``. Dictionaries are automatically read-only if declared with `const` keyword.
+    public func isReadOnly() -> Bool {
+        dictionary.isReadOnly()
+    }
+    
+    /// Returns `true` if the two dictionaries contain the same keys and values, inner ``VariantDictionary`` and ``VariantArray`` keys and values are compared recursively.
+    public func recursiveEqual(dictionary otherDictionary: VariantDictionary, recursionCount: Int64) -> Bool {
+        dictionary.recursiveEqual(dictionary: otherDictionary, recursionCount: recursionCount)
+    }
+    
+    // MARK: - Invariant enforcing
+    /// `Value` is `Object?` here.
+    /// It doesn't throw if it's `nil`, it returns `nil`.
+    /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
+    @inline(__always)
+    @usableFromInline
+    func unwrapOrCrash(_ variant: Variant?, invoking function: StaticString = #function, at key: Key? = nil) -> Value {
+        do {
+            return try Value.fromVariantOrThrow(variant)
+        } catch {
+            typeInvariantViolation(invoking: function, error: error, at: key)
+        }
+    }
+    
+    /// `Value` is `Object?` here.
+    /// It doesn't throw if it's `nil`, it returns `nil`.
+    /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
+    @inline(__always)
+    @usableFromInline
+    func unwrapOrCrash(_ variant: borrowing FastVariant?, invoking function: StaticString = #function, at key: Key? = nil) -> Value {
+        do {
+            return try Value.fromFastVariantOrThrow(variant)
+        } catch {
+            typeInvariantViolation(invoking: function, error: error, at: key)
+        }
+    }
+        
+    @inline(__always)
+    @inlinable
+    func typeInvariantViolation(invoking function: StaticString, error: VariantConversionError, at key: Key?) -> Never {
+        let atKey = key.map { " at key \($0)" } ?? ""
+        fatalError("Fatal error during `TypedDictionary<\(Key.self), \(Value.self)>.\(function)` from \(dictionary.debugDescription)\(atKey). Type invariant violated. \(error.description)")
     }
 }
 

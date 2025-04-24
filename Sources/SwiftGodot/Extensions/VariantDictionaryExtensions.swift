@@ -108,7 +108,36 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
             }
         }
     }
-
+    
+    /// Removes the dictionary entry by key, if it exists. Returns `true` if the given `key` existed in the dictionary, otherwise `false`.
+    ///
+    /// > Note: Do not erase entries while iterating over the dictionary. You can iterate over the ``keys()`` array instead.
+    ///
+    public final func erase(fastKey: borrowing FastVariant?) -> Bool {
+        var result: Bool = Bool()
+        switch fastKey {
+        case .some(let variant):
+            let keyContent = variant.content
+            withUnsafePointer(to: keyContent) { pArg0 in
+                withUnsafePointer(to: UnsafeRawPointersN1(pArg0)) { pArgs in
+                    pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: 1) { pArgs in
+                        GodotInterfaceForDictionary.method_erase(&content, pArgs, &result, 1)
+                    }
+                }
+            }
+        case .none:
+            let keyContent = VariantContent.zero
+            withUnsafePointer(to: keyContent) { pArg0 in
+                withUnsafePointer(to: UnsafeRawPointersN1(pArg0)) { pArgs in
+                    pArgs.withMemoryRebound(to: UnsafeRawPointer?.self, capacity: 1) { pArgs in
+                        GodotInterfaceForDictionary.method_erase(&content, pArgs, &result, 1)
+                    }
+                }
+            }
+        }
+        
+        return result
+    }
     
     /// Convenience subscript that uses a String as the key to access the
     /// elements in the dictionary.   Merely wraps this on a Variant.
