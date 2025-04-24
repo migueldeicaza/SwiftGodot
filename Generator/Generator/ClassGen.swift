@@ -593,8 +593,13 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
                 }
             }
         }
-        p ("private static var className = StringName(\"\(cdef.name)\")")
-        p ("override open class var godotClassName: StringName { className }")
+
+        if noStaticCaches {
+            p ("override open class var godotClassName: StringName { \"\(cdef.name)\" }")
+        } else {
+            p ("private static var className = StringName(\"\(cdef.name)\")")
+            p ("override open class var godotClassName: StringName { className }")
+        }
 
         if cdef.name == "RefCounted" {
             p ("public required init ()") {
