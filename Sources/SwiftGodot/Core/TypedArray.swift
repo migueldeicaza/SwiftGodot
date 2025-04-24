@@ -94,8 +94,8 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     public let array: VariantArray
         
     /// Initialize ``TypedArray`` from existing ``VariantArray``.
-    /// If ``VariantArray`` is typed and its type is exactly the same as ``DeclaredElement`` the created instance will reference the same storage.
-    /// If not, a new ``Array`` to wrap will be created by following Godot rules of array type narrowing:
+    /// If ``VariantArray`` is typed and its type is exactly the same as ``Element`` the created instance will reference the same storage.
+    /// If not, a new ``VariantArray`` to wrap will be created by following Godot rules of array type narrowing:
     /// - If array could be converted successfully - it returns a typed array containing the same elements.
     /// - If not - it returns an empty typed array.
     /// See: ``VariantArray.init(base:type:className:script:)``
@@ -774,12 +774,12 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
 
 public extension Variant {
     /// Initialize ``Variant`` by wrapping ``TypedArray``
-    convenience init<T>(_ from: TypedArray<T>) where T: _GodotBridgeable {
+    convenience init<T>(_ from: TypedArray<T>) where T: _GodotContainerTypingParameter {
         self.init(from.array)
     }
     
     /// Initialize ``Variant`` by wrapping ``TypedArray?``, fails if it's `nil`
-    convenience init?<T>(_ from: TypedArray<T>?) where T: _GodotBridgeable {
+    convenience init?<T>(_ from: TypedArray<T>?) where T: _GodotContainerTypingParameter {
         guard let from else {
             return nil
         }
@@ -789,12 +789,12 @@ public extension Variant {
 
 public extension FastVariant {
     /// Initialize ``FastVariant`` by wrapping ``TypedArray``
-    init<T>(_ from: TypedArray<T>) where T: _GodotBridgeable {
+    init<T>(_ from: TypedArray<T>) where T: _GodotContainerTypingParameter {
         self.init(from.array)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``TypedArray?``, fails if it's `nil`
-    init?<T>(_ from: TypedArray<T>?) where T: _GodotBridgeable {
+    init?<T>(_ from: TypedArray<T>?) where T: _GodotContainerTypingParameter {
         guard let from else {
             return nil
         }

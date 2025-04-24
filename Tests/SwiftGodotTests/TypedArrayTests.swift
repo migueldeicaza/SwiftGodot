@@ -37,9 +37,27 @@ final class TypedArrayTests: GodotTestCase {
     }
     
     func testExplicitVariantTypedArray() {
-        //let typed = TypedArray<Int?>
+        let typed = TypedArray<Variant?>()
         
+        typed.append(10.toVariant())
+        XCTAssertEqual(typed[0], 10.toVariant())
     }
+    
+    func testCompatibleArrays() {
+        let typed = TypedArray<Object?>()
+        let anotherTyped = TypedArray<Object?>(from: typed.array)
+        
+        XCTAssert(typed.array === anotherTyped.array)
+    }
+    
+    func testObjectArrayInvariance() {
+        let typed = TypedArray<Node?>()
+        let anotherTyped = TypedArray<Object?>(from: typed.array)
+        typed.append(Node())
+        XCTAssert(typed.array !== anotherTyped.array)
+        XCTAssert(typed.array != anotherTyped.array)
+    }
+    
 }
 
 private extension VariantArray {
