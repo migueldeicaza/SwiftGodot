@@ -49,23 +49,24 @@ extension VariantArray: CustomDebugStringConvertible {
         }
     }
     
-    /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node.self)`
-    /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotBridgeable`.
+    /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node?.self)`, `VariantArray(Int.self)`
+    /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotContainerTypingParameter`.
     public convenience init<T: _GodotContainerTypingParameter>(_ type: T.Type = T.self) {
-        let className: String
-        
-        if let type = type as? Object.Type {
-            className = type._builtinOrClassName
-        } else {
-            className = ""
-        }
-        
         self.init(
             base: VariantArray(),
             type: Int32(T._variantType.rawValue),
-            className: StringName(className),
+            className: T._className,
             script: nil
         )
+    }
+    
+    /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node.self)`
+    /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotNullableBridgeable`.
+    ///
+    /// ### Note
+    /// It's the same as `init(T?.self)`.
+    public convenience init<T: _GodotNullableBridgeable>(_ type: T.Type = T.self) {
+        self.init(T?.self)
     }
     
     /// Allows subscription array as in `array[0]`.    
