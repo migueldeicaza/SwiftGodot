@@ -54,6 +54,67 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
         }
     }
     
+    public subscript(key: some VariantConvertible) -> FastVariant? {
+        get {
+            let key = key.toFastVariant()
+            
+            switch key {
+            case .some(let key):
+                var keyContent = key.content
+                if GodotInterfaceForDictionary.keyed_checker(&content, &keyContent) != 0 {
+                    var result = VariantContent.zero
+                    GodotInterfaceForDictionary.keyed_getter(&content, &keyContent, &result)
+                    return FastVariant(takingOver: result)
+                } else {
+                    return nil
+                }
+            case .none:
+                var keyContent = VariantContent.zero
+                if GodotInterfaceForDictionary.keyed_checker(&content, &keyContent) != 0 {
+                    var result = VariantContent.zero
+                    GodotInterfaceForDictionary.keyed_getter(&content, &keyContent, &result)
+                    return FastVariant(takingOver: result)
+                } else {
+                    return nil
+                }
+            }
+            var keyContent = key?.content ?? .zero
+                        
+        }
+    
+        consuming set {
+            let key = key.toFastVariant()
+            switch newValue {
+            case .some(let newValue):
+                switch key {
+                case .some(let key):
+                    var newValueContent = newValue.content
+                    var keyContent = key.content
+                    
+                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &newValueContent)
+                case .none:
+                    var newValueContent = newValue.content
+                    var keyContent = VariantContent.zero
+                    
+                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &newValueContent)
+                }
+            case .none:
+                switch key {
+                case .some(let key):
+                    var keyContent = key.content
+                    
+                    var nilContent = VariantContent.zero
+                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &nilContent)
+                case .none:
+                    var keyContent = VariantContent.zero
+                    var nilContent = VariantContent.zero
+                    GodotInterfaceForDictionary.keyed_setter(&content, &keyContent, &nilContent)
+                }
+            }
+        }
+    }
+
+    
     /// Convenience subscript that uses a String as the key to access the
     /// elements in the dictionary.   Merely wraps this on a Variant.
     public subscript(key: String) -> Variant? {

@@ -111,7 +111,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         self.init(takingOver: content)
     }
     
-    /// Initialze ``TypedDictionary`` from ``Variant``. Fails if `variant` doesn't contain ``TypedDictionary`` or is `nil`
+    /// Initialze ``TypedDictionary`` from ``Variant?``. Fails if `variant` doesn't contain ``TypedDictionary`` or is `nil`
     @inline(__always)
     @inlinable
     public init?(_ variant: Variant?) {

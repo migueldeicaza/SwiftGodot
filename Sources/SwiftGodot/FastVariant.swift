@@ -160,6 +160,11 @@ public struct FastVariant: ~Copyable {
         
         return FastVariant(unsafeTakingOver: newContent)
     }
+    
+    /// Consumes ``FastVariant`` triggering its immediate destruction.
+    public consuming func drop() {
+        // `deinit` happens in the end of this scope due to `consuming`
+    }
         
     deinit {
         var content = content
