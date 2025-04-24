@@ -37,7 +37,7 @@
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable, _GodotOptionalBridgeable {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable, _GodotNullableBridgeable {
     public typealias TypedArrayElement = Variant?
     
     @usableFromInline

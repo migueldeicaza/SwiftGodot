@@ -243,6 +243,13 @@ public protocol _GodotBridgeable: VariantConvertible {
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
+/// All builtin types can be used as typing parameter for `TypedArray` and `TypedDictionary` key and/or value.
+/// It means being a `_GodotBridgeableBuiltin` also presumes being a `_GodotTypingParameter` so
+/// the following declarations are legal:
+/// ```
+/// let array = TypedArray<Int>()
+/// let dictionary = TypedDictionary<String, Vector3>()
+/// ```
 public protocol _GodotBridgeableBuiltin: _GodotTypingParameter {
 }
 
@@ -250,12 +257,13 @@ public extension _GodotBridgeableBuiltin {
     /// Internal API. Required for `TypedArray` implementation.
     typealias _NonOptionalType = Self
     
-    /// Internal API. Required for cases where Godot expects empty `StringName` for builtin types and actual class name for `.object`-types
+    /// Internal API. Required for cases where Godot expects an empty `StringName` for builtin types and actual class name for `.object`-types.
     public static var _className: StringName {
         StringName("")
     }
     
     /// Internal API. Returns Godot type name for typed array.
+    /// For example `TypedArray<Int>` is Godot `Array[int]`
     @inline(__always)
     @inlinable
     static var _builtinOrClassName: String {

@@ -29,13 +29,23 @@ enum TypingParameter {
 /// You should use `TypedArray<ObjectType?>`, `TypedDictionary<ObjectType?, _>`, `TypedDictionary<_, ObjectType?>` instead.
 /// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
 ///
-/// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
+/// #### ❌ `'TypedArray' requires that 'Type' conform to '_GodotNullableBridgeable'`
 /// You used `TypedArray<SomeType?>`.
 /// You should use `TypedArray<SomeType>` instead.
 /// Godot guarantees non-nullability of `Array[SomeType]` elements.
 public protocol _GodotTypingParameter: _GodotBridgeable {
+    /// Internal API.
+    /// Non Optional type of this type:
+    /// - for builtin types it's the type itself.
+    /// - for `ObjectSubtype?` it's `ObjectSubtype`
+    /// - for `Variant?` it's `Variant`
     associatedtype _NonOptionalType: _GodotBridgeable
     
+    /// Internal API.
+    /// `class_name` for given type as Godot requires it
+    /// - for builtin types it's an empty string
+    /// - for `ObjectSubtype?` it's the literal name of the `ObjectSubtype`
+    /// - for `Variant?` it's an empty string
     static var _className: StringName { get }
 }
 
@@ -48,6 +58,7 @@ public protocol _GodotTypingParameter: _GodotBridgeable {
 /// Allowed elements are:
 /// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
 /// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.
+/// 3. Swift `Variant?`
 ///
 /// Example:
 /// ```
@@ -63,12 +74,12 @@ public protocol _GodotTypingParameter: _GodotBridgeable {
 ///
 /// # Compilation troubleshooting
 ///
-/// #### ❌ `Type 'ObjectType' does not conform to protocol '_GodotTypingParameter'`
-/// You used `TypedArray<ObjectType>`.
-/// You should use `TypedArray<ObjectType?>`.
-/// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
+/// #### ❌ `Type 'YourType' does not conform to protocol '_GodotTypingParameter'`
+/// You used `TypedArray<YourType>`.
+/// You should use `TypedArray<YourType?>`.
+/// Godot doesn't guarantee non-nullability of `Array[YourType]` elements.
 ///
-/// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
+/// #### ❌ `'TypedArray' requires that 'Type' conform to '_GodotNullableBridgeable'`
 /// You used `TypedArray<SomeType?>`.
 /// You should use `TypedArray<SomeType>` instead.
 /// Godot guarantees non-nullability of `Array[SomeType]` elements.
@@ -298,6 +309,10 @@ public struct TypedArray<Element: _GodotTypingParameter>: CustomDebugStringConve
         usage: PropertyUsageFlags?
     ) -> PropInfo {
         if Element._variantType == .nil {
+            // .nil means `Variant` in Godot in this context.
+            // Godot will see `TypedArray<Variant?>` as `Array`.
+            // While `Array[Variant]` is an allowed GDScript statement,
+            // get_property_list() still exposes a property having such type as `Array` without an `ARRAY_TYPE` hint.
             PropInfo(
                 propertyType: .array,
                 propertyName: StringName(name),
@@ -323,6 +338,8 @@ public struct TypedArray<Element: _GodotTypingParameter>: CustomDebugStringConve
     @inline(__always)
     public static var _returnValuePropInfo: PropInfo {
         if Element._variantType == .nil {
+            // .nil means `Variant` in Godot in this context.
+            // Godot will see `TypedArray<Variant?>` as `Array`.
             PropInfo(
                 propertyType: .array,
                 propertyName: "",
@@ -345,6 +362,8 @@ public struct TypedArray<Element: _GodotTypingParameter>: CustomDebugStringConve
     
     public static func _argumentPropInfo(name: String) -> PropInfo {
         if Element._variantType == .nil {
+            // .nil means `Variant` in Godot in this context.
+            // Godot will see `TypedArray<Variant?>` as `Array`.
             PropInfo(
                 propertyType: .array,
                 propertyName: StringName(name),

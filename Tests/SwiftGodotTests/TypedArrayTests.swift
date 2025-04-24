@@ -35,6 +35,11 @@ final class TypedArrayTests: GodotTestCase {
         XCTAssertEqual(sut.count, 1, "The collection count should be 1 after appending an element")
         XCTAssertEqual(sut[0], 222, "After 222 is appended to the \(VariantArray.self), the first value should be to 222")
     }
+    
+    func testExplicitVariantTypedArray() {
+        let typed = TypedArray<Int?>
+        
+    }
 }
 
 private extension VariantArray {
