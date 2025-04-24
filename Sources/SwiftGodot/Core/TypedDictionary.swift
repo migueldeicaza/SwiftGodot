@@ -618,3 +618,41 @@ public extension FastVariant {
         self.init(from)
     }
 }
+
+extension TypedDictionary: Sequence {
+    public struct Iterator: IteratorProtocol {
+        let iterated: TypedDictionary<Key, Value>
+        let keys: TypedArray<Key>
+        
+        init(_ dictionary: TypedDictionary) {
+            iterated = dictionary
+            keys = dictionary.keys()
+        }
+        
+        var index = 0
+        
+        public mutating func next() -> (Key, Value)? {
+            defer {
+                index += 1
+            }
+            
+            if index >= keys.count {
+                return nil
+            }
+            
+            let key = keys[index]
+            let value = iterated.unwrapOrCrash(
+                iterated.dictionary[key],
+                at: key
+            )
+            
+            return (key, value)
+        }
+        
+        public typealias Element = (Key, Value)
+    }
+    
+    public func makeIterator() -> Iterator {
+        Iterator(self)
+    }
+}
