@@ -43,6 +43,11 @@ var xmap: [UnsafeRawPointer: String] = [:]
 ///
 /// # State Management
 ///
+/// Wrapped manages the lifecycle of these objects, and in the event that an
+/// object in the Godot world has been disposed, the handle in the Wrapped
+/// object will be cleared - you can detect this condition by calling `isValid`
+/// on the object.
+///
 /// Wrapped subclasses come in two forms: straight bindings to the Godot
 /// API which are used to expose capabilities to developers.   These objects, referred
 /// to as Framework types do not have any additional state associated in
@@ -753,7 +758,7 @@ func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeM
             if let handle = obj.handle {
                 let removed = liveSubtypedObjects.removeValue(forKey: handle)
                 if removed == nil {
-                    print ("SWIFT ERROR: attempt to release object we were not aware of: \(obj))")
+                    print ("SWIFT ERROR: attempt to release user object we were not aware of: \(obj))")
                 }
             } else {
                 print ("SWIFT ERROR: the object being released already had a nil handle")
@@ -842,7 +847,7 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
                 if let handle = obj.handle {
                     let removed = liveFrameworkObjects.removeValue(forKey: handle)
                     if removed == nil {
-                        print ("SWIFT ERROR: attempt to release object we were not aware of: \(obj))")
+                        print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(obj))")
                     }
                 } else {
                     print ("SWIFT ERROR: the object being released already had a nil handle")
