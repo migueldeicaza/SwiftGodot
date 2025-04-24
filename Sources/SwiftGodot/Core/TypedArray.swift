@@ -10,7 +10,10 @@
 /// Descriptor of Godot `Array` or `Dictionary` typing.
 @usableFromInline
 enum ContainerTypingParameter {
+    /// Anything but .object
     case builtin(Variant.GType)
+    
+    /// Object with metatype
     case object(Object.Type)
 }
 
@@ -114,8 +117,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
                 self.array = array
             }
         case .object(let objectType):
-            if objectType == Element.self {
-                // objectType stored inside array is same as DeclaredElement.self
+            if objectType == Element._NonOptionalType.self {
                 // Wrap the existing storage
                 self.array = array
             } else {
