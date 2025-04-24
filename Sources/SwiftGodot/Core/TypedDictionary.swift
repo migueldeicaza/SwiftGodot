@@ -90,6 +90,19 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         }
     }
     
+    /// Initialise an empty ``TypedDictionary``.
+    public init() {
+        self.dictionary = VariantDictionary(
+            base: VariantDictionary(),
+            keyType: Int32(Key._variantType.rawValue),
+            keyClassName: Key._className,
+            keyScript: nil,
+            valueType: Int32(Value._variantType.rawValue),
+            valueClassName: Value._className,
+            valueScript: nil
+        )
+    }
+    
     /// Initialise ``TypedDictionary`` from the Swift `[Key: Value]` dictionary.
     /// For example:
     /// ```
