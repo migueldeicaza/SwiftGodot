@@ -9,14 +9,14 @@
 
 /// Descriptor of Godot `Array` or `Dictionary` typing.
 @usableFromInline
-enum TypingParameter {
+enum ContainerTypingParameter {
     case builtin(Variant.GType)
     case object(Object.Type)
 }
 
 /// Internal API.
 /// Do not conform your types to this protocol.
-/// Protocol implemented by types that are allowed to be `TypedArray` `Element` and `TypedDictionary` `Key` or `Value`.
+/// Protocol implemented by types that are allowed to be `TypedArray` `Element`, and `TypedDictionary` `Key` or `Value`.
 /// This protocol is implemented by:
 /// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
 /// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.
@@ -24,16 +24,16 @@ enum TypingParameter {
 ///
 /// # Compilation troubleshooting
 ///
-/// #### ❌ `Type 'ObjectType' does not conform to protocol '_GodotTypingParameter'`
-/// You used `TypedArray<ObjectType>` or `TypedDictionary` with `ObjectType` `Key` or `Value`.
-/// You should use `TypedArray<ObjectType?>`, `TypedDictionary<ObjectType?, _>`, `TypedDictionary<_, ObjectType?>` instead.
-/// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
+/// #### ❌ `Type 'YourType' does not conform to protocol '_GodotContainerTypingParameter'`
+/// You used `TypedArray<YourType>` or `TypedDictionary` with `YourType` `Key` or `Value`.
+/// You should use `TypedArray<YourType?>`, `TypedDictionary<YourType?, _>`, `TypedDictionary<_, YourType?>` instead.
+/// Godot doesn't guarantee non-nullability of `YourType` elements.
 ///
-/// #### ❌ `'TypedArray' requires that 'Type' conform to '_GodotNullableBridgeable'`
-/// You used `TypedArray<SomeType?>`.
-/// You should use `TypedArray<SomeType>` instead.
-/// Godot guarantees non-nullability of `Array[SomeType]` elements.
-public protocol _GodotTypingParameter: _GodotBridgeable {
+/// #### ❌ `'TypedArray' requires that 'YourType' conform to '_GodotNullableBridgeable'`
+/// You used `TypedArray<YourType?>` or `TypedDictionary` with `YourType?` `Key` or `Value`.
+/// You should use `TypedArray<YourType>`, `TypedDictionary<YourType, _>`, `TypedDictionary<_, YourType>` instead.
+/// Godot guarantees non-nullability of `SomeType` elements.
+public protocol _GodotContainerTypingParameter: _GodotBridgeable {
     /// Internal API.
     /// Non Optional type of this type:
     /// - for builtin types it's the type itself.
@@ -74,16 +74,16 @@ public protocol _GodotTypingParameter: _GodotBridgeable {
 ///
 /// # Compilation troubleshooting
 ///
-/// #### ❌ `Type 'YourType' does not conform to protocol '_GodotTypingParameter'`
+/// #### ❌ `Type 'YourType' does not conform to protocol '_GodotContainerTypingParameter'`
 /// You used `TypedArray<YourType>`.
 /// You should use `TypedArray<YourType?>`.
 /// Godot doesn't guarantee non-nullability of `Array[YourType]` elements.
 ///
-/// #### ❌ `'TypedArray' requires that 'Type' conform to '_GodotNullableBridgeable'`
-/// You used `TypedArray<SomeType?>`.
-/// You should use `TypedArray<SomeType>` instead.
-/// Godot guarantees non-nullability of `Array[SomeType]` elements.
-public struct TypedArray<Element: _GodotTypingParameter>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable {
+/// #### ❌ `'TypedArray' requires that 'YourType' conform to '_GodotNullableBridgeable'`
+/// You used `TypedArray<YourType?>`.
+/// You should use `TypedArray<YourType>` instead.
+/// Godot guarantees non-nullability of `Array[YourType]` elements.
+public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable {
     public typealias Index = Int
     public typealias ArrayLiteralElement = Element
 

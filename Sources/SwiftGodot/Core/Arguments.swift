@@ -446,9 +446,9 @@ public protocol _GodotNullableBridgeable: _GodotBridgeable {
 /// - for `TypedDictionary` as `Key` and `Value`
 ///
 /// ### Note
-/// `Variant` and `ObjectOrObjectSubclass` themselves are _not_ `_GodotTypingParameter`.
-/// Godot doesn't guarantee that they are not null in the places where`_GodotTypingParameter` is used, and neither do we.
-extension Optional: _GodotTypingParameter where Wrapped: _GodotNullableBridgeable {
+/// `Variant` and `ObjectOrObjectSubclass` themselves are _not_ `_GodotContainerTypingParameter`.
+/// Godot doesn't guarantee that they are not null in the places where`_GodotContainerTypingParameter` is used, and neither do we.
+extension Optional: _GodotContainerTypingParameter where Wrapped: _GodotNullableBridgeable {
     /// Internal API. Required for implementation of `TypedArray`.
     /// For `Optional` it's `Wrapped` type.
     public typealias _NonOptionalType = Wrapped

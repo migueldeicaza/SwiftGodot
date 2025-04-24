@@ -244,13 +244,13 @@ public protocol _GodotBridgeable: VariantConvertible {
 
 /// Internal API. Subset protocol for all Builtin Types.
 /// All builtin types can be used as typing parameter for `TypedArray` and `TypedDictionary` key and/or value.
-/// It means being a `_GodotBridgeableBuiltin` also presumes being a `_GodotTypingParameter` so
+/// It means being a `_GodotBridgeableBuiltin` also presumes being a `_GodotContainerTypingParameter` so
 /// the following declarations are legal:
 /// ```
 /// let array = TypedArray<Int>()
 /// let dictionary = TypedDictionary<String, Vector3>()
 /// ```
-public protocol _GodotBridgeableBuiltin: _GodotTypingParameter {
+public protocol _GodotBridgeableBuiltin: _GodotContainerTypingParameter {
 }
 
 public extension _GodotBridgeableBuiltin {

@@ -37,7 +37,7 @@ final class TypedArrayTests: GodotTestCase {
     }
     
     func testExplicitVariantTypedArray() {
-        let typed = TypedArray<Int?>
+        //let typed = TypedArray<Int?>
         
     }
 }

@@ -14,22 +14,19 @@
 /// Allowed types are:
 /// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
 /// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.
-///
-/// Example:
-/// ```
-/// ```
+/// 3. Swift `Variant?`
 ///
 /// # Compilation troubleshooting
 ///
-/// #### ❌ `Type 'ObjectType' does not conform to protocol '_GodotTypingParameter'`
-/// You used `ObjectType` as `Key` or `Value` generic parameter.
-/// You should use `ObjectType?`.
+/// #### ❌ `Type 'YourType' does not conform to protocol '_GodotContainerTypingParameter'`
+/// You used `YourType` as `Key` or `Value` generic parameter.
+/// You should use `YourType?`.
 /// Godot doesn't guarantee non-nullability of `ObjectType` keys or values.
 ///
-/// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
-/// You used `SomeType?` as `Key` or `Value` generic parameter.
-/// You should use `SomeType` instead.
-/// Godot guarantees non-nullability of such `SomeType` in the context of being a `Key` or `Value`.
-public struct TypedDictionary<Key: _GodotTypingParameter, Value: _GodotTypingParameter> {
-    
+/// #### ❌ `'TypedDictionary' requires that 'YourType' conform to '_GodotNullableBridgeable'`
+/// You used `YourType?` as `Key` or `Value` generic parameter.
+/// You should use `YourType` instead.
+/// Godot guarantees non-nullability of `SomeType` when used as `Key` or `Value`.
+public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter> {
+    public let dictionary: VariantDictionary
 }

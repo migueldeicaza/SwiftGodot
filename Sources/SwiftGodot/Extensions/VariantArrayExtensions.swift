@@ -29,9 +29,9 @@ extension VariantArray: CustomDebugStringConvertible {
     
     /// Return the typing information suitable for Swift metatype magic.
     @usableFromInline
-    var typing: TypingParameter {
+    var typing: ContainerTypingParameter {
         let rawValue = getTypedBuiltin()
-        guard let gtype = Variant.GType(rawValue: getTypedBuiltin()) else {
+        guard let gtype = Variant.GType(rawValue: rawValue) else {
             fatalError("Unknown variant type rawValue: \(rawValue)")
         }
         
@@ -51,7 +51,7 @@ extension VariantArray: CustomDebugStringConvertible {
     
     /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node.self)`
     /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotBridgeable`.
-    public convenience init<T: _GodotBridgeable>(_ type: T.Type = T.self) {
+    public convenience init<T: _GodotContainerTypingParameter>(_ type: T.Type = T.self) {
         let className: String
         
         if let type = type as? Object.Type {
