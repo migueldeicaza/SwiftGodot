@@ -88,7 +88,7 @@ extension GodotBuiltinConvertible {
     }
 }
 
-extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _TypedArrayElement, VariantConvertible where Element: _TypedArrayElement {
+extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _GodotTypingParameter, VariantConvertible where Element: _GodotTypingParameter {
     /// Converts `[Element]` into `TypedArray<Element>`
     ///
     /// This is O(n) operation.

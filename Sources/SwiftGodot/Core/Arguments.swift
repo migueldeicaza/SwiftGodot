@@ -436,7 +436,7 @@ public extension VariantConvertible {
 public protocol _GodotOptionalBridgeable: _GodotBridgeable {
 }
 
-extension Optional: _TypedArrayElement where Wrapped: Object {
+extension Optional: _GodotTypingParameter where Wrapped: Object {
     /// Internal API. Required for implementation of `TypedArray`.
     public typealias _NonOptionalType = Wrapped
     

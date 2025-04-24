@@ -29,20 +29,18 @@ extension VariantArray: CustomDebugStringConvertible {
     
     /// Return the typing information suitable for Swift metatype magic.
     @usableFromInline
-    var typing: ArrayTyping {
+    var typing: TypingParameter {
         let rawValue = getTypedBuiltin()
         guard let gtype = Variant.GType(rawValue: getTypedBuiltin()) else {
             fatalError("Unknown variant type rawValue: \(rawValue)")
         }
         
         switch gtype {
-        case .nil:
-            return .untyped
         case .object:
             let className = getTypedClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
                 GD.printErr("Unknown class name: \(className).")
-                return .untyped
+                return .builtin(.nil)
             }
             
             return .object(metatype)

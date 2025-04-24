@@ -7,32 +7,33 @@
 
 @_implementationOnly import GDExtension
 
+/// Descriptor of Godot `Array` or `Dictionary` typing.
 @usableFromInline
-enum ArrayTyping {
-    case untyped
+enum TypingParameter {
     case builtin(Variant.GType)
     case object(Object.Type)
 }
 
 /// Internal API.
 /// Do not conform your types to this protocol.
-/// Protocol implemented by types that are allowed to be `TypedArray` element.
+/// Protocol implemented by types that are allowed to be `TypedArray.Element` and `TypedDictionary` `Key` or `Value`.
 /// This protocol is implemented by:
 /// 1. All builtin types such as ``Vector3``, ``VariantArray``,  etc.
 /// 2. Optional `Object`-inherited classes. `Object?`, `Node?`, `Camera3D?`, etc.
+/// 3. Swift `Variant?`.
 ///
 /// # Compilation troubleshooting
 ///
-/// #### ❌ `Type 'ObjectType' does not conform to protocol '_TypedArrayElement'`
-/// You used `TypedArray<ObjectType>`.
-/// You should use `TypedArray<ObjectType?>` instead.
+/// #### ❌ `Type 'ObjectType' does not conform to protocol '_GodotTypingParameter'`
+/// You used `TypedArray<ObjectType>` or `TypedDictionary` with `ObjectType` `Key` or `Value`.
+/// You should use `TypedArray<ObjectType?>`, `TypedDictionary<ObjectType?, _>`, `TypedDictionary<_, ObjectType?>` instead.
 /// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
 ///
 /// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
 /// You used `TypedArray<SomeType?>`.
 /// You should use `TypedArray<SomeType>` instead.
 /// Godot guarantees non-nullability of `Array[SomeType]` elements.
-public protocol _TypedArrayElement: _GodotBridgeable {
+public protocol _GodotTypingParameter: _GodotBridgeable {
     associatedtype _NonOptionalType: _GodotBridgeable
     
     static var _className: StringName { get }
@@ -62,16 +63,16 @@ public protocol _TypedArrayElement: _GodotBridgeable {
 ///
 /// # Compilation troubleshooting
 ///
-/// #### ❌ `Type 'ObjectType' does not conform to protocol '_TypedArrayElement'`
+/// #### ❌ `Type 'ObjectType' does not conform to protocol '_GodotTypingParameter'`
 /// You used `TypedArray<ObjectType>`.
-/// You should use `TypedArray<ObjectType?>` instead.
+/// You should use `TypedArray<ObjectType?>`.
 /// Godot doesn't guarantee non-nullability of `Array[ObjectType]` elements.
 ///
 /// #### ❌ `'TypedArray' requires that 'Type' inherit from 'Object'`
 /// You used `TypedArray<SomeType?>`.
 /// You should use `TypedArray<SomeType>` instead.
 /// Godot guarantees non-nullability of `Array[SomeType]` elements.
-public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable {
+public struct TypedArray<Element: _GodotTypingParameter>: CustomDebugStringConvertible, RandomAccessCollection, _GodotBridgeableBuiltin, ExpressibleByArrayLiteral, Hashable {
     public typealias Index = Int
     public typealias ArrayLiteralElement = Element
 
@@ -88,25 +89,14 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
     @inlinable
     public init(from array: VariantArray) {
         switch array.typing {
-        case .untyped:
-            let count = array.count
-            let className: StringName
-                        
-            self.array = VariantArray(
-                base: array,
-                type: Int32(Element._variantType.rawValue),
-                className: Element._className,
-                script: nil
-            )
-            
         case .builtin(let gtype):
             assert(gtype != .object)
-            assert(gtype != .nil)
+            
             if gtype != Element._variantType {
                 self.array = VariantArray(
                     base: array,
                     type: Int32(Element._variantType.rawValue),
-                    className: "",
+                    className: Element._className,
                     script: nil
                 )
             } else {
@@ -307,28 +297,72 @@ public struct TypedArray<Element: _TypedArrayElement>: CustomDebugStringConverti
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        PropInfo(
-            propertyType: .array,
-            propertyName: StringName(name),
-            className: StringName("Array[\(Element._builtinOrClassName)]"),
-            hint: hint ?? .arrayType,
-            hintStr: GString(hintStr ?? "\(Element._builtinOrClassName)"),
-            usage: usage ?? .default
-        )
+        if Element._variantType == .nil {
+            PropInfo(
+                propertyType: .array,
+                propertyName: StringName(name),
+                className: "Array",
+                hint: hint ?? .none,
+                hintStr: GString(hintStr ?? ""),
+                usage: usage ?? .default
+            )
+        } else {
+            PropInfo(
+                propertyType: .array,
+                propertyName: StringName(name),
+                className: StringName("Array[\(Element._builtinOrClassName)]"),
+                hint: hint ?? .arrayType,
+                hintStr: GString(hintStr ?? "\(Element._builtinOrClassName)"),
+                usage: usage ?? .default
+            )
+        }
     }
     
     /// Internal API. Returns ``PropInfo`` for when any ``TypedArray`` is used in API visible to Godot
     @inlinable
     @inline(__always)
     public static var _returnValuePropInfo: PropInfo {
-        PropInfo(
-            propertyType: .array,
-            propertyName: "",
-            className: "Array[\(Element._builtinOrClassName)]",
-            hint: .arrayType,
-            hintStr: "\(Element._builtinOrClassName)",
-            usage: .default
-        )
+        if Element._variantType == .nil {
+            PropInfo(
+                propertyType: .array,
+                propertyName: "",
+                className: "Array",
+                hint: .none,
+                hintStr: "",
+                usage: .default
+            )
+        } else {
+            PropInfo(
+                propertyType: .array,
+                propertyName: "",
+                className: "Array[\(Element._builtinOrClassName)]",
+                hint: .arrayType,
+                hintStr: "\(Element._builtinOrClassName)",
+                usage: .default
+            )
+        }
+    }
+    
+    public static func _argumentPropInfo(name: String) -> PropInfo {
+        if Element._variantType == .nil {
+            PropInfo(
+                propertyType: .array,
+                propertyName: StringName(name),
+                className: "Array",
+                hint: .none,
+                hintStr: "",
+                usage: .default
+            )
+        } else {
+            PropInfo(
+                propertyType: .array,
+                propertyName: StringName(name),
+                className: "Array[\(Element._builtinOrClassName)]",
+                hint: .arrayType,
+                hintStr: "\(Element._builtinOrClassName)",
+                usage: .default
+            )
+        }
     }
     
     // MARK: - VariantArray proxying

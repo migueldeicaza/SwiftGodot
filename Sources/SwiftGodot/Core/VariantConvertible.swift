@@ -243,7 +243,7 @@ public protocol _GodotBridgeable: VariantConvertible {
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
-public protocol _GodotBridgeableBuiltin: _TypedArrayElement {
+public protocol _GodotBridgeableBuiltin: _GodotTypingParameter {
 }
 
 public extension _GodotBridgeableBuiltin {
