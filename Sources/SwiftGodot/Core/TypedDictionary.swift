@@ -27,7 +27,8 @@
 /// You used `YourType?` as `Key` or `Value` generic parameter.
 /// You should use `YourType` instead.
 /// Godot guarantees non-nullability of `SomeType` when used as `Key` or `Value`.
-public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter>: CustomDebugStringConvertible, _GodotBridgeableBuiltin {
+public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter>: CustomDebugStringConvertible, _GodotBridgeableBuiltin, Sequence, ExpressibleByDictionaryLiteral {
+    
     /// Reference to underlying `VariantDictionary` which is guaranteed to containing only `Key: Value` pairs.
     public let dictionary: VariantDictionary
     
@@ -74,10 +75,25 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         self.init(from: VariantDictionary(takingOver: content))
     }
     
+    /// Initialise ``TypedDictionary`` from the Swift dictionary literal.
+    /// For example:
+    /// ```
+    /// let typedDictionary: TypedDictionary = [1: 2, 2: 3, 3: 3, 4: 4, 5: 5]
+    /// ```
+    ///
+    /// This operation is O(n) as it requires full copy of Swift dictionary.
+    public init(dictionaryLiteral elements: (Key, Value)...) {
+        self.init()
+        
+        for (key, value) in elements {
+            set(key: key, value: value)
+        }
+    }
+    
     /// Initialise ``TypedDictionary`` from the Swift `[Key: Value]` dictionary.
     /// For example:
     /// ```
-    /// let dictionary: [Int: Int] = [1: 2, 2: 3, 3: 3, 4: 4, 5:5]
+    /// let dictionary: [Int: Int] = [1: 2, 2: 3, 3: 3, 4: 4, 5: 5]
     /// let typedDictionary = TypedDictionary(typedDictionary)
     /// ```
     ///
@@ -90,29 +106,6 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         for (key, value) in dictionary {
             set(key: key, value: value)
         }
-    }
-    
-    /// Initialize an empty ``TypedDictionary`` of given `keyType` and `valueType`.
-    ///
-    /// For example:
-    /// ```
-    /// let dictionary = TypedDictionary(keyType: Node?.self, valueType: String.self)
-    /// // same as
-    /// let anotherDictionary = TypedArray<Node?, String>()
-    /// ```
-    @inline(__always)
-    @inlinable
-    public init(keyType: Key.Type = Key.self, valueType: Value.Type = Value.self) {
-        // TODO: we can minimize amount of allocations here, but let's name the constructors first
-        self.dictionary = VariantDictionary(
-            base: VariantDictionary(),
-            keyType: Int32(Key._variantType.rawValue),
-            keyClassName: Key._className,
-            keyScript: nil,
-            valueType: Int32(Value._variantType.rawValue),
-            valueClassName: Value._className,
-            valueScript: nil
-        )
     }
             
     /// Subscript operator for where `Value` is Godot builtin type.
@@ -587,39 +580,9 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         let atKey = key.map { " at key \($0)" } ?? ""
         fatalError("Fatal error during `TypedDictionary<\(Key.self), \(Value.self)>.\(function)` from \(dictionary.debugDescription)\(atKey). Type invariant violated. \(error.description)")
     }
-}
-
-public extension Variant {
-    /// Initialize ``Variant`` by wrapping ``TypedDictionary``
-    convenience init<Key, Value>(_ from: TypedDictionary<Key, Value>) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        self.init(from.dictionary)
-    }
     
-    /// Initialize ``Variant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
-    convenience init?<Key, Value>(_ from: TypedDictionary<Key, Value>?) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        guard let from else {
-            return nil
-        }
-        self.init(from)
-    }
-}
-
-public extension FastVariant {
-    /// Initialize ``FastVariant`` by wrapping ``TypedDictionary``
-    init<Key, Value>(_ from: TypedDictionary<Key, Value>) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        self.init(from.dictionary)
-    }
+    // MARK: - Sequence
     
-    /// Initialize ``FastVariant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
-    init?<Key, Value>(_ from: TypedDictionary<Key, Value>?) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        guard let from else {
-            return nil
-        }
-        self.init(from)
-    }
-}
-
-extension TypedDictionary: Sequence {
     public struct Iterator: IteratorProtocol {
         let iterated: TypedDictionary<Key, Value>
         let keys: TypedArray<Key>
@@ -654,5 +617,35 @@ extension TypedDictionary: Sequence {
     
     public func makeIterator() -> Iterator {
         Iterator(self)
+    }
+}
+
+public extension Variant {
+    /// Initialize ``Variant`` by wrapping ``TypedDictionary``
+    convenience init<Key, Value>(_ from: TypedDictionary<Key, Value>) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
+        self.init(from.dictionary)
+    }
+    
+    /// Initialize ``Variant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
+    convenience init?<Key, Value>(_ from: TypedDictionary<Key, Value>?) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
+    }
+}
+
+public extension FastVariant {
+    /// Initialize ``FastVariant`` by wrapping ``TypedDictionary``
+    init<Key, Value>(_ from: TypedDictionary<Key, Value>) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
+        self.init(from.dictionary)
+    }
+    
+    /// Initialize ``FastVariant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
+    init?<Key, Value>(_ from: TypedDictionary<Key, Value>?) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
+        guard let from else {
+            return nil
+        }
+        self.init(from)
     }
 }
