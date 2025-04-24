@@ -28,12 +28,12 @@
 /// You should use `YourType` instead.
 /// Godot guarantees non-nullability of `SomeType` when used as `Key` or `Value`.
 public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter>: CustomDebugStringConvertible, _GodotBridgeableBuiltin {
+    /// Reference to underlying `VariantDictionary` which is guaranteed to containing only `Key: Value` pairs.
+    public let dictionary: VariantDictionary
+    
     public var debugDescription: String {
         dictionary.debugDescription
     }
-
-    /// Reference to underlying `VariantDictionary` which is guaranteed to containing only `Key: Value` pairs.
-    public let dictionary: VariantDictionary
     
     /// Check if `dictionary` is compatible with this generic instantiation
     @inline(__always)
@@ -82,11 +82,13 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// ```
     ///
     /// This operation is O(n) as it requires full copy of Swift dictionary.
+    @inline(__always)
+    @inlinable
     public init(_ dictionary: [Key: Value]) where Key: Hashable {
         self.init()
         
         for (key, value) in dictionary {
-            set(value, at: key)
+            set(key: key, value: value)
         }
     }
     
@@ -98,6 +100,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// // same as
     /// let anotherDictionary = TypedArray<Node?, String>()
     /// ```
+    @inline(__always)
+    @inlinable
     public init(keyType: Key.Type = Key.self, valueType: Value.Type = Value.self) {
         // TODO: we can minimize amount of allocations here, but let's name the constructors first
         self.dictionary = VariantDictionary(
@@ -119,6 +123,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// let dictionary: TypedDictionary<Int, String>
     /// dictionay[10] = nil // will erase a value with key `10` if any
     /// ```
+    @inline(__always)
+    @inlinable
     public subscript(key: Key) -> Value? where Value: _GodotBridgeableBuiltin {
         get {
             let variant = dictionary[key]
@@ -143,6 +149,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// ```
     ///
     /// To erase value from the dictionary use ``erase(key:)``
+    @inline(__always)
+    @inlinable
     public subscript(key: Key) -> Value where Value._NonOptionalType: _GodotNullableBridgeable {
         get {
             let variant = dictionary[key]
@@ -157,18 +165,6 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         set {
             dictionary[key] = newValue.toFastVariant()
         }
-    }
-    
-    /// Set `value` at given `key`.
-    ///
-    /// Example:
-    /// ```
-    /// dictionary.set(10, at: 20)
-    /// // same thing
-    /// dictionary[20] = 10
-    /// ```
-    public func set(_ value: Value, at key: Key) {
-        dictionary[key] = value.toFastVariant()
     }
     
     /// Initialize ``TypedDictionary`` from existing ``VariantDictionary``.
@@ -333,6 +329,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     }
     
     /// Internal API. Returns ``PropInfo`` for when any ``TypedDictionary`` is used as a function argument in API visible to Godot
+    @inline(__always)
+    @inlinable
     public static func _argumentPropInfo(name: String) -> PropInfo {
         if Key._variantType == .nil && Value._variantType == .nil {
             // .nil means `Variant` in Godot in this context.
@@ -357,31 +355,41 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         }
     }
     
-    // MARK: - Proxy VariantDictionary
+    // MARK: - Proxy
     
     /* Methods */
     
     /// Returns the number of entries in the dictionary. Empty dictionaries (`{ }`) always return `0`. See also ``isEmpty()``.
+    @inline(__always)
+    @inlinable
     public func size() -> Int64 {
         return dictionary.size()
     }
     
     /// Returns `true` if the dictionary is empty (its size is `0`). See also ``size()``.
+    @inline(__always)
+    @inlinable
     public func isEmpty() -> Bool {
         return dictionary.isEmpty()
     }
     
     /// Clears the dictionary, removing all entries from it.
+    @inline(__always)
+    @inlinable
     public func clear() {
         dictionary.clear()
     }
     
     /// Assigns elements of another `dictionary` into the dictionary. Resizes the dictionary to match `dictionary`. Performs type conversions if the dictionary is typed.
+    @inline(__always)
+    @inlinable
     public func assign(dictionary otherDictionary: VariantDictionary) {
         dictionary.assign(dictionary: otherDictionary)
     }
     
     /// Sorts the dictionary in-place by key. This can be used to ensure dictionaries with the same contents produce equivalent results when getting the ``keys()``, getting the ``values()``, and converting to a string. This is also useful when wanting a JSON representation consistent with what is in memory, and useful for storing on a database that requires dictionaries to be sorted.
+    @inline(__always)
+    @inlinable
     public func sort() {
         dictionary.sort()
     }
@@ -389,7 +397,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// Adds entries from `dictionary` to this dictionary. By default, duplicate keys are not copied over, unless `overwrite` is `true`.
     ///
     /// > Note: ``merge(dictionary:overwrite:)`` is _not_ recursive. Nested dictionaries are considered as keys that can be overwritten or not depending on the value of `overwrite`, but they will never be merged together.
-    ///
+    @inline(__always)
+    @inlinable
     public func merge(dictionary otherDictionary: VariantDictionary, overwrite: Bool = false) {
         dictionary.merge(dictionary: otherDictionary, overwrite: overwrite)
         
@@ -398,7 +407,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// Returns a copy of this dictionary merged with the other `dictionary`. By default, duplicate keys are not copied over, unless `overwrite` is `true`. See also ``merge(dictionary:overwrite:)``.
     ///
     /// This method is useful for quickly making dictionaries with default values:
-    ///
+    @inline(__always)
+    @inlinable
     public func merged(dictionary otherDictionary: VariantDictionary, overwrite: Bool = false) -> VariantDictionary {
         dictionary.merged(dictionary: otherDictionary, overwrite: overwrite)
     }
@@ -408,12 +418,15 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// In GDScript, this is equivalent to the `in` operator:
     ///
     /// > Note: This method returns `true` as long as the `key` exists, even if its corresponding value is `null`.
-    ///
+    @inline(__always)
+    @inlinable
     public func has(key: Key) -> Bool {
         dictionary.has(key: key.toVariant())
     }
     
     /// Returns `true` if the dictionary contains all keys in the given `keys` array.
+    @inline(__always)
+    @inlinable
     public func hasAll(keys: VariantArray) -> Bool {
         dictionary.hasAll(keys: keys)
     }
@@ -421,7 +434,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// Finds and returns the first key whose associated value is equal to `value`, or `null` if it is not found.
     ///
     /// > Note: `null` is also a valid key. If inside the dictionary, ``findKey(value:)`` may give misleading results.
-    ///
+    @inline(__always)
+    @inlinable
     public func findKey(value: Variant?) -> Variant? {
         return dictionary.findKey(value: value)
     }
@@ -429,68 +443,119 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// Removes the dictionary entry by key, if it exists. Returns `true` if the given `key` existed in the dictionary, otherwise `false`.
     ///
     /// > Note: Do not erase entries while iterating over the dictionary. You can iterate over the ``keys()`` array instead.
-    ///
+    @inline(__always)
+    @inlinable
     public func erase(key: Key) -> Bool {
         dictionary.erase(key: key.toVariant())
     }
     
     /// Returns the list of keys in the dictionary.
+    @inline(__always)
+    @inlinable
     public func keys() -> TypedArray<Key> {
         TypedArray(from: dictionary.keys())
     }
     
     /// Returns the list of values in this dictionary.
+    @inline(__always)
+    @inlinable
     public func values() -> TypedArray<Value> {
         TypedArray(from: dictionary.values())
     }
     
     /// Creates and returns a new copy of the dictionary. If `deep` is `true`, inner ``VariantDictionary`` and ``VariantArray`` keys and values are also copied, recursively.
+    @inline(__always)
+    @inlinable
     public func duplicate(deep: Bool = false) -> Self {
         Self(from: dictionary.duplicate(deep: deep))
     }
     
     /// Returns `true` if the dictionary is typed the same as `dictionary`.
+    @inline(__always)
+    @inlinable
     public func isSameTyped(dictionary otherDictionary: VariantDictionary) -> Bool {
         otherDictionary.isSameTyped(dictionary: dictionary)
     }
     
     /// Returns `true` if the dictionary's keys are typed the same as `dictionary`'s keys.
+    @inline(__always)
+    @inlinable
     public func isSameTypedKey(dictionary otherDictionary: VariantDictionary) -> Bool {
         dictionary.isSameTypedKey(dictionary: otherDictionary)
     }
     
     /// Returns `true` if the dictionary's values are typed the same as `dictionary`'s values.
+    @inline(__always)
+    @inlinable
     public func isSameTypedValue(dictionary otherDictionary: VariantDictionary) -> Bool {
         dictionary.isSameTypedValue(dictionary: otherDictionary)
     }
     
     /// Returns the ``Script`` instance associated with this typed dictionary's keys, or `null` if it does not exist. See also ``isTypedKey()``.
+    @inline(__always)
+    @inlinable
     public func getTypedKeyScript() -> Variant? {
         dictionary.getTypedKeyScript()
     }
     
     /// Returns the ``Script`` instance associated with this typed dictionary's values, or `null` if it does not exist. See also ``isTypedValue()``.
+    @inline(__always)
+    @inlinable
     public func getTypedValueScript() -> Variant? {
         dictionary.getTypedValueScript()
     }
     
     /// Makes the dictionary read-only, i.e. disables modification of the dictionary's contents. Does not apply to nested content, e.g. content of nested dictionaries.
+    @inline(__always)
+    @inlinable
     public func makeReadOnly() {
         dictionary.makeReadOnly()
     }
     
     /// Returns `true` if the dictionary is read-only. See ``makeReadOnly()``. Dictionaries are automatically read-only if declared with `const` keyword.
+    @inline(__always)
+    @inlinable
     public func isReadOnly() -> Bool {
         dictionary.isReadOnly()
     }
     
     /// Returns `true` if the two dictionaries contain the same keys and values, inner ``VariantDictionary`` and ``VariantArray`` keys and values are compared recursively.
+    @inline(__always)
+    @inlinable
     public func recursiveEqual(dictionary otherDictionary: VariantDictionary, recursionCount: Int64) -> Bool {
         dictionary.recursiveEqual(dictionary: otherDictionary, recursionCount: recursionCount)
     }
     
+    /// Returns the corresponding value for the given `key` in the dictionary. If the `key` does not exist, returns `default`, or `null` if the parameter is omitted.
+    @inline(__always)
+    @inlinable
+    public func get(key: Key, `default`: Value) -> Value {
+        // This should always contain unwrappable value
+        unwrapOrCrash(
+            dictionary.get(key: key.toVariant(), default: `default`.toVariant()),
+            at: key
+        )
+    }
+    
+    /// Gets a value and ensures the key is set. If the `key` exists in the dictionary, this behaves like ``get(key:`default`:)``. Otherwise, the `default` value is inserted into the dictionary and returned.
+    @inline(__always)
+    @inlinable
+    public func getOrAdd(key: Key, `default`: Value) -> Value {
+        unwrapOrCrash(
+            dictionary.getOrAdd(key: key.toVariant(), default: `default`.toVariant()),
+            at: key
+        )
+    }
+    
+    /// Sets the value of the element at the given `key` to the given `value`.
+    @inline(__always)
+    @inlinable
+    public func set(key: Key, value: Value) -> Bool {
+        dictionary.set(key: key.toVariant(), value: value.toVariant())
+    }
+    
     // MARK: - Invariant enforcing
-    /// `Value` is `Object?` here.
+    /// `Value` is `Object?` or `Variant?` here. Or it's in the context where unwrapping is never expected to fail.
     /// It doesn't throw if it's `nil`, it returns `nil`.
     /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
     @inline(__always)
@@ -503,7 +568,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         }
     }
     
-    /// `Value` is `Object?` here.
+    /// `Value` is `Object?` or `Variant?` here. Or it's in the context where unwrapping is never expected to fail.
     /// It doesn't throw if it's `nil`, it returns `nil`.
     /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
     @inline(__always)
