@@ -28,12 +28,13 @@ those types would clash with the existing Swift types with the same names.
 
 Here is a list of the current data type mappings:
 
-| GDScript type | SwiftGodot Name       |
-|---------------|-----------------------|
-| String        | GString               |
-| Dictionary    | VariantDictionary           |
-| Array         | VariantArray          |
-| Array[Element]| TypedArray            |
+| GDScript type      | SwiftGodot Name       |
+|--------------------|-----------------------|
+| String             | GString               |
+| Dictionary         | VariantDictionary     |
+| Dictionary[Element]| TypedDictionary       |
+| Array              | VariantArray          |
+| Array[Element]     | TypedArray            |
 
 
 The ``VariantArray`` is a type-erased array that can hold any sort of element that can be managed by Godot.
@@ -47,6 +48,14 @@ let objects = TypedArray<Object?>
 ```
 
 Note that in the context of `Object`-derived classes only `Optional` elements are supported. That reflects exactly how Godot behaves. It allows `nil`s in `Object`-derived typed arrays, but not in other types.
+
+### Old Types
+
+In the past, we used different types for various functions which have now been unified, the old names of types that you might find in older documentation or samples are as follows:
+
+* `GArray`, became `VariantArray`.
+* `VariantCollection<BuiltinType>`, became `TypedArray<BuiltinType>`
+* `ObjectCollection<ObjectOrSubclassType>`, became `TypedArray<ObjectOrSubclassType?>`
 
 ## GDScript Helper Functions
 
