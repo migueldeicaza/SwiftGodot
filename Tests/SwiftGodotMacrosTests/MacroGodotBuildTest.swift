@@ -173,7 +173,7 @@ final class Demo21: Node {
 class SomeNode: Node {
     @Callable
     func printNames(of nodes: TypedArray<Node?>) {
-        let node0 = nodes[0]
+        _ = nodes[0]
         
         nodes.forEach { print($0?.name ?? "") }
     }
@@ -219,4 +219,15 @@ class DebugThing: SwiftGodot.Object {
     func bar(_ value: Variant?) -> Variant? {
         return value
     }
+}
+
+@Godot class NodeWithNewCallableAutoSnakeCase: Node {
+    @Callable(autoSnakeCase: true)
+    func noNeedToSnakeCaseFunctionsNow() {}
+
+    @Callable(autoSnakeCase: false)
+    func or_is_there() {}
+
+    @Callable
+    func defaultIsLegacyCompatible() {}
 }

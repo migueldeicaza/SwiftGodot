@@ -29,13 +29,16 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case nameCollision(String)
     case legacySignalMacroUnexpectedArgumentsSyntax
     case legacySignalMacroTooManyArguments
+    case illegalCallableAutoSnakeCaseArgument(String)    
     
     var severity: DiagnosticSeverity {
         return .error
     }
 
     var message: String {
-        switch self {        
+        switch self {
+        case .illegalCallableAutoSnakeCaseArgument(let expr):
+            "`autoSnakeCase: \(expr)` is illegal. `true` or `false` expected."
         case .exportMacroOnReadonlyVariable:
             "@Export attribute can only be applied to mutable stored or computed { get set } property"
         case .godotMacroNotOnClass:

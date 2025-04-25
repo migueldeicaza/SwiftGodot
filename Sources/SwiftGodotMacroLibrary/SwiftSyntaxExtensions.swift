@@ -94,6 +94,38 @@ extension VariableDeclSyntax {
     }
 }
 
+extension AttributeSyntax.Arguments {
+    func argument(labeled label: String) -> LabeledExprSyntax? {
+        if case let .argumentList(listSyntax) = self {
+            return listSyntax.first { exprSyntax in
+                exprSyntax.label?.description == label
+            }
+        } else {
+            return nil
+        }
+    }
+}
+
+extension AttributeSyntax {
+    var callableAutoSnakeCaseArgument: Bool {
+        get throws {
+            guard let exprSyntax = arguments?.argument(labeled: "autoSnakeCase") else {
+                return false
+            }
+            
+            let expr = exprSyntax.expression.description
+            switch expr {
+            case "true":
+                return true
+            case "false":
+                return false
+            default:
+                throw GodotMacroError.illegalCallableAutoSnakeCaseArgument(expr)
+            }
+        }
+    }
+}
+
 extension AttributeListSyntax {
     func attribute(named name: String) -> AttributeSyntax? {
         for element in self {

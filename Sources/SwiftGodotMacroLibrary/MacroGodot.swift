@@ -69,7 +69,7 @@ class GodotMacroProcessor {
     }
         
     func processFunction(_ funcDecl: FunctionDeclSyntax) throws {
-        if !funcDecl.hasCallableAttribute {
+        guard let callableAttribute = funcDecl.attributes.attribute(named: "Callable") else {
             return
         }
         
@@ -78,6 +78,13 @@ class GodotMacroProcessor {
         }
         
         let funcName = funcDecl.name.text
+        
+        let godotFuncName: String
+        if try callableAttribute.callableAutoSnakeCaseArgument {
+            godotFuncName = funcName.camelCaseToSnakeCase()
+        } else {
+            godotFuncName = funcName
+        }
         
         let p = classInitializerPrinter
                         
@@ -107,7 +114,7 @@ class GodotMacroProcessor {
         p("SwiftGodot._registerMethod", .parentheses) {
             p("""
             className: className,
-            name: "\(funcName)", 
+            name: "\(godotFuncName)", 
             flags: \(flags), 
             returnValue: SwiftGodot._returnValuePropInfo(\(returnTypename).self),    
             """)
@@ -117,7 +124,7 @@ class GodotMacroProcessor {
             p("function: \(className)._mproxy_\(funcName)")
         }
         
-        try checkNameCollision(funcName, for: DeclSyntax(funcDecl))
+        try checkNameCollision(godotFuncName, for: DeclSyntax(funcDecl))
     }
       
 
