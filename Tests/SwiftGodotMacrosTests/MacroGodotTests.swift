@@ -445,5 +445,25 @@ final class MacroGodotTests: MacroGodotTestCase {
             ]
         )
     }
+    
+    func testCallableAutoSnakeCase() {
+        assertExpansion(
+            of: """
+            @Godot class TestClass: Node {
+                @Callable(autoSnakeCase: true)
+                func noNeedToSnakeCaseFunctionsNow() {}
+            
+                @Callable(autoSnakeCase: false)
+                func or_is_there() {}
+            
+                @Callable(autoSnakeCase: false)
+                func thatIsHideous() {}
+
+                @Callable
+                func defaultIsLegacyCompatible() {}
+            }
+            """
+        )
+    }
 
 }

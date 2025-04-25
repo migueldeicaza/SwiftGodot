@@ -30,9 +30,11 @@ public enum ClassBehavior: Int {
 /// When this attribute is applied to a function, the function is exposed to the Godot engine, and it
 /// can be called by scripts in other languages.
 ///
-/// The parameters to the function must be parameters that can be wrapped in a ``Variant`` structure
+/// The parameters and returns type of the function must be `_GodotBridgeable`.
+///
+/// - Parameter autoSnakeCase: if `true` (default value is `false`), the function name will be automatically translated from `camelCase` to `snake_case` when exposed to Godot
 @attached(peer, names: prefixed(_mproxy_))
-public macro Callable() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
+public macro Callable(autoSnakeCase: Bool = false) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
 
 /// Exposes a property or variable to the Godot runtime
 ///
