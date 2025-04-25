@@ -200,7 +200,10 @@ class DebugThing: SwiftGodot.Object {
 }
 
 @Godot class MyThing: SwiftGodot.RefCounted {
-
+    @Callable
+    func nodeAddedToScene(node: Node?) {
+        
+    }
 }
 
 @Godot class ObjectWithCallableReturningOptionalObject: SwiftGodot.Node {
