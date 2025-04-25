@@ -12,39 +12,18 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-extension FunctionDeclSyntax {
-    var hasClassOrStaticModifier: Bool {
-        modifiers.contains { modifier in
-            switch modifier.name.tokenKind {
-            case .keyword(let keyword):
-                switch keyword {
-                case .static, .class:
-                    return true
-                default:
-                    return false
-                }
-            default:
-                return false
-            }
-        }
-    }
-}
-
 public struct GodotCallable: PeerMacro {
     static func process (funcDecl: FunctionDeclSyntax) throws -> String {
-        let funcName = funcDecl.name.text
-        
+        let funcName = funcDecl.name.text        
         let isStatic = funcDecl.hasClassOrStaticModifier
         
-        if let effects = funcDecl.signature.effectSpecifiers,
-           effects.asyncSpecifier?.presence == .present ||
-            effects.throwsClause?.throwsSpecifier.presence == .present {
-            throw GodotMacroError.unsupportedCallableEffect
+        if funcDecl.hasAsyncOrThrowsSpecifier {
+            throw GodotMacroError.callableMacroOnThrowingOrAsyncFunction
         }
         
         var body = ""
         
-        let parameters = funcDecl.signature.parameterClause.parameters
+        let parameters = funcDecl.parameters
         
         var callArgsList: [String] = []
         
@@ -68,11 +47,8 @@ public struct GodotCallable: PeerMacro {
             body += """
                     let arg\(index) = try arguments.argument(ofType: \(ptype).self, at: \(index))            
             """
-            
-            let first = parameter.firstName.text
                         
-            let labelOrNothing = first != "_" ? "\(first): " : ""
-            callArgsList.append("\(labelOrNothing)arg\(index)")
+            callArgsList.append("\(parameter.labelForCaller)arg\(index)")
         }
         
         let callArgs = callArgsList.joined(separator: ", ")
@@ -106,11 +82,11 @@ public struct GodotCallable: PeerMacro {
     
     public static func expansion(of node: SwiftSyntax.AttributeSyntax, providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol, in context: some SwiftSyntaxMacros.MacroExpansionContext) throws -> [SwiftSyntax.DeclSyntax] {
         guard let funcDecl = declaration.as(FunctionDeclSyntax.self) else {
-            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.requiresFunction)
+            let classError = Diagnostic(node: declaration.root, message: GodotMacroError.callableMacroNotOnFunction)
             context.diagnose(classError)
             return []
         }
-        return [SwiftSyntax.DeclSyntax (stringLiteral: try process (funcDecl: funcDecl))]
+        return [SwiftSyntax.DeclSyntax(stringLiteral: try process(funcDecl: funcDecl))]
     }
     
 }

@@ -12,17 +12,17 @@ import SwiftGodotTestability
 @Godot
 fileprivate class TestObject: Object {
     @Callable
-    func countObjects(_ objects: ObjectCollection<TestObject>) -> Int {
+    func countObjects(_ objects: TypedArray<TestObject?>) -> Int {
         return objects.count
     }
     
     @Callable
-    func countBuiltins(_ builtins: VariantCollection<Int>) -> Int {
+    func countBuiltins(_ builtins: TypedArray<Int>) -> Int {
         return builtins.count
     }
     
     @Callable
-    func countMixed(builtins: VariantCollection<Int>, _ objects: ObjectCollection<RefCounted>, array: GArray, variant: Variant?) -> Int? {
+    func countMixed(builtins: TypedArray<Int>, _ objects: TypedArray<RefCounted?>, array: VariantArray, variant: Variant?) -> Int? {
         return builtins.count + objects.count + array.count
     }
 }
@@ -33,7 +33,7 @@ fileprivate class TestObject2: TestObject { // for checking inheritance
 
 final class MacroCallableIntegrationTests: GodotTestCase {
     
-    override static var godotSubclasses: [Wrapped.Type] {
+    override static var godotSubclasses: [Object.Type] {
         return [TestObject.self, TestObject2.self]
     }
     
@@ -44,7 +44,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject2()
         let object2 = TestObject()
         
-        let objectsArray = GArray()
+        let objectsArray = VariantArray()
         objectsArray.append(nil)
         objectsArray.append(Variant(object0))
         objectsArray.append(Variant(object1))
@@ -66,7 +66,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject2()
         let object2 = TestObject()
         
-        let objectsArray = GArray()
+        let objectsArray = VariantArray()
         objectsArray.append(nil)
         objectsArray.append(Variant(object0))
         objectsArray.append(Variant(object1))
@@ -74,9 +74,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(Variant(object2))
         objectsArray.append(nil)
         objectsArray.append(Variant(RefCounted())) // this one causes the failure
-        
-        // Fails, prints into console and returns nil due to RefCounted not being TestObject
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), nil)
+                
+        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), 0.toVariant())
         testObject.free()
         object0.free()
         object1.free()
@@ -90,7 +89,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject2()
         let object2 = TestObject()
         
-        let objectsArray = GArray(TestObject.self)
+        let objectsArray = VariantArray(TestObject.self)
         objectsArray.append(nil) // 1
         objectsArray.append(Variant(object0)) // 2
         objectsArray.append(Variant(object1)) // 3
@@ -117,7 +116,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         let object1 = TestObject()
         let object2 = TestObject()
         
-        let objectsArray = ObjectCollection<TestObject>()
+        let objectsArray = TypedArray<TestObject?>()
         objectsArray.append(nil) // 1
         objectsArray.append(object0) // 2
         objectsArray.append(object1) // 3
@@ -135,7 +134,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testImplicitlyTypingBuiltinsArray() {
         let testObject = TestObject()
         
-        let builtinsArray = GArray()
+        let builtinsArray = VariantArray()
         builtinsArray.append(Variant(1))
         builtinsArray.append(Variant(2))
         builtinsArray.append(Variant(3))
@@ -148,7 +147,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testImplicitTypingOfUntypedBuiltinArrayFailure() {
         let testObject = TestObject()
         
-        let array = GArray()
+        let array = VariantArray()
         array.append(nil)
         array.append(Variant(1))
         array.append(Variant(2))
@@ -158,14 +157,14 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         array.append(Variant(4))
         
         // Fails, prints into console and returns nil due to typed builtin array not allowing nils
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), nil)
+        XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), 0.toVariant())
         testObject.free()
     }
     
     func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
         let testObject = TestObject()
         
-        let builtinsArray = GArray(Int.self)
+        let builtinsArray = VariantArray(Int.self)
         builtinsArray.append(Variant(1))
         builtinsArray.append(Variant(2))
         builtinsArray.append(Variant(3))
@@ -179,7 +178,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testExplicitlyTypedBuiltinArray() {
         let testObject = TestObject()
         
-        let builtinsArray = VariantCollection<Int>()
+        let builtinsArray = TypedArray<Int>()
         builtinsArray.append(1)
         builtinsArray.append(2)
         builtinsArray.append(3)
@@ -191,14 +190,14 @@ final class MacroCallableIntegrationTests: GodotTestCase {
     func testCountMixed() {
         let testObject = TestObject()
         
-        let builtins = GArray(Int.self)
+        let builtins = VariantArray(Int.self)
         builtins.append(Variant(1)) // 1
         
-        let objects = ObjectCollection<RefCounted>()
+        let objects = TypedArray<RefCounted?>()
         objects.append(nil) // 2
         objects.append(RefCounted()) // 3
         
-        let variants = GArray()
+        let variants = VariantArray()
         variants.append(nil) // 4
         variants.append(Variant(RefCounted())) // 5
         variants.append(Variant("Foo")) // 6

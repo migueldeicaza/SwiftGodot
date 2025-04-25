@@ -47,30 +47,11 @@ public func _wrapCallableResult(_ value: Variant?) -> FastVariant? {
     return value.toFastVariant()
 }
 
-/// Internal API. Swift Array.
+/// Internal API. [Object]. It's the only case where non-optional object array can be used.
 @inline(__always)
 @inlinable
-public func _wrapCallableResult<T>(_ value: [T]) -> FastVariant? where T: _GodotBridgeable {
-    let array = GArray(T.self)
-    for element in value {
-        array.append(element.toVariant())
-    }
-    
-    return array.toFastVariant()
-}
-
-/// Internal API. ObjectCollection.
-@inline(__always)
-@inlinable
-public func _wrapCallableResult<T>(_ value: ObjectCollection<T>) -> FastVariant? where T: _GodotBridgeable {
-    value.array.toFastVariant()
-}
-
-/// Internal API. VariantCollection.
-@inline(__always)
-@inlinable
-public func _wrapCallableResult<T>(_ value: VariantCollection<T>) -> FastVariant? where T: _GodotBridgeable {
-    value.array.toFastVariant()
+public func _wrapCallableResult<T>(_ value: [T]) -> FastVariant? where T: Object {
+    (value as [T?]).toFastVariant()
 }
 
 /// Internal API. Void.

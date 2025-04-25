@@ -21,16 +21,16 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "String":
         return "String ()"
     case "Array":
-        return "GArray ()"
+        return "VariantArray ()"
     case "Dictionary":
-        return "GDictionary ()"
+        return "VariantDictionary ()"
     case let t where t.starts (with: "typedarray::"):
         let nestedTypeName = String (t.dropFirst(12))
         let simple = SimpleType(type: nestedTypeName)
         if classMap [nestedTypeName] != nil {
-            return "ObjectCollection<\(getGodotType (simple))>(\(initCollection))"
+            return "TypedArray<\(getGodotType (simple))?>(\(initCollection))"
         } else {
-            return "VariantCollection<\(getGodotType (simple))>(\(initCollection))"
+            return "TypedArray<\(getGodotType (simple))>(\(initCollection))"
         }
     case "enum::Error":
         return ".ok"
@@ -185,7 +185,7 @@ func generateVirtualProxy (_ p: Printer,
                     case "String":
                         p ("ret.content = GString.zero")
                     case "Array":
-                        p ("ret.content = GArray.zero")
+                        p ("ret.content = VariantArray.zero")
                     default:
                         p ("ret.content = \(type).zero")
                     }
@@ -197,7 +197,7 @@ func generateVirtualProxy (_ p: Printer,
 
 // Dictioanry of Godot Type Name to array of method names that can get a @discardableResult
 // Notice that the type is looked up as the original Godot name, not
-// the mapped name (it is "Array", not "GArray"):
+// the mapped name (it is "Array", not "VariantArray"):
 let discardableResultList: [String: Set<String>] = [
     "Object": ["emit_signal"],
     "Array": ["resize"],
@@ -236,7 +236,7 @@ let omittedMethodsList: [String: Set<String>] = [
 
 // Dictionary used to explicitly tell the generator to replace the first argument label with "_ "
 let omittedFirstArgLabelList: [String: Set<String>] = [
-    "GArray": ["append"],
+    "VariantArray": ["append"],
     "PackedColorArray": ["append"],
     "PackedFloat64Array": ["append"],
     "PackedInt64Array": ["append"],
@@ -549,7 +549,7 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
     }
 }
 
-let objectInherits = "Wrapped, _GodotBridgeable"
+let objectInherits = "Wrapped, _GodotBridgeable, _GodotNullableBridgeable"
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     // Determine if it is a singleton, but exclude EditorInterface

@@ -30,14 +30,16 @@
 /// - Can work as an exported property, so the editor can edit it universally.
 /// - Can be used for dictionaries, arrays, parsers, etc.
 ///
-/// > Note: Containers (``GArray`` and ``GDictionary``): Both are implemented using variants.
-/// A ``GDictionary`` can match any datatype used as key to any other datatype.  An ``GArray``
-/// just holds an array of Variants.  A ``Variant`` can also hold a ``GDictionary`` and an ``GArray``
+/// > Note: Containers (``VariantArray`` and ``VariantDictionary``): Both are implemented using variants.
+/// A ``VariantDictionary`` can match any datatype used as key to any other datatype.  An ``VariantArray``
+/// just holds an array of Variants.  A ``Variant`` can also hold a ``VariantDictionary`` and an ``VariantArray``
 /// inside.
 ///
 /// Modifications to a container will modify all references to it.
 
-public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable {
+public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable, _GodotNullableBridgeable {
+    public typealias TypedArrayElement = Variant?
+    
     @usableFromInline
     typealias ContentType = VariantContent
     
@@ -210,8 +212,8 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         /// Avoid allocating `GString` wrapper at least
         var stringContent = GString.zero
         gi.string_new_with_utf8_chars(&stringContent, from)
-        self.init(payload: stringContent, constructor: GString.variantFromSelf)
-        GString.destructor(&stringContent)
+        self.init(payload: stringContent, constructor: GodotInterfaceForString.variantFromSelf)
+        GodotInterfaceForString.destructor(&stringContent)
     }
     
     /// Initialize ``Variant`` by wrapping ``String?``, fails if it's `nil`
@@ -265,7 +267,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         gi.variant_stringify (&content, &ret)
         
         let str = stringFromGodotString(&ret)
-        GString.destructor (&ret)
+        GodotInterfaceForString.destructor(&ret)
         return str ?? ""
     }
     
@@ -471,7 +473,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
     
     /// Internal API.
-    public static var _godotTypeName: String {
+    public static var _builtinOrClassName: String {
         "Variant"
     }
     
@@ -556,7 +558,7 @@ extension Variant? {
 
 public extension Variant.GType {
     /// Internal API. Godot type name of the type with this variant tag.
-    var _godotTypeName: String {
+    var _builtinOrClassName: String {
         switch self {
         case .nil:
             fatalError("Unreachable")

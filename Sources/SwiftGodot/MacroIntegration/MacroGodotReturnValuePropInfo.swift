@@ -81,40 +81,13 @@ public func _returnValuePropInfo<T>(
     T._returnValuePropInfo
 }
 
-/// Internal API. Swift Builtin Array.
-@inline(__always)
-@inlinable
-public func _returnValuePropInfo<T>(
-    _ type: [T].Type = [T].self
-) -> PropInfo where T: _GodotBridgeableBuiltin {
-    VariantCollection<T>._returnValuePropInfo
-}
-
-/// Internal API. Swift Object Array.
+/// Internal API. [Object]. It's the only case where non-optional object array can be used.
 @inline(__always)
 @inlinable
 public func _returnValuePropInfo<T>(
     _ type: [T].Type = [T].self
 ) -> PropInfo where T: Object {
-    ObjectCollection<T>._returnValuePropInfo
-}
-
-/// Internal API. VariantCollection.
-@inline(__always)
-@inlinable
-public func _returnValuePropInfo<T>(
-    _ type: VariantCollection<T>.Type = VariantCollection<T>.self
-) -> PropInfo where T: _GodotBridgeableBuiltin {
-    VariantCollection<T>._returnValuePropInfo
-}
-
-/// Internal API. ObjectCollection.
-@inline(__always)
-@inlinable
-public func _returnValuePropInfo<T>(
-    _ type: ObjectCollection<T>.Type = ObjectCollection<T>.self
-) -> PropInfo where T: Object {
-    ObjectCollection<T>._returnValuePropInfo
+    [T?]._returnValuePropInfo
 }
 
 /// Internal API. Void.

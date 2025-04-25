@@ -120,13 +120,13 @@ struct MethodArgument {
         /// e.g. Godot Variant to Swift Variant?
         case variant
         
-        /// e.g. GArray.content
+        /// e.g. VariantArray.content
         case contentRef
         
         /// e.g. Object.handle
         case objectRef(isOptional: Bool)
         
-        /// e.g. ObjectCollection<Object>, VariantCollection<Float>
+        /// e.g. TypedArray<Object>, TypedArray<Float>
         case typedArray(String)
         
         /// Implicit GString -> String
@@ -573,7 +573,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                     return "var _result: Variant.ContentType = Variant.zero"
                 }
             } else if godotReturnType.starts(with: "typedarray::") {
-                let (storage, initialize) = getBuiltinStorage ("Array")
+                let (storage, initialize) = getBuiltinStorage ("Array", asComputedProperty: false)
                 return "var _result: \(storage)\(initialize)"
             } else if godotReturnType == "String" {
                 return "let _result = GString ()"
@@ -678,7 +678,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             //print ("OBJ RETURN: \(className) \(method.name)")
             return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result, ownsRef: true)\(returnOptional ? "" : "!")"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
-            let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "content: _result")
+            let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"
         } else if godotReturnType?.starts(with: "enum::") ?? false {
             return "return \(returnType) (rawValue: _result)!"

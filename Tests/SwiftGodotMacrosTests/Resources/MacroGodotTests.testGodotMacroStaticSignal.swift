@@ -12,10 +12,25 @@ class Hi: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Hi> (name: className)
-        classInfo.registerSignal(name: Hi.pickedUpItem.name, arguments: Hi.pickedUpItem.arguments)
-        classInfo.registerSignal(name: Hi.scored.name, arguments: Hi.scored.arguments)
-        classInfo.registerSignal(name: Hi.differentInit.name, arguments: Hi.differentInit.arguments)
-        classInfo.registerSignal(name: Hi.differentInit2.name, arguments: Hi.differentInit2.arguments)
-    } ()
+        SwiftGodot._registerSignal(
+            Hi.pickedUpItem.name,
+            in: className,
+            arguments: Hi.pickedUpItem.arguments
+        )
+        SwiftGodot._registerSignal(
+            Hi.scored.name,
+            in: className,
+            arguments: Hi.scored.arguments
+        )
+        SwiftGodot._registerSignal(
+            Hi.differentInit.name,
+            in: className,
+            arguments: Hi.differentInit.arguments
+        )
+        SwiftGodot._registerSignal(
+            Hi.differentInit2.name,
+            in: className,
+            arguments: Hi.differentInit2.arguments
+        )
+    }()
 }

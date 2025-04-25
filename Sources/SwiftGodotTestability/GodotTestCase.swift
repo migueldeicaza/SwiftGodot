@@ -34,7 +34,7 @@ open class GodotTestCase: EmbeddedTestCase<GodotTestHost> {
 
     /// List of types that need to be registered in the Godot runtime.
     /// Subclasses should override this to return the types they need.
-    open class var godotSubclasses: [Wrapped.Type] {
+    open class var godotSubclasses: [Object.Type] {
         return []
     }
 

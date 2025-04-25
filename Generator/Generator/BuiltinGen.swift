@@ -63,6 +63,17 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
     return val
 }
 
+extension JGodotTypeEnum {
+    var swiftTypeName: String {
+        switch self {
+        case .int:
+            return "Int"
+        default:
+            return rawValue
+        }
+    }
+}
+
 func generateBuiltinConstants (_ p: Printer,
                                _ bc: JGodotBuiltinClass,
                                typeName: String) {
@@ -79,15 +90,17 @@ func generateBuiltinConstants (_ p: Printer,
         if constant.description != "" {
             doc (p, bc, constant.description)
         }
-        p ("public static let \(snakeToCamel (constant.name)) = \(val)")
+        p ("public static var \(snakeToCamel(constant.name)): \(constant.type.swiftTypeName) { \(val) }")
     }
 }
 
 func generateBuiltinCtors (_ p: Printer,
+                           _ gip: Printer,
                            _ bc: JGodotBuiltinClass,
                            _ ctors: [JGodotConstructor],
                            godotTypeName: String,
                            typeName: String,
+                           typeGodotInterfaceName: String,
                            typeEnum: String,
                            members: [JGodotArgument]?)
 {
@@ -98,8 +111,8 @@ func generateBuiltinCtors (_ p: Printer,
         var visibility = "public"
         
         let ptrName = "constructor\(m.index)"
-        p.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrConstructor") {
-            p("gi.variant_get_ptr_constructor(\(typeEnum), \(m.index))!")
+        gip.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrConstructor") {
+            gip("gi.variant_get_ptr_constructor(\(typeEnum), \(m.index))!")
         }
             
         for arg in m.arguments ?? [] {
@@ -116,7 +129,7 @@ func generateBuiltinCtors (_ p: Printer,
             }
         }
         
-        p ("\(visibility) init (\(args))") {
+        p ("\(visibility) init(\(args))") {
             // Determine if we have a constructors whose sole job is to initialize the members
             // of the struct, in that case, just do that, do not call into Godot.
             if let margs = m.arguments, let members, margs.count == members.count {
@@ -184,12 +197,12 @@ func generateBuiltinCtors (_ p: Printer,
             
             if arguments.isEmpty {
                 preparingArguments(p, arguments: arguments) {
-                    p ("\(typeName).\(ptrName)(&\(ptr), nil)")
+                    p ("\(typeGodotInterfaceName).\(ptrName)(&\(ptr), nil)")
                 }
             } else {
                 preparingArguments(p, arguments: arguments) {
                     aggregatingPreparedArguments(p, argumentsCount: arguments.count) {
-                        p("\(typeName).\(ptrName)(&\(ptr), pArgs)")
+                        p("\(typeGodotInterfaceName).\(ptrName)(&\(ptr), pArgs)")
                     }
                 }
             }
@@ -199,6 +212,7 @@ func generateBuiltinCtors (_ p: Printer,
 
 func generateMethodCall (_ p: Printer,
                          typeName: String,
+                         typeGodotInterfaceName: String,
                          methodToCall: String,
                          godotReturnType: String?,
                          isStatic: Bool,
@@ -253,17 +267,17 @@ func generateMethodCall (_ p: Printer,
         }
         
         if isStatic {
-            return "\(typeName).\(methodToCall)(nil, \(argsRef), \(ptrResult), \(countArg))"
+            return "\(typeGodotInterfaceName).\(methodToCall)(nil, \(argsRef), \(ptrResult), \(countArg))"
         } else {
             if isStruct(typeName) {
                 return """
                 var mutSelfCopy = self
                 withUnsafeMutablePointer (to: &mutSelfCopy) { ptr in
-                   \(typeName).\(methodToCall)(ptr, \(argsRef), \(ptrResult), \(countArg))
+                   \(typeGodotInterfaceName).\(methodToCall)(ptr, \(argsRef), \(ptrResult), \(countArg))
                 }
                 """
             } else {
-                return "\(typeName).\(methodToCall)(&content, \(argsRef), \(ptrResult), \(countArg))"
+                return "\(typeGodotInterfaceName).\(methodToCall)(&content, \(argsRef), \(ptrResult), \(countArg))"
             }
         }
     }
@@ -329,8 +343,11 @@ private struct MethodSignature: Hashable, ExpressibleByStringLiteral {
 ///   - godotTypeName: the type for which we are generating operators
 ///   - typeName: the type name above, but in Swift
 func generateBuiltinOperators (_ p: Printer,
+                               _ gip: Printer,
                                _ bc: JGodotBuiltinClass,
-                               typeName: String) {
+                               typeName: String,
+                               typeGodotInterfaceName: String
+) {
     let operators = bc.operators
     let godotTypeName = bc.name
     var n = 0
@@ -351,10 +368,10 @@ func generateBuiltinOperators (_ p: Printer,
             guard let (operatorCode, swiftOperator) = infixOperatorMap (op.name) else {
                 continue
             }
-            p.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrOperatorEvaluator") {
-                let rightTypeCode = builtinTypecode (right)
-                let leftTypeCode = builtinTypecode (godotTypeName)
-                p ("return gi.variant_get_ptr_operator_evaluator (\(operatorCode), \(leftTypeCode), \(rightTypeCode))!")
+            gip.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrOperatorEvaluator") {
+                let rightTypeCode = builtinTypecode(right)
+                let leftTypeCode = builtinTypecode(godotTypeName)
+                gip("return gi.variant_get_ptr_operator_evaluator(\(operatorCode), \(leftTypeCode), \(rightTypeCode))!")
             }
             
             let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
@@ -368,7 +385,7 @@ func generateBuiltinOperators (_ p: Printer,
                 doc (p, bc, desc)
             }
             
-            p ("public static func \(swiftOperator) (lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
+            p ("public static func \(swiftOperator)(lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
                 if customImplementation != nil {
                     p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
                 }
@@ -403,7 +420,7 @@ func generateBuiltinOperators (_ p: Printer,
                 )
                     
                 preparingArguments(p, arguments: [lhsa, rhsa]) {
-                    p("\(typeName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
+                    p("\(typeGodotInterfaceName).\(ptrName)(pArg0, pArg1, \(ptrResult))")
                 }
                 
                 if op.returnType == "String" && mapStringToSwift {
@@ -425,9 +442,11 @@ func generateBuiltinOperators (_ p: Printer,
 
 
 func generateBuiltinMethods (_ p: Printer,
+                             _ gip: Printer,
                              _ bc: JGodotBuiltinClass,
                              _ methods: [JGodotBuiltinClassMethod],
                              _ typeName: String,
+                             _ typeGodotInterfaceName: String,
                              _ typeEnum: String,
                              isStruct: Bool)
 {
@@ -456,14 +475,14 @@ func generateBuiltinMethods (_ p: Printer,
         if ret == "Object" {
             continue
         }
-        let retSig = ret == "" ? "" : "-> \(ret)"
+        let retSig = ret == "" ? "" : " -> \(ret)"
         var args = ""
     
         let ptrName = "method_\(m.name)"
         
-        p.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
-            p ("var name = FastStringName(\"\(m.name)\")")
-            p ("return gi.variant_get_ptr_builtin_method(\(typeEnum), &name.content, \(m.hash))!")
+        gip.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
+            gip("var name = FastStringName(\"\(m.name)\")")
+            gip("return gi.variant_get_ptr_builtin_method(\(typeEnum), &name.content, \(m.hash))!")
         }
         
         for arg in m.arguments ?? [] {
@@ -504,7 +523,7 @@ func generateBuiltinMethods (_ p: Printer,
                 p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")
             }
             
-            generateMethodCall (p, typeName: typeName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
+            generateMethodCall(p, typeName: typeName, typeGodotInterfaceName: typeGodotInterfaceName, methodToCall: ptrName, godotReturnType: m.returnType, isStatic: m.isStatic, isVararg: m.isVararg, arguments: m.arguments ?? [])
             
             if let customImplementation {
                 p("#else // CUSTOM_BUILTIN_IMPLEMENTATIONS")
@@ -515,22 +534,22 @@ func generateBuiltinMethods (_ p: Printer,
     }
     if bc.isKeyed {
         let variantType = builtinTypecode(bc.name)
-        p.staticProperty(visibility: "private", isStored: true, name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
-            p ("return gi.variant_get_ptr_keyed_getter (\(variantType))!")
+        gip.staticProperty(isStored: true, name: "keyed_getter", type: "GDExtensionPtrKeyedGetter") {
+            gip("return gi.variant_get_ptr_keyed_getter (\(variantType))!")
         }
-        p.staticProperty(visibility: "private", isStored: true, name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
-            p ("return gi.variant_get_ptr_keyed_setter (\(variantType))!")
+        gip.staticProperty(isStored: true, name: "keyed_setter", type: "GDExtensionPtrKeyedSetter") {
+            gip("return gi.variant_get_ptr_keyed_setter (\(variantType))!")
         }
-        p.staticProperty(visibility: "private", isStored: true, name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
-            p ("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
+        gip.staticProperty(isStored: true, name: "keyed_checker", type: "GDExtensionPtrKeyedChecker") {
+            gip("return gi.variant_get_ptr_keyed_checker (\(variantType))!")
         }
         p("""
         public subscript(key: Variant?) -> Variant? {
             get {                            
                 withUnsafePointer(to: key.content) { pKeyContent in
-                    if Self.keyed_checker(&content, pKeyContent) != 0 {
+                    if \(typeGodotInterfaceName).keyed_checker(&content, pKeyContent) != 0 {
                         var result = Variant.zero
-                        Self.keyed_getter (&content, pKeyContent, &result)
+                        \(typeGodotInterfaceName).keyed_getter(&content, pKeyContent, &result)
                         // Returns unowned handle
                         return Variant(takingOver: result)
                     } else {
@@ -542,10 +561,10 @@ func generateBuiltinMethods (_ p: Printer,
             set {
                 withUnsafePointer(to: key.content) { pKeyContent in
                     if let newValue {
-                        Self.keyed_setter(&content, pKeyContent, &newValue.content)
+                        \(typeGodotInterfaceName).keyed_setter(&content, pKeyContent, &newValue.content)
                     } else {                    
                         var nilContent = Variant.zero
-                        Self.keyed_setter(&content, pKeyContent, &nilContent)
+                        \(typeGodotInterfaceName).keyed_setter(&content, pKeyContent, &nilContent)
                     }
                 }                                
             }
@@ -555,21 +574,21 @@ func generateBuiltinMethods (_ p: Printer,
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
         let variantType = builtinTypecode (bc.name)
-        p.staticProperty(visibility: "private", isStored: true, name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
-            p ("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
+        gip.staticProperty(isStored: true, name: "indexed_getter", type: "GDExtensionPtrIndexedGetter") {
+            gip("return gi.variant_get_ptr_indexed_getter (\(variantType))!")
         }
-        p.staticProperty(visibility: "private", isStored: true, name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
-            p ("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
+        gip.staticProperty(isStored: true, name: "indexed_setter", type: "GDExtensionPtrIndexedSetter") {
+            gip("return gi.variant_get_ptr_indexed_setter (\(variantType))!")
         }
-        p (" public subscript (index: Int64) -> \(godotType)") {
-            p ("mutating get") {
-                p ("var result = \(godotType) ()")
-                p ("Self.indexed_getter (&self, index, &result)")
-                p ("return result")
+        p("public subscript(index: Int64) -> \(godotType)") {
+            p("mutating get") {
+                p("var result = \(godotType)()")
+                p("\(typeGodotInterfaceName).indexed_getter (&self, index, &result)")
+                p("return result")
             }
-            p ("set") {
-                p ("var value = newValue")
-                p ("Self.indexed_setter (&self, index, &value)")
+            p("set") {
+                p("var value = newValue")
+                p("\(typeGodotInterfaceName).indexed_setter (&self, index, &value)")
             }
         }
     }
@@ -583,13 +602,17 @@ var builtinGodotTypeNames: [String:BKind] = ["Variant": .isClass]
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) async {
-
-    func generateBuiltinClass (p: Printer, _ bc: JGodotBuiltinClass) {
+    func generateBuiltinClass(p: Printer, _ bc: JGodotBuiltinClass) {
         // TODO: isKeyed, hasDestrcturo,
         let kind: BKind = builtinGodotTypeNames[bc.name]!
         
         let typeName = mapTypeName (bc.name)
         let typeEnum = "GDEXTENSION_VARIANT_TYPE_" + camelToSnake(bc.name).uppercased()
+                
+        let typeGodotInterfaceName = "GodotInterfaceFor" + bc.name
+        
+        /// Printer for collecting godot procedures pointers
+        let gip = Printer()
                 
         var conformances: [String] = ["_GodotBridgeableBuiltin"]
         if kind == .isStruct {
@@ -598,6 +621,12 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         } else {
             if bc.operators.contains(where: { op in op.name == "==" && op.rightType == bc.name }) {
                 conformances.append ("Equatable")
+            }
+            
+            if bc.methods?.contains(where: { method in
+                method.name == "hash"
+            }) == true {
+                conformances.append("Hashable")
             }
         }
 
@@ -624,7 +653,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
         
         var isContentRepresented: Bool? = nil
-        
+                
         p ("public \(kind == .isStruct ? "struct" : "final class") \(typeName)\(proto)") {
             if bc.name == "String" {
                 p("""
@@ -647,7 +676,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     let gstring = GString(value)
                     withUnsafePointer(to: &gstring.content) { pContent in
                         withUnsafePointer(to: pContent) { pArgs in
-                            NodePath.constructor2(&content, pArgs)
+                            \(typeGodotInterfaceName).constructor2(&content, pArgs)
                         }
                     }
                 }
@@ -659,7 +688,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     let gstring = GString(value)
                     withUnsafePointer(to: &gstring.content) { pContent in
                         withUnsafePointer(to: pContent) { pArgs in
-                            NodePath.constructor2(&content, pArgs)
+                            \(typeGodotInterfaceName).constructor2(&content, pArgs)
                         }
                     }
                 }
@@ -680,7 +709,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p("""
                 public init(fromPtr ptr: UnsafeRawPointer?) {
                     withUnsafePointer(to: ptr) { pArgs in
-                        StringName.constructor1(&content, pArgs) 
+                        \(typeGodotInterfaceName).constructor1(&content, pArgs) 
                     }
                 }
                 """)
@@ -691,7 +720,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     let gstring = GString(value)
                     withUnsafePointer(to: &gstring.content) { pContent in 
                         withUnsafePointer(to: pContent) { pArgs in
-                            StringName.constructor2(&content, pArgs)
+                            \(typeGodotInterfaceName).constructor2(&content, pArgs)
                         }
                     }
                 }
@@ -703,7 +732,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     let gstring = GString(value)
                     withUnsafePointer(to: &gstring.content) { pContent in
                         withUnsafePointer(to: pContent) { pArgs in
-                            StringName.constructor2(&content, pArgs)
+                            \(typeGodotInterfaceName).constructor2(&content, pArgs)
                         }
                     }
                 }
@@ -728,13 +757,14 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
 #endif
             }
             if bc.hasDestructor {
-                p.staticProperty(isStored: true, name: "destructor", type: "GDExtensionPtrDestructor") {
-                    p("return gi.variant_get_ptr_destructor(\(typeEnum))!")
+                gip("// MARK: - Destructor")
+                gip.staticProperty(isStored: true, name: "destructor", type: "GDExtensionPtrDestructor") {
+                    gip("return gi.variant_get_ptr_destructor(\(typeEnum))!")
                 }
                 
                 p("deinit"){
                     p("if content != \(typeName).zero") {
-                        p("\(typeName).destructor(&content)")
+                        p("\(typeGodotInterfaceName).destructor(&content)")
                     }
                 }
             }
@@ -743,15 +773,17 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p ("public var count: Int { Int (size()) }")
             }
             if kind == .isClass {
-                let (storage, initialize) = getBuiltinStorage (bc.name)
-                p ("// Contains a binary blob where this type information is stored")
-                p ("public var content: ContentType\(initialize)")
-                p ("// Used to initialize empty types")
+                let (storage, initialize) = getBuiltinStorage(bc.name, asComputedProperty: true)
+                p("""
+                // Contains a binary blob where this type information is stored
+                public var content: ContentType = \(typeName).zero
                 
-                // It's just a POD type, so no worries about it being a static property
-                p ("public static let zero: ContentType \(initialize)")
-                p ("// Convenience type that matches the build configuration storage needs")
-                p ("public typealias ContentType = \(storage)")
+                // Used to initialize empty types
+                public static var zero: ContentType\(initialize)
+                // Convenience type that matches the build configuration storage needs
+                public typealias ContentType = \(storage)
+                """)
+                
                 builtinClassStorage [bc.name] = storage
                 // TODO: This is a little brittle, because I am
                 // hardcoding the constructor1 here, it should
@@ -763,7 +795,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 public required init(content proxyContent: ContentType) {
                     withUnsafePointer(to: proxyContent) { pContent in
                         withUnsafePointer(to: pContent) { pArgs in
-                            \(typeName).constructor1(&content, pArgs)
+                            \(typeGodotInterfaceName).constructor1(&content, pArgs)
                         }
                     }
                 }
@@ -815,20 +847,33 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             if let enums = bc.enums {
                 generateEnums(p, cdef: bc, values: enums, prefix: bc.name + ".")
             }
-            generateBuiltinCtors (p, bc, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeEnum: typeEnum, members: storedMembers)
             
-            generateBuiltinMethods(p, bc, bc.methods ?? [], typeName, typeEnum, isStruct: kind == .isStruct)
-            generateBuiltinOperators (p, bc, typeName: typeName)
-            generateBuiltinConstants (p, bc, typeName: typeName)
+            generateBuiltinConstants(p, bc, typeName: typeName)
+            
+            gip("// MARK: - Constructors")
+            generateBuiltinCtors(p, gip, bc, bc.constructors, godotTypeName: bc.name, typeName: typeName, typeGodotInterfaceName: typeGodotInterfaceName, typeEnum: typeEnum, members: storedMembers)
+            gip("// MARK: - Methods")
+            generateBuiltinMethods(p, gip, bc, bc.methods ?? [], typeName, typeGodotInterfaceName, typeEnum, isStruct: kind == .isStruct)
+            gip("// MARK: - Operators")
+            generateBuiltinOperators(p, gip, bc, typeName: typeName, typeGodotInterfaceName: typeGodotInterfaceName)
                                                 
             isContentRepresented = storedMembers == nil
             
-            p.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionVariantFromTypeConstructorFunc") {
-                p("gi.get_variant_from_type_constructor(\(typeEnum))!")
+            gip("// MARK: - Variant conversion")
+            gip.staticProperty(isStored: true, name: "variantFromSelf", type: "GDExtensionVariantFromTypeConstructorFunc") {
+                gip("gi.get_variant_from_type_constructor(\(typeEnum))!")
             }
             
-            p.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionTypeFromVariantConstructorFunc") {
-                p("gi.get_variant_to_type_constructor(\(typeEnum))!")
+            gip.staticProperty(isStored: true, name: "selfFromVariant", type: "GDExtensionTypeFromVariantConstructorFunc") {
+                gip("gi.get_variant_to_type_constructor(\(typeEnum))!")
+            }
+            
+            if kind == .isClass && conformances.contains("Hashable") {
+                p("""
+                public func hash(into hasher: inout Hasher) {
+                    hasher.combine(hash())
+                }
+                """)
             }
                                                 
             p("""
@@ -891,7 +936,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     guard Self._variantType == variant.gtype else { return nil }
                     var content = \(typeName).zero
                     withUnsafeMutablePointer(to: &content) { pPayload in
-                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
                     }
                     self.init(takingOver: content)
                 }
@@ -910,7 +955,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     guard Self._variantType == variant.gtype else { return nil }
                     var content = \(typeName).zero
                     withUnsafeMutablePointer(to: &content) { pPayload in
-                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
                     }
                     self.init(takingOver: content)
                 }
@@ -936,7 +981,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     self.init()
                     
                     withUnsafeMutablePointer(to: &self) { pPayload in
-                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
                     }
                 }
                 
@@ -955,7 +1000,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     self.init()
                     
                     withUnsafeMutablePointer(to: &self) { pPayload in
-                        variant.constructType(into: pPayload, constructor: Self.selfFromVariant)                        
+                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
                     }
                 }
                 
@@ -1055,11 +1100,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 """) {
                     if isContentRepresented {
                         p("""
-                        self.init(payload: from.content, constructor: \(typeName).variantFromSelf)
+                        self.init(payload: from.content, constructor: \(typeGodotInterfaceName).variantFromSelf)
                         """)
                     } else {
                         p("""
-                        self.init(payload: from, constructor: \(typeName).variantFromSelf)
+                        self.init(payload: from, constructor: \(typeGodotInterfaceName).variantFromSelf)
                         """)
                     }
                 }
@@ -1083,14 +1128,21 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 """) {
                     if isContentRepresented {
                         p("""
-                        self.init(payload: from.content, constructor: \(typeName).variantFromSelf)
+                        self.init(payload: from.content, constructor: \(typeGodotInterfaceName).variantFromSelf)
                         """)
                     } else {
                         p("""
-                        self.init(payload: from, constructor: \(typeName).variantFromSelf)
+                        self.init(payload: from, constructor: \(typeGodotInterfaceName).variantFromSelf)
                         """)
                     }
                 }
+            }
+            
+            p("""
+            /// Static storage for keeping pointers to Godot implementation wrapped by \(typeName)
+            enum \(typeGodotInterfaceName)
+            """) {
+                p(gip.result)
             }
         }
     }
@@ -1116,9 +1168,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         case "int", "float", "bool":
             break
         default:
+            // printer for class itself
             let p: Printer = await PrinterFactory.shared.initPrinter(bc.name, withPreamble: true)
+                        
             mapStringToSwift = bc.name != "String"
-            generateBuiltinClass (p: p, bc)
+            generateBuiltinClass(p: p, bc)
             mapStringToSwift = true
             if let outputDir {
                 p.save(outputDir + "/\(bc.name).swift")

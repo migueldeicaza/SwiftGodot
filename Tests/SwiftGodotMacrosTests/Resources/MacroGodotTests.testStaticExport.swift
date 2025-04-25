@@ -3,7 +3,7 @@ class Hi: Node {
 
     static func _mproxy_set_int(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for int: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for int: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 

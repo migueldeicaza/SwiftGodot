@@ -107,14 +107,14 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
-    func testGodotMacroWithCallableFuncsWithVariantCollectionReturnType() {
+    func testGodotMacroWithCallableFuncsWithTypedArrayReturnType() {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
                 @Callable
-                func getIntegerCollection() -> VariantCollection<Int> {
-                    let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
+                func getIntegerCollection() -> TypedArray<Int> {
+                    let result: TypedArray<Int> = [0, 1, 1, 2, 3, 5, 8]
                     return result
                 }
             }
@@ -122,48 +122,19 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
-    func testGodotMacroWithCallableFuncsWithVariantCollectionParam() {
+    func testGodotMacroWithCallableFuncsWithTypedArrayParam() {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
                 @Callable
-                func square(_ integers: VariantCollection<Int>) -> VariantCollection<Int> {
-                    integers.map { $0 * $0 }.reduce(into: VariantCollection<Int>()) { $0.append(value: $1) }
+                func square(_ integers: TypedArray<Int>) -> TypedArray<Int> {
+                    integers.map { $0 * $0 }.reduce(into: TypedArray<Int>()) { $0.append(value: $1) }
                 }
             }
             """
         )
-    }
-    
-    func testGodotMacroWithCallableFuncsWithObjectCollectionReturnType() {
-        assertExpansion(
-            of: """
-            @Godot
-            class SomeNode: Node {
-                @Callable
-                func getNodeCollection() -> ObjectCollection<Node> {
-                    let result: ObjectCollection<Node> = [Node(), Node()]
-                    return result
-                }
-            }
-            """
-        )
-    }
-    
-    func testGodotMacroWithCallableFuncsWithObjectCollectionParam() {        
-        assertExpansion(
-            of: """
-            @Godot
-            class SomeNode: Node {
-                @Callable
-                func printNames(of nodes: ObjectCollection<Node>) {
-                    nodes.forEach { print($0.name) }
-                }
-            }
-            """
-        )
-    }
+    }   
     
     func testGodotMacroWithCallableFuncsWithArrayParam() {
         assertExpansion(
@@ -312,7 +283,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 @Callable static func get_some() -> Int64 { 10 }
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -323,7 +294,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 @Callable class func get_some() -> Int64 { 10 }
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -335,7 +306,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 static var int = 10
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -347,7 +318,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 class var int = 10
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -359,7 +330,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 class var int: SimpleSignal
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -371,7 +342,7 @@ final class MacroGodotTests: MacroGodotTestCase {
                 static var int: SimpleSignal
             }
             """,
-            diagnostics: [.init(message: "`static` and `class` members are not supported", line: 1, column: 1)]
+            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
         )
     }
     
@@ -458,6 +429,19 @@ final class MacroGodotTests: MacroGodotTestCase {
             """,
             diagnostics: [
                 .init(message: "Same name `get_foo` for two different declarations. GDScript doesn't support it.", line: 1, column: 1)
+            ]
+        )
+    }
+    
+    func testMultipleSignalBindings() {
+        assertExpansion(
+            of: """
+            @Godot class OtherThing: SwiftGodot.Node {            
+                @Signal var signal0: SimpleSignal, signal1: SimpleSignal
+            }
+            """,
+            diagnostics: [
+                .init(message: "accessor macro can only be applied to a single variable", line: 2, column: 5)
             ]
         )
     }

@@ -1,6 +1,6 @@
 
 class SomeNode: Node {
-    var someArray: GArray = GArray()
+    var someArray: VariantArray = VariantArray()
 
     static func _mproxy_set_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {

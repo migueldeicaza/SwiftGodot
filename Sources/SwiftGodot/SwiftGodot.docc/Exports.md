@@ -34,7 +34,7 @@ modify values that later influence how the program runs. For this, a special exp
 `@Export` can be applied to non-static, non-class variables with following types:
 1. ``VariantConvertible`` types and their ``Optional``s such as: 
 1.1. Swift primitive types (``Bool``, ``String``, ``Int``, ``Double``, ``Float``, any width signed and unsigned version ``BinaryInteger`` (such as ``UInt32``, ``Int64``).
-1.2. All builtin Godot types present in ``SwiftGodot``, such as ``GArray``, ``Vector3``, ``Callable``, ``Signal``
+1.2. All builtin Godot types present in ``SwiftGodot``, such as ``VariantArray``, ``Vector3``, ``Callable``, ``Signal``
 1.3. All ``Object``-derived types including your own types.
 1.4. Your custom ``VariantConvertible`` types.
 2. Any Swift closures taking `VariantConvertible` arguments and returning `Void` or `VariantConvertible` value without `async` specifier.
@@ -297,18 +297,22 @@ properties are still editable. This can be used in conjunction with a script in 
 
 To surface arrays in Godot, use a strong type for it, for example:
 
-```
+```swift
 @Export
-var myResources: VariantCollection<Resource>
+var myResources: TypedArray<Vector3>
 ```
 
-Alternatively, if you want to surface an array of Godot objects, or even your
-own subclasses of those, use `ObjectCollection<YourCustomType>`, for example:
+Alternatively, if you want to surface an array of Godot objects, or even your own subclasses of those, use `TypedArray<YourCustomType?>`, for example:
 
-```
+```swift
 @Export
-var myNodes: ObjectCollection<MySpinnerCube>
+var myNodes: TypedArray<MySpinnerCube?>
 ```
+
+### ⚠️ Note ⚠️
+
+`Object` derived types require optional `Element` type.
+That's due to Godot absence of guarantee that that `Array[Object]` doesn't contain `nil`s.
 
 ### Enumeration Values
 

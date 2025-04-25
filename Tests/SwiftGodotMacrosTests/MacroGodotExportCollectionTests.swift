@@ -24,7 +24,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             @Godot
             class SomeNode: Node {
                 @Export
-                var greetings: VariantCollection<String> = []
+                var greetings: TypedArray<String> = []
             }
             """
         )
@@ -33,7 +33,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
     func testExportArrayStringMacro() {        
         assertExpansion(
             of: """
-            @Export var greetings: VariantCollection<String> = []
+            @Export var greetings: TypedArray<String> = []
             """
         )
     }
@@ -41,7 +41,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
     func testExportGenericArrayStringMacro() {
         assertExpansion(
             of: """
-            @Export var greetings: VariantCollection<String> = []
+            @Export var greetings: TypedArray<String> = []
             """
         )
     }
@@ -49,17 +49,17 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
     func testExportConstantGenericArrayStringMacro() {
         assertExpansion(
             of: """
-            @Export let greetings: VariantCollection<String> = []
+            @Export let greetings: TypedArray<String> = []
             """
         )
     }
     
-    func testExportGArray() {
+    func testExportVariantArray() {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
-                @Export var someArray: GArray = GArray()
+                @Export var someArray: VariantArray = VariantArray()
             }
             """
         )
@@ -69,7 +69,7 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
         assertExpansion(of: """
             @Godot
             class SomeNode: Node {
-                @Export var someNumbers: VariantCollection<Int> = []
+                @Export var someNumbers: TypedArray<Int> = []
             }
             """
         )
@@ -80,8 +80,8 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
             of: """
             @Godot
             class SomeNode: Node {
-                @Export var someNumbers: VariantCollection<Int> = []
-                @Export var someOtherNumbers: VariantCollection<Int> = []
+                @Export var someNumbers: TypedArray<Int> = []
+                @Export var someOtherNumbers: TypedArray<Int> = []
             }
             """
         )
@@ -94,27 +94,27 @@ final class MacroGodotExportCollectionTests: MacroGodotTestCase {
 
             @Godot
             class ArrayTest: Node {
-               @Export var firstNames: VariantCollection<String> = ["Thelonius"]
-               @Export var lastNames: VariantCollection<String> = ["Monk"]
+               @Export var firstNames: TypedArray<String> = ["Thelonius"]
+               @Export var lastNames: TypedArray<String> = ["Monk"]
             }
             """
         )
     }
     
-    func testExportObjectCollection() throws {
+    func testExportTypedArray() throws {
         assertExpansion(
             of: """
-            @Export var greetings: ObjectCollection<Node3D> = []
+            @Export var greetings: TypedArray<Node3D> = []
             """
         )
     }
     
-    func testGodotExportObjectCollection() throws {
+    func testGodotExportTypedArray() throws {
         assertExpansion(
             of: """
             @Godot
             class SomeNode: Node {
-                @Export var greetings: ObjectCollection<Node3D> = []
+                @Export var greetings: TypedArray<Node3D> = []
             }
             """
         )

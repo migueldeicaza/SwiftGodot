@@ -150,42 +150,6 @@ public func _propInfo<Root, T>(
     )
 }
 
-/// Internal API. VariantCollection.
-@inline(__always)
-@inlinable
-public func _propInfo<Root, T>(
-    at keyPath: KeyPath<Root, VariantCollection<T>>,
-    name: String,
-    userHint: PropertyHint? = nil,
-    userHintStr: String? = nil,
-    userUsage: PropertyUsageFlags? = nil
-) -> PropInfo where T: _GodotBridgeableBuiltin {
-    VariantCollection<T>._propInfo(
-        name: name,
-        hint: userHint,
-        hintStr: userHintStr,
-        usage: userUsage
-    )
-}
-
-/// Internal API. ObjectCollection.
-@inline(__always)
-@inlinable
-public func _propInfo<Root, T>(
-    at keyPath: KeyPath<Root, ObjectCollection<T>>,
-    name: String,
-    userHint: PropertyHint? = nil,
-    userHintStr: String? = nil,
-    userUsage: PropertyUsageFlags? = nil
-) -> PropInfo where T: Object {
-    ObjectCollection<T>._propInfo(
-        name: name,
-        hint: userHint,
-        hintStr: userHintStr,
-        usage: userUsage
-    )
-}
-
 /// Internal API. Closure.
 @inline(__always)
 @inlinable

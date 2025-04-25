@@ -150,15 +150,48 @@ No `async` and `throw` specifiers are allowed.
     // Godot will see `Callable variable1`
 }
 ```
-
+---
 #### Swift `Void` (aka empty tuple `()`) 
 Toll-free bridging.
 ##### Scenarios allowed:
 - Returned value from `@Callable` function
 - Returned value from Swift closure
+---
+#### Swift ``Array`` - Godot `Array[type]` 
+Only ``Swift.Array`` with `Element`s of Godot builtin types or *optional*(!) ``Object``-derived types are allowed.
+Expensive bridging, operations takes O(n) during each translation.
 
-#### Swift ``Array``
-🚧 TODO 🚧
+Implemented via ``GodotBuiltinConvertible``
+
+Prefer using `TypedArray` for frequent operations
+
+```swift
+@Godot class CustomNode: Node {
+    @Export var variable0: TypedArray<Vector3> = []
+    // Godot will see `Array[Vector3] variable0`
+
+    @Export var variable1: TypedArray<Object?> = []
+    // Godot will see `Array[Object] variable1`
+}
+```
+
+#### Swift Optional ``Array`` - Godot `Variant`
+Only ``Swift.Array`` with `Element`s of Godot builtin types or *optional*(!) ``Object``-derived types are allowed.
+Expensive bridging, operations takes O(n) during each translation.
+
+Implemented via ``GodotBuiltinConvertible``
+
+Prefer using `TypedArray` for frequent operations
+
+```swift
+@Godot class CustomNode: Node {
+    @Export var variable0: TypedArray<Vector3>? = []
+    // Godot will see `Variant variable0`
+
+    @Export var variable1: TypedArray<Object?>? = []
+    // Godot will see `Variant variable1`
+}
+```
 
 ---
 #### Swift enum - Godot `int`, Godot `String`, Godot `bool`
@@ -262,13 +295,13 @@ Toll-free bridging.
 #### SwiftGodot non-`Object` reference types - Corresponding Godot builtin types
 _NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the value is translated from `Godot` to `Swift`.
 
-All built-in types of Godot which are represented as Swift `class` such as: ``GArray``, ``GDictionary``, ``RID``, ``PackedFloat32Array``, etc.
+All built-in types of Godot which are represented as Swift `class` such as: ``VariantArray``, ``VariantDictionary``, ``RID``, ``PackedFloat32Array``, etc.
 
-These types appear exactly as they are in Godot except `GString`(Godot `String`), `GArray` (Godot `Array`), and `GDictionary`(Godot `Dictionary`), which are renamed to avoid collision with native Swift types.
+These types appear exactly as they are in Godot except `GString`(Godot `String`), `VariantArray` (Godot `Array`), and `VariantDictionary`(Godot `Dictionary`), which are renamed to avoid collision with native Swift types.
 
 ```swift
 @Godot class CustomNode: Node {
-    @Export var variable = GArray()
+    @Export var variable = VariantArray()
     // Godot will see `Array variable`
 }
 ```
@@ -277,7 +310,7 @@ These types appear exactly as they are in Godot except `GString`(Godot `String`)
 _NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the non-nil value is translated from `Godot` to `Swift`.
 ```swift
 @Godot class CustomNode: Node {
-    @Export var variable: GArray? = nil 
+    @Export var variable: VariantArray? = nil 
     // Godot will see `Variant variable`
 }
 ```
@@ -311,9 +344,34 @@ Allocation only happens when Godot object never seen by Swift shows up during Go
 }
 ```
 
-#### `VariantCollection` and `ObjectCollection`
-🚧 TODO 🚧
+---
 
+#### SwiftGodot `TypedArray` - Godot `Array[type]`
+_NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the value is translated from `Godot` to `Swift`.
+
+```swift
+@Godot class CustomNode: Node {
+    @Export var variable0: TypedArray<Int> = []
+    // Godot will see `Array[int] variable0`
+
+    @Export var variable1: TypedArray<Object?> = []
+    // Godot will see `Array[int] variable1`
+}
+```
+
+
+#### SwiftGodot Optional `TypedArray` - Godot `Variant`
+_NOT_ toll-free bridging. Requires a heap allocation of the Swift wrapper every time the value is translated from `Godot` to `Swift`.
+
+```swift
+@Godot class CustomNode: Node {
+    @Export var variable0: TypedArray<Int>? = []
+    // Godot will see `Variant variable0`
+
+    @Export var variable1: TypedArray<Object?>? = []
+    // Godot will see `Variant variable1`
+}
+```
 ---
 
 # Your custom types
@@ -360,3 +418,50 @@ extension Date: VariantConvertible {
     // Godot will see `Variant variable1`
 }
 ```
+
+#### ``GodotBuiltinConvertible`` - Corresponding Godot builtin types 
+_Maybe_ toll-free bridging:
+1. The conversion runtime doesn't require allocations.
+2. Cost of conversions depends on how expensive your `GodotBuiltinConvertible` implementation is. Conversion will happened every time the type is translated back and forth between Swift and Godot.
+
+You can conform your own types to `GodotBuiltinConvertible`. They will be visible as type corresponding to `GodotBuiltinConvertible.GodotBuiltin`.
+```swift
+extension Date: GodotBuiltinConvertible {
+    public func toGodotBuiltin() -> Double {
+        timeIntervalSince1970
+    }
+
+    public static func fromGodotBuiltinOrThrow(_ value: Double) throws(VariantConversionError) -> Self {
+        Date(timeIntervalSince1970: value)
+    }
+}
+
+@Godot class CustomNode: Node {
+    @Export var variable0 = Date.now
+    // Godot will see `float variable0`
+}
+```
+
+#### `Optional` ``GodotBuiltinConvertible`` - Godot `Variant`
+_Maybe_ toll-free bridging:
+1. The conversion runtime doesn't require allocations.
+2. Cost of conversions depends on how expensive your `GodotBuiltinConvertible` implementation is. Conversion will happened every time the type is translated back and forth between Swift and Godot.
+
+You can conform your own types to `GodotBuiltinConvertible`. They will be visible as type corresponding to `GodotBuiltinConvertible.GodotBuiltin`.
+```swift
+extension Date: GodotBuiltinConvertible {
+    public func toGodotBuiltin() -> Double {
+        timeIntervalSince1970
+    }
+
+    public static func fromGodotBuiltinOrThrow(_ value: Double) throws(VariantConversionError) -> Self {
+        Date(timeIntervalSince1970: value)
+    }
+}
+
+@Godot class CustomNode: Node {
+    @Export var variable0: Date? = Date.now
+    // Godot will see `Variant variable0`
+}
+```
+

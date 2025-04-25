@@ -92,7 +92,7 @@ public struct FastVariant: ~Copyable {
     ///
     /// Assumes that this ``FastVariant`` was either
     /// 1. constructed by ``init(unsafelyBorrowing:)``
-    /// 2. has its ownership passed to Godot, for example in ``GArray.setFastVariant(_:at:)``
+    /// 2. has its ownership passed to Godot, for example in ``VariantArray.setFastVariant(_:at:)``
     @inline(__always)
     @inlinable
     consuming func unsafelyForget() {
@@ -128,7 +128,7 @@ public struct FastVariant: ~Copyable {
     ///
     /// Only `borrowing` instance initalized this way is allowed in user world!
     /// Used in:
-    /// ``Arguments``, ``GArray.withFastVariant(at:)``
+    /// ``Arguments``, ``VariantArray.withFastVariant(at:)``
     ///
     /// Call ``unsafelyForget()`` after you are done.
     @inline(__always)
@@ -161,15 +161,18 @@ public struct FastVariant: ~Copyable {
         return FastVariant(unsafeTakingOver: newContent)
     }
     
-    @inline(__always)
-    @inlinable
+    /// Consumes ``FastVariant`` triggering its immediate destruction.
+    public consuming func drop() {
+        // `deinit` happens in the end of this scope due to `consuming`
+    }
+        
     deinit {
+        var content = content
         if content.isZero {
             // Was consumed, or cleaned-up explicitly
             return
         }
-        
-        var content = content
+                
         if !extensionInterface.variantShouldDeinit(content: &content) { return }
         gi.variant_destroy(&content)
     }
@@ -244,8 +247,8 @@ public struct FastVariant: ~Copyable {
         /// Avoid allocating `GString` wrapper at least
         var stringContent = GString.zero
         gi.string_new_with_utf8_chars(&stringContent, from)
-        self.init(payload: stringContent, constructor: GString.variantFromSelf)
-        GString.destructor(&stringContent)
+        self.init(payload: stringContent, constructor: GodotInterfaceForString.variantFromSelf)
+        GodotInterfaceForString.destructor(&stringContent)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``String?``, fails if it's `nil`
@@ -273,11 +276,11 @@ public struct FastVariant: ~Copyable {
     /// String description of this ``FastVariant``
     public var description: String {
         var content = content
-        var ret = GDExtensionStringPtr (bitPattern: 0xdeaddead)
-        gi.variant_stringify (&content, &ret)
+        var ret = GDExtensionStringPtr(bitPattern: 0xdeaddead)
+        gi.variant_stringify(&content, &ret)
         
         let str = stringFromGodotString(&ret)
-        GString.destructor (&ret)
+        GodotInterfaceForString.destructor(&ret)
         return str ?? ""
     }
     

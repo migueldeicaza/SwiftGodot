@@ -1,6 +1,6 @@
 
 class Car: Node {
-    var vins: VariantCollection<String> = ["00000000000000000"]
+    var vins: TypedArray<String> = ["00000000000000000"]
 
     static func _mproxy_set_vins(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -22,7 +22,7 @@ class Car: Node {
 
         return SwiftGodot._invokeGetter(object.vins)
     }
-    var years: VariantCollection<Int> = [1997]
+    var years: TypedArray<Int> = [1997]
 
     static func _mproxy_set_years(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {

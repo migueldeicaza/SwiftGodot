@@ -146,10 +146,10 @@ public macro initSwiftExtension(cdecl: String,
 @freestanding(declaration, names: named(enterExtension))
 public macro initSwiftExtension(
     cdecl: String,
-    coreTypes: [Wrapped.Type] = [],
-    editorTypes: [Wrapped.Type] = [],
-    sceneTypes: [Wrapped.Type] = [],
-    serverTypes: [Wrapped.Type] = []
+    coreTypes: [Object.Type] = [],
+    editorTypes: [Object.Type] = [],
+    sceneTypes: [Object.Type] = [],
+    serverTypes: [Object.Type] = []
 ) = #externalMacro(
     module: "SwiftGodotMacroLibrary",
     type: "InitSwiftExtensionMacro")

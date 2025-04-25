@@ -17,7 +17,7 @@ You can create ``Variant``s from types that conform to the
 This includes the following types:
 
 * Godot's native types: ``GString``, ``Vector``, ``Rect``, ``Transform``, ``Plane``, ``Quaternion``,
-  ``AABB``,  ``Basis``, ``Projection``, ``Int64``, ``NodePaths``, ``RIDs``, ``Callable``, ``GDictionary``, ``Array``
+  ``AABB``,  ``Basis``, ``Projection``, ``Int64``, ``NodePaths``, ``RIDs``, ``Callable``, ``VariantDictionary``, ``Array``
   and PackedArrays.  
 * Swift types that SwiftGodot adds convenience conformances for: ``Bool``, ``Int`` (and all signed/unsigned width varieties such as `UInt32`, `Int16`), ``String``, ``Float`` and ``Double``,
 * Godot's objects: e.g. ``Node``, ``Area2D``
@@ -158,7 +158,7 @@ is how you would decode this:
 /// This converts a variant that contains a dictionary of string keys and an 
 /// array of integers into the native Swift dictionary
 func decode (variant: Variant) -> [String: [Int32]]? {
-    guard let dict = GDictionary (variant) else {
+    guard let dict = VariantDictionary (variant) else {
         // If the variant is not a dictionary, we return nil
         return nil
     }
@@ -179,14 +179,14 @@ possibility that we do not receive a dictionary, or the values in the dictionary
 are not of type ``PackedArrayInt32``.
 
 The following examples shows how to encode an array that contains
-paris of file names and sizes into a Godot ``GArray`` with
-``GDictionary`` elements:
+paris of file names and sizes into a Godot ``VariantArray`` with
+``VariantDictionary`` elements:
 
 ```swift
 func encode(values: [(String,Int)]) -> Variant {
-    let array = GArray ()
+    let array = VariantArray ()
     for (fileName, size) in values {
-        let dict = GDictionary ()
+        let dict = VariantDictionary ()
         dict ["file_name"] = Variant (fileName)
         dict ["size"] = Variant (size)
         array.append (dict)
@@ -196,8 +196,8 @@ func encode(values: [(String,Int)]) -> Variant {
 ```
 
 
-The next example shows how to decode the result of the above.  The ``GArray``
-and ``GDictionary`` are weakly typed, so the inverse operation takes a defensive
+The next example shows how to decode the result of the above.  The ``VariantArray``
+and ``VariantDictionary`` are weakly typed, so the inverse operation takes a defensive
 approach.
 
 ```swift
@@ -208,7 +208,7 @@ func decode(variant: Variant) -> [(String, Int)]? {
     }
     var result = [(String, Int)] ()
     for element in array {
-        guard let dict = GDictionary (element) else {
+        guard let dict = VariantDictionary (element) else {
             // If the element in the array is not a dictionary, we skip it
             continue
         }
@@ -271,7 +271,7 @@ packed version of those.   You can access the individual elements of the
 those with a convenient subscript provided on the array.
 
 ```swift
-func foo(_ array: GArray) {
+func foo(_ array: VariantArray) {
     let variant = array[4] // returns Variant? since Godot arrays can store `nil`s
 }
 ```

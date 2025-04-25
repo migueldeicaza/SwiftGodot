@@ -28,21 +28,34 @@ those types would clash with the existing Swift types with the same names.
 
 Here is a list of the current data type mappings:
 
-| GDScript type | SwiftGodot Name |
-|---------------|-----------------|
-| string        | GString         |
-| dictionary    | GDictionary     |
-| array         | GArray          |
+| GDScript type      | SwiftGodot Name       |
+|--------------------|-----------------------|
+| String             | GString               |
+| Dictionary         | VariantDictionary     |
+| Dictionary[Element]| TypedDictionary       |
+| Array              | VariantArray          |
+| Array[Element]     | TypedArray            |
 
-The ``GArray`` is a type-erased array that can hold any sort of element that
-can be managed by Godot (Variants or Objects).
 
-In addition, there are two special kinds of strongly-typed versions of the
-GArray:
+The ``VariantArray`` is a type-erased array that can hold any sort of element that can be managed by Godot.
 
-* ``VariantCollection`` that holds any ``Variant`` instances.
+In addition, there is a strongly-typed version of the
+`VariantArray` – ``TypedArray`` that holds specific type.
 
-* ``ObjectCollection`` that holds any ``Object`` instances.
+```swift
+let ints = TypedArray<Int>
+let objects = TypedArray<Object?>
+```
+
+Note that in the context of `Object`-derived classes only `Optional` elements are supported. That reflects exactly how Godot behaves. It allows `nil`s in `Object`-derived typed arrays, but not in other types.
+
+### Old Types
+
+In the past, we used different types for various functions which have now been unified, the old names of types that you might find in older documentation or samples are as follows:
+
+* `GArray`, became `VariantArray`.
+* `VariantCollection<BuiltinType>`, became `TypedArray<BuiltinType>`
+* `ObjectCollection<ObjectOrSubclassType>`, became `TypedArray<ObjectOrSubclassType?>`
 
 ## GDScript Helper Functions
 
@@ -202,17 +215,37 @@ convenience methods that you might have come to expect from the Godot String
 
 ## Callable
 
-In SwiftGodot, you can create `Callable` instances by directly passing a Swift function that takes an array of `Variant` arguments,
-and returns an optional `Variant` result, like this:
+In SwiftGodot, you can create `Callable` instances by directly passing a Swift function that takes `borrowing Arguments` parameter,
+and returns a `Variant?` result, like this:
 
 ```swift
-func myCallback(args: borrowing Arguments)-> Variant? {
+func myCallback(args: borrowing Arguments) -> Variant? {
 	print ("MyCallback invoked with \(args.count) arguments")
+	if let argument = try? arguments.argument(ofType: Int.self, at: 0) {
+		print("First argument was an int: \(argument)")
+	}
 	return nil
 }
 
 let myCallable = Callable(myCallback)
 ```
+For more convenience you can pass a closure containing arguments and return value that Godot can understand:
+```swift
+let myCallable = Callable { (int: Int, bool: Bool, object: Object?) -> Camera3D? in 
+	// do something 
+	if let camera = object as? Camera3D? {
+		if int > 2 || bool {
+			return camera
+		}
+	}
+
+	return camera
+}
+```
+Conversion from `Arguments` to corresponding arguments will happen automatically. Or not, then function won't be called and you will see a error log specifying what went wrong.
+
+---
+
 
 Alternatively, you can use a StringName that binds a method that you have exported (via, the `@Callable` macro), like this:
 
@@ -229,6 +262,10 @@ MySwiftNode.myCallback.call("Hello from Swift!")
 ```
 
 ## Async/Await
+
+> 
+> ##### ⚠️ Note
+> The snippets below are using deprecated API and are dangerous. If signal never emits the Swift coroutine state will leak with all the captured context. Prefer using `Signal.connect`
 
 GDScript comes with an `await` primitive, you can achieve similar functionality
 with the Swift built-in await/async stack.   Unlike GDScript, await can only be

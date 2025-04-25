@@ -104,7 +104,6 @@ class Castro: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Castro")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Castro> (name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "deleteEpisode",
@@ -166,5 +165,5 @@ class Castro: Node {
             ],
             function: Castro._mproxy_queue
         )
-    } ()
+    }()
 }

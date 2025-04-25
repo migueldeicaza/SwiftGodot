@@ -83,7 +83,7 @@ var xmap: [UnsafeRawPointer: String] = [:]
 /// determines whether this is a Framework type or a user type.
 ///
 /// To register User types with the framework make sure you call the
-/// `register<T:Wrapped> (type: T.Type)` method like this:
+/// `register<T: Object> (type: T.Type)` method like this:
 ///
 /// `register (type: MySpinningCube.self)`
 ///
@@ -360,10 +360,10 @@ func bindGodotInstance(instance: some Wrapped, handle: UnsafeRawPointer) {
     gi.object_set_instance_binding(UnsafeMutableRawPointer (mutating: handle),  extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
 }
 
-var userTypes: [String:(UnsafeRawPointer)->Wrapped] = [:]
+var userTypes: [String: Object.Type] = [:]
 
 // @_spi(SwiftGodotTesting) public
-var duplicateClassNameDetected: (_ name: StringName, _ type: Wrapped.Type) -> Void = { name, type in
+var duplicateClassNameDetected: (_ name: StringName, _ type: Object.Type) -> Void = { name, type in
     preconditionFailure(
                 """
                 Godot already has a class named \(name), so I cannot register \(type) using that name. This is a fatal error because the only way I can tell whether Godot is handing me a pointer to a class I'm responsible for is by checking the class name.
@@ -371,7 +371,7 @@ var duplicateClassNameDetected: (_ name: StringName, _ type: Wrapped.Type) -> Vo
     )
 }
 
-func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Type) {
+func register<T: Object>(type name: StringName, parent: StringName, type: T.Type) {
     var nameContent = name.content
 
     // The classdb_get_class_tag function is documented to return “a pointer uniquely identifying the given built-in class”. As of Godot 4.2.2, it also returns non-nil for types registered by extensions. If Godot is changed in the future to return nil for extension types, this will simply stop detecting duplicate class names. It won't break valid code.
@@ -383,7 +383,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
 
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
-        guard let type  = typeAny as? Wrapped.Type else {
+        guard let type  = typeAny as? Object.Type else {
             pd ("The wrapped value did not contain a type: \(typeAny)")
             return nil
         }
@@ -399,9 +399,7 @@ func register<T:Wrapped> (type name: StringName, parent: StringName, type: T.Typ
     info.validate_property_func = validatePropertyFunc
     info.is_exposed = 1
     
-    userTypes[name.description] = { ptr in
-        return type.init(nativeHandle: ptr)
-    }
+    userTypes[name.description] = T.self
     
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
@@ -463,7 +461,7 @@ final class WrappedReference {
 /// Registers the user-type specified with the Godot system, and allows it to
 /// receive any of the calls from Godot virtual methods (those that are prefixed
 /// with an underscore)
-public func register<T:Wrapped> (type: T.Type) {
+public func register<T: Object>(type: T.Type) {
     guard let superType = Swift._getSuperclass (type) else {
         print ("You can not register the root class")
         return
@@ -473,7 +471,7 @@ public func register<T:Wrapped> (type: T.Type) {
     register (type: StringName (typeStr), parent: StringName (superStr), type: type)
 }
 
-public func unregister<T:Wrapped> (type: T.Type) {
+public func unregister<T: Object>(type: T.Type) {
     let typeStr = String (describing: type)
     let name = StringName (typeStr)
     pd ("Unregistering \(typeStr)")
@@ -619,8 +617,8 @@ func lookupObject<T: Object> (nativeHandle: UnsafeRawPointer, ownsRef: Bool) -> 
         handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
         return result as? T
     }
-    if let userTypeCtor = userTypes [className] {
-        let created = userTypeCtor (nativeHandle)
+    if let userType = userTypes[className] {
+        let created = userType.init(nativeHandle: nativeHandle)
         handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
         if let result = created as? T {
             return result
@@ -952,4 +950,17 @@ public func clearHandles(_ handles: [UnsafeRawPointer]) {
             liveSubtypedObjects.removeValue(forKey: handle)
         }
     }
+}
+
+/// Find existing Godot or User `Wrapped.Type` having a `className`
+func typeOfClass(named className: String) -> Object.Type? {
+    if let frameworkType = godotFrameworkCtors[className] {
+        return frameworkType
+    }
+    
+    if let userType = userTypes[className] {
+        return userType
+    }
+    
+    return nil
 }

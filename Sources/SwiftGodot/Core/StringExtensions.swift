@@ -7,7 +7,7 @@
 
 @_implementationOnly import GDExtension
 
-extension StringName: CustomStringConvertible, Hashable {
+extension StringName: CustomStringConvertible {
     /// Creates a StringName from a Swift String.Substring
     public convenience init (_ from: String.SubSequence) {
         self.init (from: String (from))
@@ -19,8 +19,9 @@ extension StringName: CustomStringConvertible, Hashable {
         return buffer.getStringFromUtf8().description
     }
     
-    public func hash (into hasher: inout Hasher) {
-        hasher.combine (hash ())
+    @usableFromInline
+    var asciiDescription: String {
+        toAsciiBuffer().getStringFromAscii()
     }
     
     /// Compares two StringNames for equality.
@@ -46,7 +47,7 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
     }
 }
     
-extension GString: CustomStringConvertible, Hashable {
+extension GString: CustomStringConvertible {
     /// Returns a Swift string from a pointer to a native Godot string
     static func stringFromGStringPtr (ptr: UnsafeRawPointer?) -> String? {
         guard let ptr else {
@@ -81,10 +82,6 @@ extension GString: CustomStringConvertible, Hashable {
             cString[Int(byteCount)] = 0 // null-terminator
             return String(cString: cString)
         }
-    }
-    
-    public func hash (into hasher: inout Hasher) {
-        hasher.combine (hash ())
     }
 }
 

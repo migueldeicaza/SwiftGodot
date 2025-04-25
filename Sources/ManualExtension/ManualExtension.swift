@@ -105,7 +105,7 @@ class SwiftSprite: Sprite2D {
         
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
-        let dict2: GDictionary? = GDictionary(imageVariant)
+        let dict2: VariantDictionary? = VariantDictionary(imageVariant)
         GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no value for type") \(dict2?["value"]?.description ?? "no value for value")")
         
         // part b

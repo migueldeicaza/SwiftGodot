@@ -314,44 +314,6 @@ public struct Arguments: ~Copyable {
             return try unsafeGodotArgs.copy(FastVariant.self, at: index)
         }
     }
-    
-    /// Returns `[T]` value wrapped in  argument at `index`.
-    ///
-    /// Throws an error if:
-    /// - `Variant` is `nil`
-    /// - `Variant` wraps a type other than `Array`
-    /// - Any element of underlying Godot Array couldn't be converted to `T`
-    /// - `index` is out of bounds.
-    @inline(__always)
-    @inlinable
-    public func argument<T>(ofType type: [T].Type = [T].self, at index: Int) throws(ArgumentAccessError) -> [T] where T: VariantConvertible {
-        try withBorrowedFastVariant(at: index) { variantOrNil in
-            extract([T].self, from: variantOrNil)
-        }
-    }
-        
-    @inline(__always)
-    @inlinable
-    func extract<T>(_ type: [T].Type = [T].self, from variantOrNil: borrowing FastVariant?) -> Result<[T], ArgumentAccessError> where T: VariantConvertible {
-        switch variantOrNil {
-        case .none:
-            return .failure(.variantConversionError(.unexpectedNilContent(parsing: [T].self)))
-        case .some(let variant):
-            do {
-                let array = try GArray.fromFastVariantOrThrow(variant)
-                var result: [T] = []
-                result.reserveCapacity(array.count)
-                for element in array {
-                    result.append(
-                        try T.fromVariantOrThrow(element)
-                    )
-                }
-                return .success(result)
-            } catch {
-                return .failure(.variantConversionError(error))
-            }
-        }
-    }
         
     /// Returns `T` value wrapped argument at `index`.
     ///
@@ -467,19 +429,49 @@ public extension VariantConvertible {
 }
 
 /// Internal API. Protocol covering types that have nullable semantics on Godot Side: Object-derived types and Variant.
-/// It's used for conditional extension of Optional.
-/// This is a workaround for Swift inability to have multiple conditional extensions for one type (Optional in our case).
-public protocol _GodotOptionalBridgeable: _GodotBridgeable {
+/// For example when Godot says `Array[ObjectOrObjectSubclass]`, it actually means Array of `ObjectOrObjectSubclass?`
+///
+/// It's used for conditional extension of `Optional`.
+/// This is a workaround for Swift inability to have multiple conditional extensions for one type (`Optional` in our case).
+///
+/// It's implemented by
+/// - `Object` (and its subclasses)
+/// - `Variant`, because we differentiate between `Variant` with something inside and  Godot `Variant` containing `null` (which is simply Swift `nil`)
+public protocol _GodotNullableBridgeable: _GodotBridgeable {
 }
 
-extension Object: _GodotOptionalBridgeable {
+/// Internal API.
+/// Allows `Variant?` and `ObjectOrObjectSubclass?` to be a generic parameter
+/// - for `TypedArray` as `Element`
+/// - for `TypedDictionary` as `Key` and `Value`
+///
+/// ### Note
+/// `Variant` and `ObjectOrObjectSubclass` themselves are _not_ `_GodotContainerTypingParameter`.
+/// Godot doesn't guarantee that they are not null in the places where`_GodotContainerTypingParameter` is used, and neither do we.
+extension Optional: _GodotContainerTypingParameter where Wrapped: _GodotNullableBridgeable {
+    /// Internal API. Required for implementation of `TypedArray`.
+    /// For `Optional` it's `Wrapped` type.
+    public typealias _NonOptionalType = Wrapped
+    
+    /// Internal API.
+    /// `class_name` for given `Optional` type as Godot requires it
+    /// - for `ObjectOrObjectSubclass?` it's the literal name of the `ObjectOrObjectSubclass`
+    /// - for `Variant?` it's an empty string
+    public static var _className: StringName {
+        if Wrapped.self == Variant.self {
+            ""
+        } else {
+            // TODO: Make Godot macro generate this in a static context for every class, same for code generator
+            "\(Wrapped.self)"
+        }
+    }
 }
 
-extension Variant: _GodotOptionalBridgeable {    
-}
 
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
-extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOptionalBridgeable {
+extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotNullableBridgeable {
+    public typealias TypedArrayElement = Self
+    
     @inline(__always)
     @inlinable
     public static func _argumentPropInfo(name: String) -> PropInfo {
@@ -506,8 +498,8 @@ extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotOp
     
     @inline(__always)
     @inlinable
-    public static var _godotTypeName: String {
-        Wrapped._godotTypeName
+    public static var _builtinOrClassName: String {
+        Wrapped._builtinOrClassName
     }
 
     /// Variant?.some -> Variant?.some (never throws, see Variant.fromVariantOrThrow)

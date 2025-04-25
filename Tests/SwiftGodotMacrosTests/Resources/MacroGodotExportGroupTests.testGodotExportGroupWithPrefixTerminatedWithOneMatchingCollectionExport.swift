@@ -1,10 +1,10 @@
 
 public class Issue353: Node {
-    var prefix1_prefixed_bool: VariantCollection<Bool> = [false]
+    var prefix1_prefixed_bool: TypedArray<Bool> = [false]
 
     static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -22,11 +22,11 @@ public class Issue353: Node {
 
         return SwiftGodot._invokeGetter(object.prefix1_prefixed_bool)
     }
-    var non_prefixed_bool: VariantCollection<Bool> = [false]
+    var non_prefixed_bool: TypedArray<Bool> = [false]
 
     static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
@@ -53,7 +53,6 @@ public class Issue353: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Issue353")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<Issue353> (name: className)
         SwiftGodot._addPropertyGroup(className: className, name: "Group With a Prefix", prefix: "prefix1")
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -83,5 +82,5 @@ public class Issue353: Node {
             getterFunction: Issue353._mproxy_get_non_prefixed_bool,
             setterFunction: Issue353._mproxy_set_non_prefixed_bool
         )
-    } ()
+    }()
 }

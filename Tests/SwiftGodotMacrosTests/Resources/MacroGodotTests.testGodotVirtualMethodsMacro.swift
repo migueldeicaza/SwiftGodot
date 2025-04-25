@@ -9,7 +9,7 @@ class Hi: Control {
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
-    } ()
+    }()
 
     override open class func implementedOverrides () -> [StringName] {
         return super.implementedOverrides () + [

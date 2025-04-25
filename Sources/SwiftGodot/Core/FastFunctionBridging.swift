@@ -128,6 +128,7 @@ public func _registerMethod(
 }
 
 /// Internal API.
+/// Unwraps an `Object` from a native Godot object pointer.
 @inline(__always)
 public func _unwrap<T: Object>(
     _ type: T.Type = T.self,

@@ -5,7 +5,7 @@
 //  Created by Estevan Hernandez on 12/24/23.
 //
 
-private extension GDictionary {
+private extension VariantDictionary {
     func makeOrUnwrap<T: VariantConvertible>(key: String) -> T? {
         guard let variant = self[key] else {
             GD.pushWarning("There was no Variant for key: \(key)")
@@ -40,7 +40,7 @@ extension PhysicsDirectSpaceState3D {
         /// The face index at the intersection point.
         public let faceIndex: Int
 
-        init?(_ dictionary: GDictionary) {
+        init?(_ dictionary: VariantDictionary) {
             guard dictionary.isEmpty() == false,
                   let position: Vector3 = dictionary.makeOrUnwrap(key: "position"),
                   let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),
@@ -67,7 +67,7 @@ extension PhysicsDirectSpaceState3D {
 extension PhysicsDirectSpaceState3D {
     /// Intersects a ray in a given space. Ray position and other parameters are defined through `PhysicsRayQueryParameters3D` The return value is an `IntersectRayResult<T>?` where `T` is any Godot `Object`, however if the ray did not intersect anything, or the intersecting collider was not of type `T` then a nil object is returned instead. Usually `T` is a physics object such as `StaticBody` for example but it could also be a `GridMap` if the `mesh_library` has collisions.
     public func intersectRay<T: Object>(_ type: T.Type = T.self, parameters: PhysicsRayQueryParameters3D) -> IntersectRayResult<T>? {
-        let dictionary: GDictionary = intersectRay(parameters: parameters)
+        let dictionary: VariantDictionary = intersectRay(parameters: parameters)
         return IntersectRayResult<T>(dictionary)
     }
 }

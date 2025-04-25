@@ -8,7 +8,7 @@ class MyThing: SwiftGodot.RefCounted {
     private static let _initializeClass: Void = {
         let className = StringName("MyThing")
         assert(ClassDB.classExists(class: className))
-    } ()
+    }()
 
 }
 
@@ -34,7 +34,6 @@ class OtherThing: SwiftGodot.Node {
     private static let _initializeClass: Void = {
         let className = StringName("OtherThing")
         assert(ClassDB.classExists(class: className))
-        let classInfo = ClassInfo<OtherThing> (name: className)
         SwiftGodot._registerMethod(
             className: className,
             name: "get_thing",
@@ -45,5 +44,5 @@ class OtherThing: SwiftGodot.Node {
             ],
             function: OtherThing._mproxy_get_thing
         )
-    } ()
+    }()
 }

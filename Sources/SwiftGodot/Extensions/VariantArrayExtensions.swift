@@ -10,28 +10,63 @@
 public enum ArrayError {
     case outOfRange
 }
-extension GArray: CustomDebugStringConvertible {
+
+
+@available(*, deprecated, renamed: "VariantArray", message: "GArray was renamed to `VariantArray` to better communicate its semantics")
+public typealias GArray = VariantArray
+
+extension VariantArray: CustomDebugStringConvertible {
+    /// Provides debug description of this instance:
+    /// ```
+    /// let array = VariantArray()
+    /// array.append(1)
+    /// array.append(2)
+    /// print(array) // prints [1, 2]
+    /// ```
     public var debugDescription: String {
         "[\(map { $0?.description ?? "nil"}.joined(separator: ", "))]"
     }
     
-    /// Initializes an empty, but typed `GArray`. For example: `GArray(Node.self)`
-    /// - Parameter type: `T` the type of the elements in the GArray, must conform to `_GodotBridgeable`.
-    public convenience init<T: _GodotBridgeable>(_ type: T.Type = T.self) {
-        let className: String
-        
-        if let type = type as? Object.Type {
-            className = type._godotTypeName
-        } else {
-            className = ""
+    /// Return the typing information suitable for Swift metatype magic.
+    @usableFromInline
+    var typing: ContainerTypingParameter {
+        let rawValue = getTypedBuiltin()
+        guard let gtype = Variant.GType(rawValue: rawValue) else {
+            fatalError("Unknown variant type rawValue: \(rawValue)")
         }
         
+        switch gtype {
+        case .object:
+            let className = getTypedClassName().asciiDescription
+            guard let metatype = typeOfClass(named: className) else {
+                GD.printErr("Unknown class name: \(className).")
+                return .builtin(.nil)
+            }
+            
+            return .object(metatype)
+        default:
+            return .builtin(gtype)
+        }
+    }
+    
+    /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node?.self)`, `VariantArray(Int.self)`
+    /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotContainerTypingParameter`.
+    public convenience init<T: _GodotContainerTypingParameter>(_ type: T.Type = T.self) {
         self.init(
-            base: GArray(),
+            base: VariantArray(),
             type: Int32(T._variantType.rawValue),
-            className: StringName(className),
+            className: T._className,
             script: nil
         )
+    }
+    
+    /// Initializes an empty, but typed `VariantArray`. For example: `VariantArray(Node.self)`
+    /// - Parameter type: `T` the type of the elements in the VariantArray, must conform to `_GodotNullableBridgeable`.
+    ///
+    /// ### Note
+    /// It's the same as `init(T?.self)`.
+    public convenience init<T: _GodotNullableBridgeable>(_ type: T.Type = T.self) {
+        self.init(T?.self)
     }
     
     /// Allows subscription array as in `array[0]`.    
@@ -66,9 +101,9 @@ extension GArray: CustomDebugStringConvertible {
     }
     
     /// Borrows ``FastVariant`` at `index` to perform some action on it.
-    public func withFastVariant<R>(at index: Int, _ body: (borrowing FastVariant?) -> R?) -> R? {
+    public func withFastVariant<R>(at index: Int, _ body: (borrowing FastVariant?) -> R) -> R {
         guard let ret = gi.array_operator_index(&content, Int64 (index)) else {
-            return nil
+            return body(nil)
         }
         
         let ptr = ret.assumingMemoryBound(to: VariantContent.self)
@@ -76,7 +111,7 @@ extension GArray: CustomDebugStringConvertible {
         
         let result = body(variant)
         
-        variant?.content = .zero // Avoid destroying a variant owned by Godot
+        variant?.unsafelyForget()
         
         return result
     }

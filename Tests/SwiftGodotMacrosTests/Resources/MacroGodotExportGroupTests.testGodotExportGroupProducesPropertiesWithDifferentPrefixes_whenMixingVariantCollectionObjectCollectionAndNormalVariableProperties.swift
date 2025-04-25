@@ -44,7 +44,7 @@ class Garage: Node {
 
         return SwiftGodot._invokeGetter(object.rating)
     }
-    var reviews: VariantCollection<String> = []
+    var reviews: TypedArray<String> = []
 
     static func _mproxy_set_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -66,7 +66,7 @@ class Garage: Node {
 
         return SwiftGodot._invokeGetter(object.reviews)
     }
-    var checkIns: ObjectCollection<CheckIn> = []
+    var checkIns: TypedArray<CheckIn> = []
 
     static func _mproxy_set_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -110,7 +110,7 @@ class Garage: Node {
 
         return SwiftGodot._invokeGetter(object.address)
     }
-    var daysOfOperation: VariantCollection<String> = []
+    var daysOfOperation: TypedArray<String> = []
 
     static func _mproxy_set_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -132,7 +132,7 @@ class Garage: Node {
 
         return SwiftGodot._invokeGetter(object.daysOfOperation)
     }
-    var hours: VariantCollection<String> = []
+    var hours: TypedArray<String> = []
 
     static func _mproxy_set_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -154,7 +154,7 @@ class Garage: Node {
 
         return SwiftGodot._invokeGetter(object.hours)
     }
-    var insuranceProvidersAccepted: ObjectCollection<InsuranceProvider> = []
+    var insuranceProvidersAccepted: TypedArray<InsuranceProvider> = []
 
     static func _mproxy_set_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {

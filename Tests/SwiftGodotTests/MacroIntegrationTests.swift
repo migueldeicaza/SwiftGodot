@@ -31,15 +31,15 @@ final class MacroIntegrationTests: GodotTestCase {
             var meshInstance: MeshInstance3D? = nil
             var variant = 1.toVariant()
             var optionalVariant: Variant?
-            var garray: GArray = GArray()
+            var garray: VariantArray = VariantArray()
             var object = Object() as Object?
             var lala = [42, 31].min() ?? 10
             lazy var someNode = {
                 Node3D()
             }()
             var wop = 42 as Int?
-            var variantCollection = VariantCollection<Int>()
-            var objectCollection = ObjectCollection<MeshInstance2D>()
+            var variantCollection = TypedArray<Int>()
+            var objectCollection = TypedArray<MeshInstance2D?>()
             var enumExample = EnumExample.two
             var wow = Wow()
             var optionalWow = Wow()

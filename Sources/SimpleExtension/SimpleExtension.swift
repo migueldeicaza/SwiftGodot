@@ -37,7 +37,7 @@ class SwiftSprite: Sprite2D {
     var count: Int = 0
     
     @Export
-    var someCollection: VariantCollection<Int> = [1, 2, 3, 4]
+    var someCollection: TypedArray<Int> = [1, 2, 3, 4]
     
     @Signal var pickedUpItem: SignalWithArguments<String, Bool, Int>
     @Signal var scored: SimpleSignal
@@ -88,7 +88,7 @@ class SwiftSprite: Sprite2D {
         
         GD.print("Found this value IMAGE: \(imageVariant.gtype) variant: \(imageVariant) desc: \(imageVariant.description)")
         
-        let dict2: GDictionary? = GDictionary(imageVariant)
+        let dict2: VariantDictionary? = VariantDictionary(imageVariant)
         GD.print("dictionary2: \(String(describing: dict2)) \(dict2?["type"]?.description ?? "no type") \(dict2?["value"]?.description ?? "no value")")
         
         // part b

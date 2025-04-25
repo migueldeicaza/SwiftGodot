@@ -17,12 +17,21 @@ public enum VariantConversionError: Error, CustomStringConvertible {
             return "\(value) doesn't fit in \(requestedType)"
         case .invalidRawValue(let requestedType, let value):
             return "\(value) is not a valid rawValue for \(requestedType)"
+        case .custom(let error):
+            if let error {
+                return "Custom type conversion error: \(error)"
+            } else {
+                return "Custom type conversion error."
+            }
         }
     }
     
     case unexpectedContent(requestedType: Any.Type, actualContent: String)
     case integerOverflow(requestedType: Any.Type, value: Int64)
     case invalidRawValue(requestedType: any RawRepresentable.Type, value: Any)
+    
+    /// Intended for ``GodotBuiltinConvertible`` and ``VariantConvertible`` implementations of user.
+    case custom(error: (any Error)?)
     
     @_disfavoredOverload
     public static func unexpectedContent<T>(parsing type: T.Type = T.self, from: Variant?) -> Self {
@@ -213,8 +222,8 @@ public protocol _GodotBridgeable: VariantConvertible {
     /// Internal API. Variant type tag for this type.
     static var _variantType: Variant.GType { get }
     
-    /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `GArray` -> `Array`, `Object` -> `Object`
-    static var _godotTypeName: String { get }
+    /// Internal API. Name of this type in Godot.  `Int64` -> `int`, `VariantArray` -> `Array`, `Object` -> `Object`
+    static var _builtinOrClassName: String { get }
     
     /// Internal API. PropInfo for this type when it's used as an argument.
     static func _argumentPropInfo(
@@ -234,15 +243,31 @@ public protocol _GodotBridgeable: VariantConvertible {
 }
 
 /// Internal API. Subset protocol for all Builtin Types.
-public protocol _GodotBridgeableBuiltin: _GodotBridgeable {
+/// All builtin types can be used as typing parameter for `TypedArray` and `TypedDictionary` key and/or value.
+/// It means being a `_GodotBridgeableBuiltin` also presumes being a `_GodotContainerTypingParameter` so
+/// the following declarations are legal:
+/// ```
+/// let array = TypedArray<Int>()
+/// let dictionary = TypedDictionary<String, Vector3>()
+/// ```
+public protocol _GodotBridgeableBuiltin: _GodotContainerTypingParameter {
 }
 
 public extension _GodotBridgeableBuiltin {
+    /// Internal API. Required for `TypedArray` implementation.
+    typealias _NonOptionalType = Self
+    
+    /// Internal API. Required for cases where Godot expects an empty `StringName` for builtin types and actual class name for `.object`-types.
+    public static var _className: StringName {
+        StringName("")
+    }
+    
     /// Internal API. Returns Godot type name for typed array.
+    /// For example `TypedArray<Int>` is Godot `Array[int]`
     @inline(__always)
     @inlinable
-    static var _godotTypeName: String {
-        _variantType._godotTypeName
+    static var _builtinOrClassName: String {
+        _variantType._builtinOrClassName                
     }
     
     /// Internal API. Default implementation.
@@ -287,6 +312,8 @@ public extension _GodotBridgeableBuiltin {
 }
 
 public extension _GodotBridgeable where Self: Object {
+    public typealias TypedArrayElement = Self?
+    
     /// Internal API. Default implementation.
     @inline(__always)
     @inlinable
@@ -295,7 +322,7 @@ public extension _GodotBridgeable where Self: Object {
     /// Internal API. Default implementation.
     @inline(__always)
     @inlinable
-    static var _godotTypeName: String {
+    static var _builtinOrClassName: String {
         "\(self)"
     }
     
@@ -313,13 +340,13 @@ public extension _GodotBridgeable where Self: Object {
         
         if self is Node.Type && hint == nil && hintStr == nil {
             hint = .nodeType
-            hintStr = _godotTypeName
+            hintStr = _builtinOrClassName
         }
         
         return _propInfoDefault(
             propertyType: _variantType,
             name: name,
-            className: StringName(_godotTypeName),
+            className: StringName(_builtinOrClassName),
             hint: hint,
             hintStr: hintStr,
             usage: usage
@@ -335,7 +362,7 @@ public extension _GodotBridgeable where Self: Object {
         _propInfoDefault(
             propertyType: _variantType,
             name: name,
-            className: StringName(_godotTypeName)
+            className: StringName(_builtinOrClassName)
         )
     }
     
@@ -346,7 +373,7 @@ public extension _GodotBridgeable where Self: Object {
         _propInfoDefault(
             propertyType: _variantType,
             name: "",
-            className: StringName(_godotTypeName)
+            className: StringName(_builtinOrClassName)
         )
     }
 }
@@ -747,9 +774,9 @@ extension String: _GodotBridgeableBuiltin {
         case .string:
             /// Avoid allocating `GString` wrapper at least
             var content = GString.zero
-            variant.constructType(into: &content, constructor: GString.selfFromVariant)
+            variant.constructType(into: &content, constructor: GodotInterfaceForString.selfFromVariant)
             self = GString.toString(pContent: &content)
-            GString.destructor(&content)
+            GodotInterfaceForString.destructor(&content)
         case .stringName:
             /// It's going through the ``PackedByteArray`` already, it's a death from the thousand cuts.
             // TODO: should we print a warning and question feasibility of this?
@@ -779,9 +806,9 @@ extension String: _GodotBridgeableBuiltin {
         case .string:
             /// Avoid allocating `GString` wrapper at least
             var content = GString.zero
-            variant.constructType(into: &content, constructor: GString.selfFromVariant)
+            variant.constructType(into: &content, constructor: GodotInterfaceForString.selfFromVariant)
             self = GString.toString(pContent: &content)
-            GString.destructor(&content)
+            GodotInterfaceForString.destructor(&content)
         case .stringName:
             /// It's going through the ``PackedByteArray`` already, it's a death from the thousand cuts.
             // TODO: should we print a warning and question feasibility of this?

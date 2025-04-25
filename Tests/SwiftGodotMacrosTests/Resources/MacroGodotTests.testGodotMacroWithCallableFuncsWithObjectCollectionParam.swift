@@ -1,6 +1,6 @@
 
 class SomeNode: Node {
-    func printNames(of nodes: ObjectCollection<Node>) {
+    func printNames(of nodes: TypedArray<Node>) {
         nodes.forEach { print($0.name) }
     }
 
@@ -10,7 +10,7 @@ class SomeNode: Node {
                 SwiftGodot.GD.printErr("Error calling `printNames`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
-            let arg0 = try arguments.argument(ofType: ObjectCollection<Node>.self, at: 0)
+            let arg0 = try arguments.argument(ofType: TypedArray<Node>.self, at: 0)
             return SwiftGodot._wrapCallableResult(object.printNames(of: arg0))
 
         } catch {
@@ -35,7 +35,7 @@ class SomeNode: Node {
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodot._argumentPropInfo(ObjectCollection<Node>.self, name: "nodes")
+                SwiftGodot._argumentPropInfo(TypedArray<Node>.self, name: "nodes")
             ],
             function: SomeNode._mproxy_printNames
         )

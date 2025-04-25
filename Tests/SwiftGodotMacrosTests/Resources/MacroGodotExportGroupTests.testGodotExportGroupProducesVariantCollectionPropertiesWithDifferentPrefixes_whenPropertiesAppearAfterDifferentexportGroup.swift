@@ -1,6 +1,6 @@
 
 class Car: Node {
-    var vins: VariantCollection<String> = [""]
+    var vins: TypedArray<String> = [""]
 
     static func _mproxy_set_vins(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -22,7 +22,7 @@ class Car: Node {
 
         return SwiftGodot._invokeGetter(object.vins)
     }
-    var years: VariantCollection<Int> = [1997]
+    var years: TypedArray<Int> = [1997]
 
     static func _mproxy_set_years(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -44,7 +44,7 @@ class Car: Node {
 
         return SwiftGodot._invokeGetter(object.years)
     }
-    var makes: VariantCollection<String> = ["HONDA"]
+    var makes: TypedArray<String> = ["HONDA"]
 
     static func _mproxy_set_makes(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
@@ -66,7 +66,7 @@ class Car: Node {
 
         return SwiftGodot._invokeGetter(object.makes)
     }
-    var models: VariantCollection<String> = ["ACCORD"]
+    var models: TypedArray<String> = ["ACCORD"]
 
     static func _mproxy_set_models(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {

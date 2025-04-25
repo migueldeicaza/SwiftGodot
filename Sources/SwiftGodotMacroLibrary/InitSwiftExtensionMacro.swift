@@ -36,15 +36,15 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 print ("Error: Not all parameters were initialized.")
                 return 0
             }
-            var types: [GDExtension.InitializationLevel: [Wrapped.Type]] = [:]
-            types[.core] = \(coreTypes)
-            types[.editor] = \(editorTypes)
-            types[.scene] = \(sceneTypes)
-            types[.servers] = \(serverTypes)
+            var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+            types[.core] = \(coreTypes).topologicallySorted()
+            types[.editor] = \(editorTypes).topologicallySorted()
+            types[.scene] = \(sceneTypes).topologicallySorted()
+            types[.servers] = \(serverTypes).topologicallySorted()
             initializeSwiftModule (interface, library, `extension`, initHook: { level in
-                types[level]?.forEach (register)
+                types[level]?.forEach(register)
             }, deInitHook: { level in
-                types[level]?.forEach (unregister)
+                types[level]?.reversed().forEach(unregister)
             })
             return 1
         }

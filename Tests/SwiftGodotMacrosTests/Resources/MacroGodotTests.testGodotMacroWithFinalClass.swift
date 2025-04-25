@@ -9,7 +9,7 @@ final class Hi: Node {
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
         assert(ClassDB.classExists(class: className))
-    } ()
+    }()
 
     override public class func implementedOverrides () -> [StringName] {
         guard !Engine.isEditorHint () else {

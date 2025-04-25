@@ -328,3 +328,51 @@ func bind_call_ptr () {
     fatalError("Not implemented")
 }
 
+extension [Object.Type] {
+    /// Returns a topologically sorted array of the classes.
+    /// Classes depending on others will be strictly later in the sequence.
+    /// Duplicating entries will be removed.    
+    public func topologicallySorted() -> [Object.Type] {
+        guard !isEmpty else {
+            return []
+        }
+        
+        func id(of type: AnyClass) -> ObjectIdentifier {
+            ObjectIdentifier(type)
+        }
+        
+        let idToType = Dictionary(
+            uniqueKeysWithValues: map { (id(of: $0), $0) }
+        )
+        
+        func type(with id: ObjectIdentifier) -> Object.Type {
+            idToType[id]!
+        }
+        
+        var remaining = Set(idToType.keys)
+        var pending = [ObjectIdentifier]()
+        var sorted = [ObjectIdentifier]()
+        
+        while remaining.count > 0 {            
+            for typeId in remaining {
+                let type = type(with: typeId)
+                if let superType = _getSuperclass(type) {
+                    let superTypeId = id(of: superType)
+                    if !remaining.contains(superTypeId) {
+                        pending.append(typeId)
+                    }
+                } else {
+                    pending.append(typeId)
+                }
+            }
+            
+            sorted.append(contentsOf: pending)
+            for id in pending {
+                remaining.remove(id)
+            }
+            pending.removeAll()
+        }
+        
+        return sorted.map { type(with: $0) }
+    }
+}

@@ -1,7 +1,7 @@
 
 class SomeNode: Node {
-    func getIntegerCollection() -> VariantCollection<Int> {
-        let result: VariantCollection<Int> = [0, 1, 1, 2, 3, 5, 8]
+    func getIntegerCollection() -> TypedArray<Int> {
+        let result: TypedArray<Int> = [0, 1, 1, 2, 3, 5, 8]
         return result
     }
 
@@ -27,7 +27,7 @@ class SomeNode: Node {
             className: className,
             name: "getIntegerCollection",
             flags: .default,
-            returnValue: SwiftGodot._returnValuePropInfo(VariantCollection<Int>.self),
+            returnValue: SwiftGodot._returnValuePropInfo(TypedArray<Int>.self),
             arguments: [
 
             ],
