@@ -345,6 +345,7 @@ public struct Arguments: ~Copyable {
     /// - `index` is out of bounds.
     @inline(__always)
     @inlinable
+    @_disfavoredOverload
     public func argument<T>(ofType type: T?.Type = T?.self, at index: Int) throws(ArgumentAccessError) -> T? where T: VariantConvertible {
         try withBorrowedFastVariant(at: index) { variantOrNil in
             extract(T?.self, from: variantOrNil)

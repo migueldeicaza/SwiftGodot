@@ -357,5 +357,41 @@ final class MarshalTests: GodotTestCase {
             2.toVariant()
         )
     }
+    
+    func testOptionalObjectArgument() {
+        let arguments = Arguments(from: [nil, Node().toVariant()])
+        let expectation = XCTestExpectation()
+        expectation.expectedFulfillmentCount = 5
+        do {
+            let a = try arguments.argument(ofType: Node?.self, at: 0)
+            XCTAssertNil(a)
+            let _ = try arguments.argument(ofType: Node.self, at: 1)
+            expectation.fulfill() // 1
+            let _ = try arguments.argument(ofType: Node.self, at: 2)
+        } catch {
+            expectation.fulfill() // 2
+        }
+        
+        do {
+            _ = try arguments.argument(ofType: Node.self, at: 0)
+        } catch {
+            expectation.fulfill() // 3
+        }
+        
+        do {
+            _ = try arguments.argument(ofType: Int.self, at: 0)
+        } catch {
+            expectation.fulfill() // 4
+        }
+        
+        do {
+            _ = try arguments.argument(ofType: Int?.self, at: 0)
+            expectation.fulfill() // 5
+        } catch {
+            XCTFail()
+        }
+        
+        wait(for: [expectation], timeout: 0.0)
+    }
 }
 
