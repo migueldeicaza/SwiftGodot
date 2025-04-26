@@ -42,7 +42,7 @@ public struct GodotCallable: PeerMacro {
         let objectOrSelf = isStatic ? "self" : "object"
         
         for (index, parameter) in parameters.enumerated() {
-            let ptype = parameter.type.description
+            let ptype = parameter.type.trimmedDescription
             
             body += """
                     let arg\(index) = try arguments.argument(ofType: \(ptype).self, at: \(index))            

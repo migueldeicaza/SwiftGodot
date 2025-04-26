@@ -234,3 +234,16 @@ class DebugThing: SwiftGodot.Object {
     @Callable
     func defaultIsLegacyCompatible() {}
 }
+
+@Godot(
+.tool) // like this
+class NodeWithCommentsInRandomPlaces: Node {
+    /* comment */@Signal/* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal // Comment
+    @Callable/* comment */
+    public func /* comment */foo/* comment */(
+        /* comment */lala: Int // COMMENT
+    ) -> /* comment */ Int // COMMENT
+    {
+        0
+    }
+}

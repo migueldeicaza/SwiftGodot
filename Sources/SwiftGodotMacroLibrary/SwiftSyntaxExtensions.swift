@@ -98,7 +98,7 @@ extension AttributeSyntax.Arguments {
     func argument(labeled label: String) -> LabeledExprSyntax? {
         if case let .argumentList(listSyntax) = self {
             return listSyntax.first { exprSyntax in
-                exprSyntax.label?.description == label
+                exprSyntax.label?.trimmedDescription == label
             }
         } else {
             return nil
@@ -113,7 +113,7 @@ extension AttributeSyntax {
                 return false
             }
             
-            let expr = exprSyntax.expression.description
+            let expr = exprSyntax.expression.trimmedDescription
             switch expr {
             case "true":
                 return true

@@ -25,7 +25,7 @@ public struct SignalMacro: DeclarationMacro {
                 signalName = argument.expression.signalName()
             }
             if index == 1 {
-                if argument.expression.description == ".init()" {
+                if argument.expression.trimmedDescription == ".init()" {
                     // its an empty dictionary, so no arguments
                     continue
                 }
@@ -47,7 +47,7 @@ public struct SignalMacro: DeclarationMacro {
                     guard let typeName = pair.value.typeName() else {
                         throw GodotMacroError.legacySignalMacroUnexpectedArgumentsSyntax
                     }
-                    arguments.append((pair.key.description, typeName))
+                    arguments.append((pair.key.trimmedDescription, typeName))
                 }
             }
         }

@@ -43,7 +43,7 @@ public struct SignalAttachmentMacro: AccessorMacro {
             }
             
             result.append("""
-            get { \(raw: type.description.trimmingCharacters(in: .whitespacesAndNewlines))(target: self, signalName: \"\(raw: identifier.camelCaseToSnakeCase())\") }
+            get { \(raw: type.trimmedDescription)(target: self, signalName: \"\(raw: identifier.camelCaseToSnakeCase())\") }
             """)
         }
     
