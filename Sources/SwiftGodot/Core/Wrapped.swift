@@ -95,9 +95,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     public static var deferred: Callable? = nil
-
-    /// Conformance to Identifiable by using the native handle to the object
-    public var id: Int { Int (bitPattern: handle) }
     
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
         return lhs.handle == rhs.handle
