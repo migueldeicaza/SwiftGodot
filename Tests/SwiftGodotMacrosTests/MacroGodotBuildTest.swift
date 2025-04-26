@@ -235,15 +235,15 @@ class DebugThing: SwiftGodot.Object {
     func defaultIsLegacyCompatible() {}
 }
 
-@Godot(
-.tool) // like this
-class NodeWithCommentsInRandomPlaces: Node {
+/* comment */@Godot/* comment */(
+.tool/* comment */) // like this
+/* comment */class /* comment */NodeWithCommentsInRandomPlaces/* comment */: /* comment */Node /* comment */{
     /* comment */@Signal/* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal // Comment
     @Callable/* comment */
-    public func /* comment */foo/* comment */(
-        /* comment */lala: Int // COMMENT
-    ) -> /* comment */ Int // COMMENT
-    {
+    public /* comment */func /* comment */foo/* comment */(
+        /* comment */lala/* comment */:/* comment */ Int // COMMENT
+    )/* comment */ -> /* comment */ Int // COMMENT
+    /* comment */{/* comment */
         0
-    }
+    }/* comment */
 }
