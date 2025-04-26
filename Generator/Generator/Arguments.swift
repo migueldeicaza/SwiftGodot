@@ -202,7 +202,7 @@ func getArgRef (arg: JGodotArgument) -> String {
                 optstorage = ".content"
             } else {
                 needAddress = "&"
-                optstorage = ".handle"
+                optstorage = ".pNativeObject"
             }
         }
         return "\(needAddress)\(escapeSwift(argref))\(optstorage)"

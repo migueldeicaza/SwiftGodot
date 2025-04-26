@@ -92,7 +92,7 @@ var classMap: [String: JGodotExtensionAPIClass] = [:]
 
 // Tracks whether a Godot type has subclasses, we want to use this
 // to determine whether we want to perform the more expensive lookup
-// for handle -> Swift type using `lookupObject` rather than creating
+// for handle -> Swift type using `lookupNativeObject` rather than creating
 // a plain wrapper directly from the handle
 var hasSubclasses = Set<String>()
 

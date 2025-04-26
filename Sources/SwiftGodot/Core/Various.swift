@@ -8,8 +8,8 @@
 public extension SceneTree {
     /// Public because we want to allow the embed API to call this, but dont want to make it
     /// obvious in the constructors
-    static func createFrom (nativeHandle: UnsafeMutableRawPointer) -> SceneTree {
-        return SceneTree (nativeHandle: nativeHandle)
+    static func createFrom(nativeHandle: UnsafeMutableRawPointer) -> SceneTree {
+        return SceneTree(NativeObjectHandle(pNativeObject: nativeHandle, constructedFromSwift: false))
     }
 }
 
@@ -22,8 +22,8 @@ extension Object: CustomStringConvertible {
 public extension ProjectSettings {
     /// Public because we want to allow the embed API to call this, but dont want to make it
     /// obvious in the constructors
-    static func createFrom (nativeHandle: UnsafeMutableRawPointer) -> ProjectSettings {
-        return ProjectSettings (nativeHandle: nativeHandle)
+    static func createFrom(nativeHandle: UnsafeMutableRawPointer) -> ProjectSettings {
+        return ProjectSettings(NativeObjectHandle(pNativeObject: nativeHandle, constructedFromSwift: false))
     }
 }
 

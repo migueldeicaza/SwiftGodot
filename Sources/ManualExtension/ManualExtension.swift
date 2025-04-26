@@ -51,20 +51,14 @@ class SwiftSprite: Sprite2D {
                                  usage: .default)
         classInfo.registerProperty(foodProp, getter: "demo_get_favorite_food", setter: "demo_set_favorite_food")
     }()
-    
-    required init (nativeHandle: UnsafeRawPointer) {
-        _ = SwiftSprite.initClass
-        time_passed = 0
-        count = sequence
-        super.init (nativeHandle: nativeHandle)
-    }
-    
-    required init () {
+        
+    required init(_ nativeObjectHandle: NativeObjectHandle) {
         _ = SwiftSprite.initClass
         count = sequence
         sequence += 1
         time_passed = 0
-        super.init ()
+        
+        super.init(nativeObjectHandle)
     }
     
     deinit {

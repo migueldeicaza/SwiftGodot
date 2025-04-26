@@ -30,7 +30,7 @@ extension PhysicsDirectSpaceState3D {
         /// The colliding object
         public let collider: T
         /// The colliding object's ID.
-        public let colliderId: Int
+        public let colliderId: UInt
         /// The The intersecting object's ``RID``.
         public let rid: RID
         /// The shape index of the colliding shape.
@@ -46,7 +46,7 @@ extension PhysicsDirectSpaceState3D {
                   let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),
                   let colliderVariant = dictionary["collider"],
                   let collider = T.fromVariant(colliderVariant),
-                  let colliderId: Int = dictionary.makeOrUnwrap(key: "collider_id"),
+                  let colliderId: UInt = dictionary.makeOrUnwrap(key: "collider_id"),
                   let rid: RID = dictionary.makeOrUnwrap(key: "rid"),
                   let shape: Int = dictionary.makeOrUnwrap(key: "shape"),
                   let faceIndex: Int = dictionary.makeOrUnwrap(key: "face_index") else {

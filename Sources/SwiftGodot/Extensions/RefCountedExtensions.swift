@@ -9,7 +9,7 @@ public extension RefCounted {
         let instanceID = Int64(bitPattern: UInt64(getInstanceId()))
         if GD.isInstanceIdValid(id: instanceID) {
             if unreference() {
-                gi.object_destroy(UnsafeMutableRawPointer(mutating: handle))
+                gi.object_destroy(pNativeObject)
             }
         }
     }

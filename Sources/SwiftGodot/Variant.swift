@@ -156,7 +156,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     
     /// Initialize ``Variant`` by wrapping ``Object``
     public convenience init(_ from: Object) {
-        self.init(payload: from.handle, constructor: Object.variantFromSelf)
+        self.init(payload: from.pNativeObject, constructor: Object.variantFromSelf)
     }
     
     /// Initialize ``Variant`` by wrapping ``Object?``, fails if it's `nil`
@@ -253,12 +253,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
             return nil
         }
 
-        var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
-        constructType(into: &objectHandle, constructor: Object.selfFromVariant)
-        guard let objectHandle else {
+        var pNativeObject: GDExtensionObjectPtr? = GDExtensionObjectPtr(bitPattern: 1)!
+        constructType(into: &pNativeObject, constructor: Object.selfFromVariant)
+        guard let pNativeObject else {
             return nil
         }
-        let ret: T? = lookupObject(nativeHandle: objectHandle, ownsRef: false)
+        let ret: T? = getOrInitSwiftObject(boundTo: pNativeObject, ownsRef: false)
         return ret
     }
     

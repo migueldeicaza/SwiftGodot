@@ -18,7 +18,7 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
             dictionary["position"] = Variant(Vector2(x: 1, y: 2))
             dictionary["normal"] = Variant(Vector2(x: 4, y: 5))
             dictionary["collider"] = Variant(collider)
-            dictionary["collider_id"] = Variant(collider.id)
+            dictionary["collider_id"] = Variant(collider.getInstanceId())
             dictionary["rid"] = Variant(RID())
             dictionary["shape"] = Variant(22)
             return dictionary
@@ -29,7 +29,7 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
         XCTAssertEqual(result.position, Vector2(x: 1, y: 2))
         XCTAssertEqual(result.normal, Vector2(x: 4, y: 5))
         XCTAssertEqual(result.collider, collider)
-        XCTAssertEqual(result.colliderId, collider.id)
+        XCTAssertEqual(result.colliderId, collider.getInstanceId())
         XCTAssertEqual(result.rid, RID())
         XCTAssertEqual(result.shape, 22)
     }
@@ -42,7 +42,7 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
             dictionary["position"] = Variant(Vector2(x: 1, y: 2))
             dictionary["normal"] = Variant(Vector2(x: 4, y: 5))
 //            dictionary["collider"] = Variant(collider)
-            dictionary["collider_id"] = Variant(collider.id)
+            dictionary["collider_id"] = Variant(collider.getInstanceId())
             dictionary["rid"] = Variant(RID())
             dictionary["shape"] = Variant(22)
             return dictionary

@@ -34,18 +34,12 @@ class Demo5: Node {
     @Export(.enum) var foo: Demo3
     @Export(.enum) var bar: Demo4
     
-    required init() {
-        foo = .first
-        bar = .second
-        
-        super.init()
-    }
     
-    required init(nativeHandle: UnsafeRawPointer) {
+    required init(_ nativeHandle: NativeObjectHandle) {
         foo = .first
         bar = .second
         
-        super.init(nativeHandle: nativeHandle)
+        super.init(nativeHandle)
     }
 }
 

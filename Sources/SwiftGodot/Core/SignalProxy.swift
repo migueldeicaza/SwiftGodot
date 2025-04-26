@@ -33,12 +33,8 @@ public class SignalProxy: Object {
     public typealias Proxy = (borrowing Arguments) -> ()
     public var proxy: Proxy?
     
-    public required init () {
-        super.init()
-    }
-
-    public required init(nativeHandle: UnsafeRawPointer) {
-        super.init(nativeHandle: nativeHandle)
+    public required init(_ nativeHandle: NativeObjectHandle) {
+        super.init(nativeHandle)
     }
 
     func proxyFunc(args: borrowing Arguments) -> Variant? {

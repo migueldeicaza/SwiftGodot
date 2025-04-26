@@ -180,7 +180,7 @@ public struct FastVariant: ~Copyable {
     /// Initialize ``FastVariant`` by wrapping ``Object``
     @inline(__always)
     public init(_ from: Object) {
-        self.init(payload: from.handle, constructor: Object.variantFromSelf)
+        self.init(payload: from.pNativeObject, constructor: Object.variantFromSelf)
     }
     
     /// Initialize ``FastVariant`` by wrapping ``Object?``, fails if it's `nil`
@@ -291,12 +291,12 @@ public struct FastVariant: ~Copyable {
             return nil
         }
 
-        var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
-        constructType(into: &objectHandle, constructor: Object.selfFromVariant)
-        guard let objectHandle else {
+        var pNativeObject: GDExtensionObjectPtr? = GDExtensionObjectPtr(bitPattern: 1)!
+        constructType(into: &pNativeObject, constructor: Object.selfFromVariant)
+        guard let pNativeObject else {
             return nil
         }
-        let ret: T? = lookupObject(nativeHandle: objectHandle, ownsRef: false)
+        let ret: T? = getOrInitSwiftObject(boundTo: pNativeObject, ownsRef: false)
         return ret
     }
     

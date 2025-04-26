@@ -10,10 +10,10 @@ private final class ABCX: AStar3D {
     static let A: Int = 0
     static let B: Int = 1
     static let C: Int = 2
-    static let X: Int = 3
+    static let X: Int = 3        
     
-    required init () {
-        super.init ()
+    required init(_ nativeHandle: NativeObjectHandle) {
+        super.init(nativeHandle)
         
         addPoint (id: Self.A, position: Vector3 (x: 0, y: 0, z: 0))
         addPoint (id: Self.B, position: Vector3 (x: 1, y: 0, z: 0))
@@ -23,10 +23,6 @@ private final class ABCX: AStar3D {
         connectPoints (id: Self.A, toId: Self.C)
         connectPoints (id: Self.B, toId: Self.C)
         connectPoints (id: Self.X, toId: Self.A)
-    }
-    
-    required init (nativeHandle: UnsafeRawPointer) {
-        super.init (nativeHandle: nativeHandle)
     }
     
     // Disable heuristic completely.

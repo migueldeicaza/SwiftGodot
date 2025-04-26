@@ -123,7 +123,7 @@ struct MethodArgument {
         /// e.g. VariantArray.content
         case contentRef
         
-        /// e.g. Object.handle
+        /// e.g. Object.pNativeObject
         case objectRef(isOptional: Bool)
         
         /// e.g. TypedArray<Object>, TypedArray<Float>
@@ -273,9 +273,9 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
                 accessor = argument.name
             case .objectRef(let isOptional):
                 if isOptional {
-                    accessor = "\(argument.name)?.handle"
+                    accessor = "\(argument.name)?.pNativeObject"
                 } else {
-                    accessor = "\(argument.name).handle"
+                    accessor = "\(argument.name).pNativeObject"
                 }
             case .rawValue:
                 accessor = "\(argument.name).rawValue"
@@ -578,9 +578,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             } else if godotReturnType == "String" {
                 return "let _result = GString ()"
             } else {
-                if godotReturnTypeIsReferenceType {
-                    // frameworkType = true
-                    return "var _result = UnsafeRawPointer (bitPattern: 0)"
+                if godotReturnTypeIsReferenceType {                    
+                    return "var _result = GDExtensionObjectPtr(bitPattern: 0)"
                 } else {
                     if godotReturnType == "Variant" {
                         return "var _result: Variant.ContentType = Variant.zero"
@@ -633,7 +632,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                     if method.isVirtual {
                         ptrResult = "&_result"
                     } else {
-                        ptrResult = "&_result.handle"
+                        ptrResult = "&_result.pNativeObject"
                     }
                 }
             }
@@ -676,7 +675,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             return "return Variant(takingOver: _result)"
         } else if frameworkType {
             //print ("OBJ RETURN: \(className) \(method.name)")
-            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result, ownsRef: true)\(returnOptional ? "" : "!")"
+            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return getOrInitSwiftObject(boundTo: _result, ownsRef: true)\(returnOptional ? "" : "!")"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
             let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"
@@ -754,7 +753,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     
     p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
         if staticAttribute == nil {
-            p("if handle == nil { Wrapped.attemptToUseObjectFreedByGodot() }")
+            p("assertValidity()")
         }
         if method.optionalHash == nil {
             if let godotReturnType {
@@ -770,14 +769,12 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             let instanceArg: String
             if method.isStatic {
                 instanceArg = "nil"
-            } else {
-                let accessor: String
+            } else {                
                 if asSingleton {
-                    accessor = "shared.handle"
+                    instanceArg = "shared.pNativeObject"
                 } else {
-                    accessor = "handle"
+                    instanceArg = "pNativeObject"
                 }
-                instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
             }
             
             func getMethodNameArgument() -> String {
