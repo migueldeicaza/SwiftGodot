@@ -91,14 +91,14 @@ class GodotMacroProcessor {
         let arguments = funcDecl
             .parameters
             .map { parameter in
-                let typename = parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)                
+                let typename = parameter.type.trimmedDescription
                 return "SwiftGodot._argumentPropInfo(\(typename).self, name: \"\(parameter.internalName)\")"
             }
             .joined(separator: ",\n")
                 
         let returnTypename: String
         if let type = funcDecl.signature.returnClause?.type {
-            returnTypename = type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+            returnTypename = type.trimmedDescription
         } else {
             returnTypename = "Swift.Void"
         }
@@ -158,7 +158,7 @@ class GodotMacroProcessor {
         let hintStrExpr = hintExpr == nil ? nil : labeledExpressionList?.dropFirst().first
         
         let usageExpr = labeledExpressionList?.first { labelExpr in
-            labelExpr.description == "usage"
+            labelExpr.trimmedDescription == "usage"
         }
 
         for binding in varDecl.bindings {
@@ -182,19 +182,19 @@ class GodotMacroProcessor {
                 "name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
             ]
             
-            if let hint = hintExpr?.description {
+            if let hint = hintExpr?.trimmedDescription {
                 args.append("userHint: .\(hint)")
             } else {
                 args.append("userHint: nil")
             }
             
-            if let hintStr = hintStrExpr?.description {
+            if let hintStr = hintStrExpr?.trimmedDescription {
                 args.append("userHintStr: \(hintStr)")
             } else {
                 args.append("userHintStr: nil")
             }
             
-            if let usage = usageExpr?.expression.description {
+            if let usage = usageExpr?.expression.trimmedDescription {
                 args.append("userUsage: \(usage)")
             } else {
                 args.append("userUsage: nil")
@@ -239,7 +239,7 @@ class GodotMacroProcessor {
                 throw GodotMacroError.signalMacroNoType(nameWithPrefix)
             }
             
-            let typeName = typeAnnotation.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+            let typeName = typeAnnotation.type.trimmedDescription
             
             let godotName = name.camelCaseToSnakeCase()
             
@@ -364,7 +364,7 @@ public struct GodotMacro: MemberMacro {
                 
                 var isTool: Bool = false
                 if case let .argumentList (arguments) = node.arguments, let expression = arguments.first?.expression {
-                    isTool = expression.description.trimmingCharacters (in: .whitespacesAndNewlines) .hasSuffix(".tool")
+                    isTool = expression.trimmedDescription.hasSuffix(".tool")
                 }
                 
                 var implementedOverridesDecl = "override \(accessControlLevel) class func implementedOverrides () -> [StringName] {\n"

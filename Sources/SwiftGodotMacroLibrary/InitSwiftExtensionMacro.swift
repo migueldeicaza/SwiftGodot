@@ -31,7 +31,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         let serverTypes = node.arguments.first(where: { $0.label?.text == "serverTypes" })?.expression ?? "[]"
 
         let initModule: DeclSyntax = """
-        @_cdecl(\(raw: cDecl.description)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
+        @_cdecl(\(raw: cDecl.trimmedDescription)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
             guard let library, let interface, let `extension` else {
                 print ("Error: Not all parameters were initialized.")
                 return 0

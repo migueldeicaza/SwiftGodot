@@ -465,5 +465,24 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
+    
+    func testNoTypeAnnotationTrivia() {
+        assertExpansion(
+            of: """
+            @Godot(
+            .tool) // like this
+            class TestClass: Node {     
+                /* comment */@Signal/* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal // Comment
+                @Callable/* comment */
+                public func /* comment */foo/* comment */(
+                    /* can do that too -> */var /* comment */lala: Int // COMMENT            
+                ) -> /* comment */ Int // COMMENT
+                {
+                    0
+                }            
+            }
+            """
+        )
+    }
 
 }

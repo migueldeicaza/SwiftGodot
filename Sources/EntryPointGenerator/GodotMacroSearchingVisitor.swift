@@ -25,9 +25,9 @@ public class GodotMacroSearchingVisitor: SyntaxVisitor {
     public override func visit(_ classDecl: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         for attribute in classDecl.attributes {
             if let attributeSyntax = attribute.as(AttributeSyntax.self) {
-                let attributeName = attributeSyntax.attributeName.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                let attributeName = attributeSyntax.attributeName.trimmedDescription
                 if attributeName == "Godot" {
-                    let className = classDecl.name.text
+                    let className = classDecl.name.trimmedDescription
                     logger?("Found '\(className)' with @Godot macro.")
                     classes.append(className)
                     break // Found the @Godot macro, no need to check further
