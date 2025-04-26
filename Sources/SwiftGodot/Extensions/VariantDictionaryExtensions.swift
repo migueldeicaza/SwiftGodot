@@ -6,7 +6,7 @@
 //
 
 @available(*, deprecated, renamed: "VariantDictionary", message: "GDictionary was renamed to `VariantDictionary` to better communicate its semantics")
-public typealias GDictionary = VariantArray
+public typealias GDictionary = VariantDictionary
 
 extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertible {
     
