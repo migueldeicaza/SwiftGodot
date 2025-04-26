@@ -235,7 +235,7 @@ class DebugThing: SwiftGodot.Object {
     func defaultIsLegacyCompatible() {}
 }
 
-/* comment */@Godot/* comment */(
+/* comment */@Godot(
 .tool/* comment */) // like this
 /* comment */class /* comment */NodeWithCommentsInRandomPlaces/* comment */: /* comment */Node /* comment */{
     /* comment */@Signal/* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal // Comment
