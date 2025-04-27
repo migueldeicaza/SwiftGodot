@@ -29,13 +29,8 @@ class TestClass: Node {
         return nil
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("TestClass")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SimpleSignal.register(as: "signal", in: className)
         SwiftGodot._registerMethod(
@@ -49,4 +44,15 @@ class TestClass: Node {
             function: TestClass._mproxy_foo
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "TestClass"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

@@ -25,13 +25,8 @@ class CallableCollectionsNode: Node {
 
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("CallableCollectionsNode")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -54,4 +49,15 @@ class CallableCollectionsNode: Node {
             function: CallableCollectionsNode._mproxy_get_markers
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "CallableCollectionsNode"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

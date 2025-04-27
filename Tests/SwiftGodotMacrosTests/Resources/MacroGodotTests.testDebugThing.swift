@@ -25,13 +25,8 @@ class DebugThing: SwiftGodot.Object {
         return nil
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("DebugThing")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SignalWithArguments<Swift.Int>.register(as: "lives_changed", in: className)
         SwiftGodot._registerMethod(
@@ -45,4 +40,15 @@ class DebugThing: SwiftGodot.Object {
             function: DebugThing._mproxy_do_thing
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "DebugThing"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

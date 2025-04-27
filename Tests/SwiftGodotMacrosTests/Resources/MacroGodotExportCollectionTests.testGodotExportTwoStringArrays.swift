@@ -45,13 +45,8 @@ class ArrayTest: Node {
        return SwiftGodot._invokeGetter(object.lastNames)
    }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("ArrayTest")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -82,4 +77,15 @@ class ArrayTest: Node {
             setterFunction: ArrayTest._mproxy_set_lastNames
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "ArrayTest"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

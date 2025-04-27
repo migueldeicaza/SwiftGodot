@@ -45,13 +45,8 @@ public class Issue353: Node {
         return SwiftGodot._invokeGetter(object.non_prefixed_bool)
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("Issue353")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._addPropertyGroup(className: className, name: "Group With a Prefix", prefix: "prefix1")
         SwiftGodot._registerPropertyWithGetterSetter(
@@ -83,4 +78,15 @@ public class Issue353: Node {
             setterFunction: Issue353._mproxy_set_non_prefixed_bool
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "Issue353"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

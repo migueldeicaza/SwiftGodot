@@ -22,13 +22,8 @@ class Hi: Node {
         return SwiftGodot._invokeGetter(object.goodName)
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("Hi")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -45,4 +40,15 @@ class Hi: Node {
             setterFunction: Hi._mproxy_set_goodName
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "Hi"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

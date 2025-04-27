@@ -177,13 +177,8 @@ class Garage: Node {
         return SwiftGodot._invokeGetter(object.insuranceProvidersAccepted)
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("Garage")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._addPropertyGroup(className: className, name: "Front Page", prefix: "")
         SwiftGodot._registerPropertyWithGetterSetter(
@@ -301,4 +296,15 @@ class Garage: Node {
             setterFunction: Garage._mproxy_set_insuranceProvidersAccepted
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "Garage"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

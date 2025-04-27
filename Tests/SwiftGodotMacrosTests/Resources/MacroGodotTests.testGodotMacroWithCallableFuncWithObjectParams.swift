@@ -96,13 +96,8 @@ class Castro: Node {
         return nil
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("Castro")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -166,4 +161,15 @@ class Castro: Node {
             function: Castro._mproxy_queue
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "Castro"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

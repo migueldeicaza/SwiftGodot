@@ -54,13 +54,8 @@ class MathHelper: Node {
         return nil
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("MathHelper")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -96,4 +91,15 @@ class MathHelper: Node {
             function: MathHelper._mproxy_areBothTrue
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "MathHelper"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

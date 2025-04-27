@@ -12,15 +12,21 @@ class Demo: Node3D {
         }
     }
 
+    private static let _initializeClass: Void = {
+        let className = actualClassName
+        assert(ClassDB.classExists(class: className))
+        SimpleSignal.register(as: "burp", in: className)
+        SignalWithArguments<Int>.register(as: "lives_changed", in: className)
+    }()
+
     override open class var classInitializer: Void {
         let _ = super.classInitializer
         return _initializeClass
     }
 
-    private static let _initializeClass: Void = {
-        let className = StringName("Demo")
-        assert(ClassDB.classExists(class: className))
-        SimpleSignal.register(as: "burp", in: className)
-        SignalWithArguments<Int>.register(as: "lives_changed", in: className)
-    }()
+    private static let actualClassName: StringName = "Demo"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

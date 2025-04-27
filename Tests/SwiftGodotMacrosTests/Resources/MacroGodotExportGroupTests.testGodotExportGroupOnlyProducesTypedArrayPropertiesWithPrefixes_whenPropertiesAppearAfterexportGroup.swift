@@ -45,13 +45,8 @@ class Car: Node {
         return SwiftGodot._invokeGetter(object.years)
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("Car")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -83,4 +78,15 @@ class Car: Node {
             setterFunction: Car._mproxy_set_years
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "Car"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

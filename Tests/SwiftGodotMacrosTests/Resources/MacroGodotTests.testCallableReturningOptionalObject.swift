@@ -1,14 +1,20 @@
 class MyThing: SwiftGodot.RefCounted {
 
+    private static let _initializeClass: Void = {
+        let className = actualClassName
+        assert(ClassDB.classExists(class: className))
+    }()
+
     override open class var classInitializer: Void {
         let _ = super.classInitializer
         return _initializeClass
     }
 
-    private static let _initializeClass: Void = {
-        let className = StringName("MyThing")
-        assert(ClassDB.classExists(class: className))
-    }()
+    private static let actualClassName: StringName = "MyThing"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 
 }
 
@@ -26,13 +32,8 @@ class OtherThing: SwiftGodot.Node {
 
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("OtherThing")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -45,4 +46,15 @@ class OtherThing: SwiftGodot.Node {
             function: OtherThing._mproxy_get_thing
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "OtherThing"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

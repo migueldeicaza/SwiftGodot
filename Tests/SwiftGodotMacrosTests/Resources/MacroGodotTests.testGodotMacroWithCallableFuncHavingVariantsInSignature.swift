@@ -20,13 +20,8 @@ private class TestNode: Node {
         return nil
     }
 
-    override open class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("TestNode")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -39,4 +34,15 @@ private class TestNode: Node {
             function: TestNode._mproxy_foo
         )
     }()
+
+    override open class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "TestNode"
+
+    open override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }

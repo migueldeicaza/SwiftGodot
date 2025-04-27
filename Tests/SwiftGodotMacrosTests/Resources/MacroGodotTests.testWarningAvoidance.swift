@@ -1,15 +1,21 @@
 
 final class MyData: Resource {
 
+    private static let _initializeClass: Void = {
+        let className = actualClassName
+        assert(ClassDB.classExists(class: className))
+    }()
+
     override public class var classInitializer: Void {
         let _ = super.classInitializer
         return _initializeClass
     }
 
-    private static let _initializeClass: Void = {
-        let className = StringName("MyData")
-        assert(ClassDB.classExists(class: className))
-    }()
+    private static let actualClassName: StringName = "MyData"
+
+    public override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }
 final class MyClass: Node {
     var data: MyData = .init()
@@ -35,13 +41,8 @@ final class MyClass: Node {
         return SwiftGodot._invokeGetter(object.data)
     }
 
-    override public class var classInitializer: Void {
-        let _ = super.classInitializer
-        return _initializeClass
-    }
-
     private static let _initializeClass: Void = {
-        let className = StringName("MyClass")
+        let className = actualClassName
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -58,4 +59,15 @@ final class MyClass: Node {
             setterFunction: MyClass._mproxy_set_data
         )
     }()
+
+    override public class var classInitializer: Void {
+        let _ = super.classInitializer
+        return _initializeClass
+    }
+
+    private static let actualClassName: StringName = "MyClass"
+
+    public override var actualClassName: StringName {
+        Self.actualClassName
+    }
 }
