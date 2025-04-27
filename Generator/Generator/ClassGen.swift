@@ -603,9 +603,9 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
 
         if cdef.name == "RefCounted" {
             p("""
-            public required init(_ nativeHandle: NativeObjectHandle) {                
-                super.init(nativeHandle)
-                if nativeHandle.constructedFromSwift {
+            public required init(_ initContext: InitContext) {                
+                super.init(initContext)
+                if initContext.instigator == .swift {
                     _ = initRef()
                 }
             }

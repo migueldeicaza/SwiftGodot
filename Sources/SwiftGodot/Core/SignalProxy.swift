@@ -33,7 +33,7 @@ public class SignalProxy: Object {
     public typealias Proxy = (borrowing Arguments) -> ()
     public var proxy: Proxy?
     
-    public required init(_ nativeHandle: NativeObjectHandle) {
+    public required init(_ nativeHandle: InitContext) {
         super.init(nativeHandle)
     }
 

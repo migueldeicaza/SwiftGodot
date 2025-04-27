@@ -35,7 +35,7 @@ class Demo5: Node {
     @Export(.enum) var bar: Demo4
     
     
-    required init(_ nativeHandle: NativeObjectHandle) {
+    required init(_ nativeHandle: InitContext) {
         foo = .first
         bar = .second
         

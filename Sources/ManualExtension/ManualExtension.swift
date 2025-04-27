@@ -52,7 +52,7 @@ class SwiftSprite: Sprite2D {
         classInfo.registerProperty(foodProp, getter: "demo_get_favorite_food", setter: "demo_set_favorite_food")
     }()
         
-    required init(_ nativeObjectHandle: NativeObjectHandle) {
+    required init(_ initContext: InitContext) {
         _ = SwiftSprite.initClass
         count = sequence
         sequence += 1

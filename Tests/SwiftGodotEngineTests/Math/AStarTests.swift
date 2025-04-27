@@ -12,7 +12,7 @@ private final class ABCX: AStar3D {
     static let C: Int = 2
     static let X: Int = 3        
     
-    required init(_ nativeHandle: NativeObjectHandle) {
+    required init(_ nativeHandle: InitContext) {
         super.init(nativeHandle)
         
         addPoint (id: Self.A, position: Vector3 (x: 0, y: 0, z: 0))
