@@ -7,6 +7,32 @@
 
 @_implementationOnly import GDExtension
 
+public struct UnsafeStringName {
+    public let content: StringName.ContentType
+    let needsDestruction: Bool
+    
+    public init(_ string: StaticString) {
+        needsDestruction = false
+        var content = StringName.zero
+        let ptr = UnsafeRawPointer(string.utf8Start).assumingMemoryBound(to: CChar.self)
+        gi.string_name_new_with_latin1_chars(&content, ptr, 1)
+        self.content = content
+    }
+    
+    public init(takingOver other: consuming FastStringName) {
+        content = other.content
+        needsDestruction = true
+        other.discard()
+    }
+    
+    func destroy() {
+        if needsDestruction {
+            var content = content
+            GodotInterfaceForStringName.destructor(&content)
+        }
+    }
+}
+
 /// A fast wrapper similar to ``StringName``, but relying on Swift ``StaticString`` to avoid allocations if possible.
 public struct FastStringName: ~Copyable {
     enum Source {
@@ -94,10 +120,6 @@ public struct FastStringName: ~Copyable {
         
         var content = content
         GodotInterfaceForStringName.destructor(&content)
-    }
-    
-    static func ==(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
-        lhs.content == rhs.content
     }
     
     consuming func discard() {

@@ -256,7 +256,7 @@ class GodotMacroProcessor {
         
         try p("private static let _initializeClass: Void = ", .curly, afterBlock: "()") {
             p("""
-            let className = StringName(takingOver: getActualClassName())
+            let className = StringName(content: actualClassName.content)
             assert(ClassDB.classExists(class: className))
             """)
             var previousGroupPrefix: String? = nil
@@ -283,6 +283,8 @@ class GodotMacroProcessor {
                     try classInitSignals(macroExpansion)
                 }
             }
+            
+            p("className.content = .zero")
         }
         
         return classInitializerPrinter.result
@@ -349,12 +351,12 @@ public struct GodotMacro: MemberMacro {
                 """,
                 
                 """
-                private static func getActualClassName() -> FastStringName { FastStringName("\(raw: processor.className)") }                                
+                private static let actualClassName = UnsafeStringName("\(raw: processor.className)")                                
                 """,
                 
                 """
-                \(raw: accessControlLevel) override func getActualClassName() -> FastStringName {
-                    Self.getActualClassName()
+                \(raw: accessControlLevel) override var actualClassName: UnsafeStringName {
+                    Self.actualClassName
                 }
                 """
             ]

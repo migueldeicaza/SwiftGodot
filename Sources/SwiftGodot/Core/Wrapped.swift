@@ -102,7 +102,7 @@ public struct InitContext {
     
     /// Opaque Godot Object pointer: `Object *`
     @usableFromInline
-    let pNativeObject: NativeObjectPointer
+    let handle: NativeObjectPointer
     
     @usableFromInline
     let instigator: Instigator
@@ -110,7 +110,7 @@ public struct InitContext {
     /// Internal API.
     /// Unsafely create an ``InitContext`` from the raw native pointer.
     public static func _unsafelyFromHandle(_ pointer: NativeObjectPointer) -> Self {
-        .init(pNativeObject: pointer, instigator: .godot)
+        .init(handle: pointer, instigator: .godot)
     }
 }
 
@@ -178,12 +178,7 @@ public struct InitContext {
 /// call you back on will not be invoked.
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Opaque Godot `Object *`
-    var pNativeObject: NativeObjectPointer?
-    
-    /// Internal API.
-    public var _unsafeHandle: NativeObjectPointer? {
-        pNativeObject
-    }
+    internal(set) public var handle: NativeObjectPointer?
     
     // ``ObjectBox`` managing this `Wrapped` instance
     weak var box: ObjectBox?
@@ -193,11 +188,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static var deferred: Callable? = nil
     
     public static func == (lhs: Wrapped, rhs: Wrapped) -> Bool {
-        return lhs.pNativeObject == rhs.pNativeObject
+        return lhs.handle == rhs.handle
     }
     
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(pNativeObject)
+        hasher.combine(handle)
     }
     
     /// This method returns the list of StringNames for methods that the class overwrites, and
@@ -223,7 +218,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     
     func assertValidity() {
         if !isValid {
-            fatalError("\(Self.self).pNativeObject is nil, which indicates the object was cleared by Godot")
+            fatalError("\(Self.self).handle is nil, which indicates the object was cleared by Godot")
         }
     }
     
@@ -240,8 +235,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         let log = dbglog("\(Self.self)")
         defer { log.finish() }
         #endif
-        if let pNativeObject {
-            guard extensionInterface.objectShouldDeinit(handle: pNativeObject) else { return }
+        if let handle {
+            guard extensionInterface.objectShouldDeinit(handle: handle) else { return }
 
             if self is RefCounted {
                 var queue = false
@@ -252,7 +247,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                             return nil
                         })
                     }
-                    pendingReleaseHandles.append(pNativeObject)
+                    pendingReleaseHandles.append(handle)
                     if pendingReleaseHandles.count == 1 {
                         queue = true
                     }
@@ -279,7 +274,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public func getGodotClassName() -> FastStringName {
         var sc: StringName.ContentType = StringName.zero
         
-        if gi.object_get_class_name(pNativeObject, extensionInterface.getLibrary(), &sc) != 0 {
+        if gi.object_get_class_name(handle, extensionInterface.getLibrary(), &sc) != 0 {
             let sn = FastStringName(takingOver: sc)
             return sn
         }
@@ -287,10 +282,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return FastStringName("")
     }
     
-    /// Returns actual class name as a ``StringName``.
+    /// Returns actual class name as a ``UnsafeStringName``.
     /// Unlike ``godotClassName`` it returns the actual typename and not the last framework type in the inheritance chain.
-    open func getActualClassName() -> FastStringName {
-        getGodotClassName()
+    open var actualClassName: UnsafeStringName {        
+        UnsafeStringName(takingOver: getGodotClassName())
     }
 
     /// This method is posted by Godot, you can override this method and
@@ -312,7 +307,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// - Returns: `true` if the object has a script and that script has a method with the given name.
     /// `false` if the object has no script.
     public func hasScript(method: StringName) -> Bool {
-        gi.object_has_script_method(pNativeObject, &method.content) != 0
+        gi.object_has_script_method(handle, &method.content) != 0
     }
     
     /// Invokes the specified method on the object
@@ -331,7 +326,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         var result = Variant.zero
         var error = GDExtensionCallError()
-        gi.object_call_script_method(&pNativeObject, &method.content, &args, Int64(args.count), &result, &error)
+        gi.object_call_script_method(&handle, &method.content, &args, Int64(args.count), &result, &error)
         if error.error != GDEXTENSION_CALL_OK {
             throw toCallErrorType(error.error)
         }
@@ -347,7 +342,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             log.finish()
         }
         #endif
-        pNativeObject = initContext.pNativeObject
+        handle = initContext.handle
         extensionInterface.objectInited(object: self)
         
         #if DEBUG_INSTANCES
@@ -369,7 +364,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// when you call the ``Node/queueFree()`` which might queue the object
     /// for disposal
     public var isValid: Bool {
-        return pNativeObject != nil
+        return handle != nil
     }
 
     /// Use this to release objects that are neither Nodes or RefCounted subclasses.
@@ -391,7 +386,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             return
         }
 
-        gi.object_destroy(pNativeObject)
+        gi.object_destroy(handle)
     }
     
     open class var godotClassName: StringName {
@@ -417,11 +412,11 @@ extension _GodotBridgeable where Self: Object {
         
         let _ = Self.classInitializer
         
-        guard let pNativeObject = gi.classdb_construct_object(&Self.godotClassName.content) else {
+        guard let handle = gi.classdb_construct_object(&Self.godotClassName.content) else {
             fatalError("SWIFT: It was not possible to construct a \(Self.godotClassName.description)")
         }
         
-        let initContext = InitContext(pNativeObject: pNativeObject, instigator: .swift)
+        let initContext = InitContext(handle: handle, instigator: .swift)
         self.init(initContext)
     }
 }
@@ -438,14 +433,17 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         log.finish()
     }
     #endif
-    let pNativeObject = initContext.pNativeObject
+    let handle = initContext.handle
     
     #if DEBUG_INSTANCES
-    let strLog = dbglog(function: "", "StringName from type(of:)")
+    let strLog = dbglog(function: "", "compare class names")
     #endif
     let godotClassName = swiftObject.getGodotClassName()
-    var actualClassName = swiftObject.getActualClassName()
-    let isFrameworkClass = godotClassName == actualClassName
+    var actualClassName = swiftObject.actualClassName
+    defer {
+        actualClassName.destroy()
+    }
+    let isFrameworkClass = godotClassName.content == actualClassName.content
     #if DEBUG_INSTANCES
     strLog.finish()
     #endif
@@ -481,9 +479,9 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     #endif
     tableLock.withLockVoid {
         if isFrameworkClass {
-            liveFrameworkObjects[pNativeObject] = box
+            liveFrameworkObjects[handle] = box
         } else {
-            liveSubtypedObjects[pNativeObject] = box
+            liveSubtypedObjects[handle] = box
         }
     }
     #if DEBUG_INSTANCES
@@ -499,22 +497,23 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         //dbglog("Registering instance with Godot")
         // Retain an additional unmanaged reference that will be released in freeFunc().
         #if DEBUG_INSTANCES
-        let log = dbglog(function: "", "object_set_instance NativeObjectPointer(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+        let log = dbglog(function: "", "object_set_instance NativeObjectPointer(\(handle)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
         defer {
             log.finish()
         }
         #endif
-        withUnsafePointer(to: &actualClassName.content) { pClassName in
-            gi.object_set_instance(pNativeObject, pClassName, unmanaged.retain().toOpaque())
+        var content = actualClassName.content
+        withUnsafePointer(to: &content) { pClassName in
+            gi.object_set_instance(handle, pClassName, unmanaged.retain().toOpaque())
         }
     }
     #if DEBUG_INSTANCES
-    let bindingLog = dbglog(function: "", "object_set_instance_binding NativeObjectPointer(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+    let bindingLog = dbglog(function: "", "object_set_instance_binding NativeObjectPointer(\(handle)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
     defer {
         bindingLog.finish()
     }
     #endif
-    gi.object_set_instance_binding(pNativeObject, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
+    gi.object_set_instance_binding(handle, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
     
     swiftObject.box = box
 }
@@ -686,9 +685,9 @@ public func releasePendingObjects() {
 
 @inline(__always)
 @usableFromInline
-func existingSwiftObject(boundTo pNativeObject: NativeObjectPointer) -> Wrapped? {
+func existingSwiftObject(boundTo handle: NativeObjectPointer) -> Wrapped? {
     tableLock.withLock {
-        if let o = (liveFrameworkObjects[pNativeObject]?.object ?? liveSubtypedObjects[pNativeObject]?.object) {
+        if let o = (liveFrameworkObjects[handle]?.object ?? liveSubtypedObjects[handle]?.object) {
             return o
         }
         
@@ -760,14 +759,14 @@ func harmonizeReferenceCounting<T: Wrapped>(
 @usableFromInline
 func getOrInitSwiftObject<T>(
     ofType type: T.Type = T.self,
-    boundTo pNativeObject: NativeObjectPointer?,
+    boundTo handle: NativeObjectPointer?,
     mode: RefTransferMode
 ) -> T? where T: Object {
-    guard let pNativeObject else {
+    guard let handle else {
         return nil
     }
     
-    if let swiftObject = existingSwiftObject(boundTo: pNativeObject) {
+    if let swiftObject = existingSwiftObject(boundTo: handle) {
         harmonizeReferenceCounting(staticType: T.self, object: swiftObject, mode: mode, unref: true)
         return swiftObject as? T
     }
@@ -775,23 +774,23 @@ func getOrInitSwiftObject<T>(
     var className: String = ""
     var sc: StringName.ContentType = StringName.zero
             
-    if gi.object_get_class_name(pNativeObject, extensionInterface.getLibrary(), &sc) != 0 {
+    if gi.object_get_class_name(handle, extensionInterface.getLibrary(), &sc) != 0 {
         let sn = StringName(content: sc)
         className = String(sn)
     } else {
         let _result: GString = GString()
-        gi.object_method_bind_ptrcall(Object.method_get_class, pNativeObject, nil, &_result.content)
+        gi.object_method_bind_ptrcall(Object.method_get_class, handle, nil, &_result.content)
         className = _result.description
     }
     
     if let frameworkType = godotFrameworkCtors[className] {
-        let result = frameworkType.init(InitContext(pNativeObject: pNativeObject, instigator: .godot))
+        let result = frameworkType.init(InitContext(handle: handle, instigator: .godot))
         harmonizeReferenceCounting(staticType: T.self, object: result, mode: mode, unref: false)
         return result as? T
     }
     
     if let userType = userTypes[className] {
-        let created = userType.init(InitContext(pNativeObject: pNativeObject, instigator: .godot))
+        let created = userType.init(InitContext(handle: handle, instigator: .godot))
         harmonizeReferenceCounting(staticType: T.self, object: created, mode: mode, unref: false)
         if let result = created as? T {
             return result
@@ -800,7 +799,7 @@ func getOrInitSwiftObject<T>(
         }
     }
 
-    let result = T(InitContext(pNativeObject: pNativeObject, instigator: .godot))
+    let result = T(InitContext(handle: handle, instigator: .godot))
     harmonizeReferenceCounting(staticType: T.self, object: result, mode: mode, unref: false)
     return result
 }
@@ -810,9 +809,9 @@ func getOrInitSwiftObject<T>(
 /// - `ObjectBox` managing it is created and `strongify`-ed to avoid it being immediately destroyed after the scope ends
 @inline(__always)
 @usableFromInline
-func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: NativeObjectPointer) {
+func initSwiftObject(ofType metatype: Object.Type, boundTo handle: NativeObjectPointer) {
     #if DEBUG_INSTANCES
-    let log = dbglog("\(metatype) NativeObjectPointer(\(pNativeObject))")
+    let log = dbglog("\(metatype) NativeObjectPointer(\(handle))")
     defer {
         log.finish()
     }
@@ -820,7 +819,7 @@ func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: Native
     
     _ = metatype.classInitializer
     
-    let initContext = InitContext(pNativeObject: pNativeObject, instigator: .godot)
+    let initContext = InitContext(handle: handle, instigator: .godot)
     let swiftObject = metatype.init(initContext)        
         
     extensionInterface.objectInited(object: swiftObject)
@@ -865,20 +864,20 @@ func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> NativeObjectPoi
     let constructLog = dbglog(function: "", "gi.classdb_construct_object")
     #endif
 
-    guard let pNativeObject = gi.classdb_construct_object(&metatype.godotClassName.content) else {
+    guard let handle = gi.classdb_construct_object(&metatype.godotClassName.content) else {
         fatalError("SWIFT: It was not possible to construct a \(metatype.godotClassName.description)")
     }
     #if DEBUG_INSTANCES
     constructLog.finish()
     #endif
     
-    initSwiftObject(ofType: metatype, boundTo: pNativeObject)
+    initSwiftObject(ofType: metatype, boundTo: handle)
     
-    return pNativeObject
+    return handle
 }
 
-func recreateInstanceFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: NativeObjectPointer?) -> UnsafeMutableRawPointer? {
-    guard let pNativeObject else {
+func recreateInstanceFunc(_ userData: UnsafeMutableRawPointer?, handle: NativeObjectPointer?) -> UnsafeMutableRawPointer? {
+    guard let handle else {
         return nil
     }
         
@@ -901,9 +900,9 @@ func recreateInstanceFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: N
     }
     #endif
     
-    initSwiftObject(ofType: metatype, boundTo: pNativeObject)
+    initSwiftObject(ofType: metatype, boundTo: handle)
     
-    return pNativeObject
+    return handle
 }
 
 //
@@ -982,8 +981,8 @@ func userTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: NativeOb
         guard let swiftObject = box.object else { return }
 
         tableLock.withLockVoid {
-            if let pNativeObject = swiftObject.pNativeObject {
-                let removed = liveSubtypedObjects.removeValue(forKey: pNativeObject)
+            if let handle = swiftObject.handle {
+                let removed = liveSubtypedObjects.removeValue(forKey: handle)
                 if removed == nil {
                     print("SWIFT ERROR: attempt to release user object we were not aware of: \(swiftObject))")
                 }
@@ -994,7 +993,7 @@ func userTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: NativeOb
 
         // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
         // invoke methods for objects that have been disposed by Godot.
-        swiftObject.pNativeObject = nil
+        swiftObject.handle = nil
     }
 }
 
@@ -1019,14 +1018,14 @@ func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: Unsa
     if reference != 0 {
         // In addition to a reference by SwiftGodot, Godot also retained a reference.
         if rc == 2 {
-            if let refCounted, refCounted.pNativeObject != nil {
+            if let refCounted, refCounted.handle != nil {
                 box.strongify()
             }
         }
     } else {
         // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
         if rc == 1 {
-            if let refCounted, refCounted.pNativeObject != nil {
+            if let refCounted, refCounted.handle != nil {
                 box.weakify()
             }
         }
@@ -1049,14 +1048,14 @@ func frameworkTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding:
     if reference != 0 {
         // In addition to a reference by SwiftGodot, Godot also retained a reference.
         if rc == 2 {
-            if let refCounted, refCounted.pNativeObject != nil {
+            if let refCounted, refCounted.handle != nil {
                 ref.strongify()
             }
         }
     } else {
         // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
         if rc == 1 {
-            if let refCounted, refCounted.pNativeObject != nil {
+            if let refCounted, refCounted.handle != nil {
                 ref.weakify()
             }
         }
@@ -1077,10 +1076,10 @@ func frameworkTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: Uns
 
         if let swiftObject = box.object {
             tableLock.withLockVoid {
-                if let pNativeObject = swiftObject.pNativeObject {
-                    let removed = liveFrameworkObjects.removeValue(forKey: pNativeObject)
+                if let handle = swiftObject.handle {
+                    let removed = liveFrameworkObjects.removeValue(forKey: handle)
                     if removed == nil {
-                        print("SWIFT ERROR: attempt to release framework object we were not aware of: \(pNativeObject))")
+                        print("SWIFT ERROR: attempt to release framework object we were not aware of: \(handle))")
                     }
                 } else {
                     print("SWIFT ERROR: the object being released already had a nil handle")
@@ -1089,7 +1088,7 @@ func frameworkTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: Uns
 
             // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
             // invoke methods for objects that have been disposed by Godot.
-            swiftObject.pNativeObject = nil
+            swiftObject.handle = nil
         } else if let instance {
             // For RefCounted objects, the call to `reference.value` will already be nil,
             // we can just remove the handle.

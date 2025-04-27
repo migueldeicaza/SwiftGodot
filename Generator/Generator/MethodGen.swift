@@ -123,7 +123,7 @@ struct MethodArgument {
         /// e.g. VariantArray.content
         case contentRef
         
-        /// e.g. Object.pNativeObject
+        /// e.g. Object.handle
         case objectRef(isOptional: Bool)
         
         /// e.g. TypedArray<Object>, TypedArray<Float>
@@ -273,9 +273,9 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
                 accessor = argument.name
             case .objectRef(let isOptional):
                 if isOptional {
-                    accessor = "\(argument.name)?.pNativeObject"
+                    accessor = "\(argument.name)?.handle"
                 } else {
-                    accessor = "\(argument.name).pNativeObject"
+                    accessor = "\(argument.name).handle"
                 }
             case .rawValue:
                 accessor = "\(argument.name).rawValue"
@@ -632,7 +632,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                     if method.isVirtual {
                         ptrResult = "&_result"
                     } else {
-                        ptrResult = "&_result.pNativeObject"
+                        ptrResult = "&_result.handle"
                     }
                 }
             }
@@ -770,9 +770,9 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 instanceArg = "nil"
             } else {                
                 if asSingleton {
-                    instanceArg = "shared.pNativeObject"
+                    instanceArg = "shared.handle"
                 } else {
-                    instanceArg = "pNativeObject"
+                    instanceArg = "handle"
                 }
             }
             

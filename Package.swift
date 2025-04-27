@@ -156,7 +156,7 @@ var targets: [Target] = [
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-//            .define("DEBUG_INSTANCES"),
+            .define("DEBUG_INSTANCES"),
             .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]

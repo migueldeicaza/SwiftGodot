@@ -161,7 +161,7 @@ func generateVirtualProxy (_ p: Printer,
                     derefField = "array.content"
                     derefType = "type (of: ret.array.content)"
                 } else if classMap [ret.type] != nil {
-                    derefField = "pNativeObject"
+                    derefField = "handle"
                     derefType = "GDExtensionObjectPtr?.self"
                 } else {
                     derefField = "content"
@@ -172,7 +172,7 @@ func generateVirtualProxy (_ p: Printer,
                 if ret.type.starts (with: "typedarray::") {
                     target = "array.content"
                 } else {
-                    target = classMap [ret.type] != nil ? "pNativeObject" : "content"
+                    target = classMap [ret.type] != nil ? "handle" : "content"
                 }
                 p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType)) // \(ret.type)")
                 

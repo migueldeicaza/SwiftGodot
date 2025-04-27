@@ -9,7 +9,7 @@ public extension SceneTree {
     /// Public because we want to allow the embed API to call this, but dont want to make it
     /// obvious in the constructors
     static func createFrom(nativeHandle: UnsafeMutableRawPointer) -> SceneTree {
-        return SceneTree(InitContext(pNativeObject: nativeHandle, instigator: .godot))
+        return SceneTree(InitContext(handle: nativeHandle, instigator: .godot))
     }
 }
 
@@ -23,7 +23,7 @@ public extension ProjectSettings {
     /// Public because we want to allow the embed API to call this, but dont want to make it
     /// obvious in the constructors
     static func createFrom(nativeHandle: UnsafeMutableRawPointer) -> ProjectSettings {
-        return ProjectSettings(InitContext(pNativeObject: nativeHandle, instigator: .godot))
+        return ProjectSettings(InitContext(handle: nativeHandle, instigator: .godot))
     }
 }
 
