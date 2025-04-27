@@ -256,7 +256,7 @@ class GodotMacroProcessor {
         
         try p("private static let _initializeClass: Void = ", .curly, afterBlock: "()") {
             p("""
-            let className = StringName("\(className)")
+            let className = actualClassName
             assert(ClassDB.classExists(class: className))
             """)
             var previousGroupPrefix: String? = nil
@@ -337,17 +337,27 @@ public struct GodotMacro: MemberMacro {
                 .contains(.keyword(.final))
 
             let accessControlLevel = isFinal ? "public" : "open"
-
-            let classInitProperty = DeclSyntax(
-            """
-            override \(raw: accessControlLevel) class var classInitializer: Void {
-                let _ = super.classInitializer
-                return _initializeClass
-            }
-            """
-            )
             
-            var decls = [classInitProperty, DeclSyntax(stringLiteral: classInit)]
+            var decls = [
+                DeclSyntax(stringLiteral: classInit),
+                
+                """
+                override \(raw: accessControlLevel) class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass
+                }
+                """,
+                
+                """
+                private static let actualClassName: StringName = "\(raw: processor.className)"                                
+                """,
+                
+                """
+                \(raw: accessControlLevel) override var actualClassName: StringName {
+                    Self.actualClassName
+                }
+                """
+            ]
 
             // Now look for overrides of Godot functions
             let functions = classDecl.memberBlock.members

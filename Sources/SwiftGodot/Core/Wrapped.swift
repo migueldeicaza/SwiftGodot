@@ -275,6 +275,12 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         return ""
     }
+    
+    /// Returns actual class name as a ``StringName``.
+    /// Unlike ``godotClassName`` it returns the actual typename and not the last framework type in the inheritance chain.
+    open var actualClassName: StringName {
+        godotClassName
+    }
 
     /// This method is posted by Godot, you can override this method and
     /// be notified of interesting events, the values for this notification are declared on various
@@ -426,9 +432,9 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     #if DEBUG_INSTANCES
     let strLog = dbglog(function: "", "StringName from type(of:)")
     #endif
-    let name = swiftObject.godotClassName
-    let thisTypeName = StringName(stringLiteral: String(describing: Swift.type(of: swiftObject)))
-    let frameworkType = thisTypeName == name
+    let godotClassName = swiftObject.godotClassName
+    let actualClassName = swiftObject.actualClassName
+    let isFrameworkClass = godotClassName == actualClassName
     #if DEBUG_INSTANCES
     strLog.finish()
     #endif
@@ -437,7 +443,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     let callbackLog = dbglog(function: "", "callback retrieval")
     #endif
     var callbacks: GDExtensionInstanceBindingCallbacks
-    if frameworkType {
+    if isFrameworkClass {
         callbacks = Wrapped.frameworkTypeBindingCallback
     } else {
         callbacks = Wrapped.userTypeBindingCallback
@@ -463,7 +469,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     let tableLog = dbglog(function: "", "tableLock.withLockVoid")
     #endif
     tableLock.withLockVoid {
-        if frameworkType {
+        if isFrameworkClass {
             liveFrameworkObjects[pNativeObject] = box
         } else {
             liveSubtypedObjects[pNativeObject] = box
@@ -476,7 +482,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     let unmanaged = Unmanaged<ObjectBox>.passUnretained(box)
 
     // This I believe should only be set for user subclasses, and not anything else.
-    if frameworkType {
+    if isFrameworkClass {
         //dbglog("Skipping object registration, this is a framework type")
     } else {
         //dbglog("Registering instance with Godot")
@@ -487,7 +493,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
             log.finish()
         }
         #endif
-        withUnsafePointer(to: &thisTypeName.content) { pClassName in
+        withUnsafePointer(to: &actualClassName.content) { pClassName in
             gi.object_set_instance(pNativeObject, pClassName, unmanaged.retain().toOpaque())
         }
     }
@@ -821,7 +827,15 @@ func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: Native
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
 ///
 func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> NativeObjectPointer? {
-    //print ("SWIFT: Creating object userData:\(String(describing: userData))")
+    #if DEBUG_INSTANCES
+    let log = dbglog("")
+    defer {
+        log.finish()
+    }
+    
+    let metatypeLog = dbglog(function: "", "metatype from userdata")
+    #endif
+    
     guard let userData else {
         print("SwiftGodot.createFunc: Got a nil userData")
         return nil
@@ -833,16 +847,19 @@ func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> NativeObjectPoi
         return nil
     }
     
+    
     #if DEBUG_INSTANCES
-    let log = dbglog("\(metatype)")
-    defer {
-        log.finish()
-    }
+    metatypeLog.finish()
+    
+    let constructLog = dbglog(function: "", "gi.classdb_construct_object")
     #endif
 
     guard let pNativeObject = gi.classdb_construct_object(&metatype.godotClassName.content) else {
         fatalError("SWIFT: It was not possible to construct a \(metatype.godotClassName.description)")
     }
+    #if DEBUG_INSTANCES
+    constructLog.finish()
+    #endif
     
     initSwiftObject(ofType: metatype, boundTo: pNativeObject)
     
