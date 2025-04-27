@@ -253,7 +253,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
             return nil
         }
 
-        var pNativeObject: GDExtensionObjectPtr? = GDExtensionObjectPtr(bitPattern: 1)!
+        var pNativeObject: NativeObjectPointer? = NativeObjectPointer(bitPattern: 1)!
         constructType(into: &pNativeObject, constructor: Object.selfFromVariant)
         guard let pNativeObject else {
             return nil

@@ -85,10 +85,14 @@ fileprivate func dbglog(function: String = #function, _ message: String) -> Scop
 
 #endif
 
+@usableFromInline
+typealias NativeObjectPointer = UnsafeMutableRawPointer
+
 /// This is a initialization context required for properly binding Swift and Godot world together.
 /// Don't do anything with it except pass it to `super.init`
 public struct InitContext {
     /// Instigator for initialization sequence
+    @usableFromInline
     enum Instigator {
         /// Godot constructs a Swift type from anew or lazily binds existing Godot `Object *` to Swift counterpart
         case godot
@@ -98,8 +102,10 @@ public struct InitContext {
     }
     
     /// Opaque Godot Object pointer: `Object *`
-    let pNativeObject: GDExtensionObjectPtr
+    @usableFromInline
+    let pNativeObject: NativeObjectPointer
     
+    @usableFromInline
     let instigator: Instigator
 }
 
@@ -167,7 +173,7 @@ public struct InitContext {
 /// call you back on will not be invoked.
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Opaque Godot `Object *`
-    var pNativeObject: GDExtensionObjectPtr?
+    var pNativeObject: NativeObjectPointer?
     
     // ``ObjectBox`` managing this `Wrapped` instance
     weak var box: ObjectBox?
@@ -315,7 +321,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         
         return Variant(takingOver: result)
     }
-        
+     
+    @inline(__always)
     public required init(_ initContext: InitContext) {
         #if DEBUG_INSTANCES
         let log = dbglog("\(Self.self)")
@@ -376,6 +383,7 @@ extension _GodotBridgeable where Self: Object {
     ///
     /// ### Internal note
     /// Swift-registered types constructed from within Godot do not go via this path. See `bindGDExtensionObject` instead
+    @inline(__always)
     public init() {
         #if DEBUG_INSTANCES
         let log = dbglog("\(Self.self)")
@@ -397,6 +405,8 @@ extension _GodotBridgeable where Self: Object {
 
 
 /// Bind Godot `Object *` with Swift `instance`.
+@inline(__always)
+@usableFromInline
 @discardableResult
 func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     #if DEBUG_INSTANCES
@@ -461,7 +471,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         //dbglog("Registering instance with Godot")
         // Retain an additional unmanaged reference that will be released in freeFunc().
         #if DEBUG_INSTANCES
-        let log = dbglog(function: "", "object_set_instance GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+        let log = dbglog(function: "", "object_set_instance NativeObjectPointer(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
         defer {
             log.finish()
         }
@@ -471,7 +481,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         }
     }
     #if DEBUG_INSTANCES
-    let bindingLog = dbglog(function: "", "object_set_instance_binding GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+    let bindingLog = dbglog(function: "", "object_set_instance_binding NativeObjectPointer(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
     defer {
         bindingLog.finish()
     }
@@ -533,7 +543,10 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     }
 }
 
+@usableFromInline
 final class ObjectBox {
+    @inline(__always)
+    @usableFromInline
     init(_ object: Object, strong: Bool = true) {
         self.object = object
         if strong {
@@ -541,10 +554,14 @@ final class ObjectBox {
         }
     }
     
+    @inline(__always)
+    @usableFromInline
     deinit {
         weakify()
     }
     
+    @inline(__always)
+    @usableFromInline
     func strongify() -> Self {
         if strong {
             return self
@@ -556,6 +573,8 @@ final class ObjectBox {
         return self
     }
     
+    @inline(__always)
+    @usableFromInline
     func weakify() -> Self {
         if !strong {
             return self
@@ -566,13 +585,12 @@ final class ObjectBox {
         strong = false
         return self
     }
-    
-    func isStrong() -> Bool {
-        return strong
-    }
-    
+        
+    @usableFromInline
     private(set) weak var object: Object?
-    private var strong: Bool = false
+    
+    @usableFromInline
+    private(set) var strong: Bool = false
 }
 
 /// Registers the user-type specified with the Godot system, and allows it to
@@ -602,8 +620,8 @@ public func unregister<T: Object>(type: T.Type) {
 
 /// Currently contains all instantiated objects, but might want to separate those
 /// (or find a way of easily telling appart) framework objects from user subtypes
-var liveFrameworkObjects: [GDExtensionObjectPtr: ObjectBox] = [:]
-var liveSubtypedObjects: [GDExtensionObjectPtr: ObjectBox] = [:]
+var liveFrameworkObjects: [NativeObjectPointer: ObjectBox] = [:]
+var liveSubtypedObjects: [NativeObjectPointer: ObjectBox] = [:]
 
 public func printSwiftGodotStats() {
     print("User types: \(userTypes.count)")
@@ -638,7 +656,9 @@ public func releasePendingObjects() {
     }
 }
 
-func existingSwiftObject(boundTo pNativeObject: GDExtensionObjectPtr) -> Wrapped? {
+@inline(__always)
+@usableFromInline
+func existingSwiftObject(boundTo pNativeObject: NativeObjectPointer) -> Wrapped? {
     tableLock.withLock {
         if let o = (liveFrameworkObjects[pNativeObject]?.object ?? liveSubtypedObjects[pNativeObject]?.object) {
             return o
@@ -649,6 +669,7 @@ func existingSwiftObject(boundTo pNativeObject: GDExtensionObjectPtr) -> Wrapped
 }
 
 /// See `harmonizeReferenceCounting` for details
+@usableFromInline
 enum RefTransferMode {
     /// Value is Godot `Ref<>`.
     case owned
@@ -676,6 +697,8 @@ enum RefTransferMode {
 /// the Swift proxy object always results in a single increment of the reference count.
 /// - The `mode` parameter specifies if Godot can pass ownership of a Ref<> wrapper to
 /// SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
+@inline(__always)
+@usableFromInline
 func harmonizeReferenceCounting<T: Wrapped>(
     staticType: T.Type,
     object: Wrapped,
@@ -704,9 +727,12 @@ func harmonizeReferenceCounting<T: Wrapped>(
     }
 }
 
+
+@inline(__always)
+@usableFromInline
 func getOrInitSwiftObject<T>(
     ofType type: T.Type = T.self,
-    boundTo pNativeObject: GDExtensionObjectPtr?,
+    boundTo pNativeObject: NativeObjectPointer?,
     mode: RefTransferMode
 ) -> T? where T: Object {
     guard let pNativeObject else {
@@ -754,9 +780,11 @@ func getOrInitSwiftObject<T>(
 /// Path for Godot constructing a `Swift` type.
 /// - A Swift object is initialized
 /// - `ObjectBox` managing it is created and `strongify`-ed to avoid it being immediately destroyed after the scope ends
-func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: GDExtensionObjectPtr) {
+@inline(__always)
+@usableFromInline
+func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: NativeObjectPointer) {
     #if DEBUG_INSTANCES
-    let log = dbglog("\(metatype) GDExtensionObjectPtr(\(pNativeObject))")
+    let log = dbglog("\(metatype) NativeObjectPointer(\(pNativeObject))")
     defer {
         log.finish()
     }
@@ -781,7 +809,7 @@ func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: GDExte
 /// This one is invoked by Godot when an instance of one of our types is created, and we need
 /// to instantiate it.   Notice that this is different that direct instantiation from our API
 ///
-func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> GDExtensionObjectPtr? {
+func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> NativeObjectPointer? {
     //print ("SWIFT: Creating object userData:\(String(describing: userData))")
     guard let userData else {
         print("SwiftGodot.createFunc: Got a nil userData")
@@ -810,7 +838,7 @@ func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> GDExtensionObje
     return pNativeObject
 }
 
-func recreateInstanceFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: GDExtensionObjectPtr?) -> UnsafeMutableRawPointer? {
+func recreateInstanceFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: NativeObjectPointer?) -> UnsafeMutableRawPointer? {
     guard let pNativeObject else {
         return nil
     }
@@ -908,7 +936,7 @@ func userTypeBindingCreate(_ token: UnsafeMutableRawPointer?, _ instance: Unsafe
     return nil
 }
 
-func userTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: GDExtensionObjectPtr?, _ binding: UnsafeMutableRawPointer?) {
+func userTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: NativeObjectPointer?, _ binding: UnsafeMutableRawPointer?) {
     if let binding {
         let box = Unmanaged<ObjectBox>.fromOpaque(binding).takeUnretainedValue()
         
