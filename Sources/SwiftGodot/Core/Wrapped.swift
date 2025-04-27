@@ -106,12 +106,6 @@ public struct InitContext {
     
     @usableFromInline
     let instigator: Instigator
-    
-    /// Internal API.
-    /// Unsafely create an ``InitContext`` from the raw native pointer.
-    public static func _unsafelyFromHandle(_ pointer: NativeObjectPointer) -> Self {
-        .init(handle: pointer, instigator: .godot)
-    }
 }
 
 ///
@@ -404,7 +398,7 @@ extension _GodotBridgeable where Self: Object {
     /// Initialize a new instance
     ///
     /// ### Internal note
-    /// Swift-registered types constructed from within Godot do not go via this path. See `bindGDExtensionObject` instead
+    /// Swift-registered types constructed from within Godot do not go via this path. See `initSwiftObject` instead.
     @inline(__always)
     public init() {
         #if DEBUG_INSTANCES
@@ -422,6 +416,12 @@ extension _GodotBridgeable where Self: Object {
         
         let initContext = InitContext(handle: handle, instigator: .swift)
         self.init(initContext)
+    }
+    
+    
+    /// Delicate API for cases where construction from the raw handle directly is required.
+    public init(_ nativeHandle: NativeObjectPointer) {
+        self.init(InitContext(handle: nativeHandle, instigator: .godot))
     }
 }
 
