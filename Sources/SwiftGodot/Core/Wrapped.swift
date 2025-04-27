@@ -333,9 +333,15 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         pNativeObject = initContext.pNativeObject
         extensionInterface.objectInited(object: self)
         
+        #if DEBUG_INSTANCES
+        let castLog = dbglog("self as? Object")
+        #endif
         guard let object = self as? Object else {
             fatalError("Wrapped can not be constructed directly")
         }
+        #if DEBUG_INSTANCES
+        castLog.finish()
+        #endif
         
         bindSwiftObject(object, initContext: initContext)
     }
@@ -417,23 +423,28 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     #endif
     let pNativeObject = initContext.pNativeObject
     
-    let name = swiftObject.godotClassName
-        
     #if DEBUG_INSTANCES
     let strLog = dbglog(function: "", "StringName from type(of:)")
     #endif
+    let name = swiftObject.godotClassName
     let thisTypeName = StringName(stringLiteral: String(describing: Swift.type(of: swiftObject)))
     let frameworkType = thisTypeName == name
     #if DEBUG_INSTANCES
     strLog.finish()
     #endif
     
+    #if DEBUG_INSTANCES
+    let callbackLog = dbglog(function: "", "callback retrieval")
+    #endif
     var callbacks: GDExtensionInstanceBindingCallbacks
     if frameworkType {
         callbacks = Wrapped.frameworkTypeBindingCallback
     } else {
         callbacks = Wrapped.userTypeBindingCallback
     }
+    #if DEBUG_INSTANCES
+    callbackLog.finish()
+    #endif
 
     #if DEBUG_INSTANCES
     let rcLog = dbglog(function: "", "ObjectBox initialization")
