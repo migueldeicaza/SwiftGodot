@@ -667,8 +667,7 @@ func unreferenceFunc(_ userData: UnsafeMutableRawPointer) {
     fatalError()
 }
 
-/// Bind a Godot Object that Swift didn't know about after constructing a wrapper of type = `metatype`
-/// It means that the object was constructed by Godot
+/// Bind a Godot Object that Swift didn't know about after constructing a wrapper of type = `metatype`.
 func initSwiftObject(ofType metatype: Object.Type, andBindTo pNativeObject: GDExtensionObjectPtr) {
     dbglog("\(metatype) and bind to \(pNativeObject)")
     let swiftObject = metatype.init(InitContext(pNativeObject: pNativeObject, instigator: .godot))

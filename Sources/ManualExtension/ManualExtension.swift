@@ -58,7 +58,7 @@ class SwiftSprite: Sprite2D {
         sequence += 1
         time_passed = 0
         
-        super.init(nativeObjectHandle)
+        super.init(initContext)
     }
     
     deinit {
