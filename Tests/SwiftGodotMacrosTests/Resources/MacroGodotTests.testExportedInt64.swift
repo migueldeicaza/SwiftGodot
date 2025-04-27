@@ -35,7 +35,7 @@ class Thing: SwiftGodot.Object {
     }
 
     private static let _initializeClass: Void = {
-        let className = actualClassName
+        let className = StringName(takingOver: getActualClassName())
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -68,9 +68,11 @@ class Thing: SwiftGodot.Object {
         return _initializeClass
     }
 
-    private static let actualClassName: StringName = "Thing"
+    private static func getActualClassName() -> FastStringName {
+        FastStringName("Thing")
+    }
 
-    open override var actualClassName: StringName {
-        Self.actualClassName
+    open override func getActualClassName() -> FastStringName {
+        Self.getActualClassName()
     }
 }

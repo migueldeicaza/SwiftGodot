@@ -18,7 +18,7 @@
 /// `_process` run in editor, making the class work like `@tool` annotated script in GDScript
 ///
 @attached(member,
-          names: named(_initializeClass), named(classInitializer), named(implementedOverrides), named(actualClassName))
+          names: named(_initializeClass), named(classInitializer), named(implementedOverrides), named(getActualClassName))
 public macro Godot(_ behavior: ClassBehavior = .gameplay) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
 
 public enum ClassBehavior: Int {

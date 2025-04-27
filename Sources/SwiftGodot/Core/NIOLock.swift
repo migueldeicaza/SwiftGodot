@@ -66,6 +66,7 @@ extension LockOperations {
 #endif
     }
     
+    @inline(__always)
     @inlinable
     static func lock(_ mutex: UnsafeMutablePointer<LockPrimitive>) {
         mutex.assertValidAlignment()
@@ -78,6 +79,7 @@ extension LockOperations {
 #endif
     }
     
+    @inline(__always)
     @inlinable
     static func unlock(_ mutex: UnsafeMutablePointer<LockPrimitive>) {
         mutex.assertValidAlignment()
@@ -121,7 +123,7 @@ extension LockOperations {
 // See also: https://github.com/apple/swift/pull/40000
 @usableFromInline
 final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
-    
+    @inline(__always)
     @inlinable
     static func create(value: Value) -> Self {
         let buffer = Self.create(minimumCapacity: 1) { _ in
@@ -136,6 +138,7 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         return storage
     }
     
+    @inline(__always)
     @inlinable
     func lock() {
         self.withUnsafeMutablePointerToElements { lockPtr in
@@ -143,6 +146,7 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         }
     }
     
+    @inline(__always)
     @inlinable
     func unlock() {
         self.withUnsafeMutablePointerToElements { lockPtr in
@@ -150,6 +154,7 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         }
     }
     
+    @inline(__always)
     @inlinable
     deinit {
         self.withUnsafeMutablePointerToElements { lockPtr in
@@ -157,6 +162,7 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         }
     }
     
+    @inline(__always)
     @inlinable
     func withLockPrimitive<T>(_ body: (UnsafeMutablePointer<LockPrimitive>) throws -> T) rethrows -> T {
         try self.withUnsafeMutablePointerToElements { lockPtr in
@@ -164,6 +170,7 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         }
     }
     
+    @inline(__always)
     @inlinable
     func withLockedValue<T>(_ mutate: (inout Value) throws -> T) rethrows -> T {
         try self.withUnsafeMutablePointers { valuePtr, lockPtr in
@@ -190,6 +197,7 @@ public struct NIOLock {
     
     /// Create a new lock.
     @inlinable
+    @inline(__always)
     public init() {
         self._storage = .create(value: ())
     }
@@ -198,6 +206,7 @@ public struct NIOLock {
     ///
     /// Whenever possible, consider using `withLock` instead of this method and
     /// `unlock`, to simplify lock handling.
+    @inline(__always)
     @inlinable
     public func lock() {
         self._storage.lock()
@@ -207,11 +216,13 @@ public struct NIOLock {
     ///
     /// Whenever possible, consider using `withLock` instead of this method and
     /// `lock`, to simplify lock handling.
+    @inline(__always)
     @inlinable
     public func unlock() {
         self._storage.unlock()
     }
 
+    @inline(__always)
     @inlinable
     internal func withLockPrimitive<T>(_ body: (UnsafeMutablePointer<LockPrimitive>) throws -> T) rethrows -> T {
         return try self._storage.withLockPrimitive(body)
@@ -227,6 +238,7 @@ extension NIOLock {
     ///
     /// - Parameter body: The block to execute while holding the lock.
     /// - Returns: The value returned by the block.
+    @inline(__always)
     @inlinable
     public func withLock<T>(_ body: () throws -> T) rethrows -> T {
         self.lock()
@@ -236,6 +248,7 @@ extension NIOLock {
         return try body()
     }
 
+    @inline(__always)
     @inlinable
     public func withLockVoid(_ body: () throws -> Void) rethrows -> Void {
         try self.withLock(body)

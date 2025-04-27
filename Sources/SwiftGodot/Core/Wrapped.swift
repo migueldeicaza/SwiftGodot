@@ -276,20 +276,21 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         reference_callback: frameworkTypeBindingReference)
 
     /// Returns the Godot's class name as a `StringName`, returns the empty string on error
-    public var godotClassName: StringName {
+    public func getGodotClassName() -> FastStringName {
         var sc: StringName.ContentType = StringName.zero
         
         if gi.object_get_class_name(pNativeObject, extensionInterface.getLibrary(), &sc) != 0 {
-            let sn = StringName(takingOver: sc)
+            let sn = FastStringName(takingOver: sc)
             return sn
         }
-        return ""
+        
+        return FastStringName("")
     }
     
     /// Returns actual class name as a ``StringName``.
     /// Unlike ``godotClassName`` it returns the actual typename and not the last framework type in the inheritance chain.
-    open var actualClassName: StringName {
-        godotClassName
+    open func getActualClassName() -> FastStringName {
+        getGodotClassName()
     }
 
     /// This method is posted by Godot, you can override this method and
@@ -442,8 +443,8 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     #if DEBUG_INSTANCES
     let strLog = dbglog(function: "", "StringName from type(of:)")
     #endif
-    let godotClassName = swiftObject.godotClassName
-    let actualClassName = swiftObject.actualClassName
+    let godotClassName = swiftObject.getGodotClassName()
+    var actualClassName = swiftObject.getActualClassName()
     let isFrameworkClass = godotClassName == actualClassName
     #if DEBUG_INSTANCES
     strLog.finish()

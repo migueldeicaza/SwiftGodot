@@ -2,7 +2,7 @@ class OtherThing: SwiftGodot.Node {
     var signal0: SimpleSignal, signal1: SimpleSignal
 
     private static let _initializeClass: Void = {
-        let className = actualClassName
+        let className = StringName(takingOver: getActualClassName())
         assert(ClassDB.classExists(class: className))
         SimpleSignal.register(as: "signal0", in: className)
         SimpleSignal.register(as: "signal1", in: className)
@@ -13,9 +13,11 @@ class OtherThing: SwiftGodot.Node {
         return _initializeClass
     }
 
-    private static let actualClassName: StringName = "OtherThing"
+    private static func getActualClassName() -> FastStringName {
+        FastStringName("OtherThing")
+    }
 
-    open override var actualClassName: StringName {
-        Self.actualClassName
+    open override func getActualClassName() -> FastStringName {
+        Self.getActualClassName()
     }
 }

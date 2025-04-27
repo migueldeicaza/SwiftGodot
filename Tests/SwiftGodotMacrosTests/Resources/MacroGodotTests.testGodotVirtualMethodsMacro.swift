@@ -2,7 +2,7 @@ class Hi: Control {
     override func _hasPoint(_ point: Vector2) -> Bool { false }
 
     private static let _initializeClass: Void = {
-        let className = actualClassName
+        let className = StringName(takingOver: getActualClassName())
         assert(ClassDB.classExists(class: className))
     }()
 
@@ -11,10 +11,12 @@ class Hi: Control {
         return _initializeClass
     }
 
-    private static let actualClassName: StringName = "Hi"
+    private static func getActualClassName() -> FastStringName {
+        FastStringName("Hi")
+    }
 
-    open override var actualClassName: StringName {
-        Self.actualClassName
+    open override func getActualClassName() -> FastStringName {
+        Self.getActualClassName()
     }
 
     override open class func implementedOverrides () -> [StringName] {

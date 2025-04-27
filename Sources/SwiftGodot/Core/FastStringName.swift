@@ -12,16 +12,20 @@ public struct FastStringName: ~Copyable {
     enum Source {
         case staticString(StaticString, isStatic: Bool)
         case string(String)
+        case godot
+        case discarded
     }
     
     var content: StringName.ContentType
-    let source: Source
-    var isStatic: Bool {
+    var source: Source
+    var needsDeinit: Bool {
         switch source {
         case .staticString(_, let isStatic):
-            return isStatic
-        case .string:
+            return !isStatic
+        case .discarded:
             return false
+        case .string, .godot:
+            return true
         }
     }
     
@@ -31,6 +35,8 @@ public struct FastStringName: ~Copyable {
             return staticString.description
         case .string(let string):
             return string
+        case .godot, .discarded:
+            fatalError("Not implemented.")
         }
     }
     
@@ -76,12 +82,33 @@ public struct FastStringName: ~Copyable {
         self.content = content
     }
     
+    init(takingOver otherContent: StringName.ContentType) {
+        source = .godot
+        content = otherContent
+    }
+    
     deinit {
-        guard !isStatic else {
+        guard needsDeinit else {
             return
         }
         
         var content = content
         GodotInterfaceForStringName.destructor(&content)
+    }
+    
+    static func ==(lhs: borrowing Self, rhs: borrowing Self) -> Bool {
+        lhs.content == rhs.content
+    }
+    
+    consuming func discard() {
+        source = .discarded
+    }
+}
+
+public extension StringName {
+    convenience init(takingOver name: consuming FastStringName) {
+        self.init(takingOver: name.content)
+        
+        name.discard()
     }
 }

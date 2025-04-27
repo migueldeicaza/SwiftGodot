@@ -46,7 +46,7 @@ class ArrayTest: Node {
    }
 
     private static let _initializeClass: Void = {
-        let className = actualClassName
+        let className = StringName(takingOver: getActualClassName())
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -83,9 +83,11 @@ class ArrayTest: Node {
         return _initializeClass
     }
 
-    private static let actualClassName: StringName = "ArrayTest"
+    private static func getActualClassName() -> FastStringName {
+        FastStringName("ArrayTest")
+    }
 
-    open override var actualClassName: StringName {
-        Self.actualClassName
+    open override func getActualClassName() -> FastStringName {
+        Self.getActualClassName()
     }
 }

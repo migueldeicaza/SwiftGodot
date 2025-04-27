@@ -2,7 +2,7 @@ final class Hi: Node {
     override func _hasPoint(_ point: Vector2) -> Bool { false }
 
     private static let _initializeClass: Void = {
-        let className = actualClassName
+        let className = StringName(takingOver: getActualClassName())
         assert(ClassDB.classExists(class: className))
     }()
 
@@ -11,10 +11,12 @@ final class Hi: Node {
         return _initializeClass
     }
 
-    private static let actualClassName: StringName = "Hi"
+    private static func getActualClassName() -> FastStringName {
+        FastStringName("Hi")
+    }
 
-    public override var actualClassName: StringName {
-        Self.actualClassName
+    public override func getActualClassName() -> FastStringName {
+        Self.getActualClassName()
     }
 
     override public class func implementedOverrides () -> [StringName] {
