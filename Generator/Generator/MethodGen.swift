@@ -674,7 +674,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         } else if returnType == "Variant?" {
             return "return Variant(takingOver: _result)"
         } else if frameworkType {            
-            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return getOrInitSwiftObject(boundTo: _result, mode: .retained)\(returnOptional ? "" : "!")"
+            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return getOrInitSwiftObject(boundTo: _result, mode: .owned)\(returnOptional ? "" : "!")"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
             let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"

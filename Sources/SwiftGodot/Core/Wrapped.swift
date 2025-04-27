@@ -552,15 +552,15 @@ func existingSwiftObject(boundTo pNativeObject: GDExtensionObjectPtr) -> Wrapped
 
 /// See `harmonizeReferenceCounting` for details
 enum RefTransferMode {
-    case retained
-    case unretained
+    case owned
+    case unowned
     case singleton
     
     var ownsRef: Bool {
         switch self {
-        case .unretained, .singleton:
+        case .unowned, .singleton:
             return false
-        case .retained:
+        case .owned:
             return true
         }
     }

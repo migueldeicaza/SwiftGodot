@@ -258,7 +258,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         guard let pNativeObject else {
             return nil
         }
-        let ret: T? = getOrInitSwiftObject(boundTo: pNativeObject, mode: .unretained)
+        let ret: T? = getOrInitSwiftObject(boundTo: pNativeObject, mode: .unowned)
         return ret
     }
     

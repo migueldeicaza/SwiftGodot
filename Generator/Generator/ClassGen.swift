@@ -117,9 +117,9 @@ func generateVirtualProxy (_ p: Printer,
                 //
                 argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GDExtensionObjectPtr?.self)\n"
                 if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
-                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unretained)"
+                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unowned)"
                 } else {
-                    argCall += "getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unretained)!"
+                    argCall += "getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unowned)!"
                 }
             } else if let storage = builtinClassStorage [arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
