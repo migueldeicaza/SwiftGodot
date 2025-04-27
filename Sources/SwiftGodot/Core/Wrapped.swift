@@ -20,13 +20,11 @@
 import Foundation
 
 #if DEBUG_INSTANCES
-var xmap: [UnsafeRawPointer: String] = [:]
-#endif
-
 @inline(__always)
 fileprivate func dbglog(function: String = #function, _ str: String) {
     GD.print("\(function) \(str)")
 }
+#endif
 
 /// This is a initialization context required for properly binding Swift and Godot world together.
 /// Don't do anything with it except pass it to `super.init`
@@ -155,32 +153,18 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
     
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
+        #if DEBUG_INSTANCES
         dbglog("reached Wrapped from \(self)")
+        #endif
         return nil
     }
 
     deinit {
-        GD.print("deinit \(Self.self)")
-        // Use the following to catch the deinit happening and then the free framework
-        // code running - we have no way of notifying that code that we are dead.
-        #if DEBUG_DEINIT
-        let opaque: UnsafeMutableRawPointer = Unmanaged.passUnretained(self).toOpaque()
-        print ("Wrapped.deinit \(String(describing: opaque)) handle=\(handle)")
-        if let so = self as? Object {
-            if so.isValid {
-                print ("   -> \(so)")
-            } else {
-                print("    -> \(type(of:self)) [DIED BEFORE DEINIT]")
-            }
-        }
+        #if DEBUG_INSTANCES
+        dbglog("\(Self.self)")
         #endif
         if let pNativeObject {
             guard extensionInterface.objectShouldDeinit(handle: pNativeObject) else { return }
-            
-            #if DEBUG_INSTANCES
-            let type = xmap[handle] ?? "unknown"
-            let txt = "DEINIT for object=\(type) handle=\(handle)"
-            #endif
 
             if self is RefCounted {
                 var queue = false
@@ -271,8 +255,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
         
     public required init(_ initContext: InitContext) {
-//        dbglog("\(Self.self), callstack: \n\(Foundation.Thread.callStackSymbols.map { "    \($0)"}.joined(separator: "\n"))")
+        #if DEBUG_INSTANCES
         dbglog("\(Self.self)")
+        #endif
         pNativeObject = initContext.pNativeObject
         extensionInterface.objectInited(object: self)
         
@@ -327,7 +312,9 @@ extension _GodotBridgeable where Self: Object {
     /// ### Internal note
     /// Swift-registered types constructed from within Godot do not go via this path. See `bindGDExtensionObject` instead
     public init() {
+        #if DEBUG_INSTANCES
         dbglog("\(Self.self)")
+        #endif
         
         let _ = Self.classInitializer
         
@@ -380,13 +367,16 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     } else {
         //dbglog("Registering instance with Godot")
         // Retain an additional unmanaged reference that will be released in freeFunc().
+        #if DEBUG_INSTANCES
         dbglog("object_set_instance GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+        #endif
         withUnsafePointer(to: &thisTypeName.content) { pClassName in
             gi.object_set_instance(pNativeObject, pClassName, unmanaged.retain().toOpaque())
         }
     }
-    
+    #if DEBUG_INSTANCES
     dbglog("object_set_instance_binding GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+    #endif
     gi.object_set_instance_binding(pNativeObject, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
     
     swiftObject.box = box
@@ -416,7 +406,9 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     func getVirtualFunc(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) -> GDExtensionClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
         guard let type  = typeAny as? Object.Type else {
+            #if DEBUG_INSTANCES
             dbglog("The wrapped value did not contain a type: \(typeAny)")
+            #endif
             return nil
         }
         return type.getVirtualDispatcher(name: StringName(fromPtr: name))
@@ -499,7 +491,9 @@ public func register<T: Object>(type: T.Type) {
 public func unregister<T: Object>(type: T.Type) {
     let typeStr = String (describing: type)
     let name = StringName (typeStr)
+    #if DEBUG_INSTANCES
     dbglog("Unregistering \(typeStr)")
+    #endif
     withUnsafePointer (to: &name.content) { namePtr in
         gi.classdb_unregister_extension_class (extensionInterface.getLibrary(), namePtr)
     }
@@ -668,7 +662,9 @@ func unreferenceFunc(_ userData: UnsafeMutableRawPointer) {
 /// - A Swift object is initialized
 /// - `ObjectBox` managing it is created and `strongify`-ed to avoid it being immediately destroyed after the scope ends
 func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: GDExtensionObjectPtr) {
+    #if DEBUG_INSTANCES
     dbglog("\(metatype) GDExtensionObjectPtr(\(pNativeObject))")
+    #endif
     
     _ = metatype.classInitializer
     
@@ -702,7 +698,9 @@ func createInstanceFunc(_ userData: UnsafeMutableRawPointer?) -> GDExtensionObje
         return nil
     }
     
+    #if DEBUG_INSTANCES
     dbglog("\(metatype)")
+    #endif
 
     guard let pNativeObject = gi.classdb_construct_object(&metatype.godotClassName.content) else {
         fatalError("SWIFT: It was not possible to construct a \(metatype.godotClassName.description)")
@@ -730,7 +728,9 @@ func recreateInstanceFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: G
         return nil
     }
     
+    #if DEBUG_INSTANCES
     dbglog("\(metatype)")
+    #endif
     
     initSwiftObject(ofType: metatype, boundTo: pNativeObject)
     
@@ -752,7 +752,9 @@ func freeInstanceFunc(_ userData: UnsafeMutableRawPointer?, _ objectHandle: Unsa
 
     guard let objectHandle else { return }
     
+    #if DEBUG_INSTANCES
     dbglog("\(metatype) ObjectBox(\(objectHandle))")
+    #endif
     // Release the unmanaged reference that was retained in bindSwiftObject()
     Unmanaged<ObjectBox>.fromOpaque(objectHandle).release()
 }
@@ -829,7 +831,9 @@ func userTypeBindingFree(_ token: UnsafeMutableRawPointer?, _ instance: GDExtens
 // This is invoked to take a reference on the object and ensure our Swift-land object
 // does not go away while the object is in use.
 func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?, _ reference: UInt8) -> UInt8 {
+    #if DEBUG_INSTANCES
     dbglog("token: \(token), binding: \(binding), reference: \(reference)")
+    #endif
     guard let binding else { return 0 }
     let box = Unmanaged<ObjectBox>.fromOpaque(binding).takeUnretainedValue()
     weak var refCounted = box.object as? RefCounted
