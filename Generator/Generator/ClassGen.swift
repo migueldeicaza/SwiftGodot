@@ -93,8 +93,8 @@ func generateVirtualProxy (_ p: Printer,
         if let arguments = method.arguments, arguments.count > 0 {
             p ("guard let args else { return }")
         }
-        p ("let reference = Unmanaged<WrappedReference>.fromOpaque(instance).takeUnretainedValue()")
-        p ("guard let swiftObject = reference.value as? \(cdef.name) else { return }")
+        p ("let box = Unmanaged<ObjectBox>.fromOpaque(instance).takeUnretainedValue()")
+        p ("guard let swiftObject = box.object as? \(cdef.name) else { return }")
         
         var argCall = ""
         var argPrep = ""

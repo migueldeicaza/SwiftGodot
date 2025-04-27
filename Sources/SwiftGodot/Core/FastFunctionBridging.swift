@@ -138,8 +138,8 @@ public func _unwrap<T: Object>(
         return nil
     }
     
-    let ref = Unmanaged<WrappedReference>.fromOpaque(pInstance).takeUnretainedValue()
-    guard let object = ref.value as? T else {
+    let box = Unmanaged<ObjectBox>.fromOpaque(pInstance).takeUnretainedValue()
+    guard let object = box.object as? T else {
         return nil
     }
     
