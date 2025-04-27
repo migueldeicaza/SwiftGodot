@@ -107,6 +107,12 @@ public struct InitContext {
     
     @usableFromInline
     let instigator: Instigator
+    
+    /// Internal API.
+    /// Unsafely create an ``InitContext`` from the raw native pointer.
+    public static func _unsafelyFromHandle(_ pointer: UnsafeMutableRawPointer) -> Self {
+        .init(pNativeObject: pointer, instigator: .godot)
+    }
 }
 
 ///
