@@ -35,8 +35,14 @@ fileprivate func dbglog(function: String = #function, _ str: String) {
 public struct InitContext {
     /// Instigator for initialization sequence
     enum Instigator {
+        /// Godot constructs a Swift type or lazily binds existing Godot `Object *` to Swift counterpart
         case godot
+        
+        /// Object is created by Swift code, aka `let obj = Object()`
         case swift
+        
+        /// Object is created by Swift during the singleton access aka `Engine.shared`
+        case singletonAccess
     }
     
     /// Opaque Godot Object pointer: `Object *`
@@ -111,6 +117,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// Opaque Godot `Object *`
     var pNativeObject: GDExtensionObjectPtr?
     
+    // ``WrappedReference`` managing this `Wrapped` instance
+    weak var wrappedReference: WrappedReference?
+    
     public static var fcallbacks = OpaquePointer(UnsafeRawPointer(&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer(UnsafeRawPointer(&Wrapped.userTypeBindingCallback))
     public static var deferred: Callable? = nil
@@ -173,10 +182,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         if let pNativeObject {
             guard extensionInterface.objectShouldDeinit(handle: pNativeObject) else { return }
             
-        #if DEBUG_INSTANCES
-        let type = xmap[handle] ?? "unknown"
-        let txt = "DEINIT for object=\(type) handle=\(handle)"
-        #endif
+            #if DEBUG_INSTANCES
+            let type = xmap[handle] ?? "unknown"
+            let txt = "DEINIT for object=\(type) handle=\(handle)"
+            #endif
 
             if self is RefCounted {
                 var queue = false
@@ -271,9 +280,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         pNativeObject = initContext.pNativeObject
         extensionInterface.objectInited(object: self)
         
-        if initContext.instigator == .swift {
-            bindSwiftObject(self, toNativeObject: initContext.pNativeObject)
-        }
+        bindSwiftObject(self, initContext: initContext)
     }
     
     /// This property indicates if the instance is valid or not.
@@ -328,14 +335,17 @@ extension _GodotBridgeable where Self: Object {
             fatalError("SWIFT: It was not possible to construct a \(Self.godotClassName.description)")
         }
         
-        self.init(InitContext(pNativeObject: pNativeObject, instigator: .swift))
+        let initContext = InitContext(pNativeObject: pNativeObject, instigator: .swift)
+        self.init(initContext)
     }
 }
 
 
-/// Bind Godot `Object *` with Swift `instance`. Return a ``WrappedReference`` used for managing the lifetime of Swift instance.
+/// Bind Godot `Object *` with Swift `instance`.
 @discardableResult
-func bindSwiftObject(_ swiftObject: some Wrapped, toNativeObject pNativeObject: GDExtensionObjectPtr) -> WrappedReference {
+func bindSwiftObject(_ swiftObject: some Wrapped, initContext: InitContext) {
+    let pNativeObject = initContext.pNativeObject
+    
     let name = swiftObject.godotClassName
     let thisTypeName = StringName(stringLiteral: String(describing: Swift.type(of: swiftObject)))
     let frameworkType = thisTypeName == name
@@ -379,7 +389,7 @@ func bindSwiftObject(_ swiftObject: some Wrapped, toNativeObject pNativeObject: 
     dbglog("object_set_instance_binding \(type(of: swiftObject)) \(Unmanaged.passUnretained(swiftObject).toOpaque()) to \(pNativeObject)")
     gi.object_set_instance_binding(pNativeObject, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
     
-    return reference
+    swiftObject.wrappedReference = reference
 }
 
 var userTypes: [String: Object.Type] = [:]
@@ -661,17 +671,24 @@ func unreferenceFunc(_ userData: UnsafeMutableRawPointer) {
     fatalError()
 }
 
-/// Bind a Godot Object that Swift didn't know about after constructing a wrapper of type = `metatype`.
-func initSwiftObject(ofType metatype: Object.Type, andBindTo pNativeObject: GDExtensionObjectPtr) {
+/// Path for Godot constructing a `Swift` type.
+/// - A Swift object is initialized
+/// - `WrappedReference` managing it is created and `strongify`-ed to avoid it being immediately destroyed after the scope ends
+func initSwiftObject(ofType metatype: Object.Type, boundTo pNativeObject: GDExtensionObjectPtr) {
     dbglog("\(metatype) and bind to \(pNativeObject)")
-    let swiftObject = metatype.init(InitContext(pNativeObject: pNativeObject, instigator: .godot))
     
-    let wrappedReference = bindSwiftObject(swiftObject, toNativeObject: pNativeObject)
     _ = metatype.classInitializer
-    extensionInterface.objectInited(object: swiftObject)
     
-    // We are the createFunc, and we have no other owner to this object but ourselves
-    // we need to make this a strong reference, or it dies before we return
+    let initContext = InitContext(pNativeObject: pNativeObject, instigator: .godot)
+    let swiftObject = metatype.init(initContext)        
+        
+    extensionInterface.objectInited(object: swiftObject)
+        
+    guard let wrappedReference = swiftObject.wrappedReference else {
+        fatalError("\(swiftObject) should have a non-nil `wrappedReference` after initialization")
+    }
+
+    /// We need to ask `wrappedReference` to retain `swiftObject`, otherwise it will be immediately destroyed after this function ends
     wrappedReference.strongify()
 }
 
@@ -698,7 +715,7 @@ func createFunc(_ userData: UnsafeMutableRawPointer?) -> GDExtensionObjectPtr? {
         fatalError("SWIFT: It was not possible to construct a \(metatype.godotClassName.description)")
     }
     
-    initSwiftObject(ofType: metatype, andBindTo: pNativeObject)
+    initSwiftObject(ofType: metatype, boundTo: pNativeObject)
     
     return pNativeObject
 }
@@ -720,9 +737,9 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: GDExtensi
         return nil
     }
     
-    dbglog("recreateFunc \(metatype)")
+    dbglog("\(metatype)")
     
-    initSwiftObject(ofType: metatype, andBindTo: pNativeObject)
+    initSwiftObject(ofType: metatype, boundTo: pNativeObject)
     
     return pNativeObject
 }
@@ -730,7 +747,7 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, pNativeObject: GDExtensi
 //
 // This is invoked to release any Subtyped objects we created
 //
-func freeFunc (_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutableRawPointer?) {
+func freeFunc(_ userData: UnsafeMutableRawPointer?, _ objectHandle: UnsafeMutableRawPointer?) {
     let metatypeObject = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
     let metatype = metatypeObject as! Object.Type
     dbglog("freeFunc \(metatype)")
