@@ -63,14 +63,20 @@ class ScopedDebugLog {
 }
 
 @inline(__always)
-fileprivate func dbglog(function: StaticString = #function, _ message: String) -> ScopedDebugLog {
+fileprivate func dbglog(function: String = #function, _ message: String) -> ScopedDebugLog {
     dbgWorkItem?.cancel()
     let item = DispatchWorkItem(block: {
         GD.print("\(pendingDbgLogs.joined(separator: "\n"))")
         pendingDbgLogs.removeAll()
     })
     
-    let log = ScopedDebugLog(message: "\(function) \(message)")
+    let fullMessage: String
+    if function.isEmpty {
+        fullMessage = message
+    } else {
+        fullMessage = "\(function) \(message)"
+    }
+    let log = ScopedDebugLog(message: fullMessage)
         
     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: item)
     dbgWorkItem = item
@@ -403,8 +409,14 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
     
     let name = swiftObject.godotClassName
         
+    #if DEBUG_INSTANCES
+    let strLog = dbglog(function: "", "StringName from type(of:)")
+    #endif
     let thisTypeName = StringName(stringLiteral: String(describing: Swift.type(of: swiftObject)))
     let frameworkType = thisTypeName == name
+    #if DEBUG_INSTANCES
+    strLog.finish()
+    #endif
     
     var callbacks: GDExtensionInstanceBindingCallbacks
     if frameworkType {
@@ -413,13 +425,22 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         callbacks = Wrapped.userTypeBindingCallback
     }
 
+    #if DEBUG_INSTANCES
+    let rcLog = dbglog(function: "", "ObjectBox initialization")
+    #endif
     let box: ObjectBox
     if let refCounted = swiftObject as? RefCounted, refCounted.getReferenceCount() <= 1 {
         box = ObjectBox(swiftObject, strong: false)
     } else {
         box = ObjectBox(swiftObject, strong: true)
     }
-
+    #if DEBUG_INSTANCES
+    rcLog.finish()
+    #endif
+    
+    #if DEBUG_INSTANCES
+    let tableLog = dbglog(function: "", "tableLock.withLockVoid")
+    #endif
     tableLock.withLockVoid {
         if frameworkType {
             liveFrameworkObjects[pNativeObject] = box
@@ -427,6 +448,9 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
             liveSubtypedObjects[pNativeObject] = box
         }
     }
+    #if DEBUG_INSTANCES
+    tableLog.finish()
+    #endif
 
     let unmanaged = Unmanaged<ObjectBox>.passUnretained(box)
 
@@ -437,7 +461,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         //dbglog("Registering instance with Godot")
         // Retain an additional unmanaged reference that will be released in freeFunc().
         #if DEBUG_INSTANCES
-        let log = dbglog("object_set_instance GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+        let log = dbglog(function: "", "object_set_instance GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
         defer {
             log.finish()
         }
@@ -447,7 +471,7 @@ func bindSwiftObject(_ swiftObject: some Object, initContext: InitContext) {
         }
     }
     #if DEBUG_INSTANCES
-    let bindingLog = dbglog("object_set_instance_binding GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
+    let bindingLog = dbglog(function: "", "object_set_instance_binding GDExtensionObjectPtr(\(pNativeObject)) → \(type(of: swiftObject))(\(Unmanaged.passUnretained(swiftObject).toOpaque()))")
     defer {
         bindingLog.finish()
     }
