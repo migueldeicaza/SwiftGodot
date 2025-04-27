@@ -117,9 +117,9 @@ func generateVirtualProxy (_ p: Printer,
                 //
                 argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GDExtensionObjectPtr?.self)\n"
                 if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
-                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, ownsRef: false)"
+                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unretained)"
                 } else {
-                    argCall += "getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, ownsRef: false)!"
+                    argCall += "getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unretained)!"
                 }
             } else if let storage = builtinClassStorage [arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
@@ -589,7 +589,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             p ("/// The shared instance of this class")
             p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
                 p ("return withUnsafePointer(to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
-                    p ("getOrInitSwiftObject(boundTo: gi.global_get_singleton(ptr)!, ownsRef: false)!")
+                    p ("getOrInitSwiftObject(boundTo: gi.global_get_singleton(ptr)!, mode: .singleton)!")
                 }
             }
         }

@@ -17,6 +17,7 @@
 //
 
 @_implementationOnly import GDExtension
+import Foundation
 
 #if DEBUG_INSTANCES
 var xmap: [UnsafeRawPointer: String] = [:]
@@ -266,7 +267,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
         
     public required init(_ initContext: InitContext) {
-        dbglog("\(Self.self)")
+        dbglog("\(Self.self), callstack: \n\(Foundation.Thread.callStackSymbols.map { "    \($0)"}.joined(separator: "\n"))")
         pNativeObject = initContext.pNativeObject
         extensionInterface.objectInited(object: self)
         
@@ -430,10 +431,6 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     }
 }
 
-struct WeakBox {
-    weak var object: Object?
-}
-
 final class WrappedReference {
 
     typealias T = Wrapped
@@ -543,40 +540,29 @@ public func releasePendingObjects() {
     }
 }
 
-///
-/// Looks into the liveSubtypedObjects table if we have an object registered for it,
-
-///
-/// Looks into the liveSubtypedObjects table if we have an object registered for it,
-/// and if we do, we returned that existing instance.
-///
-/// The idioms is that we only need to look up subtyped objects, because those
-/// are the only ones that would keep state
-func existingSwiftUserObjectFromGDExtensionObjectPtr(_ pNativeObject: GDExtensionObjectPtr) -> Wrapped? {
-    tableLock.withLock {
-        return liveSubtypedObjects[pNativeObject]?.value
-    }
-}
-
-///
-/// Looks into the liveSubtypedObjects table if we have an object registered for it,
-/// and if we do, we returned that existing instance.
-///
-/// We are surfacing this, so that when we recreate an object resurfaced in a collection
-/// we do not get the base type, but the most derived one
-func existingSwiftFrameworkObjectboundTo(_ pNativeObject: GDExtensionObjectPtr) -> Wrapped? {
-    tableLock.withLock {
-        return liveFrameworkObjects[pNativeObject]?.value
-    }
-}
-
-func existingSwiftObjectboundTo(_ pNativeObject: GDExtensionObjectPtr) -> Wrapped? {
+func existingSwiftObject(boundTo pNativeObject: GDExtensionObjectPtr) -> Wrapped? {
     tableLock.withLock {
         if let o = (liveFrameworkObjects[pNativeObject]?.value ?? liveSubtypedObjects[pNativeObject]?.value) {
             return o
         }
         
         return nil
+    }
+}
+
+/// See `harmonizeReferenceCounting` for details
+enum RefTransferMode {
+    case retained
+    case unretained
+    case singleton
+    
+    var ownsRef: Bool {
+        switch self {
+        case .unretained, .singleton:
+            return false
+        case .retained:
+            return true
+        }
     }
 }
 
@@ -594,8 +580,8 @@ func existingSwiftObjectboundTo(_ pNativeObject: GDExtensionObjectPtr) -> Wrappe
 // the Swift proxy object always results in a single increment of the reference count.
 // - The ownsRef parameter is true iff Godot can pass ownership of a Ref<> wrapper to
 // SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
-func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, unref: Bool) {
-    if !ownsRef {
+func harmonizeReferenceCounting<T: Wrapped>(staticType: T.Type, object: Wrapped?, mode: RefTransferMode, unref: Bool) {
+    if !mode.ownsRef {
         if !unref {
             if let refCounted = object as? RefCounted {
                 refCounted.reference()
@@ -603,6 +589,7 @@ func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, 
         }
         return
     }
+    
     if let refCounted = object as? RefCounted {
         if staticType is RefCounted.Type {
             if unref {
@@ -616,13 +603,17 @@ func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, 
     }
 }
 
-func getOrInitSwiftObject<T: Object>(ofType type: T.Type = T.self, boundTo pNativeObject: GDExtensionObjectPtr?, ownsRef: Bool) -> T? {
+func getOrInitSwiftObject<T>(
+    ofType type: T.Type = T.self,
+    boundTo pNativeObject: GDExtensionObjectPtr?,
+    mode: RefTransferMode
+) -> T? where T: Object {
     guard let pNativeObject else {
         return nil
     }
     
-    if let swiftObject = existingSwiftObjectboundTo(pNativeObject) {
-        handleRef(staticType: T.self, object: swiftObject, ownsRef: ownsRef, unref: true)
+    if let swiftObject = existingSwiftObject(boundTo: pNativeObject) {
+        harmonizeReferenceCounting(staticType: T.self, object: swiftObject, mode: mode, unref: true)
         return swiftObject as? T
     }
     
@@ -640,13 +631,13 @@ func getOrInitSwiftObject<T: Object>(ofType type: T.Type = T.self, boundTo pNati
     
     if let frameworkType = godotFrameworkCtors[className] {
         let result = frameworkType.init(InitContext(pNativeObject: pNativeObject, instigator: .godot))
-        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+        harmonizeReferenceCounting(staticType: T.self, object: result, mode: mode, unref: false)
         return result as? T
     }
     
     if let userType = userTypes[className] {
         let created = userType.init(InitContext(pNativeObject: pNativeObject, instigator: .godot))
-        handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
+        harmonizeReferenceCounting(staticType: T.self, object: created, mode: mode, unref: false)
         if let result = created as? T {
             return result
         } else {
@@ -655,7 +646,7 @@ func getOrInitSwiftObject<T: Object>(ofType type: T.Type = T.self, boundTo pNati
     }
 
     let result = T(InitContext(pNativeObject: pNativeObject, instigator: .godot))
-    handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+    harmonizeReferenceCounting(staticType: T.self, object: result, mode: mode, unref: false)
     return result
 }
 
