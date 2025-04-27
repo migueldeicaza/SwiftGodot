@@ -752,7 +752,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     
     p ("\(declarationTokens)(\(argumentsList))\(returnClause)") {
         if staticAttribute == nil {
-            p("assertValidity()")
+            p("crashIfObjectWasFreedByGodot()")
         }
         if method.optionalHash == nil {
             if let godotReturnType {

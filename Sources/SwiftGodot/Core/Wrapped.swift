@@ -216,10 +216,14 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         []
     }
     
-    func assertValidity() {
+    func crashIfObjectWasFreedByGodot() {
         if !isValid {
-            fatalError("\(Self.self).handle is nil, which indicates the object was cleared by Godot")
+            Self.attemptToUseObjectFreedByGodot()
         }
+    }
+    
+    private static func attemptToUseObjectFreedByGodot() {
+        fatalError("\(Self.self).handle is nil, which indicates the object was cleared by Godot")
     }
     
     class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
