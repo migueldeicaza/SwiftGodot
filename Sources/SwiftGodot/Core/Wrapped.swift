@@ -85,8 +85,7 @@ fileprivate func dbglog(function: String = #function, _ message: String) -> Scop
 
 #endif
 
-@usableFromInline
-typealias NativeObjectPointer = UnsafeMutableRawPointer
+public typealias NativeObjectPointer = UnsafeMutableRawPointer
 
 /// This is a initialization context required for properly binding Swift and Godot world together.
 /// Don't do anything with it except pass it to `super.init`
@@ -110,7 +109,7 @@ public struct InitContext {
     
     /// Internal API.
     /// Unsafely create an ``InitContext`` from the raw native pointer.
-    public static func _unsafelyFromHandle(_ pointer: UnsafeMutableRawPointer) -> Self {
+    public static func _unsafelyFromHandle(_ pointer: NativeObjectPointer) -> Self {
         .init(pNativeObject: pointer, instigator: .godot)
     }
 }
@@ -180,6 +179,11 @@ public struct InitContext {
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Opaque Godot `Object *`
     var pNativeObject: NativeObjectPointer?
+    
+    /// Internal API.
+    public var _unsafeHandle: NativeObjectPointer? {
+        pNativeObject
+    }
     
     // ``ObjectBox`` managing this `Wrapped` instance
     weak var box: ObjectBox?
