@@ -115,7 +115,7 @@ func generateVirtualProxy (_ p: Printer,
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
-                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GDExtensionObjectPtr?.self)\n"
+                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: NativeObjectPointer?.self)\n"
                 if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
                     argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject(ofType: \(arg.type).self, boundTo: resolved_\(i)!, mode: .unowned)"
                 } else {
