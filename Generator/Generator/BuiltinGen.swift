@@ -634,6 +634,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             conformances.append ("ExpressibleByStringLiteral")
             conformances.append ("ExpressibleByStringInterpolation")
             conformances.append ("LosslessStringConvertible")
+            conformances.append("@unchecked Sendable")
         }
         if bc.name.hasSuffix ("Array") {
             conformances.append ("Collection")
