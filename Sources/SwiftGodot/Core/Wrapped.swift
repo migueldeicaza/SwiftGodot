@@ -552,52 +552,55 @@ func existingSwiftObject(boundTo pNativeObject: GDExtensionObjectPtr) -> Wrapped
 
 /// See `harmonizeReferenceCounting` for details
 enum RefTransferMode {
+    /// Value is Godot `Ref<>`.
     case owned
-    case unowned
-    case singleton
     
-    var ownsRef: Bool {
-        switch self {
-        case .unowned, .singleton:
-            return false
-        case .owned:
-            return true
-        }
-    }
+    /// Value is raw `Object *`
+    case unowned
+    
+    /// Value is Godot singleton
+    case singleton
 }
 
-// The following function makes the reference count of RefCounted objects consistent
-// with the semantics of Godot:
-// - Every time godot returns a RefCounted object in a Ref<> wrapper for a ptrcall,
-// its reference count is incremeneted. As object identity results in the return of
-// the same Swift proxy for the same RefCounted object, this means that every subsequent
-// return should result in an unreference() call, so that the existence of the Swift proxy
-// object always results in a single increment of the reference count.
-// - On the other hand, if a RefCounted object was returned through a non-RefCounted
-// static return type (e.g. as an Object), then Godot did not increment its reference
-// count. This means that on the first return of such an object, the reference count
-// should be incremented by a reference() call, so that similarly the existence of
-// the Swift proxy object always results in a single increment of the reference count.
-// - The ownsRef parameter is true iff Godot can pass ownership of a Ref<> wrapper to
-// SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
-func harmonizeReferenceCounting<T: Wrapped>(staticType: T.Type, object: Wrapped?, mode: RefTransferMode, unref: Bool) {
-    if !mode.ownsRef {
+/// The following function makes the reference count of RefCounted objects consistent
+/// with the semantics of Godot.
+///
+/// ### Rationale
+/// - Every time godot returns a `RefCounted` object in a `Ref<>` wrapper for a ptrcall,
+/// its reference count is incremeneted. As object identity results in the return of
+/// the same Swift proxy for the same `RefCounted` object, this means that every subsequent
+/// return should result in an `unreference()` call, so that the existence of the Swift proxy
+/// object always results in a single increment of the reference count.
+/// - On the other hand, if a `RefCounted` object was returned through a non`RefCounted`
+/// static return type (e.g. as an `Object`), then Godot did not increment its reference
+/// count. This means that on the first return of such an object, the reference count
+/// should be incremented by a `reference()` call, so that similarly the existence of
+/// the Swift proxy object always results in a single increment of the reference count.
+/// - The `mode` parameter specifies if Godot can pass ownership of a Ref<> wrapper to
+/// SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
+func harmonizeReferenceCounting<T: Wrapped>(
+    staticType: T.Type,
+    object: Wrapped,
+    mode: RefTransferMode,
+    unref: Bool
+) {
+    switch mode {
+    case .unowned, .singleton:
         if !unref {
             if let refCounted = object as? RefCounted {
                 refCounted.reference()
             }
         }
-        return
-    }
-    
-    if let refCounted = object as? RefCounted {
-        if staticType is RefCounted.Type {
-            if unref {
-                refCounted.unreference()
-            }
-        } else {
-            if !unref {
-                refCounted.reference()
+    case .owned:
+        if let refCounted = object as? RefCounted {
+            if staticType is RefCounted.Type {
+                if unref {
+                    refCounted.unreference()
+                }
+            } else {
+                if !unref {
+                    refCounted.reference()
+                }
             }
         }
     }
