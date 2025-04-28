@@ -675,11 +675,11 @@ func createFunc(_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer
         fatalError("SWIFT: It was not possible to construct a \(type.godotClassName.description)")
     }
 
-    let o = type.init(InitContext(handle: handle, origin: .godot))
+    let object = type.init(InitContext(handle: handle, origin: .godot))
     
     // We are the createFunc, and we have no other owner to this object but ourselves
     // we need to make this a strong reference, or it dies before we return
-    guard let wrapper = liveSubtypedObjects[handle] else {
+    guard let wrapper = object.wrapper else {
         fatalError("SwiftGodot.createFunc: wrapper should have been created during binding")
     }
     
@@ -704,11 +704,11 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, godotObjectHandle: Unsaf
         print ("SwiftGodot.recreateFunc: The wrapped value did not contain a type: \(typeAny)")
         return nil
     }
-    let o = type.init(InitContext(handle: godotObjectHandle, origin: .godot))
+    let object = type.init(InitContext(handle: godotObjectHandle, origin: .godot))
     
     // Just line in the createFunc
     // we need to make this a strong reference, or it dies before we return
-    guard let wrapper = liveSubtypedObjects[godotObjectHandle] else {
+    guard let wrapper = object.wrapper else {
         fatalError("SwiftGodot.createFunc: wrapper should have been created during binding")
     }
     
