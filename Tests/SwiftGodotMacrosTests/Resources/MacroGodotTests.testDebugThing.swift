@@ -26,7 +26,7 @@ class DebugThing: SwiftGodot.Object {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SignalWithArguments<Swift.Int>.register(as: "lives_changed", in: className)
         SwiftGodot._registerMethod(
@@ -39,6 +39,7 @@ class DebugThing: SwiftGodot.Object {
             ],
             function: DebugThing._mproxy_do_thing
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -46,11 +47,11 @@ class DebugThing: SwiftGodot.Object {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("DebugThing")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("DebugThing")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

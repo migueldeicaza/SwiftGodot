@@ -178,7 +178,7 @@ class Garage: Node {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._addPropertyGroup(className: className, name: "Front Page", prefix: "")
         SwiftGodot._registerPropertyWithGetterSetter(
@@ -295,6 +295,7 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_insuranceProvidersAccepted,
             setterFunction: Garage._mproxy_set_insuranceProvidersAccepted
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -302,11 +303,11 @@ class Garage: Node {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("Garage")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("Garage")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

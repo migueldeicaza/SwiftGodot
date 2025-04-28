@@ -2,8 +2,9 @@
 final class MyData: Resource {
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
+        className.content = .zero
     }()
 
     override public class var classInitializer: Void {
@@ -11,12 +12,12 @@ final class MyData: Resource {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("MyData")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("MyData")
     }
 
-    public override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    public override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }
 final class MyClass: Node {
@@ -44,7 +45,7 @@ final class MyClass: Node {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -60,6 +61,7 @@ final class MyClass: Node {
             getterFunction: MyClass._mproxy_get_data,
             setterFunction: MyClass._mproxy_set_data
         )
+        className.content = .zero
     }()
 
     override public class var classInitializer: Void {
@@ -67,11 +69,11 @@ final class MyClass: Node {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("MyClass")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("MyClass")
     }
 
-    public override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    public override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

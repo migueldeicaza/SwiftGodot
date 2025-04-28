@@ -21,7 +21,7 @@ private class TestNode: Node {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -33,6 +33,7 @@ private class TestNode: Node {
             ],
             function: TestNode._mproxy_foo
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -40,11 +41,11 @@ private class TestNode: Node {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("TestNode")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("TestNode")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

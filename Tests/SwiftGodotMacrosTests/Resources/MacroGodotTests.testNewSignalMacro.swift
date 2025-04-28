@@ -13,10 +13,11 @@ class Demo: Node3D {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SimpleSignal.register(as: "burp", in: className)
         SignalWithArguments<Int>.register(as: "lives_changed", in: className)
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -24,11 +25,11 @@ class Demo: Node3D {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("Demo")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("Demo")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

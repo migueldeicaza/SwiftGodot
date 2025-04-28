@@ -351,7 +351,9 @@ public struct GodotMacro: MemberMacro {
                 """,
                 
                 """
-                private static let actualClassName = UnsafeStringName("\(raw: processor.className)")                                
+                private static var actualClassName: UnsafeStringName {
+                    UnsafeStringName("\(raw: processor.className)")
+                }                                
                 """,
                 
                 """

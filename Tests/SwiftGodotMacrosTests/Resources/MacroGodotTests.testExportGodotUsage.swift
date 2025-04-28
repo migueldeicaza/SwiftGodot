@@ -23,7 +23,7 @@ class Hi: Node {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -39,6 +39,7 @@ class Hi: Node {
             getterFunction: Hi._mproxy_get_goodName,
             setterFunction: Hi._mproxy_set_goodName
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -46,11 +47,11 @@ class Hi: Node {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("Hi")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("Hi")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

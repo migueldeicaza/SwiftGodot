@@ -35,7 +35,7 @@ class Thing: SwiftGodot.Object {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
@@ -61,6 +61,7 @@ class Thing: SwiftGodot.Object {
             ],
             function: Thing._mproxy_get_some
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -68,11 +69,11 @@ class Thing: SwiftGodot.Object {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("Thing")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("Thing")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

@@ -1,8 +1,9 @@
 class MyThing: SwiftGodot.RefCounted {
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -10,12 +11,12 @@ class MyThing: SwiftGodot.RefCounted {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("MyThing")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("MyThing")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 
 }
@@ -71,7 +72,7 @@ class OtherThing: SwiftGodot.Node {
     }
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
@@ -103,6 +104,7 @@ class OtherThing: SwiftGodot.Node {
             ],
             function: OtherThing._mproxy_get_thing
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -110,11 +112,11 @@ class OtherThing: SwiftGodot.Node {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("OtherThing")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("OtherThing")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }

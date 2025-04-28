@@ -5,7 +5,7 @@ class Hi: Node {
     static let differentInit2 = SignalWithNoArguments("different_init2")
 
     private static let _initializeClass: Void = {
-        let className = StringName(takingOver: getActualClassName())
+        let className = StringName(content: actualClassName.content)
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerSignal(
             Hi.pickedUpItem.name,
@@ -27,6 +27,7 @@ class Hi: Node {
             in: className,
             arguments: Hi.differentInit2.arguments
         )
+        className.content = .zero
     }()
 
     override open class var classInitializer: Void {
@@ -34,11 +35,11 @@ class Hi: Node {
         return _initializeClass
     }
 
-    private static func getActualClassName() -> FastStringName {
-        FastStringName("Hi")
+    private static var actualClassName: UnsafeStringName {
+        UnsafeStringName("Hi")
     }
 
-    open override func getActualClassName() -> FastStringName {
-        Self.getActualClassName()
+    open override var actualClassName: UnsafeStringName {
+        Self.actualClassName
     }
 }
