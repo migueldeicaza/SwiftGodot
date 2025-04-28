@@ -253,12 +253,12 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
             return nil
         }
 
-        var objectHandle: UnsafeRawPointer? = UnsafeRawPointer(bitPattern: 1)!
+        var objectHandle: GodotNativeObjectPointer? = GodotNativeObjectPointer(bitPattern: 1)!
         constructType(into: &objectHandle, constructor: Object.selfFromVariant)
         guard let objectHandle else {
             return nil
         }
-        let ret: T? = lookupObject(nativeHandle: objectHandle, ownsRef: false)
+        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownsRef: false)
         return ret
     }
     

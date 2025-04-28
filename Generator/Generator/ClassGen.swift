@@ -115,11 +115,11 @@ func generateVirtualProxy (_ p: Printer,
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
-                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: UnsafeRawPointer?.self)\n"
+                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
                 if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
-                    argCall += "resolved_\(i) == nil ? nil : lookupObject (nativeHandle: resolved_\(i)!, ownsRef: false) as? \(arg.type)"
+                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as? \(arg.type)"
                 } else {
-                    argCall += "lookupObject (nativeHandle: resolved_\(i)!, ownsRef: false) as! \(arg.type)"
+                    argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as! \(arg.type)"
                 }
             } else if let storage = builtinClassStorage [arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
@@ -162,7 +162,7 @@ func generateVirtualProxy (_ p: Printer,
                     derefType = "type (of: ret.array.content)"
                 } else if classMap [ret.type] != nil {
                     derefField = "handle"
-                    derefType = "UnsafeRawPointer?.self"
+                    derefType = " GodotNativeObjectPointer?.self"
                 } else {
                     derefField = "content"
                     derefType = "type (of: ret.content)"
@@ -589,7 +589,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             p ("/// The shared instance of this class")
             p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
                 p ("return withUnsafePointer(to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
-                    p ("lookupObject(nativeHandle: gi.global_get_singleton(ptr)!, ownsRef: false)!")
+                    p ("getOrInitSwiftObject(nativeHandle: gi.global_get_singleton(ptr)!, ownsRef: false)!")
                 }
             }
         }
@@ -602,13 +602,15 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
 
         if cdef.name == "RefCounted" {
-            p ("public required init ()") {
-                p ("super.init ()")
-                p ("_ = initRef()")
+            p("""
+            public override required init(_ context: InitContext) {
+                super.init(context)
+            
+                if context.origin == .swift {
+                    _ = initRef()
+                }                
             }
-            p ("public required init(nativeHandle: UnsafeRawPointer)") {
-                p ("super.init (nativeHandle: nativeHandle)")
-            }
+            """)
         }
         
         var referencedMethods = Set<String>()
