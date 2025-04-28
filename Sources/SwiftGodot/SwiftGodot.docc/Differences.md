@@ -170,13 +170,8 @@ function is already too late for you, you can use the following idiom:
 ```swift
 @Godot
 class NetworkedNode: Node {
-    required init() {
-        super.init()
-        onInit()
-    }
-
-    required init(nativeHandle: UnsafeRawPointer) {
-        super.init(nativeHandle: nativeHandle)
+    required init(_ context: InitContext) {
+        super.init(context)
         onInit()
     }
 
