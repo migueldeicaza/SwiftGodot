@@ -968,8 +968,8 @@ struct CallableWrapper {
 // This is a temporary hack until we get proper WeakReference support
 // so we can clear the internal dictionaries when a domain is shut down.
 ///
-public func getActiveHandles() -> ([UnsafeRawPointer]) {
-    var handles: [UnsafeRawPointer] = []
+public func getActiveHandles() -> [GodotNativeObjectPointer] {
+    var handles: [GodotNativeObjectPointer] = []
     for x in liveFrameworkObjects {
         handles.append(x.key)
     }
