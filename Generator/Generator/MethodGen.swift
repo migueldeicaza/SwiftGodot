@@ -580,7 +580,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             } else {
                 if godotReturnTypeIsReferenceType {
                     // frameworkType = true
-                    return "var _result = UnsafeRawPointer (bitPattern: 0)"
+                    return "var _result = GodotNativeObjectPointer(bitPattern: 0)"
                 } else {
                     if godotReturnType == "Variant" {
                         return "var _result: Variant.ContentType = Variant.zero"
@@ -676,7 +676,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             return "return Variant(takingOver: _result)"
         } else if frameworkType {
             //print ("OBJ RETURN: \(className) \(method.name)")
-            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return lookupObject (nativeHandle: _result, ownsRef: true)\(returnOptional ? "" : "!")"
+            return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return getOrInitSwiftObject (nativeHandle: _result, ownsRef: true)\(returnOptional ? "" : "!")"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
             let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"
@@ -770,14 +770,12 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             let instanceArg: String
             if method.isStatic {
                 instanceArg = "nil"
-            } else {
-                let accessor: String
+            } else {                
                 if asSingleton {
-                    accessor = "shared.handle"
+                    instanceArg = "shared.handle"
                 } else {
-                    accessor = "handle"
+                    instanceArg = "handle"
                 }
-                instanceArg = "UnsafeMutableRawPointer(mutating: \(accessor))"
             }
             
             func getMethodNameArgument() -> String {
