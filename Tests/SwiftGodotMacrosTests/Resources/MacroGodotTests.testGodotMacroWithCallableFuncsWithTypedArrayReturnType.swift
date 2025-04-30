@@ -24,7 +24,7 @@ class SomeNode: Node {
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
-            name: "getIntegerCollection",
+            name: "get_integer_collection",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(TypedArray<Int>.self),
             arguments: [

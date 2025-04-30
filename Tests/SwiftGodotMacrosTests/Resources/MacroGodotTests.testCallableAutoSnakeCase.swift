@@ -80,7 +80,7 @@ class TestClass: Node {
         )
         SwiftGodot._registerMethod(
             className: className,
-            name: "defaultIsLegacyCompatible",
+            name: "default_is_legacy_compatible",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [

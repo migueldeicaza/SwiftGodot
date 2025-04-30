@@ -25,6 +25,12 @@ public enum ClassBehavior: Int {
     case gameplay, tool
 }
 
+#if TRAIT_USE_CAMEL_CASE_FOR_CALLABLE
+public let autoSnakeCaseDefaultValue = false
+#else
+public let autoSnakeCaseDefaultValue = true
+#endif
+
 /// Exposes the function to the Godot runtime
 ///
 /// When this attribute is applied to a function, the function is exposed to the Godot engine, and it
@@ -34,7 +40,7 @@ public enum ClassBehavior: Int {
 ///
 /// - Parameter autoSnakeCase: if `true` (default value is `false`), the function name will be automatically translated from `camelCase` to `snake_case` when exposed to Godot
 @attached(peer, names: prefixed(_mproxy_))
-public macro Callable(autoSnakeCase: Bool = false) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
+public macro Callable(autoSnakeCase: Bool = autoSnakeCaseDefaultValue) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
 
 /// Exposes a property or variable to the Godot runtime
 ///

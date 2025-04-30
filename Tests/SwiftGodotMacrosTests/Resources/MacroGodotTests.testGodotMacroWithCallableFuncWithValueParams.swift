@@ -86,7 +86,7 @@ class MathHelper: Node {
         )
         SwiftGodot._registerMethod(
             className: className,
-            name: "areBothTrue",
+            name: "are_both_true",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Bool.self),
             arguments: [

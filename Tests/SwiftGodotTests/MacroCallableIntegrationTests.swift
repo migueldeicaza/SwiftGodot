@@ -52,7 +52,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(Variant(object2))
         objectsArray.append(nil)
                 
-        XCTAssertEqual(testObject.call(method: "countObjects", objectsArray.toVariant()).to(), 6)
+        XCTAssertEqual(testObject.call(method: "count_objects", objectsArray.toVariant()).to(), 6)
         testObject.free()
         object0.free()
         object1.free()
@@ -75,7 +75,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(nil)
         objectsArray.append(Variant(RefCounted())) // this one causes the failure
                 
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), 0.toVariant())
+        XCTAssertEqual(testObject.call(method: "count_objects", Variant(objectsArray)), 0.toVariant())
         testObject.free()
         object0.free()
         object1.free()
@@ -100,7 +100,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         // this one won't be added, error is logged from Godot, RefCounted is not TestObject
         objectsArray.append(Variant(RefCounted()))
         
-        let result = testObject.call(method: "countObjects", objectsArray.toVariant())
+        let result = testObject.call(method: "count_objects", objectsArray.toVariant())
         XCTAssertEqual(result.to(), 6)
         
         testObject.free()
@@ -124,7 +124,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         objectsArray.append(object2) // 5
         objectsArray.append(nil) // 6
         
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
+        XCTAssertEqual(testObject.call(method: "count_objects", Variant(objectsArray)), Variant(6))
         testObject.free()
         object0.free()
         object1.free()
@@ -139,7 +139,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         builtinsArray.append(Variant(2))
         builtinsArray.append(Variant(3))
         
-        XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        XCTAssertEqual(testObject.call(method: "count_builtins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
     
@@ -157,7 +157,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         array.append(Variant(4))
         
         // Fails, prints into console and returns nil due to typed builtin array not allowing nils
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), 0.toVariant())
+        XCTAssertEqual(testObject.call(method: "count_objects", Variant(array)), 0.toVariant())
         testObject.free()
     }
     
@@ -171,7 +171,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         // this one won't be added, error is logged from Godot, nil Builtins are not allowed in typed Arrays
         builtinsArray.append(nil)
         
-        XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        XCTAssertEqual(testObject.call(method: "count_builtins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
     
@@ -183,7 +183,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         builtinsArray.append(2)
         builtinsArray.append(3)
         
-        XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        XCTAssertEqual(testObject.call(method: "count_builtins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
     
@@ -204,7 +204,7 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         variants.append(Variant(true)) // 7
         
         
-        XCTAssertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(7))
+        XCTAssertEqual(testObject.call(method: "count_mixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(7))
         testObject.free()
     }
 }
