@@ -147,18 +147,19 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         self.init(elements)
     }
     
-    /// Initialise ``TypedArray`` from the Swift `Element` array.
+    
+    /// Initialise ``TypedArray`` from the Swift ``Sequence``.
     /// For example:
     /// ```
     /// let array: [Int] = [1, 2, 3, 4, 5]
     /// let typedArray = TypedArray(array)
     /// ```
     ///
-    /// This operation is O(n) as it requires creating and copying contents of Swift array.
-    public init(_ array: [Element]) {
+    /// This operation is O(n) as it requires allocating a new ``TypedArray`` and copying contents of Swift ``Sequence``.
+    public init<S>(_ sequence: S) where S: Sequence, S.Element == Element {
         self.init(Element.self)
         
-        for element in array {
+        for element in sequence {
             append(element)
         }
     }
