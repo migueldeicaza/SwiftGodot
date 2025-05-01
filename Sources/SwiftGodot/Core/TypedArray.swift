@@ -155,7 +155,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     /// let typedArray = TypedArray(array)
     /// ```
     ///
-    /// This operation is O(n) as it requires creating and copying contents of Swift array.
+    /// This operation is O(n) as it requires allocating a new ``TypedArray`` and copying contents of Swift ``Sequence``.
     public init<S>(_ sequence: S) where S: Sequence, S.Element == Element {
         self.init(Element.self)
         
