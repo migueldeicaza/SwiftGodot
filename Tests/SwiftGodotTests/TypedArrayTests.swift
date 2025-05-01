@@ -58,6 +58,22 @@ final class TypedArrayTests: GodotTestCase {
         XCTAssert(typed.array != anotherTyped.array)
     }
     
+    func testSequenceInitializer() {
+        let sequence = [1, 2, 3, 4]
+                
+        let typedArray = TypedArray(sequence)
+        XCTAssertEqual(typedArray[2], 3)
+        XCTAssertEqual(typedArray[3], 4)
+        
+        let dictionary = [
+            "Hello": 2,
+            "World": 3
+        ]
+        let anotherTypedArray = TypedArray(dictionary.keys)
+        XCTAssertTrue(anotherTypedArray.contains { $0 == "Hello" })
+        XCTAssertTrue(anotherTypedArray.contains { $0 == "World" })
+    }
+    
 }
 
 private extension VariantArray {
