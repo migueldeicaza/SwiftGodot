@@ -3,25 +3,17 @@
         print ("Error: Not all parameters were initialized.")
         return 0
     }
-    var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
-    types[.core] = [].topologicallySorted()
-    types[.editor] = [].topologicallySorted()
-    types[.scene] = [].topologicallySorted()
-    types[.servers] = [].topologicallySorted()
-
+    let types: [GDExtension.InitializationLevel: [Object.Type]]
+    do {
+        types = try [ChrysalisNode.self, CaterpillarNode.self, ButterflyNode.self].prepareForRegistration()
+    } catch {
+        GD.printErr("Error during GDExtension initialization: \(error)")
+        return 0
+    }
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
-        if level == .scene {
-
-        } else if level == .editor {
-            if false {
-                EditorInterop.loadLibraryDocs()
-            }
-        }
-
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)
-
     })
     return 1
-}
+}            

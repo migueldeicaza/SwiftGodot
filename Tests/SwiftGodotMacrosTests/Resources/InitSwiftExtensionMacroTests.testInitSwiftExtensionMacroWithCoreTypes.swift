@@ -1,4 +1,4 @@
-@_cdecl("libchrysalis_entry_point") public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
+@_cdecl("libchrysalis_entry_point") public func enterExtension(interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
     guard let library, let interface, let `extension` else {
         print ("Error: Not all parameters were initialized.")
         return 0
