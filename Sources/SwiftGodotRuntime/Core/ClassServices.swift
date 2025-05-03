@@ -330,8 +330,8 @@ func bind_call_ptr () {
 
 /// Error indicating that a ``earlyChild`` is registered before ``lateParent`` due to ``classInitializationLevel`` requirement, despite ``lateParent`` is a super class of ``earlyChild``
 public struct IncorrectInitializationOrderError: Error {
-    public let earlyChild: Object.Type
-    public let lateParent: Object.Type
+    public let earlyChild: String
+    public let lateParent: String
 }
 
 extension [Object.Type] {
@@ -339,7 +339,7 @@ extension [Object.Type] {
     /// Classes depending on others will be strictly later in the sequence.
     /// Duplicating entries will be removed.    
     public func topologicallySorted(
-        onIncorrectInitializationOrder: (Object.Type, Object.Type) throws -> Void
+        onIncorrectInitializationOrder: (String, String) throws -> Void
     ) rethrows -> [Object.Type] {
         guard !isEmpty else {
             return []
@@ -358,6 +358,7 @@ extension [Object.Type] {
         }
         
         var remaining = Set(idToType.keys)
+        let knownTypeIds = remaining
         var pending = [ObjectIdentifier]()
         var sorted = [ObjectIdentifier]()
         
@@ -369,12 +370,14 @@ extension [Object.Type] {
                         fatalError("Unreachable")
                     }
                     
-                    if superType.classInitializationLevel.rawValue > type.classInitializationLevel.rawValue {
-                        // Super type is registered later than the child
-                        try onIncorrectInitializationOrder(type, superType)
-                    }
-                    
                     let superTypeId = id(of: superType)
+                    
+                    if knownTypeIds.contains(superTypeId) // unknown types (such as framework ones) are considered as registered
+                        && superType.classInitializationLevel.rawValue > type.classInitializationLevel.rawValue {
+                        // Super type is registered later than the child
+                        try onIncorrectInitializationOrder("\(type)", "\(superType)")
+                    }
+                                        
                     if !remaining.contains(superTypeId) {
                         pending.append(typeId)
                     }
