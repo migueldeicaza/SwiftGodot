@@ -1,3 +1,4 @@
+
 final class MyData: Resource {
 
     override public class var classInitializer: Void {
@@ -7,31 +8,34 @@ final class MyData: Resource {
 
     private static let _initializeClass: Void = {
         let className = StringName("MyData")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
     }()
 }
 final class MyClass: Node {
     var data: MyData = .init()
 
-    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for data: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "data", object.data) {
+        SwiftGodot._invokeSetter(arguments, "data", object.data) {
             object.data = $0
         }
         return nil
     }
 
-    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.data)
+        return SwiftGodot._invokeGetter(object.data)
     }
 
     override public class var classInitializer: Void {
@@ -41,10 +45,13 @@ final class MyClass: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("MyClass")
-        assert(ClassDB.classExists(class: className))
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \MyClass.data,
                 name: "data",
                 userHint: nil,

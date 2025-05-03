@@ -1,25 +1,25 @@
 class Hi: Node {
     var goodName: String = "Supertop"
 
-    static func _mproxy_set_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for goodName: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for goodName: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "goodName", object.goodName) {
+        SwiftGodot._invokeSetter(arguments, "goodName", object.goodName) {
             object.goodName = $0
         }
         return nil
     }
 
-    static func _mproxy_get_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_goodName(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for goodName: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.goodName)
+        return SwiftGodot._invokeGetter(object.goodName)
     }
 
     override open class var classInitializer: Void {
@@ -29,10 +29,13 @@ class Hi: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
-        assert(ClassDB.classExists(class: className))
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Hi.goodName,
                 name: "good_name",
                 userHint: nil,

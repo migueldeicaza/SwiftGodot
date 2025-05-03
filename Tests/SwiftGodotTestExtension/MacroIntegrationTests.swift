@@ -125,6 +125,8 @@ final class MacroIntegrationTests {
         XCTAssertEqual(types[.scene]?.count, 1)
         XCTAssertEqual(types[.editor]?.count, 2)
         
+        XCTAssertEqual(minimumInitializationLevel(for: types), .core)
+        
         class E: Object {
             override class var classInitializationLevel: GDExtension.InitializationLevel {
                 .scene
@@ -138,10 +140,23 @@ final class MacroIntegrationTests {
         }
         
         do {
-            let types = try [E.self, F.self].prepareForRegistration()
+            types = try [E.self, F.self].prepareForRegistration()
             XCTFail()
         } catch {
             // expected error
+        }
+        
+        XCTAssertEqual(minimumInitializationLevel(for: [:]), .editor)
+        
+        class G: Object {
+        }
+                
+        do {
+            types = try [G.self].prepareForRegistration()
+            XCTAssertEqual(minimumInitializationLevel(for: types), .scene)
+        } catch {
+            XCTFail("\(error)")
+            return
         }
     }
 }

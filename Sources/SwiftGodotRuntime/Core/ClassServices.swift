@@ -429,3 +429,16 @@ extension [Object.Type] {
         return result
     }
 }
+
+public func minimumInitializationLevel(for registration: [GDExtension.InitializationLevel: [Object.Type]]) -> GDExtension.InitializationLevel {
+    let nonEmptyLevels = registration.keys.filter { key in
+        registration[key]?.isEmpty == false
+    }
+    
+    let minOrNil = nonEmptyLevels.min { lhs, rhs in
+        lhs.rawValue < rhs.rawValue
+    }
+    
+    return minOrNil ?? .editor // .editor is max
+}
+    

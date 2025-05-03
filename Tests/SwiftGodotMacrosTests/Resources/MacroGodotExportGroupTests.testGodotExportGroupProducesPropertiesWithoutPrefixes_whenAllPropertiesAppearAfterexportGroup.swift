@@ -1,47 +1,48 @@
+
 class Car: Node {
     var vin: String = "00000000000000000"
 
-    static func _mproxy_set_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for vin: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for vin: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "vin", object.vin) {
+        SwiftGodot._invokeSetter(arguments, "vin", object.vin) {
             object.vin = $0
         }
         return nil
     }
 
-    static func _mproxy_get_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_vin(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for vin: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for vin: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.vin)
+        return SwiftGodot._invokeGetter(object.vin)
     }
     var year: Int = 1997
 
-    static func _mproxy_set_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for year: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for year: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "year", object.year) {
+        SwiftGodot._invokeSetter(arguments, "year", object.year) {
             object.year = $0
         }
         return nil
     }
 
-    static func _mproxy_get_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_year(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for year: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for year: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.year)
+        return SwiftGodot._invokeGetter(object.year)
     }
 
     override open class var classInitializer: Void {
@@ -51,10 +52,13 @@ class Car: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("Car")
-        assert(ClassDB.classExists(class: className))
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Car.vin,
                 name: "vin",
                 userHint: nil,
@@ -66,9 +70,9 @@ class Car: Node {
             getterFunction: Car._mproxy_get_vin,
             setterFunction: Car._mproxy_set_vin
         )
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Car.year,
                 name: "year",
                 userHint: nil,
@@ -80,6 +84,6 @@ class Car: Node {
             getterFunction: Car._mproxy_get_year,
             setterFunction: Car._mproxy_set_year
         )
-        SwiftGodotRuntime._addPropertyGroup(className: className, name: "Pointless", prefix: "")
+        SwiftGodot._addPropertyGroup(className: className, name: "Pointless", prefix: "")
     }()
 }

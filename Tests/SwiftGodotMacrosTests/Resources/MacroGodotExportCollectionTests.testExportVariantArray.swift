@@ -1,25 +1,26 @@
+
 class SomeNode: Node {
     var someArray: VariantArray = VariantArray()
 
-    static func _mproxy_set_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for someArray: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for someArray: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "someArray", object.someArray) {
+        SwiftGodot._invokeSetter(arguments, "someArray", object.someArray) {
             object.someArray = $0
         }
         return nil
     }
 
-    static func _mproxy_get_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_someArray(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for someArray: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for someArray: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.someArray)
+        return SwiftGodot._invokeGetter(object.someArray)
     }
 
     override open class var classInitializer: Void {
@@ -29,10 +30,13 @@ class SomeNode: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("SomeNode")
-        assert(ClassDB.classExists(class: className))
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \SomeNode.someArray,
                 name: "some_array",
                 userHint: nil,

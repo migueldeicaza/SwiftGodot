@@ -11,23 +11,26 @@ class Hi: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
-        assert(ClassDB.classExists(class: className))
-        SwiftGodotRuntime._registerSignal(
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
+        SwiftGodot._registerSignal(
             Hi.pickedUpItem.name,
             in: className,
             arguments: Hi.pickedUpItem.arguments
         )
-        SwiftGodotRuntime._registerSignal(
+        SwiftGodot._registerSignal(
             Hi.scored.name,
             in: className,
             arguments: Hi.scored.arguments
         )
-        SwiftGodotRuntime._registerSignal(
+        SwiftGodot._registerSignal(
             Hi.differentInit.name,
             in: className,
             arguments: Hi.differentInit.arguments
         )
-        SwiftGodotRuntime._registerSignal(
+        SwiftGodot._registerSignal(
             Hi.differentInit2.name,
             in: className,
             arguments: Hi.differentInit2.arguments

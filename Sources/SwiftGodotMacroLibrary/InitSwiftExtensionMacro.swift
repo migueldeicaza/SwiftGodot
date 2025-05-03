@@ -54,6 +54,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 print ("Error: Not all parameters were initialized.")
                 return 0
             }
+            
             """)
 
             if let types = node.arguments.first(where: { $0.label?.text == "types" })?.expression.trimmedDescription {
@@ -96,7 +97,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
             }, deInitHook: { level in
                 types[level]?.reversed().forEach(unregister)
                 \(hookDeinit)
-            })
+            }, minimumInitializationLevel: minimumInitializationLevel(for: types))
             return 1
             """)
         }

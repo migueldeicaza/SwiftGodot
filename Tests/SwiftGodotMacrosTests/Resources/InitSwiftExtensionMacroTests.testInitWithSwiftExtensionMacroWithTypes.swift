@@ -3,6 +3,7 @@
         print ("Error: Not all parameters were initialized.")
         return 0
     }
+
     let types: [GDExtension.InitializationLevel: [Object.Type]]
     do {
         types = try [ChrysalisNode.self, CaterpillarNode.self, ButterflyNode.self].prepareForRegistration()
@@ -14,6 +15,6 @@
         types[level]?.forEach(register)
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)
-    })
+    }, minimumInitializationLevel: minimumInitializationLevel(for: types))
     return 1
 }            

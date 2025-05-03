@@ -8,7 +8,10 @@ class Hi: Control {
 
     private static let _initializeClass: Void = {
         let className = StringName("Hi")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
     }()
 
     override open class func implementedOverrides () -> [StringName] {

@@ -1,179 +1,180 @@
+
 class Garage: Node {
     var name: String = ""
 
-    static func _mproxy_set_name(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_name(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for name: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for name: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "name", object.name) {
+        SwiftGodot._invokeSetter(arguments, "name", object.name) {
             object.name = $0
         }
         return nil
     }
 
-    static func _mproxy_get_name(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_name(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for name: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for name: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.name)
+        return SwiftGodot._invokeGetter(object.name)
     }
     var rating: Float = 0.0
 
-    static func _mproxy_set_rating(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_rating(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for rating: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for rating: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "rating", object.rating) {
+        SwiftGodot._invokeSetter(arguments, "rating", object.rating) {
             object.rating = $0
         }
         return nil
     }
 
-    static func _mproxy_get_rating(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_rating(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for rating: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for rating: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.rating)
+        return SwiftGodot._invokeGetter(object.rating)
     }
     var reviews: TypedArray<String> = []
 
-    static func _mproxy_set_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for reviews: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for reviews: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "reviews", object.reviews) {
+        SwiftGodot._invokeSetter(arguments, "reviews", object.reviews) {
             object.reviews = $0
         }
         return nil
     }
 
-    static func _mproxy_get_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_reviews(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for reviews: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for reviews: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.reviews)
+        return SwiftGodot._invokeGetter(object.reviews)
     }
     var checkIns: TypedArray<CheckIn> = []
 
-    static func _mproxy_set_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for checkIns: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for checkIns: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "checkIns", object.checkIns) {
+        SwiftGodot._invokeSetter(arguments, "checkIns", object.checkIns) {
             object.checkIns = $0
         }
         return nil
     }
 
-    static func _mproxy_get_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_checkIns(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for checkIns: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for checkIns: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.checkIns)
+        return SwiftGodot._invokeGetter(object.checkIns)
     }
     var address: String = ""
 
-    static func _mproxy_set_address(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_address(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for address: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for address: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "address", object.address) {
+        SwiftGodot._invokeSetter(arguments, "address", object.address) {
             object.address = $0
         }
         return nil
     }
 
-    static func _mproxy_get_address(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_address(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for address: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for address: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.address)
+        return SwiftGodot._invokeGetter(object.address)
     }
     var daysOfOperation: TypedArray<String> = []
 
-    static func _mproxy_set_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for daysOfOperation: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for daysOfOperation: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "daysOfOperation", object.daysOfOperation) {
+        SwiftGodot._invokeSetter(arguments, "daysOfOperation", object.daysOfOperation) {
             object.daysOfOperation = $0
         }
         return nil
     }
 
-    static func _mproxy_get_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_daysOfOperation(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for daysOfOperation: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for daysOfOperation: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.daysOfOperation)
+        return SwiftGodot._invokeGetter(object.daysOfOperation)
     }
     var hours: TypedArray<String> = []
 
-    static func _mproxy_set_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for hours: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for hours: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "hours", object.hours) {
+        SwiftGodot._invokeSetter(arguments, "hours", object.hours) {
             object.hours = $0
         }
         return nil
     }
 
-    static func _mproxy_get_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_hours(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for hours: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for hours: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.hours)
+        return SwiftGodot._invokeGetter(object.hours)
     }
     var insuranceProvidersAccepted: TypedArray<InsuranceProvider> = []
 
-    static func _mproxy_set_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling setter for insuranceProvidersAccepted: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling setter for insuranceProvidersAccepted: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodotRuntime._invokeSetter(arguments, "insuranceProvidersAccepted", object.insuranceProvidersAccepted) {
+        SwiftGodot._invokeSetter(arguments, "insuranceProvidersAccepted", object.insuranceProvidersAccepted) {
             object.insuranceProvidersAccepted = $0
         }
         return nil
     }
 
-    static func _mproxy_get_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_insuranceProvidersAccepted(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodotRuntime.GD.printErr("Error calling getter for insuranceProvidersAccepted: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodot.GD.printErr("Error calling getter for insuranceProvidersAccepted: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodotRuntime._invokeGetter(object.insuranceProvidersAccepted)
+        return SwiftGodot._invokeGetter(object.insuranceProvidersAccepted)
     }
 
     override open class var classInitializer: Void {
@@ -183,11 +184,14 @@ class Garage: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("Garage")
-        assert(ClassDB.classExists(class: className))
-        SwiftGodotRuntime._addPropertyGroup(className: className, name: "Front Page", prefix: "")
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
+        SwiftGodot._addPropertyGroup(className: className, name: "Front Page", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.name,
                 name: "name",
                 userHint: nil,
@@ -199,9 +203,9 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_name,
             setterFunction: Garage._mproxy_set_name
         )
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.rating,
                 name: "rating",
                 userHint: nil,
@@ -213,10 +217,10 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_rating,
             setterFunction: Garage._mproxy_set_rating
         )
-        SwiftGodotRuntime._addPropertyGroup(className: className, name: "More Details", prefix: "")
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._addPropertyGroup(className: className, name: "More Details", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.reviews,
                 name: "reviews",
                 userHint: nil,
@@ -228,9 +232,9 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_reviews,
             setterFunction: Garage._mproxy_set_reviews
         )
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.checkIns,
                 name: "check_ins",
                 userHint: nil,
@@ -242,9 +246,9 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_checkIns,
             setterFunction: Garage._mproxy_set_checkIns
         )
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.address,
                 name: "address",
                 userHint: nil,
@@ -256,10 +260,10 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_address,
             setterFunction: Garage._mproxy_set_address
         )
-        SwiftGodotRuntime._addPropertyGroup(className: className, name: "Hours and Insurance", prefix: "")
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._addPropertyGroup(className: className, name: "Hours and Insurance", prefix: "")
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.daysOfOperation,
                 name: "days_of_operation",
                 userHint: nil,
@@ -271,9 +275,9 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_daysOfOperation,
             setterFunction: Garage._mproxy_set_daysOfOperation
         )
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.hours,
                 name: "hours",
                 userHint: nil,
@@ -285,9 +289,9 @@ class Garage: Node {
             getterFunction: Garage._mproxy_get_hours,
             setterFunction: Garage._mproxy_set_hours
         )
-        SwiftGodotRuntime._registerPropertyWithGetterSetter(
+        SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodotRuntime._propInfo(
+            info: SwiftGodot._propInfo(
                 at: \Garage.insuranceProvidersAccepted,
                 name: "insurance_providers_accepted",
                 userHint: nil,
