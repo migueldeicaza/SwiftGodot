@@ -1,4 +1,4 @@
-@Tutorials(name: "SwiftGodot Tutorials") {
+@Tutorials(name: "SwiftGodot") {
     @Intro(title: "Meet SwiftGodot") {
         SwiftGodot allows developers to take new and existing Swift packages and use them as extensions for the Godot game engine.
         
