@@ -5,13 +5,17 @@
 //  Created by Miguel de Icaza on 4/7/23.
 //
 
-extension PackedStringArray {
+extension PackedStringArray : ExpressibleByArrayLiteral {
     /// Initializes a ``PackedStringArray`` from an array of strings
     public convenience init (_ values: [String]) {
         self.init ()
         for x in values {
             append(x)
         }
+    }
+    
+    public convenience init (arrayLiteral values: String...) {
+        self.init(values)
     }
     
     /// Accesses a specific element in the ``PackedStringArray``
@@ -30,7 +34,7 @@ extension PackedStringArray {
     }
 }
 
-extension PackedByteArray {
+extension PackedByteArray : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedByteArray``
     public subscript (index: Int) -> UInt8 {
         get {
@@ -113,13 +117,17 @@ extension PackedByteArray {
         }
     }
     
+    public convenience init (arrayLiteral values: UInt8...) {
+        self.init(values)
+    }
+    
     /// Appends an element at the end of the array
     public func append(_ value: UInt8) {
         append(value: Int64(value))
     }
 }
 
-extension PackedColorArray {
+extension PackedColorArray : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedColorArray``
     public subscript (index: Int) -> Color {
         get {
@@ -149,9 +157,13 @@ extension PackedColorArray {
             }
         }
     }
+    
+    public convenience init (arrayLiteral values: Color...) {
+        self.init(values)
+    }
 }
 
-extension PackedFloat32Array {
+extension PackedFloat32Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedFloat32Array``
     public subscript (index: Int) -> Float {
         get {
@@ -178,13 +190,17 @@ extension PackedFloat32Array {
         }
     }
     
+    public convenience init (arrayLiteral values: Float...) {
+        self.init(values)
+    }
+    
     /// Appends an element at the end of the array
     public func append(_ value: Float) {
         append (value: Double (value))
     }
 }
 
-extension PackedFloat64Array {
+extension PackedFloat64Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedFloat64Array``
     public subscript (index: Int) -> Double {
         get {
@@ -211,13 +227,17 @@ extension PackedFloat64Array {
         }
     }
     
+    public convenience init (arrayLiteral values: Double...) {
+        self.init(values)
+    }
+    
     @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
     public func append(value: Double) {
         append(value)
     }
 }
 
-extension PackedInt32Array {
+extension PackedInt32Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedInt32Array``
     public subscript (index: Int) -> Int32 {
         get {
@@ -243,6 +263,10 @@ extension PackedInt32Array {
             }
         }
     }
+    
+    public convenience init (arrayLiteral values: Int32...) {
+        self.init(values)
+    }
 
     /// Appends an element at the end of the array
     public func append(_ value: Int32) {
@@ -250,7 +274,7 @@ extension PackedInt32Array {
     }
 }
 
-extension PackedInt64Array {
+extension PackedInt64Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedInt64Array``
     public subscript (index: Int) -> Int64 {
         get {
@@ -276,6 +300,10 @@ extension PackedInt64Array {
             }
         }
     }
+    
+    public convenience init (arrayLiteral values: Int64...) {
+        self.init(values)
+    }
 
     @available(*, deprecated, renamed: "append(_:)", message: "This method signature has been deprecated in favor of append(_:)")
     public func append(value: Int64) {
@@ -283,7 +311,7 @@ extension PackedInt64Array {
     }
 }
 
-extension PackedVector2Array {
+extension PackedVector2Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector2Array``
     public subscript (index: Int) -> Vector2 {
         get {
@@ -313,9 +341,13 @@ extension PackedVector2Array {
             }
         }
     }
+    
+    public convenience init (arrayLiteral values: Vector2...) {
+        self.init(values)
+    }
 }
 
-extension PackedVector3Array {
+extension PackedVector3Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector3Array``
     public subscript (index: Int) -> Vector3 {
         get {
@@ -345,9 +377,13 @@ extension PackedVector3Array {
             }
         }
     }
+    
+    public convenience init (arrayLiteral values: Vector3...) {
+        self.init(values)
+    }
 }
 
-extension PackedVector4Array {
+extension PackedVector4Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector3Array``
     public subscript (index: Int) -> Vector4 {
         get {
@@ -372,5 +408,9 @@ extension PackedVector4Array {
                 }
             }
         }
+    }
+    
+    public convenience init (arrayLiteral values: Vector4...) {
+        self.init(values)
     }
 }
