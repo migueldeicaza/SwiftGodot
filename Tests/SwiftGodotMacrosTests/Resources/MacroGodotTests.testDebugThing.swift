@@ -32,7 +32,10 @@ class DebugThing: SwiftGodot.Object {
 
     private static let _initializeClass: Void = {
         let className = StringName("DebugThing")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SignalWithArguments<Swift.Int>.register(as: "lives_changed", in: className)
         SwiftGodot._registerMethod(
             className: className,
