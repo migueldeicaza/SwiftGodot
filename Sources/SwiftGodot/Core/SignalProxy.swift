@@ -22,11 +22,14 @@ public class SignalProxy: Object {
     public static var proxyName = StringName("proxy")
 
     public static func initClass() {
-        register(type: SignalProxy.self)
-
-        let s = ClassInfo<SignalProxy>(name: "SignalProxy")
-
-        s.registerMethod(name: SignalProxy.proxyName, flags: .default, returnValue: nil, arguments: [], function: SignalProxy.proxyFunc)
+        let name = StringName("SignalProxy")
+        if gi.classdb_get_class_tag(&name.content) == nil {
+            register(type: SignalProxy.self)
+            
+            let s = ClassInfo<SignalProxy>(name: "SignalProxy")
+            
+            s.registerMethod(name: SignalProxy.proxyName, flags: .default, returnValue: nil, arguments: [], function: SignalProxy.proxyFunc)
+        }
     }
     
     /// The code invoked when Godot invokes the `proxy` method on this object.
