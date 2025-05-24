@@ -52,7 +52,10 @@ class Car: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("Car")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SwiftGodot._addPropertyGroup(className: className, name: "Vehicle", prefix: "")
         SwiftGodot._registerPropertyWithGetterSetter(
             className: className,
