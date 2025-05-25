@@ -31,6 +31,5 @@ class PlayerController: CharacterBody2D {
             velocity = velocity.moveToward(to: .zero, delta: friction)
         }
         self.moveAndSlide()
-        super._physicsProcess(delta: delta)
     }
 }

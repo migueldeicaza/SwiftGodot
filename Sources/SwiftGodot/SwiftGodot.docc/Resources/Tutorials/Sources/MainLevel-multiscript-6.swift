@@ -19,8 +19,6 @@ class MainLevel: Node2D {
                 teleportPlayerToTop()
             }
         }
-
-        super._ready()
     }
 
     private func teleportPlayerToTop() {
