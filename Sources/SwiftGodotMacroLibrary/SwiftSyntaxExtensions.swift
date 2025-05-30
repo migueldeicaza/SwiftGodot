@@ -110,7 +110,11 @@ extension AttributeSyntax {
     var callableAutoSnakeCaseArgument: Bool {
         get throws {
             guard let exprSyntax = arguments?.argument(labeled: "autoSnakeCase") else {
+                #if TRAIT_USE_CAMEL_CASE_FOR_CALLABLE
                 return false
+                #else
+                return true
+                #endif
             }
             
             let expr = exprSyntax.expression.trimmedDescription

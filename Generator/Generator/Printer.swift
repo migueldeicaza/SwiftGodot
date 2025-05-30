@@ -85,11 +85,15 @@ class Printer {
             visibility = "\(visibility) "
         }
         
-        if noStaticCaches || !isStored {
+        #if TRAIT_NO_STATIC_CACHES
+        b("\(visibility)static var \(name): \(type)", suffix: "", block: block)
+        #else
+        if !isStored {
             b("\(visibility)static var \(name): \(type)", suffix: "", block: block)
         } else {
             b("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)
         }
+        #endif
     }
 
     // Prints a block, automatically indents the code in the closure
