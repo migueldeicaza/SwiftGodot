@@ -606,9 +606,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             public override required init(_ context: InitContext) {
                 super.init(context)
             
-                if context.origin == .swift {
-                    _ = initRef()
-                }                
+                _ = initRef()             
             }
             """)
         }
