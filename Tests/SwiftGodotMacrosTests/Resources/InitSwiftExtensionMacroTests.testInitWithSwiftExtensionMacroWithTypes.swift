@@ -4,15 +4,17 @@
         return 0
     }
 
-    var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
-    types[.core] = [EggNode.self].topologicallySorted()
-    types[.editor] = [CaterpillarNode.self].topologicallySorted()
-    types[.scene] = [ChrysalisNode.self].topologicallySorted()
-    types[.servers] = [ButterflyNode.self].topologicallySorted()
+    let types: [GDExtension.InitializationLevel: [Object.Type]]
+    do {
+        types = try [ChrysalisNode.self, CaterpillarNode.self, ButterflyNode.self].prepareForRegistration()
+    } catch {
+        GD.printErr("Error during GDExtension initialization: \(error)")
+        return 0
+    }
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)
     }, minimumInitializationLevel: minimumInitializationLevel(for: types))
     return 1
-}
+}            
