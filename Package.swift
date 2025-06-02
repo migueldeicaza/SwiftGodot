@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.1
 
 import CompilerPluginSupport
 import PackageDescription
@@ -88,9 +88,8 @@ var targets: [Target] = [
         path: "Generator",
         exclude: ["README.md"],
         swiftSettings: [
-            .swiftLanguageMode(.v5)
-            // Uncomment for using legacy array-based marshalling
-            //.define("LEGACY_MARSHALING")
+            .swiftLanguageMode(.v5),
+            .define("TRAIT_NO_STATIC_CACHES", .when(traits: ["NoStaticCaches"])),
         ]
     ),
 
@@ -127,7 +126,10 @@ var targets: [Target] = [
             .product(name: "SwiftSyntax", package: "swift-syntax"),
             .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
         ],
-        swiftSettings: [.swiftLanguageMode(.v5)]
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("TRAIT_USE_CAMEL_CASE_FOR_CALLABLE", .when(traits: ["UseCamelCaseForCallable"]))
+        ]
     ),
     // This contains sample code showing how to use the SwiftGodot API
     .target(
@@ -156,6 +158,7 @@ var targets: [Target] = [
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+            .define("TRAIT_USE_CAMEL_CASE_FOR_CALLABLE", .when(traits: ["UseCamelCaseForCallable"])),
             .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
@@ -263,10 +266,15 @@ let package = Package(
         .iOS (.v17)
     ],
     products: products,
+    traits: [
+        .trait(name: "NoStaticCaches", description: "Disable caching reusable GDE interface pointers and instances"),
+        .trait(name: "UseCamelCaseForCallable", description: "If used, @Callable macro will export unction named `as is` instead of converting it to `snake_case` (legacy behavior)"),
+        .default(enabledTraits: [])
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "600.0.1"),
     ],
-    targets: targets
+    targets: targets,
 )
