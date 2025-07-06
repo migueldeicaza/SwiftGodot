@@ -106,7 +106,7 @@ class Castro: Node {
         assert(ClassDB.classExists(class: className))
         SwiftGodot._registerMethod(
             className: className,
-            name: "deleteEpisode",
+            name: "delete_episode",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -126,7 +126,7 @@ class Castro: Node {
         )
         SwiftGodot._registerMethod(
             className: className,
-            name: "perhapsSubscribe",
+            name: "perhaps_subscribe",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -136,7 +136,7 @@ class Castro: Node {
         )
         SwiftGodot._registerMethod(
             className: className,
-            name: "removeSilences",
+            name: "remove_silences",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -146,7 +146,7 @@ class Castro: Node {
         )
         SwiftGodot._registerMethod(
             className: className,
-            name: "getLatestEpisode",
+            name: "get_latest_episode",
             flags: .default,
             returnValue: SwiftGodot._returnValuePropInfo(Episode.self),
             arguments: [
