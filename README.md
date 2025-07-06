@@ -180,9 +180,9 @@ import SwiftGodot
 #initSwiftExtension(cdecl: "swift_entry_point", types: [SpinningCube.self])
 ```
 
-Also, you can use `EntryPointGeneratorPlugin` that will scan the target source files and generate entry point called `swift_entry_point` with `types` array mentioning all classes with `@Godot` macro attached. All you need is to add `plugins` entry in your `Package.swift` as below: 
+Also, you can use `EntryPointGeneratorPlugin` that will scan the target source files and generate an entry point called `swift_entry_point` with `types` array mentioning all classes with `@Godot` macro attached. All you need is to add `plugins` entry in your `Package.swift` as below: 
 
-```
+```swift
 let package = Package(
     name: "MyFirstGame",
     products: [
@@ -240,7 +240,7 @@ android.release.arm64 = "res://bin/MyFirstGame"
 
 In the example above, the extension always expects the 
 platform specific payload to be called "MyFirstGame", 
-regarless of the platform.   If you want to distribute
+regardless of the platform.   If you want to distribute
 your extension to other users and have a single payload,
 you will need to manually set different names for those.
 
