@@ -186,7 +186,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         hasher.combine(hash())
     }
     
-    public static func ==(lhs: Self, rhs: Self) {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.array == rhs.array
     }
     

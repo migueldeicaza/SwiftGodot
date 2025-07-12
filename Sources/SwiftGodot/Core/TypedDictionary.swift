@@ -86,7 +86,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         self.init()
         
         for (key, value) in elements {
-            set(key: key, value: value)
+            _ = set(key: key, value: value)
         }
     }
     
@@ -117,7 +117,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         self.init()
         
         for (key, value) in dictionary {
-            set(key: key, value: value)
+            _ = set(key: key, value: value)
         }
     }
             
@@ -139,7 +139,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         
         set {
             if newValue == nil {
-                dictionary.erase(fastKey: key.toFastVariant())
+                _ = dictionary.erase(fastKey: key.toFastVariant())
             } else {
                 dictionary[key] = newValue.toFastVariant()
             }

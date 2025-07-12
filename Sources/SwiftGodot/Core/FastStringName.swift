@@ -27,7 +27,7 @@ public struct FastStringName: ~Copyable {
     
     var description: String {
         switch source {
-        case .staticString(let staticString, let isStatic):
+        case .staticString(let staticString, _):
             return staticString.description
         case .string(let string):
             return string
