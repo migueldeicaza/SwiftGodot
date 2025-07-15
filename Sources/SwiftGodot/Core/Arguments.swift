@@ -81,7 +81,7 @@ public struct Arguments: ~Copyable {
                     let result: Result<T, ArgumentAccessError>
                     
                     if let ptr = pargs[index] {
-                        var fastVariant = FastVariant(
+                        let fastVariant = FastVariant(
                             unsafelyBorrowing: ptr
                                 .assumingMemoryBound(to: VariantContent.self)
                                 .pointee

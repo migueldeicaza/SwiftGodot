@@ -258,7 +258,7 @@ public extension _GodotBridgeableBuiltin {
     typealias _NonOptionalType = Self
     
     /// Internal API. Required for cases where Godot expects an empty `StringName` for builtin types and actual class name for `.object`-types.
-    public static var _className: StringName {
+    static var _className: StringName {
         StringName("")
     }
     
@@ -312,7 +312,7 @@ public extension _GodotBridgeableBuiltin {
 }
 
 public extension _GodotBridgeable where Self: Object {
-    public typealias TypedArrayElement = Self?
+    typealias TypedArrayElement = Self?
     
     /// Internal API. Default implementation.
     @inline(__always)
