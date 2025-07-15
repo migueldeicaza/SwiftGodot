@@ -163,7 +163,7 @@ private func call_func(
         finfo.function(classInstance, arguments)
     }
 
-    if let returnValue, var ret {
+    if let returnValue, let ret {
         // If returnValue is not nil and `retType` is ".nil", then it means we are expecting a `Variant` and don't care
         // which types are stored in it.
         // See https://github.com/godotengine/godot/issues/67544#issuecomment-1382229216

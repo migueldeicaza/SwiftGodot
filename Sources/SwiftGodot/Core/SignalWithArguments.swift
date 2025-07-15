@@ -61,7 +61,7 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
     @discardableResult
     public func connect(flags: Object.ConnectFlags = [], _ callback: @escaping (_ t: repeat each T) -> Void) -> Callable {
         let callable = Callable(callback)
-        let error = target?.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
+        _ = target?.connect(signal: signalName, callable: callable, flags: UInt32(flags.rawValue))
         return callable
     }
 

@@ -107,7 +107,7 @@ extension VariantArray: CustomDebugStringConvertible {
         }
         
         let ptr = ret.assumingMemoryBound(to: VariantContent.self)
-        var variant = FastVariant(unsafelyBorrowing: ptr.pointee)
+        let variant = FastVariant(unsafelyBorrowing: ptr.pointee)
         
         let result = body(variant)
         
