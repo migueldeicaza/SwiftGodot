@@ -263,7 +263,9 @@ is a Node3D subclass.
 
 ## Community
 
-Join the community on [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-2aqygohvb-stSRGEAN~c3awuMwtaqCAA)
+Join the community on [Discord](https://discord.gg/bHAsTYaCZM)
+
+The old community is still around, but it clears the history in [Slack](https://join.slack.com/t/swiftongodot/shared_invite/zt-2aqygohvb-stSRGEAN~c3awuMwtaqCAA).
 
 ## Contributing
 
