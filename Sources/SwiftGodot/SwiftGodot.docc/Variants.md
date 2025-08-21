@@ -151,7 +151,7 @@ The following are some examples of how to work with Variants in practice, and
 some idioms suitable to be used with Swift.
 
 In the following example, imagine that an API returns a Variant value that
-contains a dictionary with string keys and values are ``PackedArrayInt32``, this
+contains a dictionary with string keys and values are ``PackedInt32Array``, this
 is how you would decode this:
 
 ```swift
@@ -164,8 +164,8 @@ func decode (variant: Variant) -> [String: [Int32]]? {
     }
     var result = [String: [Int32]] ()
     for (key, value) in dict {
-        guard let packedArray = PackedArrayInt32 (value) else {
-            // If the `value` in the dictionary is not of type `PackedArrayInt32`, we ski it
+        guard let packedArray = PackedInt32Array (value) else {
+            // If the `value` in the dictionary is not of type `PackedInt32Array`, we skip it
             continue
         }
         result [key] = packedArray
@@ -176,7 +176,7 @@ func decode (variant: Variant) -> [String: [Int32]]? {
 
 The above shows a defensive style of programming, where we prepare for the 
 possibility that we do not receive a dictionary, or the values in the dictionary
-are not of type ``PackedArrayInt32``.
+are not of type ``PackedInt32Array``.
 
 The following examples shows how to encode an array that contains
 paris of file names and sizes into a Godot ``VariantArray`` with
@@ -285,7 +285,7 @@ call method on an Object.
 For example, you can invoke this generic "size" method on an array to get the
 size of an array, regardless of the specific type of array:
 
-```
+```swift
 func printSize (myArray: Variant) {
     switch variant.call(method: "size") {
     case .failure(let err):
