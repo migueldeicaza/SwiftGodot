@@ -285,7 +285,7 @@ call method on an Object.
 For example, you can invoke this generic "size" method on an array to get the
 size of an array, regardless of the specific type of array:
 
-```
+```swift
 func printSize (myArray: Variant) {
     switch variant.call(method: "size") {
     case .failure(let err):
