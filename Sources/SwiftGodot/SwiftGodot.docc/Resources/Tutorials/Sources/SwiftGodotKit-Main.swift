@@ -46,7 +46,7 @@ class SpinningCube: Node3D {
     }
 }
 
-func registerTypes (level: GDExtension.InitializationLevel) {
+func registerTypes (level: GodotInitializationLevel) {
     switch level {
     case .scene:
         register (type: SpinningCube.self)

@@ -8,6 +8,44 @@
 import Foundation
 import ExtensionApi
 
+enum ClassTrait {
+    case core
+    case medium
+    case full
+}
+
+var traitByClassName: [String: ClassTrait] = [:]
+
+func trait(for className: String) -> ClassTrait {
+    traitByClassName[className] ?? .full
+}
+
+func guardMacro(for className: String) -> String {
+    macroName(for: trait(for: className))
+}
+
+func macroName(for trait: ClassTrait) -> String {
+    switch trait {
+    case .core:
+        return "SWIFT_GODOT_TRAIT_CORE"
+    case .medium:
+        return "SWIFT_GODOT_TRAIT_MEDIUM"
+    case .full:
+        return "SWIFT_GODOT_TRAIT_FULL"
+    }
+}
+
+func traitPriority(_ trait: ClassTrait) -> Int {
+    switch trait {
+    case .core:
+        return 0
+    case .medium:
+        return 1
+    case .full:
+        return 2
+    }
+}
+
 func makeDefaultInit (godotType: String, initCollection: String = "") -> String {
     switch godotType {
     case "Variant":
@@ -558,6 +596,8 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     
     // Clear the result
     let p = await PrinterFactory.shared.initPrinter(cdef.name, withPreamble: true)
+    let guardDirective = guardMacro(for: cdef.name)
+    p("#if \(guardDirective)")
     
     // Save it
     defer {
@@ -736,15 +776,22 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             }
         }
     }
+
+    p("#endif // \(guardDirective)")
 }
 
 extension Generator {
     func generateCtorPointers (_ p: Printer) {
-        p ("var godotFrameworkCtors = [")
-        for x in classMap.keys.sorted() {
-            p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
+        p("var godotFrameworkCtors: [String: Wrapped.Type] =", suffix: "()") {
+            p("var result: [String: Wrapped.Type] = [:]")
+            for className in classMap.keys.sorted() {
+                let guardDirective = guardMacro(for: className)
+                p("#if \(guardDirective)")
+                p("result[\"\(className)\"] = \(className).self")
+                p("#endif")
+            }
+            p("return result")
         }
-        p ("]")
     }
     
     /// Variant itself is manally implemented, so we vary our `staticProperty` behavior here

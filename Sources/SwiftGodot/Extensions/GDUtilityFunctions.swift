@@ -5,6 +5,8 @@
 //  Created by Marquis Kurt on 5/16/23.
 //
 
+#if SWIFT_GODOT_TRAIT_MEDIUM
+
 extension GD {
     /// Loads a resource from the filesystem located at `path`.
     ///
@@ -100,3 +102,4 @@ extension GD {
         GD.printerr(arg1: Variant (finalMessage))
     }
 }
+#endif

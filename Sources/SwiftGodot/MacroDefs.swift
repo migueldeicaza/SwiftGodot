@@ -156,6 +156,7 @@ public macro initSwiftExtension(
     module: "SwiftGodotMacroLibrary",
     type: "InitSwiftExtensionMacro")
 
+#if SWIFT_GODOT_TRAIT_MEDIUM
 /// A macro that instantiates a `Texture2D` from a specified resource path. If the texture cannot be created, a
 /// `preconditionFailure` will be thrown.
 ///
@@ -169,6 +170,7 @@ public macro initSwiftExtension(
 @freestanding(expression)
 public macro texture2DLiteral(_ path: String) -> Texture2D = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                             type: "Texture2DLiteralMacro")
+#endif
 
 // MARK: - Attached Macros
 

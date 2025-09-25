@@ -60,10 +60,12 @@ public func editorAddPlugin(name: StringName) {
 ///
 /// You typically invoke this method from the `setupScene` method when initializing
 /// the `.editor` level.   The type specified should have been declared with `@Godot(.tool)`
+#if SWIFT_GODOT_TRAIT_FULL
 public func editorAddPlugin<T:EditorPlugin> (type: T.Type) {
     let typeStr = String (describing: type)
     editorAddPlugin(name: StringName(typeStr))
 }
+#endif
 
 /// Removes a Godot editor plugin from the editor by name
 public func editorRemovePlugin(name: StringName) {
@@ -73,10 +75,12 @@ public func editorRemovePlugin(name: StringName) {
 }
 
 /// Removes a Godot editor plugin.
+#if SWIFT_GODOT_TRAIT_FULL
 public func editorRemovePlugin<T:EditorPlugin> (type: T.Type) {
     let typeStr = String (describing: type)
     editorRemovePlugin(name: StringName(typeStr))
 }
+#endif
 
 //
 ///* variant general */

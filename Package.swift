@@ -1,7 +1,14 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.1
 
 import CompilerPluginSupport
-import PackageDescription
+@_spi(ExperimentalTraits) import PackageDescription
+
+// Trait names used to configure the generated surface area.
+private enum SwiftGodotTraits {
+    static let core = "Core"
+    static let medium = "Medium"
+    static let full = "Full"
+}
 
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
@@ -156,6 +163,9 @@ var targets: [Target] = [
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+            .define("SWIFT_GODOT_TRAIT_CORE", .when(traits: [SwiftGodotTraits.core])),
+            .define("SWIFT_GODOT_TRAIT_MEDIUM", .when(traits: [SwiftGodotTraits.medium])),
+            .define("SWIFT_GODOT_TRAIT_FULL", .when(traits: [SwiftGodotTraits.full])),
 //            .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
@@ -263,6 +273,23 @@ let package = Package(
         .iOS (.v17)
     ],
     products: products,
+    traits: [
+        .trait(
+            name: SwiftGodotTraits.core,
+            description: "Essential SwiftGodot runtime plus generated builtins and foundational Godot classes"
+        ),
+        .trait(
+            name: SwiftGodotTraits.medium,
+            description: "Expands Core with a curated set of commonly used Godot node wrappers",
+            enabledTraits: [SwiftGodotTraits.core]
+        ),
+        .trait(
+            name: SwiftGodotTraits.full,
+            description: "Includes the entire generated SwiftGodot API surface",
+            enabledTraits: [SwiftGodotTraits.medium]
+        ),
+        .default(enabledTraits: [SwiftGodotTraits.full])
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),

@@ -5,7 +5,7 @@
 //
 //
 
-@_implementationOnly import GDExtension
+import GDExtension
 
 public protocol ExtensionInterface {
 
@@ -93,8 +93,23 @@ var extensionInterface: ExtensionInterface!
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
 public var swiftGodotLibraryGeneration: UInt16 = 0
 
-var extensionInitCallbacks: [OpaquePointer: ((GDExtension.InitializationLevel) -> Void)] = [:]
-var extensionDeInitCallbacks: [OpaquePointer: ((GDExtension.InitializationLevel) -> Void)] = [:]
+public enum GodotInitializationLevel: Int32 {
+    case core = 0
+    case servers = 1
+    case scene = 2
+    case editor = 3
+
+    init?(cLevel: GDExtensionInitializationLevel) {
+        self.init(rawValue: Int32(exactly: cLevel.rawValue) ?? -1)
+    }
+
+    var cLevel: GDExtensionInitializationLevel {
+        GDExtensionInitializationLevel(rawValue: UInt32(bitPattern: rawValue))
+    }
+}
+
+var extensionInitCallbacks: [OpaquePointer: ((GodotInitializationLevel) -> Void)] = [:]
+var extensionDeInitCallbacks: [OpaquePointer: ((GodotInitializationLevel) -> Void)] = [:]
 
 func loadFunctions(loader: GDExtensionInterfaceGetProcAddress) {
 
@@ -113,7 +128,7 @@ public func setExtensionInterface(interface: ExtensionInterface) {
 // Extension initialization callback
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
-    guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    guard let level = GodotInitializationLevel(cLevel: l) else { return }
     if level == .scene {
         extensionInterface.initClasses()
     }
@@ -128,7 +143,7 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
-    guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    guard let level = GodotInitializationLevel(cLevel: l) else { return }
     callback(level)
     if level == .core {
         // Last one, remove
@@ -451,13 +466,13 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 ///     return 1
 /// }
 ///
-/// func myInit (level: GDExtension.InitializationLevel) {
+/// func myInit (level: GodotInitializationLevel) {
 ///    if level == .scene {
 ///       registerType (MySpinningCube.self)
 ///    }
 /// }
 ///
-/// func myDeInit (level: GDExtension.InitializationLevel) {
+/// func myDeInit (level: GodotInitializationLevel) {
 ///     if level == .scene {
 ///         print ("Deinitialized")
 ///     }
@@ -476,9 +491,9 @@ public func initializeSwiftModule(
     _ godotGetProcAddrPtr: OpaquePointer,
     _ libraryPtr: OpaquePointer,
     _ extensionPtr: OpaquePointer,
-    initHook: @escaping (GDExtension.InitializationLevel) -> (),
-    deInitHook: @escaping (GDExtension.InitializationLevel) -> (),
-    minimumInitializationLevel: GDExtension.InitializationLevel = .scene
+    initHook: @escaping (GodotInitializationLevel) -> (),
+    deInitHook: @escaping (GodotInitializationLevel) -> (),
+    minimumInitializationLevel: GodotInitializationLevel = .scene
 ) {
     let getProcAddrFun = unsafeBitCast(godotGetProcAddrPtr, to: GDExtensionInterfaceGetProcAddress.self)
     loadGodotInterface(getProcAddrFun)
@@ -495,12 +510,7 @@ public func initializeSwiftModule(
     let initialization = UnsafeMutablePointer<GDExtensionInitialization>(extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize
-    #if os(Windows)
-        typealias RawType = Int32
-    #else
-        typealias RawType = UInt32
-    #endif
-    initialization.pointee.minimum_initialization_level = GDExtensionInitializationLevel(RawType(minimumInitializationLevel.rawValue))
+    initialization.pointee.minimum_initialization_level = minimumInitializationLevel.cLevel
     initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
 }
 

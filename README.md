@@ -67,6 +67,41 @@ https://github.com/migueldeicaza/SwiftGodotBinary
 
 Currently this requires Swift 5.9 or Xcode 15.
 
+# Package Traits
+
+SwiftGodot now supports SwiftPM package traits so you can choose how much of the
+generated Godot surface area you compile. Traits require SwiftPM 6.1 or newer.
+
+- `Full` (default) matches the previous behaviour and builds every generated
+  builtin and class wrapper.
+- `Medium` keeps the core runtime plus a curated set of frequently used engine
+  services (windowing, audio, rendering, resource loading, etc.).
+- `Core` trims the build to the supporting runtime, generated builtins, and the
+  minimum set of classes needed to construct Godot objects from Swift.
+
+When you depend on SwiftGodot, override the enabled traits in your own
+`Package.swift`:
+
+```swift
+.package(
+    url: "https://github.com/migueldeicaza/SwiftGodot",
+    branch: "main",
+    traits: [
+        // Start from an empty set to opt out of the default `Full` surface.
+        .trait("Core")
+    ]
+)
+```
+
+You can also experiment locally with the CLI. For example, a core-only build is
+just:
+
+```bash
+swift build --disable-default-traits --traits Core
+```
+
+Swap `Core` for `Medium` or `Full` to test other combinations.
+
 # Working with this Repository
 
 You should be all set by referencing this as a package from SwiftPM
@@ -149,7 +184,7 @@ project to be loadable by Godot, you can do it like this:
 
 ```swift
 /// We register our new type when we are told that the scene is being loaded
-func setupScene (level: GDExtension.InitializationLevel) {
+func setupScene (level: GodotInitializationLevel) {
     if level == .scene {
         register(type: SpinningCube.self)
     }

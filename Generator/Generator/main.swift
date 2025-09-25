@@ -103,6 +103,152 @@ for x in jsonApi.classes {
     }
 }
 
+let coreTraitSeedClasses: Set<String> = [
+    "Object",
+    "RefCounted",
+]
+
+let mediumTraitSeedClasses: Set<String> = coreTraitSeedClasses.union([
+    "Node",
+    "Node2D",
+    "Node3D",
+    "CanvasItem",
+    "SceneTree",
+    "ProjectSettings",
+    "Viewport",
+    "Window",
+    "Input",
+    "InputEvent",
+    "Timer",
+    "AudioStreamPlayer",
+    "DisplayServer",
+    "AudioServer",
+    "OS",
+    "PackedScene",
+    "PathFollow2D",
+    "CollisionShape2D",
+    "RigidBody2D",
+    "Sprite2D",
+    "AnimatedSprite2D",
+    "SpriteFrames",
+    "Camera2D",
+    "Camera3D",
+    "Texture2D",
+    "ResourceLoader",
+    "ResourceSaver",
+    "Material",
+    "Shader",
+    "RenderingServer",
+    "RenderSceneBuffers",
+    "RenderSceneBuffersConfiguration",
+    "RenderData",
+    "Compositor",
+    "CompositorEffect",
+    "TextServer",
+])
+
+let explicitClassTraits: [String: ClassTrait] = [:]
+
+func normalizeClassName(from rawType: String) -> String? {
+    var candidate = rawType
+    if candidate.hasPrefix("const ") {
+        candidate = String(candidate.dropFirst(6))
+    }
+    if candidate.hasSuffix("*") {
+        candidate = String(candidate.dropLast())
+    }
+    if candidate.hasSuffix("?") {
+        candidate = String(candidate.dropLast())
+    }
+    if candidate.hasPrefix("typedarray::") {
+        let nested = String(candidate.dropFirst("typedarray::".count))
+        return normalizeClassName(from: nested)
+    }
+    if candidate.hasPrefix("Ref<") && candidate.hasSuffix(">") {
+        let inner = String(candidate.dropFirst(4).dropLast())
+        return normalizeClassName(from: inner)
+    }
+    if candidate.hasPrefix("enum::") || candidate.hasPrefix("bitfield::") {
+        return nil
+    }
+    if candidate.contains("::") {
+        // Likely an enum or nested type, not a class dependency we need to surface here.
+        return nil
+    }
+    if classMap[candidate] != nil {
+        return candidate
+    }
+    return nil
+}
+
+func referencedClassNames(for classDef: JGodotExtensionAPIClass) -> Set<String> {
+    var references = Set<String>()
+    if let inherits = classDef.inherits, let normalized = normalizeClassName(from: inherits) {
+        references.insert(normalized)
+    }
+    if let properties = classDef.properties {
+        for property in properties {
+            if let normalized = normalizeClassName(from: property.type) {
+                references.insert(normalized)
+            }
+        }
+    }
+    if let methods = classDef.methods {
+        for method in methods {
+            if let ret = method.returnValue, let normalized = normalizeClassName(from: ret.type) {
+                references.insert(normalized)
+            }
+            for argument in method.arguments ?? [] {
+                if let normalized = normalizeClassName(from: argument.type) {
+                    references.insert(normalized)
+                }
+            }
+        }
+    }
+    if let signals = classDef.signals {
+        for signal in signals {
+            for argument in signal.arguments ?? [] {
+                if let normalized = normalizeClassName(from: argument.type) {
+                    references.insert(normalized)
+                }
+            }
+        }
+    }
+    return references
+}
+
+func resolveTraitClosure(startingFrom seed: Set<String>) -> Set<String> {
+    var result = seed
+    var worklist = Array(seed)
+    while let current = worklist.popLast() {
+        guard let classDef = classMap[current] else {
+            continue
+        }
+        for dependency in referencedClassNames(for: classDef) {
+            if !result.contains(dependency) {
+                result.insert(dependency)
+                worklist.append(dependency)
+            }
+        }
+    }
+    return result
+}
+
+let resolvedCoreClasses = resolveTraitClosure(startingFrom: coreTraitSeedClasses)
+let resolvedMediumClasses = resolveTraitClosure(startingFrom: mediumTraitSeedClasses).subtracting(resolvedCoreClasses)
+
+for className in resolvedCoreClasses {
+    traitByClassName[className] = .core
+}
+
+for className in resolvedMediumClasses {
+    traitByClassName[className] = .medium
+}
+
+for (className, trait) in explicitClassTraits {
+    traitByClassName[className] = trait
+}
+
 private var structTypes: Set<String> = [
     "const void*",
     "AudioFrame*",

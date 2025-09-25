@@ -298,10 +298,12 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// ``RefCounted`` objects are destroyed automatically when the last reference
     /// is gone, so it is not necessary to call ``free`` on those.
     public func free() {
+#if SWIFT_GODOT_TRAIT_MEDIUM
         guard !(self is Node) else {
             print ("SwiftGodot: Cannot call free() on Nodes; queueFree() should be used instead.")
             return
         }
+#endif
         guard !(self is RefCounted) else  {
             print ("SwiftGodot: Cannot call free() on RefCounted; release all references to it instead.")
             return
@@ -990,7 +992,7 @@ public func clearHandles(_ handles: [GodotNativeObjectPointer]) {
 /// Find existing Godot or User `Wrapped.Type` having a `className`
 func typeOfClass(named className: String) -> Object.Type? {
     if let frameworkType = godotFrameworkCtors[className] {
-        return frameworkType
+        return frameworkType as? Object.Type
     }
     
     if let userType = userTypes[className] {

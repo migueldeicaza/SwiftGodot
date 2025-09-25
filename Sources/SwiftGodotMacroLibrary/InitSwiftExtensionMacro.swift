@@ -36,7 +36,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 print ("Error: Not all parameters were initialized.")
                 return 0
             }
-            var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+            var types: [GodotInitializationLevel: [Object.Type]] = [:]
             types[.core] = \(coreTypes).topologicallySorted()
             types[.editor] = \(editorTypes).topologicallySorted()
             types[.scene] = \(sceneTypes).topologicallySorted()

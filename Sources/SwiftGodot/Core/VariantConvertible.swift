@@ -338,10 +338,12 @@ public extension _GodotBridgeable where Self: Object {
         var hint = hint
         var hintStr = hintStr
         
+#if SWIFT_GODOT_TRAIT_MEDIUM
         if self is Node.Type && hint == nil && hintStr == nil {
             hint = .nodeType
             hintStr = _builtinOrClassName
         }
+#endif
         
         return _propInfoDefault(
             propertyType: _variantType,

@@ -5,6 +5,8 @@
 //  Created by Estevan Hernandez on 12/24/23.
 //
 
+#if SWIFT_GODOT_TRAIT_FULL
+
 private extension VariantDictionary {
     func makeOrUnwrap<T: VariantConvertible>(key: String) -> T? {
         guard let variant = self[key] else {
@@ -71,3 +73,5 @@ extension PhysicsDirectSpaceState3D {
         return IntersectRayResult<T>(dictionary)
     }
 }
+
+#endif

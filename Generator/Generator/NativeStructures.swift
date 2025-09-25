@@ -18,40 +18,40 @@ extension Generator {
     // the additional boolean value represents whether this needs an enum wrapper
     // since our enums are 64 bit values, and the way that they are encoded in these
     // native structures is 32 bit values
-    private func mapNativeType (_ name: Substring) -> (String,NativeMapType)? {
+private func mapNativeType (_ name: Substring) -> (String, NativeMapType, ClassTrait?)? {
         switch name {
         case "float":
-            return ("Float", .straight)
+            return ("Float", .straight, nil)
         case "uint64_t":
-            return ("UInt64", .straight)
+            return ("UInt64", .straight, nil)
         case "int32_t":
-            return ("Int32", .straight)
+            return ("Int32", .straight, nil)
         case "uint16_t":
-            return ("UInt16", .straight)
+            return ("UInt16", .straight, nil)
         case "real_t":
-            return ("Float", .straight)
+            return ("Float", .straight, nil)
         case "int":
-            return ("Int32", .straight)
+            return ("Int32", .straight, nil)
         case "Rect2":
-            return ("Rect2", .straight)
+            return ("Rect2", .straight, nil)
         case "Vector3":
-            return ("Vector3", .straight)
+            return ("Vector3", .straight, nil)
         case "Vector2":
-            return ("Vector2", .straight)
+            return ("Vector2", .straight, nil)
         case "TextServer::Direction":
-            return ("TextServer.Direction", .enumeration)
+            return ("TextServer.Direction", .enumeration, .full)
         case "ObjectID":
-            return ("ObjectID", .straight)
+            return ("ObjectID", .straight, nil)
         case "Object":
-            return ("Object", .variant)
+            return ("Object", .variant, nil)
         case "RID":
-            return ("RID", .variant)
+            return ("RID", .variant, nil)
         case "StringName":
-            return ("StringName", .variant)
+            return ("StringName", .variant, nil)
         case "uint8_t":
-            return ("UInt8", .straight)
+            return ("UInt8", .straight, nil)
         case "PhysicsServer3DExtensionMotionCollision":
-            return ("PhysicsServer3DExtensionMotionCollision", .straight)
+            return ("PhysicsServer3DExtensionMotionCollision", .straight, nil)
         default:
             print ("Failed with \(name)")
             return nil
@@ -60,7 +60,8 @@ extension Generator {
     func generateNativeStructures (_ p: Printer, values: [JGodotNativeStructure]) {
         for structure in values {
             var generate = true
-            var ofields: [(String,(String, NativeMapType))] = []
+            var ofields: [(String,(String, NativeMapType, ClassTrait?))] = []
+            var requiredTraits = Set<ClassTrait>()
 
             for fields in structure.format.split (separator: ";") {
                 if fields.contains ("*") {
@@ -86,10 +87,17 @@ extension Generator {
                 }
                 let name = String(pair [1])
                 ofields.append ((snakeToCamel(name), typeInfo))
+                if let trait = typeInfo.2 {
+                    requiredTraits.insert(trait)
+                }
             }
 
             if !generate {
                 continue
+            }
+
+            if let guardTrait = requiredTraits.max(by: { traitPriority($0) < traitPriority($1) }) {
+                p("#if \(macroName(for: guardTrait))")
             }
 
             p ("public struct \(structure.name)") {
@@ -143,7 +151,9 @@ extension Generator {
                     }
                 }
             }
+            if let guardTrait = requiredTraits.max(by: { traitPriority($0) < traitPriority($1) }) {
+                p("#endif // \(macroName(for: guardTrait))")
+            }
         }
     }
 }
-
