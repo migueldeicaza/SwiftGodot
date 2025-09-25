@@ -106,6 +106,7 @@ for x in jsonApi.classes {
 let coreTraitSeedClasses: Set<String> = [
     "Object",
     "RefCounted",
+    "Node",
 ]
 
 let mediumTraitSeedClasses: Set<String> = coreTraitSeedClasses.union([

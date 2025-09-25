@@ -7,9 +7,9 @@ check when you only need a subset of the engine.
 ## Available traits
 
 - ``Core`` pulls in the Swift runtime support, generated builtins, and the small
-  set of Object-derived types needed to materialise handles coming back from
-  Godot. This is ideal for utilities or headless tools that do not interact with
-  the full scene graph.
+  set of Object-derived types (including ``Node``) needed to materialise handles
+  coming back from Godot. This is ideal for utilities or headless tools that do
+  not interact with the full scene graph.
 - ``Medium`` enables everything from ``Core`` and adds the most common runtime
   services—windowing, input, audio, resource loading/saving, and the rendering
   bridge. Use this for most gameplay code and editor tooling.

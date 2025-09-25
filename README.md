@@ -77,7 +77,8 @@ generated Godot surface area you compile. Traits require SwiftPM 6.1 or newer.
 - `Medium` keeps the core runtime plus a curated set of frequently used engine
   services (windowing, audio, rendering, resource loading, etc.).
 - `Core` trims the build to the supporting runtime, generated builtins, and the
-  minimum set of classes needed to construct Godot objects from Swift.
+  minimum set of classes needed to construct Godot objects—including
+  ``Node``—from Swift.
 
 When you depend on SwiftGodot, override the enabled traits in your own
 `Package.swift`:
