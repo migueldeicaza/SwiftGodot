@@ -1,4 +1,4 @@
-#if !SWIFT_GODOT_TRAIT_MEDIUM
+#if !Medium
 extension GD {
     private static func makeMessage(from items: [Any], separator: String) -> String {
         items.map { String(describing: $0) }.joined(separator: separator)

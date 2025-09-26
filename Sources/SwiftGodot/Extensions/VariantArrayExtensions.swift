@@ -39,7 +39,7 @@ extension VariantArray: CustomDebugStringConvertible {
         case .object:
             let className = getTypedClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
-#if SWIFT_GODOT_TRAIT_MEDIUM
+#if Medium
                 GD.printErr("Unknown class name: \(className).")
 #else
                 debugPrint("SwiftGodot: Unknown class name: \(className)")

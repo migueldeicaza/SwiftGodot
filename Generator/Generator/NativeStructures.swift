@@ -96,7 +96,7 @@ private func mapNativeType (_ name: Substring) -> (String, NativeMapType, ClassT
                 continue
             }
 
-            if let guardTrait = requiredTraits.max(by: { traitPriority($0) < traitPriority($1) }) {
+            if let guardTrait = requiredTraits.max(by: { traitPriority($0) < traitPriority($1) }), guardTrait != .core {
                 p("#if \(macroName(for: guardTrait))")
             }
 
@@ -151,7 +151,7 @@ private func mapNativeType (_ name: Substring) -> (String, NativeMapType, ClassT
                     }
                 }
             }
-            if let guardTrait = requiredTraits.max(by: { traitPriority($0) < traitPriority($1) }) {
+            if let guardTrait = requiredTraits.max(by: { traitPriority($0) < traitPriority($1) }), guardTrait != .core {
                 p("#endif // \(macroName(for: guardTrait))")
             }
         }

@@ -22,7 +22,7 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
         case .object:
             let className = getTypedKeyClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
-#if SWIFT_GODOT_TRAIT_MEDIUM
+#if Medium
                 GD.printErr("Unknown class name: \(className).")
 #else
                 debugPrint("SwiftGodot: Unknown class name: \(className)")
@@ -48,7 +48,7 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
         case .object:
             let className = getTypedValueClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
-#if SWIFT_GODOT_TRAIT_MEDIUM
+#if Medium
                 GD.printErr("Unknown class name: \(className).")
 #else
                 debugPrint("SwiftGodot: Unknown class name: \(className)")

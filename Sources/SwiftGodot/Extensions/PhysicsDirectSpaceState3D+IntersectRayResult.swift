@@ -5,7 +5,7 @@
 //  Created by Estevan Hernandez on 12/24/23.
 //
 
-#if SWIFT_GODOT_TRAIT_FULL
+#if Full
 
 private extension VariantDictionary {
     func makeOrUnwrap<T: VariantConvertible>(key: String) -> T? {

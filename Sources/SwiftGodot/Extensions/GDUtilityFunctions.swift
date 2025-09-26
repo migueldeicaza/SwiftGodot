@@ -5,7 +5,7 @@
 //  Created by Marquis Kurt on 5/16/23.
 //
 
-#if SWIFT_GODOT_TRAIT_MEDIUM
+#if Medium
 
 extension GD {
     /// Loads a resource from the filesystem located at `path`.

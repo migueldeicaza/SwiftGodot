@@ -45,8 +45,8 @@ Swap `Core` for `Medium` or `Full` to test the other configurations.
 
 ## Behavioural differences
 
-Code that lives behind richer traits is guarded with `#if
-SWIFT_GODOT_TRAIT_*` directives. When a type is not available in the selected
+Code that lives behind richer traits is guarded with `#if Core`, `#if Medium`,
+or `#if Full` directives. When a type is not available in the selected
 profile:
 
 - Generated wrappers guarded by the missing trait are not compiled.

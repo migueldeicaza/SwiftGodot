@@ -20,18 +20,25 @@ func trait(for className: String) -> ClassTrait {
     traitByClassName[className] ?? .full
 }
 
-func guardMacro(for className: String) -> String {
-    macroName(for: trait(for: className))
+func guardMacro(for className: String) -> String? {
+    switch trait(for: className) {
+    case .core:
+        return nil
+    case .medium:
+        return "Medium"
+    case .full:
+        return "Full"
+    }
 }
 
 func macroName(for trait: ClassTrait) -> String {
     switch trait {
     case .core:
-        return "SWIFT_GODOT_TRAIT_CORE"
+        return "Core"
     case .medium:
-        return "SWIFT_GODOT_TRAIT_MEDIUM"
+        return "Medium"
     case .full:
-        return "SWIFT_GODOT_TRAIT_FULL"
+        return "Full"
     }
 }
 
@@ -597,7 +604,9 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     // Clear the result
     let p = await PrinterFactory.shared.initPrinter(cdef.name, withPreamble: true)
     let guardDirective = guardMacro(for: cdef.name)
-    p("#if \(guardDirective)")
+    if let guardDirective {
+        p("#if \(guardDirective)")
+    }
     
     // Save it
     defer {
@@ -777,7 +786,9 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         }
     }
 
-    p("#endif // \(guardDirective)")
+    if let guardDirective {
+        p("#endif // \(guardDirective)")
+    }
 }
 
 extension Generator {
@@ -785,13 +796,17 @@ extension Generator {
         p("var godotFrameworkCtors: [String: Wrapped.Type] =", suffix: "()") {
             p("var result: [String: Wrapped.Type] = [:]")
             let grouped = Dictionary(grouping: classMap.keys, by: { trait(for: $0) })
-            for (trait, list) in grouped {
-                let traitMacroDefine = macroName(for: trait)
-                p("#if \(traitMacroDefine)")
-                for className in list.sorted() {
+            for trait in [ClassTrait.core, .medium, .full] {
+                guard let classNames = grouped[trait] else { continue }
+                if trait != .core {
+                    p("#if \(macroName(for: trait))")
+                }
+                for className in classNames.sorted() {
                     p("result[\"\(className)\"] = \(className).self")
                 }
-                p("#endif")
+                if trait != .core {
+                    p("#endif")
+                }
             }
             p("return result")
         }

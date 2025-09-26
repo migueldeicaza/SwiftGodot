@@ -163,9 +163,6 @@ var targets: [Target] = [
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-            .define("SWIFT_GODOT_TRAIT_CORE", .when(traits: [SwiftGodotTraits.core])),
-            .define("SWIFT_GODOT_TRAIT_MEDIUM", .when(traits: [SwiftGodotTraits.medium])),
-            .define("SWIFT_GODOT_TRAIT_FULL", .when(traits: [SwiftGodotTraits.full])),
 //            .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
