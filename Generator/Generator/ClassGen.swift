@@ -784,10 +784,13 @@ extension Generator {
     func generateCtorPointers (_ p: Printer) {
         p("var godotFrameworkCtors: [String: Wrapped.Type] =", suffix: "()") {
             p("var result: [String: Wrapped.Type] = [:]")
-            for className in classMap.keys.sorted() {
-                let guardDirective = guardMacro(for: className)
-                p("#if \(guardDirective)")
-                p("result[\"\(className)\"] = \(className).self")
+            let grouped = Dictionary(grouping: classMap.keys, by: { trait(for: $0) })
+            for (trait, list) in grouped {
+                let traitMacroDefine = macroName(for: trait)
+                p("#if \(traitMacroDefine)")
+                for className in list.sorted() {
+                    p("result[\"\(className)\"] = \(className).self")
+                }
                 p("#endif")
             }
             p("return result")
