@@ -36,7 +36,7 @@
                       previousFile: "Package-starter-init.swift")
             }
             @Step {
-                Set the type of the SimpleRunnerDriver library to dynamic and set the minimum platform target to macOS 13.
+                Set the type of the SimpleRunnerDriver library to dynamic and set the minimum platform target to macOS 14.
                 
                 @Code(name: "Package.swift", file: "Package-starter-3.swift")
             }
@@ -203,7 +203,7 @@
         @Steps {
             @Step {
                 Open the SimpleRunner project in the Godot editor. When the project opens, you should see a dialog that
-                appears, asking to reloag Godot for extensions to take effect.
+                appears, asking to reload Godot for extensions to take effect.
                 
                 @Image(source: "GodotExtensionPrompt", alt: "The Godot editor open with a dialog in the center.")
             }
