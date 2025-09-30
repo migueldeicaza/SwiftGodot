@@ -214,7 +214,7 @@ To learn more, read the <doc:Exports> page.
 
 Surfacing signals is covered in the <doc:Signals> document.
 
-## Low-Leve Details: PropInfo
+## Low-Level Details: PropInfo
 
 In SwiftGodot, the ``PropInfo`` structure is used to define argument types,
 properties and return values.  You will be exposed to these when you define 
