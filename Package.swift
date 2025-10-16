@@ -10,12 +10,47 @@ var products: [Product] = [
         type: .dynamic,
         targets: ["SwiftGodot"]
     ),
-
     .library(
         name: "SwiftGodotStatic",
         targets: ["SwiftGodot"]
     ),
 
+    // The components of SwiftGodot
+    .library(
+        name: "SwiftGodotRuntime",
+        type: .dynamic,
+        targets: ["SwiftGodotRuntime"]
+    ),
+    .library(
+        name: "SwiftGodotCore",
+        type: .dynamic,
+        targets: ["SwiftGodotCore"]
+    ),
+    .library(
+        name: "SwiftGodot2D",
+        type: .dynamic,
+        targets: ["SwiftGodot2D"]
+    ),
+    .library(
+        name: "SwiftGodot3D",
+        type: .dynamic,
+        targets: ["SwiftGodot3D"]
+    ),
+    .library(
+        name: "SwiftGodotControls",
+        type: .dynamic,
+        targets: ["SwiftGodotControls"]
+    ),
+    .library(
+        name: "SwiftGodotXR",
+        type: .dynamic,
+        targets: ["SwiftGodotXR"]
+    ),
+    .library(
+        name: "SwiftGodotVisualShaderNodes",
+        type: .dynamic,
+        targets: ["SwiftGodotVisualShaderNodes"]
+    ),
     .library(
         name: "ExtensionApi",
         targets: [
@@ -151,14 +186,85 @@ var targets: [Target] = [
     // Godot API, supporting infrastructure and extensions to the API to provide
     // a better Swift experience
     .target(
-        name: "SwiftGodot",
+        name: "SwiftGodotRuntime",
         dependencies: ["GDExtension"],
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-//            .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
+    ),
+    .target(
+        name: "SwiftGodotCore",
+        dependencies: ["SwiftGodotRuntime"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodot2D",
+        dependencies: ["SwiftGodotCore"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodot3D",
+        dependencies: ["SwiftGodotCore"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodotControls",
+        dependencies: ["SwiftGodotCore"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodotVisualShaderNodes",
+        dependencies: ["SwiftGodotCore"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodotXR",
+        dependencies: ["SwiftGodotCore"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodotEditor",
+        dependencies: ["SwiftGodotCore"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+    ),
+    .target(
+        name: "SwiftGodot",
+        dependencies: [
+            "SwiftGodotRuntime",
+	    "SwiftGodotCore",
+	    "SwiftGodot2D",
+	    "SwiftGodot3D",
+	    "SwiftGodotVisualShaderNodes",
+	    "SwiftGodotXR",
+	    "SwiftGodotEditor"
+        ],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
     ),
 
     // General purpose cross-platform tests
