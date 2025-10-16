@@ -310,7 +310,7 @@ struct GodotInterface {
 }
 
 @usableFromInline
-var gi: GodotInterface!
+@_spi(SwiftGodotRuntimePrivate) var gi: GodotInterface!
 
 func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddress) {
 
