@@ -156,7 +156,7 @@ public macro initSwiftExtension(
     module: "SwiftGodotMacroLibrary",
     type: "InitSwiftExtensionMacro")
 
-#if Medium
+#if !Core
 /// A macro that instantiates a `Texture2D` from a specified resource path. If the texture cannot be created, a
 /// `preconditionFailure` will be thrown.
 ///

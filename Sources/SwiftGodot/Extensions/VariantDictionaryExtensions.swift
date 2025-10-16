@@ -22,10 +22,10 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
         case .object:
             let className = getTypedKeyClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
-#if Medium
-                GD.printErr("Unknown class name: \(className).")
-#else
+#if Core
                 debugPrint("SwiftGodot: Unknown class name: \(className)")
+#else
+                GD.printErr("Unknown class name: \(className).")
 #endif
                 return .builtin(.nil)
             }
@@ -48,10 +48,10 @@ extension VariantDictionary: CustomDebugStringConvertible, CustomStringConvertib
         case .object:
             let className = getTypedValueClassName().asciiDescription
             guard let metatype = typeOfClass(named: className) else {
-#if Medium
-                GD.printErr("Unknown class name: \(className).")
-#else
+#if Core
                 debugPrint("SwiftGodot: Unknown class name: \(className)")
+#else
+                GD.printErr("Unknown class name: \(className).")
 #endif
                 return .builtin(.nil)
             }

@@ -338,7 +338,7 @@ public extension _GodotBridgeable where Self: Object {
         var hint = hint
         var hintStr = hintStr
         
-#if Medium
+#if Medium || Full || Xogot
         if self is Node.Type && hint == nil && hintStr == nil {
             hint = .nodeType
             hintStr = _builtinOrClassName

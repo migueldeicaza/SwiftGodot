@@ -1,4 +1,4 @@
-#if !Medium
+#if !(Medium || Full || Xogot)
 extension GD {
     private static func makeMessage(from items: [Any], separator: String) -> String {
         items.map { String(describing: $0) }.joined(separator: separator)

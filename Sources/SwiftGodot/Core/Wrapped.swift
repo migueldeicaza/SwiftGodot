@@ -298,7 +298,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// ``RefCounted`` objects are destroyed automatically when the last reference
     /// is gone, so it is not necessary to call ``free`` on those.
     public func free() {
-#if Medium
+#if Medium || Xogot || Full
         guard !(self is Node) else {
             print ("SwiftGodot: Cannot call free() on Nodes; queueFree() should be used instead.")
             return

@@ -21,10 +21,10 @@ struct BridgedFunctionInfo {
 public func _registerSignal(_ signalName: StringName, in className: StringName, arguments: [PropInfo] = []) {
     withUnsafeTemporaryAllocation(of: GDExtensionPropertyInfo.self, capacity: arguments.count) { bufferPtr in
         guard let ptr = bufferPtr.baseAddress else {
-#if Medium
-            GD.print("Swift.withUnsafeTemporaryAllocation failed at `ClassInfo.registerSignal`")
-#else
+#if Core
             debugPrint("Swift.withUnsafeTemporaryAllocation failed at ClassInfo.registerSignal")
+#else
+            GD.print("Swift.withUnsafeTemporaryAllocation failed at `ClassInfo.registerSignal`")
 #endif
             return
         }

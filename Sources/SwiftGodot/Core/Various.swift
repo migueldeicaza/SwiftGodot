@@ -11,7 +11,7 @@ extension Object: CustomStringConvertible {
     }
 }
 
-#if Medium
+#if Medium || Full || Xogot
 public extension SceneTree {
     /// Public because we want to allow the embed API to call this, but dont want to make it
     /// obvious in the constructors

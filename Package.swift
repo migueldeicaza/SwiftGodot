@@ -1,12 +1,32 @@
 // swift-tools-version: 6.1
 
 import CompilerPluginSupport
-@_spi(ExperimentalTraits) import PackageDescription
+import PackageDescription
 
 // Trait names used to configure the generated surface area.
 private enum SwiftGodotTraits {
+    /// The Core trait includes the bridging APIs, bindings for the Variant types and the Object class,
+    /// and provides callbacks, signals and other features.   This is ideal if you just want to interoperate
+    /// with Godot, but do not want to control Godot.   This is ideal for people that just want to use
+    /// SwiftGodot as a mechanism to call into iOS APIs and provide some functionality to Godot.
     static let core = "Core"
+
+    /// This is a "small blend" of Godot, the Core binding, plus a handful of types, for simple scenarios
+    /// that blends small builds and libraries with some functionality.   This profile is evolving so we can
+    /// find a good match for it.
     static let medium = "Medium"
+
+    /// This is a profile suitable for use in Xogot, a port of Godot that replaces the Godot UI with
+    /// SwiftUI and UIKit, and controls Godot entirely.   It is a blend of Medium with Editor APIs
+    static let xogot = "Xogot"
+
+    /// The full trait surfaces the entiere Godot API to Swift developer, this can be used to write any
+    /// extension for Godot using the Swift language.   The library can take time to compile and it will
+    /// be large, but if you use static linking, most of it can go away.   There is one caveat, even with
+    /// static linking, we need to keep all base definitions for all types to resolve them - this will be
+    /// hopefuly fixed in the future.
+    ///
+    /// For details on the optimization, see https://github.com/migueldeicaza/SwiftGodot/issues/555
     static let full = "Full"
 }
 
@@ -273,17 +293,23 @@ let package = Package(
     traits: [
         .trait(
             name: SwiftGodotTraits.core,
-            description: "Essential SwiftGodot runtime plus generated builtins and foundational Godot classes"
+            description: "Essential SwiftGodot runtime plus generated builtins and foundational Godot classes",
+            enabledTraits: [SwiftGodotTraits.core]
         ),
         .trait(
             name: SwiftGodotTraits.medium,
             description: "Expands Core with a curated set of commonly used Godot node wrappers",
-            enabledTraits: [SwiftGodotTraits.core]
+            enabledTraits: [SwiftGodotTraits.medium]
+        ),
+        .trait(
+            name: SwiftGodotTraits.xogot,
+            description: "This is a profile suitable for use in Xogot, a port of Godot that replaces the Godot UI",
+            enabledTraits: [SwiftGodotTraits.xogot]
         ),
         .trait(
             name: SwiftGodotTraits.full,
             description: "Includes the entire generated SwiftGodot API surface",
-            enabledTraits: [SwiftGodotTraits.medium]
+            enabledTraits: [SwiftGodotTraits.full]
         ),
         .default(enabledTraits: [SwiftGodotTraits.full])
     ],

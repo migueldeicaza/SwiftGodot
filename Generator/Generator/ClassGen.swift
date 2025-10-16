@@ -11,6 +11,7 @@ import ExtensionApi
 enum ClassTrait {
     case core
     case medium
+    case xogot
     case full
 }
 
@@ -26,6 +27,8 @@ func guardMacro(for className: String) -> String? {
         return nil
     case .medium:
         return "Medium"
+    case .xogot:
+        return "Xogot"
     case .full:
         return "Full"
     }
@@ -37,6 +40,8 @@ func macroName(for trait: ClassTrait) -> String {
         return "Core"
     case .medium:
         return "Medium"
+    case .xogot:
+        return "Xogot"
     case .full:
         return "Full"
     }
@@ -48,8 +53,10 @@ func traitPriority(_ trait: ClassTrait) -> Int {
         return 0
     case .medium:
         return 1
-    case .full:
+    case .xogot:
         return 2
+    case .full:
+        return 3
     }
 }
 

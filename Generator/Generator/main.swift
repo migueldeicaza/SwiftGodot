@@ -146,8 +146,18 @@ let mediumTraitSeedClasses: Set<String> = coreTraitSeedClasses.union([
     "Compositor",
     "CompositorEffect",
     "TextServer",
+    "Theme"
 ])
 
+let xogotTraitSeedClasses: Set<String> = mediumTraitSeedClasses.union([
+    "EditorUndoRedoManager",
+    "EditorPlugin",
+    "EditorScript",
+    "EditorSelection",
+    "EditorInterface",
+    "EditorFileSystemDirectory",
+    "EditorSettings",
+])
 let explicitClassTraits: [String: ClassTrait] = [:]
 
 func normalizeClassName(from rawType: String) -> String? {
