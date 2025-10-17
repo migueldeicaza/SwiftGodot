@@ -65,6 +65,65 @@ if args.count < 2 {
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
 
+func loadEntries(from path: String, stripSwiftSuffix: Bool = false) -> [String] {
+    guard let content = try? String(contentsOfFile: path, encoding: .utf8) else {
+        return []
+    }
+    return content
+        .split(whereSeparator: \.isNewline)
+        .map { line -> String in
+            let entry = String(line).trimmingCharacters(in: .whitespacesAndNewlines)
+            if stripSwiftSuffix {
+                return normalizedSymbolName(from: entry)
+            } else {
+                return entry
+            }
+        }
+        .filter { !$0.isEmpty }
+}
+
+var index = 0
+while index < args.count {
+    let argument = args[index]
+    switch argument {
+    case "--class-filter":
+        if index + 1 < args.count {
+            classWhitelist = Set(loadEntries(from: args[index + 1], stripSwiftSuffix: true))
+        }
+        index += 1
+    case "--builtin-filter":
+        if index + 1 < args.count {
+            builtinWhitelist = Set(loadEntries(from: args[index + 1], stripSwiftSuffix: true))
+        }
+        index += 1
+    case "--deferred-return-types":
+        if index + 1 < args.count {
+            deferredReturnTypes = Set(loadEntries(from: args[index + 1]))
+        }
+        index += 1
+    case "--deferred-extension-types":
+        if index + 1 < args.count {
+            deferredExtensionTypes = Set(loadEntries(from: args[index + 1]))
+        }
+        index += 1
+    case "--deferred-extension-sources":
+        if index + 1 < args.count {
+            deferredExtensionSourceClasses = Set(loadEntries(from: args[index + 1], stripSwiftSuffix: true))
+        }
+        index += 1
+    default:
+        break
+    }
+    index += 1
+}
+
+if !classWhitelist.isEmpty {
+    okList = classWhitelist
+}
+if !builtinWhitelist.isEmpty {
+    builtinOkList = builtinWhitelist
+}
+
 func dropMatchingPrefix(_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel(enumKey)
     if snake.lowercased().starts(with: enumName.lowercased()) {
@@ -173,6 +232,7 @@ struct Generator {
         await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
         await generateClasses(values: jsonApi.classes, outputDir: generatedDir)
+        await generateDeferredExtensions(outputDir: generatedDir)
 
         generateVariantGodotInterface(coreDefPrinter)
         generateCtorPointers(coreDefPrinter)

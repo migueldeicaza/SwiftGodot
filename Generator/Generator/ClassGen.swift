@@ -410,6 +410,10 @@ func generateProperties (_ p: Printer,
 
         let propertyOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: property.getter)
         
+        if let godotReturnType, deferredReturnTypes.contains(godotReturnType) {
+            continue
+        }
+
         // Lookup the type from the method, not the property,
         // sometimes the method is a GString, but the property is a StringName
         type = getGodotType (method.returnValue) + (propertyOptional ? "?" : "")
@@ -734,6 +738,130 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             if !skipList.contains (cdef.name) && (okList.count == 0 || okList.contains (cdef.name)) {
                 generateVirtualProxy(p, cdef: cdef, methodName: methodName, method: methodDef)
             }
+        }
+    }
+}
+
+func generateDeferredExtensionMethod(_ p: Printer,
+                                     cdef: JGodotExtensionAPIClass,
+                                     method: JGodotClassMethod,
+                                     isSingleton: Bool) {
+    doc(p, cdef, method.description)
+
+    let swiftMethodName = godotMethodToSwift(method.name)
+    let rawMethodName = rawSwiftMethodName(for: swiftMethodName)
+    let isStaticMethod = method.isStatic || isSingleton
+
+    guard let returnValue = method.returnValue else {
+        return
+    }
+
+    let godotReturnType = returnValue.type
+    let returnOptional = godotReturnType == "Variant" || (classMap[godotReturnType] != nil && isReturnOptional(className: cdef.name, method: method.name))
+    let swiftReturnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
+
+    var signatureArgs: [String] = []
+    var callArguments: [String] = []
+
+    for (index, argument) in (method.arguments ?? []).enumerated() {
+        let argumentName = godotArgumentToSwift(argument.name)
+        let isOptionalArg: Bool
+        if argument.type == "Variant" {
+            isOptionalArg = true
+        } else if classMap[argument.type] != nil {
+            isOptionalArg = isMethodArgumentOptional(className: cdef.name, method: method.name, arg: argument.name)
+        } else {
+            isOptionalArg = false
+        }
+
+        let omitLabel = index == 0 && shouldOmitFirstArgLabel(typeName: cdef.name, methodName: method.name, argName: argument.name)
+        signatureArgs.append(getArgumentDeclaration(argument, omitLabel: omitLabel, isOptional: isOptionalArg))
+
+        if omitLabel {
+            callArguments.append(argumentName)
+        } else {
+            let externalLabel = argumentName.replacingOccurrences(of: "`", with: "")
+            callArguments.append("\(externalLabel): \(argumentName)")
+        }
+    }
+
+    if method.isVararg {
+        signatureArgs.append("_ arguments: Variant?...")
+        callArguments.append("arguments")
+    }
+
+    if let classDiscardables = discardableResultList[cdef.name], classDiscardables.contains(method.name) {
+        p("@discardableResult /* discardable per discardableList: \(cdef.name), \(method.name) */ ")
+    }
+
+    let declarationTokens = [
+        "public",
+        isStaticMethod ? "static" : nil,
+        "func",
+        swiftMethodName
+    ].compactMap { $0 }.joined(separator: " ")
+
+    let argumentsList = signatureArgs.joined(separator: ", ")
+    let returnClause = swiftReturnType.isEmpty ? "" : " -> \(swiftReturnType)"
+
+    p("\(declarationTokens)(\(argumentsList))\(returnClause)") {
+        let callTarget = isStaticMethod ? "Self.\(rawMethodName)" : rawMethodName
+        let invocation: String
+        if callArguments.isEmpty {
+            invocation = "\(callTarget)()"
+        } else {
+            invocation = "\(callTarget)(\(callArguments.joined(separator: ", ")))"
+        }
+
+        p("let _result = \(invocation)")
+        if returnOptional {
+            p("guard let _result else { return nil }")
+            p("return getOrInitSwiftObject(nativeHandle: _result, ownsRef: true)")
+        } else {
+            p("guard let _result else { fatalError(\"Unexpected nil return from a method that should never return nil\") }")
+            p("return getOrInitSwiftObject(nativeHandle: _result, ownsRef: true)!")
+        }
+    }
+}
+
+func generateDeferredExtensions(outputDir: String?) async {
+    guard !deferredExtensionTypes.isEmpty else {
+        return
+    }
+
+    let singletonNames = Set(jsonApi.singletons.map { $0.name })
+
+    for cdef in jsonApi.classes {
+        if !deferredExtensionSourceClasses.isEmpty && !deferredExtensionSourceClasses.contains(cdef.name) {
+            continue
+        }
+
+        guard let methods = cdef.methods else {
+            continue
+        }
+
+        let relevantMethods = methods.filter { method in
+            guard let returnType = method.returnValue?.type else {
+                return false
+            }
+            return classMap[returnType] != nil && deferredExtensionTypes.contains(returnType)
+        }
+
+        if relevantMethods.isEmpty {
+            continue
+        }
+
+        let isSingleton = singletonNames.contains(cdef.name) && cdef.name != "EditorInterface"
+        let printer = await PrinterFactory.shared.initPrinter("\(cdef.name)+Deferred", withPreamble: true)
+
+        printer("public extension \(cdef.name)") {
+            for method in relevantMethods {
+                generateDeferredExtensionMethod(printer, cdef: cdef, method: method, isSingleton: isSingleton)
+            }
+        }
+
+        if let outputDir {
+            printer.save(outputDir + "/\(cdef.name)+Deferred.swift")
         }
     }
 }

@@ -8,6 +8,8 @@
 import Foundation
 import ExtensionApi
 
+var builtinOkList = Set<String>()
+
 /// Given an initializer of the form "Vector (0, 1, 0)" returns a proper Swift "Vector (x: 0, y: 1, z: 0)" value
 ///
 func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
@@ -1160,6 +1162,9 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     }
     
     for bc in values {
+        if !builtinOkList.isEmpty && !builtinOkList.contains(bc.name) {
+            continue
+        }
         switch bc.name {
             // This one is ignored altogether. We've got `Optional` in Swift
         case "Nil":

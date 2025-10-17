@@ -30,6 +30,14 @@ enum GeneratedMethodKind {
     case utilityFunction
 }
 
+func rawSwiftMethodName(for baseName: String) -> String {
+    guard let first = baseName.first else {
+        return "raw"
+    }
+    let capitalizedFirst = String(first).uppercased()
+    return "raw" + capitalizedFirst + baseName.dropFirst()
+}
+
 // To test the design, will use an external file later
 // determines whether the className/method returns an optional reference type
 func isReturnOptional (className: String, method: String) -> Bool {
@@ -553,15 +561,27 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         registerVirtualMethodName = swiftMethodName
     }
     
-    var signatureArgs: [String] = []
     let godotReturnType = method.returnValue?.type
     let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
     let returnOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
-    let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
+    var returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
 
+    let shouldGenerateRawMethod = generatedMethodKind == .classMethod
+        && godotReturnTypeIsReferenceType
+        && (godotReturnType.flatMap { deferredReturnTypes.contains($0) } ?? false)
+
+    if shouldGenerateRawMethod {
+        returnType = "GodotNativeObjectPointer?"
+        swiftMethodName = rawSwiftMethodName(for: swiftMethodName)
+    }
+
+    var signatureArgs: [String] = []
     /// returns appropriate declaration of the return type, used by the helper function.
     let frameworkType = godotReturnTypeIsReferenceType
     func returnTypeDecl() -> String {
+        if shouldGenerateRawMethod {
+            return "var _result: GodotNativeObjectPointer? = nil"
+        }
         if returnType != "" {
             guard let godotReturnType else {
                 fatalError ("If the returnType is not empty, we should have a godotReturnType")
@@ -648,6 +668,9 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     }
     
     func getReturnStatement() -> String {
+        if shouldGenerateRawMethod {
+            return "return _result"
+        }
         if returnType == "" {
             return ""
         }
@@ -721,12 +744,18 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         p(inlineAttribute)
     }
     // Sadly, the parameters have no useful documentation
-    doc(p, cdef, method.description)
+    if !shouldGenerateRawMethod {
+        doc(p, cdef, method.description)
+    }
     // Generate the method entry point
     if let classDiscardables = discardableResultList[className] {
         if classDiscardables.contains(method.name) == true {
             p("@discardableResult /* discardable per discardableList: \(className), \(method.name) */ ")
         }
+    }
+    
+    if shouldGenerateRawMethod {
+        p("@_spi(SwiftGodotPrivate)")
     }
     
     if let documentationVisibilityAttribute {

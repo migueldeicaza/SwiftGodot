@@ -35,6 +35,24 @@ import PackagePlugin
 
         var arguments = [api.path, generatedSourcesDir.path]
         var outputFiles: [URL] = []
+
+        if !config.deferredReturnTypes.isEmpty {
+            let deferredReturnTypesFile = configurationDir.appending(path: "\(target.name)-deferred-return-types.txt")
+            try config.deferredReturnTypes.joined(separator: "\n").write(to: deferredReturnTypesFile, atomically: true, encoding: .utf8)
+            arguments.append(contentsOf: ["--deferred-return-types", deferredReturnTypesFile.path])
+        }
+
+        if !config.deferredExtensionTypes.isEmpty {
+            let deferredExtensionTypesFile = configurationDir.appending(path: "\(target.name)-deferred-extension-types.txt")
+            try config.deferredExtensionTypes.joined(separator: "\n").write(to: deferredExtensionTypesFile, atomically: true, encoding: .utf8)
+            arguments.append(contentsOf: ["--deferred-extension-types", deferredExtensionTypesFile.path])
+        }
+
+        if !config.deferredExtensionSourceClasses.isEmpty {
+            let deferredExtensionSourcesFile = configurationDir.appending(path: "\(target.name)-deferred-extension-sources.txt")
+            try config.deferredExtensionSourceClasses.joined(separator: "\n").write(to: deferredExtensionSourcesFile, atomically: true, encoding: .utf8)
+            arguments.append(contentsOf: ["--deferred-extension-sources", deferredExtensionSourcesFile.path])
+        }
 #if os(Windows)
         // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well.
         // We generate so many output files that passing them all into the build command would exceed the limit.
@@ -75,7 +93,8 @@ import PackagePlugin
             return GenerationConfig(
                 classFiles: runtime.uniqued(),
                 builtinFiles: knownBuiltin,
-                preamble: nil
+                preamble: nil,
+                deferredReturnTypes: runtimeDeferredReturnTypes
             )
         case "SwiftGodotCore":
             return GenerationConfig(
@@ -85,6 +104,9 @@ import PackagePlugin
 @_exported import SwiftGodotRuntime
 @_spi(SwiftGodotPrivate) import SwiftGodotRuntime
 """
+                ,
+                deferredExtensionTypes: runtimeDeferredReturnTypes,
+                deferredExtensionSourceClasses: runtime.uniqued()
             )
         case "SwiftGodot2D":
             fallthrough
@@ -119,6 +141,25 @@ struct GenerationConfig {
     let classFiles: [String]
     let builtinFiles: [String]
     let preamble: String?
+    let deferredReturnTypes: [String]
+    let deferredExtensionTypes: [String]
+    let deferredExtensionSourceClasses: [String]
+
+    init(
+        classFiles: [String],
+        builtinFiles: [String],
+        preamble: String?,
+        deferredReturnTypes: [String] = [],
+        deferredExtensionTypes: [String] = [],
+        deferredExtensionSourceClasses: [String] = []
+    ) {
+        self.classFiles = classFiles
+        self.builtinFiles = builtinFiles
+        self.preamble = preamble
+        self.deferredReturnTypes = deferredReturnTypes
+        self.deferredExtensionTypes = deferredExtensionTypes
+        self.deferredExtensionSourceClasses = deferredExtensionSourceClasses
+    }
 }
 
 private extension Array where Element == String {
@@ -1140,6 +1181,13 @@ let runtimeEntries: Set<String> = [
     "MultiplayerPeer.swift",
     "MultiplayerAPI.swift",
     "PacketPeer.swift"
+]
+
+let runtimeDeferredReturnTypes = [
+    "Window",
+    "Tween",
+    "SceneTree",
+    "Viewport"
 ]
 
 let coreAdditionalEntries: Set<String> = [
