@@ -150,7 +150,7 @@ public struct FastVariant: ~Copyable {
     
     /// Create a copy of this ``FastVariant`` with a separate lifetime.
     @inline(__always)
-    @inlinable
+//  TODO:  @inlinable
     public func copy() -> FastVariant {
         var newContent = VariantContent.zero
         

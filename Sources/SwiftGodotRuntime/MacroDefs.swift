@@ -166,9 +166,9 @@ public macro initSwiftExtension(
 ///     sprite.texture = #texture2DLiteral("res://assets/playersprite.png")
 /// }
 /// ```
-@freestanding(expression)
-public macro texture2DLiteral(_ path: String) -> Texture2D = #externalMacro(module: "SwiftGodotMacroLibrary",
-                                                                            type: "Texture2DLiteralMacro")
+//@freestanding(expression)
+//public macro texture2DLiteral(_ path: String) -> Texture2D = #externalMacro(module: "SwiftGodotMacroLibrary",
+//                                                                            type: "Texture2DLiteralMacro")
 
 // MARK: - Attached Macros
 

@@ -11,17 +11,29 @@ import PackagePlugin
 /// Generates the API for the SwiftGodot from the Godot exported Json API
 @main struct SwiftCodeGeneratorPlugin: BuildToolPlugin {
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
-        var commands: [Command] = []
-        // Configure the commands to write to a "GeneratedSources" directory.
-        let genSourcesDir = context.pluginWorkDirectoryURL.appending(path: "GeneratedSources")
+        guard let config = generationConfig(for: target.name) else {
+            return []
+        }
 
-        // We only generate commands for source targets.
         let generator = try context.tool(named: "Generator").url
 
         let api = context.package.directoryURL
             .appending(["Sources", "ExtensionApi", "extension_api.json"])
 
-        var arguments = [api.path, genSourcesDir.path]
+        let generatedSourcesDir = context.pluginWorkDirectoryURL
+            .appending(path: "GeneratedSources")
+            .appending(path: target.name)
+
+        let configurationDir = context.pluginWorkDirectoryURL.appending(path: "Configuration")
+        try FileManager.default.createDirectory(at: configurationDir, withIntermediateDirectories: true)
+
+        let classFilterFile = configurationDir.appending(path: "\(target.name)-classes.txt")
+        let builtinFilterFile = configurationDir.appending(path: "\(target.name)-builtins.txt")
+
+        try config.classFiles.joined(separator: "\n").write(to: classFilterFile, atomically: true, encoding: .utf8)
+        try config.builtinFiles.joined(separator: "\n").write(to: builtinFilterFile, atomically: true, encoding: .utf8)
+
+        var arguments = [api.path, generatedSourcesDir.path]
         var outputFiles: [URL] = []
 #if os(Windows)
         // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well.
@@ -30,26 +42,89 @@ import PackagePlugin
         // all the types that start with that letter.
         let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         for letter in letters {
-            outputFiles.append(genSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
+            outputFiles.append(generatedSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
         }
         arguments.append(context.package.directoryURL.appending(path: "doc").path)
         arguments.append("--combined")
 #else
-        outputFiles.append(contentsOf: knownBuiltin.map { genSourcesDir.appending(["generated-builtin", $0]) })
-        outputFiles.append(contentsOf: known.map { genSourcesDir.appending(["generated", $0]) })
+        outputFiles.append(contentsOf: config.builtinFiles.map { generatedSourcesDir.appending(["generated-builtin", $0]) })
+        outputFiles.append(contentsOf: config.classFiles.map { generatedSourcesDir.appending(["generated", $0]) })
 #endif
+        arguments.append(contentsOf: ["--class-filter", classFilterFile.path, "--builtin-filter", builtinFilterFile.path])
 
-        commands.append(
+        if let preamble = config.preamble, !preamble.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let preambleFile = configurationDir.appending(path: "\(target.name)-preamble.txt")
+            try preamble.write(to: preambleFile, atomically: true, encoding: .utf8)
+            arguments.append(contentsOf: ["--preamble-file", preambleFile.path])
+        }
+
+        return [
             Command.buildCommand(
-                displayName: "Generating Swift API from \(api) to \(genSourcesDir)",
+                displayName: "Generating SwiftGodot API for \(target.name)",
                 executable: generator,
                 arguments: arguments,
                 inputFiles: [api],
                 outputFiles: outputFiles
             )
-        )
+        ]
+    }
 
-        return commands
+    private func generationConfig(for targetName: String) -> GenerationConfig? {
+        switch targetName {
+        case "SwiftGodotRuntime":
+            return GenerationConfig(
+                classFiles: runtime.uniqued(),
+                builtinFiles: knownBuiltin,
+                preamble: nil
+            )
+        case "SwiftGodotCore":
+            return GenerationConfig(
+                classFiles: core.uniqued(),
+                builtinFiles: [],
+                preamble: """
+@_exported import SwiftGodotRuntime
+@_spi(SwiftGodotPrivate) import SwiftGodotRuntime
+"""
+            )
+        case "SwiftGodot2D":
+            fallthrough
+        case "SwiftGodot3D":
+            fallthrough
+        case "SwiftGodotXR":
+            fallthrough
+        case "SwiftGodotVisualShaderNodes":
+            let classFiles: [String]
+            switch targetName {
+            case "SwiftGodot2D": classFiles = twoD
+            case "SwiftGodot3D": classFiles = threeD
+            case "SwiftGodotXR": classFiles = xr
+            case "SwiftGodotVisualShaderNodes": classFiles = visualShaderNodes
+            default: classFiles = []
+            }
+            return GenerationConfig(
+                classFiles: classFiles.uniqued(),
+                builtinFiles: [],
+                preamble: """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotPrivate) import SwiftGodotCore
+"""
+            )
+        default:
+            return nil
+        }
+    }
+}
+
+struct GenerationConfig {
+    let classFiles: [String]
+    let builtinFiles: [String]
+    let preamble: String?
+}
+
+private extension Array where Element == String {
+    func uniqued() -> [String] {
+        var seen: Set<String> = []
+        return self.filter { seen.insert($0).inserted }
     }
 }
 
@@ -320,6 +395,7 @@ let known = [
     "EditorInterface.swift",
     "EditorNode3DGizmo.swift",
     "EditorNode3DGizmoPlugin.swift",
+    "EditorNode3DGizmo.swift",
     "EditorPaths.swift",
     "EditorPlugin.swift",
     "EditorProperty.swift",
@@ -1055,6 +1131,67 @@ let known = [
 let runtimeEntries: Set<String> = [
     "Object.swift",
     "RefCounted.swift",
+    "Node.swift",
+    "InputEvent.swift",
+    "Resource.swift",
+    "ResourceLoader.swift",
+    "ResourceFormatLoader.swift",
+
+    "MultiplayerPeer.swift",
+    "MultiplayerAPI.swift",
+    "PacketPeer.swift"
+]
+
+let coreAdditionalEntries: Set<String> = [
+    "AudioListener2D.swift",
+    "AudioListener3D.swift",
+    "Camera2D.swift",
+    "Camera3D.swift",
+    "Node2D.swift",
+    "Node3D.swift",
+    "Viewport.swift",
+    "World2D.swift",
+    "World3D.swift",
+    "PhysicsDirectSpaceState2D.swift",
+    "PhysicsDirectSpaceState2DExtension.swift",
+    "PhysicsDirectSpaceState3D.swift",
+    "PhysicsDirectSpaceState3DExtension.swift",
+    "PhysicsDirectBodyState2D.swift",
+    "PhysicsDirectBodyState2DExtension.swift",
+    "PhysicsDirectBodyState3D.swift",
+    "PhysicsDirectBodyState3DExtension.swift",
+    "PhysicsServer2D.swift",
+    "PhysicsServer2DExtension.swift",
+    "PhysicsServer2DManager.swift",
+    "PhysicsServer3D.swift",
+    "PhysicsServer3DExtension.swift",
+    "PhysicsServer3DManager.swift",
+    "Skeleton2D.swift",
+    "SkeletonModificationStack2D.swift",
+    "SkeletonModification2D.swift",
+    "Bone2D.swift",
+    "Skeleton3D.swift",
+    "SkeletonModificationStack3D.swift",
+    "VisualShader.swift",
+    "VisualShaderNode.swift",
+    "VisualShaderNodeCustom.swift",
+    "Texture.swift",
+    "Texture2D.swift",
+    "ImageTexture.swift",
+    "ViewportTexture.swift",
+    "EditorNode3DGizmo.swift",
+    "EditorNode3DGizmoPlugin.swift",
+    "Node3DGizmo.swift",
+    "Light3D.swift",
+    "CollisionObject3D.swift",
+    "CollisionShape3D.swift",
+    "VisualInstance3D.swift",
+    "StandardMaterial3D.swift",
+    "BaseMaterial3D.swift",
+    "Material.swift",
+    "Shape3D.swift",
+    "BoneAttachment3D.swift",
+    "OccluderPolygon2D.swift",
 ]
 
 let threeDEntries: Set<String> = [
@@ -1096,6 +1233,7 @@ let threeDEntries: Set<String> = [
     "Generic6DOFJoint3D.swift",
     "GeometryInstance3D.swift",
     "GridMap.swift",
+    "GridMapEditorPlugin.swift",
     "HingeJoint3D.swift",
     "ImporterMeshInstance3D.swift",
     "Joint3D.swift",
@@ -1226,16 +1364,34 @@ let twoDEntries: Set<String> = [
 ]
 
 let runtime = known.filter { runtimeEntries.contains($0) }
-let threeD = known.filter { threeDEntries.contains($0) }
-let twoD = known.filter { twoDEntries.contains($0) }
-let xr = known.filter { $0.contains("XR") }
-let visualShaderNodes = known.filter { $0.contains("VisualShaderNode") }
-let core = known.filter {
-    !runtimeEntries.contains($0)
-        && !threeDEntries.contains($0)
-        && !twoDEntries.contains($0)
+let threeD = known.filter {
+    (threeDEntries.contains($0) || $0.contains("3D"))
         && !$0.contains("XR")
-        && !$0.contains("VisualShaderNode")
+        && !coreAdditionalEntries.contains($0)
+}
+
+let twoD = known.filter {
+    (twoDEntries.contains($0)
+        || ($0.contains("2D") && !$0.contains("3D") && !$0.contains("XR")))
+        && !coreAdditionalEntries.contains($0)
+}
+
+let xr = known.filter { $0.contains("XR") && !coreAdditionalEntries.contains($0) }
+
+let visualShaderNodes = known.filter {
+    ($0.contains("VisualShaderNode") || $0.contains("VisualShader"))
+        && !coreAdditionalEntries.contains($0)
+}
+
+let core = known.filter {
+    coreAdditionalEntries.contains($0)
+        || (!runtimeEntries.contains($0)
+            && !threeDEntries.contains($0)
+            && !twoDEntries.contains($0)
+            && !$0.contains("3D")
+            && !$0.contains("2D")
+            && !$0.contains("XR")
+            && !$0.contains("VisualShader"))
 }
 
 extension URL {

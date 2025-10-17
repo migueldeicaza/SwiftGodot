@@ -93,8 +93,8 @@ var extensionInterface: ExtensionInterface!
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
 public var swiftGodotLibraryGeneration: UInt16 = 0
 
-var extensionInitCallbacks: [OpaquePointer: ((GDExtension.InitializationLevel) -> Void)] = [:]
-var extensionDeInitCallbacks: [OpaquePointer: ((GDExtension.InitializationLevel) -> Void)] = [:]
+var extensionInitCallbacks: [OpaquePointer: ((ExtensionInitializationLevel) -> Void)] = [:]
+var extensionDeInitCallbacks: [OpaquePointer: ((ExtensionInitializationLevel) -> Void)] = [:]
 
 func loadFunctions(loader: GDExtensionInterfaceGetProcAddress) {
 
@@ -113,7 +113,7 @@ public func setExtensionInterface(interface: ExtensionInterface) {
 // Extension initialization callback
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
-    guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    guard let level = ExtensionInitializationLevel(cLevel: l) else { return }
     if level == .scene {
         extensionInterface.initClasses()
     }
@@ -128,7 +128,7 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
-    guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    guard let level = ExtensionInitializationLevel(cLevel: l) else { return }
     callback(level)
     if level == .core {
         // Last one, remove
@@ -476,9 +476,9 @@ public func initializeSwiftModule(
     _ godotGetProcAddrPtr: OpaquePointer,
     _ libraryPtr: OpaquePointer,
     _ extensionPtr: OpaquePointer,
-    initHook: @escaping (GDExtension.InitializationLevel) -> (),
-    deInitHook: @escaping (GDExtension.InitializationLevel) -> (),
-    minimumInitializationLevel: GDExtension.InitializationLevel = .scene
+    initHook: @escaping (ExtensionInitializationLevel) -> (),
+    deInitHook: @escaping (ExtensionInitializationLevel) -> (),
+    minimumInitializationLevel: ExtensionInitializationLevel = .scene
 ) {
     let getProcAddrFun = unsafeBitCast(godotGetProcAddrPtr, to: GDExtensionInterfaceGetProcAddress.self)
     loadGodotInterface(getProcAddrFun)
