@@ -214,6 +214,7 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodot3D",
@@ -222,6 +223,7 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodotControls",
@@ -230,6 +232,7 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodotVisualShaderNodes",
@@ -238,22 +241,33 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodotXR",
-        dependencies: ["SwiftGodotCore"],
+        dependencies: [
+            "SwiftGodotCore",
+            "SwiftGodotControls",
+            "SwiftGodot3D"
+        ],
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodotEditor",
-        dependencies: ["SwiftGodotCore"],
+        dependencies: [
+            "SwiftGodotCore",
+            "SwiftGodotControls",
+            "SwiftGodot3D"
+        ],
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodot",

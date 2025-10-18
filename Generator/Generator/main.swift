@@ -36,7 +36,6 @@ while index < args.count {
             contents.append("\n")
         }
         additionalPreamble = contents
-        print("DEBUG additionalPreamble length: \(additionalPreamble.count)")
         index += 1
     default:
         positionalArgs.append(argument)

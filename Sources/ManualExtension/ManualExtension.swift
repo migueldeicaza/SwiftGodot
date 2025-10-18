@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import SwiftGodot
+import SwiftGodot2D
 
 var sequence = 0
 
@@ -115,7 +115,7 @@ class SwiftSprite: Sprite2D {
 }
 
 /// Setup 
-func setupScene (level: GDExtension.InitializationLevel) {
+func setupScene (level: ExtensionInitializationLevel) {
     if level == .scene {
         register(type: Rigid.self)
         register(type: SwiftSprite.self)

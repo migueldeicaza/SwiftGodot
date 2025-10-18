@@ -96,30 +96,65 @@ import PackagePlugin
         case "SwiftGodotXR":
             fallthrough
         case "SwiftGodotEditor":
+            fallthrough
         case "SwiftGodotVisualShaderNodes":
             let classFiles: [String]
+            let preamble: String
             switch targetName {
             case "SwiftGodotControls":
                 classFiles = controls
+                preamble = """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+"""
             case "SwiftGodot2D":
                 classFiles = twoD
+                preamble = """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+"""
             case "SwiftGodot3D":
                 classFiles = threeD
+                preamble = """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+"""
             case "SwiftGodotXR":
                 classFiles = xr
+                preamble = """
+@_exported import SwiftGodotCore
+@_exported import SwiftGodotControls
+@_exported import SwiftGodot3D
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotControls
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
+"""
             case "SwiftGodotVisualShaderNodes":
                 classFiles = visualShaderNodes
+                preamble = """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+"""
             case "SwiftGodotEditor":
                 classFiles = editor
+                preamble = """
+@_exported import SwiftGodotCore
+@_exported import SwiftGodotControls
+@_exported import SwiftGodot3D
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotControls
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
+"""
             default: classFiles = []
+                preamble = """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+"""
             }
             return GenerationConfig(
                 classFiles: classFiles.uniqued(),
                 builtinFiles: [],
-                preamble: """
-@_exported import SwiftGodotCore
-@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
-"""
+                preamble: preamble
             )
         default:
             return nil
@@ -407,7 +442,6 @@ let known = [
     "EditorInterface.swift",
     "EditorNode3DGizmo.swift",
     "EditorNode3DGizmoPlugin.swift",
-    "EditorNode3DGizmo.swift",
     "EditorPaths.swift",
     "EditorPlugin.swift",
     "EditorProperty.swift",
@@ -1201,8 +1235,6 @@ let coreAdditionalEntries: Set<String> = [
     "Texture2D.swift",
     "ImageTexture.swift",
     "ViewportTexture.swift",
-    "EditorNode3DGizmo.swift",
-    "EditorNode3DGizmoPlugin.swift",
     "Node3DGizmo.swift",
     "StandardMaterial3D.swift",
     "BaseMaterial3D.swift",
@@ -1224,12 +1256,7 @@ let controlEntries: Set<String> = [
     "ColorPickerButton.swift",
     "ColorRect.swift",
     "Container.swift",
-    "EditorInspector.swift",
     "EditorProperty.swift",
-    "EditorResourcePicker.swift",
-    "EditorScriptPicker.swift",
-    "EditorSpinSlider.swift",
-    "EditorToaster.swift",
     "FileSystemDock.swift",
     "FlowContainer.swift",
     "GraphEdit.swift",
@@ -1252,8 +1279,6 @@ let controlEntries: Set<String> = [
     "MenuButton.swift",
     "NinePatchRect.swift",
     "OpenXRBindingModifierEditor.swift",
-    "OpenXRInteractionProfileEditor.swift",
-    "OpenXRInteractionProfileEditorBase.swift",
     "OptionButton.swift",
     "Panel.swift",
     "PanelContainer.swift",
@@ -1261,8 +1286,6 @@ let controlEntries: Set<String> = [
     "Range.swift",
     "ReferenceRect.swift",
     "RichTextLabel.swift",
-    "ScriptEditor.swift",
-    "ScriptEditorBase.swift",
     "ScrollBar.swift",
     "ScrollContainer.swift",
     "Separator.swift",
@@ -1325,7 +1348,6 @@ let threeDEntries: Set<String> = [
     "Generic6DOFJoint3D.swift",
     "GeometryInstance3D.swift",
     "GridMap.swift",
-    "GridMapEditorPlugin.swift",
     "HingeJoint3D.swift",
     "ImporterMeshInstance3D.swift",
     "Joint3D.swift",
@@ -1464,7 +1486,6 @@ let twoDEntries: Set<String> = [
     "PhysicsServer2DManager.swift",
 ]
 
-// TODO: these will need some extra work
 let editorEntries: Set<String> = [
     "EditorCommandPalette.swift",
     "EditorContextMenuPlugin.swift",
@@ -1492,7 +1513,6 @@ let editorEntries: Set<String> = [
     "EditorInterface.swift",
     "EditorNode3DGizmo.swift",
     "EditorNode3DGizmoPlugin.swift",
-    "EditorNode3DGizmo.swift",
     "EditorPaths.swift",
     "EditorPlugin.swift",
     "EditorProperty.swift",
@@ -1512,21 +1532,30 @@ let editorEntries: Set<String> = [
     "EditorScriptPicker.swift",
     "EditorSelection.swift",
     "EditorSettings.swift",
-    "EditorSpinSlider.swift",
     "EditorSyntaxHighlighter.swift",
+    "EditorSpinSlider.swift",
     "EditorToaster.swift",
     "EditorTranslationParserPlugin.swift",
     "EditorUndoRedoManager.swift",
     "EditorVCSInterface.swift",
+    "GDScriptSyntaxHighlighter.swift",
+    "GridMapEditorPlugin.swift",
+    "OpenXRInteractionProfileEditor.swift",
+    "OpenXRInteractionProfileEditorBase.swift",
+    "ScriptEditor.swift",
+    "ScriptEditorBase.swift",
 ]
 
-let runtime = known.filter { runtimeEntries.contains($0) }
+let runtime = runtimeEntries.map { $0 }
 let controls = known.filter { controlEntries.contains($0) }
+
 let threeD = known.filter {
     (threeDEntries.contains($0) || $0.contains("3D"))
         && !$0.contains("XR")
         && !coreAdditionalEntries.contains($0)
         && !controlEntries.contains($0)
+        && !editorEntries.contains($0)
+        && !$0.contains("VisualShader")
 }
 
 let twoD = known.filter {
@@ -1534,6 +1563,8 @@ let twoD = known.filter {
         || ($0.contains("2D") && !$0.contains("3D") && !$0.contains("XR")))
         && !coreAdditionalEntries.contains($0)
         && !controlEntries.contains($0)
+        && !editorEntries.contains($0)
+        && !$0.contains("VisualShader")
 }
 
 let xr = known.filter { ($0.contains("XR") || $0.contains("VR")) && !coreAdditionalEntries.contains($0) }
@@ -1542,7 +1573,10 @@ let visualShaderNodes = known.filter {
     ($0.contains("VisualShaderNode") || $0.contains("VisualShader"))
         && !coreAdditionalEntries.contains($0)
         && !controlEntries.contains($0)
+        && !editorEntries.contains($0)
 }
+
+let editor = known.filter { editorEntries.contains($0) }
 
 let core = known.filter {
     coreAdditionalEntries.contains($0)
@@ -1554,13 +1588,10 @@ let core = known.filter {
             && !$0.contains("XR")
             && !$0.contains("VR")
             && !controlEntries.contains($0)
+            && !editorEntries.contains($0)
             && !$0.contains("VisualShader"))
 }
 
-let editor = known.filter {
-    editorEntries.contains($0)
-    && !coreAdditionalEntries.contains($0)
-}
 extension URL {
     func appending(_ paths: [String]) -> URL {
         return paths.reduce(self) { $0.appending(path: $1) }
