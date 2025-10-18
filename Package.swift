@@ -258,6 +258,7 @@ var targets: [Target] = [
 	    "SwiftGodotCore",
 	    "SwiftGodot2D",
 	    "SwiftGodot3D",
+	    "SwiftGodotControls",
 	    "SwiftGodotVisualShaderNodes",
 	    "SwiftGodotXR",
 	    "SwiftGodotEditor"

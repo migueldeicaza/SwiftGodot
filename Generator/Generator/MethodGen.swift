@@ -298,18 +298,33 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
 }
 
 func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgument], body: () -> Void) {
+    func temporaryName(from base: String, suffix: String) -> String {
+        let trimmed: String
+        if base.hasPrefix("`") && base.hasSuffix("`") {
+            trimmed = String(base.dropFirst().dropLast())
+        } else {
+            trimmed = base
+        }
+        return escapeSwift(trimmed + suffix)
+    }
+    
     func withNestedUnsafe(index: Int = 0) {
         if index >= arguments.count {
             body()
         } else {
             let argument = arguments[index]
             let argumentName = godotArgumentToSwift(argument.name)
+            let pointerName: String
                         
             if argument.type != "Variant" {
-                p("let \(argumentName) = \(argumentName).toVariant()")
+                let convertedName = temporaryName(from: argumentName, suffix: "Variant")
+                p("let \(convertedName) = \(argumentName).toVariant()")
+                pointerName = convertedName
+            } else {
+                pointerName = argumentName
             }
             
-            p("withUnsafePointer(to: \(argumentName).content)", arg: " pArg\(index) in") {
+            p("withUnsafePointer(to: \(pointerName).content)", arg: " pArg\(index) in") {
                 withNestedUnsafe(index: index + 1)
             }
         }

@@ -5,6 +5,8 @@
 //  Created by Estevan Hernandez on 12/24/23.
 //
 
+import SwiftGodotCore
+
 private extension VariantDictionary {
     func makeOrUnwrap<T: VariantConvertible>(key: String) -> T? {
         guard let variant = self[key] else {

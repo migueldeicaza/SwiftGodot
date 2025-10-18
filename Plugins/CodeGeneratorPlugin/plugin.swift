@@ -87,6 +87,8 @@ import PackagePlugin
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 """
             )
+        case "SwiftGodotControls":
+            fallthrough
         case "SwiftGodot2D":
             fallthrough
         case "SwiftGodot3D":
@@ -96,6 +98,7 @@ import PackagePlugin
         case "SwiftGodotVisualShaderNodes":
             let classFiles: [String]
             switch targetName {
+            case "SwiftGodotControls": classFiles = controls
             case "SwiftGodot2D": classFiles = twoD
             case "SwiftGodot3D": classFiles = threeD
             case "SwiftGodotXR": classFiles = xr
@@ -1131,16 +1134,7 @@ let known = [
 
 let runtimeEntries: Set<String> = [
     "Object.swift",
-    "RefCounted.swift",
-    "Node.swift",
-    "InputEvent.swift",
-    "Resource.swift",
-    "ResourceLoader.swift",
-    "ResourceFormatLoader.swift",
-
-    "MultiplayerPeer.swift",
-    "MultiplayerAPI.swift",
-    "PacketPeer.swift"
+    "RefCounted.swift"
 ]
 
 let coreAdditionalEntries: Set<String> = [
@@ -1148,11 +1142,15 @@ let coreAdditionalEntries: Set<String> = [
     "AudioListener3D.swift",
     "Camera2D.swift",
     "Camera3D.swift",
+    "InputEvent.swift",
+    "Node.swift",
     "Node2D.swift",
     "Node3D.swift",
     "Viewport.swift",
     "World2D.swift",
     "World3D.swift",
+    "NavigationMeshSourceGeometryData2D.swift",
+    "NavigationMeshSourceGeometryData3D.swift",
     "PhysicsDirectSpaceState2D.swift",
     "PhysicsDirectSpaceState2DExtension.swift",
     "PhysicsDirectSpaceState3D.swift",
@@ -1167,6 +1165,23 @@ let coreAdditionalEntries: Set<String> = [
     "PhysicsServer3D.swift",
     "PhysicsServer3DExtension.swift",
     "PhysicsServer3DManager.swift",
+    "PhysicsServer3DRenderingServerHandler.swift",
+    "PhysicsPointQueryParameters2D.swift",
+    "PhysicsPointQueryParameters3D.swift",
+    "PhysicsRayQueryParameters2D.swift",
+    "PhysicsRayQueryParameters3D.swift",
+    "PhysicsShapeQueryParameters2D.swift",
+    "PhysicsShapeQueryParameters3D.swift",
+    "PhysicsTestMotionParameters2D.swift",
+    "PhysicsTestMotionParameters3D.swift",
+    "PhysicsTestMotionResult2D.swift",
+    "PhysicsTestMotionResult3D.swift",
+    "Resource.swift",
+    "ResourceLoader.swift",
+    "ResourceFormatLoader.swift",
+    "MultiplayerPeer.swift",
+    "MultiplayerAPI.swift",
+    "PacketPeer.swift",
     "Skeleton2D.swift",
     "SkeletonModificationStack2D.swift",
     "SkeletonModification2D.swift",
@@ -1193,6 +1208,81 @@ let coreAdditionalEntries: Set<String> = [
     "Shape3D.swift",
     "BoneAttachment3D.swift",
     "OccluderPolygon2D.swift",
+]
+
+let controlEntries: Set<String> = [
+    "AspectRatioContainer.swift",
+    "BaseButton.swift",
+    "BoxContainer.swift",
+    "Button.swift",
+    "CenterContainer.swift",
+    "CheckBox.swift",
+    "CheckButton.swift",
+    "CodeEdit.swift",
+    "ColorPicker.swift",
+    "ColorPickerButton.swift",
+    "ColorRect.swift",
+    "Container.swift",
+    "EditorInspector.swift",
+    "EditorProperty.swift",
+    "EditorResourcePicker.swift",
+    "EditorScriptPicker.swift",
+    "EditorSpinSlider.swift",
+    "EditorToaster.swift",
+    "FileSystemDock.swift",
+    "FlowContainer.swift",
+    "GraphEdit.swift",
+    "GraphElement.swift",
+    "GraphFrame.swift",
+    "GraphNode.swift",
+    "GridContainer.swift",
+    "HBoxContainer.swift",
+    "HFlowContainer.swift",
+    "HScrollBar.swift",
+    "HSeparator.swift",
+    "HSlider.swift",
+    "HSplitContainer.swift",
+    "ItemList.swift",
+    "Label.swift",
+    "LineEdit.swift",
+    "LinkButton.swift",
+    "MarginContainer.swift",
+    "MenuBar.swift",
+    "MenuButton.swift",
+    "NinePatchRect.swift",
+    "OpenXRBindingModifierEditor.swift",
+    "OpenXRInteractionProfileEditor.swift",
+    "OpenXRInteractionProfileEditorBase.swift",
+    "OptionButton.swift",
+    "Panel.swift",
+    "PanelContainer.swift",
+    "ProgressBar.swift",
+    "Range.swift",
+    "ReferenceRect.swift",
+    "RichTextLabel.swift",
+    "ScriptEditor.swift",
+    "ScriptEditorBase.swift",
+    "ScrollBar.swift",
+    "ScrollContainer.swift",
+    "Separator.swift",
+    "Slider.swift",
+    "SpinBox.swift",
+    "SplitContainer.swift",
+    "SubViewportContainer.swift",
+    "TabBar.swift",
+    "TabContainer.swift",
+    "TextEdit.swift",
+    "TextureButton.swift",
+    "TextureProgressBar.swift",
+    "TextureRect.swift",
+    "Tree.swift",
+    "VBoxContainer.swift",
+    "VFlowContainer.swift",
+    "VScrollBar.swift",
+    "VSeparator.swift",
+    "VSlider.swift",
+    "VSplitContainer.swift",
+    "VideoStreamPlayer.swift",
 ]
 
 let threeDEntries: Set<String> = [
@@ -1365,23 +1455,27 @@ let twoDEntries: Set<String> = [
 ]
 
 let runtime = known.filter { runtimeEntries.contains($0) }
+let controls = known.filter { controlEntries.contains($0) }
 let threeD = known.filter {
     (threeDEntries.contains($0) || $0.contains("3D"))
         && !$0.contains("XR")
         && !coreAdditionalEntries.contains($0)
+        && !controlEntries.contains($0)
 }
 
 let twoD = known.filter {
     (twoDEntries.contains($0)
         || ($0.contains("2D") && !$0.contains("3D") && !$0.contains("XR")))
         && !coreAdditionalEntries.contains($0)
+        && !controlEntries.contains($0)
 }
 
-let xr = known.filter { $0.contains("XR") && !coreAdditionalEntries.contains($0) }
+let xr = known.filter { ($0.contains("XR") || $0.contains("VR")) && !coreAdditionalEntries.contains($0) }
 
 let visualShaderNodes = known.filter {
     ($0.contains("VisualShaderNode") || $0.contains("VisualShader"))
         && !coreAdditionalEntries.contains($0)
+        && !controlEntries.contains($0)
 }
 
 let core = known.filter {
@@ -1392,6 +1486,8 @@ let core = known.filter {
             && !$0.contains("3D")
             && !$0.contains("2D")
             && !$0.contains("XR")
+            && !$0.contains("VR")
+            && !controlEntries.contains($0)
             && !$0.contains("VisualShader"))
 }
 

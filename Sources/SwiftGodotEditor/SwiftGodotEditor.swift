@@ -1,4 +1,5 @@
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
+import SwiftGodotCore
 
 /// Adds the type described by `name` as an Editor plugin.
 ///
@@ -32,4 +33,3 @@ public func editorRemovePlugin<T:EditorPlugin> (type: T.Type) {
     let typeStr = String (describing: type)
     editorRemovePlugin(name: StringName(typeStr))
 }
-

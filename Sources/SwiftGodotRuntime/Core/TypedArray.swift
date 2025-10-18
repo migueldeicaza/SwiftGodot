@@ -131,7 +131,8 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         }
     }
     
-    init(takingOver content: VariantArray.ContentType) {
+    @_spi(SwiftGodotRuntimePrivate)
+    public init(takingOver content: VariantArray.ContentType) {
         self.init(from: VariantArray(takingOver: content))
     }
     
@@ -802,4 +803,3 @@ public extension FastVariant {
         self.init(from)
     }
 }
-

@@ -337,12 +337,13 @@ public extension _GodotBridgeable where Self: Object {
     ) -> PropInfo {
         var hint = hint
         var hintStr = hintStr
-        
-        if self is Node.Type && hint == nil && hintStr == nil {
-            hint = .nodeType
-            hintStr = _builtinOrClassName
-        }
-        
+
+        // TODO: 
+//        if hint == nil, hintStr == nil, self is Node.Type {
+//            hint = .nodeType
+//            hintStr = _builtinOrClassName
+//        }
+
         return _propInfoDefault(
             propertyType: _variantType,
             name: name,
