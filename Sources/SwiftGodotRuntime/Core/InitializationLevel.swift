@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 10/16/25.
 //
 
-import GDExtension
+@_implementationOnly import GDExtension
 
 public enum ExtensionInitializationLevel: Int64, Sendable {
     case core = 0

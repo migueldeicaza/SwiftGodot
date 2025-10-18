@@ -1,4 +1,4 @@
-@_spi(SwiftGodotPrivate) import SwiftGodotRuntime
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 
 /// Adds the type described by `name` as an Editor plugin.
 ///

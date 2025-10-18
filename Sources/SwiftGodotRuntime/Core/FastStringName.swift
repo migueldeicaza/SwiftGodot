@@ -14,7 +14,7 @@ public struct FastStringName: ~Copyable {
         case string(String)
     }
     
-    var content: StringName.ContentType
+    public var content: StringName.ContentType
     let source: Source
     var isStatic: Bool {
         switch source {

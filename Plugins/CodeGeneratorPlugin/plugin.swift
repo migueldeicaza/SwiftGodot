@@ -83,7 +83,8 @@ import PackagePlugin
                 builtinFiles: [],
                 preamble: """
 @_exported import SwiftGodotRuntime
-@_spi(SwiftGodotPrivate) import SwiftGodotRuntime
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 """
             )
         case "SwiftGodot2D":
@@ -106,7 +107,7 @@ import PackagePlugin
                 builtinFiles: [],
                 preamble: """
 @_exported import SwiftGodotCore
-@_spi(SwiftGodotPrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
             )
         default:

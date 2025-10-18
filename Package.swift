@@ -201,6 +201,7 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
         ],
+        plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
         name: "SwiftGodot2D",

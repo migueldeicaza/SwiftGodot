@@ -281,7 +281,7 @@ func generateMethods (_ p: Printer,
     }
     
     if virtuals.count > 0 {
-        p ("override class func getVirtualDispatcher(name: StringName) -> GDExtensionClassCallVirtual?"){
+        p ("@_spi(SwiftGodotRuntimePrivate) open override class func getVirtualDispatcher(name: StringName) -> GodotClassCallVirtual?"){
             p ("guard implementedOverrides().contains(name) else { return nil }")
             p ("switch name.description") {
                 for name in virtuals.keys.sorted() {
@@ -464,8 +464,11 @@ var skipList = Set<String>()
 #endif
 
 func generateClasses (values: [JGodotExtensionAPIClass], outputDir: String?) async {
+    let filteredClasses = values.filter { shouldGenerateClass($0.name) }
+    classesSelectedForGeneration = filteredClasses.map { $0.name }
+
     await withTaskGroup(of: Void.self) { group in
-        for cdef in values {
+        for cdef in filteredClasses {
             group.addTask {
                 await processClass (cdef: cdef, outputDir: outputDir)
             }
@@ -552,6 +555,10 @@ func generateSignalDocAppendix (_ p: Printer, cdef: JGodotExtensionAPIClass, sig
 let objectInherits = "Wrapped, _GodotBridgeable, _GodotNullableBridgeable"
 
 func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
+    guard shouldGenerateClass(cdef.name) else {
+        return
+    }
+
     // Determine if it is a singleton, but exclude EditorInterface
     let isSingleton = jsonApi.singletons.contains (where: { $0.name == cdef.name })
     let asSingleton = isSingleton && cdef.name != "EditorInterface"
@@ -740,9 +747,17 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
 
 extension Generator {
     func generateCtorPointers (_ p: Printer) {
-        p ("var godotFrameworkCtors = [")
-        for x in classMap.keys.sorted() {
-            p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
+        let sortedClasses = classesSelectedForGeneration.sorted()
+
+        p("let godotFrameworkTypeNames: [String] = [")
+        for name in sortedClasses {
+            p("    \"\(name)\",")
+        }
+        p("]\n")
+
+        p ("var godotFrameworkCtors: [String: Object.Type] = [")
+        for name in sortedClasses {
+            p ("    \"\(name)\": \(name).self, //(nativeHandle:),")
         }
         p ("]")
     }

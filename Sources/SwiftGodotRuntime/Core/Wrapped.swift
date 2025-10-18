@@ -45,6 +45,8 @@ enum InitOrigin {
 /// Opaque pointer representing Godot `Object *`
 public typealias GodotNativeObjectPointer = UnsafeMutableRawPointer
 
+@_spi(SwiftGodotRuntimePrivate) public typealias GodotClassCallVirtual = @convention(c) (UnsafeMutableRawPointer?, UnsafePointer<UnsafeRawPointer?>?, UnsafeMutableRawPointer?) -> Void
+
 /// Just pass it to `super.init`.
 public struct InitContext {
     let handle: GodotNativeObjectPointer
@@ -159,7 +161,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static func attemptToUseObjectFreedByGodot() {
         fatalError ("Wrapped.handle was nil, which indicates the object was cleared by Godot")
     }
-    class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
+    @_spi(SwiftGodotRuntimePrivate) open class func getVirtualDispatcher(name: StringName) -> GodotClassCallVirtual? {
         pd ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
         return nil
     }
@@ -405,7 +407,7 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
         duplicateClassNameDetected(name, type)
     }
 
-    func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
+    func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) -> GodotClassCallVirtual? {
         let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
         guard let type  = typeAny as? Object.Type else {
             pd ("The wrapped value did not contain a type: \(typeAny)")
@@ -431,7 +433,7 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     gi.classdb_register_extension_class(extensionInterface.getLibrary(), &nameContent, &parent.content, &info)
 }
 
-final class WrappedReference {
+@_spi(SwiftGodotRuntimePrivate) public final class WrappedReference {
     public init(_ val: Wrapped, strong: Bool = true) {
         self.ref = val
         if strong {
@@ -611,7 +613,7 @@ func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, 
 }
 
 /// Get an existing Swift object which is bound to Godot `nativeHandle` or initialize a new one and bind it
-func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
+@_spi(SwiftGodotRuntimePrivate) public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
     if let object = existingSwiftObject(for: nativeHandle) {
         handleRef(staticType: T.self, object: object, ownsRef: ownsRef, unref: true)
         return object as? T

@@ -361,6 +361,9 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         if t.type.starts (with: "bitfield::") {
             return "\(t.type.dropFirst(10))"
         }
+        if classMap[t.type] != nil {
+            return fallbackClassName(for: t.type)
+        }
         return t.type
     }
 }
@@ -467,4 +470,3 @@ func builtinTypecode (_ name: String) -> String {
         fatalError("Missing handler for \(name)")
     }
 }
-
