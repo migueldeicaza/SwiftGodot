@@ -52,6 +52,10 @@ var products: [Product] = [
         targets: ["SwiftGodotVisualShaderNodes"]
     ),
     .library(
+        name: "SwiftGodotEditor",
+        type: .dynamic,
+        targets: ["SwiftGodotEditor"]),
+    .library(
         name: "ExtensionApi",
         targets: [
             "ExtensionApi",
@@ -255,13 +259,13 @@ var targets: [Target] = [
         name: "SwiftGodot",
         dependencies: [
             "SwiftGodotRuntime",
-	    "SwiftGodotCore",
-	    "SwiftGodot2D",
-	    "SwiftGodot3D",
-	    "SwiftGodotControls",
-	    "SwiftGodotVisualShaderNodes",
-	    "SwiftGodotXR",
-	    "SwiftGodotEditor"
+            "SwiftGodotCore",
+            "SwiftGodot2D",
+            "SwiftGodot3D",
+            "SwiftGodotControls",
+            "SwiftGodotVisualShaderNodes",
+            "SwiftGodotXR",
+            "SwiftGodotEditor"
         ],
         swiftSettings: [
             .swiftLanguageMode(.v5),

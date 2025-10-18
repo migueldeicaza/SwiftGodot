@@ -95,14 +95,22 @@ import PackagePlugin
             fallthrough
         case "SwiftGodotXR":
             fallthrough
+        case "SwiftGodotEditor":
         case "SwiftGodotVisualShaderNodes":
             let classFiles: [String]
             switch targetName {
-            case "SwiftGodotControls": classFiles = controls
-            case "SwiftGodot2D": classFiles = twoD
-            case "SwiftGodot3D": classFiles = threeD
-            case "SwiftGodotXR": classFiles = xr
-            case "SwiftGodotVisualShaderNodes": classFiles = visualShaderNodes
+            case "SwiftGodotControls":
+                classFiles = controls
+            case "SwiftGodot2D":
+                classFiles = twoD
+            case "SwiftGodot3D":
+                classFiles = threeD
+            case "SwiftGodotXR":
+                classFiles = xr
+            case "SwiftGodotVisualShaderNodes":
+                classFiles = visualShaderNodes
+            case "SwiftGodotEditor":
+                classFiles = editor
             default: classFiles = []
             }
             return GenerationConfig(
@@ -1141,7 +1149,6 @@ let coreAdditionalEntries: Set<String> = [
     "AudioListener2D.swift",
     "AudioListener3D.swift",
     "Camera2D.swift",
-    "Camera3D.swift",
     "InputEvent.swift",
     "Node.swift",
     "Node2D.swift",
@@ -1186,7 +1193,6 @@ let coreAdditionalEntries: Set<String> = [
     "SkeletonModificationStack2D.swift",
     "SkeletonModification2D.swift",
     "Bone2D.swift",
-    "Skeleton3D.swift",
     "SkeletonModificationStack3D.swift",
     "VisualShader.swift",
     "VisualShaderNode.swift",
@@ -1198,15 +1204,10 @@ let coreAdditionalEntries: Set<String> = [
     "EditorNode3DGizmo.swift",
     "EditorNode3DGizmoPlugin.swift",
     "Node3DGizmo.swift",
-    "Light3D.swift",
-    "CollisionObject3D.swift",
-    "CollisionShape3D.swift",
-    "VisualInstance3D.swift",
     "StandardMaterial3D.swift",
     "BaseMaterial3D.swift",
     "Material.swift",
     "Shape3D.swift",
-    "BoneAttachment3D.swift",
     "OccluderPolygon2D.swift",
 ]
 
@@ -1390,6 +1391,15 @@ let threeDEntries: Set<String> = [
     "PhysicsServer3DExtension.swift",
     "PhysicsServer3DManager.swift",
     "PhysicsServer3DRenderingServerHandler.swift",
+
+    "Camera3D.swift",
+    "Skeleton3D.swift",
+    "Light3D.swift",
+    "CollisionObject3D.swift",
+    "CollisionShape3D.swift",
+    "VisualInstance3D.swift",
+    "BoneAttachment3D.swift",
+
 ]
 
 let twoDEntries: Set<String> = [
@@ -1454,6 +1464,62 @@ let twoDEntries: Set<String> = [
     "PhysicsServer2DManager.swift",
 ]
 
+// TODO: these will need some extra work
+let editorEntries: Set<String> = [
+    "EditorCommandPalette.swift",
+    "EditorContextMenuPlugin.swift",
+    "EditorDebuggerPlugin.swift",
+    "EditorDebuggerSession.swift",
+    "EditorExportPlatform.swift",
+    "EditorExportPlatformAndroid.swift",
+    "EditorExportPlatformExtension.swift",
+    "EditorExportPlatformIOS.swift",
+    "EditorExportPlatformLinuxBSD.swift",
+    "EditorExportPlatformMacOS.swift",
+    "EditorExportPlatformPC.swift",
+    "EditorExportPlatformWeb.swift",
+    "EditorExportPlatformWindows.swift",
+    "EditorExportPlugin.swift",
+    "EditorExportPreset.swift",
+    "EditorFeatureProfile.swift",
+    "EditorFileDialog.swift",
+    "EditorFileSystem.swift",
+    "EditorFileSystemDirectory.swift",
+    "EditorFileSystemImportFormatSupportQuery.swift",
+    "EditorImportPlugin.swift",
+    "EditorInspector.swift",
+    "EditorInspectorPlugin.swift",
+    "EditorInterface.swift",
+    "EditorNode3DGizmo.swift",
+    "EditorNode3DGizmoPlugin.swift",
+    "EditorNode3DGizmo.swift",
+    "EditorPaths.swift",
+    "EditorPlugin.swift",
+    "EditorProperty.swift",
+    "EditorResourceConversionPlugin.swift",
+    "EditorResourcePicker.swift",
+    "EditorResourcePreview.swift",
+    "EditorResourcePreviewGenerator.swift",
+    "EditorResourceTooltipPlugin.swift",
+    "EditorSceneFormatImporter.swift",
+    "EditorSceneFormatImporterBlend.swift",
+    "EditorSceneFormatImporterFBX2GLTF.swift",
+    "EditorSceneFormatImporterGLTF.swift",
+    "EditorSceneFormatImporterUFBX.swift",
+    "EditorScenePostImport.swift",
+    "EditorScenePostImportPlugin.swift",
+    "EditorScript.swift",
+    "EditorScriptPicker.swift",
+    "EditorSelection.swift",
+    "EditorSettings.swift",
+    "EditorSpinSlider.swift",
+    "EditorSyntaxHighlighter.swift",
+    "EditorToaster.swift",
+    "EditorTranslationParserPlugin.swift",
+    "EditorUndoRedoManager.swift",
+    "EditorVCSInterface.swift",
+]
+
 let runtime = known.filter { runtimeEntries.contains($0) }
 let controls = known.filter { controlEntries.contains($0) }
 let threeD = known.filter {
@@ -1491,6 +1557,10 @@ let core = known.filter {
             && !$0.contains("VisualShader"))
 }
 
+let editor = known.filter {
+    editorEntries.contains($0)
+    && !coreAdditionalEntries.contains($0)
+}
 extension URL {
     func appending(_ paths: [String]) -> URL {
         return paths.reduce(self) { $0.appending(path: $1) }
