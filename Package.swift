@@ -42,6 +42,11 @@ var products: [Product] = [
         targets: ["SwiftGodotControls"]
     ),
     .library(
+        name: "SwiftGodotGLTF",
+        type: .dynamic,
+        targets: ["SwiftGodotGLTF"]
+    ),
+    .library(
         name: "SwiftGodotXR",
         type: .dynamic,
         targets: ["SwiftGodotXR"]
@@ -226,6 +231,15 @@ var targets: [Target] = [
         plugins: ["CodeGeneratorPlugin"]
     ),
     .target(
+        name: "SwiftGodotGLTF",
+        dependencies: ["SwiftGodotCore", "SwiftGodot3D"],
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+        ],
+        plugins: ["CodeGeneratorPlugin"]
+    ),
+    .target(
         name: "SwiftGodotControls",
         dependencies: ["SwiftGodotCore"],
         swiftSettings: [
@@ -261,7 +275,8 @@ var targets: [Target] = [
         dependencies: [
             "SwiftGodotCore",
             "SwiftGodotControls",
-            "SwiftGodot3D"
+            "SwiftGodot3D",
+            "SwiftGodotGLTF"
         ],
         swiftSettings: [
             .swiftLanguageMode(.v5),
@@ -276,6 +291,7 @@ var targets: [Target] = [
             "SwiftGodotCore",
             "SwiftGodot2D",
             "SwiftGodot3D",
+            "SwiftGodotGLTF",
             "SwiftGodotControls",
             "SwiftGodotVisualShaderNodes",
             "SwiftGodotXR",

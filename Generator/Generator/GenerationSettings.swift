@@ -66,6 +66,8 @@ func fallbackClassName(for original: String) -> String {
         return original
     }
 
+    let args = CommandLine.arguments.joined(separator: " ")
+    print("Looking for \(original) but did not exit in \(args)")
     var currentName = original
     while let inherits = classMap[currentName]?.inherits {
         if classWhitelist.contains(inherits) {
@@ -73,6 +75,8 @@ func fallbackClassName(for original: String) -> String {
         }
         currentName = inherits
     }
+
+    print("SwiftGodot Generator warning: falling back to Object for missing type '\(original)'.\n")
 
     return "Object"
 }
