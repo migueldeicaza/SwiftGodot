@@ -28,9 +28,11 @@ import PackagePlugin
         try FileManager.default.createDirectory(at: configurationDir, withIntermediateDirectories: true)
 
         let classFilterFile = configurationDir.appending(path: "\(target.name)-classes.txt")
+        let availableClassFilterFile = configurationDir.appending(path: "\(target.name)-available-classes.txt")
         let builtinFilterFile = configurationDir.appending(path: "\(target.name)-builtins.txt")
 
-        try config.classFiles.joined(separator: "\n").write(to: classFilterFile, atomically: true, encoding: .utf8)
+        try config.generatedClassFiles.joined(separator: "\n").write(to: classFilterFile, atomically: true, encoding: .utf8)
+        try config.availableClassFiles.joined(separator: "\n").write(to: availableClassFilterFile, atomically: true, encoding: .utf8)
         try config.builtinFiles.joined(separator: "\n").write(to: builtinFilterFile, atomically: true, encoding: .utf8)
 
         var arguments = [api.path, generatedSourcesDir.path]
@@ -48,9 +50,13 @@ import PackagePlugin
         arguments.append("--combined")
 #else
         outputFiles.append(contentsOf: config.builtinFiles.map { generatedSourcesDir.appending(["generated-builtin", $0]) })
-        outputFiles.append(contentsOf: config.classFiles.map { generatedSourcesDir.appending(["generated", $0]) })
+        outputFiles.append(contentsOf: config.generatedClassFiles.map { generatedSourcesDir.appending(["generated", $0]) })
 #endif
-        arguments.append(contentsOf: ["--class-filter", classFilterFile.path, "--builtin-filter", builtinFilterFile.path])
+        arguments.append(contentsOf: [
+            "--class-filter", classFilterFile.path,
+            "--available-class-filter", availableClassFilterFile.path,
+            "--builtin-filter", builtinFilterFile.path
+        ])
 
         if let preamble = config.preamble, !preamble.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let preambleFile = configurationDir.appending(path: "\(target.name)-preamble.txt")
@@ -85,13 +91,16 @@ import PackagePlugin
 @_exported import SwiftGodotRuntime
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
-"""
+""",
+                dependencyClassFiles: runtime
             )
         case "SwiftGodotControls":
             fallthrough
         case "SwiftGodot2D":
             fallthrough
         case "SwiftGodot3D":
+            fallthrough
+        case "SwiftGodotGLTF":
             fallthrough
         case "SwiftGodotXR":
             fallthrough
@@ -100,6 +109,7 @@ import PackagePlugin
         case "SwiftGodotVisualShaderNodes":
             let classFiles: [String]
             let preamble: String
+            let dependencyClassFiles: [String]
             switch targetName {
             case "SwiftGodotControls":
                 classFiles = controls
@@ -107,27 +117,31 @@ import PackagePlugin
 @_exported import SwiftGodotCore
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
+                dependencyClassFiles = core + runtime
             case "SwiftGodot2D":
                 classFiles = twoD
                 preamble = """
 @_exported import SwiftGodotCore
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
-        case "SwiftGodot3D":
-            classFiles = threeD
-            preamble = """
+                dependencyClassFiles = core + runtime
+            case "SwiftGodot3D":
+                classFiles = threeD
+                preamble = """
 @_exported import SwiftGodotCore
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
-        case "SwiftGodotGLTF":
-            classFiles = gltf
-            preamble = """
+                dependencyClassFiles = core + runtime
+            case "SwiftGodotGLTF":
+                classFiles = gltf
+                preamble = """
 @_exported import SwiftGodotCore
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
-        case "SwiftGodotXR":
-            classFiles = xr
-            preamble = """
+                dependencyClassFiles = core + runtime
+            case "SwiftGodotXR":
+                classFiles = xr
+                preamble = """
 @_exported import SwiftGodotCore
 @_exported import SwiftGodotControls
 @_exported import SwiftGodot3D
@@ -135,15 +149,17 @@ import PackagePlugin
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotControls
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
 """
+                dependencyClassFiles = core + controls + threeD + runtime
             case "SwiftGodotVisualShaderNodes":
                 classFiles = visualShaderNodes
                 preamble = """
 @_exported import SwiftGodotCore
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
-        case "SwiftGodotEditor":
-            classFiles = editor
-            preamble = """
+                dependencyClassFiles = core + runtime
+            case "SwiftGodotEditor":
+                classFiles = editor
+                preamble = """
 @_exported import SwiftGodotCore
 @_exported import SwiftGodotControls
 @_exported import SwiftGodot3D
@@ -153,16 +169,20 @@ import PackagePlugin
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotGLTF
 """
-        default: classFiles = []
-            preamble = """
+                dependencyClassFiles = core + controls + threeD + gltf + runtime
+            default:
+                classFiles = []
+                preamble = """
 @_exported import SwiftGodotCore
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
 """
+                dependencyClassFiles = core + runtime
             }
             return GenerationConfig(
                 classFiles: classFiles.uniqued(),
                 builtinFiles: [],
-                preamble: preamble
+                preamble: preamble,
+                dependencyClassFiles: dependencyClassFiles
             )
         default:
             return nil
@@ -174,6 +194,27 @@ struct GenerationConfig {
     let classFiles: [String]
     let builtinFiles: [String]
     let preamble: String?
+    let dependencyClassFiles: [String]
+
+    init(
+        classFiles: [String],
+        builtinFiles: [String],
+        preamble: String?,
+        dependencyClassFiles: [String] = []
+    ) {
+        self.classFiles = classFiles
+        self.builtinFiles = builtinFiles
+        self.preamble = preamble
+        self.dependencyClassFiles = dependencyClassFiles
+    }
+
+    var generatedClassFiles: [String] {
+        classFiles.uniqued()
+    }
+
+    var availableClassFiles: [String] {
+        (classFiles + dependencyClassFiles).uniqued()
+    }
 }
 
 private extension Array where Element == String {

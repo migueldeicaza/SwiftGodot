@@ -23,6 +23,12 @@ while index < args.count {
         classWhitelist = Set(normalizedSymbolEntries(from: contents))
         classFilterProvided = true
         index += 1
+    case "--available-class-filter":
+        let path = args[index + 1]
+        let contents = try! String(contentsOfFile: path, encoding: .utf8)
+        availableClassNames = Set(normalizedSymbolEntries(from: contents))
+        availableClassFilterProvided = true
+        index += 1
     case "--builtin-filter":
         let path = args[index + 1]
         let contents = try! String(contentsOfFile: path, encoding: .utf8)
@@ -144,6 +150,24 @@ if classFilterProvided {
             stack.append(inherits)
         }
     }
+}
+
+if availableClassFilterProvided {
+    var stack: [String] = Array(availableClassNames)
+    while let current = stack.popLast() {
+        guard let inherits = classMap[current]?.inherits, !inherits.isEmpty else {
+            continue
+        }
+        if !availableClassNames.contains(inherits) {
+            availableClassNames.insert(inherits)
+            stack.append(inherits)
+        }
+    }
+} else if classFilterProvided {
+    availableClassNames = classWhitelist
+} else {
+    availableClassNames = Set(classMap.keys)
+    availableClassFilterProvided = true
 }
 
 private var structTypes: Set<String> = [

@@ -3,7 +3,7 @@
         print ("Error: Not all parameters were initialized.")
         return 0
     }
-    var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+    var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
     types[.core] = [].topologicallySorted()
     types[.editor] = [].topologicallySorted()
     types[.scene] = [ChrysalisNode.self].topologicallySorted()

@@ -11,6 +11,10 @@ import Foundation
 var classWhitelist: Set<String> = []
 var classFilterProvided = false
 
+/// Names of classes available to be referenced when generating code, including dependencies.
+var availableClassNames: Set<String> = []
+var availableClassFilterProvided = false
+
 /// Names of builtin types (without the `.swift` suffix) that should be generated in this run.
 var builtinWhitelist: Set<String> = []
 var builtinFilterProvided = false
@@ -62,15 +66,19 @@ func shouldGenerateBuiltin(_ name: String) -> Bool {
 
 /// Finds the closest ancestor that is part of the whitelist, falling back to `Object`.
 func fallbackClassName(for original: String) -> String {
-    guard classFilterProvided, !classWhitelist.contains(original) else {
+    guard classFilterProvided else {
+        return original
+    }
+
+    guard !availableClassNames.contains(original) else {
         return original
     }
 
     let args = CommandLine.arguments.joined(separator: " ")
-    print("Looking for \(original) but did not exit in \(args)")
+    print("Looking for \(original) but did not exist in \(args)")
     var currentName = original
     while let inherits = classMap[currentName]?.inherits {
-        if classWhitelist.contains(inherits) {
+        if availableClassNames.contains(inherits) {
             return inherits
         }
         currentName = inherits

@@ -447,13 +447,13 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 ///     return 1
 /// }
 ///
-/// func myInit (level: GDExtension.InitializationLevel) {
+/// func myInit (level: ExtensionInitializationLevel) {
 ///    if level == .scene {
 ///       registerType (MySpinningCube.self)
 ///    }
 /// }
 ///
-/// func myDeInit (level: GDExtension.InitializationLevel) {
+/// func myDeInit (level: ExtensionInitializationLevel) {
 ///     if level == .scene {
 ///         print ("Deinitialized")
 ///     }
