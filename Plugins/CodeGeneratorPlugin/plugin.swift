@@ -270,7 +270,6 @@ let runtime: [String] = [
 
 let core: [String] = [
     "AESContext.swift",
-    "AcceptDialog.swift",
     "AnimatedTexture.swift",
     "Animation.swift",
     "AnimationLibrary.swift",
@@ -664,7 +663,6 @@ let core: [String] = [
     "SubViewport.swift",
     "SubtweenTweener.swift",
     "SurfaceTool.swift",
-    "SyntaxHighlighter.swift",
     "SystemFont.swift",
     "TCPServer.swift",
     "TLSOptions.swift",
@@ -697,7 +695,6 @@ let core: [String] = [
     "Translation.swift",
     "TranslationDomain.swift",
     "TranslationServer.swift",
-    "TreeItem.swift",
     "TriangleMesh.swift",
     "TubeTrailMesh.swift",
     "Tween.swift",
@@ -966,6 +963,7 @@ let threeD: [String] = [
 ]
 
 let controls: [String] = [
+    "AcceptDialog.swift",
     "AspectRatioContainer.swift",
     "BaseButton.swift",
     "BoxContainer.swift",
@@ -978,7 +976,6 @@ let controls: [String] = [
     "ColorPickerButton.swift",
     "ColorRect.swift",
     "Container.swift",
-    "EditorProperty.swift",
     "FileSystemDock.swift",
     "FlowContainer.swift",
     "GraphEdit.swift",
@@ -1000,7 +997,6 @@ let controls: [String] = [
     "MenuBar.swift",
     "MenuButton.swift",
     "NinePatchRect.swift",
-    "OpenXRBindingModifierEditor.swift",
     "OptionButton.swift",
     "Panel.swift",
     "PanelContainer.swift",
@@ -1015,6 +1011,7 @@ let controls: [String] = [
     "SpinBox.swift",
     "SplitContainer.swift",
     "SubViewportContainer.swift",
+    "SyntaxHighlighter.swift",
     "TabBar.swift",
     "TabContainer.swift",
     "TextEdit.swift",
@@ -1022,6 +1019,7 @@ let controls: [String] = [
     "TextureProgressBar.swift",
     "TextureRect.swift",
     "Tree.swift",
+    "TreeItem.swift",
     "VBoxContainer.swift",
     "VFlowContainer.swift",
     "VScrollBar.swift",
@@ -1040,21 +1038,19 @@ let xr: [String] = [
     "OpenXRActionSet.swift",
     "OpenXRAnalogThresholdModifier.swift",
     "OpenXRBindingModifier.swift",
-    "OpenXRBindingModifierEditor.swift",
     "OpenXRCompositionLayer.swift",
     "OpenXRCompositionLayerCylinder.swift",
     "OpenXRCompositionLayerEquirect.swift",
     "OpenXRCompositionLayerQuad.swift",
     "OpenXRDpadBindingModifier.swift",
     "OpenXRExtensionWrapperExtension.swift",
+    
     "OpenXRHand.swift",
     "OpenXRHapticBase.swift",
     "OpenXRHapticVibration.swift",
     "OpenXRIPBinding.swift",
     "OpenXRIPBindingModifier.swift",
     "OpenXRInteractionProfile.swift",
-    "OpenXRInteractionProfileEditor.swift",
-    "OpenXRInteractionProfileEditorBase.swift",
     "OpenXRInteractionProfileMetadata.swift",
     "OpenXRInterface.swift",
     "OpenXRVisibilityMask.swift",
@@ -1250,6 +1246,7 @@ let editor: [String] = [
     "OpenXRInteractionProfileEditorBase.swift",
     "ScriptEditor.swift",
     "ScriptEditorBase.swift",
+    "OpenXRBindingModifierEditor.swift",
 ]
 
 extension URL {
