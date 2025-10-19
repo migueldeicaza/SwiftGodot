@@ -145,7 +145,7 @@ if classFilterProvided {
         guard let inherits = classMap[current]?.inherits, !inherits.isEmpty else {
             continue
         }
-        if !classWhitelist.contains(inherits) {
+        if !classWhitelist.contains(inherits) && !(availableClassFilterProvided && availableClassNames.contains(inherits)) {
             classWhitelist.insert(inherits)
             stack.append(inherits)
         }
