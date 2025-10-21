@@ -33,7 +33,7 @@ class Printer {
     fileprivate static let preamble =
         """
         // This file is auto-generated, do not edit.
-        @_implementationOnly import GDExtension
+        internal import GDExtension
 
         #if CUSTOM_BUILTIN_IMPLEMENTATIONS
         #if canImport(Darwin)

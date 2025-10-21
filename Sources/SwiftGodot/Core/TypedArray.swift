@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 20/04/2025.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 /// Descriptor of Godot `Array` or `Dictionary` typing.
 @usableFromInline

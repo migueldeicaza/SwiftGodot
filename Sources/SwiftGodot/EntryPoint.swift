@@ -5,7 +5,7 @@
 //
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 public protocol ExtensionInterface {
 

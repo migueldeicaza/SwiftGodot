@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 08/04/2025.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 /// Error while trying to unwrap Variant
 public enum VariantConversionError: Error, CustomStringConvertible {
@@ -250,13 +250,10 @@ public protocol _GodotBridgeable: VariantConvertible {
 /// let array = TypedArray<Int>()
 /// let dictionary = TypedDictionary<String, Vector3>()
 /// ```
-public protocol _GodotBridgeableBuiltin: _GodotContainerTypingParameter {
+public protocol _GodotBridgeableBuiltin: _GodotContainerTypingParameter where _NonOptionalType == Self {
 }
 
 public extension _GodotBridgeableBuiltin {
-    /// Internal API. Required for `TypedArray` implementation.
-    typealias _NonOptionalType = Self
-    
     /// Internal API. Required for cases where Godot expects an empty `StringName` for builtin types and actual class name for `.object`-types.
     static var _className: StringName {
         StringName("")
