@@ -3,7 +3,7 @@
 import CompilerPluginSupport
 import PackageDescription
 
-// Products define the executables and libraries a package produces, and make them visible to other packages.
+// Products define the executables and libraries a package produces, and make them visible to other packages.w
 var products: [Product] = [
     .library(
         name: "SwiftGodot",
@@ -49,6 +49,12 @@ var products: [Product] = [
 
 /// Targets are the basic building blocks of a package. A target can define a module, plugin, test suite, etc.
 var targets: [Target] = [
+    .executableTarget(name: "StaticDemo", dependencies: [
+        "SwiftGodot"
+    ]),
+    .executableTarget(name: "DynamicDemo", dependencies: [
+        "SwiftGodot"
+    ]),
     .executableTarget(
         name: "EntryPointGenerator",
         dependencies: [
@@ -155,6 +161,11 @@ var targets: [Target] = [
         dependencies: ["GDExtension"],
         swiftSettings: [
             .swiftLanguageMode(.v5),
+	    // Gets to 23 from 100 on the static build
+	    .unsafeFlags(["-Xfrontend", "-internalize-at-link", "-Xfrontend", "-lto=llvm-full"]),
+	    // trying this one now
+	    // Thsi made no difference?
+            //.unsafeFlags(["-Xfrontend", "-experimental-hermetic-seal-at-link", "-Xfrontend", "-lto=llvm-full"]),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
 //            .unsafeFlags(["-suppress-warnings"])
         ],

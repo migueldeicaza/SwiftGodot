@@ -740,11 +740,6 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
 
 extension Generator {
     func generateCtorPointers (_ p: Printer) {
-        p ("var godotFrameworkCtors = [")
-        for x in classMap.keys.sorted() {
-            p ("    \"\(x)\": \(x).self, //(nativeHandle:),")
-        }
-        p ("]")
     }
     
     /// Variant itself is manally implemented, so we vary our `staticProperty` behavior here
