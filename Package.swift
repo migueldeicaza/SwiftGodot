@@ -49,12 +49,6 @@ var products: [Product] = [
 
 /// Targets are the basic building blocks of a package. A target can define a module, plugin, test suite, etc.
 var targets: [Target] = [
-    .executableTarget(name: "StaticDemo", dependencies: [
-        "SwiftGodot"
-    ]),
-    .executableTarget(name: "DynamicDemo", dependencies: [
-        "SwiftGodot"
-    ]),
     .executableTarget(
         name: "EntryPointGenerator",
         dependencies: [
