@@ -21,9 +21,18 @@ let package = Package(
                 .product(name: "SwiftGodotStatic", package: "SwiftGodot")
 
             ],
+	    swiftSettings: [
+	    	    .unsafeFlags(["-Xfrontend", "-internalize-at-link", "-Xfrontend", "-lto=llvm-full", "-Xfrontend", "-disable-reflection-metadata"]),
+		    ],
             linkerSettings: [
                 .unsafeFlags(
-                    ["-Xlinker", "-dead_strip", "-Xlinker", "-no_exported_symbols"],
+                    ["-Xlinker", "-dead_strip",
+		    "-Xlinker", "-no_exported_symbols",
+		    "-Xlinker", "-why_live",
+		    //"-Xlinker", "_$s10SwiftGodot10OpenXRHandC10BoneUpdateOMa"]
+		    //"-Xlinker", "_$s10SwiftGodot10OpenXRHandC10BoneUpdateOSYAAMA"
+		    "-Xlinker", "_$s10SwiftGodot10OpenXRHandC15method_set_hand33_0B6DE4D26A8E536FD53858E8549F662ELLSVvpZ"
+		    ],
                     .when(platforms: [.macOS, .iOS])
                 ),
 //                .unsafeFlags(

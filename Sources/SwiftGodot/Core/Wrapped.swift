@@ -230,6 +230,16 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return ""
     }
 
+    static internal func getBinding(name: StaticString, hash: GDExtensionInt) -> GDExtensionMethodBindPtr? {
+        var classNameCopy = godotClassName
+        var methodName = FastStringName(name)
+        return withUnsafePointer(to: &classNameCopy.content) { classPtr in
+            withUnsafePointer(to: &methodName.content) { mnamePtr in
+                gi.classdb_get_method_bind(classPtr, mnamePtr, hash)
+            }
+        }
+    }
+
     /// This method is posted by Godot, you can override this method and
     /// be notified of interesting events, the values for this notification are declared on various
     /// different types, like the constants in Object or Node.
