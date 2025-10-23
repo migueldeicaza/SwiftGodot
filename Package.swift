@@ -157,8 +157,7 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
 	    // Gets to 23 from 100 on the static build
 	    .unsafeFlags(["-Xfrontend", "-internalize-at-link", "-Xfrontend", "-lto=llvm-full", "-Xfrontend", "-disable-reflection-metadata"]),
-	    // trying this one now
-	    // Thsi made no difference?
+	    // This made no difference?
             //.unsafeFlags(["-Xfrontend", "-experimental-hermetic-seal-at-link", "-Xfrontend", "-lto=llvm-full"]),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
 //            .unsafeFlags(["-suppress-warnings"])
