@@ -19,7 +19,7 @@
 import Foundation
 #endif
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 func pd (_ str: String) {
     #if false
@@ -447,25 +447,27 @@ final class WrappedReference {
     public init(_ val: Wrapped, strong: Bool = true) {
         self.ref = val
         if strong {
-            strongify()
+            _ = strongify()
         }
     }
     
     deinit {
-        weakify()
+        _ = weakify()
     }
-    
+
+    @discardableResult
     public final func strongify() -> Self {
         if strong {
             return self
         }
         if let value {
-            Unmanaged<Wrapped>.passUnretained(value).retain()
+            _ = Unmanaged<Wrapped>.passUnretained(value).retain()
         }
         strong = true
         return self
     }
-    
+
+    @discardableResult
     public final func weakify() -> Self {
         if !strong {
             return self
@@ -848,14 +850,14 @@ func userTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding: Unsa
     if reference != 0 {
         // In addition to a reference by SwiftGodot, Godot also retained a reference.
         if rc == 2 {
-            if let refCounted, let handle = refCounted.handle {
+            if let refCounted, refCounted.handle != nil {
                 ref.strongify()
             }
         }
     } else {
         // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
         if rc == 1 {
-            if let refCounted, let handle = refCounted.handle {
+            if let refCounted, refCounted.handle != nil {
                 ref.weakify()
             }
         }
@@ -878,14 +880,14 @@ func frameworkTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding:
     if reference != 0 {
         // In addition to a reference by SwiftGodot, Godot also retained a reference.
         if rc == 2 {
-            if let refCounted, let handle = refCounted.handle {
+            if let refCounted, refCounted.handle != nil {
                 ref.strongify()
             }
         }
     } else {
         // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
         if rc == 1 {
-            if let refCounted, let handle = refCounted.handle {
+            if let refCounted, refCounted.handle != nil {
                 ref.weakify()
             }
         }
@@ -1037,3 +1039,4 @@ func typeOfClass(named className: String) -> Object.Type? {
     
     return nil
 }
+

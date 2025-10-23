@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 16/04/2025.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 /// A fast wrapper similar to ``StringName``, but relying on Swift ``StaticString`` to avoid allocations if possible.
 public struct FastStringName: ~Copyable {

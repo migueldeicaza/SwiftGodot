@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 13/04/2025.
 //
 
-@_implementationOnly import GDExtension
+internal import GDExtension
 
 /// 24-bytes payload of Godot Variant
 @usableFromInline

@@ -480,7 +480,7 @@ func generateBuiltinMethods (_ p: Printer,
     
         let ptrName = "method_\(m.name)"
         
-        gip.staticProperty(isStored: true, name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
+        gip.staticProperty(visibility: "internal", isStored: true, name: ptrName, type: "GDExtensionPtrBuiltInMethod") {
             gip("var name = FastStringName(\"\(m.name)\")")
             gip("return gi.variant_get_ptr_builtin_method(\(typeEnum), &name.content, \(m.hash))!")
         }
