@@ -175,7 +175,6 @@ struct Generator {
         await generateClasses(values: jsonApi.classes, outputDir: generatedDir)
 
         generateVariantGodotInterface(coreDefPrinter)
-        generateCtorPointers(coreDefPrinter)
         generateNativeStructures(coreDefPrinter, values: jsonApi.nativeStructures)
 
         if let generatedBuiltinDir {
