@@ -3,7 +3,7 @@
 import CompilerPluginSupport
 import PackageDescription
 
-// Products define the executables and libraries a package produces, and make them visible to other packages.
+// Products define the executables and libraries a package produces, and make them visible to other packages.w
 var products: [Product] = [
     .library(
         name: "SwiftGodot",
@@ -155,6 +155,10 @@ var targets: [Target] = [
         dependencies: ["GDExtension"],
         swiftSettings: [
             .swiftLanguageMode(.v5),
+	    // Gets to 23 from 100 on the static build
+	    .unsafeFlags(["-Xfrontend", "-internalize-at-link", "-Xfrontend", "-lto=llvm-full", "-Xfrontend", "-disable-reflection-metadata"]),
+	    // This made no difference?
+            //.unsafeFlags(["-Xfrontend", "-experimental-hermetic-seal-at-link", "-Xfrontend", "-lto=llvm-full"]),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
 //            .unsafeFlags(["-suppress-warnings"])
         ],

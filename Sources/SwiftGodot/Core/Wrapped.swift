@@ -15,6 +15,9 @@
 // We ensure that all Godot objects that are surfaced to Swift retain their
 // identity.  So we keep a table of every surfaced Godot object into Swift.
 //
+#if canImport(AppKit) || canImport(UIKit)
+import Foundation
+#endif
 
 internal import GDExtension
 
@@ -225,6 +228,15 @@ open class Wrapped: Equatable, Identifiable, Hashable {
             return sn
         }
         return ""
+    }
+
+    static internal func getBinding(className: StringName, name: StaticString, hash: GDExtensionInt) -> GDExtensionMethodBindPtr? {
+        var methodName = FastStringName(name)
+        return withUnsafePointer(to: &className.content) { classPtr in
+            withUnsafePointer(to: &methodName.content) { mnamePtr in
+                gi.classdb_get_method_bind(classPtr, mnamePtr, hash)
+            }
+        }
     }
 
     /// This method is posted by Godot, you can override this method and
@@ -629,11 +641,28 @@ func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, own
         gi.object_method_bind_ptrcall (Object.method_get_class, nativeHandle, nil, &_result.content)
         className = _result.description
     }
-    if let ctor = godotFrameworkCtors [className] {
+    // The format is:
+    // MODULE: LENGHT + String
+    // Type: LENGHT + String
+    // C
+    //
+    // So "SwiftGodot.Node" becomes "10SwiftGodot4NodeC":
+    //
+    let typeCode = "10SwiftGodot\(className.count)\(className)C"
+    #if canImport(UIKit) || canImport(AppKit)
+    if let ctor = NSClassFromString(typeCode) as? T.Type {
         let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
         handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
-        return result as? T
+        return result
     }
+    #else
+    if let ctor = _typeByName(typeCode) as? T.Type {
+        let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
+        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+        return result
+    }
+    #endif
+
     if let userType = userTypes[className] {
         let created = userType.init(InitContext(handle: nativeHandle, origin: .godot))
         handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
@@ -989,12 +1018,21 @@ public func clearHandles(_ handles: [GodotNativeObjectPointer]) {
     }
 }
 
+
 /// Find existing Godot or User `Wrapped.Type` having a `className`
 func typeOfClass(named className: String) -> Object.Type? {
-    if let frameworkType = godotFrameworkCtors[className] {
+    let typeCode = "10SwiftGodot\(className.count)\(className)C"
+
+    #if canImport(UIKit) || canImport(AppKit)
+    if let frameworkType = NSClassFromString(typeCode) as? Object.Type {
         return frameworkType
     }
-    
+    #else
+    if let frameworkType = _typeByName(typeCode) as? Object.Type {
+        return frameworkType
+    }
+    #endif
+
     if let userType = userTypes[className] {
         return userType
     }
