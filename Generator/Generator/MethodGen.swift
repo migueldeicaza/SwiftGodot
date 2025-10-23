@@ -782,7 +782,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             func getMethodNameArgument() -> String {
                 assert(generatedMethodKind == .classMethod)
 
-                return "Wrapped.getBinding(name: \"\(method.name)\", hash: \(method.optionalHash!))!"
+                return "Wrapped.getBinding(className: godotClassName, name: \"\(method.name)\", hash: \(method.optionalHash!))!"
             }
             
             generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in

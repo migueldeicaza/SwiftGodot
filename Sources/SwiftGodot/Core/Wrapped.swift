@@ -230,10 +230,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return ""
     }
 
-    static internal func getBinding(name: StaticString, hash: GDExtensionInt) -> GDExtensionMethodBindPtr? {
-        var classNameCopy = godotClassName
+    static internal func getBinding(className: StringName, name: StaticString, hash: GDExtensionInt) -> GDExtensionMethodBindPtr? {
         var methodName = FastStringName(name)
-        return withUnsafePointer(to: &classNameCopy.content) { classPtr in
+        return withUnsafePointer(to: &className.content) { classPtr in
             withUnsafePointer(to: &methodName.content) { mnamePtr in
                 gi.classdb_get_method_bind(classPtr, mnamePtr, hash)
             }
