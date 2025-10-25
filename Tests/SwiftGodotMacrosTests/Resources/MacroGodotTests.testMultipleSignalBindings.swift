@@ -8,7 +8,10 @@ class OtherThing: SwiftGodot.Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("OtherThing")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SimpleSignal.register(as: "signal0", in: className)
         SimpleSignal.register(as: "signal1", in: className)
     }()
