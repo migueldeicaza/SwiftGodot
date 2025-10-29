@@ -498,21 +498,20 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let documentationVisibilityAttribute: String?
     if let methodHash = method.optionalHash {
         // get_class and unreference are also called by Wrapped
+        let staticVarVisibility = if bindName != "method_get_class" && bindName != "method_unreference" { "fileprivate" } else { "" }
         switch generatedMethodKind {
         case .classMethod:
-            if bindName == "method_get_class" || bindName == "method_unreference" {
-                p.staticProperty(visibility: "", isStored: true, name: bindName, type: "GDExtensionMethodBindPtr") {
-                    p ("var methodName = FastStringName(\"\(method.name)\")")
-
-                    p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
-                        p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
-                            p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
-                        }
+            p.staticProperty(visibility: staticVarVisibility, isStored: true, name: bindName, type: "GDExtensionMethodBindPtr") {
+                p ("var methodName = FastStringName(\"\(method.name)\")")
+            
+                p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
+                    p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
+                        p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
                     }
                 }
             }
         case .utilityFunction:
-            p.staticProperty(visibility: "fileprivate", isStored: true, name: bindName, type: "GDExtensionPtrUtilityFunction") {
+            p.staticProperty(visibility: staticVarVisibility, isStored: true, name: bindName, type: "GDExtensionPtrUtilityFunction") {
                 p ("var methodName = FastStringName(\"\(method.name)\")")
                 p ("return withUnsafePointer(to: &methodName.content)", arg: " ptr in") {
                     p ("return gi.variant_get_ptr_utility_function(ptr, \(methodHash))!")
@@ -781,8 +780,12 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             
             func getMethodNameArgument() -> String {
                 assert(generatedMethodKind == .classMethod)
-
-                return "Wrapped.getBinding(className: godotClassName, name: \"\(method.name)\", hash: \(method.optionalHash!))!"
+                
+                if staticAttribute == nil {
+                    return "\(className).method_\(method.name)"
+                } else {
+                    return "method_\(method.name)"
+                }
             }
             
             generateMethodCall(p, isVariadic: method.isVararg, arguments: arguments, methodArguments: methodArguments) { argsRef, count in
