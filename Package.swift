@@ -17,6 +17,10 @@ var products: [Product] = [
     ),
 
     .library(
+        name: "SwiftGodotRuntimeStatic",
+        targets: ["SwiftGodotRuntime"]
+    ),
+    .library(
         name: "SwiftGodotStatic",
         targets: ["SwiftGodot"]
     ),
@@ -159,7 +163,14 @@ var targets: [Target] = [
         dependencies: ["GDExtension"],
         swiftSettings: [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-            .unsafeFlags(["-suppress-warnings"]),
+            .unsafeFlags(
+                [
+                    "-suppress-warnings",
+                    "-Xfrontend", "-conditional-runtime-records",
+                    "-Xfrontend", "-internalize-at-link",
+                    "-Xfrontend", "-lto=llvm-full",
+                ]
+            ),
             .swiftLanguageMode(.v5),
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
