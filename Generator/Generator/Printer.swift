@@ -172,7 +172,7 @@ actor PrinterFactory {
             if #available(iOS 17.0, *) {
                 url = URL(fileURLWithPath: root).appending(path: "SwiftGodot\(letter).swift")
             } else {
-                url = URL(fileURLWithPath: root).appending(component: "SwiftGodot\(letter).swift)")
+                url = URL(fileURLWithPath: "\(root)/SwiftGodot\(letter).swift)")
             }
             let existing = try? String(contentsOf: url, encoding: .utf8)
             if existing != output {
