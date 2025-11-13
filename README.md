@@ -43,6 +43,10 @@ https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b81
 
 * Learn more: [Swift Godot: Fixing the Multi-million dollar mistake](https://www.youtube.com/watch?v=tzt36EGKEZo)
 
+# Looking for the tiny SwiftGodot?
+
+Check the `barebone-split` branch, and the [associated discussion](https://github.com/migueldeicaza/SwiftGodot/discussions/741).
+
 # Quickly Getting Started
 
 The [SwiftGodotKick](https://github.com/EstevanBR/SwiftGodotKick) project can create a skeleton template
