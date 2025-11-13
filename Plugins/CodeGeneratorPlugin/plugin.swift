@@ -294,6 +294,7 @@ let knownBuiltin = [
 ]
 
 let runtime: [String] = [
+    "ClassDB.swift",
     "Object.swift",
     "RefCounted.swift",
 ]
@@ -404,7 +405,6 @@ let core: [String] = [
     "CanvasTexture.swift",
     "CapsuleMesh.swift",
     "CharFXTransform.swift",
-    "ClassDB.swift",
     "ColorPalette.swift",
     "Compositor.swift",
     "CompositorEffect.swift",

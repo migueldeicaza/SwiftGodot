@@ -32,8 +32,8 @@ public struct GodotCallable: PeerMacro {
         
         if !isStatic {
             body += """
-            \(indentation)    guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
+            \(indentation)    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+            \(indentation)        SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
             \(indentation)        return nil
             \(indentation)    }
             """
@@ -54,23 +54,23 @@ public struct GodotCallable: PeerMacro {
         let callArgs = callArgsList.joined(separator: ", ")
         
         body += """
-        \(indentation)    return SwiftGodot._wrapCallableResult(\(objectOrSelf).\(funcName)(\(callArgs)))
+        \(indentation)    return SwiftGodotRuntime._wrapCallableResult(\(objectOrSelf).\(funcName)(\(callArgs)))
         
         """
         
         if parameters.isEmpty {
             return """
-            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
             \(body)                
             }
             """
         } else {
             return """
-            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
                 do { // safe arguments access scope
             \(body)        
                 } catch {
-                    SwiftGodot.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
+                                SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
                 }
             
                 return nil
