@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 3/26/23.
 //
 
-internal import GDExtension
+import GDExtension
 
 extension StringName: CustomStringConvertible {
     /// Creates a StringName from a Swift String.Substring
@@ -49,7 +49,7 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
     
 extension GString: CustomStringConvertible {
     /// Returns a Swift string from a pointer to a native Godot string
-    static func stringFromGStringPtr (ptr: UnsafeRawPointer?) -> String? {
+    @_spi(SwiftGodotRuntimePrivate) public static func stringFromGStringPtr (ptr: UnsafeRawPointer?) -> String? {
         guard let ptr else {
             return nil
         }

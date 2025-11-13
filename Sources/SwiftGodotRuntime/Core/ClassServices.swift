@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 4/13/23.
 //
 
-internal import GDExtension
+import GDExtension
 
 
 /// Provides support to expose Swift methods and signals to the Godot runtime, making it callable

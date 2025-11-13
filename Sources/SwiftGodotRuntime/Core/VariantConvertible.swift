@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 08/04/2025.
 //
 
-internal import GDExtension
+import GDExtension
 
 /// Error while trying to unwrap Variant
 public enum VariantConversionError: Error, CustomStringConvertible {
@@ -333,12 +333,6 @@ public extension _GodotBridgeable where Self: Object {
         usage: PropertyUsageFlags?
     ) -> PropInfo {
         var hint = hint
-        var hintStr = hintStr
-        
-        if self is Node.Type && hint == nil && hintStr == nil {
-            hint = .nodeType
-            hintStr = _builtinOrClassName
-        }
         
         return _propInfoDefault(
             propertyType: _variantType,

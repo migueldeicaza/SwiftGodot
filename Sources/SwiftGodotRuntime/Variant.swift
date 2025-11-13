@@ -5,7 +5,7 @@
 //  Created by Miguel de Icaza on 3/24/23.
 //
 
-internal import GDExtension
+import GDExtension
 
 /// Variant objects box various Godot Objects, you create them with one of the
 /// constructors, and you can retrieve the contents using the various extension
@@ -40,19 +40,16 @@ internal import GDExtension
 public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _GodotBridgeable, _GodotNullableBridgeable {
     public typealias TypedArrayElement = Variant?
     
-    @usableFromInline
-    typealias ContentType = VariantContent
-    
-    @usableFromInline
-    var content = Variant.zero
-    
-    static var zero: ContentType {
+    public typealias ContentType = VariantContent
+
+    public var content = Variant.zero
+
+    public static var zero: ContentType {
         VariantContent.zero
     }
     
     /// Initializes from the raw contents of another Variant, this will make a copy of the variant contents
-    @usableFromInline
-    init?(copying otherContent: ContentType) {
+    public init?(copying otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
         
         withUnsafePointer(to: otherContent) { src in
@@ -63,7 +60,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
     
     /// Initialize with existing `ContentType` assuming this ``Variant`` owns it since now. Fails if `content` represents Godot Nil.
-    init?(takingOver otherContent: ContentType) {
+    @_spi(SwiftGodotRuntimePrivate) public init?(takingOver otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
         
         content = otherContent
@@ -547,7 +544,7 @@ extension Variant? {
         type.fromVariant(self)
     }
     
-    var content: Variant.ContentType {
+    public var content: Variant.ContentType {
         if let wrapped = self {
             return wrapped.content
         } else {

@@ -602,6 +602,8 @@ var builtinGodotTypeNames: [String:BKind] = ["Variant": .isClass]
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) async {
+    let filteredValues = values.filter { shouldGenerateBuiltin($0.name) }
+
     func generateBuiltinClass(p: Printer, _ bc: JGodotBuiltinClass) {
         // TODO: isKeyed, hasDestrcturo,
         let kind: BKind = builtinGodotTypeNames[bc.name]!
@@ -1148,7 +1150,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
     }
     
     // First map structs and classes from the builtins
-    for bc in values {
+    for bc in filteredValues {
         if bc.name == "Nil" { continue }
         switch bc.name {
             // We do not generate code for a few types, we will bridge those instead
@@ -1159,7 +1161,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
     }
     
-    for bc in values {
+    for bc in filteredValues {
         switch bc.name {
             // This one is ignored altogether. We've got `Optional` in Swift
         case "Nil":

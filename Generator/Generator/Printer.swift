@@ -30,10 +30,10 @@ class Printer {
         addPreamble = false
     }
 
-    fileprivate static let preamble =
+    fileprivate static let basePreamble =
         """
         // This file is auto-generated, do not edit.
-        internal import GDExtension
+        import GDExtension
 
         #if CUSTOM_BUILTIN_IMPLEMENTATIONS
         #if canImport(Darwin)
@@ -55,6 +55,20 @@ class Printer {
 
 
         """
+
+    fileprivate static var preambleText: String {
+        guard !additionalPreamble.isEmpty else {
+            return basePreamble
+        }
+
+        if additionalPreamble.hasSuffix("\n\n") {
+            return basePreamble + additionalPreamble
+        } else if additionalPreamble.hasSuffix("\n") {
+            return basePreamble + additionalPreamble + "\n"
+        } else {
+            return basePreamble + additionalPreamble + "\n\n"
+        }
+    }
 
     // Prints the string, indenting any newlines with the current indentation
     func p (_ str: String) {
@@ -114,7 +128,7 @@ class Printer {
     }
 
     func save(_ file: String) {        
-        let output = (addPreamble ? Self.preamble : "") + result
+        let output = (addPreamble ? Self.preambleText : "") + result
 
         let existing = try? String(contentsOfFile: file)
         if existing != output {
@@ -136,7 +150,7 @@ actor PrinterFactory {
 
     func save(_ file: String) {
         let combined = printers.sorted(by: { $0.name < $1.name }).map ({ $0.result }).joined(separator: "\n")
-        let output = Printer.preamble + combined
+        let output = Printer.preambleText + combined
 
         let existing = try? String(contentsOf: URL(fileURLWithPath: file), encoding: .utf8)
         if existing != output {
@@ -152,7 +166,7 @@ actor PrinterFactory {
                 .sorted(by: { $0.name < $1.name })
                 .map ({ $0.result })
                 .joined(separator: "\n")
-            let output = Printer.preamble + combined
+            let output = Printer.preambleText + combined
 
             let url = URL(fileURLWithPath: root).appending(path: "SwiftGodot\(letter).swift")
             let existing = try? String(contentsOf: url, encoding: .utf8)

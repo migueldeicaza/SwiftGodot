@@ -71,7 +71,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         return true
     }
     
-    init(takingOver content: VariantDictionary.ContentType) {
+    @_spi(SwiftGodotRuntimePrivate)
+    public init(takingOver content: VariantDictionary.ContentType) {
         self.init(from: VariantDictionary(takingOver: content))
     }
     

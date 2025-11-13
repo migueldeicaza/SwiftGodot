@@ -5,11 +5,11 @@
 //  Created by Elijah Semyonov on 13/04/2025.
 //
 
-internal import GDExtension
+import GDExtension
 
 /// 24-bytes payload of Godot Variant
-@usableFromInline
-struct VariantContent: Equatable {
+// @usableFromInline
+public struct VariantContent: Equatable {
     @inline(__always)
     @usableFromInline
     let w0: UInt64
@@ -150,7 +150,8 @@ public struct FastVariant: ~Copyable {
     
     /// Create a copy of this ``FastVariant`` with a separate lifetime.
     @inline(__always)
-    @inlinable
+    // TODO: @inlinable
+    // If we keep @inlinable we get "Property 'variant_new_copy' is internal and cannot be referenced from an '@inlinable' function"
     public func copy() -> FastVariant {
         var newContent = VariantContent.zero
         

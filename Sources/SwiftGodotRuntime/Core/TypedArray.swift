@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 20/04/2025.
 //
 
-internal import GDExtension
+import GDExtension
 
 /// Descriptor of Godot `Array` or `Dictionary` typing.
 @usableFromInline
@@ -131,7 +131,8 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         }
     }
     
-    init(takingOver content: VariantArray.ContentType) {
+    @_spi(SwiftGodotRuntimePrivate)
+    public init(takingOver content: VariantArray.ContentType) {
         self.init(from: VariantArray(takingOver: content))
     }
     

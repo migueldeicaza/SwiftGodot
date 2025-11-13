@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 16/04/2025.
 //
 
-internal import GDExtension
+import GDExtension
 
 /// A fast wrapper similar to ``StringName``, but relying on Swift ``StaticString`` to avoid allocations if possible.
 public struct FastStringName: ~Copyable {
@@ -14,7 +14,7 @@ public struct FastStringName: ~Copyable {
         case string(String)
     }
     
-    var content: StringName.ContentType
+    public var content: StringName.ContentType
     let source: Source
     var isStatic: Bool {
         switch source {

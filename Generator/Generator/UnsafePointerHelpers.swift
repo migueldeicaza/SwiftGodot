@@ -20,7 +20,7 @@ func generateUnsafePointerHelpers(_ p: Printer) {
 /// }
 /// ```
 private func generateUnsafeRawPointersN(_ p: Printer, pointerCount count: Int) {
-    p("struct UnsafeRawPointersN\(count)") {
+    p("@_spi(SwiftGodotRuntimePrivate) public struct UnsafeRawPointersN\(count)") {
         for i in 0..<count {
             p("let p\(i): UnsafeRawPointer?")
         }
@@ -33,7 +33,7 @@ private func generateUnsafeRawPointersN(_ p: Printer, pointerCount count: Int) {
             }
             .joined(separator: ", ")
         
-        p("init(\(args))") {
+        p("@_spi(SwiftGodotRuntimePrivate) public init(\(args))") {
             for i in 0..<count {
                 p("self.p\(i) = p\(i)")
             }

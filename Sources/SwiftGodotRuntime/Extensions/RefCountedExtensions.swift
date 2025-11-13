@@ -1,4 +1,4 @@
-internal import GDExtension
+import GDExtension
 
 public extension RefCounted {
     /// Decrements the internal reference counter. Deletes underlying object if it goes to zero..

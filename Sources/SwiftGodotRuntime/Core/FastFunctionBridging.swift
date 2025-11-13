@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 16/04/2025.
 //
 
-internal import GDExtension
+import GDExtension
 
 public typealias BridgedFunction = (
     UnsafeRawPointer?, // pInstance

@@ -149,7 +149,7 @@ project to be loadable by Godot, you can do it like this:
 
 ```swift
 /// We register our new type when we are told that the scene is being loaded
-func setupScene (level: GDExtension.InitializationLevel) {
+func setupScene (level: ExtensionInitializationLevel) {
     if level == .scene {
         register(type: SpinningCube.self)
     }

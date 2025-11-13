@@ -16,7 +16,7 @@
 // identity.  So we keep a table of every surfaced Godot object into Swift.
 //
 
-internal import GDExtension
+import GDExtension
 
 func pd (_ str: String) {
     #if false
@@ -159,7 +159,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static func attemptToUseObjectFreedByGodot() {
         fatalError ("Wrapped.handle was nil, which indicates the object was cleared by Godot")
     }
-    class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
+    @_spi(SwiftGodotRuntimePrivate) open class func getVirtualDispatcher(name: StringName) ->  GDExtensionClassCallVirtual? {
         pd ("SWARN: getVirtualDispatcher (\"\(name)\") reached Wrapped on class \(self)")
         return nil
     }
@@ -298,7 +298,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// ``RefCounted`` objects are destroyed automatically when the last reference
     /// is gone, so it is not necessary to call ``free`` on those.
     public func free() {
-        guard !(self is Node) else {
+        if let object = self as? Object, object.isClass("Node") {
             print ("SwiftGodot: Cannot call free() on Nodes; queueFree() should be used instead.")
             return
         }
@@ -431,7 +431,7 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     gi.classdb_register_extension_class(extensionInterface.getLibrary(), &nameContent, &parent.content, &info)
 }
 
-final class WrappedReference {
+@_spi(SwiftGodotRuntimePrivate) public final class WrappedReference {
     public init(_ val: Wrapped, strong: Bool = true) {
         self.ref = val
         if strong {
@@ -613,7 +613,8 @@ func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, 
 }
 
 /// Get an existing Swift object which is bound to Godot `nativeHandle` or initialize a new one and bind it
-func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
+// @_spi(SwiftGodotRuntimePrivate)
+public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
     if let object = existingSwiftObject(for: nativeHandle) {
         handleRef(staticType: T.self, object: object, ownsRef: ownsRef, unref: true)
         return object as? T
