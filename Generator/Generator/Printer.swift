@@ -168,7 +168,12 @@ actor PrinterFactory {
                 .joined(separator: "\n")
             let output = Printer.preambleText + combined
 
-            let url = URL(fileURLWithPath: root).appending(path: "SwiftGodot\(letter).swift")
+            let url: URL
+            if #available(iOS 17.0, *) {
+                url = URL(fileURLWithPath: root).appending(path: "SwiftGodot\(letter).swift")
+            } else {
+                url = URL(fileURLWithPath: root).appending(component: "SwiftGodot\(letter).swift)")
+            }
             let existing = try? String(contentsOf: url, encoding: .utf8)
             if existing != output {
                 try? output.write(to: url, atomically: false, encoding: .utf8)
