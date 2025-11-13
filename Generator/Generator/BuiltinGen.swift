@@ -602,6 +602,13 @@ var builtinGodotTypeNames: [String:BKind] = ["Variant": .isClass]
 var builtinClassStorage: [String:String] = [:]
 
 func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) async {
+    // Always register builtin enum metadata so other stages can resolve enum defaults
+    for bc in values {
+        if let enums = bc.enums {
+            registerEnumDefinitions(enums, prefix: bc.name + ".")
+        }
+    }
+    
     let filteredValues = values.filter { shouldGenerateBuiltin($0.name) }
 
     func generateBuiltinClass(p: Printer, _ bc: JGodotBuiltinClass) {

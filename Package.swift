@@ -159,6 +159,7 @@ var targets: [Target] = [
         dependencies: ["GDExtension"],
         swiftSettings: [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+            .unsafeFlags(["-suppress-warnings"]),
             .swiftLanguageMode(.v5),
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]

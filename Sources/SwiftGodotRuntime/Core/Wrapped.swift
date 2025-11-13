@@ -769,7 +769,7 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
         // and passes a reference that we will destroy right away when `pinfo` goes out of scope.
         //
         // For now, we just update the usage, type and hint but we need to find a solution for those other fields
-        let native = pinfo.makeNativeStruct()
+        //let native = pinfo.makeNativeStruct()
         _info?.pointee.usage = UInt32(pinfo.usage.rawValue)
         _info?.pointee.hint = UInt32(pinfo.hint.rawValue)
         _info?.pointee.type = GDExtensionVariantType(GDExtensionVariantType.RawValue (pinfo.propertyType.rawValue))

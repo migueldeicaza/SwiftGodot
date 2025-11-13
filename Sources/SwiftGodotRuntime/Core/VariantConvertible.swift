@@ -8,7 +8,7 @@
 import GDExtension
 
 /// Error while trying to unwrap Variant
-public enum VariantConversionError: Error, CustomStringConvertible {
+public enum VariantConversionError: Error, CustomStringConvertible, @unchecked Sendable {
     public var description: String {
         switch self {
         case .unexpectedContent(let requestedType, let actualContent):
@@ -332,8 +332,6 @@ public extension _GodotBridgeable where Self: Object {
         hintStr: String?,
         usage: PropertyUsageFlags?
     ) -> PropInfo {
-        var hint = hint
-        
         return _propInfoDefault(
             propertyType: _variantType,
             name: name,

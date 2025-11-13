@@ -17,7 +17,7 @@
 /// // Let godot call `demo` and its proxy method.
 /// invokeScript ("myDemo.proxy ()", params: ["myDemo", demo])
 /// ```
-@available(*, deprecated, message: "Use Callable constructed from Swift closure instead")
+//@available(*, deprecated, message: "Use Callable constructed from Swift closure instead")
 public class SignalProxy: Object {
     public static var proxyName = StringName("proxy")
 

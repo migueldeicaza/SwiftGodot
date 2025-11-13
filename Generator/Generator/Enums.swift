@@ -8,6 +8,20 @@
 import Foundation
 import ExtensionApi
 
+/// Stores enum definitions so other generator stages (like default-value mapping)
+/// can resolve `enum::Type.Value` even when we skip emitting the corresponding type.
+func registerEnumDefinition(_ enumDef: JGodotGlobalEnumElement, prefix: String?) {
+    guard let prefix else { return }
+    globalEnums[prefix + enumDef.name] = enumDef
+}
+
+func registerEnumDefinitions(_ values: [JGodotGlobalEnumElement], prefix: String?) {
+    guard let prefix else { return }
+    for enumDef in values {
+        registerEnumDefinition(enumDef, prefix: prefix)
+    }
+}
+
 // The name of the form 'bitfield::'
 func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
     guard name.starts(with: "bitfield::") else {
@@ -135,9 +149,6 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             p.indent -= 1
             p ("}\n")
         }
-        if let prefix {
-            globalEnums [prefix + enumDef.name] = enumDef
-        }
+        registerEnumDefinition(enumDef, prefix: prefix)
     }
 }
-

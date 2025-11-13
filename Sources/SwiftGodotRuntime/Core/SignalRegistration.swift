@@ -7,7 +7,7 @@
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWithNoArguments {
     public let name: StringName
     public let arguments: [PropInfo] = [] // needed for registration in macro, but always []

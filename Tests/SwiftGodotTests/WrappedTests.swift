@@ -8,6 +8,7 @@
 import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
+@testable import SwiftGodotRuntime
 
 final class WrappedTests: GodotTestCase {
     

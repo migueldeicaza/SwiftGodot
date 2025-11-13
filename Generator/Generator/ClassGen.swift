@@ -610,7 +610,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
 
         if cdef.name == "RefCounted" {
             p("""
-            public override required init(_ context: InitContext) {
+            public required init(_ context: InitContext) {
                 super.init(context)
             
                 _ = initRef()             
