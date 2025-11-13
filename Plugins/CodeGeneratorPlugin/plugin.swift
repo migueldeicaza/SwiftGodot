@@ -20,9 +20,16 @@ import PackagePlugin
         let api = context.package.directoryURL
             .appending(["Sources", "ExtensionApi", "extension_api.json"])
 
+        try FileManager.default.createDirectory(at: context.pluginWorkDirectoryURL, withIntermediateDirectories: true)
+
         let generatedSourcesDir = context.pluginWorkDirectoryURL
             .appending(path: "GeneratedSources")
             .appending(path: target.name)
+
+        if FileManager.default.fileExists(atPath: generatedSourcesDir.path) {
+            try FileManager.default.removeItem(at: generatedSourcesDir)
+        }
+        try FileManager.default.createDirectory(at: generatedSourcesDir, withIntermediateDirectories: true)
 
         let configurationDir = context.pluginWorkDirectoryURL.appending(path: "Configuration")
         try FileManager.default.createDirectory(at: configurationDir, withIntermediateDirectories: true)
@@ -375,7 +382,6 @@ let core: [String] = [
     "CapsuleMesh.swift",
     "CharFXTransform.swift",
     "ClassDB.swift",
-    "CodeHighlighter.swift",
     "ColorPalette.swift",
     "Compositor.swift",
     "CompositorEffect.swift",
@@ -383,7 +389,6 @@ let core: [String] = [
     "CompressedCubemapArray.swift",
     "CompressedTextureLayered.swift",
     "ConfigFile.swift",
-    "ConfirmationDialog.swift",
     "Control.swift",
     "Crypto.swift",
     "CryptoKey.swift",
@@ -409,7 +414,6 @@ let core: [String] = [
     "ExternalTexture.swift",
     "FastNoiseLite.swift",
     "FileAccess.swift",
-    "FileDialog.swift",
     "FogMaterial.swift",
     "Font.swift",
     "FontFile.swift",
@@ -625,7 +629,6 @@ let core: [String] = [
     "SceneTree.swift",
     "SceneTreeTimer.swift",
     "Script.swift",
-    "ScriptCreateDialog.swift",
     "ScriptExtension.swift",
     "ScriptLanguage.swift",
     "ScriptLanguageExtension.swift",
@@ -971,11 +974,14 @@ let controls: [String] = [
     "CenterContainer.swift",
     "CheckBox.swift",
     "CheckButton.swift",
+    "ConfirmationDialog.swift",
     "CodeEdit.swift",
+    "CodeHighlighter.swift",
     "ColorPicker.swift",
     "ColorPickerButton.swift",
     "ColorRect.swift",
     "Container.swift",
+    "FileDialog.swift",
     "FileSystemDock.swift",
     "FlowContainer.swift",
     "GraphEdit.swift",
@@ -1244,6 +1250,7 @@ let editor: [String] = [
     "GridMapEditorPlugin.swift",
     "OpenXRInteractionProfileEditor.swift",
     "OpenXRInteractionProfileEditorBase.swift",
+    "ScriptCreateDialog.swift",
     "ScriptEditor.swift",
     "ScriptEditorBase.swift",
     "OpenXRBindingModifierEditor.swift",
