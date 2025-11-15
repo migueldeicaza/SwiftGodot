@@ -36,7 +36,7 @@ public struct GodotExport: PeerMacro {
             declarations.append("""
             static func _mproxy_set_\(raw: identifier)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
                 guard let object = _unwrap(self, pInstance: pInstance) else {
-                    SwiftGodot.GD.printErr("Error calling setter for \(raw: identifier): failed to unwrap instance \\(String(describing: pInstance))")
+                    SwiftGodotRuntime.GD.printErr("Error calling setter for \(raw: identifier): failed to unwrap instance \\(String(describing: pInstance))")
                     return nil
                 }
             
