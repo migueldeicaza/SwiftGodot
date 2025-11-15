@@ -49,6 +49,16 @@ public typealias GodotNativeObjectPointer = UnsafeMutableRawPointer
 public struct InitContext {
     let handle: GodotNativeObjectPointer
     let origin: InitOrigin
+
+    /// Creates a new object of the specified className and returns an InitContext that you can
+    /// use to call your constructor
+    public static func createObject(className: StringName) -> InitContext? {
+        var copy = className
+        guard let nativeHandle = gi.classdb_construct_object(&copy.content) else {
+            return nil
+        }
+        return InitContext(handle: nativeHandle, origin: .swift)
+    }
 }
 
 ///
