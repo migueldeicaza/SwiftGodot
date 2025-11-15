@@ -40,7 +40,7 @@ public struct GodotExport: PeerMacro {
                     return nil
                 }
             
-                SwiftGodot._invokeSetter(arguments, "\(raw: identifier)", object.\(raw: identifier)) {
+                SwiftGodotRuntime._invokeSetter(arguments, "\(raw: identifier)", object.\(raw: identifier)) {
                     object.\(raw: identifier) = $0
                 }
                 return nil
