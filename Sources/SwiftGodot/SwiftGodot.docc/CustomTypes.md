@@ -214,6 +214,41 @@ To learn more, read the <doc:Exports> page.
 
 Surfacing signals is covered in the <doc:Signals> document.
 
+### Custom Constructors
+
+Most of the time you will not need a custom constructor, and you will
+let Godot take care of things.  But there are scenarios where you will
+want to instantiate objects that are surfaced to Godot but from the
+Swift side, and you might want to initialize some data from the
+parameters.
+
+You will soon find that you need a InitContext definition because your
+custom init needs to call the designated initializer.
+
+To achieve this, use the `createObject` methox of InitContext that
+will create the backing object for you, for example:
+
+```swift
+@Godot
+class MyDemo: RefCounted {
+    var name: String
+    
+    required init(_ context: InitContext) {
+	name = "My Name:
+        super.init(context)
+    }
+
+    // Custom initializer
+    init(name: String) {
+        self.name = name
+        guard let ctxt = InitContext.createObject(className: MyDemo.godotClassName) else {
+            fatalError("Could not create object")
+        }
+        super.init(ctxt)
+    }
+}
+```
+
 ## Low-Level Details: PropInfo
 
 In SwiftGodot, the ``PropInfo`` structure is used to define argument types,

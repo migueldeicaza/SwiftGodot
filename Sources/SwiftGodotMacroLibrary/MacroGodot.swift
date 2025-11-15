@@ -166,17 +166,19 @@ class GodotMacroProcessor {
                 throw GodotMacroError.noIdentifier(binding)
             }
             
+            // Determine if this property needs a setter (same logic as Export macro)
+            let needsSetter = Self.bindingNeedsSetter(variableDecl: varDecl, binding: binding)
+            
             let varNameWithPrefix = ips.identifier.text
             let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
-            let proxySetterName = "_mproxy_set_\(varNameWithPrefix)"
+            // For the case where there is no setter, set the proxySetterName to the empty string
+            let proxySetterName = needsSetter ? "_mproxy_set_\(varNameWithPrefix)" : ""
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
             let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
             
-            if !binding.isSettableBinding {
-                throw GodotMacroError.exportMacroOnReadonlyVariable(varNameWithPrefix)
-            }
-            
+            // Do not throw for read-only properties anymore; allow registration to proceed.
+            // Keep building the args list as before.
             var args: [String] = [
                 "at: \\\(className).\(varNameWithPrefix)",
                 "name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
@@ -209,16 +211,21 @@ class GodotMacroProcessor {
                 p("info: SwiftGodotRuntime._propInfo", .parentheses, afterBlock: ",") {
                     p(argsStr)
                 }
+                let setterFunction = needsSetter ? "\(className).\(proxySetterName)" : "nil"
+                let setterNameArg = needsSetter ? "\"\(setterName)\"" : "StringName()"
+
                 p("""
                 getterName: "\(getterName)\",
-                setterName: "\(setterName)",                
+                setterName: \(setterNameArg),
                 getterFunction: \(className).\(proxyGetterName),
-                setterFunction: \(className).\(proxySetterName)  
+                setterFunction: \(setterFunction)
                 """)
             }
             
             try checkNameCollision(getterName, for: DeclSyntax(varDecl))
-            try checkNameCollision(setterName, for: DeclSyntax(varDecl))
+            if needsSetter {
+                try checkNameCollision(setterName, for: DeclSyntax(varDecl))
+            }
         }
     }
         
@@ -288,6 +295,48 @@ class GodotMacroProcessor {
         return classInitializerPrinter.result
     }
 
+    /// Determines whether a binding is settable based on its syntax.
+    /// - Rules:
+    ///   - `let` bindings are never settable.
+    ///   - `var` without an accessor block is a stored property -> settable.
+    ///   - Accessor block:
+    ///       - `.getter` form is read-only -> not settable.
+    ///       - `.accessors` is settable if it contains `set`, `_modify`, `willSet`, or `didSet`.
+    private static func bindingNeedsSetter(variableDecl: VariableDeclSyntax, binding: PatternBindingSyntax) -> Bool {
+        // If it's a 'let', it's not settable
+        if case .keyword(.let) = variableDecl.bindingSpecifier.tokenKind {
+            return false
+        }
+        
+        // No accessor block => stored property => settable
+        guard let accessorBlock = binding.accessorBlock else {
+            return true
+        }
+        
+        switch accessorBlock.accessors {
+        case .getter:
+            // Shorthand getter-only computed property
+            return false
+        case .accessors(let list):
+            // If we have an explicit 'set' or '_modify', it's settable.
+            // Also consider observers (willSet/didSet) which imply write-ability for stored properties.
+            return list.contains { accessor in
+                switch accessor.accessorSpecifier.tokenKind {
+                case .keyword(.set),
+                     .keyword(._modify),
+                     .keyword(.willSet),
+                     .keyword(.didSet):
+                    return true
+                default:
+                    return false
+                }
+            }
+        #if RESILIENT_LIBRARIES
+        @unknown default:
+            return false
+        #endif
+        }
+    }
 }
 
 extension String {
@@ -466,3 +515,4 @@ private extension MacroExpansionDeclSyntax {
             .text
     }
 }
+

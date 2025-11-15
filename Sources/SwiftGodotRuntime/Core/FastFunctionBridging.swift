@@ -69,10 +69,12 @@ public func _registerPropertyWithGetterSetter(
     getterName: StringName,
     setterName: StringName,
     getterFunction: @escaping BridgedFunction,
-    setterFunction: @escaping BridgedFunction
+    setterFunction: BridgedFunction?
 ) {
     _registerMethod(className: className, name: getterName, flags: .default, returnValue: info, arguments: [], function: getterFunction)
-    _registerMethod(className: className, name: setterName, flags: .default, returnValue: nil, arguments: [info], function: setterFunction)
+    if let setterFunction {
+        _registerMethod(className: className, name: setterName, flags: .default, returnValue: nil, arguments: [info], function: setterFunction)
+    }
     _registerProperty(className: className, info: info, getter: getterName, setter: setterName)
 }
 /// Internal API.
