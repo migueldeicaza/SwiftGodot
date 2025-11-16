@@ -439,6 +439,7 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     info.class_userdata = retained.toOpaque()
     
     gi.classdb_register_extension_class(extensionInterface.getLibrary(), &nameContent, &parent.content, &info)
+    _ = type.classInitializer
 }
 
 @_spi(SwiftGodotRuntimePrivate) public final class WrappedReference {
