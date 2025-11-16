@@ -328,11 +328,19 @@ func bind_call_ptr () {
     fatalError("Not implemented")
 }
 
+/// Error indicating that a ``earlyChild`` is registered before ``lateParent`` due to ``classInitializationLevel`` requirement, despite ``lateParent`` is a super class of ``earlyChild``
+public struct IncorrectInitializationOrderError: Error {
+    public let earlyChild: String
+    public let lateParent: String
+}
+
 extension [Object.Type] {
     /// Returns a topologically sorted array of the classes.
     /// Classes depending on others will be strictly later in the sequence.
     /// Duplicating entries will be removed.    
-    public func topologicallySorted() -> [Object.Type] {
+    public func topologicallySorted(
+        onIncorrectInitializationOrder: (String, String) throws -> Void
+    ) rethrows -> [Object.Type] {
         guard !isEmpty else {
             return []
         }
@@ -350,6 +358,7 @@ extension [Object.Type] {
         }
         
         var remaining = Set(idToType.keys)
+        let knownTypeIds = remaining
         var pending = [ObjectIdentifier]()
         var sorted = [ObjectIdentifier]()
         
@@ -357,7 +366,18 @@ extension [Object.Type] {
             for typeId in remaining {
                 let type = type(with: typeId)
                 if let superType = _getSuperclass(type) {
+                    guard let superType = superType as? Object.Type else {
+                        fatalError("Unreachable")
+                    }
+                    
                     let superTypeId = id(of: superType)
+                    
+                    if knownTypeIds.contains(superTypeId) // unknown types (such as framework ones) are considered as registered
+                        && superType.classInitializationLevel.rawValue > type.classInitializationLevel.rawValue {
+                        // Super type is registered later than the child
+                        try onIncorrectInitializationOrder("\(type)", "\(superType)")
+                    }
+                                        
                     if !remaining.contains(superTypeId) {
                         pending.append(typeId)
                     }
@@ -375,4 +395,50 @@ extension [Object.Type] {
         
         return sorted.map { type(with: $0) }
     }
+    
+    /// Returns a topologically sorted array of the classes.
+    /// Classes depending on others will be strictly later in the sequence.
+    /// Duplicating entries will be removed.
+    public func topologicallySorted() -> [Object.Type] {
+        topologicallySorted(onIncorrectInitializationOrder: { _, _ in
+            // no-op
+        })
+    }
+    
+    /// Returns a topologically sorted array of the classes.
+    /// Classes depending on others will be strictly later in the sequence.
+    /// Duplicating entries will be removed.
+    /// If the sorted sequence doesn't contain a strictly ascending `classInitializationLevel`, throws ``IncorrectInitializationOrderError``
+    public func topologicallySortedCheckingInitializationOrder() throws -> [Object.Type] {
+        try topologicallySorted(
+            onIncorrectInitializationOrder: {
+                throw IncorrectInitializationOrderError(earlyChild: $0, lateParent: $1)
+            }
+        )
+    }
+        
+    /// Sort types topologically, ensuring that their initialization order is correct (see ``topologicallySortedCheckingInitializationOrder``)
+    public func prepareForRegistration() throws -> [GDExtension.InitializationLevel: [Object.Type]] {
+        let sorted = try topologicallySortedCheckingInitializationOrder()
+        var result: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+        
+        for type in sorted {
+            result[type.classInitializationLevel, default: []].append(type)
+        }
+        
+        return result
+    }
 }
+
+public func minimumInitializationLevel(for registration: [GDExtension.InitializationLevel: [Object.Type]]) -> GDExtension.InitializationLevel {
+    let nonEmptyLevels = registration.keys.filter { key in
+        registration[key]?.isEmpty == false
+    }
+    
+    let minOrNil = nonEmptyLevels.min { lhs, rhs in
+        lhs.rawValue < rhs.rawValue
+    }
+    
+    return minOrNil ?? .editor // .editor is max
+}
+    
