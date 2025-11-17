@@ -34,15 +34,19 @@ public struct GodotCallable: PeerMacro {
         let indentation = parameters.isEmpty ? "" : "    "
         
         if !isStatic {
-            let loadInstance = """
+            body += """
             \(indentation)    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             \(indentation)        SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
             \(indentation)        return nil
             \(indentation)    }
             """
 
-            body += loadInstance
-            bodyPtr += loadInstance
+            bodyPtr += """
+            \(indentation)    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+            \(indentation)        SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
+            \(indentation)        return
+            \(indentation)    }
+            """
         }
 
         let objectOrSelf = isStatic ? "self" : "object"
@@ -58,7 +62,7 @@ public struct GodotCallable: PeerMacro {
 
             bodyPtr += """
 
-                    let arg\(index): \(ptype) = rargs.fetchArgument(at: \(index))
+            \(indentation)let arg\(index): \(ptype) = rargs.fetchArgument(at: \(index))
             """
         }
         
@@ -75,19 +79,15 @@ public struct GodotCallable: PeerMacro {
         
         """
         let ptrCallDecl: String
-        if funcDecl.hasClassOrStaticModifier {
-            ptrCallDecl = """
-            
-            static func _pproxy_\(funcName)(        
-            _ classInstance: UnsafeMutableRawPointer?,
-            _ rargs: RawArguments,
-            _ returnValue: UnsafeMutableRawPointer?) {
-            \(bodyPtr)
-            }
-            """
-        } else {
-            ptrCallDecl = ""
+        ptrCallDecl = """
+        
+        static func _pproxy_\(funcName)(        
+        _ pInstance: UnsafeMutableRawPointer?,
+        _ rargs: RawArguments,
+        _ returnValue: UnsafeMutableRawPointer?) {
+        \(bodyPtr)
         }
+        """
 
         if parameters.isEmpty {
             return """

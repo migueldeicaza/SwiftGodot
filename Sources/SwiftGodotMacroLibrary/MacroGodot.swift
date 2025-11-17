@@ -78,7 +78,7 @@ class GodotMacroProcessor {
         // variants.   Historically, SwiftGodot only supported the former for callbacks
         // and we are slowly support for the rest - since we did not support static functions
         // we can start testing there, and once it is done, we can turn this for everything.
-        var generatePtrCall = false
+        var generatePtrCall = true
 
         if funcDecl.hasClassOrStaticModifier {
             generatePtrCall = true
