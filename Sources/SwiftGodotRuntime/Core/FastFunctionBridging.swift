@@ -77,6 +77,7 @@ public func _registerPropertyWithGetterSetter(
     }
     _registerProperty(className: className, info: info, getter: getterName, setter: setterName)
 }
+
 /// Internal API.
 public func _registerMethod(
     className: StringName,
@@ -84,7 +85,7 @@ public func _registerMethod(
     flags: MethodFlags,
     returnValue: PropInfo?,
     arguments: [PropInfo],
-    function: @escaping BridgedFunction
+    function: @escaping BridgedFunction,
 ) {
     let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
     defer { argPtr.deallocate() }
@@ -113,6 +114,54 @@ public func _registerMethod(
             method_userdata: userdata,
             call_func: call_func,
             ptrcall_func: nil, //ClassInfo.bind_call_ptr,
+            method_flags: UInt32 (flags.rawValue),
+            has_return_value: GDExtensionBool (returnValue != nil ? 1 : 0),
+            return_value_info: retInfoPtr,
+            return_value_metadata: returnMeta,
+            argument_count: UInt32(arguments.count),
+            arguments_info: argPtr,
+            arguments_metadata: argMeta, // GDExtensionClassMethodArgumentMetadata
+            default_argument_count: 0,
+            default_arguments: nil) // GDExtensionVariantPtr)
+            withUnsafePointer(to: &className.content) { namePtr in
+                gi.classdb_register_extension_class_method (extensionInterface.getLibrary(), namePtr, &info)
+            }
+        }
+    }
+}
+
+public func _registerMethod(
+    className: StringName,
+    name: StringName,
+    flags: MethodFlags,
+    returnValue: PropInfo?,
+    arguments: [PropInfo],
+    function: @escaping BridgedFunction,
+    ptrFunction: @escaping GDExtensionClassMethodPtrCall
+) {
+    let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
+    defer { argPtr.deallocate() }
+    let argMeta = UnsafeMutablePointer<GDExtensionClassMethodArgumentMetadata>.allocate(capacity: arguments.count)
+    defer { argMeta.deallocate() }
+    var i = 0
+    for arg in arguments {
+        argPtr [i] = arg.makeNativeStruct()
+        argMeta [i] = GDExtensionClassMethodArgumentMetadata(GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE.rawValue)
+        i += 1
+    }
+    let returnMeta = GDExtensionClassMethodArgumentMetadata(GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE.rawValue)
+    var retInfo = GDExtensionPropertyInfo ()
+    if let returnValue {
+        retInfo = returnValue.makeNativeStruct()
+    }
+
+    withUnsafeMutablePointer(to: &name.content) { namePtr in
+        withUnsafeMutablePointer(to: &retInfo) { retInfoPtr in
+        var info = GDExtensionClassMethodInfo (
+            name: namePtr,
+            method_userdata: nil,
+            call_func: call_func,
+            ptrcall_func: ptrFunction,
             method_flags: UInt32 (flags.rawValue),
             has_return_value: GDExtensionBool (returnValue != nil ? 1 : 0),
             return_value_info: retInfoPtr,
@@ -183,3 +232,5 @@ private func call_func(
         ret.unsafelyForget()
     }
 }
+
+

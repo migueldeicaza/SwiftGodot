@@ -72,9 +72,16 @@ class GodotMacroProcessor {
         guard let callableAttribute = funcDecl.attributes.attribute(named: "Callable") else {
             return
         }
-        
+
+        // Godot has two mechanisms to call function, one is its call_func that takes
+        // variants, and the other one is ptrcall that takes pointers to the contents of the
+        // variants.   Historically, SwiftGodot only supported the former for callbacks
+        // and we are slowly support for the rest - since we did not support static functions
+        // we can start testing there, and once it is done, we can turn this for everything.
+        var generatePtrCall = false
+
         if funcDecl.hasClassOrStaticModifier {
-            throw GodotMacroError.unsupportedStaticMember
+            generatePtrCall = true
         }
         
         let funcName = funcDecl.name.text
@@ -110,7 +117,7 @@ class GodotMacroProcessor {
         } else {
             flags = ".default"
         }
-        
+
         p("SwiftGodotRuntime._registerMethod", .parentheses) {
             p("""
             className: className,
@@ -121,7 +128,17 @@ class GodotMacroProcessor {
             p("arguments: ", .square, afterBlock: ",") {
                 p(arguments)
             }
-            p("function: \(className)._mproxy_\(funcName)")
+            p(("function: \(className)._mproxy_\(funcName)") + (generatePtrCall ? "," : ""))
+            if generatePtrCall {
+                p("""
+                ptrFunction: { udata, classInstance, argsPtr, retValue in
+                    GD.print("Reached \(funcName)")
+                    guard let argsPtr else { print("Godot is not passing the arguments"); return } 
+                    \(className)._pproxy_\(funcName) (classInstance, RawArguments(args: argsPtr), retValue)
+                }
+                
+                """)
+            }
         }
         
         try checkNameCollision(godotFuncName, for: DeclSyntax(funcDecl))

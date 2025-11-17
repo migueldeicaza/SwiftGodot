@@ -20,9 +20,12 @@ public struct GodotCallable: PeerMacro {
         if funcDecl.hasAsyncOrThrowsSpecifier {
             throw GodotMacroError.callableMacroOnThrowingOrAsyncFunction
         }
-        
+
+        // The body for the regular call
         var body = ""
-        
+        // The body for the ptrcall
+        var bodyPtr = ""
+
         let parameters = funcDecl.parameters
         
         var callArgsList: [String] = []
@@ -31,16 +34,19 @@ public struct GodotCallable: PeerMacro {
         let indentation = parameters.isEmpty ? "" : "    "
         
         if !isStatic {
-            body += """
+            let loadInstance = """
             \(indentation)    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             \(indentation)        SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
             \(indentation)        return nil
             \(indentation)    }
             """
+
+            body += loadInstance
+            bodyPtr += loadInstance
         }
-        
+
         let objectOrSelf = isStatic ? "self" : "object"
-        
+
         for (index, parameter) in parameters.enumerated() {
             let ptype = parameter.type.trimmedDescription
             
@@ -49,6 +55,11 @@ public struct GodotCallable: PeerMacro {
             """
                         
             callArgsList.append("\(parameter.labelForCaller)arg\(index)")
+
+            bodyPtr += """
+
+                    let arg\(index): \(ptype) = rargs.fetchArgument(at: \(index))
+            """
         }
         
         let callArgs = callArgsList.joined(separator: ", ")
@@ -57,12 +68,32 @@ public struct GodotCallable: PeerMacro {
         \(indentation)    return SwiftGodotRuntime._wrapCallableResult(\(objectOrSelf).\(funcName)(\(callArgs)))
         
         """
+
+        bodyPtr += """
         
+        \(indentation)    RawReturnWriter.writeResult(returnValue, \(objectOrSelf).\(funcName)(\(callArgs))) 
+        
+        """
+        let ptrCallDecl: String
+        if funcDecl.hasClassOrStaticModifier {
+            ptrCallDecl = """
+            
+            static func _pproxy_\(funcName)(        
+            _ classInstance: UnsafeMutableRawPointer?,
+            _ rargs: RawArguments,
+            _ returnValue: UnsafeMutableRawPointer?) {
+            \(bodyPtr)
+            }
+            """
+        } else {
+            ptrCallDecl = ""
+        }
+
         if parameters.isEmpty {
             return """
             static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
             \(body)                
-            }
+            }\(ptrCallDecl)
             """
         } else {
             return """
@@ -74,8 +105,11 @@ public struct GodotCallable: PeerMacro {
                 }
             
                 return nil
-            }
+            }\(ptrCallDecl)
             """
+        }
+
+        if funcDecl.hasClassOrStaticModifier {
         }
     }
     
