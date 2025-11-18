@@ -132,8 +132,7 @@ class GodotMacroProcessor {
             if generatePtrCall {
                 p("""
                 ptrFunction: { udata, classInstance, argsPtr, retValue in
-                    GD.print("Reached \(funcName)")
-                    guard let argsPtr else { print("Godot is not passing the arguments"); return } 
+                    guard let argsPtr else { GD.print("Godot is not passing the arguments"); return } 
                     \(className)._pproxy_\(funcName) (classInstance, RawArguments(args: argsPtr), retValue)
                 }
                 

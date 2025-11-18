@@ -722,6 +722,12 @@ public struct RawReturnWriter {
         copy.content = 0
     }
 
+    public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: String) {
+        var content = GString.zero
+        gi.string_new_with_utf8_chars(&content, value)
+        target!.assumingMemoryBound(to: StringName.ContentType.self).pointee = content
+    }
+
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: NodePath) {
         var copy = NodePath(from: value)
         target!.assumingMemoryBound(to: NodePath.ContentType.self).pointee = copy.content
@@ -829,6 +835,15 @@ public struct RawReturnWriter {
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Bool) {
         target!.assumingMemoryBound(to: Int.self).pointee = value ? 1 : 0
     }
+
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T) where T: RawRepresentable, T.RawValue == Int {
+        target!.assumingMemoryBound(to: Int.self).pointee = value.rawValue
+    }
+
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T) where T: RawRepresentable, T.RawValue == Int64 {
+        target!.assumingMemoryBound(to: Int.self).pointee = Int(value.rawValue)
+    }
+
 }
 
 /// Execute `body` and return the result of executing it taking temporary storage keeping Godot managed `Variant`s stored in `pargs`.
