@@ -401,13 +401,24 @@ public struct Arguments: ~Copyable {
 ///
 /// You should generally not use this in your code
 public struct RawArguments: Sendable {
-    var args: UnsafePointer<UnsafeRawPointer?>
+    public var args: UnsafePointer<UnsafeRawPointer?>
     public init (args: UnsafePointer<UnsafeRawPointer?>) {
         self.args = args
     }
 
     public func fetchArgument(at: Int) -> Int {
         args[at]!.assumingMemoryBound(to: Int.self).pointee
+    }
+
+    // Generic overload for any enum with Int raw values
+    public func fetchArgument<T>(at: Int) -> T where T: RawRepresentable, T.RawValue == Int {
+        // Replace this with however you obtain the raw value
+        let raw = args[at]!.assumingMemoryBound(to: Int.self).pointee
+
+        guard let value = T(rawValue: raw) else {
+            preconditionFailure("Invalid raw value \(raw) for \(T.self)")
+        }
+        return value
     }
 
     public func fetchArgument(at: Int) -> Int64 {
