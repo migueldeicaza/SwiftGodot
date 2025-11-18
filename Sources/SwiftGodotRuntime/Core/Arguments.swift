@@ -532,82 +532,82 @@ public struct RawArguments: Sendable {
 
     public func fetchArgument(at: Int) -> StringName {
         let i = args[at]!.assumingMemoryBound(to: StringName.ContentType.self).pointee
-        return StringName(takingOver: i)
+        return StringName(content: i)
     }
 
     public func fetchArgument(at: Int) -> NodePath {
         let i = args[at]!.assumingMemoryBound(to: NodePath.ContentType.self).pointee
-        return NodePath(takingOver: i)
+        return NodePath(content: i)
     }
 
     public func fetchArgument(at: Int) -> RID {
         let i = args[at]!.assumingMemoryBound(to: RID.ContentType.self).pointee
-        return RID(takingOver: i)
+        return RID(content: i)
     }
 
     public func fetchArgument(at: Int) -> Callable {
         let i = args[at]!.assumingMemoryBound(to: Callable.ContentType.self).pointee
-        return Callable(takingOver: i)
+        return Callable(content: i)
     }
 
     public func fetchArgument(at: Int) -> Signal {
         let i = args[at]!.assumingMemoryBound(to: Signal.ContentType.self).pointee
-        return Signal(takingOver: i)
+        return Signal(content: i)
     }
 
     public func fetchArgument(at: Int) -> VariantDictionary {
         let i = args[at]!.assumingMemoryBound(to: VariantDictionary.ContentType.self).pointee
-        return VariantDictionary(takingOver: i)
+        return VariantDictionary(content: i)
     }
 
     public func fetchArgument(at: Int) -> VariantArray {
         let i = args[at]!.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
-        return VariantArray(takingOver: i)
+        return VariantArray(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedByteArray {
         let i = args[at]!.assumingMemoryBound(to: PackedByteArray.ContentType.self).pointee
-        return PackedByteArray(takingOver: i)
+        return PackedByteArray(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedInt32Array {
         let i = args[at]!.assumingMemoryBound(to: PackedInt32Array.ContentType.self).pointee
-        return PackedInt32Array(takingOver: i)
+        return PackedInt32Array(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedInt64Array {
         let i = args[at]!.assumingMemoryBound(to: PackedInt64Array.ContentType.self).pointee
-        return PackedInt64Array(takingOver: i)
+        return PackedInt64Array(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedFloat32Array {
         let i = args[at]!.assumingMemoryBound(to: PackedFloat32Array.ContentType.self).pointee
-        return PackedFloat32Array(takingOver: i)
+        return PackedFloat32Array(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedFloat64Array {
         let i = args[at]!.assumingMemoryBound(to: PackedFloat64Array.ContentType.self).pointee
-        return PackedFloat64Array(takingOver: i)
+        return PackedFloat64Array(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedStringArray {
         let i = args[at]!.assumingMemoryBound(to: PackedStringArray.ContentType.self).pointee
-        return PackedStringArray(takingOver: i)
+        return PackedStringArray(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedVector2Array {
         let i = args[at]!.assumingMemoryBound(to: PackedVector2Array.ContentType.self).pointee
-        return PackedVector2Array(takingOver: i)
+        return PackedVector2Array(content: i)
     }
 
     public func fetchArgument(at: Int) -> PackedColorArray {
         let i = args[at]!.assumingMemoryBound(to: PackedColorArray.ContentType.self).pointee
-        return PackedColorArray(takingOver: i)
+        return PackedColorArray(content: i)
     }
     
     public func fetchArgument(at: Int) -> PackedVector4Array {
         let i = args[at]!.assumingMemoryBound(to: PackedVector4Array.ContentType.self).pointee
-        return PackedVector4Array(takingOver: i)
+        return PackedVector4Array(content: i)
     }
 }
 
