@@ -29,7 +29,31 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         let coreTypes = node.arguments.first(where: { $0.label?.text == "coreTypes" })?.expression ?? "[]"
         let editorTypes = node.arguments.first(where: { $0.label?.text == "editorTypes" })?.expression ?? "[]"
         let serverTypes = node.arguments.first(where: { $0.label?.text == "serverTypes" })?.expression ?? "[]"
-        let enums = node.arguments.first(where: { $0.label?.text == "enums" })?.expression ?? "[]"
+        let enumsExpr = node.arguments.first(where: { $0.label?.text == "enums" })?.expression ?? "[]"
+
+        // Build per-element registerEnum(...) calls if enums is an array literal
+        let enumRegistrationStatements: CodeBlockItemListSyntax = {
+            if let array = enumsExpr.as(ArrayExprSyntax.self) {
+                // Collect elements and build one call per element
+                let items: [CodeBlockItemSyntax] = array.elements.map { elem in
+                    let call: ExprSyntax = "registerEnum(\(elem.expression))"
+                    return CodeBlockItemSyntax(item: .expr(call))
+                }
+                return CodeBlockItemListSyntax(items)
+            } else {
+                // Fallback: keep the runtime loop if not an array literal
+                let loop: ExprSyntax = """
+                for e in \(enumsExpr) {
+                    registerEnum(e)
+                }
+                """
+                return CodeBlockItemListSyntax {
+                    CodeBlockItemSyntax(item: .expr(loop))
+                }
+            }
+        }()
+
+        // Build the init function, inserting the generated enum registration statements at .scene level
         let initModule: DeclSyntax = """
         @_cdecl(\(raw: cDecl.trimmedDescription)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
             guard let library, let interface, let `extension` else {
@@ -44,9 +68,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
             initializeSwiftModule (interface, library, `extension`, initHook: { level in
                 types[level]?.forEach(register)
                 if level == .scene {
-                    for e in \(enums) {
-                        registerEnum(e)
-                    }
+                    \(enumRegistrationStatements)
                 }
             }, deInitHook: { level in
                 types[level]?.reversed().forEach(unregister)
@@ -54,6 +76,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
             return 1
         }
         """
+
         return [initModule]
     }
 }
