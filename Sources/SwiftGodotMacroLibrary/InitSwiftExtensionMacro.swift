@@ -29,7 +29,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         let coreTypes = node.arguments.first(where: { $0.label?.text == "coreTypes" })?.expression ?? "[]"
         let editorTypes = node.arguments.first(where: { $0.label?.text == "editorTypes" })?.expression ?? "[]"
         let serverTypes = node.arguments.first(where: { $0.label?.text == "serverTypes" })?.expression ?? "[]"
-
+        let enums = node.arguments.first(where: { $0.label?.text == "enums" })?.expression ?? "[]"
         let initModule: DeclSyntax = """
         @_cdecl(\(raw: cDecl.trimmedDescription)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
             guard let library, let interface, let `extension` else {
@@ -43,6 +43,11 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
             types[.servers] = \(serverTypes).topologicallySorted()
             initializeSwiftModule (interface, library, `extension`, initHook: { level in
                 types[level]?.forEach(register)
+                if level == .scene {
+                    for e in \(enums) {
+                        registerEnum(e)
+                    }
+                }
             }, deInitHook: { level in
                 types[level]?.reversed().forEach(unregister)
             })

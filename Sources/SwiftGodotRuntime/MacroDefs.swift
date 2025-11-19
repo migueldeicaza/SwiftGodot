@@ -112,14 +112,17 @@ public macro exportSubgroup(_ name: String, prefix: String = "") = #externalMacr
 /// class MyControl: Control { ... }
 ///
 /// #initSwiftExtension(cdecl: "myextension_entry_point",
-///                     types: [MySprite.self, MyControl.self])
+///                     types: [MySprite.self, MyControl.self],
+///                     enums: [MySprite.BlendMode.self])
 /// ```
 ///
 /// - Parameter cdecl: The name of the entrypoint exposed to C.
 /// - Parameter types: The node types that should be registered with Godot.
+/// - Parameter enums: a list of enumerations that use an Int64 backing store and are CaseIterable
 @freestanding(declaration, names: named(enterExtension))
 public macro initSwiftExtension(cdecl: String,
-                                types: [Wrapped.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
+                                types: [Wrapped.Type] = [],
+                                enums: [CaseIterable.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")
 
 /// Macro used to write an entrypoint for a Godot extension and register all the supported scene types.
@@ -137,7 +140,8 @@ public macro initSwiftExtension(cdecl: String,
 ///
 /// #initSwiftExtension(cdecl: "myextension_entry_point",
 ///                     editorTypes: [MyEditorPlugin.self],  
-///                     sceneTypes: [MySprite.self, MyControl.self])
+///                     sceneTypes: [MySprite.self, MyControl.self],
+///                     enums: [MySprite.ScaleMode.self])
 /// ```
 ///
 /// - Parameter cdecl: The name of the entrypoint exposed to C.
@@ -145,6 +149,7 @@ public macro initSwiftExtension(cdecl: String,
 /// - Parameter editorTypes: Types registered at the `.editor` level
 /// - Parameter sceneTypes: Types registered at the `.scene` level
 /// - Parameter serverTypes: Types registered at the `.server` level
+/// - Parameter enums: a list of enumerations that use an Int64 backing store and are CaseIterable
 @freestanding(declaration, names: named(enterExtension))
 public macro initSwiftExtension(
     cdecl: String,

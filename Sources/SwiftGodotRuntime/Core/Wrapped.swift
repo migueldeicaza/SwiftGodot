@@ -503,6 +503,74 @@ public func register<T: Object>(type: T.Type) {
     register (type: StringName (typeStr), parent: StringName (superStr), type: type)
 }
 
+/// Register the enumeration, the enumeration must be nested into a type
+public func registerEnum<T>(_ type: T.Type)
+where T: RawRepresentable & CaseIterable, T.RawValue == Int64 {
+    let fullname = String(reflecting: type)
+    let split = fullname.split(separator: ".")
+    if split.count != 3 {
+        GD.print("Could not register enum \(fullname) it needs 3 components")
+        return
+    }
+
+    var className = StringName(split[1])
+    var enumName  = StringName(split[2])
+
+    withUnsafePointer(to: &className.content) { classPtr in
+        withUnsafePointer(to: &enumName.content) { enumPtr in
+            for v in type.allCases {
+                let keyString = String(describing: v)          // e.g. "foo", "bar"
+                var key   = StringName(keyString)
+                let value = v.rawValue                         // Int64
+
+                withUnsafePointer(to: &key.content) { keyPtr in
+                    gi.classdb_register_extension_class_integer_constant(
+                        extensionInterface.getLibrary(),
+                        classPtr,
+                        enumPtr,
+                        keyPtr,
+                        value,
+                        0)
+                }
+            }
+        }
+    }
+}
+
+/// Register the enumeration, the enumeration must be nested into a type
+public func registerEnum<T>(_ type: T.Type)
+where T: RawRepresentable & CaseIterable, T.RawValue == Int {
+    let fullname = String(reflecting: type)
+    let split = fullname.split(separator: ".")
+    if split.count != 3 {
+        GD.print("Could not register enum \(fullname) it needs 3 components")
+        return
+    }
+
+    var className = StringName(split[1])
+    var enumName  = StringName(split[2])
+
+    withUnsafePointer(to: &className.content) { classPtr in
+        withUnsafePointer(to: &enumName.content) { enumPtr in
+            for v in type.allCases {
+                let keyString = String(describing: v)          // e.g. "foo", "bar"
+                var key   = StringName(keyString)
+                let value = v.rawValue                         // Int64
+
+                withUnsafePointer(to: &key.content) { keyPtr in
+                    gi.classdb_register_extension_class_integer_constant(
+                        extensionInterface.getLibrary(),
+                        classPtr,
+                        enumPtr,
+                        keyPtr,
+                        Int64(value),
+                        0)
+                }
+            }
+        }
+    }
+}
+
 public func unregister<T: Object>(type: T.Type) {
     let typeStr = String (describing: type)
     let name = StringName (typeStr)

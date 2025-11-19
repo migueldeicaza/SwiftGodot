@@ -421,6 +421,17 @@ public struct RawArguments: Sendable {
         return value
     }
 
+    // Generic overload for any enum with Int raw values
+    public func fetchArgument<T>(at: Int) -> T where T: RawRepresentable, T.RawValue == Int64 {
+        // Replace this with however you obtain the raw value
+        let raw = args[at]!.assumingMemoryBound(to: Int.self).pointee
+
+        guard let value = T(rawValue: Int64(raw)) else {
+            preconditionFailure("Invalid raw value \(raw) for \(T.self)")
+        }
+        return value
+    }
+
     public func fetchArgument(at: Int) -> Int64 {
         Int64(args[at]!.assumingMemoryBound(to: Int.self).pointee)
     }

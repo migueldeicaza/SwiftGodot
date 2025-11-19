@@ -198,6 +198,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  classdb_register_extension_class_property: GDExtensionInterfaceClassdbRegisterExtensionClassProperty
     public let  classdb_register_extension_class_property_group: GDExtensionInterfaceClassdbRegisterExtensionClassPropertyGroup
     public let  classdb_register_extension_class_property_subgroup: GDExtensionInterfaceClassdbRegisterExtensionClassPropertySubgroup
+    public let  classdb_register_extension_class_integer_constant: GDExtensionInterfaceClassdbRegisterExtensionClassIntegerConstant
     public let  classdb_unregister_extension_class: GDExtensionInterfaceClassdbUnregisterExtensionClass
 
     public let  object_set_instance: GDExtensionInterfaceObjectSetInstance
@@ -351,6 +352,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         classdb_register_extension_class_property: load("classdb_register_extension_class_property"),
         classdb_register_extension_class_property_group: load("classdb_register_extension_class_property_group"),
         classdb_register_extension_class_property_subgroup: load("classdb_register_extension_class_property_subgroup"),
+        classdb_register_extension_class_integer_constant: load("classdb_register_extension_class_integer_constant"),
         classdb_unregister_extension_class: load("classdb_unregister_extension_class"),
         
         object_set_instance: load("object_set_instance"),

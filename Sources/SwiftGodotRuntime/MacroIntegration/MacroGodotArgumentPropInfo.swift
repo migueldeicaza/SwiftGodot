@@ -77,6 +77,47 @@ public func _argumentPropInfo<T>(
     )
 }
 
+// Enumeration values
+@inline(__always)
+@inlinable
+public func _argumentPropInfo<T>(
+    _ type: T.Type,
+    name: String = ""
+) -> PropInfo where T: RawRepresentable, T.RawValue == Int64 {
+    PropInfo(
+        propertyType: .int,
+        propertyName: StringName(name),
+        className: "",
+        hint: .none,
+        hintStr: GString(""),
+        usage: .default
+    )
+}
+
+// Enumeration values, when we can case-iterate
+@inline(__always)
+@inlinable
+public func _argumentPropInfo<T>(
+    _ type: T.Type,
+    name: String = ""
+) -> PropInfo where T: CaseIterable & RawRepresentable, T.RawValue == Int64 {
+    var hintStr = ""
+    for c in T.allCases {
+        if hintStr != "" {
+            hintStr += ","
+        }
+        hintStr += "\(c):\(c.rawValue)"
+    }
+    return PropInfo(
+        propertyType: .int,
+        propertyName: StringName(name),
+        className: StringName(String(describing: T.self)),
+        hint: .enum,
+        hintStr: GString(hintStr),
+        usage: .default
+    )
+}
+
 /// Internal API. VariantConvertible user type.
 @inline(__always)
 @inlinable
