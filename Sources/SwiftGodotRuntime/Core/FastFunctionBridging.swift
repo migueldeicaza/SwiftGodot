@@ -154,12 +154,15 @@ public func _registerMethod(
     if let returnValue {
         retInfo = returnValue.makeNativeStruct()
     }
+    // TODO: leaks, never deallocated
+    let userdata = UnsafeMutablePointer<BridgedFunctionInfo>.allocate(capacity: 1)
+    userdata.initialize(to: .init(function: function, returnedType: returnValue?.propertyType))
 
     withUnsafeMutablePointer(to: &name.content) { namePtr in
         withUnsafeMutablePointer(to: &retInfo) { retInfoPtr in
         var info = GDExtensionClassMethodInfo (
             name: namePtr,
-            method_userdata: nil,
+            method_userdata: userdata,
             call_func: call_func,
             ptrcall_func: ptrFunction,
             method_flags: UInt32 (flags.rawValue),
@@ -206,8 +209,7 @@ private func call_func(
     r_error: UnsafeMutablePointer<GDExtensionCallError>?
 ) {
     guard let udata else { return }
-    guard let classInstance else { return }
-        
+
     let finfo = udata.assumingMemoryBound(to: BridgedFunctionInfo.self).pointee
     
     let ret = withArguments(pargs: variantArgs, argc: argc) { arguments in
