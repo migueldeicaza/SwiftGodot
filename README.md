@@ -27,6 +27,8 @@ Tutorials and Documentation:
 * SwiftGodot port of [KenneyNL's StarterKit 3D Platformer](https://github.com/lorenalexm/Starter-Kit-3D-Platformer-Swift)
 * WIP: SwiftGodot port of C# Udemy tutorial: [GridBasedPuzzleGameTutorial](https://gitlab.com/dracks/gridbasedpuzzlegametutorial)
 * [SwiftGodot template project](https://github.com/elijah-semyonov/SwiftGodotTemplate) with a Editor plugin allowing recompiling with a single button tap
+* [Template to create your own bridge iOS/MacOS APIs to Godot](https://github.com/migueldeicaza/SwiftGodotAppleTemplate)
+* [Godot Apple Plugins](https://github.com/migueldeicaza/GodotApplePlugins) is a good example of wrapping iOS/MacOS APIs for use in Godot.
 
 Of interest to the community:
 * Running Godot in VisionPro using [GodotVision](https://github.com/kevinw/GodotVision)
