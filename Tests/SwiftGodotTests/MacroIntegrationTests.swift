@@ -72,4 +72,89 @@ final class MacroIntegrationTests: GodotTestCase {
         
         XCTAssertEqual(_invokeGetter(closure)?.gtype, .callable)
     }
+    
+    func testCorrectRegistrationSequence() {
+        class A: Object {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .core
+            }
+        }
+        
+        class B: A {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .servers
+            }
+        }
+        
+        class C: B {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .scene
+            }
+        }
+        
+        class D0: C {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .editor
+            }
+        }
+        
+        class D1: C {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .editor
+            }
+        }
+        
+        var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+        do {
+            types = try [A.self, B.self, C.self, D0.self, D1.self].prepareForRegistration()
+        } catch {
+            XCTFail("\(error)")
+            return
+        }
+        
+        XCTAssertEqual(types[.core]?.contains(where: { $0 == A.self}), true)
+        XCTAssertEqual(types[.servers]?.contains(where: { $0 == B.self}), true)
+        XCTAssertEqual(types[.scene]?.contains(where: { $0 == C.self}), true)
+        XCTAssertEqual(types[.editor]?.contains(where: { $0 == D0.self}), true)
+        XCTAssertEqual(types[.editor]?.contains(where: { $0 == D1.self}), true)
+        
+        XCTAssertEqual(types[.core]?.count, 1)
+        XCTAssertEqual(types[.servers]?.count, 1)
+        XCTAssertEqual(types[.scene]?.count, 1)
+        XCTAssertEqual(types[.editor]?.count, 2)
+        
+        XCTAssertEqual(minimumInitializationLevel(for: types), .core)
+        
+        class E: Object {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .scene
+            }
+        }
+        
+        class F: E {
+            override class var classInitializationLevel: GDExtension.InitializationLevel {
+                .core
+            }
+        }
+        
+        do {
+            types = try [E.self, F.self].prepareForRegistration()
+            XCTFail()
+        } catch {
+            // expected error
+        }
+        
+        XCTAssertEqual(minimumInitializationLevel(for: [:]), .editor)
+        
+        class G: Object {
+        }
+                
+        do {
+            types = try [G.self].prepareForRegistration()
+            XCTAssertEqual(minimumInitializationLevel(for: types), .scene)
+        } catch {
+            XCTFail("\(error)")
+            return
+        }
+    }
 }
