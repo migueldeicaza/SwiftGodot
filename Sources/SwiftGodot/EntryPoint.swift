@@ -122,14 +122,12 @@ public func setExtensionInterface(interface: ExtensionInterface) {
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
     guard let level = GDExtension.InitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
-    if level == .servers {
+    if level == .scene {
         extensionInterface.classDBReady = true
         for initializer in extensionInterface.pendingInitializers {
             initializer()
         }
         extensionInterface.pendingInitializers.removeAll()
-    }
-    if level == .scene {
         extensionInterface.initClasses()
     }
     guard let userData else { return }
