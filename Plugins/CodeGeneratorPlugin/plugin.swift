@@ -296,6 +296,7 @@ let knownBuiltin = [
 let runtime: [String] = [
     "ClassDB.swift",
     "Object.swift",
+    "Engine.swift",
     "RefCounted.swift",
 ]
 
@@ -429,7 +430,6 @@ let core: [String] = [
     "ENetMultiplayerPeer.swift",
     "ENetPacketPeer.swift",
     "EncodedObjectAsID.swift",
-    "Engine.swift",
     "EngineDebugger.swift",
     "EngineProfiler.swift",
     "Environment.swift",
