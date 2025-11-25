@@ -113,7 +113,7 @@ public struct GodotCallable: PeerMacro {
                 do { // safe arguments access scope
             \(body)        
                 } catch {
-                                SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
+                    SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
                 }
             
                 return nil

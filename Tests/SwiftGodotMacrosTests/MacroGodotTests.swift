@@ -276,28 +276,30 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
-    func testStaticFunction() {
-        assertExpansion(
-            of: """
-            @Godot class Hi: Node {
-                @Callable static func get_some() -> Int64 { 10 }
-            }
-            """,
-            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
-        )
-    }
-    
-    func testClassFunction() {
-        assertExpansion(
-            of: """
-            @Godot class Hi: Node {
-                @Callable class func get_some() -> Int64 { 10 }
-            }
-            """,
-            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
-        )
-    }
-    
+    // Victory, no longer needed!   We now support statics!
+//    func testStaticFunction() {
+//        assertExpansion(
+//            of: """
+//            @Godot class Hi: Node {
+//                @Callable static func get_some() -> Int64 { 10 }
+//            }
+//            """,
+//            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
+//        )
+//    }
+
+    // Victory, no longer needed!   We now support statics!
+//    func testClassFunction() {
+//        assertExpansion(
+//            of: """
+//            @Godot class Hi: Node {
+//                @Callable class func get_some() -> Int64 { 10 }
+//            }
+//            """,
+//            diagnostics: [.init(message: "`static` or `class` member is not supported", line: 1, column: 1)]
+//        )
+//    }
+//    
     func testStaticExport() {
         assertExpansion(
             of: """

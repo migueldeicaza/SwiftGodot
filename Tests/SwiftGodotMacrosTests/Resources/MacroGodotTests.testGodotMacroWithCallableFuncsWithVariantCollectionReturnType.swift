@@ -5,12 +5,12 @@ class SomeNode: Node {
         return result
     }
 
-    static func _mproxy_getIntegerCollection(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
-        guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling `getIntegerCollection`: failed to unwrap instance \(String(describing: pInstance))")
+    static func _mproxy_getIntegerCollection(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+        guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+            SwiftGodotRuntime.GD.printErr("Error calling `getIntegerCollection`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
-        return SwiftGodot._wrapCallableResult(object.getIntegerCollection())
+        return SwiftGodotRuntime._wrapCallableResult(object.getIntegerCollection())
 
     }
 
@@ -23,11 +23,11 @@ class SomeNode: Node {
         let className = StringName("SomeNode")
         assert(ClassDB.classExists(class: className))
         let classInfo = ClassInfo<SomeNode> (name: className)
-        SwiftGodot._registerMethod(
+        SwiftGodotRuntime._registerMethod(
             className: className,
             name: "getIntegerCollection",
             flags: .default,
-            returnValue: SwiftGodot._returnValuePropInfo(TypedArray<Int>.self),
+            returnValue: SwiftGodotRuntime._returnValuePropInfo(TypedArray<Int>.self),
             arguments: [
 
             ],
