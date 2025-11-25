@@ -532,12 +532,21 @@ public struct RawArguments: Sendable {
 
     public func fetchArgument<T: Wrapped>(at: Int) -> T? {
         guard let value = args[at] else {
-            GD.print("There was no value at \(at)")
             return nil
         }
-        print("I have \(value)")
         let ptr = value.assumingMemoryBound(to: UnsafeMutableRawPointer.self).pointee
         return lookupLiveObject(handleAddress: ptr) as? T
+    }
+
+    public func fetchArgument<Element: VariantConvertible>(at: Int) throws -> [Element] {
+        let i = args[at]!.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
+        let varray = VariantArray(content: i)
+        var result: [Element] = []
+        for variant in varray {
+            var element = try Element.fromVariantOrThrow(variant)
+            result.append(element)
+        }
+        return result
     }
 
     // Like the above, but if it does not find, it fails
@@ -575,6 +584,21 @@ public struct RawArguments: Sendable {
     public func fetchArgument(at: Int) -> Signal {
         let i = args[at]!.assumingMemoryBound(to: Signal.ContentType.self).pointee
         return Signal(content: i)
+    }
+
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Variant {
+        let i = args[at]!.assumingMemoryBound(to: Variant.ContentType.self).pointee
+        guard let v = Variant(copying: i) else {
+            throw ArgumentAccessError.variantConversionError(
+                .unexpectedNilContent(parsing: Variant.self)
+            )
+        }
+        return v
+    }
+
+    public func fetchArgument(at: Int) throws -> Variant? {
+        let i = args[at]!.assumingMemoryBound(to: Variant.ContentType.self).pointee
+        return Variant(copying: i)
     }
 
     public func fetchArgument(at: Int) -> VariantDictionary {
@@ -630,6 +654,11 @@ public struct RawArguments: Sendable {
     public func fetchArgument(at: Int) -> PackedVector4Array {
         let i = args[at]!.assumingMemoryBound(to: PackedVector4Array.ContentType.self).pointee
         return PackedVector4Array(content: i)
+    }
+
+    public func fetchArgument<T>(at: Int) -> TypedArray<T> where T: _GodotContainerTypingParameter {
+        let i = args[at]!.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
+        return TypedArray(from: VariantArray(content: i))
     }
 }
 
@@ -825,6 +854,12 @@ public struct RawReturnWriter {
         var copy = PackedVector4Array(from: value)
         target!.assumingMemoryBound(to: PackedVector4Array.ContentType.self).pointee = copy.content
         copy.content = PackedVector4Array.zero
+    }
+
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T?) where T: VariantConvertible {
+        if let value {
+            writeResult(target, value)
+        }
     }
 
 

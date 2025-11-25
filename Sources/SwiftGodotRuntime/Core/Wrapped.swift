@@ -396,7 +396,7 @@ func bindSwiftObject(_ instance: some Wrapped, toGodot handle: GodotNativeObject
 
 var userTypes: [String: Object.Type] = [:]
 
-// @_spi(SwiftGodotTesting) public
+@_spi(SwiftGodotRuntimePrivate) public
 var duplicateClassNameDetected: (_ name: StringName, _ type: Object.Type) -> Void = { name, type in
     preconditionFailure(
                 """

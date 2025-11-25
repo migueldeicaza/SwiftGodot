@@ -62,7 +62,7 @@ public struct GodotCallable: PeerMacro {
 
             bodyPtr += """
 
-            \(indentation)let arg\(index): \(ptype) = rargs.fetchArgument(at: \(index))
+            \(indentation)let arg\(index): \(ptype) = try rargs.fetchArgument(at: \(index))
             """
         }
         
@@ -78,7 +78,19 @@ public struct GodotCallable: PeerMacro {
         \(indentation)    RawReturnWriter.writeResult(returnValue, \(objectOrSelf).\(funcName)(\(callArgs))) 
         
         """
+
         let ptrCallDecl: String
+
+        if !parameters.isEmpty {
+            bodyPtr = """
+            do { // safe arguments access scope
+                \(bodyPtr)
+            } catch {
+                SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: \\(String(describing: error))")                    
+            }
+        """
+        }
+        
         ptrCallDecl = """
         
         static func _pproxy_\(funcName)(        
@@ -107,9 +119,6 @@ public struct GodotCallable: PeerMacro {
                 return nil
             }\(ptrCallDecl)
             """
-        }
-
-        if funcDecl.hasClassOrStaticModifier {
         }
     }
     

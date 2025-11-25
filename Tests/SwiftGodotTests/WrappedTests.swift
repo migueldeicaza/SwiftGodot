@@ -8,14 +8,14 @@
 import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
-@testable import SwiftGodotRuntime
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 
 final class WrappedTests: GodotTestCase {
     
     override class var godotSubclasses: [Object.Type] {
         return [SubtypedNode.self]
     }
-    
+
     /// Checks memory leaks of the swift wrappers during object's life cycle
     func testRetain () async throws {
         // queueFree deletes the node at the end of the current frame,
@@ -78,7 +78,7 @@ private class SubtypedNode: Node { }
 final class ReferenceChecker {
     
     weak var reference: AnyObject?
-    
+
     func assertDisposed (file: StaticString = #file, line: UInt = #line) {
         XCTAssertTrue (reference == nil, "Object was not disposed", file: file, line: line)
     }
