@@ -58,6 +58,13 @@ final class InitSwiftExtensionMacroTests: MacroGodotTestCase {
         )
     }
 
+    func testInitSwiftExtensionMacroWithEnums() {
+        assertExpansion(of: """
+            #initSwiftExtension(cdecl: "libchrysalis_entry_point", types: [Demo.self], enums: [MyEnum.self])
+            """
+        )
+    }
+
     func testInitSwiftExtensionMacroWithAllTypes() {
         assertExpansion(of: """
             #initSwiftExtension(cdecl: "libchrysalis_entry_point", coreTypes: [EggNode.self], editorTypes: [CaterpillarNode.self], sceneTypes: [ChrysalisNode.self], serverTypes: [ButterflyNode.self])

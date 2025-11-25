@@ -10,6 +10,9 @@
     types[.servers] = [ButterflyNode.self].topologicallySorted()
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
+        if level == .scene {
+
+        }
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)
     })

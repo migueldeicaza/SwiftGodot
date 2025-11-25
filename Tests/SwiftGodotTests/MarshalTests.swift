@@ -251,7 +251,8 @@ final class MarshalTests: GodotTestCase {
         
         // I can just unwrap it in place:
         let int = result.to(Int.self)
-        
+        _ = int
+
         // Or I can store it for long-term use as `Variant`
         let variant = Variant(takingOver: result)
     }
