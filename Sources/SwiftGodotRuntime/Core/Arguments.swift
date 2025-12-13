@@ -154,8 +154,7 @@ public struct Arguments: ~Copyable {
     }
     
     @inline(__always)
-    @usableFromInline
-    init(from array: [Variant?]) {
+    public init(from array: [Variant?]) {
         contents = .array(array)
     }
     

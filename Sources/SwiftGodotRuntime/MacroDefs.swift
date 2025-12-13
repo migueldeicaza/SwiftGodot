@@ -119,10 +119,15 @@ public macro exportSubgroup(_ name: String, prefix: String = "") = #externalMacr
 /// - Parameter cdecl: The name of the entrypoint exposed to C.
 /// - Parameter types: The node types that should be registered with Godot.
 /// - Parameter enums: a list of enumerations that use an Int64 backing store and are CaseIterable
+/// - Parameter registerDocs: Set to true if you want to locate documents relative to the dynamic library and load them into Godot
+/// - Parameter hookMethod: Hook that is invoked after each init/deinit stage
 @freestanding(declaration, names: named(enterExtension))
 public macro initSwiftExtension(cdecl: String,
                                 types: [Wrapped.Type] = [],
-                                enums: [CaseIterable.Type] = []) = #externalMacro(module: "SwiftGodotMacroLibrary",
+                                enums: [CaseIterable.Type] = [],
+                                registerDocs: Bool = false,
+                                hookMethod: ((ExtensionInitializationLevel, Bool)->())? = nil
+) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")
 
 /// Macro used to write an entrypoint for a Godot extension and register all the supported scene types.
@@ -150,13 +155,17 @@ public macro initSwiftExtension(cdecl: String,
 /// - Parameter sceneTypes: Types registered at the `.scene` level
 /// - Parameter serverTypes: Types registered at the `.server` level
 /// - Parameter enums: a list of enumerations that use an Int64 backing store and are CaseIterable
+/// - Parameter registerDocs: Set to true if you want to locate documents relative to the dynamic library and load them into Godot
+/// - Parameter hookMethod: Hook that is invoked after each init/deinit stage
 @freestanding(declaration, names: named(enterExtension))
 public macro initSwiftExtension(
     cdecl: String,
     coreTypes: [Object.Type] = [],
     editorTypes: [Object.Type] = [],
     sceneTypes: [Object.Type] = [],
-    serverTypes: [Object.Type] = []
+    serverTypes: [Object.Type] = [],
+    regiterDocs: Bool = false,
+    hookMethod: ((ExtensionInitializationLevel, Bool)->())? = nil,
 ) = #externalMacro(
     module: "SwiftGodotMacroLibrary",
     type: "InitSwiftExtensionMacro")
