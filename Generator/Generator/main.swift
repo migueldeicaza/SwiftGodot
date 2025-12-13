@@ -8,6 +8,49 @@ import ExtensionApi
 import Foundation
 
 var args = CommandLine.arguments
+var positionalArgs: [String] = []
+
+// Controls whether we want one file per type, or a smaller number of files that are combined
+// used in Windows.
+var combineOutput = false
+
+var index = 1
+while index < args.count {
+    let argument = args[index]
+    switch argument {
+    case "--combined":
+        combineOutput = true
+    case "--class-filter":
+        let path = args[index + 1]
+        let contents = try! String(contentsOfFile: path, encoding: .utf8)
+        classesToGenerate = Set(normalizedSymbolEntries(from: contents))
+        classFilterProvided = true
+        index += 1
+    case "--available-class-filter":
+        let path = args[index + 1]
+        let contents = try! String(contentsOfFile: path, encoding: .utf8)
+        availableClassNames = Set(normalizedSymbolEntries(from: contents))
+        availableClassFilterProvided = true
+        index += 1
+    case "--builtin-filter":
+        let path = args[index + 1]
+        let contents = try! String(contentsOfFile: path, encoding: .utf8)
+        builtinClassesToGenerate = Set(normalizedSymbolEntries(from: contents))
+        builtinFilterProvided = true
+        index += 1
+    case "--preamble-file":
+        let path = args[index + 1]
+        var contents = try! String(contentsOfFile: path, encoding: .utf8)
+        if !contents.isEmpty && !contents.hasSuffix("\n") {
+            contents.append("\n")
+        }
+        additionalPreamble = contents
+        index += 1
+    default:
+        positionalArgs.append(argument)
+    }
+    index += 1
+}
 
 var rootUrl: URL {
     let url = URL(fileURLWithPath: #file)  // SwiftGodot/Generator/Generator/main.swift
@@ -36,19 +79,15 @@ var defaultDocRootUrl: URL {
         .appendingPathComponent("Docs")
 }
 
-let jsonFile = args.count > 1 ? args[1] : defaultExtensionApiJsonUrl.path
-var generatorOutput = args.count > 2 ? args[2] : defaultGeneratorOutputlUrl.path
-var docRoot = args.count > 3 ? args[3] : defaultDocRootUrl.path
-let outputDir = args.count > 2 ? args[2] : generatorOutput
+let jsonFile = positionalArgs.count > 0 ? positionalArgs[0] : defaultExtensionApiJsonUrl.path
+var generatorOutput = positionalArgs.count > 1 ? positionalArgs[1] : defaultGeneratorOutputlUrl.path
+var docRoot = positionalArgs.count > 2 ? positionalArgs[2] : defaultDocRootUrl.path
+let outputDir = positionalArgs.count > 1 ? positionalArgs[1] : generatorOutput
 
 /// Special case for Xogot to avoid caching godot interface pointers
 let noStaticCaches = false
 
-// IF we want one file per type, or a smaller number of
-// files that are combined.
-var combineOutput = args.contains("--combined")
-
-if args.count < 2 {
+if positionalArgs.count < 1 {
     print(
         """
         Usage is: generator path-to-extension-api output-directory doc-directory
@@ -101,6 +140,37 @@ for x in jsonApi.classes {
     if let parentClass = x.inherits {
         hasSubclasses.insert(parentClass)
     }
+}
+
+if classFilterProvided {
+    var stack: [String] = Array(classesToGenerate)
+    while let current = stack.popLast() {
+        guard let inherits = classMap[current]?.inherits, !inherits.isEmpty else {
+            continue
+        }
+        if !classesToGenerate.contains(inherits) && !(availableClassFilterProvided && availableClassNames.contains(inherits)) {
+            classesToGenerate.insert(inherits)
+            stack.append(inherits)
+        }
+    }
+}
+
+if availableClassFilterProvided {
+    var stack: [String] = Array(availableClassNames)
+    while let current = stack.popLast() {
+        guard let inherits = classMap[current]?.inherits, !inherits.isEmpty else {
+            continue
+        }
+        if !availableClassNames.contains(inherits) {
+            availableClassNames.insert(inherits)
+            stack.append(inherits)
+        }
+    }
+} else if classFilterProvided {
+    availableClassNames = classesToGenerate
+} else {
+    availableClassNames = Set(classMap.keys)
+    availableClassFilterProvided = true
 }
 
 private var structTypes: Set<String> = [

@@ -20,9 +20,12 @@ public struct GodotCallable: PeerMacro {
         if funcDecl.hasAsyncOrThrowsSpecifier {
             throw GodotMacroError.callableMacroOnThrowingOrAsyncFunction
         }
-        
+
+        // The body for the regular call
         var body = ""
-        
+        // The body for the ptrcall
+        var bodyPtr = ""
+
         let parameters = funcDecl.parameters
         
         var callArgsList: [String] = []
@@ -32,15 +35,22 @@ public struct GodotCallable: PeerMacro {
         
         if !isStatic {
             body += """
-            \(indentation)    guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-            \(indentation)        SwiftGodot.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
+            \(indentation)    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+            \(indentation)        SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
             \(indentation)        return nil
             \(indentation)    }
             """
+
+            bodyPtr += """
+            \(indentation)    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+            \(indentation)        SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: failed to unwrap instance \\(String(describing: pInstance))")
+            \(indentation)        return
+            \(indentation)    }
+            """
         }
-        
+
         let objectOrSelf = isStatic ? "self" : "object"
-        
+
         for (index, parameter) in parameters.enumerated() {
             let ptype = parameter.type.trimmedDescription
             
@@ -49,33 +59,57 @@ public struct GodotCallable: PeerMacro {
             """
                         
             callArgsList.append("\(parameter.labelForCaller)arg\(index)")
+
+            bodyPtr += """
+
+            \(indentation)let arg\(index): \(ptype) = rargs.fetchArgument(at: \(index))
+            """
         }
         
         let callArgs = callArgsList.joined(separator: ", ")
         
         body += """
-        \(indentation)    return SwiftGodot._wrapCallableResult(\(objectOrSelf).\(funcName)(\(callArgs)))
+        \(indentation)    return SwiftGodotRuntime._wrapCallableResult(\(objectOrSelf).\(funcName)(\(callArgs)))
         
         """
+
+        bodyPtr += """
         
+        \(indentation)    RawReturnWriter.writeResult(returnValue, \(objectOrSelf).\(funcName)(\(callArgs))) 
+        
+        """
+        let ptrCallDecl: String
+        ptrCallDecl = """
+        
+        static func _pproxy_\(funcName)(        
+        _ pInstance: UnsafeMutableRawPointer?,
+        _ rargs: RawArguments,
+        _ returnValue: UnsafeMutableRawPointer?) {
+        \(bodyPtr)
+        }
+        """
+
         if parameters.isEmpty {
             return """
-            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
             \(body)                
-            }
+            }\(ptrCallDecl)
             """
         } else {
             return """
-            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
                 do { // safe arguments access scope
             \(body)        
                 } catch {
-                    SwiftGodot.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
+                                SwiftGodotRuntime.GD.printErr("Error calling `\(funcName)`: \\(error.description)")                    
                 }
             
                 return nil
-            }
+            }\(ptrCallDecl)
             """
+        }
+
+        if funcDecl.hasClassOrStaticModifier {
         }
     }
     

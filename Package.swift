@@ -6,11 +6,20 @@ import PackageDescription
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
     .library(
+        name: "SwiftGodotRuntime",
+        type: .dynamic,
+        targets: ["SwiftGodotRuntime"]
+    ),
+    .library(
         name: "SwiftGodot",
         type: .dynamic,
         targets: ["SwiftGodot"]
     ),
 
+    .library(
+        name: "SwiftGodotRuntimeStatic",
+        targets: ["SwiftGodotRuntime"]
+    ),
     .library(
         name: "SwiftGodotStatic",
         targets: ["SwiftGodot"]
@@ -147,18 +156,37 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // This is the binding itself, it is made up of our generated code for the
-    // Godot API, supporting infrastructure and extensions to the API to provide
-    // a better Swift experience
+    // This is the core runtime for SwiftGodot, it only contains the builtins
+    // the Object and RefCounted classes.
+    .target(
+        name: "SwiftGodotRuntime",
+        dependencies: ["GDExtension"],
+        swiftSettings: [
+            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+            .unsafeFlags(
+                [
+                    "-suppress-warnings",
+                    "-Xfrontend", "-conditional-runtime-records",
+                    "-Xfrontend", "-internalize-at-link",
+                    "-Xfrontend", "-lto=llvm-full",
+                ]
+            ),
+            .swiftLanguageMode(.v5),
+        ],
+        plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
+    ),
+
+    // This binds the rest of the Godot API, it will eventually be split
+    // up in chunks
     .target(
         name: "SwiftGodot",
-        dependencies: ["GDExtension"],
+        dependencies: ["GDExtension", "SwiftGodotRuntime"],
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-//            .unsafeFlags(["-suppress-warnings"])
+            .unsafeFlags(["-suppress-warnings"])
         ],
-        plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
+        plugins: ["CodeGeneratorPlugin"]
     ),
 
     // General purpose cross-platform tests

@@ -4,8 +4,7 @@
 //
 //  Created by Marquis Kurt on 5/16/23.
 //
-
-extension GD {
+public extension GD {
     /// Loads a resource from the filesystem located at `path`.
     ///
     /// The resource is loaded on the method call (unless it's referenced already elsewhere, e.g. in another script or
@@ -17,10 +16,10 @@ extension GD {
     ///
     /// - Important: The path must be absolute, a local path will just return `nil`. This method is a simplified
     /// version of `ResourceLoader.load`, which can be used for more advanced scenarios.
-    /// 
+    ///
     /// - Parameter path: Path of the `Resource` to load.
     /// - Returns: The loaded `Resource`.
-    public static func load(path: String) -> Resource? {
+    static func load(path: String) -> Resource? {
         return ResourceLoader.load(path: path, cacheMode: .reuse)
     }
 
@@ -38,35 +37,8 @@ extension GD {
     ///
     /// - Parameter path: Path of the `Resource` to load.
     /// - Returns: The loaded `Resource`.
-    public static func load<T>(path: String) -> T? {
+    static func load<T>(path: String) -> T? {
         return ResourceLoader.load(path: path, cacheMode: .reuse) as? T
-    }
-
-    /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
-    /// - Parameter items: The items to print into the Godot console.
-    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
-    public static func pushError(_ items: Any..., separator: String = " ") {
-        let transformedItems = items.map(String.init(describing:))
-        let finalMessage = transformedItems.joined(separator: separator)
-        GD.pushError(arg1: Variant(GString(stringLiteral: finalMessage)))
-    }
-
-    /// Pushes a warning message to Godot's built-in debugger and to the OS terminal.
-    /// - Parameter items: The items to print into the Godot console.
-    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
-    public static func pushWarning(_ items: Any..., separator: String = " ") {
-        let transformedItems = items.map(String.init(describing:))
-        let finalMessage = transformedItems.joined(separator: separator)
-        GD.pushWarning(arg1: Variant(GString(stringLiteral: finalMessage)))
-    }
-
-    /// Converts one or more arguments of any type to string in the best way possible and prints them to the console.
-    /// - Parameter items: The items to print into the Godot console.
-    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
-    public static func print(_ items: Any..., separator: String = " ") {
-        let transformedItems = items.map(String.init(describing:))
-        let finalMessage = transformedItems.joined(separator: separator)
-        GD.print(arg1: Variant(GString(stringLiteral: finalMessage)))
     }
 
     /// Converts one or more arguments of any type to string in the best way possible and prints them to the console, with fileID, line, and function name of the calling function.
@@ -75,28 +47,10 @@ extension GD {
     /// - Parameter fileID: the module/file of the caller
     /// - Parameter function: the calling function
     /// - Parameter line: the calling line
-    public static func printDebug(_ items: Any..., separator: String = " ", fileID: StaticString = #fileID, function: StaticString = #function, line: UInt = #line) {
+    static func printDebug(_ items: Any..., separator: String = " ", fileID: StaticString = #fileID, function: StaticString = #function, line: UInt = #line) {
         guard OS.isDebugBuild() else { return }
         let transformedItems = items.map(String.init(describing:))
         let finalMessage = transformedItems.joined(separator: separator) + "\n   At: \(fileID):\(line) in \(function)"
         GD.print(arg1: Variant(GString(stringLiteral: finalMessage)))
-    }
-
-    /// Converts one or more arguments of any type to string in the best way possible and prints them to the console.
-    /// - Parameter items: The items to print into the Godot console.
-    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
-    public static func printRich(_ items: Any..., separator: String = " ") {
-        let transformedItems = items.map(String.init(describing:))
-        let finalMessage = transformedItems.joined(separator: separator)
-        GD.printRich(arg1: Variant(GString(stringLiteral: finalMessage)))
-    }
-
-    /// Converts one or more arguments of any type to string in the best way possible and prints them to the console.
-    /// - Parameter items: The items to print into the Godot console.
-    /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
-    public static func printErr(_ items: Any..., separator: String = " ") {
-        let transformedItems = items.map(String.init(describing:))
-        let finalMessage = transformedItems.joined(separator: separator)
-        GD.printerr(arg1: Variant (finalMessage))
     }
 }

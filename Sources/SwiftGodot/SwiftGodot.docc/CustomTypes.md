@@ -58,7 +58,7 @@ is how I register my types:
 /// in our example, we register the type when the level being used is
 /// `.scene`.
 
-func setupScene (level: GDExtension.InitializationLevel) {
+func setupScene (level: ExtensionInitializationLevel) {
     if level == .scene {
         register(type: SwiftSprite.self)
     }

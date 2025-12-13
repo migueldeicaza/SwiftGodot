@@ -39,7 +39,11 @@ extension Generator {
         case "Vector2":
             return ("Vector2", .straight)
         case "TextServer::Direction":
-            return ("TextServer.Direction", .enumeration)
+            if shouldGenerateClass("TextServer") {
+                return ("TextServer.Direction", .enumeration)
+            } else {
+                return ("Int32", .straight)
+            }
         case "ObjectID":
             return ("ObjectID", .straight)
         case "Object":
@@ -146,4 +150,3 @@ extension Generator {
         }
     }
 }
-

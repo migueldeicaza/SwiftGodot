@@ -48,7 +48,7 @@ class GodotMacroProcessor {
         }
         
         classInitializerPrinter("""
-        SwiftGodot._registerSignal(
+        SwiftGodotRuntime._registerSignal(
             \(className).\(signalName.swiftName).name, 
             in: className, 
             arguments: \(className).\(signalName.swiftName).arguments
@@ -58,13 +58,13 @@ class GodotMacroProcessor {
     
     func processExportGroup(name: String, prefix: String) {
         classInitializerPrinter("""
-        SwiftGodot._addPropertyGroup(className: className, name: "\(name)", prefix: "\(prefix)")
+        SwiftGodotRuntime._addPropertyGroup(className: className, name: "\(name)", prefix: "\(prefix)")
         """)
     }
     
     func processExportSubgroup(name: String, prefix: String) {
         classInitializerPrinter("""
-        SwiftGodot._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")
+        SwiftGodotRuntime._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")
         """)
     }
         
@@ -72,9 +72,16 @@ class GodotMacroProcessor {
         guard let callableAttribute = funcDecl.attributes.attribute(named: "Callable") else {
             return
         }
-        
+
+        // Godot has two mechanisms to call function, one is its call_func that takes
+        // variants, and the other one is ptrcall that takes pointers to the contents of the
+        // variants.   Historically, SwiftGodot only supported the former for callbacks
+        // and we are slowly support for the rest - since we did not support static functions
+        // we can start testing there, and once it is done, we can turn this for everything.
+        var generatePtrCall = true
+
         if funcDecl.hasClassOrStaticModifier {
-            throw GodotMacroError.unsupportedStaticMember
+            generatePtrCall = true
         }
         
         let funcName = funcDecl.name.text
@@ -92,7 +99,7 @@ class GodotMacroProcessor {
             .parameters
             .map { parameter in
                 let typename = parameter.type.trimmedDescription
-                return "SwiftGodot._argumentPropInfo(\(typename).self, name: \"\(parameter.internalName)\")"
+                return "SwiftGodotRuntime._argumentPropInfo(\(typename).self, name: \"\(parameter.internalName)\")"
             }
             .joined(separator: ",\n")
                 
@@ -110,18 +117,27 @@ class GodotMacroProcessor {
         } else {
             flags = ".default"
         }
-        
-        p("SwiftGodot._registerMethod", .parentheses) {
+
+        p("SwiftGodotRuntime._registerMethod", .parentheses) {
             p("""
             className: className,
             name: "\(godotFuncName)", 
             flags: \(flags), 
-            returnValue: SwiftGodot._returnValuePropInfo(\(returnTypename).self),    
+            returnValue: SwiftGodotRuntime._returnValuePropInfo(\(returnTypename).self),    
             """)
             p("arguments: ", .square, afterBlock: ",") {
                 p(arguments)
             }
-            p("function: \(className)._mproxy_\(funcName)")
+            p(("function: \(className)._mproxy_\(funcName)") + (generatePtrCall ? "," : ""))
+            if generatePtrCall {
+                p("""
+                ptrFunction: { udata, classInstance, argsPtr, retValue in
+                    guard let argsPtr else { GD.print("Godot is not passing the arguments"); return } 
+                    \(className)._pproxy_\(funcName) (classInstance, RawArguments(args: argsPtr), retValue)
+                }
+                
+                """)
+            }
         }
         
         try checkNameCollision(godotFuncName, for: DeclSyntax(funcDecl))
@@ -206,9 +222,9 @@ class GodotMacroProcessor {
             
             let p = classInitializerPrinter
                         
-            p("SwiftGodot._registerPropertyWithGetterSetter", .parentheses) {
+            p("SwiftGodotRuntime._registerPropertyWithGetterSetter", .parentheses) {
                 p("className: className,")
-                p("info: SwiftGodot._propInfo", .parentheses, afterBlock: ",") {
+                p("info: SwiftGodotRuntime._propInfo", .parentheses, afterBlock: ",") {
                     p(argsStr)
                 }
                 let setterFunction = needsSetter ? "\(className).\(proxySetterName)" : "nil"

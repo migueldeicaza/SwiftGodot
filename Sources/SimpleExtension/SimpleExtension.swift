@@ -58,16 +58,7 @@ class SwiftSprite: Sprite2D {
     public func computerSimple (_ x: Int, _ y: Int) -> Double {
         return Double (x + y)
     }
-    
-    @Callable 
-    func returnNullable () -> String? {
-        let x: Variant = Variant (1)
-        if let y: Resource = x.asObject () {
-            print ("Y is = \(y)")
-        }
-        return nil
-    }
-    
+
     @Export var resource: Resource?
     @Export(.dir) var directory: String?
     @Export(.file, "*txt") var file: String?

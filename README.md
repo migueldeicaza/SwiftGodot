@@ -43,11 +43,20 @@ https://user-images.githubusercontent.com/36863/232163186-dc7c0290-71db-49f2-b81
 
 * No game stutters caused by GC, unlike C#.
 
-* Learn more: [Swift Godot: Fixing the Multi-million dollar mistake](https://www.youtube.com/watch?v=tzt36EGKEZo)
+* Learn more: [Swift Godot: Fixing the Multi-million dollar
+  mistake](https://www.youtube.com/watch?v=tzt36EGKEZo)
 
-# Looking for the tiny SwiftGodot?
+* Easy to surface Swift APIs to Godot, for example [GodotApplePlugins](https://github.com/migueldeicaza/GodotApplePlugins)
 
-Check the `barebone-split` branch, and the [associated discussion](https://github.com/migueldeicaza/SwiftGodot/discussions/741).
+# Tiny and Large
+
+When compiled, you can choose to use and reference a minimal SwiftGodot that
+only contains support for the core variant types, Object, ClassDB and RefCounted
+in the target `SwiftGodotRuntime`, or you can choose to use the traditional
+`SwiftGodot` target that contains the entire Godot API and is a superset of `SwiftGodotRuntime`.
+
+[Learn More about the
+rationale](https://github.com/migueldeicaza/SwiftGodot/discussions/741). 
 
 # Quickly Getting Started
 
@@ -57,11 +66,10 @@ iterate on your game on MacOS.
 
 # Supported Platforms
 
-Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS, or Windows platforms. It may be possible to target additional platforms, but testing for other platforms has not been completed and stability cannot be verified at this time.
-
-# Development Status
-
-SwiftGodot is built on the GDExtension framework, which is still in an [experimental](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html#differences-between-gdextension-and-c-modules) state, and consequently SwiftGodot is still in an experimental state. Compatibility may break in order to fix major bugs or include critical features. That being said, much of the Godot API surface has been implemented and SwiftGodot is suitable for use in small to mid size projects.
+Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS,
+or Windows platforms. It may be possible to target additional platforms, but
+testing for other platforms has not been completed and stability cannot be
+verified at this time.
 
 # Consuming SwiftGodot
 
@@ -155,7 +163,7 @@ project to be loadable by Godot, you can do it like this:
 
 ```swift
 /// We register our new type when we are told that the scene is being loaded
-func setupScene (level: GDExtension.InitializationLevel) {
+func setupScene (level: ExtensionInitializationLevel) {
     if level == .scene {
         register(type: SpinningCube.self)
     }
