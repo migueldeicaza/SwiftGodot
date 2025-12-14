@@ -631,6 +631,16 @@ public struct RawArguments: Sendable {
         let i = args[at]!.assumingMemoryBound(to: PackedVector4Array.ContentType.self).pointee
         return PackedVector4Array(content: i)
     }
+
+    public func fetchArgument<T>(at: Int) -> TypedArray<T> {
+        let array: VariantArray = fetchArgument(at: at)
+        return TypedArray(from: array)
+    }
+
+    public func fetchArgument<TKey,TValue>(at: Int) -> TypedDictionary<TKey, TValue> {
+        let dictionary: VariantDictionary = fetchArgument(at: at)
+        return TypedDictionary(from: dictionary)
+    }
 }
 
 /// This is a helper tool used by the generated bridge functions, do not use directly

@@ -75,7 +75,7 @@ public struct GodotCallable: PeerMacro {
 
         bodyPtr += """
         
-        \(indentation)    RawReturnWriter.writeResult(returnValue, \(objectOrSelf).\(funcName)(\(callArgs))) 
+        \(indentation)    SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, \(objectOrSelf).\(funcName)(\(callArgs))) 
         
         """
         let ptrCallDecl: String
@@ -83,7 +83,7 @@ public struct GodotCallable: PeerMacro {
         
         static func _pproxy_\(funcName)(        
         _ pInstance: UnsafeMutableRawPointer?,
-        _ rargs: RawArguments,
+        _ rargs: SwiftGodotRuntime.RawArguments,
         _ returnValue: UnsafeMutableRawPointer?) {
         \(bodyPtr)
         }

@@ -49,6 +49,9 @@ class SwiftSprite: Sprite2D {
         return 1.0
     }
 
+    @Callable func addRapportToScene(paths: TypedArray<Node?>) {
+    }
+    
     @Callable
     public func wink () {
         print ("Wink")
