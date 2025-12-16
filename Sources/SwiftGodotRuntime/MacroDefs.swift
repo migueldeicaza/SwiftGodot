@@ -164,7 +164,8 @@ public macro initSwiftExtension(
     editorTypes: [Object.Type] = [],
     sceneTypes: [Object.Type] = [],
     serverTypes: [Object.Type] = [],
-    regiterDocs: Bool = false,
+    enums: [CaseIterable.Type] = [],
+    registerDocs: Bool = false,
     hookMethod: ((ExtensionInitializationLevel, Bool)->())? = nil,
 ) = #externalMacro(
     module: "SwiftGodotMacroLibrary",
