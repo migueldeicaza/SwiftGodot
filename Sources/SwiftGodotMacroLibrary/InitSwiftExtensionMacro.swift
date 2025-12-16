@@ -30,6 +30,8 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         let editorTypes = node.arguments.first(where: { $0.label?.text == "editorTypes" })?.expression ?? "[]"
         let serverTypes = node.arguments.first(where: { $0.label?.text == "serverTypes" })?.expression ?? "[]"
         let enumsExpr = node.arguments.first(where: { $0.label?.text == "enums" })?.expression ?? "[]"
+        let registerDocs = node.arguments.first(where: { $0.label?.text == "registerDocs" })?.expression ?? "false"
+        let hookMethod = node.arguments.first(where: { $0.label?.text == "hookMethod" })?.expression
 
         // Build per-element registerEnum(...) calls if enums is an array literal
         let enumRegistrationStatements: CodeBlockItemListSyntax = {
@@ -52,7 +54,12 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 }
             }
         }()
-
+        var hookInit = ""
+        var hookDeinit = ""
+        if let hookMethod {
+            hookInit = "\(hookMethod)(level, true)"
+            hookDeinit = "\(hookMethod)(level, false)"
+        }
         // Build the init function, inserting the generated enum registration statements at .scene level
         let initModule: DeclSyntax = """
         @_cdecl(\(raw: cDecl.trimmedDescription)) public func enterExtension (interface: OpaquePointer?, library: OpaquePointer?, extension: OpaquePointer?) -> UInt8 {
@@ -69,9 +76,15 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 types[level]?.forEach(register)
                 if level == .scene {
                     \(enumRegistrationStatements)
+                } else if level == .editor {
+                    if \(registerDocs) {
+                        EditorInterop.loadLibraryDocs()
+                    }
                 }
+                \(raw: hookInit)
             }, deInitHook: { level in
                 types[level]?.reversed().forEach(unregister)
+                \(raw: hookDeinit)
             })
             return 1
         }

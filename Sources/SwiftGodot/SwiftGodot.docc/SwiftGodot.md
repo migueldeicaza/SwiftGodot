@@ -41,6 +41,7 @@ Going in depth with SwiftGodot:
 - <doc:RunningInEditor>
 - <doc:MemoryManagement>
 - <doc:TypesTranslation>
+- <doc:Documentation>
 
 ### Platform Integration
 

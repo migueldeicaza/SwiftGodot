@@ -4,14 +4,14 @@
         return 0
     }
     var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
-    types[.core] = [ChrysalisNode.self].topologicallySorted()
+    types[.core] = [].topologicallySorted()
     types[.editor] = [].topologicallySorted()
-    types[.scene] = [].topologicallySorted()
+    types[.scene] = [Demo.self].topologicallySorted()
     types[.servers] = [].topologicallySorted()
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
         if level == .scene {
-
+            registerEnum(MyEnum.self)
         }
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)

@@ -18,11 +18,11 @@ final class MacroIntegrationTests: GodotTestCase {
         }
         
         struct Wow: VariantConvertible {
-            static func fromFastVariantOrThrow(_ variant: borrowing SwiftGodot.FastVariant) throws(SwiftGodot.VariantConversionError) -> Wow {
+            static func fromFastVariantOrThrow(_ variant: borrowing SwiftGodotRuntime.FastVariant) throws(SwiftGodot.VariantConversionError) -> Wow {
                 Wow()
             }
             
-            func toFastVariant() -> SwiftGodot.FastVariant? {
+            func toFastVariant() -> SwiftGodotRuntime.FastVariant? {
                 nil
             }
         }

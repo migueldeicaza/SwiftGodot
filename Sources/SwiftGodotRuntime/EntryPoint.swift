@@ -318,6 +318,9 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
 
     public let  editor_add_plugin: GDExtensionInterfaceEditorAddPlugin
     public let  editor_remove_plugin: GDExtensionInterfaceEditorRemovePlugin
+
+    public let get_library_path: GDExtensionInterfaceGetLibraryPath
+    public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen
 }
 
 @_spi(SwiftGodotRuntimePrivate) public var gi: GodotInterface!
@@ -438,7 +441,10 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 
         callable_custom_create: load("callable_custom_create"),
         editor_add_plugin: load("editor_add_plugin"),
-        editor_remove_plugin: load("editor_remove_plugin")
+        editor_remove_plugin: load("editor_remove_plugin"),
+
+        get_library_path: load("get_library_path"),
+        editor_help_load_xml_from_utf8_chars_and_len: load("editor_help_load_xml_from_utf8_chars_and_len")
     )
 }
 
@@ -524,3 +530,4 @@ public func initializeSwiftModule(
 func withArgPointers(_ _args: UnsafeMutableRawPointer?..., body: ([UnsafeRawPointer?]) -> Void) {
     body(unsafeBitCast(_args, to: [UnsafeRawPointer?].self))
 }
+

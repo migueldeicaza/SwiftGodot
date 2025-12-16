@@ -64,7 +64,7 @@ class GodotEncoder: Encoder {
         let key = codingKey.map { $0.stringValue }.joined(separator: ".")
         fatalError()
         //dict [key] = value
-        _ = key
+//        _ = key
     }
 
     func unkeyedContainer() -> any UnkeyedEncodingContainer {
@@ -84,7 +84,7 @@ class GodotEncoder: Encoder {
             let container = self.nestedSingleValueContainer(forKey: key)
             fatalError()
             //try container.encode(Variant())
-            _ = container
+//            _ = container
         }
 
         var codingPath: [any CodingKey] = []

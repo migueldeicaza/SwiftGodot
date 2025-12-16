@@ -4,13 +4,19 @@ import Foundation
 public enum ArgumentAccessError: Error, CustomStringConvertible {
     case indexOutOfBounds(index: Int, count: Int)
     case variantConversionError(VariantConversionError)
-    
+    case godotCallingConventionError
+    case couldNotSurfaceObject
+
     public var description: String {
         switch self {
         case .indexOutOfBounds(let index, let count):
             return "Arguments accessed at index \(index), while total count is \(count)"
         case .variantConversionError(let error):
-            return error.description        
+            return error.description
+        case .godotCallingConventionError:
+            return "The expected Godot calling convention was not met for RawArguments"
+        case .couldNotSurfaceObject:
+            return "Godot's object handle could not be surfaced to Swift"
         }
     }
 }
@@ -148,8 +154,7 @@ public struct Arguments: ~Copyable {
     }
     
     @inline(__always)
-    @usableFromInline
-    init(from array: [Variant?]) {
+    public init(from array: [Variant?]) {
         contents = .array(array)
     }
     
@@ -406,12 +411,12 @@ public struct RawArguments: Sendable {
         self.args = args
     }
 
-    public func fetchArgument(at: Int) -> Int {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Int {
         args[at]!.assumingMemoryBound(to: Int.self).pointee
     }
 
     // Generic overload for any enum with Int raw values
-    public func fetchArgument<T>(at: Int) -> T where T: RawRepresentable, T.RawValue == Int {
+    public func fetchArgument<T>(at: Int) throws(ArgumentAccessError) -> T where T: RawRepresentable, T.RawValue == Int {
         // Replace this with however you obtain the raw value
         let raw = args[at]!.assumingMemoryBound(to: Int.self).pointee
 
@@ -422,7 +427,7 @@ public struct RawArguments: Sendable {
     }
 
     // Generic overload for any enum with Int raw values
-    public func fetchArgument<T>(at: Int) -> T where T: RawRepresentable, T.RawValue == Int64 {
+    public func fetchArgument<T>(at: Int) throws(ArgumentAccessError) -> T where T: RawRepresentable, T.RawValue == Int64 {
         // Replace this with however you obtain the raw value
         let raw = args[at]!.assumingMemoryBound(to: Int.self).pointee
 
@@ -432,213 +437,247 @@ public struct RawArguments: Sendable {
         return value
     }
 
-    public func fetchArgument(at: Int) -> Int64 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Int64 {
         Int64(args[at]!.assumingMemoryBound(to: Int.self).pointee)
     }
 
-    public func fetchArgument(at: Int) -> Int32 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Int32 {
         Int32(args[at]!.assumingMemoryBound(to: Int.self).pointee)
     }
 
-    public func fetchArgument(at: Int) -> Int16 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Int16 {
         Int16(args[at]!.assumingMemoryBound(to: Int.self).pointee)
     }
 
-    public func fetchArgument(at: Int) -> Int8 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Int8 {
         Int8(args[at]!.assumingMemoryBound(to: Int.self).pointee)
     }
 
-    public func fetchArgument(at: Int) -> String {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> String {
         args[at]!.assumingMemoryBound(to: Int.self).pointee
         return GString.toString(pContent: args[at]!)
     }
 
-    public func fetchArgument(at: Int) -> Double {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Double {
         args[at]!.assumingMemoryBound(to: Double.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Float {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Float {
         Float(args[at]!.assumingMemoryBound(to: Double.self).pointee)
     }
 
-    public func fetchArgument(at: Int) -> Vector2 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Vector2 {
         args[at]!.assumingMemoryBound(to: Vector2.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Vector2i {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Vector2i {
         args[at]!.assumingMemoryBound(to: Vector2i.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Vector3 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Vector3 {
         args[at]!.assumingMemoryBound(to: Vector3.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Vector3i {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Vector3i {
         args[at]!.assumingMemoryBound(to: Vector3i.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Vector4 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Vector4 {
         args[at]!.assumingMemoryBound(to: Vector4.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Vector4i {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Vector4i {
         args[at]!.assumingMemoryBound(to: Vector4i.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Plane {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Plane {
         args[at]!.assumingMemoryBound(to: Plane.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Quaternion {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Quaternion {
         args[at]!.assumingMemoryBound(to: Quaternion.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Rect2 {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Rect2 {
         args[at]!.assumingMemoryBound(to: Rect2.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Rect2i {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Rect2i {
         args[at]!.assumingMemoryBound(to: Rect2i.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Transform2D {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Transform2D {
         args[at]!.assumingMemoryBound(to: Transform2D.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> AABB {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> AABB {
         args[at]!.assumingMemoryBound(to: AABB.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Basis {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Basis {
         args[at]!.assumingMemoryBound(to: Basis.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Transform3D {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Transform3D {
         args[at]!.assumingMemoryBound(to: Transform3D.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Projection {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Projection {
         args[at]!.assumingMemoryBound(to: Projection.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Color {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Color {
         args[at]!.assumingMemoryBound(to: Color.self).pointee
     }
 
-    public func fetchArgument(at: Int) -> Bool {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Bool {
         let i = args[at]!.assumingMemoryBound(to: Int.self).pointee
         return i != 0
     }
 
-    public func fetchArgument<T: Wrapped>(at: Int) -> T? {
+    public func fetchArgument<T: Wrapped>(at: Int) throws(ArgumentAccessError) -> T? {
         guard let value = args[at] else {
-            GD.print("There was no value at \(at)")
             return nil
         }
-        print("I have \(value)")
         let ptr = value.assumingMemoryBound(to: UnsafeMutableRawPointer.self).pointee
         return lookupLiveObject(handleAddress: ptr) as? T
     }
 
-    // Like the above, but if it does not find, it fails
-    public func fetchArgument<T: Wrapped>(at: Int) -> T {
-        guard let value = args[at] else {
-            fatalError("There was no object pointer passed")
+    public func fetchArgument<Element: VariantConvertible>(at: Int) throws(ArgumentAccessError) -> [Element] {
+        let i = args[at]!.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
+        let varray = VariantArray(content: i)
+        var result: [Element] = []
+        for variant in varray {
+            do {
+                var element = try Element.fromVariantOrThrow(variant)
+                result.append(element)
+            } catch {
+                throw ArgumentAccessError.variantConversionError(error)
+            }
         }
-        let ptr = value.assumingMemoryBound(to: UnsafeMutableRawPointer.self).pointee
-        if let value = lookupLiveObject(handleAddress: ptr) as? T {
-            return value
-        }
-        fatalError("Did not find an object of type \(T.self), you can try using Wrapped? instead")
+        return result
     }
 
-    public func fetchArgument(at: Int) -> StringName {
+    // Like the above, but if it does not find, it fails
+    public func fetchArgument<T: Wrapped>(at: Int) throws(ArgumentAccessError) -> T {
+        guard let value = args[at] else {
+            // There was no object pointer passed
+            throw .godotCallingConventionError
+        }
+        let ptr = value.assumingMemoryBound(to: UnsafeMutableRawPointer.self).pointee
+        if let lookup = lookupLiveObject(handleAddress: ptr) {
+            if let value = lookup as? T {
+                return value
+            } else {
+                throw ArgumentAccessError.variantConversionError(VariantConversionError.unexpectedContent(requestedType: T.self, actualContent: lookup.godotClassName.description))
+            }
+        } else {
+            throw ArgumentAccessError.couldNotSurfaceObject
+        }
+    }
+
+    public func fetchArgument(at: Int) throws(ArgumentAccessError)  -> StringName {
         let i = args[at]!.assumingMemoryBound(to: StringName.ContentType.self).pointee
         return StringName(content: i)
     }
 
-    public func fetchArgument(at: Int) -> NodePath {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> NodePath {
         let i = args[at]!.assumingMemoryBound(to: NodePath.ContentType.self).pointee
         return NodePath(content: i)
     }
 
-    public func fetchArgument(at: Int) -> RID {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> RID {
         let i = args[at]!.assumingMemoryBound(to: RID.ContentType.self).pointee
         return RID(content: i)
     }
 
-    public func fetchArgument(at: Int) -> Callable {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Callable {
         let i = args[at]!.assumingMemoryBound(to: Callable.ContentType.self).pointee
         return Callable(content: i)
     }
 
-    public func fetchArgument(at: Int) -> Signal {
+    public func fetchArgument(at: Int)throws(ArgumentAccessError)  -> Signal {
         let i = args[at]!.assumingMemoryBound(to: Signal.ContentType.self).pointee
         return Signal(content: i)
     }
 
-    public func fetchArgument(at: Int) -> VariantDictionary {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> Variant {
+        let i = args[at]!.assumingMemoryBound(to: Variant.ContentType.self).pointee
+        guard let v = Variant(copying: i) else {
+            throw ArgumentAccessError.variantConversionError(
+                .unexpectedNilContent(parsing: Variant.self)
+            )
+        }
+        return v
+    }
+
+    public func fetchArgument(at: Int) throws(ArgumentAccessError)  -> Variant? {
+        let i = args[at]!.assumingMemoryBound(to: Variant.ContentType.self).pointee
+        return Variant(copying: i)
+    }
+
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> VariantDictionary {
         let i = args[at]!.assumingMemoryBound(to: VariantDictionary.ContentType.self).pointee
         return VariantDictionary(content: i)
     }
 
-    public func fetchArgument(at: Int) -> VariantArray {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> VariantArray {
         let i = args[at]!.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
         return VariantArray(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedByteArray {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError)  -> PackedByteArray {
         let i = args[at]!.assumingMemoryBound(to: PackedByteArray.ContentType.self).pointee
         return PackedByteArray(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedInt32Array {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedInt32Array {
         let i = args[at]!.assumingMemoryBound(to: PackedInt32Array.ContentType.self).pointee
         return PackedInt32Array(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedInt64Array {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedInt64Array {
         let i = args[at]!.assumingMemoryBound(to: PackedInt64Array.ContentType.self).pointee
         return PackedInt64Array(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedFloat32Array {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedFloat32Array {
         let i = args[at]!.assumingMemoryBound(to: PackedFloat32Array.ContentType.self).pointee
         return PackedFloat32Array(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedFloat64Array {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedFloat64Array {
         let i = args[at]!.assumingMemoryBound(to: PackedFloat64Array.ContentType.self).pointee
         return PackedFloat64Array(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedStringArray {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedStringArray {
         let i = args[at]!.assumingMemoryBound(to: PackedStringArray.ContentType.self).pointee
         return PackedStringArray(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedVector2Array {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedVector2Array {
         let i = args[at]!.assumingMemoryBound(to: PackedVector2Array.ContentType.self).pointee
         return PackedVector2Array(content: i)
     }
 
-    public func fetchArgument(at: Int) -> PackedColorArray {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedColorArray {
         let i = args[at]!.assumingMemoryBound(to: PackedColorArray.ContentType.self).pointee
         return PackedColorArray(content: i)
     }
     
-    public func fetchArgument(at: Int) -> PackedVector4Array {
+    public func fetchArgument(at: Int) throws(ArgumentAccessError) -> PackedVector4Array {
         let i = args[at]!.assumingMemoryBound(to: PackedVector4Array.ContentType.self).pointee
         return PackedVector4Array(content: i)
     }
 
-    public func fetchArgument<T>(at: Int) -> TypedArray<T> {
-        let array: VariantArray = fetchArgument(at: at)
+    public func fetchArgument<T>(at: Int) throws(ArgumentAccessError) -> TypedArray<T> {
+        let array: VariantArray = try fetchArgument(at: at)
         return TypedArray(from: array)
     }
 
-    public func fetchArgument<TKey,TValue>(at: Int) -> TypedDictionary<TKey, TValue> {
-        let dictionary: VariantDictionary = fetchArgument(at: at)
+    public func fetchArgument<TKey,TValue>(at: Int) throws(ArgumentAccessError) -> TypedDictionary<TKey, TValue> {
+        let dictionary: VariantDictionary = try fetchArgument(at: at)
         return TypedDictionary(from: dictionary)
     }
 }
@@ -835,6 +874,12 @@ public struct RawReturnWriter {
         var copy = PackedVector4Array(from: value)
         target!.assumingMemoryBound(to: PackedVector4Array.ContentType.self).pointee = copy.content
         copy.content = PackedVector4Array.zero
+    }
+
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T?) where T: VariantConvertible {
+        if let value {
+            writeResult(target, value)
+        }
     }
 
 

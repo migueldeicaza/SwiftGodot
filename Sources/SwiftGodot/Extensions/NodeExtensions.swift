@@ -4,6 +4,7 @@
 //
 //  Created by Miguel de Icaza on 4/12/23.
 //
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 
 /// Use the BindNode property wrapper in any subclass of Node to retrieve the node from the
 /// current container that matches the name of the property.
@@ -78,3 +79,46 @@ public struct BindNode<Value: Node> {
     private var path: String
 }
 
+public extension _GodotBridgeable where Self: Node {
+    @inline(__always)
+    @inlinable
+    static func _propInfoNode(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        var hint = hint
+        var hintStr = hintStr
+
+        if hint == nil && hintStr == nil {
+            hint = .nodeType
+            hintStr = _builtinOrClassName
+        }
+        return PropInfo(
+            propertyType: _variantType,
+            propertyName: StringName(name),
+            className: StringName(_builtinOrClassName ?? ""),
+            hint: hint ?? .none,
+            hintStr: hintStr.map { GString($0) } ?? GString(),
+            usage: usage ?? .default
+        )
+    }
+}
+
+@inline(__always)
+@inlinable
+public func _propInfo<Root, T>(
+    at keyPath: KeyPath<Root, T?>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where T: Node {
+    T._propInfoNode(
+        name: name,
+        hint: userHint,
+        hintStr: userHintStr,
+        usage: userUsage
+    )
+}

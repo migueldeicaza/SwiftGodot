@@ -9,20 +9,36 @@ class DebugThing: SwiftGodot.Object {
         return nil
     }
 
-    static func _mproxy_do_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+    static func _mproxy_do_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
         do { // safe arguments access scope
-            guard let object = SwiftGodot._unwrap(self, pInstance: pInstance) else {
-                SwiftGodot.GD.printErr("Error calling `do_thing`: failed to unwrap instance \(String(describing: pInstance))")
+            guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+                SwiftGodotRuntime.GD.printErr("Error calling `do_thing`: failed to unwrap instance \(String(describing: pInstance))")
                 return nil
             }
             let arg0 = try arguments.argument(ofType: SwiftGodot.Variant?.self, at: 0)
-            return SwiftGodot._wrapCallableResult(object.do_thing(value: arg0))
+            return SwiftGodotRuntime._wrapCallableResult(object.do_thing(value: arg0))
 
         } catch {
-            SwiftGodot.GD.printErr("Error calling `do_thing`: \(error.description)")
+            SwiftGodotRuntime.GD.printErr("Error calling `do_thing`: \(error.description)")
         }
 
         return nil
+    }
+    static func _pproxy_do_thing(        
+    _ pInstance: UnsafeMutableRawPointer?,
+    _ rargs: RawArguments,
+    _ returnValue: UnsafeMutableRawPointer?) {
+        do { // safe arguments access scope
+                    guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
+                SwiftGodotRuntime.GD.printErr("Error calling `do_thing`: failed to unwrap instance \(String(describing: pInstance))")
+                return
+            }
+        let arg0: SwiftGodot.Variant? = try rargs.fetchArgument(at: 0)
+            RawReturnWriter.writeResult(returnValue, object.do_thing(value: arg0)) 
+
+        } catch {
+            SwiftGodotRuntime.GD.printErr("Error calling `do_thing`: \(String(describing: error))")                    
+        }
     }
 
     override open class var classInitializer: Void {
@@ -34,15 +50,23 @@ class DebugThing: SwiftGodot.Object {
         let className = StringName("DebugThing")
         assert(ClassDB.classExists(class: className))
         SignalWithArguments<Swift.Int>.register(as: "lives_changed", in: className)
-        SwiftGodot._registerMethod(
+        SwiftGodotRuntime._registerMethod(
             className: className,
             name: "do_thing",
             flags: .default,
-            returnValue: SwiftGodot._returnValuePropInfo(SwiftGodot.Variant?.self),
+            returnValue: SwiftGodotRuntime._returnValuePropInfo(SwiftGodot.Variant?.self),
             arguments: [
-                SwiftGodot._argumentPropInfo(SwiftGodot.Variant?.self, name: "value")
+                SwiftGodotRuntime._argumentPropInfo(SwiftGodot.Variant?.self, name: "value")
             ],
-            function: DebugThing._mproxy_do_thing
+            function: DebugThing._mproxy_do_thing,
+            ptrFunction: { udata, classInstance, argsPtr, retValue in
+                guard let argsPtr else {
+                    GD.print("Godot is not passing the arguments");
+                    return
+                }
+                DebugThing._pproxy_do_thing (classInstance, RawArguments(args: argsPtr), retValue)
+            }
+
         )
     }()
 }
