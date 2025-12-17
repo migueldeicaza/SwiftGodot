@@ -1,4 +1,3 @@
-
 class Garage: Node {
     var bar: TypedArray<Bool> = [false]
 

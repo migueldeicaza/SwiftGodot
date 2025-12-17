@@ -1,4 +1,3 @@
-
 class Garage: Node {
     var bar: Bool = false
 

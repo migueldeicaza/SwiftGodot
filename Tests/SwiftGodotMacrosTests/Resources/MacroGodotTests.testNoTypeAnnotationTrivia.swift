@@ -30,7 +30,7 @@ class TestClass: Node {
     }
     static func _pproxy_foo(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -38,7 +38,7 @@ class TestClass: Node {
                 return
             }
         let arg0: Int = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.foo(var: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.foo(var: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `foo`: \(String(describing: error))")                    

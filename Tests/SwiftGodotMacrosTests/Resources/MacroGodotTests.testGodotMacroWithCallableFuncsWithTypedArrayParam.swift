@@ -1,4 +1,3 @@
-
 class SomeNode: Node {
     func square(_ integers: TypedArray<Int>) -> TypedArray<Int> {
         integers.map { $0 * $0 }.reduce(into: TypedArray<Int>()) { $0.append(value: $1) }
@@ -21,7 +20,7 @@ class SomeNode: Node {
     }
     static func _pproxy_square(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -29,7 +28,7 @@ class SomeNode: Node {
                 return
             }
         let arg0: TypedArray<Int> = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.square(arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.square(arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `square`: \(String(describing: error))")                    

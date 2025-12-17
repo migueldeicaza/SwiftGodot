@@ -1,4 +1,3 @@
-
 final class MyData: Resource {
 
     override public class var classInitializer: Void {

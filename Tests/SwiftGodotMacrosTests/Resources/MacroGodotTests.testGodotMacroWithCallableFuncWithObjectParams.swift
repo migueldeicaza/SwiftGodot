@@ -11,13 +11,13 @@ class Castro: Node {
     }
     static func _pproxy_deleteEpisode(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `deleteEpisode`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.deleteEpisode()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.deleteEpisode()) 
 
     }
     func subscribe(podcast: Podcast) {}
@@ -39,7 +39,7 @@ class Castro: Node {
     }
     static func _pproxy_subscribe(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -47,7 +47,7 @@ class Castro: Node {
                 return
             }
         let arg0: Podcast = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.subscribe(podcast: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.subscribe(podcast: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `subscribe`: \(String(describing: error))")                    
@@ -72,7 +72,7 @@ class Castro: Node {
     }
     static func _pproxy_perhapsSubscribe(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -80,7 +80,7 @@ class Castro: Node {
                 return
             }
         let arg0: Podcast? = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.perhapsSubscribe(podcast: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.perhapsSubscribe(podcast: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `perhapsSubscribe`: \(String(describing: error))")                    
@@ -105,7 +105,7 @@ class Castro: Node {
     }
     static func _pproxy_removeSilences(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -113,7 +113,7 @@ class Castro: Node {
                 return
             }
         let arg0: Variant = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.removeSilences(from: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.removeSilences(from: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `removeSilences`: \(String(describing: error))")                    
@@ -138,7 +138,7 @@ class Castro: Node {
     }
     static func _pproxy_getLatestEpisode(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -146,7 +146,7 @@ class Castro: Node {
                 return
             }
         let arg0: Podcast = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.getLatestEpisode(podcast: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.getLatestEpisode(podcast: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `getLatestEpisode`: \(String(describing: error))")                    
@@ -172,7 +172,7 @@ class Castro: Node {
     }
     static func _pproxy_queue(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -181,7 +181,7 @@ class Castro: Node {
             }
         let arg0: Podcast = try rargs.fetchArgument(at: 0)
         let arg1: Podcast = try rargs.fetchArgument(at: 1)
-            RawReturnWriter.writeResult(returnValue, object.queue(arg0, after: arg1)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.queue(arg0, after: arg1)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `queue`: \(String(describing: error))")                    

@@ -257,17 +257,35 @@ class GodotMacroProcessor {
             
             let nameWithPrefix = ips.identifier.text
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
-            
+            let godotName = name.camelCaseToSnakeCase()
+
             guard let typeAnnotation = binding.typeAnnotation else {
                 throw GodotMacroError.signalMacroNoType(nameWithPrefix)
             }
             
             let typeName = typeAnnotation.type.trimmedDescription
             
-            let godotName = name.camelCaseToSnakeCase()
-            
+            // Collect optional variadic names from @Signal attribute on this variable
+            var namesExpr = "[]"
+            if let signalAttr = varDecl.attributes.attribute(named: "Signal"), let argList = signalAttr.arguments?.as(LabeledExprListSyntax.self) {
+                var parts: [String] = []
+                for arg in argList {
+                    let expr = arg.expression
+                    if let str = expr.as(StringLiteralExprSyntax.self) {
+                        let text = str.segments.compactMap { seg -> String? in
+                            if let s = seg.as(StringSegmentSyntax.self) { return s.content.text }
+                            return nil
+                        }.joined()
+                        parts.append("\"\(text)\"")
+                    } else {
+                        parts.append(expr.trimmedDescription)
+                    }
+                }
+                namesExpr = "[" + parts.joined(separator: ", ") + "]"
+            }
+
             classInitializerPrinter("""
-            \(typeName).register(as: \"\(godotName)\", in: className)
+            \(typeName).register(as: \"\(godotName)\", in: className, names: \(namesExpr))
             """)
             
             try checkNameCollision(godotName, for: DeclSyntax(varDecl))

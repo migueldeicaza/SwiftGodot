@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import Foundation
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import SwiftSyntax
@@ -28,10 +29,21 @@ class MacroGodotTestCase: XCTestCase {
         [:]
     }
     
-    /// Set it to local path to regenerate expansions test data in case the macro was updated
-    let regeneratedResourcesPath: String? =
-        nil
-//        URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Resources").path()
+    /// Set `SWIFTGODOT_REGENERATE_MACRO_TEST_RESOURCES=1` to regenerate expected outputs into `Tests/SwiftGodotMacrosTests/Resources`.
+    /// You can also set `SWIFTGODOT_REGENERATE_MACRO_TEST_RESOURCES=/absolute/path` to write elsewhere.
+    let regeneratedResourcesPath: String? = {
+        let envKey = "SWIFTGODOT_REGENERATE_MACRO_TEST_RESOURCES"
+        guard let value = ProcessInfo.processInfo.environment[envKey], !value.isEmpty else {
+            return nil
+        }
+        if value == "1" || value.lowercased() == "true" {
+            return URL(fileURLWithPath: #filePath)
+                .deletingLastPathComponent()
+                .appendingPathComponent("Resources")
+                .path()
+        }
+        return value
+    }()
         
     
     func regenerateExpansionResource(input: String, outputUrl: URL) {
@@ -41,10 +53,21 @@ class MacroGodotTestCase: XCTestCase {
             sourceFiles: [file: .init(moduleName: "test", fullFilePath: "test.swift")]
         )
 
-        let expandedSourceFile = file.expand(macros: Self.macros, contextGenerator: { _ in context }, indentationWidth: .spaces(4))
+        let macroSpecs = Self.macros.mapValues { MacroSpec(type: $0) }
+
+        func contextGenerator(_ syntax: Syntax) -> BasicMacroExpansionContext {
+            BasicMacroExpansionContext(sharingWith: context, lexicalContext: syntax.allMacroLexicalContexts())
+        }
+
+        let expandedSourceFile = file.expand(
+            macroSpecs: macroSpecs,
+            contextGenerator: contextGenerator,
+            indentationWidth: .spaces(4)
+        )
             
         do {
-            try expandedSourceFile.description.write(to: outputUrl, atomically: true, encoding: .utf8)
+            let output = expandedSourceFile.description.trimmingCharacters(in: .newlines) + "\n"
+            try output.write(to: outputUrl, atomically: true, encoding: .utf8)
         } catch {
             XCTFail("Failed to write expected data for \(name). \(error)")
         }

@@ -1,4 +1,3 @@
-
 class SomeNode: Node {
     var someNumbers: TypedArray<Int> = []
 

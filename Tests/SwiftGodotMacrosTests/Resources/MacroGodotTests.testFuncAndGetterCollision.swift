@@ -36,13 +36,13 @@ class OtherThing: SwiftGodot.Node {
     }
     static func _pproxy_get_foo(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_foo`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.get_foo()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.get_foo()) 
 
     }
 }

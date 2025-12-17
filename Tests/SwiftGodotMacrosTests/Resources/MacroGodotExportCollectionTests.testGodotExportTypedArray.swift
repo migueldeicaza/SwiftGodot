@@ -1,4 +1,3 @@
-
 class SomeNode: Node {
     var greetings: TypedArray<Node3D> = []
 

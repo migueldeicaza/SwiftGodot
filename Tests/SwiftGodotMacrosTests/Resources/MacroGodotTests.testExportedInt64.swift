@@ -1,4 +1,3 @@
-
 class Thing: SwiftGodot.Object {
     var value: Int64 = 0
 
@@ -35,13 +34,13 @@ class Thing: SwiftGodot.Object {
     }
     static func _pproxy_get_some(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_some`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.get_some()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.get_some()) 
 
     }
 

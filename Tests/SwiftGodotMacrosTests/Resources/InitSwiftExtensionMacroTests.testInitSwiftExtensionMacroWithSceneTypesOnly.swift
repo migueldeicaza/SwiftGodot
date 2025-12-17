@@ -12,9 +12,15 @@
         types[level]?.forEach(register)
         if level == .scene {
 
+        } else if level == .editor {
+            if false {
+                EditorInterop.loadLibraryDocs()
+            }
         }
+
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)
+
     })
     return 1
 }

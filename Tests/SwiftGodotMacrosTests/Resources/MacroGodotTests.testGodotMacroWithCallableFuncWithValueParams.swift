@@ -19,7 +19,7 @@ class MathHelper: Node {
     }
     static func _pproxy_multiply(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -28,7 +28,7 @@ class MathHelper: Node {
             }
         let arg0: Int = try rargs.fetchArgument(at: 0)
         let arg1: Int = try rargs.fetchArgument(at: 1)
-            RawReturnWriter.writeResult(returnValue, object.multiply(arg0, by: arg1)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.multiply(arg0, by: arg1)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `multiply`: \(String(describing: error))")                    
@@ -54,7 +54,7 @@ class MathHelper: Node {
     }
     static func _pproxy_divide(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -63,7 +63,7 @@ class MathHelper: Node {
             }
         let arg0: Float = try rargs.fetchArgument(at: 0)
         let arg1: Float = try rargs.fetchArgument(at: 1)
-            RawReturnWriter.writeResult(returnValue, object.divide(arg0, by: arg1)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.divide(arg0, by: arg1)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `divide`: \(String(describing: error))")                    
@@ -89,7 +89,7 @@ class MathHelper: Node {
     }
     static func _pproxy_areBothTrue(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -98,7 +98,7 @@ class MathHelper: Node {
             }
         let arg0: Bool = try rargs.fetchArgument(at: 0)
         let arg1: Bool = try rargs.fetchArgument(at: 1)
-            RawReturnWriter.writeResult(returnValue, object.areBothTrue(arg0, and: arg1)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.areBothTrue(arg0, and: arg1)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `areBothTrue`: \(String(describing: error))")                    

@@ -1,4 +1,3 @@
-
 class DebugThing: SwiftGodot.Object {
     var livesChanged: SignalWithArguments<Swift.Int> {
         get {
@@ -26,7 +25,7 @@ class DebugThing: SwiftGodot.Object {
     }
     static func _pproxy_do_thing(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -34,7 +33,7 @@ class DebugThing: SwiftGodot.Object {
                 return
             }
         let arg0: SwiftGodot.Variant? = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.do_thing(value: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.do_thing(value: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `do_thing`: \(String(describing: error))")                    

@@ -1,4 +1,3 @@
-
 class Car: Node {
     var vin: String = "00000000000000000"
 

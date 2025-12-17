@@ -1,4 +1,3 @@
-
 class CallableCollectionsNode: Node {
     func get_ages() -> Array<Int> {
         [1, 2, 3, 4]
@@ -14,13 +13,13 @@ class CallableCollectionsNode: Node {
     }
     static func _pproxy_get_ages(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_ages`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.get_ages()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.get_ages()) 
 
     }
     func get_markers() -> Array<Marker3D> {
@@ -37,13 +36,13 @@ class CallableCollectionsNode: Node {
     }
     static func _pproxy_get_markers(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_markers`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.get_markers()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.get_markers()) 
 
     }
 

@@ -295,7 +295,7 @@ public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type
 /// ```
 
 @attached(accessor)
-public macro Signal() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalAttachmentMacro")
+public macro Signal(_ names: String...) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalAttachmentMacro")
 
 
 #endif

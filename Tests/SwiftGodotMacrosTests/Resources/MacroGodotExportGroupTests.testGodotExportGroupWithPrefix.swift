@@ -1,4 +1,3 @@
-
 class Car: Node {
     var vehicle_make: String = "Mazda"
 

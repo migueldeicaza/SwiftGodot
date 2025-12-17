@@ -1,4 +1,3 @@
-
 class Demo: Node3D {
     var burp: SimpleSignal {
         get {

@@ -18,7 +18,7 @@ class OtherThing: SwiftGodot.Node {
     }
     static func _pproxy_foo(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -26,7 +26,7 @@ class OtherThing: SwiftGodot.Node {
                 return
             }
         let arg0: Int? = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.foo(value: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.foo(value: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `foo`: \(String(describing: error))")                    
@@ -47,13 +47,13 @@ class OtherThing: SwiftGodot.Node {
     }
     static func _pproxy_foo(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `foo`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.foo()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.foo()) 
 
     }
 }

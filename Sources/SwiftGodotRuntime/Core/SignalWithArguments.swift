@@ -21,21 +21,22 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
 
     /// Register this signal with the Godot runtime.
     // TODO: the @Signal macro could optionally accept a list of argument names, so that we could register them as well.
-    public static func register<C: Object>(_ signalName: String, info: ClassInfo<C>) {
-        info.registerSignal(name: StringName(signalName), arguments: argumentPropInfos)
+    public static func register<C: Object>(_ signalName: String, info: ClassInfo<C>, names: [String] = []) {
+        info.registerSignal(name: StringName(signalName), arguments: getArgumentPropInfos(names))
     }
-    
+
     /// Register ``SignalWithArguments`` with a set of arguments inferred from generic clause as a signal named `signalName` in a class named `className`.
-    public static func register(as signalName: StringName, in className: StringName) {
-        _registerSignal(signalName, in: className, arguments: argumentPropInfos)
+    public static func register(as signalName: StringName, in className: StringName, names: [String] = []) {
+        _registerSignal(signalName, in: className, arguments: getArgumentPropInfos(names))
     }
 
     /// Expand a list of argument types into a list of PropInfo objects
-    static var argumentPropInfos: [PropInfo] {
+    static func getArgumentPropInfos(_ names: [String]) -> [PropInfo] {
         var arguments = [PropInfo]()
         var i = 1
-        
-        for argument in repeat (each T)._argumentPropInfo(name: "arg\(i)") {
+        let nameCount = names.count
+
+        for argument in repeat (each T)._argumentPropInfo(name: i > nameCount ? "arg\(i)" : names[i-1]) {
             arguments.append(argument)
             i += 1
         }

@@ -32,7 +32,7 @@ class OtherThing: SwiftGodot.Node {
     }
     static func _pproxy_do_string(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -40,7 +40,7 @@ class OtherThing: SwiftGodot.Node {
                 return
             }
         let arg0: String? = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.do_string(value: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.do_string(value: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `do_string`: \(String(describing: error))")                    
@@ -66,7 +66,7 @@ class OtherThing: SwiftGodot.Node {
     }
     static func _pproxy_do_int(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -74,7 +74,7 @@ class OtherThing: SwiftGodot.Node {
                 return
             }
         let arg0: Int? = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.do_int(value: arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.do_int(value: arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `do_int`: \(String(describing: error))")                    
@@ -95,13 +95,13 @@ class OtherThing: SwiftGodot.Node {
     }
     static func _pproxy_get_thing(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_thing`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.get_thing()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.get_thing()) 
 
     }
 

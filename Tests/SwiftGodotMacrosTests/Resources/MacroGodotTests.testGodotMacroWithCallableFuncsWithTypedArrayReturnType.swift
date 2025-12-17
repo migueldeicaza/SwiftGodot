@@ -1,4 +1,3 @@
-
 class SomeNode: Node {
     func getIntegerCollection() -> TypedArray<Int> {
         let result: TypedArray<Int> = [0, 1, 1, 2, 3, 5, 8]
@@ -15,13 +14,13 @@ class SomeNode: Node {
     }
     static func _pproxy_getIntegerCollection(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `getIntegerCollection`: failed to unwrap instance \(String(describing: pInstance))")
             return
         }
-        RawReturnWriter.writeResult(returnValue, object.getIntegerCollection()) 
+        SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.getIntegerCollection()) 
 
     }
 

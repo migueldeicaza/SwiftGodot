@@ -1,4 +1,3 @@
-
 class Car: Node {
     var vins: TypedArray<String> = [""]
 

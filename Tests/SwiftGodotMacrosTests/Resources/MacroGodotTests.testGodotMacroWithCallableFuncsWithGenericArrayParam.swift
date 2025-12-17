@@ -1,4 +1,3 @@
-
 class MultiplierNode: Node {
     func multiply(_ integers: Array<Int>) -> Int {
         integers.reduce(into: 1) { $0 *= $1 }
@@ -21,7 +20,7 @@ class MultiplierNode: Node {
     }
     static func _pproxy_multiply(        
     _ pInstance: UnsafeMutableRawPointer?,
-    _ rargs: RawArguments,
+    _ rargs: SwiftGodotRuntime.RawArguments,
     _ returnValue: UnsafeMutableRawPointer?) {
         do { // safe arguments access scope
                     guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
@@ -29,7 +28,7 @@ class MultiplierNode: Node {
                 return
             }
         let arg0: Array<Int> = try rargs.fetchArgument(at: 0)
-            RawReturnWriter.writeResult(returnValue, object.multiply(arg0)) 
+            SwiftGodotRuntime.RawReturnWriter.writeResult(returnValue, object.multiply(arg0)) 
 
         } catch {
             SwiftGodotRuntime.GD.printErr("Error calling `multiply`: \(String(describing: error))")                    

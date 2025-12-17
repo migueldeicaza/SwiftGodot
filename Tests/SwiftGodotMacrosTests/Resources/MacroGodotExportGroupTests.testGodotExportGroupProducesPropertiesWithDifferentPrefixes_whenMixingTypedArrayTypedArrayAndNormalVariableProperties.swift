@@ -1,4 +1,3 @@
-
 class Garage: Node {
     var name: String = ""
 

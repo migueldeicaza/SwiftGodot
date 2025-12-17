@@ -1,4 +1,3 @@
-
 public class Issue353: Node {
     var prefix1_prefixed_bool: Bool = true
 
