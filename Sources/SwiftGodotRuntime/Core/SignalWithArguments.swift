@@ -20,7 +20,6 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
     }
 
     /// Register this signal with the Godot runtime.
-    // TODO: the @Signal macro could optionally accept a list of argument names, so that we could register them as well.
     public static func register<C: Object>(_ signalName: String, info: ClassInfo<C>, names: [String] = []) {
         info.registerSignal(name: StringName(signalName), arguments: getArgumentPropInfos(names))
     }
