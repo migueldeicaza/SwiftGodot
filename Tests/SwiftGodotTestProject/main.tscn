@@ -3,4 +3,3 @@
 [node name="Main" type="Node"]
 
 [node name="TestRunner" type="TestRunnerNode" parent="."]
-resultsPath = "/tmp/swiftgodot_test_results.json"

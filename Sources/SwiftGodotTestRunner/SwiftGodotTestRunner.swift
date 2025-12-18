@@ -51,7 +51,7 @@ struct GodotTestOrchestrator {
         print("  Build config:      \(buildConfiguration)")
 
         // 1. Build the test extension
-        print("\n[1/4] Building test extension...")
+        print("\n[1/5] Building test extension...")
         do {
             try await buildExtension()
             print("      Build successful")
@@ -61,7 +61,7 @@ struct GodotTestOrchestrator {
         }
 
         // 2. Copy built library to Godot project
-        print("\n[2/4] Copying library to test project...")
+        print("\n[2/5] Copying library to test project...")
         do {
             try copyLibraryToProject()
             print("      Copy successful")
@@ -70,18 +70,28 @@ struct GodotTestOrchestrator {
             return 1
         }
 
-        // 3. Launch Godot
-        print("\n[3/4] Running tests in Godot...")
+        // 3. Import project (needed to detect GDExtensions)
+        print("\n[3/5] Importing Godot project...")
+        do {
+            try await importProject(projectPath: absoluteProjectPath)
+            print("      Import successful")
+        } catch {
+            print("      Import failed: \(error)")
+            return 1
+        }
+
+        // 4. Launch Godot
+        print("\n[4/5] Running tests in Godot...")
         let godotExitCode: Int
         do {
-            godotExitCode = try await launchGodot()
+            godotExitCode = try await launchGodot(projectPath: absoluteProjectPath)
         } catch {
             print("      Godot launch failed: \(error)")
             return 1
         }
 
-        // 4. Read and report results
-        print("\n[4/4] Reading results...")
+        // 5. Read and report results
+        print("\n[5/5] Reading results...")
         do {
             let results = try readResults()
             printResults(results)
@@ -95,24 +105,29 @@ struct GodotTestOrchestrator {
     }
 
     private func buildExtension() async throws {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
-        process.arguments = [
-            "build",
-            "--product", extensionTarget,
-            "-c", buildConfiguration
-        ]
-        process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        // Build extension and its dynamic library dependencies
+        let products = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
 
-        // Forward stdout/stderr directly for real-time output
-        process.standardOutput = FileHandle.standardOutput
-        process.standardError = FileHandle.standardError
+        for product in products {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
+            process.arguments = [
+                "build",
+                "--product", product,
+                "-c", buildConfiguration
+            ]
+            process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
-        try process.run()
-        process.waitUntilExit()
+            // Forward stdout/stderr directly for real-time output
+            process.standardOutput = FileHandle.standardOutput
+            process.standardError = FileHandle.standardError
 
-        if process.terminationStatus != 0 {
-            throw TestRunnerError.buildFailed("See output above")
+            try process.run()
+            process.waitUntilExit()
+
+            if process.terminationStatus != 0 {
+                throw TestRunnerError.buildFailed("Failed to build \(product)")
+            }
         }
     }
 
@@ -184,8 +199,7 @@ struct GodotTestOrchestrator {
         }
     }
 
-    private func launchGodot() async throws -> Int {
-        // Check if godot is in PATH
+    private func findGodot() throws -> String {
         let whichProcess = Process()
         whichProcess.executableURL = URL(fileURLWithPath: "/usr/bin/which")
         whichProcess.arguments = ["godot"]
@@ -201,9 +215,34 @@ struct GodotTestOrchestrator {
         }
 
         let godotPathData = whichPipe.fileHandleForReading.readDataToEndOfFile()
-        let godotPath = String(data: godotPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "godot"
+        return String(data: godotPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "godot"
+    }
 
-        // Launch Godot
+    private func importProject(projectPath: String) async throws {
+        let godotPath = try findGodot()
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: godotPath)
+        process.arguments = [
+            "--headless",
+            "--import",
+            "--path", projectPath
+        ]
+        process.currentDirectoryURL = URL(fileURLWithPath: projectPath)
+
+        // Forward stdout/stderr
+        process.standardOutput = FileHandle.standardOutput
+        process.standardError = FileHandle.standardError
+
+        try process.run()
+        process.waitUntilExit()
+
+        // Import may exit with non-zero code but still succeed
+    }
+
+    private func launchGodot(projectPath: String) async throws -> Int {
+        let godotPath = try findGodot()
+
         let process = Process()
         process.executableURL = URL(fileURLWithPath: godotPath)
         process.arguments = [
@@ -211,7 +250,7 @@ struct GodotTestOrchestrator {
             "--path", projectPath,
             "--quit-after", "600"  // Timeout after 10 minutes
         ]
-        process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        process.currentDirectoryURL = URL(fileURLWithPath: projectPath)
 
         // Forward stdout/stderr
         process.standardOutput = FileHandle.standardOutput
