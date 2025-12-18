@@ -74,7 +74,8 @@ struct GodotTestOrchestrator {
         do {
             let results = try readResults()
             printResults(results)
-            return results.summary.failed > 0 ? 1 : godotExitCode
+            // Test results are the source of truth - Godot may exit non-zero due to expected errors during tests
+            return results.summary.failed > 0 ? 1 : 0
         } catch {
             print("      Failed to read results: \(error)")
             print("      Godot exit code was: \(godotExitCode)")
