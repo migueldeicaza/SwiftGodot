@@ -25,10 +25,6 @@ import PackagePlugin
         let generatedSourcesDir = context.pluginWorkDirectoryURL
             .appending(path: "GeneratedSources")
             .appending(path: target.name)
-
-        if FileManager.default.fileExists(atPath: generatedSourcesDir.path) {
-            try FileManager.default.removeItem(at: generatedSourcesDir)
-        }
         try FileManager.default.createDirectory(at: generatedSourcesDir, withIntermediateDirectories: true)
 
         let configurationDir = context.pluginWorkDirectoryURL.appending(path: "Configuration")
@@ -43,9 +39,9 @@ import PackagePlugin
                 fatalError()
             }
         }
-        try config.generatedClassFiles.joined(separator: "\n").write(to: classFilterFile, atomically: true, encoding: .utf8)
-        try config.availableClassFiles.joined(separator: "\n").write(to: availableClassFilterFile, atomically: true, encoding: .utf8)
-        try config.builtinFiles.joined(separator: "\n").write(to: builtinFilterFile, atomically: true, encoding: .utf8)
+        try writeIfChanged(config.generatedClassFiles.joined(separator: "\n"), to: classFilterFile)
+        try writeIfChanged(config.availableClassFiles.joined(separator: "\n"), to: availableClassFilterFile)
+        try writeIfChanged(config.builtinFiles.joined(separator: "\n"), to: builtinFilterFile)
 
         var arguments = [api.path, generatedSourcesDir.path]
         var outputFiles: [URL] = []
@@ -70,10 +66,13 @@ import PackagePlugin
             "--builtin-filter", builtinFilterFile.path
         ])
 
+        var inputFiles: [URL] = [api, classFilterFile, availableClassFilterFile, builtinFilterFile]
+
         if let preamble = config.preamble, !preamble.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let preambleFile = configurationDir.appending(path: "\(target.name)-preamble.txt")
-            try preamble.write(to: preambleFile, atomically: true, encoding: .utf8)
+            try writeIfChanged(preamble, to: preambleFile)
             arguments.append(contentsOf: ["--preamble-file", preambleFile.path])
+            inputFiles.append(preambleFile)
         }
 
         return [
@@ -81,7 +80,7 @@ import PackagePlugin
                 displayName: "Generating SwiftGodot API for \(target.name)",
                 executable: generator,
                 arguments: arguments,
-                inputFiles: [api],
+                inputFiles: inputFiles,
                 outputFiles: outputFiles
             )
         ]
@@ -217,6 +216,14 @@ import PackagePlugin
         default:
             return nil
         }
+    }
+
+    private func writeIfChanged(_ contents: String, to file: URL) throws {
+        let data = Data(contents.utf8)
+        if let existing = try? Data(contentsOf: file), existing == data {
+            return
+        }
+        try data.write(to: file, options: [.atomic])
     }
 }
 
