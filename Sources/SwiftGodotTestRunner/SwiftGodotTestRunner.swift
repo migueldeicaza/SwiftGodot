@@ -28,12 +28,33 @@ struct SwiftGodotTestRunner {
         print("  Extension target:  \(extensionTarget)")
         print("  Build config:      \(buildConfiguration)")
 
+        // Find swift executable from PATH
+        let whichSwiftProcess = Process()
+        whichSwiftProcess.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        whichSwiftProcess.arguments = ["swift"]
+        let whichSwiftPipe = Pipe()
+        whichSwiftProcess.standardOutput = whichSwiftPipe
+        whichSwiftProcess.standardError = whichSwiftPipe
+        do {
+            try whichSwiftProcess.run()
+            whichSwiftProcess.waitUntilExit()
+        } catch {
+            print("      Failed to find swift: \(error)")
+            exit(1)
+        }
+        if whichSwiftProcess.terminationStatus != 0 {
+            print("      Swift not found in PATH")
+            exit(1)
+        }
+        let swiftPathData = whichSwiftPipe.fileHandleForReading.readDataToEndOfFile()
+        let swiftPath = String(data: swiftPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "swift"
+
         // 1. Build the test extension and dependencies
         print("\n[1/5] Building test extension...")
         let products = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
         for product in products {
             let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
+            process.executableURL = URL(fileURLWithPath: swiftPath)
             process.arguments = ["build", "--product", product, "-c", buildConfiguration]
             process.currentDirectoryURL = URL(fileURLWithPath: cwd)
             process.standardOutput = FileHandle.standardOutput
