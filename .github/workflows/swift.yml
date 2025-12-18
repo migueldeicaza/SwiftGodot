@@ -51,8 +51,8 @@ jobs:
       - name: Swift Install
         uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-6.1-branch
-          tag: 6.1-DEVELOPMENT-SNAPSHOT-2025-01-22-a
+          swift-version: swift-6.2-release
+          swift-build: 6.2-RELEASE
 
       - uses: actions/checkout@v4
 
@@ -83,15 +83,15 @@ jobs:
       - name: Install Swift
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.0"
+          swift-version: "6.2"
 
       - name: Install Godot
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
-          wget https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
-          unzip Godot_v4.3-stable_linux.x86_64.zip
-          sudo mv Godot_v4.3-stable_linux.x86_64 /usr/local/bin/godot
+          wget https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
+          unzip Godot_v4.5-stable_linux.x86_64.zip
+          sudo mv Godot_v4.5-stable_linux.x86_64 /usr/local/bin/godot
           sudo chmod +x /usr/local/bin/godot
           godot --version
 
