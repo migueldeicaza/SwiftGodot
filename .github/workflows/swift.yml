@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  build-and-test-macos:
     runs-on: macos-14
 
     steps:
@@ -43,7 +43,7 @@ jobs:
     - name: Run Godot-based tests
       run: swift run SwiftGodotTestRunner
 
-  build-windows:
+  build-and-test-windows:
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -74,7 +74,7 @@ jobs:
         with:
           build-tests: false
 
-  build-linux:
+  build-and-test-linux:
     runs-on: ubuntu-latest
 
     steps:

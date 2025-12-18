@@ -15,7 +15,7 @@ public final class VariantTests: GodotTestCase {
             GodotTest(name: "testVariant", method: testVariant),
             GodotTest(name: "testWrap", method: testWrap),
             GodotTest(name: "testVariantCall", method: testVariantCall),
-            GodotTest(name: "tesetInitVariantConvertible", method: tesetInitVariantConvertible),
+            GodotTest(name: "testInitVariantConvertible", method: testInitVariantConvertible),
             GodotTest(name: "testOperatorEqualsEquals", method: testOperatorEqualsEquals),
             GodotTest(name: "testUnwrappingApi", method: testUnwrappingApi),
             GodotTest(name: "testNoMisconversions", method: testNoMisconversions),
@@ -114,7 +114,7 @@ public final class VariantTests: GodotTestCase {
                               
     }
     
-    public func tesetInitVariantConvertible() {
+    public func testInitVariantConvertible() {
         var variant: Variant
         
         // Builtin struct
