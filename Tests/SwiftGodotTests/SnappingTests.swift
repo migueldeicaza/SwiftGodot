@@ -1,4 +1,4 @@
-import XCTest
+
 import SwiftGodotTestability
 @testable import SwiftGodot
 

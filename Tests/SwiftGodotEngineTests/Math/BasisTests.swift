@@ -1,6 +1,6 @@
 // Based on godot/tests/core/math/test_basis.h
 
-import XCTest
+import Foundation
 import SwiftGodotTestability
 @testable import SwiftGodot
 

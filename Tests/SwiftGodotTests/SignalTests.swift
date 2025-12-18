@@ -1,4 +1,3 @@
-import XCTest
 import SwiftGodotTestability
 @testable import SwiftGodot
 
@@ -20,13 +19,24 @@ private class TestSignalNode: Node {
     }
 }
 
-final class SignalTests: GodotTestCase {
-    
-    override static var godotSubclasses: [Object.Type] {
+public final class SignalTests: GodotTestCase {
+    public override class var godotSubclasses: [Object.Type] {
         return [TestSignalNode.self]
     }
-    
-    func testUserDefinedSignal() {
+
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testUserDefinedSignal", method: testUserDefinedSignal),
+            GodotTest(name: "testNuSignal", method: testNuSignal),
+            GodotTest(name: "testBuiltInSignalWithNoArgument", method: testBuiltInSignalWithNoArgument),
+            GodotTest(name: "testBuiltInSignalWithArgument", method: testBuiltInSignalWithArgument),
+            GodotTest(name: "testBuiltInSignalWithPrimitiveArguments", method: testBuiltInSignalWithPrimitiveArguments),
+        ]
+    }
+
+    public required init() {}
+
+    public func testUserDefinedSignal() {
         let node = TestSignalNode()
 
         node.connect (signal: TestSignalNode.mySignal, to: node, method: "receiveSignal")
@@ -36,7 +46,7 @@ final class SignalTests: GodotTestCase {
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
     }
 
-    func testNuSignal() {
+    public func testNuSignal() {
         let node = TestSignalNode()
         var signalReceived = false
 
@@ -49,7 +59,7 @@ final class SignalTests: GodotTestCase {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
-    func testBuiltInSignalWithNoArgument() {
+    public func testBuiltInSignalWithNoArgument() {
         let node = Node()
         var signalReceived = false
         node.ready.connect {
@@ -58,8 +68,8 @@ final class SignalTests: GodotTestCase {
         node.ready.emit()
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
-    
-    func testBuiltInSignalWithArgument() {
+
+    public func testBuiltInSignalWithArgument() {
         let node = Node()
         var signalReceived = false
         node.childExitingTree.connect { (nodeParameter: Node?) in // full signature is specified here to check that it's being generated with the right types
@@ -69,8 +79,8 @@ final class SignalTests: GodotTestCase {
         node.childExitingTree.emit(node)
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
-    
-    func testBuiltInSignalWithPrimitiveArguments() {
+
+    public func testBuiltInSignalWithPrimitiveArguments() {
         let node = AnimationNode()
         var signalReceived = false
         node.animationNodeRenamed.connect { (id: Int64, oldName: String, newName: String) in  // full signature is specified here to check that it's being generated with the right types

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ctest_runner_scene"]
+
+[node name="Main" type="Node"]
+
+[node name="TestRunner" type="TestRunnerNode" parent="."]
+resultsPath = "/tmp/swiftgodot_test_results.json"

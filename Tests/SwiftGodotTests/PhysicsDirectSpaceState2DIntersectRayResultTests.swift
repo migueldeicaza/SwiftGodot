@@ -5,7 +5,7 @@
 //  Created by Estevan Hernandez on 06/24/24.
 //
 
-import XCTest
+
 import SwiftGodotTestability
 @testable import SwiftGodot
 

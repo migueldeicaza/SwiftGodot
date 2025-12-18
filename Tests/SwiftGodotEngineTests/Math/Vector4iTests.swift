@@ -1,6 +1,6 @@
 // Based on godot/tests/core/math/test_vector4i.h
 
-import XCTest
+
 import SwiftGodotTestability
 @testable import SwiftGodot
 
@@ -25,7 +25,7 @@ final class Vector4iTests: GodotTestCase {
 
     func testClampMethod () {
         let vector: Vector4i = Vector4i (x: 10, y: 10, z: 10, w: 10)
-        XCTAssertEqual (Vector4i (x: -5, y: 5, z: 15, w: INT_MAX).clamp (min: Vector4i (), max: vector), Vector4i (x: 0, y: 5, z: 10, w: 10), "Vector4i clamp should work as expected.")
+        XCTAssertEqual (Vector4i (x: -5, y: 5, z: 15, w: Int32.max).clamp (min: Vector4i (), max: vector), Vector4i (x: 0, y: 5, z: 10, w: 10), "Vector4i clamp should work as expected.")
         XCTAssertEqual (vector.clamp (min: Vector4i (x: 0, y: 10, z: 15, w: -10), max: Vector4i (x: 5, y: 10, z: 20, w: -5)), Vector4i (x: 5, y: 10, z: 15, w: -5), "Vector4i clamp should work as expected.")
     }
 

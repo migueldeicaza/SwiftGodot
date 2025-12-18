@@ -1,6 +1,6 @@
 // Based on godot/tests/core/math/test_vector2.h
 
-import XCTest
+
 import SwiftGodotTestability
 @testable import SwiftGodot
 

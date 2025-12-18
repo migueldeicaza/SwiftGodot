@@ -1,6 +1,6 @@
 import SwiftGodot
 import SwiftGodotTestability
-import XCTest
+
 
 struct Foo: Codable {
     var myInt: Int

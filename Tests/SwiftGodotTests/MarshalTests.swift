@@ -1,4 +1,4 @@
-import XCTest
+import Foundation
 import SwiftGodotTestability
 @testable import SwiftGodotRuntime
 @testable import SwiftGodot
@@ -115,19 +115,18 @@ final class MarshalTests: GodotTestCase {
         let addChildName = StringName("add_child")
         let removeChildName = StringName("remove_child")
         let getChildCountName = StringName("get_child_count")
-        
-        measure {
-            for _ in 0..<100_000 {
-                node.addChild(node: child)
-                XCTAssertEqual(node.getChildCount(), 1)
-                node.removeChild(node: child)
-                XCTAssertEqual(node.getChildCount(), 0)
-                
-                _ = node.call(method: addChildName, Variant(child), Variant(false), Variant(Node.InternalMode.disabled.rawValue))
-                XCTAssertEqual(node.call(method: getChildCountName), Variant(1))
-                _ = node.call(method: removeChildName, Variant(child))
-                XCTAssertEqual(node.call(method: getChildCountName), Variant(0))
-            }
+
+        // Reduced iterations since we're not measuring performance
+        for _ in 0..<100 {
+            node.addChild(node: child)
+            XCTAssertEqual(node.getChildCount(), 1)
+            node.removeChild(node: child)
+            XCTAssertEqual(node.getChildCount(), 0)
+
+            _ = node.call(method: addChildName, Variant(child), Variant(false), Variant(Node.InternalMode.disabled.rawValue))
+            XCTAssertEqual(node.call(method: getChildCountName), Variant(1))
+            _ = node.call(method: removeChildName, Variant(child))
+            XCTAssertEqual(node.call(method: getChildCountName), Variant(0))
         }
     }
     
@@ -151,31 +150,29 @@ final class MarshalTests: GodotTestCase {
         let makeRandomVector = {
             Vector3(x: .random(in: -1.0...1.0), y: .random(in: -1.0...1.0), z: .random(in: -1.0...1.0))
         }
-        
+
         let a = makeRandomVector()
         let b = makeRandomVector()
         let preA = makeRandomVector()
         let preB = makeRandomVector()
         let weight = 0.23
-        
-        measure {
-            for _ in 0..<1_000_000 {
-                let _ = a.cubicInterpolate(b: b, preA: preA, postB: preB, weight: weight)
-            }
+
+        // Reduced iterations since we're not measuring performance
+        for _ in 0..<1000 {
+            let _ = a.cubicInterpolate(b: b, preA: preA, postB: preB, weight: weight)
         }
     }
     
     func testVarargMethodsPerformance() {
         let floats = (0..<10).map { _ in Float.random(in: -1.0...1.0) }
         let randomValues = floats.map { Variant($0) }
-        
+
         let max = Variant(floats.max()!)
-        
-        measure {
-            for _ in 0..<100_000 {
-                let maxVariant = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
-                XCTAssertEqual(max, maxVariant)
-            }
+
+        // Reduced iterations since we're not measuring performance
+        for _ in 0..<100 {
+            let maxVariant = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
+            XCTAssertEqual(max, maxVariant)
         }
     }
     
@@ -360,39 +357,40 @@ final class MarshalTests: GodotTestCase {
     }
     
     func testOptionalObjectArgument() {
-        let arguments = Arguments(from: [nil, Node().toVariant()])
-        let expectation = XCTestExpectation()
-        expectation.expectedFulfillmentCount = 5
+        let testNode = Node()
+        let arguments = Arguments(from: [nil, testNode.toVariant()])
+        var fulfillmentCount = 0
         do {
             let a = try arguments.argument(ofType: Node?.self, at: 0)
             XCTAssertNil(a)
             let _ = try arguments.argument(ofType: Node.self, at: 1)
-            expectation.fulfill() // 1
+            fulfillmentCount += 1 // 1
             let _ = try arguments.argument(ofType: Node.self, at: 2)
         } catch {
-            expectation.fulfill() // 2
+            fulfillmentCount += 1 // 2
         }
-        
+
         do {
             _ = try arguments.argument(ofType: Node.self, at: 0)
         } catch {
-            expectation.fulfill() // 3
+            fulfillmentCount += 1 // 3
         }
-        
+
         do {
             _ = try arguments.argument(ofType: Int.self, at: 0)
         } catch {
-            expectation.fulfill() // 4
+            fulfillmentCount += 1 // 4
         }
-        
+
         do {
             _ = try arguments.argument(ofType: Int?.self, at: 0)
-            expectation.fulfill() // 5
+            fulfillmentCount += 1 // 5
         } catch {
             XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 0.0)
+
+        XCTAssertEqual(fulfillmentCount, 5, "Expected 5 fulfillments")
+        testNode.free()
     }
 }
 

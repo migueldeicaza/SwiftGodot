@@ -1,6 +1,6 @@
 // Based on godot/tests/core/math/test_transform_2d.h
 
-import XCTest
+
 import SwiftGodotTestability
 @testable import SwiftGodot
 
