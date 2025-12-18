@@ -39,6 +39,16 @@ struct GodotTestOrchestrator {
         print("SwiftGodot Test Runner")
         print(String(repeating: "=", count: 60))
 
+        // Print all paths for CI debugging
+        let cwd = FileManager.default.currentDirectoryPath
+        let absoluteProjectPath = projectPath.hasPrefix("/") ? projectPath : "\(cwd)/\(projectPath)"
+        print("\nPaths:")
+        print("  Working directory: \(cwd)")
+        print("  Project path:      \(absoluteProjectPath)")
+        print("  Results path:      \(resultsPath)")
+        print("  Extension target:  \(extensionTarget)")
+        print("  Build config:      \(buildConfiguration)")
+
         // 1. Build the test extension
         print("\n[1/4] Building test extension...")
         do {
@@ -93,17 +103,15 @@ struct GodotTestOrchestrator {
         ]
         process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
+        // Forward stdout/stderr directly for real-time output
+        process.standardOutput = FileHandle.standardOutput
+        process.standardError = FileHandle.standardError
 
         try process.run()
         process.waitUntilExit()
 
         if process.terminationStatus != 0 {
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8) ?? "Unknown error"
-            throw TestRunnerError.buildFailed(output)
+            throw TestRunnerError.buildFailed("See output above")
         }
     }
 
@@ -114,55 +122,65 @@ struct GodotTestOrchestrator {
         // Create destination directory
         try fm.createDirectory(atPath: destDir, withIntermediateDirectories: true)
 
-        // Platform-specific library name and build directory
+        // Platform-specific library extension and build directory
         #if os(macOS)
-        let libName = "lib\(extensionTarget).dylib"
+        let libPrefix = "lib"
+        let libExt = "dylib"
         #if arch(arm64)
         let platformDir = "arm64-apple-macosx"
         #else
         let platformDir = "x86_64-apple-macosx"
         #endif
         #elseif os(Linux)
-        let libName = "lib\(extensionTarget).so"
+        let libPrefix = "lib"
+        let libExt = "so"
         #if arch(arm64)
         let platformDir = "aarch64-unknown-linux-gnu"
         #else
         let platformDir = "x86_64-unknown-linux-gnu"
         #endif
         #elseif os(Windows)
-        let libName = "\(extensionTarget).dll"
+        let libPrefix = ""
+        let libExt = "dll"
         let platformDir = "x86_64-unknown-windows-msvc"
         #else
-        let libName = "lib\(extensionTarget).dylib"
+        let libPrefix = "lib"
+        let libExt = "dylib"
         let platformDir = ""
         #endif
+
+        // Libraries to copy: extension + dependencies
+        let libraryNames = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
 
         // Try platform-specific path first, then fallback to simple path
         let platformBuildDir = ".build/\(platformDir)/\(buildConfiguration)"
         let simpleBuildDir = ".build/\(buildConfiguration)"
 
-        let platformSource = "\(platformBuildDir)/\(libName)"
-        let simpleSource = "\(simpleBuildDir)/\(libName)"
+        for name in libraryNames {
+            let libName = "\(libPrefix)\(name).\(libExt)"
+            let platformSource = "\(platformBuildDir)/\(libName)"
+            let simpleSource = "\(simpleBuildDir)/\(libName)"
 
-        let source: String
-        if fm.fileExists(atPath: platformSource) {
-            source = platformSource
-        } else if fm.fileExists(atPath: simpleSource) {
-            source = simpleSource
-        } else {
-            // List what's in the build dir for debugging
-            throw TestRunnerError.libraryNotFound("\(platformSource) or \(simpleSource)")
+            let source: String
+            if fm.fileExists(atPath: platformSource) {
+                source = platformSource
+            } else if fm.fileExists(atPath: simpleSource) {
+                source = simpleSource
+            } else {
+                throw TestRunnerError.libraryNotFound("\(platformSource) or \(simpleSource)")
+            }
+
+            let dest = "\(destDir)/\(libName)"
+
+            // Remove existing file if present
+            if fm.fileExists(atPath: dest) {
+                try fm.removeItem(atPath: dest)
+            }
+
+            // Copy new file
+            try fm.copyItem(atPath: source, toPath: dest)
+            print("      Copied \(libName)")
         }
-
-        let dest = "\(destDir)/\(libName)"
-
-        // Remove existing file if present
-        if fm.fileExists(atPath: dest) {
-            try fm.removeItem(atPath: dest)
-        }
-
-        // Copy new file
-        try fm.copyItem(atPath: source, toPath: dest)
     }
 
     private func launchGodot() async throws -> Int {

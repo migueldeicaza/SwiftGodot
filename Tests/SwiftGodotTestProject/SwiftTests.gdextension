@@ -9,3 +9,11 @@ linux.debug = "res://bin/libSwiftGodotTestExtension.so"
 linux.release = "res://bin/libSwiftGodotTestExtension.so"
 windows.debug = "res://bin/SwiftGodotTestExtension.dll"
 windows.release = "res://bin/SwiftGodotTestExtension.dll"
+
+[dependencies]
+macos.debug = {"res://bin/libSwiftGodot.dylib": "", "res://bin/libSwiftGodotRuntime.dylib": ""}
+macos.release = {"res://bin/libSwiftGodot.dylib": "", "res://bin/libSwiftGodotRuntime.dylib": ""}
+linux.debug = {"res://bin/libSwiftGodot.so": "", "res://bin/libSwiftGodotRuntime.so": ""}
+linux.release = {"res://bin/libSwiftGodot.so": "", "res://bin/libSwiftGodotRuntime.so": ""}
+windows.debug = {"res://bin/SwiftGodot.dll": "", "res://bin/SwiftGodotRuntime.dll": ""}
+windows.release = {"res://bin/SwiftGodot.dll": "", "res://bin/SwiftGodotRuntime.dll": ""}
