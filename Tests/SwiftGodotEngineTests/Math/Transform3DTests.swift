@@ -4,8 +4,18 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class Transform3DTests: GodotTestCase {
-    
+public final class Transform3DTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testTranslation", method: testTranslation),
+            GodotTest(name: "testScaling", method: testScaling),
+            GodotTest(name: "testRotation", method: testRotation),
+            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
+        ]
+    }
+
+    public required init() {}
+
     private func createDummyTransform () -> Transform3D {
         return Transform3D (basis: Basis (xAxis: Vector3 (x: 1, y: 2, z: 3), yAxis: Vector3 (x: 4, y: 5, z: 6), zAxis: Vector3 (x: 7, y: 8, z: 9)), origin: Vector3 (x: 10, y: 11, z: 12))
     }
@@ -14,7 +24,7 @@ final class Transform3DTests: GodotTestCase {
         return Transform3D ()
     }
     
-    func testTranslation () {
+    public func testTranslation () {
         let offset: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
         // Both versions should give the same result applied to identity.
@@ -27,7 +37,7 @@ final class Transform3DTests: GodotTestCase {
         XCTAssertEqual (orig.translatedLocal (offset: offset), orig * T)
     }
 
-    func testScaling () {
+    public func testScaling () {
         let scaling: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
         // Both versions should give the same result applied to identity.
@@ -40,7 +50,7 @@ final class Transform3DTests: GodotTestCase {
         XCTAssertEqual (orig.scaledLocal (scale: scaling), orig * S)
     }
 
-    func testRotation () {
+    public func testRotation () {
         let axis: Vector3 = Vector3 (x: 1, y: 2, z: 3).normalized ()
         let phi: Double = 1.0
         
@@ -54,7 +64,7 @@ final class Transform3DTests: GodotTestCase {
         XCTAssertEqual (orig.rotatedLocal (axis: axis, angle: phi), orig * R)
     }
 
-    func testFiniteNumberChecks () {
+    public func testFiniteNumberChecks () {
         let y: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infiniteVec: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)
         let x: Basis = Basis (xAxis: y, yAxis: y, zAxis: y)

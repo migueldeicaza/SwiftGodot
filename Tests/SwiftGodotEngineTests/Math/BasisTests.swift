@@ -4,8 +4,19 @@ import Foundation
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class BasisTests: GodotTestCase {
-    
+public final class BasisTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testEulerConversions", method: testEulerConversions),
+            GodotTest(name: "testEulerConversionsRandom", method: testEulerConversionsRandom),
+            GodotTest(name: "testGetAxisAngle", method: testGetAxisAngle),
+            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
+            GodotTest(name: "testIsConformalChecks", method: testIsConformalChecks),
+        ]
+    }
+
+    public required init() {}
+
     /// This test:
     /// 1. Converts the rotation vector from deg to rad.
     /// 2. Converts euler to basis.
@@ -52,7 +63,7 @@ final class BasisTests: GodotTestCase {
         XCTAssert ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Double check with XYZ rot order failed, due to Z \(res.z)")
     }
     
-    func testEulerConversions () {
+    public func testEulerConversions () {
         let eulerOrders: [EulerOrder] = [
             EulerOrder.xyz,
             EulerOrder.xzy,
@@ -122,7 +133,7 @@ final class BasisTests: GodotTestCase {
         }
     }
     
-    func testEulerConversionsRandom () {
+    public func testEulerConversionsRandom () {
         let eulerOrders: [EulerOrder] = [
             EulerOrder.xyz,
             EulerOrder.xzy,
@@ -146,7 +157,7 @@ final class BasisTests: GodotTestCase {
         }
     }
     
-    func testGetAxisAngle () {
+    public func testGetAxisAngle () {
         var basis: Basis
         var axis: Vector3
         
@@ -210,7 +221,7 @@ final class BasisTests: GodotTestCase {
         XCTAssertFalse (basis.getRotationQuaternion ().getAngle ().isNaN)
     }
     
-    func testFiniteNumberChecks () {
+    public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)
 
@@ -227,7 +238,7 @@ final class BasisTests: GodotTestCase {
         XCTAssertFalse (Basis (xAxis: infinite, yAxis: infinite, zAxis: infinite).isFinite (), "Basis with three components infinite should not be finite.")
     }
     
-    func testIsConformalChecks () {
+    public func testIsConformalChecks () {
         var basis: Basis
         
         basis = Basis ()

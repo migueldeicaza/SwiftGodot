@@ -375,7 +375,31 @@ class GodotEncoder: Encoder {
     }
 }
 
-final class MemoryLeakTests: GodotTestCase {
+public final class MemoryLeakTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testThatItLeaksIndeed", method: testThatItLeaksIndeed),
+            GodotTest(name: "test_513_leak1", method: test_513_leak1),
+            GodotTest(name: "testRefCountedLeak", method: testRefCountedLeak),
+            GodotTest(name: "test_513_leak2", method: test_513_leak2),
+            GodotTest(name: "test_541_leak", method: test_541_leak),
+            GodotTest(name: "test_unsafe_strings_leaks", method: test_unsafe_strings_leaks),
+            GodotTest(name: "test_544_leak", method: test_544_leak),
+            GodotTest(name: "test_543_leak", method: test_543_leak),
+            GodotTest(name: "test_array_leaks", method: test_array_leaks),
+            GodotTest(name: "test_emit_signal_leak", method: test_emit_signal_leak),
+            GodotTest(name: "test_gstring_string_variant_leak", method: test_gstring_string_variant_leak),
+            GodotTest(name: "test_551_leak", method: test_551_leak),
+            GodotTest(name: "test_552_leak", method: test_552_leak),
+            GodotTest(name: "test_godot_string_description_leak", method: test_godot_string_description_leak),
+            GodotTest(name: "test_godot_string_from_variant_leak", method: test_godot_string_from_variant_leak),
+            GodotTest(name: "test_531_crash_or_leak", method: test_531_crash_or_leak),
+            GodotTest(name: "test_dictionary_leaks", method: test_dictionary_leaks),
+        ]
+    }
+
+    public required init() {}
+
     /// Check that `body` doesn't leak. Or ensure that something is leaking, if `useUnoReverseCard` is true
     @discardableResult
     func checkLeaks(useUnoReverseCard: Bool = false, _ body: () -> Void) -> Double {
@@ -398,8 +422,8 @@ final class MemoryLeakTests: GodotTestCase {
         }
         return after-before
     }
-    
-    func testThatItLeaksIndeed() {
+
+    public func testThatItLeaksIndeed() {
         let array = VariantArray()
         
         checkLeaks(useUnoReverseCard: true) {
@@ -407,8 +431,7 @@ final class MemoryLeakTests: GodotTestCase {
         }
     }
 
-    // https://github.com/migueldeicaza/SwiftGodot/issues/513
-    func test_513_leak1() {
+    public func test_513_leak1() {
         func oneIteration(object: Object) {
             let list = object.getPropertyList()
             let it = list.makeIterator()
@@ -429,7 +452,7 @@ final class MemoryLeakTests: GodotTestCase {
         }
     }
 
-    func testRefCountedLeak() {
+    public func testRefCountedLeak() {
         func oneIteration() {
             let image0 = SwiftGodot.RefCounted()
         }
@@ -451,8 +474,7 @@ final class MemoryLeakTests: GodotTestCase {
         printSwiftGodotStats()
     }
 
-    // https://github.com/migueldeicaza/SwiftGodot/issues/513
-    func test_513_leak2() {
+    public func test_513_leak2() {
 
         func oneIteration(bytes: PackedByteArray) {
             let image0 = SwiftGodot.Image()
@@ -476,17 +498,16 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-  
-    // https://github.com/migueldeicaza/SwiftGodot/issues/541
-    func test_541_leak() {
+
+    public func test_541_leak() {
         checkLeaks {
             for _ in 0...1_000 {
                 let _ = Variant("daosdoasodasoda")
             }
         }
     }
-    
-    func test_unsafe_strings_leaks() {
+
+    public func test_unsafe_strings_leaks() {
         checkLeaks {
             for _ in 0...1_000 {
                 var string = ""
@@ -514,9 +535,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-  
-    // https://github.com/migueldeicaza/SwiftGodot/issues/544
-    func test_544_leak() {
+
+    public func test_544_leak() {
         let string = "Hello, World!"
         let variant = Variant(string)
 
@@ -529,9 +549,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    // https://github.com/migueldeicaza/SwiftGodot/issues/543
-    func test_543_leak() {
+
+    public func test_543_leak() {
         let string = "Hello, World!"
         let variant = Variant(string)
 
@@ -541,8 +560,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    func test_array_leaks() {
+
+    public func test_array_leaks() {
         let array = VariantArray()
         array.append(Variant("S"))
         array.append(Variant("M"))
@@ -573,8 +592,8 @@ final class MemoryLeakTests: GodotTestCase {
         
         XCTAssertEqual(variant[0], Variant("U"))
     }
-    
-    func test_emit_signal_leak() {
+
+    public func test_emit_signal_leak() {
         let object = Object()
         let signal = SignalWithNoArguments("some_random_name")
         
@@ -584,8 +603,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    func test_gstring_string_variant_leak() {
+
+    public func test_gstring_string_variant_leak() {
         let gstrFoo = GString("Foo")
         
         checkLeaks {
@@ -620,9 +639,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    // https://github.com/migueldeicaza/SwiftGodot/issues/551
-    func test_551_leak() {
+
+    public func test_551_leak() {
         checkLeaks {
             for i in 0 ..< 200 {
                 let str = GD.str(arg1: Variant(i))
@@ -630,9 +648,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    // https://github.com/migueldeicaza/SwiftGodot/issues/552
-    func test_552_leak() {
+
+    public func test_552_leak() {
         checkLeaks {
             for _ in 0 ..< 200 {
                 let object = Object()
@@ -642,8 +659,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    func test_godot_string_description_leak() {
+
+    public func test_godot_string_description_leak() {
         var buffer: String = ""
         checkLeaks {
             let string = GString("A")
@@ -652,8 +669,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    func test_godot_string_from_variant_leak() {
+
+    public func test_godot_string_from_variant_leak() {
         var buffer: String = ""
         let variant = Variant("A")
         checkLeaks {
@@ -667,8 +684,8 @@ final class MemoryLeakTests: GodotTestCase {
             }
         }
     }
-    
-    func test_531_crash_or_leak() {
+
+    public func test_531_crash_or_leak() {
         var buffer: String = ""
         checkLeaks {
             let g = GodotEncoder()
@@ -680,8 +697,8 @@ final class MemoryLeakTests: GodotTestCase {
             buffer += g.data?.description ?? "nil"
         }
     }
-    
-    func test_dictionary_leaks() {
+
+    public func test_dictionary_leaks() {
         checkLeaks {
             let dictionary = VariantDictionary()
             

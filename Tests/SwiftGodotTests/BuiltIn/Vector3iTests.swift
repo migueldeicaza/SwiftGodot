@@ -9,9 +9,18 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class Vector3iTests: GodotTestCase {
-    
-    func testOperatorUnaryMinus () {
+public final class Vector3iTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testOperatorUnaryMinus", method: testOperatorUnaryMinus),
+            GodotTest(name: "testOperatorPlus", method: testOperatorPlus),
+            GodotTest(name: "testOperatorMinus", method: testOperatorMinus),
+        ]
+    }
+
+    public required init() {}
+
+    public func testOperatorUnaryMinus() {
         var value: Vector3i
         
         value = -Vector3i (x: -1, y: 2, z: -3)
@@ -39,8 +48,8 @@ final class Vector3iTests: GodotTestCase {
         XCTAssertEqual (value.y, Int32.min)
         XCTAssertEqual (value.z, Int32.min)
     }
-    
-    func testOperatorPlus () {
+
+    public func testOperatorPlus() {
         var value: Vector3i
         
         value = Vector3i (x: 1, y: 2, z: 3) + Vector3i (x: 4, y: 5, z: 6)
@@ -73,8 +82,8 @@ final class Vector3iTests: GodotTestCase {
         XCTAssertEqual (value.y, Int32.max - 1)
         XCTAssertEqual (value.z, Int32.max)
     }
-    
-    func testOperatorMinus () {
+
+    public func testOperatorMinus() {
         var value: Vector3i
         
         value = Vector3i (x: 1, y: 2, z: 3) - Vector3i (x: 4, y: 5, z: 6)

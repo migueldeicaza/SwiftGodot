@@ -4,9 +4,23 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class ColorTests: GodotTestCase {
-    
-    func testConstructorMethods () {
+public final class ColorTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testConstructorMethods", method: testConstructorMethods),
+            GodotTest(name: "testOperators", method: testOperators),
+            GodotTest(name: "testReadingMethods", method: testReadingMethods),
+            GodotTest(name: "testConversionMethods", method: testConversionMethods),
+            GodotTest(name: "testSrgbConversion", method: testSrgbConversion),
+            GodotTest(name: "testNamedColors", method: testNamedColors),
+            GodotTest(name: "testValidationMethods", method: testValidationMethods),
+            GodotTest(name: "testManipulationMethods", method: testManipulationMethods),
+        ]
+    }
+
+    public required init() {}
+
+    public func testConstructorMethods () {
         let blueRgba: Color = Color (r: 0.25098, g: 0.376471, b: 1, a: 0.501961)
         let blueHtml: Color = Color.html (rgba: "#4060ff80")
         let blueHex: Color = Color.hex (hex: 0x4060ff80)
@@ -26,7 +40,7 @@ final class ColorTests: GodotTestCase {
         XCTAssertTrue (greenRgba.isEqualApprox (to: greenHsva), "Creation with HSV notation should result in components approximately equal to the default constructor.")
     }
 
-    func testOperators () {
+    public func testOperators () {
         let blue: Color = Color (r: 0.2, g: 0.2, b: 1)
         let darkRed: Color = Color (r: 0.3, g: 0.1, b: 0.1)
         
@@ -40,7 +54,7 @@ final class ColorTests: GodotTestCase {
         assertApproxEqual (-blue, Color (r: 0.8, g: 0.8, b: 0, a: 0), "Color negation should behave as expected (affecting the alpha channel, unlike `invert ()`).")
     }
 
-    func testReadingMethods () {
+    public func testReadingMethods () {
         let darkBlue: Color = Color (r: 0, g: 0, b: 0.5, a: 0.4)
         XCTAssertEqual (darkBlue.hue, 240.0 / 360.0, "The returned HSV hue should match the expected value.")
         XCTAssertEqual (darkBlue.saturation, 1.0, "The returned HSV saturation should match the expected value.")
@@ -48,7 +62,7 @@ final class ColorTests: GodotTestCase {
     }
 
 
-    func testConversionMethods () {
+    public func testConversionMethods () {
         let cyan: Color = Color (r: 0, g: 1, b: 1)
         let cyanTransparent: Color = Color (r: 0, g: 1, b: 1, a: 0)
         
@@ -63,7 +77,7 @@ final class ColorTests: GodotTestCase {
         XCTAssertEqual (Variant (cyan).description, "(0, 1, 1, 1)", "The string representation should match the expected value.")
     }
 
-    func testSrgbConversion () {
+    public func testSrgbConversion () {
         let color: Color = Color (r: 0.35, g: 0.5, b: 0.6, a: 0.7)
         let colorLinear: Color = color.srgbToLinear ()
         let colorSrgb: Color = color.linearToSrgb ()
@@ -73,7 +87,7 @@ final class ColorTests: GodotTestCase {
         XCTAssertTrue (colorSrgb.srgbToLinear ().isEqualApprox (to: Color (r: 0.35, g: 0.5, b: 0.6, a: 0.7)), "The sRGB color converted back to linear color space should match the expected value.")
     }
 
-    func testNamedColors () {
+    public func testNamedColors () {
         XCTAssertEqual (Color (code: "red"), Color.hex (hex: 0xFF0000FF), "The named color \"red\" should match the expected value.")
         
         // Named colors have their names automatically normalized.
@@ -83,14 +97,14 @@ final class ColorTests: GodotTestCase {
         XCTAssertTrue (Color (code: "doesn't exist").isEqualApprox (to: Color ()), "The invalid named color \"doesn't exist\" should result in a Color with the default values.")
     }
 
-    func testValidationMethods () {
+    public func testValidationMethods () {
         XCTAssertTrue (Color.htmlIsValid (color: "#4080ff"), "Valid HTML color (with leading #) should be considered valid.")
         XCTAssertTrue (Color.htmlIsValid (color: "4080ff"), "Valid HTML color (without leading #) should be considered valid.")
         XCTAssertTrue (!Color.htmlIsValid (color: "12345"), "Invalid HTML color should be considered invalid.")
         XCTAssertTrue (!Color.htmlIsValid (color: "#fuf"), "Invalid HTML color should be considered invalid.")
     }
 
-    func testManipulationMethods () {
+    public func testManipulationMethods () {
         let blue: Color = Color (r: 0, g: 0, b: 1, a: 0.4)
         
         XCTAssertTrue (blue.inverted ().isEqualApprox (to: Color (r: 1, g: 1, b: 0, a: 0.4)), "Inverted color should have its red, green and blue components inverted.")

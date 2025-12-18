@@ -2,8 +2,22 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class TypedArrayTests: GodotTestCase {
-    func testAppendingElementStoresInArray() {
+public final class TypedArrayTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testAppendingElementStoresInArray", method: testAppendingElementStoresInArray),
+            GodotTest(name: "testInitWithElementsStoresInArray", method: testInitWithElementsStoresInArray),
+            GodotTest(name: "testArrayCanBeModifiedOutsideOfTheCollection", method: testArrayCanBeModifiedOutsideOfTheCollection),
+            GodotTest(name: "testExplicitVariantTypedArray", method: testExplicitVariantTypedArray),
+            GodotTest(name: "testCompatibleArrays", method: testCompatibleArrays),
+            GodotTest(name: "testObjectArrayInvariance", method: testObjectArrayInvariance),
+            GodotTest(name: "testSequenceInitializer", method: testSequenceInitializer),
+        ]
+    }
+
+    public required init() {}
+
+    public func testAppendingElementStoresInArray() {
         let sut: TypedArray<Int> = []
 
         sut.append(111)

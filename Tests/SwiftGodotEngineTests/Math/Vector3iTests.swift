@@ -4,15 +4,28 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class Vector3iTests: GodotTestCase {
-    
-    func testConstructorMethods () {
+public final class Vector3iTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testConstructorMethods", method: testConstructorMethods),
+            GodotTest(name: "testAxisMethods", method: testAxisMethods),
+            GodotTest(name: "testClampMethod", method: testClampMethod),
+            GodotTest(name: "testLengthMethods", method: testLengthMethods),
+            GodotTest(name: "testOperators", method: testOperators),
+            GodotTest(name: "testOtherMethods", method: testOtherMethods),
+            GodotTest(name: "testAbsAndSignMethods", method: testAbsAndSignMethods),
+        ]
+    }
+
+    public required init() {}
+
+    public func testConstructorMethods () {
         let vectorEmpty: Vector3i = Vector3i ()
         let vectorZero: Vector3i = Vector3i (x: 0, y: 0, z: 0)
         XCTAssertEqual (vectorEmpty, vectorZero, "Vector3i Constructor with no inputs should return a zero Vector3i.")
     }
 
-    func testAxisMethods () {
+    public func testAxisMethods () {
         var vector: Vector3i = Vector3i (x: 1, y: 2, z: 3)
         XCTAssertEqual (vector.maxAxisIndex (), Vector3i.Axis.z.rawValue, "Vector3i maxAxisIndex should work as expected.")
         XCTAssertEqual (vector.minAxisIndex (), Vector3i.Axis.x.rawValue, "Vector3i minAxisIndex should work as expected.")
@@ -23,13 +36,13 @@ final class Vector3iTests: GodotTestCase {
         XCTAssertEqual (vector [Vector3i.Axis.y.rawValue], 5, "Vector3i array operator setter should work as expected.")
     }
 
-    func testClampMethod () {
+    public func testClampMethod () {
         let vector: Vector3i = Vector3i (x: 10, y: 10, z: 10)
         XCTAssertEqual (Vector3i (x: -5, y: 5, z: 15).clamp (min: Vector3i (), max: vector), Vector3i (x: 0, y: 5, z: 10), "Vector3i clamp should work as expected.")
         XCTAssertEqual (vector.clamp (min: Vector3i (x: 0, y: 10, z: 15), max: Vector3i (x: 5, y: 10, z: 20)), Vector3i (x: 5, y: 10, z: 15), "Vector3i clamp should work as expected.")
     }
 
-    func testLengthMethods () {
+    public func testLengthMethods () {
         let vector1: Vector3i = Vector3i (x: 10, y: 10, z: 10)
         let vector2: Vector3i = Vector3i (x: 20, y: 30, z: 40)
         XCTAssertEqual (vector1.lengthSquared (), 300, "Vector3i lengthSquared should work as expected and return exact result.")
@@ -38,7 +51,7 @@ final class Vector3iTests: GodotTestCase {
         assertApproxEqual (vector2.length (), 53.8516480713450403125, "Vector3i length should work as expected.")
     }
 
-    func testOperators () {
+    public func testOperators () {
         let vector1: Vector3i = Vector3i (x: 4, y: 5, z: 9)
         let vector2: Vector3i = Vector3i (x: 1, y: 2, z: 3)
         
@@ -55,7 +68,7 @@ final class Vector3iTests: GodotTestCase {
         XCTAssertEqual (Vector3i (from: Vector3 (x: 1.1, y: 2.9, z: 3.9)), Vector3i (x: 1, y: 2, z: 3), "Vector3i constructed from Vector3 should work as expected.")
     }
 
-    func testOtherMethods () {
+    public func testOtherMethods () {
         let vector: Vector3i = Vector3i (x: 1, y: 3, z: -7)
         
         // Vector3i().min() and Vector3i.max() are not exposed
@@ -65,7 +78,7 @@ final class Vector3iTests: GodotTestCase {
         XCTAssertEqual (vector.snapped (step: Vector3i (x: 4, y: 2, z: 5)), Vector3i (x: 0, y: 4, z: -5), "Vector3i snapped should work as expected.")
     }
 
-    func testAbsAndSignMethods () {
+    public func testAbsAndSignMethods () {
         let vector1: Vector3i = Vector3i (x: 1, y: 3, z: 5)
         let vector2: Vector3i = Vector3i (x: 1, y: -3, z: -5)
         XCTAssertEqual (vector1.abs (), vector1, "Vector3i abs should work as expected.")

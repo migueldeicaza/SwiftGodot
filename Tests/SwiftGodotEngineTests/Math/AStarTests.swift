@@ -35,13 +35,24 @@ private final class ABCX: AStar3D {
     
 }
 
-final class AStarTests: GodotTestCase {
-    
-    override class var godotSubclasses: [Object.Type] {
+public final class AStarTests: GodotTestCase {
+
+    override public class var godotSubclasses: [Object.Type] {
         return [ABCX.self]
     }
-    
-    func testAbcPath () {
+
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testAbcPath", method: testAbcPath),
+            GodotTest(name: "testAbcxPath", method: testAbcxPath),
+            GodotTest(name: "testAddRemove", method: testAddRemove),
+            GodotTest(name: "testFindPaths", method: testFindPaths),
+        ]
+    }
+
+    public required init() {}
+
+    public func testAbcPath () {
         let abcx = ABCX ()
         let path = abcx.getIdPath (fromId: ABCX.A, toId: ABCX.C)
         XCTAssertEqual (path.size (), 3)
@@ -50,7 +61,7 @@ final class AStarTests: GodotTestCase {
         XCTAssertEqual (path [safe: 2], Int64 (ABCX.C))
     }
 
-    func testAbcxPath () {
+    public func testAbcxPath () {
         let abcx = ABCX ()
         let path = abcx.getIdPath (fromId: ABCX.X, toId: ABCX.C)
         XCTAssertEqual (path.size (), 4)
@@ -60,7 +71,7 @@ final class AStarTests: GodotTestCase {
         XCTAssertEqual (path [safe: 3], Int64 (ABCX.C))
     }
     
-    func testAddRemove () {
+    public func testAddRemove () {
         let a = AStar3D ()
         
         // Manual tests.
@@ -185,7 +196,7 @@ final class AStarTests: GodotTestCase {
         // It's been great work, cheers. \(^ ^)/
     }
     
-    func testFindPaths () {
+    public func testFindPaths () {
         // Random stress tests with Floyd-Warshall.
         let N: Int = 30
         

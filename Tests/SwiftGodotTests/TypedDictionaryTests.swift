@@ -9,8 +9,16 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class TypedDictionaryTests: GodotTestCase {
-    func testSubscripts() {
+public final class TypedDictionaryTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testSubscripts", method: testSubscripts),
+        ]
+    }
+
+    public required init() {}
+
+    public func testSubscripts() {
         // Till libgodot 4.4
 //        var dictionary = TypedDictionary<String, RefCounted?>()
 //        

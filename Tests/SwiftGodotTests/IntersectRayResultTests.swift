@@ -9,10 +9,19 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class IntersectRayResultTests: GodotTestCase {
-    func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() throws {
+public final class IntersectRayResultTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent", method: testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent),
+            GodotTest(name: "testIntersectRayResultIsNil_whenColliderPropertyIsMissing", method: testIntersectRayResultIsNil_whenColliderPropertyIsMissing),
+        ]
+    }
+
+    public required init() {}
+
+    public func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() {
         let collider: Object = GridMap()
-        
+
         let dictionary: VariantDictionary = {
             let dictionary = VariantDictionary()
             dictionary["position"] = Variant(Vector3(x: 1, y: 2, z: 3))
@@ -24,9 +33,12 @@ final class IntersectRayResultTests: GodotTestCase {
             dictionary["face_index"] = Variant(44)
             return dictionary
         }()
-        
-        let result = try XCTUnwrap(PhysicsDirectSpaceState3D.IntersectRayResult<GridMap>(dictionary))
-        
+
+        guard let result = PhysicsDirectSpaceState3D.IntersectRayResult<GridMap>(dictionary) else {
+            XCTFail("Expected non-nil result")
+            return
+        }
+
         XCTAssertEqual(result.position, Vector3(x: 1, y: 2, z: 3))
         XCTAssertEqual(result.normal, Vector3(x: 4, y: 5, z: 6))
         XCTAssertEqual(result.collider, collider)
@@ -35,8 +47,8 @@ final class IntersectRayResultTests: GodotTestCase {
         XCTAssertEqual(result.shape, 22)
         XCTAssertEqual(result.faceIndex, 44)
     }
-    
-    func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
+
+    public func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
         let collider: Object = GridMap()
         
         let dictionary: VariantDictionary = {

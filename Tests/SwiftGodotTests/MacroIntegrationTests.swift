@@ -9,8 +9,16 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class MacroIntegrationTests: GodotTestCase {
-    func testCorrectPropInfoInferrenceWithoutMacro() {
+public final class MacroIntegrationTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testCorrectPropInfoInferrenceWithoutMacro", method: testCorrectPropInfoInferrenceWithoutMacro),
+        ]
+    }
+
+    public required init() {}
+
+    public func testCorrectPropInfoInferrenceWithoutMacro() {
         enum EnumExample: Int, CaseIterable {
             case zero = 0
             case one = 1

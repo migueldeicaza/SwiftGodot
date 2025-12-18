@@ -23,12 +23,20 @@ private class TestProp: Node {
     }
 }
 
-final class TestProperty: GodotTestCase {
-    override static var godotSubclasses: [Object.Type] {
+public final class ValidatePropertyTests: GodotTestCase {
+    public override class var godotSubclasses: [Object.Type] {
         return [TestProp.self]
     }
 
-    func testThing() {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testThing", method: testThing),
+        ]
+    }
+
+    public required init() {}
+
+    public func testThing() {
         var found = false
         let node = TestProp()
         for prop in node.getPropertyList() {

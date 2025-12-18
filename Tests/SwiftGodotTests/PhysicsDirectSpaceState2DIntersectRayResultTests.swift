@@ -9,10 +9,19 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
-    func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() throws {
+public final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent", method: testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent),
+            GodotTest(name: "testIntersectRayResultIsNil_whenColliderPropertyIsMissing", method: testIntersectRayResultIsNil_whenColliderPropertyIsMissing),
+        ]
+    }
+
+    public required init() {}
+
+    public func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() {
         let collider: Object = GridMap()
-        
+
         let dictionary: VariantDictionary = {
             let dictionary = VariantDictionary()
             dictionary["position"] = Variant(Vector2(x: 1, y: 2))
@@ -23,9 +32,12 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
             dictionary["shape"] = Variant(22)
             return dictionary
         }()
-        
-        let result = try XCTUnwrap(PhysicsDirectSpaceState2D.IntersectRayResult<GridMap>(dictionary))
-        
+
+        guard let result = PhysicsDirectSpaceState2D.IntersectRayResult<GridMap>(dictionary) else {
+            XCTFail("Expected non-nil result")
+            return
+        }
+
         XCTAssertEqual(result.position, Vector2(x: 1, y: 2))
         XCTAssertEqual(result.normal, Vector2(x: 4, y: 5))
         XCTAssertEqual(result.collider, collider)
@@ -33,8 +45,8 @@ final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
         XCTAssertEqual(result.rid, RID())
         XCTAssertEqual(result.shape, 22)
     }
-    
-    func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
+
+    public func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
         let collider: Object = GridMap()
         
         let dictionary: VariantDictionary = {

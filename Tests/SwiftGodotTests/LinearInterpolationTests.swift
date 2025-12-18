@@ -2,9 +2,23 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class LinearInterpolationTests: GodotTestCase {
-    
-    func testDoubleLinearInterpolation() {
+public final class LinearInterpolationTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testDoubleLinearInterpolation", method: testDoubleLinearInterpolation),
+            GodotTest(name: "testFloatLinearInterpolation", method: testFloatLinearInterpolation),
+            GodotTest(name: "testIntLinearInterpolation", method: testIntLinearInterpolation),
+            GodotTest(name: "testVector2LinearInterpolation", method: testVector2LinearInterpolation),
+            GodotTest(name: "testVector3LinearInterpolation", method: testVector3LinearInterpolation),
+            GodotTest(name: "testVector4LinearInterpolation", method: testVector4LinearInterpolation),
+            GodotTest(name: "testColorLinearInterpolation", method: testColorLinearInterpolation),
+            GodotTest(name: "testInverseInterpolation", method: testInverseInterpolation),
+        ]
+    }
+
+    public required init() {}
+
+    public func testDoubleLinearInterpolation() {
         let result = Double(1000).lerp(to: 1100, weight: 0.5)
         XCTAssertEqual(result, 1050)
         
@@ -15,7 +29,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, 1100)
     }
     
-    func testFloatLinearInterpolation() {
+    public func testFloatLinearInterpolation() {
         let result = Float(1000).lerp(to: 1100, weight: 0.5)
         XCTAssertEqual(result, 1050)
         
@@ -26,7 +40,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, 1100)
     }
     
-    func testIntLinearInterpolation() {
+    public func testIntLinearInterpolation() {
         let result = Int(1000).lerp(to: 1100, weight: 0.5)
         XCTAssertEqual(result, 1050)
         
@@ -37,7 +51,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, 1100)
     }
     
-    func testVector2LinearInterpolation() {
+    public func testVector2LinearInterpolation() {
         let from = Vector2(x: 100, y: 100)
         let to = Vector2(x: 200, y: 200)
         
@@ -51,7 +65,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, to)
     }
     
-    func testVector3LinearInterpolation() {
+    public func testVector3LinearInterpolation() {
         let from = Vector3(x: 100, y: 100, z: 100)
         let to = Vector3(x: 200, y: 200, z: 200)
         
@@ -65,7 +79,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, to)
     }
     
-    func testVector4LinearInterpolation() {
+    public func testVector4LinearInterpolation() {
         let from = Vector4(x: 100, y: 100, z: 100, w: 100)
         let to = Vector4(x: 200, y: 200, z: 200, w: 200)
         
@@ -79,7 +93,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, to)
     }
     
-    func testColorLinearInterpolation() {
+    public func testColorLinearInterpolation() {
         let from = Color(r: 0.6, g: 0.6, b: 0.6, a: 0.6)
         let to = Color(r: 1, g: 1, b: 1, a: 1)
         
@@ -93,7 +107,7 @@ final class LinearInterpolationTests: GodotTestCase {
         XCTAssertEqual(result3, to)
     }
     
-    func testInverseInterpolation() {
+    public func testInverseInterpolation() {
         let from: Double = 1000
         let to: Double = 1100
         let weight = 0.5

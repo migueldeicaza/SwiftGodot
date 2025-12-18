@@ -4,9 +4,22 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class PlaneTests: GodotTestCase {
-    
-    func testConstructorMethods () {
+public final class PlaneTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testConstructorMethods", method: testConstructorMethods),
+            GodotTest(name: "testBasicGetters", method: testBasicGetters),
+            GodotTest(name: "testBasicSetters", method: testBasicSetters),
+            GodotTest(name: "testPlanePointOperations", method: testPlanePointOperations),
+            GodotTest(name: "testHasPoint", method: testHasPoint),
+            GodotTest(name: "testIntersection", method: testIntersection),
+            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
+        ]
+    }
+
+    public required init() {}
+
+    public func testConstructorMethods () {
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let planeVector: Plane  = Plane (normal: Vector3 (x: 32, y: 22, z: 16), d: 3)
         let planeCopyPlane: Plane = Plane (from: plane)
@@ -14,14 +27,14 @@ final class PlaneTests: GodotTestCase {
         XCTAssertEqual (plane, planeCopyPlane, "Planes created with same values but different methods should be equal.")
     }
     
-    func testBasicGetters () {        
+    public func testBasicGetters () {        
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let planeNormalized: Plane = Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42)
         XCTAssertEqual (plane.normal, Vector3 (x: 32, y: 22, z: 16), "normal getter should return the expected value.")
         XCTAssertEqual (plane.normalized (), planeNormalized, "normalized() should return a copy of the normalized value.")
     }
     
-    func testBasicSetters () {
+    public func testBasicSetters () {
         var plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         plane.normal = Vector3 (x: 4, y: 2, z: 3)
         XCTAssertEqual (plane, Plane (a: 4, b: 2, c: 3, d: 3), "Setting normal should result in the expected plane.")
@@ -29,7 +42,7 @@ final class PlaneTests: GodotTestCase {
         XCTAssertEqual (plane, Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42), "normalize() should result in the expected plane.")
     }
     
-    func testPlanePointOperations () {
+    public func testPlanePointOperations () {
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 4)
         XCTAssertEqual (plane.getCenter (), Vector3 (x: 32 * 3, y: 22 * 3, z: 16 * 3), "getCenter() should return a vector pointing to the center of the plane.")
@@ -37,7 +50,7 @@ final class PlaneTests: GodotTestCase {
         XCTAssertEqual (yFacingPlane.getAnyPerpendicularNormal (), Vector3 (x: 1, y: 0, z: 0), "getAnyPerpendicularNormal() should return the expected result.")
     }
     
-    func testHasPoint () {
+    public func testHasPoint () {
         let xFacingPlane: Plane = Plane (a: 1, b: 0, c: 0, d: 0)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 0)
         let zFacingPlane: Plane = Plane (a: 0, b: 0, c: 1, d: 0)
@@ -61,7 +74,7 @@ final class PlaneTests: GodotTestCase {
         XCTAssertTrue (xFacingPlaneWithDOffset.hasPoint (yXxisPointWithDOffset), "hasPoint () with passed Vector3 should return the expected result.")
     }
     
-    func testIntersection () {
+    public func testIntersection () {
         let xFacingPlane: Plane = Plane (a: 1, b: 0, c: 0, d: 1)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 2)
         let zFacingPlane: Plane = Plane (a: 0, b: 0, c: 1, d: 3)
@@ -97,7 +110,7 @@ final class PlaneTests: GodotTestCase {
         }
     }
     
-    func testFiniteNumberChecks () {
+    public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)
         XCTAssertTrue (Plane (normal: x, point: .zero).isFinite (), "Plane with all components finite should be finite")

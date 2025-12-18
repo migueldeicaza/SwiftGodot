@@ -4,9 +4,34 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class Geometry2DTests: GodotTestCase {
-    
-    func testPointInCircle () {
+public final class Geometry2DTests: GodotTestCase {
+
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testPointInCircle", method: testPointInCircle),
+            GodotTest(name: "testPointInTriangle", method: testPointInTriangle),
+            GodotTest(name: "testPointInPolygon", method: testPointInPolygon),
+            GodotTest(name: "testPolygonClockwise", method: testPolygonClockwise),
+            GodotTest(name: "testLineIntersection", method: testLineIntersection),
+            GodotTest(name: "testSegmentIntersection", method: testSegmentIntersection),
+            GodotTest(name: "testSegmentIntersectionWithCircle", method: testSegmentIntersectionWithCircle),
+            GodotTest(name: "testClosestPointToSegment", method: testClosestPointToSegment),
+            GodotTest(name: "testClosestPointToUncappedSegment", method: testClosestPointToUncappedSegment),
+            GodotTest(name: "testClosestPointsBetweenSegments", method: testClosestPointsBetweenSegments),
+            GodotTest(name: "testMakeAtlas", method: testMakeAtlas),
+            GodotTest(name: "testPolygonIntersection", method: testPolygonIntersection),
+            GodotTest(name: "testMergePolygons", method: testMergePolygons),
+            GodotTest(name: "testClipPolygons", method: testClipPolygons),
+            GodotTest(name: "testExcludePolygons", method: testExcludePolygons),
+            GodotTest(name: "testIntersectPolylineWithPolygon", method: testIntersectPolylineWithPolygon),
+            GodotTest(name: "testClipPolylineWithPolygon", method: testClipPolylineWithPolygon),
+            GodotTest(name: "testConvexHull", method: testConvexHull),
+        ]
+    }
+
+    public required init() {}
+
+    public func testPointInCircle () {
         XCTAssertTrue (Geometry2D.isPointInCircle (point: Vector2 (x: 0, y: 0), circlePosition: Vector2 (x: 0, y: 0), circleRadius: 1.0))
         
         XCTAssertTrue (Geometry2D.isPointInCircle (point: Vector2 (x: 0, y: 0), circlePosition: Vector2 (x: 11.99, y: 0), circleRadius: 12))
@@ -23,7 +48,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertTrue (Geometry2D.isPointInCircle (point: Vector2 (x: 0.0, y: -1.0), circlePosition: Vector2 (x: 0, y: 0), circleRadius: 1.0))
     }
 
-    func testPointInTriangle () {
+    public func testPointInTriangle () {
         XCTAssertTrue (Geometry2D.pointIsInsideTriangle (point: Vector2 (x: 0, y: 0), a: Vector2 (x: -1, y: 1), b: Vector2 (x: 0, y: -1), c: Vector2 (x: 1, y: 1)))
         XCTAssertFalse (Geometry2D.pointIsInsideTriangle (point: Vector2 (x: -1.01, y: 1.0), a: Vector2 (x: -1, y: 1), b: Vector2 (x: 0, y: -1), c: Vector2 (x: 1, y: 1)))
         
@@ -38,7 +63,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertFalse (Geometry2D.pointIsInsideTriangle (point: Vector2 (x: 0, y: 1), a: Vector2 (x: -1, y: 1), b: Vector2 (x: 0, y: -1), c: Vector2 (x: 1, y: 1)))
     }
     
-    func testPointInPolygon () {
+    public func testPointInPolygon () {
         let p = PackedVector2Array ()
         XCTAssertFalse (Geometry2D.isPointInPolygon (point: Vector2 (x: 0, y: 0), polygon: p))
         
@@ -73,7 +98,7 @@ final class Geometry2DTests: GodotTestCase {
         }
     }
     
-    func testPolygonClockwise () {
+    public func testPolygonClockwise () {
         let p = PackedVector2Array ()
         XCTAssertFalse (Geometry2D.isPolygonClockwise (polygon: p))
         
@@ -88,7 +113,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertFalse (Geometry2D.isPolygonClockwise (polygon: p))
     }
 
-    func testLineIntersection () {
+    public func testLineIntersection () {
         var r: Variant?
         
         r = Geometry2D.lineIntersectsLine (fromA: Vector2 (x: 2, y: 0), dirA: Vector2 (x: 0, y: 1), fromB: Vector2 (x: 0, y: 2), dirB: Vector2 (x: 1, y: 0))
@@ -107,7 +132,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertEqual (r, nil, "Parallel lines should not intersect.")
     }
 
-    func testSegmentIntersection () {
+    public func testSegmentIntersection () {
         var r: Variant?
         
         r = Geometry2D.segmentIntersectsSegment (fromA: Vector2 (x: -1, y: 1), toA: Vector2 (x: 1, y: -1), fromB: Vector2 (x: 1, y: 1), toB: Vector2 (x: -1, y: -1))
@@ -134,7 +159,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertEqual (r.map { Vector2($0) }, Vector2 (x: 0, y: 0))
     }
     
-    func testSegmentIntersectionWithCircle () {
+    public func testSegmentIntersectionWithCircle () {
         let minusOne: Double = -1.0
         let zero: Double = 0.0
         let oneQuarter: Double = 0.25
@@ -158,7 +183,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertEqual (Geometry2D.segmentIntersectsCircle (segmentFrom: Vector2 (x: 3, y: 0), segmentTo: Vector2 (x: 2, y: 0), circlePosition: Vector2 (x: 0, y: 0), circleRadius: 1.0), minusOne, "Segment completely outside the circle should not intersect it")
     }
 
-    func testClosestPointToSegment () {
+    public func testClosestPointToSegment () {
         XCTAssertEqual (Geometry2D.getClosestPointToSegment (point: Vector2 (x: 4.1, y: 4.1), s1: Vector2 (x: -4, y: -4), s2: Vector2 (x: 4, y: 4)), Vector2 (x: 4, y: 4))
         XCTAssertEqual (Geometry2D.getClosestPointToSegment (point: Vector2 (x: -4.1, y: -4.1), s1: Vector2 (x: -4, y: -4), s2: Vector2 (x: 4, y: 4)), Vector2 (x: -4, y: -4))
         XCTAssertEqual (Geometry2D.getClosestPointToSegment (point: Vector2 (x: -1, y: 1), s1: Vector2 (x: -4, y: -4), s2: Vector2 (x: 4, y: 4)), Vector2 (x: 0, y: 0))
@@ -166,13 +191,13 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertEqual (Geometry2D.getClosestPointToSegment (point: Vector2 (x: -3, y: 4), s1: Vector2 (x: 1, y: -2), s2: Vector2 (x: 1, y: -2)), Vector2 (x: 1, y: -2), "Line segment is only a single point. This point should be the closest.")
     }
 
-    func testClosestPointToUncappedSegment () {
+    public func testClosestPointToUncappedSegment () {
         assertApproxEqual (Geometry2D.getClosestPointToSegmentUncapped (point: Vector2 (x: -1, y: 1), s1: Vector2 (x: -4, y: -4), s2: Vector2 (x: 4, y: 4)), Vector2 (x: 0, y: 0))
         assertApproxEqual (Geometry2D.getClosestPointToSegmentUncapped (point: Vector2 (x: -4, y: -6), s1: Vector2 (x: -4, y: -4), s2: Vector2 (x: 4, y: 4)), Vector2 (x: -5, y: -5))
         assertApproxEqual (Geometry2D.getClosestPointToSegmentUncapped (point: Vector2 (x: 4, y: 6), s1: Vector2 (x: -4, y: -4), s2: Vector2 (x: 4, y: 4)), Vector2 (x: 5, y: 5))
     }
 
-    func testClosestPointsBetweenSegments () {
+    public func testClosestPointsBetweenSegments () {
         var r: PackedVector2Array
         
         r = Geometry2D.getClosestPointsBetweenSegments (p1: Vector2 (x: 2, y: 2), q1: Vector2 (x: 3, y: 3), p2: Vector2 (x: 4, y: 4), q2: Vector2 (x: 4, y: 5))
@@ -206,7 +231,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertEqual (r [safe: 1], Vector2 (x: -2, y: 1), "Both line segments are only a point. On the 2nd line segment, that point should be the closest point to the 1st line segment.")
     }
 
-    func testMakeAtlas () {
+    public func testMakeAtlas () {
         var result: VariantDictionary
         
         let r = PackedVector2Array ()
@@ -227,7 +252,7 @@ final class Geometry2DTests: GodotTestCase {
         XCTAssertEqual (result["points"].map { PackedVector2Array($0)?.size() }, r.size())
     }
     
-    func testPolygonIntersection () throws {
+    public func testPolygonIntersection () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
         var r: TypedArray<PackedVector2Array>
@@ -302,7 +327,7 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 90, y: 15))
     }
     
-    func testMergePolygons () {
+    public func testMergePolygons () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
         var r: TypedArray<PackedVector2Array>
@@ -376,7 +401,7 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 1]?[safe: 2], Vector2 (x: 140, y: 125))
     }
 
-    func testClipPolygons () {
+    public func testClipPolygons () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
         var r: TypedArray<PackedVector2Array>
@@ -442,7 +467,7 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 1]?[safe: 2], b [2])
     }
     
-    func testExcludePolygons () {
+    public func testExcludePolygons () {
         let a = PackedVector2Array ()
         let b = PackedVector2Array ()
         var r: TypedArray<PackedVector2Array>
@@ -496,7 +521,7 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 1]?[safe: 3], Vector2 (x: 60, y: 140))
     }
 
-    func testIntersectPolylineWithPolygon () {
+    public func testIntersectPolylineWithPolygon () {
         let l = PackedVector2Array ()
         let p = PackedVector2Array ()
         var r: TypedArray<PackedVector2Array>
@@ -544,7 +569,7 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 1]?[safe: 3], Vector2 (x: 34.980492, y: 163.563065))
     }
 
-    func testClipPolylineWithPolygon () {
+    public func testClipPolylineWithPolygon () {
         let l = PackedVector2Array ()
         let p = PackedVector2Array ()
         var r: TypedArray<PackedVector2Array>
@@ -593,7 +618,7 @@ final class Geometry2DTests: GodotTestCase {
         assertApproxEqual (r [safe: 1]?[safe: 1], Vector2 (x: 53.07737, y: 116.143021))
     }
 
-    func testConvexHull () {
+    public func testConvexHull () {
         let a = PackedVector2Array ()
         var r = PackedVector2Array ()
         

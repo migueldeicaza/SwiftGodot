@@ -9,9 +9,22 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class VariantTests: GodotTestCase {
-    
-    func testVariant () {
+public final class VariantTests: GodotTestCase {
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testVariant", method: testVariant),
+            GodotTest(name: "testWrap", method: testWrap),
+            GodotTest(name: "testVariantCall", method: testVariantCall),
+            GodotTest(name: "tesetInitVariantConvertible", method: tesetInitVariantConvertible),
+            GodotTest(name: "testOperatorEqualsEquals", method: testOperatorEqualsEquals),
+            GodotTest(name: "testUnwrappingApi", method: testUnwrappingApi),
+            GodotTest(name: "testNoMisconversions", method: testNoMisconversions),
+        ]
+    }
+
+    public required init() {}
+
+    public func testVariant () {
         let testString = "Hi"
         let variant = Variant (testString)
         let unwrapped = String (variant)
@@ -19,13 +32,13 @@ final class VariantTests: GodotTestCase {
         XCTAssertEqual (unwrapped, testString)
     }
 
-    func testWrap() {
+    public func testWrap() {
         let x: Node? = Node()
         let _ = Variant(x)
     }
     
     
-    func testVariantCall() {
+    public func testVariantCall() {
         let string = "Hello Hello Hello Hello"
         let variant = Variant(string)
         
@@ -101,7 +114,7 @@ final class VariantTests: GodotTestCase {
                               
     }
     
-    func tesetInitVariantConvertible() {
+    public func tesetInitVariantConvertible() {
         var variant: Variant
         
         // Builtin struct
@@ -139,7 +152,7 @@ final class VariantTests: GodotTestCase {
         XCTAssertEqual (string, newString)
     }
     
-    func testOperatorEqualsEquals () {
+    public func testOperatorEqualsEquals () {
         XCTAssertTrue (Variant (false) == Variant (false))
         XCTAssertTrue (Variant (true) == Variant (true))
         XCTAssertFalse (Variant (true) == Variant (false))
@@ -154,7 +167,7 @@ final class VariantTests: GodotTestCase {
         XCTAssertFalse (Variant (node) == Variant (Node ()))
     }
     
-    func testUnwrappingApi() {
+    public func testUnwrappingApi() {
         func someFunctionTakingBool(_ bool: Bool?, successCount: inout Int) {
             if let bool {
                 successCount += 1
@@ -214,7 +227,7 @@ final class VariantTests: GodotTestCase {
         }
     }
     
-    func testNoMisconversions() {
+    public func testNoMisconversions() {
         let variant = Vector2(x: 1, y: 2).toVariant()
         
         XCTAssertNil(variant.to(Bool.self))

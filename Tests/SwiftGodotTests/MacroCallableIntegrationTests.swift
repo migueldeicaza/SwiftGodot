@@ -31,13 +31,28 @@ fileprivate class TestObject: Object {
 fileprivate class TestObject2: TestObject { // for checking inheritance
 }
 
-final class MacroCallableIntegrationTests: GodotTestCase {
-    
-    override static var godotSubclasses: [Object.Type] {
+public final class MacroCallableIntegrationTests: GodotTestCase {
+    public override class var godotSubclasses: [Object.Type] {
         return [TestObject.self, TestObject2.self]
     }
-    
-    func testImplicitTypingOfUntypedObjectArray() {
+
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testImplicitTypingOfUntypedObjectArray", method: testImplicitTypingOfUntypedObjectArray),
+            GodotTest(name: "testImplicitTypingOfUntypedObjectArrayFailure", method: testImplicitTypingOfUntypedObjectArrayFailure),
+            GodotTest(name: "testExplicitlyTypedObjectArrayGodotSideMismatch", method: testExplicitlyTypedObjectArrayGodotSideMismatch),
+            GodotTest(name: "testTypedObjectArray", method: testTypedObjectArray),
+            GodotTest(name: "testImplicitlyTypingBuiltinsArray", method: testImplicitlyTypingBuiltinsArray),
+            GodotTest(name: "testImplicitTypingOfUntypedBuiltinArrayFailure", method: testImplicitTypingOfUntypedBuiltinArrayFailure),
+            GodotTest(name: "testExplicitlyTypedBuiltinArrayGodotSideMismatch", method: testExplicitlyTypedBuiltinArrayGodotSideMismatch),
+            GodotTest(name: "testExplicitlyTypedBuiltinArray", method: testExplicitlyTypedBuiltinArray),
+            GodotTest(name: "testCountMixed", method: testCountMixed),
+        ]
+    }
+
+    public required init() {}
+
+    public func testImplicitTypingOfUntypedObjectArray() {
         let testObject = TestObject()
         
         let object0 = TestObject()
@@ -58,8 +73,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         object1.free()
         object2.free()
     }
-    
-    func testImplicitTypingOfUntypedObjectArrayFailure() {
+
+    public func testImplicitTypingOfUntypedObjectArrayFailure() {
         let testObject = TestObject()
         
         let object0 = TestObject()
@@ -81,8 +96,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         object1.free()
         object2.free()
     }
-    
-    func testExplicitlyTypedObjectArrayGodotSideMismatch() {
+
+    public func testExplicitlyTypedObjectArrayGodotSideMismatch() {
         let testObject = TestObject()
         
         let object0 = TestObject()
@@ -108,8 +123,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         object1.free()
         object2.free()
     }
-    
-    func testTypedObjectArray() {
+
+    public func testTypedObjectArray() {
         let testObject = TestObject()
         
         let object0 = TestObject2()
@@ -130,8 +145,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         object1.free()
         object2.free()
     }
-    
-    func testImplicitlyTypingBuiltinsArray() {
+
+    public func testImplicitlyTypingBuiltinsArray() {
         let testObject = TestObject()
         
         let builtinsArray = VariantArray()
@@ -142,9 +157,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
-    
-    
-    func testImplicitTypingOfUntypedBuiltinArrayFailure() {
+
+    public func testImplicitTypingOfUntypedBuiltinArrayFailure() {
         let testObject = TestObject()
         
         let array = VariantArray()
@@ -160,8 +174,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), 0.toVariant())
         testObject.free()
     }
-    
-    func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
+
+    public func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
         let testObject = TestObject()
         
         let builtinsArray = VariantArray(Int.self)
@@ -174,8 +188,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
-    
-    func testExplicitlyTypedBuiltinArray() {
+
+    public func testExplicitlyTypedBuiltinArray() {
         let testObject = TestObject()
         
         let builtinsArray = TypedArray<Int>()
@@ -186,8 +200,8 @@ final class MacroCallableIntegrationTests: GodotTestCase {
         XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
-    
-    func testCountMixed() {
+
+    public func testCountMixed() {
         let testObject = TestObject()
         
         let builtins = VariantArray(Int.self)

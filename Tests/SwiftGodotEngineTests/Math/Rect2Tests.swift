@@ -4,9 +4,30 @@
 import SwiftGodotTestability
 @testable import SwiftGodot
 
-final class Rect2Tests: GodotTestCase {
-    
-    func testConstructorMethods () {
+public final class Rect2Tests: GodotTestCase {
+
+    public override class var allTests: [GodotTest] {
+        [
+            GodotTest(name: "testConstructorMethods", method: testConstructorMethods),
+            GodotTest(name: "testStringConversion", method: testStringConversion),
+            GodotTest(name: "testBasicGetters", method: testBasicGetters),
+            GodotTest(name: "testBasicSetters", method: testBasicSetters),
+            GodotTest(name: "testAreaGetters", method: testAreaGetters),
+            GodotTest(name: "testAbsoluteCoordinates", method: testAbsoluteCoordinates),
+            GodotTest(name: "testIntersection", method: testIntersection),
+            GodotTest(name: "testEnclosing", method: testEnclosing),
+            GodotTest(name: "testExpanding", method: testExpanding),
+            GodotTest(name: "testGrowing", method: testGrowing),
+            GodotTest(name: "testHasPpoint", method: testHasPpoint),
+            GodotTest(name: "testIntersects", method: testIntersects),
+            GodotTest(name: "testMerging", method: testMerging),
+            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
+        ]
+    }
+
+    public required init() {}
+
+    public func testConstructorMethods () {
         let rect = Rect2 (x: 0, y: 100, width: 1280, height: 720)
         let rectVector = Rect2 (position: Vector2 (x: 0, y: 100), size: Vector2 (x: 1280, y: 720))
         let rectCopyRect = Rect2 (from: rect)
@@ -17,12 +38,12 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (rect, rectCopyRecti, "Rect2s created with the same dimensions but by different methods should be equal.")
     }
     
-    func testStringConversion () {
+    public func testStringConversion () {
         // Note: This also depends on the Vector2 string representation.
         XCTAssertEqual (Variant (Rect2 (x: 0, y: 100, width: 1280, height: 720)).description, "[P: (0, 100), S: (1280, 720)]", "The string representation should match the expected value.")
     }
     
-    func testBasicGetters () {
+    public func testBasicGetters () {
         let rect: Rect2 = Rect2 (x: 0, y: 100, width: 1280, height: 720)
         XCTAssertEqual (rect.position, Vector2 (x: 0, y: 100), "position getter should return the expected value.")
         XCTAssertEqual (rect.size, Vector2 (x: 1280, y: 720), "size getter should return the expected value.")
@@ -31,7 +52,7 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (Rect2 (x: 0, y: 100, width: 1281, height: 721).getCenter (), Vector2 (x: 640.5, y: 460.5), "getCenter() should return the expected value.")
     }
     
-    func testBasicSetters () {
+    public func testBasicSetters () {
         var rect: Rect2 = Rect2 (x: 0, y: 100, width: 1280, height: 720)
         rect.end = Vector2 (x: 4000, y: 4000)
         XCTAssertEqual (rect, Rect2 (x: 0, y: 100, width: 4000, height: 3900), "Setting end should result in the expected Rect2.")
@@ -45,7 +66,7 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (rect, Rect2 (x: 0, y: 100, width: 4000, height: 4000), "Setting size should result in the expected Rect2.")
     }
     
-    func testAreaGetters () {
+    public func testAreaGetters () {
         XCTAssertEqual (Rect2 (x: 0, y: 100, width: 1280, height: 720).getArea (), 921_600, "getArea() should return the expected value.")
         XCTAssertEqual (Rect2 (x: 0, y: 100, width: -1280, height: -720).getArea (), 921_600, "getArea() should return the expected value.")
         XCTAssertEqual (Rect2 (x: 0, y: 100, width: 1280, height: -720).getArea (), -921_600, "getArea() should return the expected value.")
@@ -58,14 +79,14 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertTrue (!Rect2 (x: 0, y: 100, width: 0, height: 0).hasArea (), "hasArea() should return the expected value on Rect2 with no area.")
     }
     
-    func testAbsoluteCoordinates () {
+    public func testAbsoluteCoordinates () {
         XCTAssertEqual (Rect2 (x: 0, y: 100, width: 1280, height: 720).abs (), Rect2 (x: 0, y: 100, width: 1280, height: 720), "abs() should return the expected Rect2.")
         XCTAssertEqual (Rect2 (x: 0, y: -100, width: 1280, height: 720).abs (), Rect2 (x: 0, y: -100, width: 1280, height: 720), "abs() should return the expected Rect2.")
         XCTAssertEqual (Rect2 (x: 0, y: -100, width: -1280, height: -720).abs (), Rect2 (x: -1280, y: -820, width: 1280, height: 720), "abs() should return the expected Rect2.")
         XCTAssertEqual (Rect2 (x: 0, y: 100, width: -1280, height: 720).abs (), Rect2 (x: -1280, y: 100, width: 1280, height: 720), "abs() should return the expected Rect2.")
     }
 
-    func testIntersection () {
+    public func testIntersection () {
         var rect: Rect2
         rect = Rect2 (x: 0, y: 100, width: 1280, height: 720).intersection (b: Rect2 (x: 0, y: 300, width: 100, height: 100))
         XCTAssertEqual (rect, Rect2 (x: 0, y: 300, width: 100, height: 100), "intersection() with fully enclosed Rect2 should return the expected result.")
@@ -76,13 +97,13 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (rect, Rect2 (), "intersection() with non-enclosed Rect2 should return the expected result.")
     }
 
-    func testEnclosing () {
+    public func testEnclosing () {
         XCTAssertTrue (Rect2 (x: 0, y: 100, width: 1280, height: 720).encloses (b: Rect2 (x: 0, y: 300, width: 100, height: 100)), "encloses() with fully contained Rect2 should return the expected result.")
         XCTAssertTrue (!Rect2 (x: 0, y: 100, width: 1280, height: 720).encloses (b: Rect2 (x: 1200, y: 700, width: 100, height: 100)), "encloses() with partially contained Rect2 should return the expected result.")
         XCTAssertTrue (!Rect2 (x: 0, y: 100, width: 1280, height: 720).encloses (b: Rect2 (x: -4000, y: -4000, width: 100, height: 100)), "encloses() with non-contained Rect2 should return the expected result.")
     }
 
-    func testExpanding () {
+    public func testExpanding () {
         var rect: Rect2
         rect = Rect2 (x: 0, y: 100, width: 1280, height: 720).expand (to: Vector2 (x: 500, y: 600))
         XCTAssertEqual (rect, Rect2 (x: 0, y: 100, width: 1280, height: 720), "expand() with contained Vector2 should return the expected result.")
@@ -90,7 +111,7 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (rect, Rect2 (x: 0, y: 0, width: 1280, height: 820), "expand() with non-contained Vector2 should return the expected result.")
     }
 
-    func testGrowing () {
+    public func testGrowing () {
         var rect: Rect2
         rect = Rect2 (x: 0, y: 100, width: 1280, height: 720).grow (amount: 100)
         XCTAssertEqual (rect, Rect2 (x: -100, y: 0, width: 1480, height: 920), "grow() with positive value should return the expected Rect2.")
@@ -110,7 +131,7 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (rect, Rect2 (x: 0, y: 600, width: 1280, height: 220), "growSide() with negative value should return the expected Rect2.")
     }
 
-    func testHasPpoint () {
+    public func testHasPpoint () {
         var rect: Rect2 = Rect2 (x: 0, y: 100, width: 1280, height: 720)
         XCTAssertTrue (rect.hasPoint (Vector2 (x: 500, y: 600)), "hasPoint() with contained Vector2 should return the expected result.")
         XCTAssertTrue (!rect.hasPoint (Vector2 (x: 0, y: 0)), "hasPoint() with non-contained Vector2 should return the expected result.")
@@ -135,13 +156,13 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertTrue (!rect.hasPoint (rect.position + Vector2 (x: 10, y: rect.size.y)), "hasPoint() with negative position and point located on bottom edge should return false.")
     }
 
-    func testIntersects () {
+    public func testIntersects () {
         XCTAssertTrue (Rect2 (x: 0, y: 100, width: 1280, height: 720).intersects (b: Rect2 (x: 0, y: 300, width: 100, height: 100)), "intersects() with fully enclosed Rect2 should return the expected result.")
         XCTAssertTrue (Rect2 (x: 0, y: 100, width: 1280, height: 720).intersects (b: Rect2 (x: 1200, y: 700, width: 100, height: 100)), "intersects() with partially enclosed Rect2 should return the expected result.")
         XCTAssertTrue (!Rect2 (x: 0, y: 100, width: 1280, height: 720).intersects (b: Rect2 (x: -4000, y: -4000, width: 100, height: 100)), "intersects() with non-enclosed Rect2 should return the expected result.")
     }
 
-    func testMerging () {
+    public func testMerging () {
         var rect: Rect2
         rect = Rect2 (x: 0, y: 100, width: 1280, height: 720).merge (b: Rect2 (x: 0, y: 300, width: 100, height: 100))
         XCTAssertEqual (rect, Rect2 (x: 0, y: 100, width: 1280, height: 720), "merge() with fully enclosed Rect2 should return the expected result.")
@@ -151,7 +172,7 @@ final class Rect2Tests: GodotTestCase {
         XCTAssertEqual (rect, Rect2 (x: -4000, y: -4000, width: 5280, height: 4820), "merge() with non-enclosed Rect2 should return the expected result.")
     }
 
-    func testFiniteNumberChecks () {
+    public func testFiniteNumberChecks () {
         let x: Vector2 = Vector2 (x: 0, y: 1)
         let infinite: Vector2 = Vector2 (x: .nan, y: .nan)
 
