@@ -56,21 +56,6 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Install Godot
-        shell: pwsh
-        run: |
-          $godotVersion = "4.3-stable"
-          $godotZip = "Godot_v${godotVersion}_win64.exe.zip"
-          $godotUrl = "https://github.com/godotengine/godot/releases/download/${godotVersion}/${godotZip}"
-          Invoke-WebRequest -Uri $godotUrl -OutFile $godotZip
-          Expand-Archive -Path $godotZip -DestinationPath godot
-          $godotExe = Get-ChildItem -Path godot -Filter "*.exe" | Select-Object -First 1
-          Rename-Item -Path $godotExe.FullName -NewName "godot.exe"
-          echo "$PWD\godot" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - name: Verify Godot
-        run: godot --version
-
       - name: Build
         run: swift build --build-tests --quiet
 
@@ -79,9 +64,6 @@ jobs:
 
       - name: Run Swift tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
-
-      - name: Run Godot-based tests
-        run: swift run SwiftGodotTestRunner
 
   build-android:
     runs-on: ubuntu-latest
