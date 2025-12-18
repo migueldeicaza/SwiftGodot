@@ -31,13 +31,13 @@ public struct TestFailure: Codable {
 public struct TestCaseResult: Codable {
     public let name: String
     public let status: TestStatus
-    public let durationMs: Int
+    public let duration: Double
     public let failure: TestFailure?
 
-    public init(name: String, status: TestStatus, durationMs: Int, failure: TestFailure? = nil) {
+    public init(name: String, status: TestStatus, duration: Double, failure: TestFailure? = nil) {
         self.name = name
         self.status = status
-        self.durationMs = durationMs
+        self.duration = duration
         self.failure = failure
     }
 }
@@ -84,14 +84,14 @@ public struct TestSummary: Codable {
 public struct TestResults: Codable {
     public let version: String
     public let timestamp: Date
-    public let durationMs: Int
+    public let duration: Double
     public let summary: TestSummary
     public let suites: [TestSuiteResult]
 
-    public init(suites: [TestSuiteResult], durationMs: Int) {
+    public init(suites: [TestSuiteResult], duration: Double) {
         self.version = "1.0"
         self.timestamp = Date()
-        self.durationMs = durationMs
+        self.duration = duration
         self.suites = suites
 
         let total = suites.reduce(0) { $0 + $1.tests.count }

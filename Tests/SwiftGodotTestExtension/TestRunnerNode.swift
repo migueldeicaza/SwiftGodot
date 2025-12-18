@@ -80,7 +80,7 @@ public class TestRunnerNode: Node {
 
         GD.print("-".repeated(60))
         GD.print("Summary: \(results.summary.passed) passed, \(results.summary.failed) failed, \(results.summary.skipped) skipped")
-        GD.print("Total time: \(results.durationMs)ms")
+        GD.print("Total time: \(formatDuration(results.duration))")
         GD.print("=".repeated(60))
 
         let exitCode = results.summary.failed > 0 ? 1 : 0
@@ -91,7 +91,7 @@ public class TestRunnerNode: Node {
 
     private func runAllTests() -> TestResults {
         var suiteResults: [TestSuiteResult] = []
-        let startTime = getCurrentTimeMs()
+        let startTime = getCurrentTime()
 
         GD.print("Running \(suites.count) test suites...")
 
@@ -100,10 +100,9 @@ public class TestRunnerNode: Node {
             suiteResults.append(suiteResult)
         }
 
-        let endTime = getCurrentTimeMs()
-        let duration = Int(endTime - startTime)
+        let duration = getCurrentTime() - startTime
 
-        let results = TestResults(suites: suiteResults, durationMs: duration)
+        let results = TestResults(suites: suiteResults, duration: duration)
         GD.print("Tests completed: \(results.summary.passed) passed, \(results.summary.failed) failed, \(results.summary.skipped) skipped")
 
         return results
@@ -154,21 +153,21 @@ public class TestRunnerNode: Node {
         let context = TestContext(testName: test.name)
         TestContext.current = context
 
-        let startTime = getCurrentTimeMs()
+        let startTime = getCurrentTime()
 
         instance.setUp()
         test.run(instance)
         instance.tearDown()
 
         TestContext.current = nil
-        let endTime = getCurrentTimeMs()
+        let duration = getCurrentTime() - startTime
 
         let status: TestStatus = context.hasFailed ? .failed : .passed
 
         return TestCaseResult(
             name: test.name,
             status: status,
-            durationMs: Int(endTime - startTime),
+            duration: duration,
             failure: context.failures.first
         )
     }
@@ -191,8 +190,16 @@ public class TestRunnerNode: Node {
         }
     }
 
-    private func getCurrentTimeMs() -> UInt64 {
-        return UInt64(Date().timeIntervalSince1970 * 1000)
+    private func getCurrentTime() -> Double {
+        return Date().timeIntervalSince1970
+    }
+
+    private func formatDuration(_ seconds: Double) -> String {
+        if seconds >= 1.0 {
+            return String(format: "%.2fs", seconds)
+        } else {
+            return String(format: "%.2fms", seconds * 1000)
+        }
     }
 }
 

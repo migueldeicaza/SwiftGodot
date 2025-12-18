@@ -239,7 +239,7 @@ struct GodotTestOrchestrator {
             print("\n\(suite.name):")
             for test in suite.tests {
                 let icon = test.status == .passed ? "+" : (test.status == .failed ? "x" : "-")
-                print("  [\(icon)] \(test.name) (\(test.durationMs)ms)")
+                print("  [\(icon)] \(test.name) (\(formatDuration(test.duration)))")
                 if let failure = test.failure {
                     print("      \(failure.message)")
                     print("      at \(failure.file):\(failure.line)")
@@ -249,8 +249,16 @@ struct GodotTestOrchestrator {
 
         print("\n" + String(repeating: "-", count: 60))
         print("Summary: \(results.summary.passed) passed, \(results.summary.failed) failed, \(results.summary.skipped) skipped")
-        print("Total time: \(results.durationMs)ms")
+        print("Total time: \(formatDuration(results.duration))")
         print(String(repeating: "=", count: 60))
+    }
+
+    private func formatDuration(_ seconds: Double) -> String {
+        if seconds >= 1.0 {
+            return String(format: "%.2fs", seconds)
+        } else {
+            return String(format: "%.2fms", seconds * 1000)
+        }
     }
 }
 

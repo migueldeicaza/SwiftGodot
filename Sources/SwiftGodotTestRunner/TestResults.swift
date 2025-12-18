@@ -25,7 +25,7 @@ struct TestFailure: Codable {
 struct TestCaseResult: Codable {
     let name: String
     let status: TestStatus
-    let durationMs: Int
+    let duration: Double
     let failure: TestFailure?
 }
 
@@ -47,7 +47,7 @@ struct TestSummary: Codable {
 struct TestResults: Codable {
     let version: String
     let timestamp: Date
-    let durationMs: Int
+    let duration: Double
     let summary: TestSummary
     let suites: [TestSuiteResult]
 }
