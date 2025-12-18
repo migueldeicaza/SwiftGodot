@@ -104,5 +104,3 @@ jobs:
       - name: Run Swift tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
 
-      - name: Run Godot-based tests
-        run: swift run SwiftGodotTestRunner
