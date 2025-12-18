@@ -8,6 +8,7 @@
     types[.editor] = [].topologicallySorted()
     types[.scene] = [ChrysalisNode.self].topologicallySorted()
     types[.servers] = [].topologicallySorted()
+
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
         if level == .scene {

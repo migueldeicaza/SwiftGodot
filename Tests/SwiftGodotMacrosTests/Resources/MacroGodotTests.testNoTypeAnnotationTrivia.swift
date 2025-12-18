@@ -53,7 +53,7 @@ class TestClass: Node {
     private static let _initializeClass: Void = {
         let className = StringName("TestClass")
         assert(ClassDB.classExists(class: className))
-        SimpleSignal.register(as: "signal", in: className)
+        SimpleSignal.register(as: "signal", in: className, names: [])
         SwiftGodotRuntime._registerMethod(
             className: className,
             name: "foo",

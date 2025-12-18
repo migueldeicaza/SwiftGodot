@@ -8,6 +8,7 @@
     types[.editor] = [CaterpillarNode.self].topologicallySorted()
     types[.scene] = [].topologicallySorted()
     types[.servers] = [].topologicallySorted()
+
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
         if level == .scene {
