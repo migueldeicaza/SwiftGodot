@@ -605,11 +605,24 @@ var tableLock = NIOLock()
 var freeLock = NIOLock()
 var pendingReleaseHandles: [GodotNativeObjectPointer] = []
 
+@inline(__always)
+private func isTrackedHandle(_ handle: GodotNativeObjectPointer) -> Bool {
+    tableLock.withLock {
+        liveFrameworkObjects[handle] != nil || liveSubtypedObjects[handle] != nil
+    }
+}
+
+@inline(__always)
+private func removePendingReleaseHandle(_ handle: GodotNativeObjectPointer) {
+    freeLock.withLockVoid {
+        pendingReleaseHandles.removeAll { $0 == handle }
+    }
+}
+
 /// Use this function to force the disposing of any objects that were queued for destruction
 /// this is called automatically by Godot's main loop iteration, but it is expose for the sake
 /// of the test suite that wants to release objects without waiting for Godot to run the queue
 public func releasePendingObjects() {
-    var result: Bool = false
     var copy: [GodotNativeObjectPointer] = []
 
     freeLock.withLock {
@@ -617,6 +630,13 @@ public func releasePendingObjects() {
         pendingReleaseHandles = []
     }
     for handle in copy {
+        // During shutdown, Godot may destroy RefCounted objects before the deferred
+        // queue is flushed; if so, our instance binding free callbacks will remove
+        // the handle from the live tables. In that case, don't call back into Godot
+        // with a stale pointer.
+        guard isTrackedHandle(handle) else { continue }
+
+        var result: Bool = false
         gi.object_method_bind_ptrcall(RefCounted.method_unreference, handle, nil, &result)
         if result {
             gi.object_destroy(handle)
@@ -874,9 +894,10 @@ func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeM
     if let binding {
         let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
         guard let obj = reference.value else { return }
+        let handle = obj.handle
 
         tableLock.withLockVoid {
-            if let handle = obj.handle {
+            if let handle {
                 let removed = liveSubtypedObjects.removeValue(forKey: handle)
                 if removed == nil {
                     print ("SWIFT ERROR: attempt to release user object we were not aware of: \(obj))")
@@ -886,8 +907,10 @@ func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeM
             }
         }
 
-        // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
-        // invoke methods for objects that have been disposed by Godot.
+	// If the object was queued for destruction, remove it from that queue
+        if let handle {
+            removePendingReleaseHandle(handle)
+        }
         obj.handle = nil
     }
 }
@@ -964,8 +987,9 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
         let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
 
         if let obj = reference.value {
+            let handle = obj.handle
             tableLock.withLockVoid {
-                if let handle = obj.handle {
+                if let handle {
                     let removed = liveFrameworkObjects.removeValue(forKey: handle)
                     if removed == nil {
                         print ("SWIFT ERROR: attempt to release framework object we were not aware of: \(obj))")
@@ -977,6 +1001,9 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
 
             // We use this opportunity to clear the handle on the object, to make sure we do not accidentally
             // invoke methods for objects that have been disposed by Godot.
+            if let handle {
+                removePendingReleaseHandle(handle)
+            }
             obj.handle = nil
         } else if let instance {
             // For RefCounted objects, the call to `reference.value` will already be nil,
@@ -987,6 +1014,7 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
                     print ("SWIFT ERROR: attempt to release object we were not aware of: \(instance))")
                 }
             }
+            removePendingReleaseHandle(instance)
         } else {
             print("frameworkTypeBindingFree: instance was nil")
         }
@@ -1087,4 +1115,3 @@ func typeOfClass(named className: String) -> Object.Type? {
     
     return nil
 }
-
