@@ -85,7 +85,7 @@ public func _registerMethod(
     flags: MethodFlags,
     returnValue: PropInfo?,
     arguments: [PropInfo],
-    function: @escaping BridgedFunction,
+    function: @escaping BridgedFunction
 ) {
     let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
     defer { argPtr.deallocate() }
