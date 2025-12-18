@@ -11,11 +11,7 @@ import SwiftGodot
 /// Initialize the test extension when Godot loads it
 func initializeTestExtension(level: ExtensionInitializationLevel) {
     if level == .scene {
-        // Register the TestRunnerNode so it can be instantiated in scenes
         register(type: TestRunnerNode.self)
-
-        // Register all test suites
-        registerAllTestSuites()
     }
 }
 

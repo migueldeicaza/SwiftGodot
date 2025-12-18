@@ -25,7 +25,7 @@ struct GodotTestOrchestrator {
 
     init(
         projectPath: String = "Tests/SwiftGodotTestProject",
-        resultsPath: String = "/tmp/swiftgodot_test_results.json",
+        resultsPath: String = "Tests/SwiftGodotTestProject/test_results.json",
         extensionTarget: String = "SwiftGodotTestExtension",
         buildConfiguration: String = "debug"
     ) {
@@ -42,10 +42,11 @@ struct GodotTestOrchestrator {
         // Print all paths for CI debugging
         let cwd = FileManager.default.currentDirectoryPath
         let absoluteProjectPath = projectPath.hasPrefix("/") ? projectPath : "\(cwd)/\(projectPath)"
+        let absoluteResultsPath = resultsPath.hasPrefix("/") ? resultsPath : "\(cwd)/\(resultsPath)"
         print("\nPaths:")
         print("  Working directory: \(cwd)")
         print("  Project path:      \(absoluteProjectPath)")
-        print("  Results path:      \(resultsPath)")
+        print("  Results path:      \(absoluteResultsPath)")
         print("  Extension target:  \(extensionTarget)")
         print("  Build config:      \(buildConfiguration)")
 
