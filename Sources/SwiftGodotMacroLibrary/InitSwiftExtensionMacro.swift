@@ -56,9 +56,11 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         }()
         var hookInit = ""
         var hookDeinit = ""
+        var hookDef = ""
         if let hookMethod {
-            hookInit = "\(hookMethod)(level, true)"
-            hookDeinit = "\(hookMethod)(level, false)"
+            hookDef = "let hook: (ExtensionInitializationLevel, Bool) -> () = \(hookMethod)"
+            hookInit = "hook (level, true)"
+            hookDeinit = "hook (level, false)"
         }
         // Build the init function, inserting the generated enum registration statements at .scene level
         let initModule: DeclSyntax = """
@@ -72,6 +74,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
             types[.editor] = \(editorTypes).topologicallySorted()
             types[.scene] = \(sceneTypes).topologicallySorted()
             types[.servers] = \(serverTypes).topologicallySorted()
+            \(raw: hookDef)
             initializeSwiftModule (interface, library, `extension`, initHook: { level in
                 types[level]?.forEach(register)
                 if level == .scene {
