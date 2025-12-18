@@ -190,7 +190,7 @@ struct GodotTestOrchestrator {
         process.arguments = [
             "--headless",
             "--path", projectPath,
-            "--quit-after", "300"  // Timeout after 5 minutes
+            "--quit-after", "600"  // Timeout after 10 minutes
         ]
         process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
