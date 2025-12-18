@@ -2,69 +2,68 @@
 //  AllTests.swift
 //  SwiftGodotTestExtension
 //
-//  Registers all test suites with the TestRunner
+//  Provides all test suites for the test runner
 //
 
-import SwiftGodotTestability
+/// All test suites to run.
+func allTestSuites() -> [any GodotTestCaseProtocol.Type] {
+    [
+        // Core tests
+        SignalTests.self,
+        WrappedTests.self,
+        DuplicateClassRegistrationTests.self,
+        PerformanceTests.self,
+        VariantTests.self,
+        MarshalTests.self,
+        MemoryLeakTests.self,
+        LifecycleTests.self,
+        SnappingTests.self,
+        LinearInterpolationTests.self,
+        TypedArrayTests.self,
+        TypedDictionaryTests.self,
+        MacroCallableIntegrationTests.self,
+        MacroIntegrationTests.self,
+        ValidatePropertyTests.self,
+        IntersectRayResultTests.self,
+        PhysicsDirectSpaceState2DIntersectRayResultTests.self,
+        PhysicsDirectSpaceState3DIntersectRayResultTests.self,
 
-// Import test modules
-@_exported import SwiftGodotTests
-@_exported import SwiftGodotEngineTests
+        // BuiltIn type tests
+        ColorTests.self,
+        PackedArrayTests.self,
+        PlaneTests.self,
+        QuaternionTests.self,
+        Vector2Tests.self,
+        Vector2iTests.self,
+        Vector3Tests.self,
+        Vector3iTests.self,
+        Vector4Tests.self,
+        Vector4iTests.self,
 
-/// Register all test suites with the TestRunner.
+        // Engine math tests
+        AABBTests.self,
+        BasisTests.self,
+        EngineColorTests.self,
+        Geometry2DTests.self,
+        Geometry3DTests.self,
+        EnginePlaneTests.self,
+        EngineQuaternionTests.self,
+        Rect2Tests.self,
+        Rect2iTests.self,
+        Transform2DTests.self,
+        Transform3DTests.self,
+        EngineVector2Tests.self,
+        EngineVector2iTests.self,
+        EngineVector3Tests.self,
+        EngineVector3iTests.self,
+        EngineVector4Tests.self,
+        EngineVector4iTests.self,
+        AStarTests.self,
+    ]
+}
+
+/// Register all test suites with TestRunnerNode.
 /// This is called during extension initialization.
 public func registerAllTestSuites() {
-    let runner = TestRunner.shared
-
-    // SwiftGodotTests suites
-    runner.addSuite(SignalTests.self)
-    runner.addSuite(WrappedTests.self)
-    runner.addSuite(DuplicateClassRegistrationTests.self)
-    runner.addSuite(PerformanceTests.self)
-    runner.addSuite(VariantTests.self)
-    runner.addSuite(MarshalTests.self)
-    runner.addSuite(MemoryLeakTests.self)
-    runner.addSuite(LifecycleTests.self)
-    runner.addSuite(SnappingTests.self)
-    runner.addSuite(LinearInterpolationTests.self)
-    runner.addSuite(TypedArrayTests.self)
-    runner.addSuite(TypedDictionaryTests.self)
-    runner.addSuite(MacroCallableIntegrationTests.self)
-    runner.addSuite(MacroIntegrationTests.self)
-    runner.addSuite(ValidatePropertyTests.self)
-    runner.addSuite(IntersectRayResultTests.self)
-    runner.addSuite(PhysicsDirectSpaceState2DIntersectRayResultTests.self)
-    runner.addSuite(PhysicsDirectSpaceState3DIntersectRayResultTests.self)
-
-    // BuiltIn tests (from SwiftGodotTests)
-    runner.addSuite(SwiftGodotTests.ColorTests.self)
-    runner.addSuite(SwiftGodotTests.PackedArrayTests.self)
-    runner.addSuite(SwiftGodotTests.PlaneTests.self)
-    runner.addSuite(SwiftGodotTests.QuaternionTests.self)
-    runner.addSuite(SwiftGodotTests.Vector2Tests.self)
-    runner.addSuite(SwiftGodotTests.Vector2iTests.self)
-    runner.addSuite(SwiftGodotTests.Vector3Tests.self)
-    runner.addSuite(SwiftGodotTests.Vector3iTests.self)
-    runner.addSuite(SwiftGodotTests.Vector4Tests.self)
-    runner.addSuite(SwiftGodotTests.Vector4iTests.self)
-
-    // Math tests (from SwiftGodotEngineTests)
-    runner.addSuite(SwiftGodotEngineTests.AABBTests.self)
-    runner.addSuite(SwiftGodotEngineTests.BasisTests.self)
-    runner.addSuite(SwiftGodotEngineTests.ColorTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Geometry2DTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Geometry3DTests.self)
-    runner.addSuite(SwiftGodotEngineTests.PlaneTests.self)
-    runner.addSuite(SwiftGodotEngineTests.QuaternionTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Rect2Tests.self)
-    runner.addSuite(SwiftGodotEngineTests.Rect2iTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Transform2DTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Transform3DTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Vector2Tests.self)
-    runner.addSuite(SwiftGodotEngineTests.Vector2iTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Vector3Tests.self)
-    runner.addSuite(SwiftGodotEngineTests.Vector3iTests.self)
-    runner.addSuite(SwiftGodotEngineTests.Vector4Tests.self)
-    runner.addSuite(SwiftGodotEngineTests.Vector4iTests.self)
-    runner.addSuite(SwiftGodotEngineTests.AStarTests.self)
+    TestRunnerNode.suites = allTestSuites()
 }

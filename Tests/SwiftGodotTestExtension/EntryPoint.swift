@@ -6,7 +6,7 @@
 //
 
 import SwiftGodot
-import SwiftGodotTestability
+
 
 /// Initialize the test extension when Godot loads it
 func initializeTestExtension(level: ExtensionInitializationLevel) {

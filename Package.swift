@@ -55,12 +55,6 @@ var products: [Product] = [
         targets: ["ManualExtension"]
     ),
 
-    // Test infrastructure
-    .library(
-        name: "SwiftGodotTestability",
-        targets: ["SwiftGodotTestability"]
-    ),
-
     .executable(
         name: "SwiftGodotTestRunner",
         targets: ["SwiftGodotTestRunner"]
@@ -221,13 +215,6 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // Test framework (cross-platform, no libgodot dependency)
-    .target(
-        name: "SwiftGodotTestability",
-        dependencies: ["SwiftGodot"],
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
     // Test runner CLI executable
     .executableTarget(
         name: "SwiftGodotTestRunner",
@@ -236,30 +223,10 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // Test suites (as regular targets, not testTargets)
-    .target(
-        name: "SwiftGodotTests",
-        dependencies: ["SwiftGodotTestability"],
-        path: "Tests/SwiftGodotTests",
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    .target(
-        name: "SwiftGodotEngineTests",
-        dependencies: ["SwiftGodotTestability"],
-        path: "Tests/SwiftGodotEngineTests",
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    // Test extension (loaded by Godot)
+    // Test extension (loaded by Godot) - includes all test infrastructure and test suites
     .target(
         name: "SwiftGodotTestExtension",
-        dependencies: [
-            "SwiftGodot",
-            "SwiftGodotTestability",
-            "SwiftGodotTests",
-            "SwiftGodotEngineTests",
-        ],
+        dependencies: ["SwiftGodot"],
         path: "Tests/SwiftGodotTestExtension",
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
