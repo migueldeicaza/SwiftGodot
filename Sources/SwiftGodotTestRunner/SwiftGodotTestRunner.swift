@@ -10,36 +10,14 @@ import Foundation
 @main
 struct SwiftGodotTestRunner {
     static func main() async {
-        let runner = GodotTestOrchestrator()
-        let exitCode = await runner.run()
-        exit(Int32(exitCode))
-    }
-}
+        let projectPath = "Tests/SwiftGodotTestProject"
+        let resultsPath = "Tests/SwiftGodotTestProject/test_results.json"
+        let extensionTarget = "SwiftGodotTestExtension"
+        let buildConfiguration = "debug"
 
-/// Orchestrates building tests, launching Godot, and reporting results
-struct GodotTestOrchestrator {
-    let projectPath: String
-    let resultsPath: String
-    let extensionTarget: String
-    let buildConfiguration: String
-
-    init(
-        projectPath: String = "Tests/SwiftGodotTestProject",
-        resultsPath: String = "Tests/SwiftGodotTestProject/test_results.json",
-        extensionTarget: String = "SwiftGodotTestExtension",
-        buildConfiguration: String = "debug"
-    ) {
-        self.projectPath = projectPath
-        self.resultsPath = resultsPath
-        self.extensionTarget = extensionTarget
-        self.buildConfiguration = buildConfiguration
-    }
-
-    func run() async -> Int {
         print("SwiftGodot Test Runner")
         print(String(repeating: "=", count: 60))
 
-        // Print all paths for CI debugging
         let cwd = FileManager.default.currentDirectoryPath
         let absoluteProjectPath = projectPath.hasPrefix("/") ? projectPath : "\(cwd)/\(projectPath)"
         let absoluteResultsPath = resultsPath.hasPrefix("/") ? resultsPath : "\(cwd)/\(resultsPath)"
@@ -50,95 +28,41 @@ struct GodotTestOrchestrator {
         print("  Extension target:  \(extensionTarget)")
         print("  Build config:      \(buildConfiguration)")
 
-        // 1. Build the test extension
+        // 1. Build the test extension and dependencies
         print("\n[1/5] Building test extension...")
-        do {
-            try await buildExtension()
-            print("      Build successful")
-        } catch {
-            print("      Build failed: \(error)")
-            return 1
-        }
-
-        // 2. Copy built library to Godot project
-        print("\n[2/5] Copying library to test project...")
-        do {
-            try copyLibraryToProject()
-            print("      Copy successful")
-        } catch {
-            print("      Copy failed: \(error)")
-            return 1
-        }
-
-        // 3. Import project (needed to detect GDExtensions)
-        print("\n[3/5] Importing Godot project...")
-        do {
-            try await importProject(projectPath: absoluteProjectPath)
-            print("      Import successful")
-        } catch {
-            print("      Import failed: \(error)")
-            return 1
-        }
-
-        // 4. Launch Godot
-        print("\n[4/5] Running tests in Godot...")
-        let godotExitCode: Int
-        do {
-            godotExitCode = try await launchGodot(projectPath: absoluteProjectPath)
-        } catch {
-            print("      Godot launch failed: \(error)")
-            return 1
-        }
-
-        // 5. Read and report results
-        print("\n[5/5] Reading results...")
-        do {
-            let results = try readResults()
-            printResults(results)
-            // Test results are the source of truth - Godot may exit non-zero due to expected errors during tests
-            return results.summary.failed > 0 ? 1 : 0
-        } catch {
-            print("      Failed to read results: \(error)")
-            print("      Godot exit code was: \(godotExitCode)")
-            return godotExitCode != 0 ? godotExitCode : 1
-        }
-    }
-
-    private func buildExtension() async throws {
-        // Build extension and its dynamic library dependencies
         let products = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
-
         for product in products {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
-            process.arguments = [
-                "build",
-                "--product", product,
-                "-c", buildConfiguration
-            ]
-            process.currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-
-            // Forward stdout/stderr directly for real-time output
+            process.arguments = ["build", "--product", product, "-c", buildConfiguration]
+            process.currentDirectoryURL = URL(fileURLWithPath: cwd)
             process.standardOutput = FileHandle.standardOutput
             process.standardError = FileHandle.standardError
-
-            try process.run()
-            process.waitUntilExit()
-
-            if process.terminationStatus != 0 {
-                throw TestRunnerError.buildFailed("Failed to build \(product)")
+            do {
+                try process.run()
+                process.waitUntilExit()
+                if process.terminationStatus != 0 {
+                    print("      Build failed for \(product)")
+                    exit(1)
+                }
+            } catch {
+                print("      Build failed: \(error)")
+                exit(1)
             }
         }
-    }
+        print("      Build successful")
 
-    private func copyLibraryToProject() throws {
+        // 2. Copy built libraries to Godot project
+        print("\n[2/5] Copying libraries to test project...")
         let fm = FileManager.default
         let destDir = "\(projectPath)/bin"
+        do {
+            try fm.createDirectory(atPath: destDir, withIntermediateDirectories: true)
+        } catch {
+            print("      Failed to create bin directory: \(error)")
+            exit(1)
+        }
 
-        // Create destination directory
-        try fm.createDirectory(atPath: destDir, withIntermediateDirectories: true)
-
-        // Platform-specific library extension and build directory
         #if os(macOS)
         let libPrefix = "lib"
         let libExt = "dylib"
@@ -165,10 +89,7 @@ struct GodotTestOrchestrator {
         let platformDir = ""
         #endif
 
-        // Libraries to copy: extension + dependencies
         let libraryNames = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
-
-        // Try platform-specific path first, then fallback to simple path
         let platformBuildDir = ".build/\(platformDir)/\(buildConfiguration)"
         let simpleBuildDir = ".build/\(buildConfiguration)"
 
@@ -183,140 +104,116 @@ struct GodotTestOrchestrator {
             } else if fm.fileExists(atPath: simpleSource) {
                 source = simpleSource
             } else {
-                throw TestRunnerError.libraryNotFound("\(platformSource) or \(simpleSource)")
+                print("      Library not found: \(platformSource) or \(simpleSource)")
+                exit(1)
             }
 
             let dest = "\(destDir)/\(libName)"
-
-            // Remove existing file if present
-            if fm.fileExists(atPath: dest) {
-                try fm.removeItem(atPath: dest)
+            do {
+                if fm.fileExists(atPath: dest) {
+                    try fm.removeItem(atPath: dest)
+                }
+                try fm.copyItem(atPath: source, toPath: dest)
+                print("      Copied \(libName)")
+            } catch {
+                print("      Copy failed: \(error)")
+                exit(1)
             }
-
-            // Copy new file
-            try fm.copyItem(atPath: source, toPath: dest)
-            print("      Copied \(libName)")
         }
-    }
+        print("      Copy successful")
 
-    private func findGodot() throws -> String {
+        // Find godot
         let whichProcess = Process()
         whichProcess.executableURL = URL(fileURLWithPath: "/usr/bin/which")
         whichProcess.arguments = ["godot"]
         let whichPipe = Pipe()
         whichProcess.standardOutput = whichPipe
         whichProcess.standardError = whichPipe
-
-        try whichProcess.run()
-        whichProcess.waitUntilExit()
-
+        do {
+            try whichProcess.run()
+            whichProcess.waitUntilExit()
+        } catch {
+            print("      Failed to find godot: \(error)")
+            exit(1)
+        }
         if whichProcess.terminationStatus != 0 {
-            throw TestRunnerError.godotNotFound
+            print("      Godot not found in PATH")
+            exit(1)
+        }
+        let godotPathData = whichPipe.fileHandleForReading.readDataToEndOfFile()
+        let godotPath = String(data: godotPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "godot"
+
+        // 3. Import project (needed to detect GDExtensions)
+        print("\n[3/5] Importing Godot project...")
+        let importProcess = Process()
+        importProcess.executableURL = URL(fileURLWithPath: godotPath)
+        importProcess.arguments = ["--headless", "--import", "--path", absoluteProjectPath]
+        importProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
+        importProcess.standardOutput = FileHandle.standardOutput
+        importProcess.standardError = FileHandle.standardError
+        do {
+            try importProcess.run()
+            importProcess.waitUntilExit()
+        } catch {
+            print("      Import failed: \(error)")
+            exit(1)
+        }
+        print("      Import successful")
+
+        // 4. Launch Godot
+        print("\n[4/5] Running tests in Godot...")
+        let godotProcess = Process()
+        godotProcess.executableURL = URL(fileURLWithPath: godotPath)
+        godotProcess.arguments = ["--headless", "--path", absoluteProjectPath, "--quit-after", "600"]
+        godotProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
+        godotProcess.standardOutput = FileHandle.standardOutput
+        godotProcess.standardError = FileHandle.standardError
+        var godotExitCode: Int32 = 0
+        do {
+            try godotProcess.run()
+            godotProcess.waitUntilExit()
+            godotExitCode = godotProcess.terminationStatus
+        } catch {
+            print("      Godot launch failed: \(error)")
+            exit(1)
         }
 
-        let godotPathData = whichPipe.fileHandleForReading.readDataToEndOfFile()
-        return String(data: godotPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "godot"
-    }
+        // 5. Read and report results
+        print("\n[5/5] Reading results...")
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: absoluteResultsPath))
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let results = try decoder.decode(TestResults.self, from: data)
 
-    private func importProject(projectPath: String) async throws {
-        let godotPath = try findGodot()
+            print("\n" + String(repeating: "=", count: 60))
+            print("Test Results")
+            print(String(repeating: "=", count: 60))
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: godotPath)
-        process.arguments = [
-            "--headless",
-            "--import",
-            "--path", projectPath
-        ]
-        process.currentDirectoryURL = URL(fileURLWithPath: projectPath)
-
-        // Forward stdout/stderr
-        process.standardOutput = FileHandle.standardOutput
-        process.standardError = FileHandle.standardError
-
-        try process.run()
-        process.waitUntilExit()
-
-        // Import may exit with non-zero code but still succeed
-    }
-
-    private func launchGodot(projectPath: String) async throws -> Int {
-        let godotPath = try findGodot()
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: godotPath)
-        process.arguments = [
-            "--headless",
-            "--path", projectPath,
-            "--quit-after", "600"  // Timeout after 10 minutes
-        ]
-        process.currentDirectoryURL = URL(fileURLWithPath: projectPath)
-
-        // Forward stdout/stderr
-        process.standardOutput = FileHandle.standardOutput
-        process.standardError = FileHandle.standardError
-
-        try process.run()
-        process.waitUntilExit()
-
-        return Int(process.terminationStatus)
-    }
-
-    private func readResults() throws -> TestResults {
-        let data = try Data(contentsOf: URL(fileURLWithPath: resultsPath))
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(TestResults.self, from: data)
-    }
-
-    private func printResults(_ results: TestResults) {
-        print("\n" + String(repeating: "=", count: 60))
-        print("Test Results")
-        print(String(repeating: "=", count: 60))
-
-        for suite in results.suites {
-            print("\n\(suite.name):")
-            for test in suite.tests {
-                let icon = test.status == .passed ? "+" : (test.status == .failed ? "x" : "-")
-                print("  [\(icon)] \(test.name) (\(formatDuration(test.duration)))")
-                if let failure = test.failure {
-                    print("      \(failure.message)")
-                    print("      at \(failure.file):\(failure.line)")
+            for suite in results.suites {
+                print("\n\(suite.name):")
+                for test in suite.tests {
+                    let icon = test.status == .passed ? "+" : (test.status == .failed ? "x" : "-")
+                    let duration = test.duration >= 1.0 ? String(format: "%.2fs", test.duration) : String(format: "%.2fms", test.duration * 1000)
+                    print("  [\(icon)] \(test.name) (\(duration))")
+                    if let failure = test.failure {
+                        print("      \(failure.message)")
+                        print("      at \(failure.file):\(failure.line)")
+                    }
                 }
             }
-        }
 
-        print("\n" + String(repeating: "-", count: 60))
-        print("Summary: \(results.summary.passed) passed, \(results.summary.failed) failed, \(results.summary.skipped) skipped")
-        print("Total time: \(formatDuration(results.duration))")
-        print(String(repeating: "=", count: 60))
-    }
+            let totalDuration = results.duration >= 1.0 ? String(format: "%.2fs", results.duration) : String(format: "%.2fms", results.duration * 1000)
+            print("\n" + String(repeating: "-", count: 60))
+            print("Summary: \(results.summary.passed) passed, \(results.summary.failed) failed, \(results.summary.skipped) skipped")
+            print("Total time: \(totalDuration)")
+            print(String(repeating: "=", count: 60))
 
-    private func formatDuration(_ seconds: Double) -> String {
-        if seconds >= 1.0 {
-            return String(format: "%.2fs", seconds)
-        } else {
-            return String(format: "%.2fms", seconds * 1000)
-        }
-    }
-}
-
-enum TestRunnerError: Error, CustomStringConvertible {
-    case buildFailed(String)
-    case libraryNotFound(String)
-    case godotNotFound
-    case resultsNotFound
-
-    var description: String {
-        switch self {
-        case .buildFailed(let output):
-            return "Build failed:\n\(output)"
-        case .libraryNotFound(let path):
-            return "Built library not found at: \(path)"
-        case .godotNotFound:
-            return "Godot not found in PATH. Please install Godot and ensure 'godot' command is available."
-        case .resultsNotFound:
-            return "Test results file not found"
+            exit(results.summary.failed > 0 ? 1 : 0)
+        } catch {
+            print("      Failed to read results: \(error)")
+            print("      Godot exit code was: \(godotExitCode)")
+            exit(godotExitCode != 0 ? godotExitCode : 1)
         }
     }
 }
