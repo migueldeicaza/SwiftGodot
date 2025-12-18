@@ -609,6 +609,29 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
     }
     
+    // Prime builtin type metadata even when we're not emitting builtin source files.
+    //
+    // This generator is used in two modes:
+    // - SwiftGodotRuntime: emits builtin sources
+    // - SwiftGodot (and split targets): imports SwiftGodotRuntime and emits only classes
+    //
+    // The class generation stage still needs to know which builtins are class-backed
+    // (and what their Swift wrapper names are) so that virtual proxy glue can unwrap
+    // arguments correctly.
+    for bc in values {
+        if bc.name == "Nil" { continue }
+        switch bc.name {
+        case "int", "float", "bool":
+            continue
+        default:
+            builtinGodotTypeNames[bc.name] = bc.members != nil ? .isStruct : .isClass
+            if bc.members == nil {
+                let (storage, _) = getBuiltinStorage(bc.name, asComputedProperty: false)
+                builtinClassStorage[bc.name] = storage
+            }
+        }
+    }
+
     let filteredValues = values.filter { shouldGenerateBuiltin($0.name) }
 
     func generateBuiltinClass(p: Printer, _ bc: JGodotBuiltinClass) {
@@ -792,7 +815,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 // Convenience type that matches the build configuration storage needs
                 public typealias ContentType = \(storage)
                 """)
-                
+
                 builtinClassStorage [bc.name] = storage
                 // TODO: This is a little brittle, because I am
                 // hardcoding the constructor1 here, it should
@@ -1153,18 +1176,6 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             """) {
                 p(gip.result)
             }
-        }
-    }
-    
-    // First map structs and classes from the builtins
-    for bc in filteredValues {
-        if bc.name == "Nil" { continue }
-        switch bc.name {
-            // We do not generate code for a few types, we will bridge those instead
-        case "int", "float", "bool":
-            break
-        default:
-            builtinGodotTypeNames [bc.name] = bc.members != nil ? .isStruct : .isClass
         }
     }
     

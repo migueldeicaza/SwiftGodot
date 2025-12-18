@@ -121,10 +121,13 @@ func generateVirtualProxy (_ p: Printer,
                 } else {
                     argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as! \(arg.type)"
                 }
-            } else if let storage = builtinClassStorage [arg.type] {
+            } else if let storage = builtinClassStorage[arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
             } else {
                 let gt = getGodotType(arg)
+                if gt.hasPrefix("Packed") || gt.hasSuffix("Array") {
+                    fatalError("Precondition, this should not happen: PackedArrays should have been handled on the code above that uses `storage`")
+                }
                 argCall += "args [\(i)]!.assumingMemoryBound (to: \(gt).self).pointee"
             }
             i += 1
