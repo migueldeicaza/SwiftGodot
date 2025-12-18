@@ -239,7 +239,7 @@ public final class Geometry2DTests: GodotTestCase {
         result = Geometry2D.makeAtlas (sizes: r)
         XCTAssertEqual (result.size (), 2)
         XCTAssertEqual (result ["size"], Variant (Vector2i (x: 2, y: 2)))
-        XCTAssertEqual (result ["points"]?.description, "[(0, 0)]")
+        XCTAssertEqual (result ["points"]?.description, "[(0.0, 0.0)]")
         
         r.clear ()
         result.clear ()

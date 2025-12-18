@@ -40,7 +40,7 @@ public final class Rect2Tests: GodotTestCase {
     
     public func testStringConversion () {
         // Note: This also depends on the Vector2 string representation.
-        XCTAssertEqual (Variant (Rect2 (x: 0, y: 100, width: 1280, height: 720)).description, "[P: (0, 100), S: (1280, 720)]", "The string representation should match the expected value.")
+        XCTAssertEqual (Variant (Rect2 (x: 0, y: 100, width: 1280, height: 720)).description, "[P: (0.0, 100.0), S: (1280.0, 720.0)]", "The string representation should match the expected value.")
     }
     
     public func testBasicGetters () {

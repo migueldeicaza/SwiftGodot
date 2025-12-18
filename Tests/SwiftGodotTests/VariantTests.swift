@@ -120,7 +120,7 @@ public final class VariantTests: GodotTestCase {
         // Builtin struct
         let transform2d = Transform2D (xAxis: Vector2 (x: 1, y: 2), yAxis: Vector2 (x: 3, y: 4), origin: Vector2 (x: 10, y: 20))
         variant = Variant (transform2d)
-        XCTAssertEqual (variant.description, "[X: (1, 2), Y: (3, 4), O: (10, 20)]")
+        XCTAssertEqual (variant.description, "[X: (1.0, 2.0), Y: (3.0, 4.0), O: (10.0, 20.0)]")
         XCTAssertEqual (variant.gtype, Variant.GType.transform2d)
         let newTransform2d = Transform2D (variant)
         XCTAssertEqual (transform2d, newTransform2d)

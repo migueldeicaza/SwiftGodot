@@ -36,7 +36,7 @@ public final class AABBTests: GodotTestCase {
 
     public func testStringConversion() {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
-        XCTAssertEqual (Variant (aabb).description, "[P: (-1.5, 2, -2.5), S: (4, 5, 6)]", "The string representation should match the expected value.")
+        XCTAssertEqual (Variant (aabb).description, "[P: (-1.5, 2.0, -2.5), S: (4.0, 5.0, 6.0)]", "The string representation should match the expected value.")
     }
 
     public func testBasicGetters() {
