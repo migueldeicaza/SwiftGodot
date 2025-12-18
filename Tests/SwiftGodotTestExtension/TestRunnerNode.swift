@@ -110,7 +110,7 @@ public class TestRunnerNode: Node {
 
     private func runSuite(_ suiteType: any GodotTestCaseProtocol.Type) -> TestSuiteResult {
         let suiteName = suiteType.testCaseName
-        GD.print("  Suite: \(suiteName)")
+        GD.printRich("[color=blue][b]\(suiteName)[/b][/color]")
 
         // Register Godot subclasses needed by this suite
         for subclass in suiteType.godotSubclasses {
@@ -125,14 +125,13 @@ public class TestRunnerNode: Node {
         var testResults: [TestCaseResult] = []
 
         for test in tests {
+            GD.printRich("[color=blue]\(test.name)[/color]")
             let result = runTest(suiteType: suiteType, test: test)
             testResults.append(result)
 
-            let icon = result.status == .passed ? "+" : "x"
-            GD.print("    [\(icon)] \(test.name)")
             if let failure = result.failure {
-                GD.print("        \(failure.message)")
-                GD.print("        at \(failure.file):\(failure.line)")
+                GD.printRich("[color=red][b]FAILED:[/b] \(failure.message)[/color]")
+                GD.printRich("[color=red]  at \(failure.file):\(failure.line)[/color]")
             }
         }
 
@@ -145,6 +144,7 @@ public class TestRunnerNode: Node {
             unregister(type: subclass)
         }
 
+        GD.print("")
         return TestSuiteResult(name: suiteName, tests: testResults)
     }
 

@@ -185,7 +185,7 @@ struct SwiftGodotTestRunner {
         print("\n[4/5] Running tests in Godot...")
         let godotProcess = Process()
         godotProcess.executableURL = URL(fileURLWithPath: godotPath)
-        godotProcess.arguments = ["--headless", "--path", absoluteProjectPath, "--quit-after", "600"]
+        godotProcess.arguments = ["--headless", "--verbose", "--path", absoluteProjectPath]
         godotProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
         godotProcess.standardOutput = FileHandle.standardOutput
         godotProcess.standardError = FileHandle.standardError
@@ -194,6 +194,7 @@ struct SwiftGodotTestRunner {
             try godotProcess.run()
             godotProcess.waitUntilExit()
             godotExitCode = godotProcess.terminationStatus
+            print("      Godot exited with code: \(godotExitCode)")
         } catch {
             print("      Godot launch failed: \(error)")
             exit(1)
