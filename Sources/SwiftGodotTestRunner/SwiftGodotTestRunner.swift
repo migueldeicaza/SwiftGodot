@@ -168,7 +168,7 @@ struct SwiftGodotTestRunner {
         print("\n[3/5] Importing Godot project...")
         let importProcess = Process()
         importProcess.executableURL = URL(fileURLWithPath: godotPath)
-        importProcess.arguments = ["--headless", "--import", "--path", absoluteProjectPath]
+        importProcess.arguments = ["--headless", "--verbose","--import", "--path", absoluteProjectPath]
         importProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
         importProcess.standardOutput = FileHandle.standardOutput
         importProcess.standardError = FileHandle.standardError
@@ -185,7 +185,7 @@ struct SwiftGodotTestRunner {
         print("\n[4/5] Running tests in Godot...")
         let godotProcess = Process()
         godotProcess.executableURL = URL(fileURLWithPath: godotPath)
-        godotProcess.arguments = ["--headless", "--path", absoluteProjectPath]
+        godotProcess.arguments = ["--headless", "--verbose", "--path", absoluteProjectPath]
         godotProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
         godotProcess.standardOutput = FileHandle.standardOutput
         godotProcess.standardError = FileHandle.standardError
