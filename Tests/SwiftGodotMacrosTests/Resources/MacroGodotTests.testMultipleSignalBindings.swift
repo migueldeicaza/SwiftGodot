@@ -9,7 +9,7 @@ class OtherThing: SwiftGodot.Node {
     private static let _initializeClass: Void = {
         let className = StringName("OtherThing")
         assert(ClassDB.classExists(class: className))
-        SimpleSignal.register(as: "signal0", in: className)
-        SimpleSignal.register(as: "signal1", in: className)
+        SimpleSignal.register(as: "signal0", in: className, names: [])
+        SimpleSignal.register(as: "signal1", in: className, names: [])
     }()
 }

@@ -1,0 +1,19 @@
+[configuration]
+entry_symbol = "swift_entry_point"
+compatibility_minimum = 4.2
+
+[libraries]
+macos.debug = "res://bin/libSwiftGodotTestExtension.dylib"
+macos.release = "res://bin/libSwiftGodotTestExtension.dylib"
+linux.debug = "res://bin/libSwiftGodotTestExtension.so"
+linux.release = "res://bin/libSwiftGodotTestExtension.so"
+windows.debug = "res://bin/SwiftGodotTestExtension.dll"
+windows.release = "res://bin/SwiftGodotTestExtension.dll"
+
+[dependencies]
+macos.debug = {"res://bin/libSwiftGodot.dylib": "", "res://bin/libSwiftGodotRuntime.dylib": ""}
+macos.release = {"res://bin/libSwiftGodot.dylib": "", "res://bin/libSwiftGodotRuntime.dylib": ""}
+linux.debug = {"res://bin/libSwiftGodot.so": "", "res://bin/libSwiftGodotRuntime.so": ""}
+linux.release = {"res://bin/libSwiftGodot.so": "", "res://bin/libSwiftGodotRuntime.so": ""}
+windows.debug = {"res://bin/SwiftGodot.dll": "", "res://bin/SwiftGodotRuntime.dll": ""}
+windows.release = {"res://bin/SwiftGodot.dll": "", "res://bin/SwiftGodotRuntime.dll": ""}

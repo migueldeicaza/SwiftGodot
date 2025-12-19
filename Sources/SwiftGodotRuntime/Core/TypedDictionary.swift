@@ -138,7 +138,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
             return Value.fromFastVariant(variant)
         }
         
-        set {
+        nonmutating set {
             if newValue == nil {
                 _ = dictionary.erase(fastKey: key.toFastVariant())
             } else {
@@ -146,7 +146,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
             }
         }
     }
-    
+
     /// Subscript operator for where `Value` is `Object`, or its subtype, or `Variant?`
     /// Such dictionaries allow `nil` values.
     ///
@@ -169,11 +169,11 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
             return unwrapOrCrash(variant, at: key)
         }
         
-        set {
+        nonmutating set {
             dictionary[key] = newValue.toFastVariant()
         }
     }
-    
+
     /// Initialize ``TypedDictionary`` from existing ``VariantDictionary``.
     /// If ``VariantDictionary`` is typed and its type is exactly `Key`:`Value` the created instance will reference the same storage.
     /// If not, a new ``VariantDictionary`` to wrap will be created by following Godot rules of dictionary type narrowing:
