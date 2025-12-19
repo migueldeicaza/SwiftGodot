@@ -25,7 +25,7 @@ private class TestProp: Node {
 
 @SwiftGodotTestSuite
 final class ValidatePropertyTests {
-    public static var godotSubclasses: [Object.Type] {
+    public static var registeredTypes: [Object.Type] {
         return [TestProp.self]
     }
 

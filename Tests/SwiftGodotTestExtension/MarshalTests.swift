@@ -66,7 +66,7 @@ private class TestNode: Node {
 
 @SwiftGodotTestSuite
 final class MarshalTests {
-    public static var godotSubclasses: [Object.Type] {
+    public static var registeredTypes: [Object.Type] {
         return [TestNode.self, NodeUsingSwiftDate.self]
     }
 

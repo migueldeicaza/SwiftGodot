@@ -37,7 +37,7 @@ private final class ABCX: AStar3D {
 
 @SwiftGodotTestSuite
 final class AStarTests {
-    public class var godotSubclasses: [Object.Type] {
+    public static var registeredTypes: [Object.Type] {
         return [ABCX.self]
     }
 

@@ -105,7 +105,7 @@ public class TestRunnerNode: Node {
         let filter = testFilter
         let filteredSuites: [any SwiftGodotTestSuiteProtocol]
         if let filter {
-            filteredSuites = suites.filter { filter.matchesSuite(type(of: $0).testCaseName) }
+            filteredSuites = suites.filter { filter.matchesSuite(type(of: $0).name) }
             GD.print("Running filtered tests: \(filter.suiteName)\(filter.testName.map { ".\($0)" } ?? "")...")
         } else {
             filteredSuites = suites
@@ -127,16 +127,13 @@ public class TestRunnerNode: Node {
 
     private func runSuite(_ suite: any SwiftGodotTestSuiteProtocol, filter: TestFilter? = nil) -> TestSuiteResult {
         let suiteType = type(of: suite)
-        let suiteName = suiteType.testCaseName
+        let suiteName = suiteType.name
         GD.printRich("[color=blue][b]\(suiteName)[/b][/color]")
 
         // Register Godot subclasses needed by this suite
-        for subclass in suiteType.godotSubclasses {
+        for subclass in suiteType.registeredTypes {
             register(type: subclass)
         }
-
-        // Suite-level setup
-        suiteType.setUpClass()
 
         // Run test methods (filtered if specified)
         let allTests = suite.allTests
@@ -154,11 +151,8 @@ public class TestRunnerNode: Node {
             }
         }
 
-        // Suite-level teardown
-        suiteType.tearDownClass()
-
         // Unregister Godot subclasses
-        for subclass in suiteType.godotSubclasses.reversed() {
+        for subclass in suiteType.registeredTypes.reversed() {
             releasePendingObjects()
             unregister(type: subclass)
         }
@@ -173,9 +167,7 @@ public class TestRunnerNode: Node {
 
         let startTime = getCurrentTime()
 
-        suite.setUp()
         test.run()
-        suite.tearDown()
 
         TestContext.current = nil
         let duration = getCurrentTime() - startTime

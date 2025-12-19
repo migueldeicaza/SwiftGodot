@@ -11,7 +11,7 @@
 
 @SwiftGodotTestSuite
 final class WrappedTests {
-    public static var godotSubclasses: [Object.Type] {
+    public static var registeredTypes: [Object.Type] {
         return [SubtypedNode.self]
     }
 

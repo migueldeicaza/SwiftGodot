@@ -33,7 +33,7 @@ fileprivate class TestObject2: TestObject { // for checking inheritance
 
 @SwiftGodotTestSuite
 final class MacroCallableIntegrationTests {
-    public static var godotSubclasses: [Object.Type] {
+    public static var registeredTypes: [Object.Type] {
         return [TestObject.self, TestObject2.self]
     }
 

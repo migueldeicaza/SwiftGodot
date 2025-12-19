@@ -21,7 +21,7 @@ private class TestSignalNode: Node {
 
 @SwiftGodotTestSuite
 final class SignalTests {
-    public static var godotSubclasses: [Object.Type] {
+    public static var registeredTypes: [Object.Type] {
         return [TestSignalNode.self]
     }
 
