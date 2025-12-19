@@ -14,7 +14,7 @@ swift run SwiftGodotTestRunner
 SWIFTGODOT_TEST_FILTER="SnappingTests" swift run SwiftGodotTestRunner
 ```
 
-## Run a specific test that require embedding in a Godot instance
+## Run a specific test that requires embedding in a Godot instance
 
 ```bash
 SWIFTGODOT_TEST_FILTER="SnappingTests.testSnapDouble" swift run SwiftGodotTestRunner
