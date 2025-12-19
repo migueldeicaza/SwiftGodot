@@ -697,4 +697,155 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[500], 1000)
         XCTAssertEqual(dictionary[999], 1998)
     }
+
+    // MARK: - Type Mismatch Tests (Godot prints errors, operations ignored)
+
+    @SwiftGodotTest
+    func testTypeMismatchKeyViaUnderlyingDictionary() {
+        // Create typed dictionary expecting Int keys
+        let typed = TypedDictionary<Int, String>()
+        typed[1] = "one"
+
+        // Try to insert with wrong key type via underlying VariantDictionary
+        // Godot will print an error and ignore the operation
+        typed.dictionary[Variant("wrong_key_type")] = Variant("value")
+
+        // Dictionary should remain unchanged (only the valid entry)
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertEqual(typed[1], "one")
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchValueViaUnderlyingDictionary() {
+        // Create typed dictionary expecting String values
+        let typed = TypedDictionary<Int, String>()
+        typed[1] = "one"
+
+        // Try to insert with wrong value type via underlying VariantDictionary
+        // Godot will print an error and ignore the operation
+        typed.dictionary[Variant(2)] = Variant(12345) // Int instead of String
+
+        // Dictionary should remain unchanged (only the valid entry)
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertEqual(typed[1], "one")
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchBothKeyAndValueViaUnderlyingDictionary() {
+        // Create typed dictionary expecting Int keys and String values
+        let typed = TypedDictionary<Int, String>()
+        typed[1] = "one"
+
+        // Try to insert with both wrong key and value types
+        // Godot will print an error and ignore the operation
+        typed.dictionary[Variant("wrong")] = Variant(Vector2(x: 1, y: 2))
+
+        // Dictionary should remain unchanged
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertEqual(typed[1], "one")
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchMergeWithIncompatibleTypes() {
+        // Create typed dictionary
+        let typed = TypedDictionary<Int, Int>()
+        typed[1] = 100
+
+        // Create untyped dictionary with incompatible types
+        let untyped = VariantDictionary()
+        untyped[Variant("string_key")] = Variant("string_value")
+        untyped[Variant(2)] = Variant(200) // This one is compatible
+
+        // Merge - Godot prints error and the entire merge operation fails
+        // when incompatible types are encountered
+        typed.merge(dictionary: untyped, overwrite: false)
+
+        // Dictionary remains unchanged due to type mismatch in source
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertEqual(typed[1], 100)
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchAssignWithIncompatibleTypes() {
+        // Create typed dictionary
+        let typed = TypedDictionary<Int, String>()
+        typed[1] = "original"
+
+        // Create untyped dictionary with incompatible types
+        let untyped = VariantDictionary()
+        untyped[Variant("wrong")] = Variant(123) // Both key and value wrong
+        untyped[Variant(2)] = Variant("correct") // This one is correct
+
+        // Assign - Godot prints error when encountering incompatible types
+        // but the operation keeps the original content unchanged
+        typed.assign(dictionary: untyped)
+
+        // Original dictionary content preserved due to failed assignment
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertEqual(typed[1], "original")
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchFromVariantDictionaryWithWrongTypes() {
+        // Create untyped dictionary with mixed types
+        let untyped = VariantDictionary()
+        untyped[Variant(1)] = Variant("one")
+        untyped[Variant("two")] = Variant(2) // Wrong key type
+        untyped[Variant(3)] = Variant(Vector2()) // Wrong value type
+
+        // Create typed dictionary from it - Godot fails to convert when types don't match
+        // and returns an empty dictionary
+        let typed = TypedDictionary<Int, String>(from: untyped)
+
+        // Result is empty because source had incompatible types
+        XCTAssertEqual(typed.size(), 0)
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchUpdateExistingKeyWithWrongValueType() {
+        // Create typed dictionary
+        let typed = TypedDictionary<String, Int>()
+        typed["key"] = 42
+
+        // Try to update with wrong value type via underlying dictionary
+        // Godot will print an error and ignore the operation
+        typed.dictionary[Variant("key")] = Variant("not_an_int")
+
+        // Value should remain unchanged
+        XCTAssertEqual(typed["key"], 42)
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchObjectTypeDictionaryWithWrongObjectType() {
+        // Create typed dictionary expecting RefCounted
+        let typed = TypedDictionary<Int, RefCounted?>()
+        let refCounted = RefCounted()
+        typed[1] = refCounted
+
+        // Try to insert a Node (which is not RefCounted) via underlying dictionary
+        // This should fail because Node is not compatible with RefCounted
+        let node = Node()
+        typed.dictionary[Variant(2)] = Variant(node)
+
+        // Dictionary should only have the valid entry
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertTrue(typed[1] === refCounted)
+    }
+
+    @SwiftGodotTest
+    func testTypeMismatchMultipleInvalidInserts() {
+        // Create typed dictionary
+        let typed = TypedDictionary<Int, Float>()
+        typed[1] = 1.5
+
+        // Try multiple invalid inserts
+        typed.dictionary[Variant("a")] = Variant(1.0) // Wrong key
+        typed.dictionary[Variant("b")] = Variant(2.0) // Wrong key
+        typed.dictionary[Variant(2)] = Variant("wrong") // Wrong value
+        typed.dictionary[Variant(3)] = Variant(Vector3()) // Wrong value
+
+        // Dictionary should remain with only the original entry
+        XCTAssertEqual(typed.size(), 1)
+        XCTAssertEqual(typed[1], 1.5)
+    }
 }
