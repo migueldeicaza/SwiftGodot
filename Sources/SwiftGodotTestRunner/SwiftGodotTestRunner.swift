@@ -185,7 +185,7 @@ struct SwiftGodotTestRunner {
         print("\n[4/5] Running tests in Godot...")
         let godotProcess = Process()
         godotProcess.executableURL = URL(fileURLWithPath: godotPath)
-        godotProcess.arguments = ["--headless", "--verbose", "--path", absoluteProjectPath]
+        godotProcess.arguments = ["--headless", "--path", absoluteProjectPath]
         godotProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
         godotProcess.standardOutput = FileHandle.standardOutput
         godotProcess.standardError = FileHandle.standardError
