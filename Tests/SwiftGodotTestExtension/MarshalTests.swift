@@ -64,33 +64,13 @@ private class TestNode: Node {
     }
 }
 
-public final class MarshalTests: GodotTestCase {
-    public override class var godotSubclasses: [Object.Type] {
+@SwiftGodotTestSuite
+final class MarshalTests {
+    public static var godotSubclasses: [Object.Type] {
         return [TestNode.self, NodeUsingSwiftDate.self]
     }
 
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testExportedClosure", method: testExportedClosure),
-            GodotTest(name: "testDateNode", method: testDateNode),
-            GodotTest(name: "testClassesMethodsPerformance", method: testClassesMethodsPerformance),
-            GodotTest(name: "testSignals", method: testSignals),
-            GodotTest(name: "testBuiltinsTypesMethodsPerformance", method: testBuiltinsTypesMethodsPerformance),
-            GodotTest(name: "testVarargMethodsPerformance", method: testVarargMethodsPerformance),
-            GodotTest(name: "testCallableArgumentInCallable", method: testCallableArgumentInCallable),
-            GodotTest(name: "testSwiftArrays", method: testSwiftArrays),
-            GodotTest(name: "testSomeVariantConvertible", method: testSomeVariantConvertible),
-            GodotTest(name: "testCallableMethodReturningVariant", method: testCallableMethodReturningVariant),
-            GodotTest(name: "testUnsafePointersNMemoryLayout", method: testUnsafePointersNMemoryLayout),
-            GodotTest(name: "testVariants", method: testVariants),
-            GodotTest(name: "testUnwrapping", method: testUnwrapping),
-            GodotTest(name: "testCallableViaSwiftClosure", method: testCallableViaSwiftClosure),
-            GodotTest(name: "testOptionalObjectArgument", method: testOptionalObjectArgument),
-        ]
-    }
-
-    public required init() {}
-
+    @SwiftGodotTest
     public func testExportedClosure() {
         let node = TestNode()
         
@@ -120,6 +100,7 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual(node.closure(2, 3, 4), 24)
     }
 
+    @SwiftGodotTest
     public func testDateNode() {
         let node = NodeUsingSwiftDate()
         let date = Date.now
@@ -129,6 +110,7 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual(node.date, Date(timeIntervalSince1970: date.timeIntervalSince1970 + 1))
     }
 
+    @SwiftGodotTest
     public func testClassesMethodsPerformance() {
         let node = TestNode()
         let child = TestNode()
@@ -151,6 +133,7 @@ public final class MarshalTests: GodotTestCase {
         }
     }
 
+    @SwiftGodotTest
     public func testSignals() {
         let node = TestNode()
         var value: Int = 0
@@ -166,6 +149,7 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual(node.intTaken, 10)
     }
 
+    @SwiftGodotTest
     public func testBuiltinsTypesMethodsPerformance() {
         let makeRandomVector = {
             Vector3(x: .random(in: -1.0...1.0), y: .random(in: -1.0...1.0), z: .random(in: -1.0...1.0))
@@ -183,6 +167,7 @@ public final class MarshalTests: GodotTestCase {
         }
     }
 
+    @SwiftGodotTest
     public func testVarargMethodsPerformance() {
         let floats = (0..<10).map { _ in Float.random(in: -1.0...1.0) }
         let randomValues = floats.map { Variant($0) }
@@ -196,6 +181,7 @@ public final class MarshalTests: GodotTestCase {
         }
     }
 
+    @SwiftGodotTest
     public func testCallableArgumentInCallable() {
         let testNode = TestNode()
         
@@ -229,6 +215,7 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual(anotherResult, 33)
     }
 
+    @SwiftGodotTest
     public func testSwiftArrays() {
         let testNode = TestNode()
         let array = VariantArray(Int.self)
@@ -257,6 +244,7 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual([12, 1, 9], testNode.swiftArray)
     }
 
+    @SwiftGodotTest
     public func testSomeVariantConvertible() {
         
         func returnsVariant() -> FastVariant? {
@@ -273,6 +261,7 @@ public final class MarshalTests: GodotTestCase {
         let _ = Variant(takingOver: result)
     }
 
+    @SwiftGodotTest
     public func testCallableMethodReturningVariant() {
         let testNode = TestNode()
         
@@ -281,11 +270,13 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual(testNode.call(method: "bar", nil), nil)
     }
 
+    @SwiftGodotTest
     public func testUnsafePointersNMemoryLayout() {
         // UnsafeRawPointersN# is keeping `UnsafeRawPointer?` inside, but Swift Compiler is smart enough to confine the optionality of `UnsafeRawPointer` as a property of its payload (being a zero address or not) instead of introducing an extra byte and consequential alignment padding.
         //XCTAssertEqual(MemoryLayout<UnsafeRawPointersN9>.size, MemoryLayout<UnsafeRawPointer>.stride * 9, "UnsafeRawPointersN should have the same size as a N of UnsafeRawPointers")
     }
 
+    @SwiftGodotTest
     public func testVariants() {
         let dc = Double.pi
         
@@ -297,6 +288,7 @@ public final class MarshalTests: GodotTestCase {
         XCTAssertEqual(2.toVariant(), 2.toVariant())
     }
 
+    @SwiftGodotTest
     public func testUnwrapping() {
         func wrap<T: VariantConvertible>(_ value: T) -> Variant? {
             return value.toVariant()
@@ -319,6 +311,7 @@ public final class MarshalTests: GodotTestCase {
         node0?.queueFree()
     }
 
+    @SwiftGodotTest
     public func testCallableViaSwiftClosure() {
         var callable = Callable { (a: Int, b: Int, c: String) -> String in
             return [String](repeating: c, count: a + b).joined(separator: " ")
@@ -375,6 +368,7 @@ public final class MarshalTests: GodotTestCase {
         )
     }
 
+    @SwiftGodotTest
     public func testOptionalObjectArgument() {
         let testNode = Node()
         let arguments = Arguments(from: [nil, testNode.toVariant()])

@@ -4,21 +4,9 @@
 
 @testable import SwiftGodot
 
-public final class EnginePlaneTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testConstructorMethods", method: testConstructorMethods),
-            GodotTest(name: "testBasicGetters", method: testBasicGetters),
-            GodotTest(name: "testBasicSetters", method: testBasicSetters),
-            GodotTest(name: "testPlanePointOperations", method: testPlanePointOperations),
-            GodotTest(name: "testHasPoint", method: testHasPoint),
-            GodotTest(name: "testIntersection", method: testIntersection),
-            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class EnginePlaneTests {
+    @SwiftGodotTest
     public func testConstructorMethods () {
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let planeVector: Plane  = Plane (normal: Vector3 (x: 32, y: 22, z: 16), d: 3)
@@ -27,6 +15,7 @@ public final class EnginePlaneTests: GodotTestCase {
         XCTAssertEqual (plane, planeCopyPlane, "Planes created with same values but different methods should be equal.")
     }
     
+    @SwiftGodotTest
     public func testBasicGetters () {        
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let planeNormalized: Plane = Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42)
@@ -34,6 +23,7 @@ public final class EnginePlaneTests: GodotTestCase {
         XCTAssertEqual (plane.normalized (), planeNormalized, "normalized() should return a copy of the normalized value.")
     }
     
+    @SwiftGodotTest
     public func testBasicSetters () {
         var plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         plane.normal = Vector3 (x: 4, y: 2, z: 3)
@@ -42,6 +32,7 @@ public final class EnginePlaneTests: GodotTestCase {
         XCTAssertEqual (plane, Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42), "normalize() should result in the expected plane.")
     }
     
+    @SwiftGodotTest
     public func testPlanePointOperations () {
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 4)
@@ -50,6 +41,7 @@ public final class EnginePlaneTests: GodotTestCase {
         XCTAssertEqual (yFacingPlane.getAnyPerpendicularNormal (), Vector3 (x: 1, y: 0, z: 0), "getAnyPerpendicularNormal() should return the expected result.")
     }
     
+    @SwiftGodotTest
     public func testHasPoint () {
         let xFacingPlane: Plane = Plane (a: 1, b: 0, c: 0, d: 0)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 0)
@@ -74,6 +66,7 @@ public final class EnginePlaneTests: GodotTestCase {
         XCTAssertTrue (xFacingPlaneWithDOffset.hasPoint (yXxisPointWithDOffset), "hasPoint () with passed Vector3 should return the expected result.")
     }
     
+    @SwiftGodotTest
     public func testIntersection () {
         let xFacingPlane: Plane = Plane (a: 1, b: 0, c: 0, d: 1)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 2)
@@ -110,6 +103,7 @@ public final class EnginePlaneTests: GodotTestCase {
         }
     }
     
+    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)

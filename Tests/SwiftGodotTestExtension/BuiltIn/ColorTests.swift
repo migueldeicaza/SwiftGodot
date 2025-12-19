@@ -9,18 +9,9 @@
 
 @testable import SwiftGodot
 
-public final class ColorTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testOperatorUnaryMinus", method: testOperatorUnaryMinus),
-            GodotTest(name: "testHue", method: testHue),
-            GodotTest(name: "testSaturation", method: testSaturation),
-            GodotTest(name: "testValue", method: testValue),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class ColorTests {
+    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Color
         
@@ -43,6 +34,7 @@ public final class ColorTests: GodotTestCase {
         XCTAssertEqual (value.alpha, 0.6)
     }
 
+    @SwiftGodotTest
     public func testHue() {
         XCTAssertEqual (Color.black.hue, 0)
         XCTAssertEqual (Color.white.hue, 0)
@@ -62,6 +54,7 @@ public final class ColorTests: GodotTestCase {
         XCTAssertEqual (Color.hex (hex: 0x800080FF).hue, 300.0 / 360.0)
     }
 
+    @SwiftGodotTest
     public func testSaturation() {
         XCTAssertEqual (Color.black.saturation, 0)
         XCTAssertEqual (Color.white.saturation, 0)
@@ -75,6 +68,7 @@ public final class ColorTests: GodotTestCase {
         XCTAssertEqual (Color.hex (hex: 0xFEFE7FFF).saturation, 0.5)
     }
 
+    @SwiftGodotTest
     public func testValue() {
         XCTAssertEqual (Color.black.value, 0)
         XCTAssertEqual (Color.white.value, 1)

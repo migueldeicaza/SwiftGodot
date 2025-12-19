@@ -19,23 +19,13 @@ private class TestSignalNode: Node {
     }
 }
 
-public final class SignalTests: GodotTestCase {
-    public override class var godotSubclasses: [Object.Type] {
+@SwiftGodotTestSuite
+final class SignalTests {
+    public static var godotSubclasses: [Object.Type] {
         return [TestSignalNode.self]
     }
 
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testUserDefinedSignal", method: testUserDefinedSignal),
-            GodotTest(name: "testNuSignal", method: testNuSignal),
-            GodotTest(name: "testBuiltInSignalWithNoArgument", method: testBuiltInSignalWithNoArgument),
-            GodotTest(name: "testBuiltInSignalWithArgument", method: testBuiltInSignalWithArgument),
-            GodotTest(name: "testBuiltInSignalWithPrimitiveArguments", method: testBuiltInSignalWithPrimitiveArguments),
-        ]
-    }
-
-    public required init() {}
-
+    @SwiftGodotTest
     public func testUserDefinedSignal() {
         let node = TestSignalNode()
 
@@ -46,6 +36,7 @@ public final class SignalTests: GodotTestCase {
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
     }
 
+    @SwiftGodotTest
     public func testNuSignal() {
         let node = TestSignalNode()
         var signalReceived = false
@@ -59,6 +50,7 @@ public final class SignalTests: GodotTestCase {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
+    @SwiftGodotTest
     public func testBuiltInSignalWithNoArgument() {
         let node = Node()
         var signalReceived = false
@@ -69,6 +61,7 @@ public final class SignalTests: GodotTestCase {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
+    @SwiftGodotTest
     public func testBuiltInSignalWithArgument() {
         let node = Node()
         var signalReceived = false
@@ -80,6 +73,7 @@ public final class SignalTests: GodotTestCase {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
+    @SwiftGodotTest
     public func testBuiltInSignalWithPrimitiveArguments() {
         let node = AnimationNode()
         var signalReceived = false

@@ -4,18 +4,8 @@
 
 @testable import SwiftGodot
 
-public final class Transform3DTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testTranslation", method: testTranslation),
-            GodotTest(name: "testScaling", method: testScaling),
-            GodotTest(name: "testRotation", method: testRotation),
-            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class Transform3DTests {
     private func createDummyTransform () -> Transform3D {
         return Transform3D (basis: Basis (xAxis: Vector3 (x: 1, y: 2, z: 3), yAxis: Vector3 (x: 4, y: 5, z: 6), zAxis: Vector3 (x: 7, y: 8, z: 9)), origin: Vector3 (x: 10, y: 11, z: 12))
     }
@@ -24,6 +14,7 @@ public final class Transform3DTests: GodotTestCase {
         return Transform3D ()
     }
     
+    @SwiftGodotTest
     public func testTranslation () {
         let offset: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
@@ -37,6 +28,7 @@ public final class Transform3DTests: GodotTestCase {
         XCTAssertEqual (orig.translatedLocal (offset: offset), orig * T)
     }
 
+    @SwiftGodotTest
     public func testScaling () {
         let scaling: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
@@ -50,6 +42,7 @@ public final class Transform3DTests: GodotTestCase {
         XCTAssertEqual (orig.scaledLocal (scale: scaling), orig * S)
     }
 
+    @SwiftGodotTest
     public func testRotation () {
         let axis: Vector3 = Vector3 (x: 1, y: 2, z: 3).normalized ()
         let phi: Double = 1.0
@@ -64,6 +57,7 @@ public final class Transform3DTests: GodotTestCase {
         XCTAssertEqual (orig.rotatedLocal (axis: axis, angle: phi), orig * R)
     }
 
+    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let y: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infiniteVec: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)

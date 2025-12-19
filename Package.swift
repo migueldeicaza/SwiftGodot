@@ -153,6 +153,25 @@ var targets: [Target] = [
         ],
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
+
+    // Test macro implementations for @SwiftGodotTest and @SwiftGodotTestSuite
+    .macro(
+        name: "SwiftGodotTestMacrosLibrary",
+        dependencies: [
+            .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+        ],
+        swiftSettings: [.swiftLanguageMode(.v5)]
+    ),
+
+    // Test macro definitions and SwiftGodotTestSuiteProtocol
+    .target(
+        name: "SwiftGodotTestMacros",
+        dependencies: ["SwiftGodot"],
+        swiftSettings: [.swiftLanguageMode(.v5)],
+        plugins: ["SwiftGodotTestMacrosLibrary"]
+    ),
     // This contains sample code showing how to use the SwiftGodot API
     .target(
         name: "SimpleExtension",
@@ -226,7 +245,7 @@ var targets: [Target] = [
     // Test extension (loaded by Godot) - includes all test infrastructure and test suites
     .target(
         name: "SwiftGodotTestExtension",
-        dependencies: ["SwiftGodot"],
+        dependencies: ["SwiftGodot", "SwiftGodotTestMacros"],
         path: "Tests/SwiftGodotTestExtension",
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),

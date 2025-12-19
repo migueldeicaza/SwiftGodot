@@ -9,16 +9,9 @@
 
 @testable import SwiftGodot
 
-public final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent", method: testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent),
-            GodotTest(name: "testIntersectRayResultIsNil_whenColliderPropertyIsMissing", method: testIntersectRayResultIsNil_whenColliderPropertyIsMissing),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class PhysicsDirectSpaceState2DIntersectRayResultTests {
+    @SwiftGodotTest
     public func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() {
         let collider: Object = GridMap()
 
@@ -46,6 +39,7 @@ public final class PhysicsDirectSpaceState2DIntersectRayResultTests: GodotTestCa
         XCTAssertEqual(result.shape, 22)
     }
 
+    @SwiftGodotTest
     public func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
         let collider: Object = GridMap()
         

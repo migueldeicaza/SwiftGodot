@@ -31,27 +31,13 @@ fileprivate class TestObject: Object {
 fileprivate class TestObject2: TestObject { // for checking inheritance
 }
 
-public final class MacroCallableIntegrationTests: GodotTestCase {
-    public override class var godotSubclasses: [Object.Type] {
+@SwiftGodotTestSuite
+final class MacroCallableIntegrationTests {
+    public static var godotSubclasses: [Object.Type] {
         return [TestObject.self, TestObject2.self]
     }
 
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testImplicitTypingOfUntypedObjectArray", method: testImplicitTypingOfUntypedObjectArray),
-            GodotTest(name: "testImplicitTypingOfUntypedObjectArrayFailure", method: testImplicitTypingOfUntypedObjectArrayFailure),
-            GodotTest(name: "testExplicitlyTypedObjectArrayGodotSideMismatch", method: testExplicitlyTypedObjectArrayGodotSideMismatch),
-            GodotTest(name: "testTypedObjectArray", method: testTypedObjectArray),
-            GodotTest(name: "testImplicitlyTypingBuiltinsArray", method: testImplicitlyTypingBuiltinsArray),
-            GodotTest(name: "testImplicitTypingOfUntypedBuiltinArrayFailure", method: testImplicitTypingOfUntypedBuiltinArrayFailure),
-            GodotTest(name: "testExplicitlyTypedBuiltinArrayGodotSideMismatch", method: testExplicitlyTypedBuiltinArrayGodotSideMismatch),
-            GodotTest(name: "testExplicitlyTypedBuiltinArray", method: testExplicitlyTypedBuiltinArray),
-            GodotTest(name: "testCountMixed", method: testCountMixed),
-        ]
-    }
-
-    public required init() {}
-
+    @SwiftGodotTest
     public func testImplicitTypingOfUntypedObjectArray() {
         let testObject = TestObject()
         
@@ -74,6 +60,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         object2.free()
     }
 
+    @SwiftGodotTest
     public func testImplicitTypingOfUntypedObjectArrayFailure() {
         let testObject = TestObject()
         
@@ -97,6 +84,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         object2.free()
     }
 
+    @SwiftGodotTest
     public func testExplicitlyTypedObjectArrayGodotSideMismatch() {
         let testObject = TestObject()
         
@@ -124,6 +112,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         object2.free()
     }
 
+    @SwiftGodotTest
     public func testTypedObjectArray() {
         let testObject = TestObject()
         
@@ -146,6 +135,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         object2.free()
     }
 
+    @SwiftGodotTest
     public func testImplicitlyTypingBuiltinsArray() {
         let testObject = TestObject()
         
@@ -158,6 +148,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         testObject.free()
     }
 
+    @SwiftGodotTest
     public func testImplicitTypingOfUntypedBuiltinArrayFailure() {
         let testObject = TestObject()
         
@@ -175,6 +166,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         testObject.free()
     }
 
+    @SwiftGodotTest
     public func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
         let testObject = TestObject()
         
@@ -189,6 +181,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         testObject.free()
     }
 
+    @SwiftGodotTest
     public func testExplicitlyTypedBuiltinArray() {
         let testObject = TestObject()
         
@@ -201,6 +194,7 @@ public final class MacroCallableIntegrationTests: GodotTestCase {
         testObject.free()
     }
 
+    @SwiftGodotTest
     public func testCountMixed() {
         let testObject = TestObject()
         

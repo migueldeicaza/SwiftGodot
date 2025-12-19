@@ -16,58 +16,58 @@ public class TestRunnerNode: Node {
     private let resultsPath = "res://test_results.json"
 
     /// All test suites to run
-    private let suites: [any GodotTestCaseProtocol.Type] = [
+    private let suites: [any SwiftGodotTestSuiteProtocol] = [
         // Core tests
-        SignalTests.self,
-        WrappedTests.self,
-        DuplicateClassRegistrationTests.self,
-        PerformanceTests.self,
-        VariantTests.self,
-        MarshalTests.self,
-        MemoryLeakTests.self,
-        LifecycleTests.self,
-        SnappingTests.self,
-        LinearInterpolationTests.self,
-        TypedArrayTests.self,
-        TypedDictionaryTests.self,
-        MacroCallableIntegrationTests.self,
-        MacroIntegrationTests.self,
-        ValidatePropertyTests.self,
-        IntersectRayResultTests.self,
-        PhysicsDirectSpaceState2DIntersectRayResultTests.self,
-        PhysicsDirectSpaceState3DIntersectRayResultTests.self,
+        SignalTests(),
+        WrappedTests(),
+        DuplicateClassRegistrationTests(),
+        PerformanceTests(),
+        VariantTests(),
+        MarshalTests(),
+        MemoryLeakTests(),
+        LifecycleTests(),
+        SnappingTests(),
+        LinearInterpolationTests(),
+        TypedArrayTests(),
+        TypedDictionaryTests(),
+        MacroCallableIntegrationTests(),
+        MacroIntegrationTests(),
+        ValidatePropertyTests(),
+        IntersectRayResultTests(),
+        PhysicsDirectSpaceState2DIntersectRayResultTests(),
+        PhysicsDirectSpaceState3DIntersectRayResultTests(),
 
         // BuiltIn type tests
-        ColorTests.self,
-        PackedArrayTests.self,
-        PlaneTests.self,
-        QuaternionTests.self,
-        Vector2Tests.self,
-        Vector2iTests.self,
-        Vector3Tests.self,
-        Vector3iTests.self,
-        Vector4Tests.self,
-        Vector4iTests.self,
+        ColorTests(),
+        PackedArrayTests(),
+        PlaneTests(),
+        QuaternionTests(),
+        Vector2Tests(),
+        Vector2iTests(),
+        Vector3Tests(),
+        Vector3iTests(),
+        Vector4Tests(),
+        Vector4iTests(),
 
         // Engine math tests
-        AABBTests.self,
-        BasisTests.self,
-        EngineColorTests.self,
-        Geometry2DTests.self,
-        Geometry3DTests.self,
-        EnginePlaneTests.self,
-        EngineQuaternionTests.self,
-        Rect2Tests.self,
-        Rect2iTests.self,
-        Transform2DTests.self,
-        Transform3DTests.self,
-        EngineVector2Tests.self,
-        EngineVector2iTests.self,
-        EngineVector3Tests.self,
-        EngineVector3iTests.self,
-        EngineVector4Tests.self,
-        EngineVector4iTests.self,
-        AStarTests.self,
+        AABBTests(),
+        BasisTests(),
+        EngineColorTests(),
+        Geometry2DTests(),
+        Geometry3DTests(),
+        EnginePlaneTests(),
+        EngineQuaternionTests(),
+        Rect2Tests(),
+        Rect2iTests(),
+        Transform2DTests(),
+        Transform3DTests(),
+        EngineVector2Tests(),
+        EngineVector2iTests(),
+        EngineVector3Tests(),
+        EngineVector3iTests(),
+        EngineVector4Tests(),
+        EngineVector4iTests(),
+        AStarTests(),
     ]
 
     public override func _ready() {
@@ -95,8 +95,8 @@ public class TestRunnerNode: Node {
 
         GD.print("Running \(suites.count) test suites...")
 
-        for suiteType in suites {
-            let suiteResult = runSuite(suiteType)
+        for suite in suites {
+            let suiteResult = runSuite(suite)
             suiteResults.append(suiteResult)
         }
 
@@ -108,7 +108,8 @@ public class TestRunnerNode: Node {
         return results
     }
 
-    private func runSuite(_ suiteType: any GodotTestCaseProtocol.Type) -> TestSuiteResult {
+    private func runSuite(_ suite: any SwiftGodotTestSuiteProtocol) -> TestSuiteResult {
+        let suiteType = type(of: suite)
         let suiteName = suiteType.testCaseName
         GD.printRich("[color=blue][b]\(suiteName)[/b][/color]")
 
@@ -121,12 +122,12 @@ public class TestRunnerNode: Node {
         suiteType.setUpClass()
 
         // Run all test methods
-        let tests = suiteType.allTests
+        let tests = suite.allTests
         var testResults: [TestCaseResult] = []
 
         for test in tests {
             GD.printRich("[color=blue]\(test.name)[/color]")
-            let result = runTest(suiteType: suiteType, test: test)
+            let result = runTest(suite: suite, test: test)
             testResults.append(result)
 
             if let failure = result.failure {
@@ -148,16 +149,15 @@ public class TestRunnerNode: Node {
         return TestSuiteResult(name: suiteName, tests: testResults)
     }
 
-    private func runTest(suiteType: any GodotTestCaseProtocol.Type, test: GodotTest) -> TestCaseResult {
-        let instance = suiteType.init()
+    private func runTest(suite: any SwiftGodotTestSuiteProtocol, test: SwiftGodotTestInvocation) -> TestCaseResult {
         let context = TestContext(testName: test.name)
         TestContext.current = context
 
         let startTime = getCurrentTime()
 
-        instance.setUp()
-        test.run(instance)
-        instance.tearDown()
+        suite.setUp()
+        test.run()
+        suite.tearDown()
 
         TestContext.current = nil
         let duration = getCurrentTime() - startTime

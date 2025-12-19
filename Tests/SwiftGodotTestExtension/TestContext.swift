@@ -9,7 +9,7 @@ import Foundation
 
 /// Context for recording test failures during test execution.
 /// Each test method gets its own context that collects any assertion failures.
-public final class TestContext {
+final class TestContext {
     /// The current test context. Set by the test runner before executing each test.
     public static var current: TestContext?
 

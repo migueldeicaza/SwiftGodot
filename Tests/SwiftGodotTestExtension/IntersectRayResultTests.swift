@@ -9,16 +9,9 @@
 
 @testable import SwiftGodot
 
-public final class IntersectRayResultTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent", method: testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent),
-            GodotTest(name: "testIntersectRayResultIsNil_whenColliderPropertyIsMissing", method: testIntersectRayResultIsNil_whenColliderPropertyIsMissing),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class IntersectRayResultTests {
+    @SwiftGodotTest
     public func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() {
         let collider: Object = GridMap()
 
@@ -48,6 +41,7 @@ public final class IntersectRayResultTests: GodotTestCase {
         XCTAssertEqual(result.faceIndex, 44)
     }
 
+    @SwiftGodotTest
     public func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
         let collider: Object = GridMap()
         

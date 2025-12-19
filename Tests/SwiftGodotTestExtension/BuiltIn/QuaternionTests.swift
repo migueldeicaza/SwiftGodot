@@ -9,15 +9,9 @@
 
 @testable import SwiftGodot
 
-public final class QuaternionTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testOperatorUnaryMinus", method: testOperatorUnaryMinus),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class QuaternionTests {
+    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Quaternion
         

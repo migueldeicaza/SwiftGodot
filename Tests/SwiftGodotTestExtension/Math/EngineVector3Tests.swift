@@ -4,34 +4,17 @@
 
 @testable import SwiftGodot
 
-public final class EngineVector3Tests: GodotTestCase {
+@SwiftGodotTestSuite
+final class EngineVector3Tests {
 
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testConstructorMethods", method: testConstructorMethods),
-            GodotTest(name: "testAngleMethods", method: testAngleMethods),
-            GodotTest(name: "testAxisMethods", method: testAxisMethods),
-            GodotTest(name: "testInterpolationMethods", method: testInterpolationMethods),
-            GodotTest(name: "testLengthMethods", method: testLengthMethods),
-            GodotTest(name: "testLimitingMethods", method: testLimitingMethods),
-            GodotTest(name: "testNormalizationMethods", method: testNormalizationMethods),
-            GodotTest(name: "testOperators", method: testOperators),
-            GodotTest(name: "testOtherMethods", method: testOtherMethods),
-            GodotTest(name: "testPlaneMethods", method: testPlaneMethods),
-            GodotTest(name: "testRoundingMethods", method: testRoundingMethods),
-            GodotTest(name: "testLinearAlgebraMethods", method: testLinearAlgebraMethods),
-            GodotTest(name: "testFiniteNumberChecks", method: testFiniteNumberChecks),
-        ]
-    }
-
-    public required init() {}
-
+    @SwiftGodotTest
     public func testConstructorMethods () {
         let vectorEmpty: Vector3 = Vector3 ()
         let vectorZero: Vector3 = Vector3 (x: 0.0, y: 0.0, z: 0.0)
         XCTAssertEqual (vectorEmpty, vectorZero, "Vector3 Constructor with no inputs should return a zero Vector3.")
     }
 
+    @SwiftGodotTest
     public func testAngleMethods () {
         let vectorX: Vector3 = Vector3 (x: 1, y: 0, z: 0)
         let vectorY: Vector3 = Vector3 (x: 0, y: 1, z: 0)
@@ -46,6 +29,7 @@ public final class EngineVector3Tests: GodotTestCase {
         assertApproxEqual (vectorYz.signedAngleTo (vectorX, axis: vectorY), Double.tau / 4, "Vector3 signedAngleTo should work as expected.")
     }
 
+    @SwiftGodotTest
     public func testAxisMethods () {
         var vector: Vector3 = Vector3 (x: 1.2, y: 3.4, z: 5.6)
         XCTAssertEqual (vector.maxAxisIndex (), Vector3.Axis.z.rawValue, "Vector3 maxAxisIndex should work as expected.")
@@ -58,6 +42,7 @@ public final class EngineVector3Tests: GodotTestCase {
     }
 
 
+    @SwiftGodotTest
     public func testInterpolationMethods () {
         let vector1: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         let vector2: Vector3 = Vector3 (x: 4, y: 5, z: 6)
@@ -78,6 +63,7 @@ public final class EngineVector3Tests: GodotTestCase {
         XCTAssertEqual (Vector3 (x: 1, y: 0, z: 0).moveToward (to: Vector3 (x: 10, y: 0, z: 0), delta: 3), Vector3 (x: 4, y: 0, z: 0), "Vector3 moveToward should work as expected.")
     }
 
+    @SwiftGodotTest
     public func testLengthMethods () {
         let vector1: Vector3 = Vector3 (x: 10, y: 10, z: 10)
         let vector2: Vector3 = Vector3 (x: 20, y: 30, z: 40)
@@ -89,6 +75,7 @@ public final class EngineVector3Tests: GodotTestCase {
         assertApproxEqual (vector1.distanceTo (vector2), 37.41657386773941385584, "Vector3 distanceTo should work as expected.")
     }
 
+    @SwiftGodotTest
     public func testLimitingMethods () {
         let vector: Vector3 = Vector3 (x: 10, y: 10, z: 10)
         assertApproxEqual (vector.limitLength (), Vector3 (x: Float.sqrt13, y: Float.sqrt13, z: Float.sqrt13), "Vector3 limitLength should work as expected.")
@@ -98,6 +85,7 @@ public final class EngineVector3Tests: GodotTestCase {
         XCTAssertEqual (vector.clamp (min: Vector3 (x: 0, y: 10, z: 15), max: Vector3 (x: 5, y: 10, z: 20)), Vector3 (x: 5, y: 10, z: 15), "Vector3 clamp should work as expected.")
     }
 
+    @SwiftGodotTest
     public func testNormalizationMethods () {
         XCTAssertEqual (Vector3 (x: 1, y: 0, z: 0).isNormalized (), true, "Vector3 isNormalized should return true for a normalized vector.")
         XCTAssertEqual (Vector3 (x: 1, y: 1, z: 1).isNormalized (), false, "Vector3 isNormalized should return false for a non-normalized vector.")
@@ -112,6 +100,7 @@ public final class EngineVector3Tests: GodotTestCase {
         //assertApproxEqual (vector, Vector3 (x: 0.368522751763902980457, y: -0.621882143601586279522, z: 0.6909801595573180883585), "Vector3 normalize should work as expected.")
     }
 
+    @SwiftGodotTest
     public func testOperators () {
         let decimal1: Vector3 = Vector3 (x: 2.3, y: 4.9, z: 7.8)
         let decimal2: Vector3 = Vector3 (x: 1.2, y: 3.4, z: 5.6)
@@ -154,6 +143,7 @@ public final class EngineVector3Tests: GodotTestCase {
         XCTAssertEqual (Variant (Vector3 (x: Float.e, y: Float.sqrt2, z: Float.sqrt3)).description, "(2.718282, 1.414214, 1.732051)", "Vector3 cast to String should print the correct amount of digits for realT = float.")
     }
 
+    @SwiftGodotTest
     public func testOtherMethods () {
         let vector: Vector3 = Vector3 (x: 1.2, y: 3.4, z: 5.6)
         assertApproxEqual (vector.directionTo (Vector3 ()), -vector.normalized (), "Vector3 directionTo should work as expected.")
@@ -177,6 +167,7 @@ public final class EngineVector3Tests: GodotTestCase {
         //assertApproxEqual (Vector3 (x: 5.3, y: 3.4, z: 5.6), vector.max (Vector3 (x: 5.3, y: 2.0, z: 3.0)), "Vector3 max should return expected value.")
     }
 
+    @SwiftGodotTest
     public func testPlaneMethods () {
         let vector: Vector3 = Vector3 (x: 1.2, y: 3.4, z: 5.6)
         let vectorY: Vector3 = Vector3 (x: 0, y: 1, z: 0)
@@ -195,6 +186,7 @@ public final class EngineVector3Tests: GodotTestCase {
         assertApproxEqual (vector.slide (n: vectorNonNormal), Vector3 (), "Vector3 slide should return empty Vector3 with non-normalized input.")
     }
 
+    @SwiftGodotTest
     public func testRoundingMethods () {
         let vector1: Vector3 = Vector3 (x: 1.2, y: 3.4, z: 5.6)
         let vector2: Vector3 = Vector3 (x: 1.2, y: -3.4, z: -5.6)
@@ -214,6 +206,7 @@ public final class EngineVector3Tests: GodotTestCase {
         XCTAssertEqual (vector2.sign (), Vector3 (x: 1, y: -1, z: -1), "Vector3 sign should work as expected.")
     }
 
+    @SwiftGodotTest
     public func testLinearAlgebraMethods () {
         let vectorX: Vector3 = Vector3 (x: 1, y: 0, z: 0)
         let vectorY: Vector3 = Vector3 (x: 0, y: 1, z: 0)
@@ -235,6 +228,7 @@ public final class EngineVector3Tests: GodotTestCase {
     }
 
 
+    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let infinite: [Float] = [.nan, .infinity, -.infinity]
         

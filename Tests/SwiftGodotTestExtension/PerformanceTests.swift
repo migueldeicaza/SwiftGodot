@@ -14,15 +14,9 @@ extension Vector2 {
 
 // Note: Performance testing using XCTCPUMetric and measure() is not available
 // in the new test framework. This test has been converted to a basic functional test.
-public final class PerformanceTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testInputGetVector", method: testInputGetVector),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class PerformanceTests {
+    @SwiftGodotTest
     public func testInputGetVector() {
         let ui_left = StringName("ui_left")
         let ui_right = StringName("ui_right")

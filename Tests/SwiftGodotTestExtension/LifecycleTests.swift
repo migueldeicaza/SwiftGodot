@@ -9,17 +9,10 @@
 
 @testable import SwiftGodot
 
-public final class LifecycleTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testFreeResource", method: testFreeResource),
-            GodotTest(name: "testFreeObjects", method: testFreeObjects),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class LifecycleTests {
     /// Checks memory leaks of Resource objects, this tests the Resource codepath
+    @SwiftGodotTest
     public func testFreeResource() {
         func createImageAndGetId () -> Int64 {
             let img = Image()
@@ -33,6 +26,7 @@ public final class LifecycleTests: GodotTestCase {
     }
 
     /// Checks memory leaks of Resource objects, this tests the non-Resource, non-Node codepath
+    @SwiftGodotTest
     public func testFreeObjects() {
         func createTimerAndGetId () -> Int64 {
             let img = UndoRedo()

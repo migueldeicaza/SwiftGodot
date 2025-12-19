@@ -2,21 +2,9 @@
 
 @testable import SwiftGodot
 
-public final class TypedArrayTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testAppendingElementStoresInArray", method: testAppendingElementStoresInArray),
-            GodotTest(name: "testInitWithElementsStoresInArray", method: testInitWithElementsStoresInArray),
-            GodotTest(name: "testArrayCanBeModifiedOutsideOfTheCollection", method: testArrayCanBeModifiedOutsideOfTheCollection),
-            GodotTest(name: "testExplicitVariantTypedArray", method: testExplicitVariantTypedArray),
-            GodotTest(name: "testCompatibleArrays", method: testCompatibleArrays),
-            GodotTest(name: "testObjectArrayInvariance", method: testObjectArrayInvariance),
-            GodotTest(name: "testSequenceInitializer", method: testSequenceInitializer),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class TypedArrayTests {
+    @SwiftGodotTest
     public func testAppendingElementStoresInArray() {
         let sut: TypedArray<Int> = []
 
@@ -30,6 +18,7 @@ public final class TypedArrayTests: GodotTestCase {
         XCTAssertEqual(Int(variant), 111, "After appending an Int with the value of 111, the first variant in the \(VariantArray.self) should hold an Int with the value 111")
     }
 
+    @SwiftGodotTest
     func testInitWithElementsStoresInArray() {
         let sut: TypedArray<Int> = [333]
 
@@ -40,7 +29,8 @@ public final class TypedArrayTests: GodotTestCase {
         }
         XCTAssertEqual(Int(variant), 333, "After initializing with an Int with the value of 333, the first variant in the \(VariantArray.self) should hold an Int with the value 333")
     }
-    
+
+    @SwiftGodotTest
     func testArrayCanBeModifiedOutsideOfTheCollection() {
         let sut: TypedArray<Int> = []
         
@@ -50,6 +40,7 @@ public final class TypedArrayTests: GodotTestCase {
         XCTAssertEqual(sut[0], 222, "After 222 is appended to the \(VariantArray.self), the first value should be to 222")
     }
     
+    @SwiftGodotTest
     func testExplicitVariantTypedArray() {
         let typed = TypedArray<Variant?>()
         
@@ -57,6 +48,7 @@ public final class TypedArrayTests: GodotTestCase {
         XCTAssertEqual(typed[0], 10.toVariant())
     }
     
+    @SwiftGodotTest
     func testCompatibleArrays() {
         let typed = TypedArray<Object?>()
         let anotherTyped = TypedArray<Object?>(from: typed.array)
@@ -64,6 +56,7 @@ public final class TypedArrayTests: GodotTestCase {
         XCTAssert(typed.array === anotherTyped.array)
     }
     
+    @SwiftGodotTest
     func testObjectArrayInvariance() {
         let typed = TypedArray<Node?>()
         let anotherTyped = TypedArray<Object?>(from: typed.array)
@@ -72,6 +65,7 @@ public final class TypedArrayTests: GodotTestCase {
         XCTAssert(typed.array != anotherTyped.array)
     }
     
+    @SwiftGodotTest
     func testSequenceInitializer() {
         let sequence = [1, 2, 3, 4]
                 

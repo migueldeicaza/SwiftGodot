@@ -9,15 +9,9 @@
 
 @testable import SwiftGodot
 
-public final class PlaneTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testOperatorUnaryMinus", method: testOperatorUnaryMinus),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class PlaneTests {
+    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Plane
         

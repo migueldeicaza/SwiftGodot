@@ -9,23 +9,17 @@
 @testable import SwiftGodot
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 
-public final class WrappedTests: GodotTestCase {
-    public override class var godotSubclasses: [Object.Type] {
+@SwiftGodotTestSuite
+final class WrappedTests {
+    public static var godotSubclasses: [Object.Type] {
         return [SubtypedNode.self]
     }
-
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testTopologicalSort", method: testTopologicalSort),
-        ]
-    }
-
-    public required init() {}
 
     // Note: testRetain was removed as it relied on the embedded GodotRuntime.getScene()
     // which is not available in the new external Godot test architecture.
     // This test needs to be reimplemented using the scene tree available in the running Godot instance.
 
+    @SwiftGodotTest
     public func testTopologicalSort() {
         class A: Object {
         }
@@ -68,17 +62,11 @@ final class ReferenceChecker {
 @Godot
 class DuplicateClassTestNode: Node { }
 
-public final class DuplicateClassRegistrationTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testDuplicateClassNameIsDetected", method: testDuplicateClassNameIsDetected),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class DuplicateClassRegistrationTests {
     var duplicateClassNames: [StringName] = []
 
+    @SwiftGodotTest
     public func testDuplicateClassNameIsDetected() {
         register(type: DuplicateClassTestNode.self)
         defer { unregister(type: DuplicateClassTestNode.self) }

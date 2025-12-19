@@ -9,21 +9,9 @@
 
 @testable import SwiftGodot
 
-public final class VariantTests: GodotTestCase {
-    public override class var allTests: [GodotTest] {
-        [
-            GodotTest(name: "testVariant", method: testVariant),
-            GodotTest(name: "testWrap", method: testWrap),
-            GodotTest(name: "testVariantCall", method: testVariantCall),
-            GodotTest(name: "testInitVariantConvertible", method: testInitVariantConvertible),
-            GodotTest(name: "testOperatorEqualsEquals", method: testOperatorEqualsEquals),
-            GodotTest(name: "testUnwrappingApi", method: testUnwrappingApi),
-            GodotTest(name: "testNoMisconversions", method: testNoMisconversions),
-        ]
-    }
-
-    public required init() {}
-
+@SwiftGodotTestSuite
+final class VariantTests {
+    @SwiftGodotTest
     public func testVariant () {
         let testString = "Hi"
         let variant = Variant (testString)
@@ -32,12 +20,14 @@ public final class VariantTests: GodotTestCase {
         XCTAssertEqual (unwrapped, testString)
     }
 
+    @SwiftGodotTest
     public func testWrap() {
         let x: Node? = Node()
         let _ = Variant(x)
     }
     
     
+    @SwiftGodotTest
     public func testVariantCall() {
         let string = "Hello Hello Hello Hello"
         let variant = Variant(string)
@@ -114,6 +104,7 @@ public final class VariantTests: GodotTestCase {
                               
     }
     
+    @SwiftGodotTest
     public func testInitVariantConvertible() {
         var variant: Variant
         
@@ -152,6 +143,7 @@ public final class VariantTests: GodotTestCase {
         XCTAssertEqual (string, newString)
     }
     
+    @SwiftGodotTest
     public func testOperatorEqualsEquals () {
         XCTAssertTrue (Variant (false) == Variant (false))
         XCTAssertTrue (Variant (true) == Variant (true))
@@ -167,6 +159,7 @@ public final class VariantTests: GodotTestCase {
         XCTAssertFalse (Variant (node) == Variant (Node ()))
     }
     
+    @SwiftGodotTest
     public func testUnwrappingApi() {
         func someFunctionTakingBool(_ bool: Bool?, successCount: inout Int) {
             if let bool {
@@ -227,6 +220,7 @@ public final class VariantTests: GodotTestCase {
         }
     }
     
+    @SwiftGodotTest
     public func testNoMisconversions() {
         let variant = Vector2(x: 1, y: 2).toVariant()
         
