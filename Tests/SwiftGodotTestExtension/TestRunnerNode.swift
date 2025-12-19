@@ -15,6 +15,15 @@ public class TestRunnerNode: Node {
     /// Path where JSON results will be written
     private let resultsPath = "res://test_results.json"
 
+    /// Test filter from environment variable (format: "SuiteName" or "SuiteName.testName")
+    private var testFilter: TestFilter? {
+        guard let filter = ProcessInfo.processInfo.environment["SWIFTGODOT_TEST_FILTER"],
+              !filter.isEmpty else {
+            return nil
+        }
+        return TestFilter(filter)
+    }
+
     /// All test suites to run
     private let suites: [any SwiftGodotTestSuiteProtocol] = [
         // Core tests
@@ -93,10 +102,18 @@ public class TestRunnerNode: Node {
         var suiteResults: [TestSuiteResult] = []
         let startTime = getCurrentTime()
 
-        GD.print("Running \(suites.count) test suites...")
+        let filter = testFilter
+        let filteredSuites: [any SwiftGodotTestSuiteProtocol]
+        if let filter {
+            filteredSuites = suites.filter { filter.matchesSuite(type(of: $0).testCaseName) }
+            GD.print("Running filtered tests: \(filter.suiteName)\(filter.testName.map { ".\($0)" } ?? "")...")
+        } else {
+            filteredSuites = suites
+            GD.print("Running \(suites.count) test suites...")
+        }
 
-        for suite in suites {
-            let suiteResult = runSuite(suite)
+        for suite in filteredSuites {
+            let suiteResult = runSuite(suite, filter: filter)
             suiteResults.append(suiteResult)
         }
 
@@ -108,7 +125,7 @@ public class TestRunnerNode: Node {
         return results
     }
 
-    private func runSuite(_ suite: any SwiftGodotTestSuiteProtocol) -> TestSuiteResult {
+    private func runSuite(_ suite: any SwiftGodotTestSuiteProtocol, filter: TestFilter? = nil) -> TestSuiteResult {
         let suiteType = type(of: suite)
         let suiteName = suiteType.testCaseName
         GD.printRich("[color=blue][b]\(suiteName)[/b][/color]")
@@ -121,8 +138,9 @@ public class TestRunnerNode: Node {
         // Suite-level setup
         suiteType.setUpClass()
 
-        // Run all test methods
-        let tests = suite.allTests
+        // Run test methods (filtered if specified)
+        let allTests = suite.allTests
+        let tests = filter.map { f in allTests.filter { f.matchesTest($0.name) } } ?? allTests
         var testResults: [TestCaseResult] = []
 
         for test in tests {
@@ -206,5 +224,25 @@ public class TestRunnerNode: Node {
 private extension String {
     func repeated(_ times: Int) -> String {
         return String(repeating: self, count: times)
+    }
+}
+
+/// Filter for running specific tests
+struct TestFilter {
+    let suiteName: String
+    let testName: String?
+
+    init(_ filter: String) {
+        let parts = filter.split(separator: ".", maxSplits: 1)
+        suiteName = String(parts[0])
+        testName = parts.count > 1 ? String(parts[1]) : nil
+    }
+
+    func matchesSuite(_ name: String) -> Bool {
+        name == suiteName
+    }
+
+    func matchesTest(_ name: String) -> Bool {
+        testName == nil || testName == name
     }
 }

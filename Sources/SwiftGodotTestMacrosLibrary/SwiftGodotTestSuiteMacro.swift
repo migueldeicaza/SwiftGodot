@@ -18,7 +18,6 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        // Validate it's attached to a class
         guard declaration.is(ClassDeclSyntax.self) else {
             throw SwiftGodotTestMacroError.notAClass
         }
@@ -29,7 +28,6 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
                 return nil
             }
 
-            // Check if the function has @SwiftGodotTest attribute
             let hasTestAttribute = funcDecl.attributes.contains { attribute in
                 guard let attr = attribute.as(AttributeSyntax.self),
                       let identifierType = attr.attributeName.as(IdentifierTypeSyntax.self) else {
@@ -42,7 +40,6 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
             return funcDecl.name.text
         }
 
-        // Generate the test entries
         let testEntries: String
         if testMethods.isEmpty {
             testEntries = ""
