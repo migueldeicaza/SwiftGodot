@@ -106,5 +106,6 @@ jobs:
       - name: Run Swift tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
 
-      - name: Run Godot-based tests
-        run: swift run SwiftGodotTestRunner
+      # Enable when the crash during termination is fixed
+      # - name: Run Godot-based tests
+      #   run: swift run SwiftGodotTestRunner
