@@ -231,7 +231,9 @@ struct SwiftGodotTestRunner {
             print("Total time: \(totalDuration)")
             print(String(repeating: "=", count: 60))
 
-            exit(results.summary.failed > 0 ? 1 : 0)
+            // Use Godot's exit code if non-zero, otherwise use test results
+            let testExitCode: Int32 = results.summary.failed > 0 ? 1 : 0
+            exit(godotExitCode != 0 ? godotExitCode : testExitCode)
         } catch {
             print("      Failed to read results: \(error)")
             print("      Godot exit code was: \(godotExitCode)")

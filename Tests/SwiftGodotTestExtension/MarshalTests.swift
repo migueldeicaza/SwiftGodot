@@ -307,8 +307,6 @@ final class MarshalTests {
         
         XCTAssertNotNil(object0)
         XCTAssertTrue(object0 === object1)
-        
-        node0?.queueFree()
     }
 
     @SwiftGodotTest

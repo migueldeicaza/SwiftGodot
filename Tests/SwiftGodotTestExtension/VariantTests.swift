@@ -155,8 +155,9 @@ final class VariantTests {
         XCTAssertTrue (Variant (Vector2 (x: 1, y: 2)) == Variant (Vector2 (x: 1, y: 2)))
         XCTAssertFalse (Variant (Vector2 (x: 1, y: 2)) == Variant (Vector2 (x: 1, y: 3)))
         let node = Node()
+        let node2 = Node()
         XCTAssertTrue (Variant (node) == Variant (node))
-        XCTAssertFalse (Variant (node) == Variant (Node ()))
+        XCTAssertFalse (Variant (node) == Variant (node2))
     }
     
     @SwiftGodotTest
