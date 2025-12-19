@@ -29,10 +29,13 @@ public func swift_entry_point(
     libraryPtr: OpaquePointer?,
     extensionPtr: OpaquePointer?
 ) -> UInt8 {
+    print("[SwiftGodotTestExtension] Entry point called")
     guard let godotGetProcAddr, let libraryPtr, let extensionPtr else {
+        print("[SwiftGodotTestExtension] Missing parameters")
         return 0
     }
 
+    print("[SwiftGodotTestExtension] Initializing Swift module...")
     initializeSwiftModule(
         godotGetProcAddr,
         libraryPtr,
@@ -41,5 +44,6 @@ public func swift_entry_point(
         deInitHook: deinitializeTestExtension
     )
 
+    print("[SwiftGodotTestExtension] Entry point complete")
     return 1
 }

@@ -401,7 +401,6 @@ final class MarshalTests {
         }
 
         XCTAssertEqual(fulfillmentCount, 5, "Expected 5 fulfillments")
-        testNode.free()
     }
 }
 
