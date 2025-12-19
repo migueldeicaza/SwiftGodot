@@ -80,6 +80,7 @@ public class TestRunnerNode: Node {
     ]
 
     public override func _ready() {
+        print("[TestRunnerNode] _ready() called")
         GD.print("=".repeated(60))
         GD.print("SwiftGodot Test Runner")
         GD.print("=".repeated(60))

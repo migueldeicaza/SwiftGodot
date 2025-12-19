@@ -10,8 +10,11 @@ import SwiftGodot
 
 /// Initialize the test extension when Godot loads it
 func initializeTestExtension(level: ExtensionInitializationLevel) {
+    print("[SwiftGodotTestExtension] initializeTestExtension level: \(level)")
     if level == .scene {
+        print("[SwiftGodotTestExtension] Registering TestRunnerNode...")
         register(type: TestRunnerNode.self)
+        print("[SwiftGodotTestExtension] TestRunnerNode registered")
     }
 }
 
