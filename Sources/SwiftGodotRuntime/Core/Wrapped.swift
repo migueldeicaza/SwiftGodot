@@ -1136,7 +1136,7 @@ fileprivate func lookupGodotType(named className: String) -> AnyClass? {
         }
 #else
         if let ctor = _typeByName(typeCode) {
-            return ctor
+            return ctor as? AnyClass
         }
 #endif
     }
