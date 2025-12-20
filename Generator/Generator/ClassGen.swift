@@ -749,22 +749,6 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
 }
 
 extension Generator {
-    func generateCtorPointers (_ p: Printer) {
-        let sortedClasses = classesSelectedForGeneration.sorted()
-
-        p("let godotFrameworkTypeNames: [String] = [")
-        for name in sortedClasses {
-            p("    \"\(name)\",")
-        }
-        p("]\n")
-
-        p ("var godotFrameworkCtors: [String: Object.Type] = [")
-        for name in sortedClasses {
-            p ("    \"\(name)\": \(name).self, //(nativeHandle:),")
-        }
-        p ("]")
-    }
-    
     /// Variant itself is manally implemented, so we vary our `staticProperty` behavior here
     /// Most of constructors sit in corresponding builtin types.
     /// We can't extend native types to add static storage

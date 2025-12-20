@@ -15,6 +15,9 @@
 // We ensure that all Godot objects that are surfaced to Swift retain their
 // identity.  So we keep a table of every surfaced Godot object into Swift.
 //
+#if canImport(AppKit) || canImport(UIKit)
+import Foundation
+#endif
 
 import GDExtension
 
@@ -735,11 +738,6 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
         gi.object_method_bind_ptrcall (Object.method_get_class, nativeHandle, nil, &_result.content)
         className = _result.description
     }
-    if let ctor = godotFrameworkCtors [className] {
-        let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
-        return result as? T
-    }
     if let userType = userTypes[className] {
         let created = userType.init(InitContext(handle: nativeHandle, origin: .godot))
         handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
@@ -749,7 +747,22 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
     }
+    if let ctor = lookupGodotType(named: className) as? T.Type {
+        let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
+        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+        return result
+    }
 
+    // If we reached here, we could not fetch the most derived type
+    // from either the user or the godot constructors, so we just
+    // wrap what we know we can do: the type we have.
+    //
+    // So if we had say a "MyCamera3D" but we could not find it as a Godot
+    // type or a user type, and we are being called as a Node3D, we will
+    // return a Node3D (even if Camera3D would be a better match).
+    //
+    // This comment here for future generations that end up in this line
+    // the real error is likely a registration issue.
     let result = T(InitContext(handle: nativeHandle, origin: .godot))
     handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
     return result
@@ -1103,15 +1116,39 @@ public func clearHandles(_ handles: [GodotNativeObjectPointer]) {
     }
 }
 
+/// Looks up the class at runtime
+fileprivate func lookupGodotType(named className: String) -> AnyClass? {
+    // The format is:
+    // MODULE: LENGHT + String
+    // Type: LENGHT + String
+    // C
+    //
+    // So "SwiftGodot.Node" becomes "10SwiftGodot4NodeC":
+    //
+    let candidates: [String] = [
+        "10SwiftGodot\(className.count)\(className)C",
+        "17SwiftGodotRuntime\(className.count)\(className)C",
+    ]
+    for typeCode in candidates {
+#if canImport(UIKit) || canImport(AppKit)
+        if let ctor = NSClassFromString(typeCode) {
+            return ctor
+        }
+#else
+        if let ctor = _typeByName(typeCode) {
+            return ctor
+        }
+#endif
+    }
+    return nil
+}
 /// Find existing Godot or User `Wrapped.Type` having a `className`
 func typeOfClass(named className: String) -> Object.Type? {
-    if let frameworkType = godotFrameworkCtors[className] {
-        return frameworkType
-    }
-    
     if let userType = userTypes[className] {
         return userType
     }
-    
+    if let type = lookupGodotType(named: className) as? Object.Type {
+        return type
+    }
     return nil
 }
