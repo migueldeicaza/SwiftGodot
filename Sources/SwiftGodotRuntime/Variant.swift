@@ -488,7 +488,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
             name: name,
             hint: hint,
             hintStr: hintStr,
-            usage: usage ?? .nilIsVariant
+            usage: usage ?? [.nilIsVariant, .default]
         )
     }
     
