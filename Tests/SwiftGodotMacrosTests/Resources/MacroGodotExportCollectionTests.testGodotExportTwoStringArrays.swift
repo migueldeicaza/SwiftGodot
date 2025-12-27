@@ -52,7 +52,7 @@ class ArrayTest: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("ArrayTest")
-        if classInitializationLevel.rawValue >= GDExtension.InitializationLevel.scene.rawValue {
+        if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
