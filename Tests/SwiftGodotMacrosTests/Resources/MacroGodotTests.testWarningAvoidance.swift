@@ -1,4 +1,3 @@
-
 final class MyData: Resource {
 
     override public class var classInitializer: Void {
@@ -17,25 +16,25 @@ final class MyData: Resource {
 final class MyClass: Node {
     var data: MyData = .init()
 
-    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling setter for data: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodotRuntime.GD.printErr("Error calling setter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        SwiftGodot._invokeSetter(arguments, "data", object.data) {
+        SwiftGodotRuntime._invokeSetter(arguments, "data", object.data) {
             object.data = $0
         }
         return nil
     }
 
-    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodot.Arguments) -> SwiftGodot.FastVariant? {
+    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
-            SwiftGodot.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
+            SwiftGodotRuntime.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil
         }
 
-        return SwiftGodot._invokeGetter(object.data)
+        return SwiftGodotRuntime._invokeGetter(object.data)
     }
 
     override public class var classInitializer: Void {
@@ -49,9 +48,9 @@ final class MyClass: Node {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SwiftGodot._registerPropertyWithGetterSetter(
+        SwiftGodotRuntime._registerPropertyWithGetterSetter(
             className: className,
-            info: SwiftGodot._propInfo(
+            info: SwiftGodotRuntime._propInfo(
                 at: \MyClass.data,
                 name: "data",
                 userHint: nil,

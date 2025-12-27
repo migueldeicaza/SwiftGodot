@@ -1,4 +1,3 @@
-
 class Demo: Node3D {
     var burp: SimpleSignal {
         get {
@@ -23,7 +22,7 @@ class Demo: Node3D {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SimpleSignal.register(as: "burp", in: className)
-        SignalWithArguments<Int>.register(as: "lives_changed", in: className)
+        SimpleSignal.register(as: "burp", in: className, names: [])
+        SignalWithArguments<Int>.register(as: "lives_changed", in: className, names: [])
     }()
 }

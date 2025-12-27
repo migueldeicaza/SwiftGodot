@@ -4,15 +4,25 @@
         return 0
     }
 
-    var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+    var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
     types[.core] = [ChrysalisNode.self].topologicallySorted()
     types[.editor] = [].topologicallySorted()
     types[.scene] = [].topologicallySorted()
     types[.servers] = [].topologicallySorted()
+
     initializeSwiftModule (interface, library, `extension`, initHook: { level in
         types[level]?.forEach(register)
+        if level == .scene {
+
+        } else if level == .editor {
+            if false {
+                EditorInterop.loadLibraryDocs()
+            }
+        }
+
     }, deInitHook: { level in
         types[level]?.reversed().forEach(unregister)
+
     }, minimumInitializationLevel: minimumInitializationLevel(for: types))
     return 1
 }

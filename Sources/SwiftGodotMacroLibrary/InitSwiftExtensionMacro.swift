@@ -42,7 +42,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
         var hookDeinit = ""
         var hookDef = ""
         if let hookMethod {
-            hookDef = "let hook: (GDExtension.InitializationLevel, Bool) -> () = \(hookMethod)"
+            hookDef = "let hook: (ExtensionInitializationLevel, Bool) -> () = \(hookMethod)"
             hookInit = "hook (level, true)"
             hookDeinit = "hook (level, false)"
         }
@@ -59,7 +59,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
 
             if let types = node.arguments.first(where: { $0.label?.text == "types" })?.expression.trimmedDescription {
                 p("""
-                let types: [GDExtension.InitializationLevel: [Object.Type]]
+                let types: [ExtensionInitializationLevel: [Object.Type]]
                 do {
                     types = try \(types).prepareForRegistration()
                 } catch {
@@ -74,7 +74,7 @@ public struct InitSwiftExtensionMacro: DeclarationMacro {
                 let serverTypes = node.arguments.first(where: { $0.label?.text == "serverTypes" })?.expression ?? "[]"
 
                 p("""
-                var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+                var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
                 types[.core] = \(coreTypes).topologicallySorted()
                 types[.editor] = \(editorTypes).topologicallySorted()
                 types[.scene] = \(sceneTypes).topologicallySorted()

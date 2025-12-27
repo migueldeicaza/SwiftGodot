@@ -77,36 +77,36 @@ final class MacroIntegrationTests {
     
     func testCorrectRegistrationSequence() {
         class A: Object {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .core
             }
         }
         
         class B: A {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .servers
             }
         }
         
         class C: B {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .scene
             }
         }
         
         class D0: C {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .editor
             }
         }
         
         class D1: C {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .editor
             }
         }
         
-        var types: [GDExtension.InitializationLevel: [Object.Type]] = [:]
+        var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
         do {
             types = try [A.self, B.self, C.self, D0.self, D1.self].prepareForRegistration()
         } catch {
@@ -128,13 +128,13 @@ final class MacroIntegrationTests {
         XCTAssertEqual(minimumInitializationLevel(for: types), .core)
         
         class E: Object {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .scene
             }
         }
         
         class F: E {
-            override class var classInitializationLevel: GDExtension.InitializationLevel {
+            override class var classInitializationLevel: ExtensionInitializationLevel {
                 .core
             }
         }

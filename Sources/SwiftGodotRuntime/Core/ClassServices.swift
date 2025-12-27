@@ -418,19 +418,19 @@ extension [Object.Type] {
     }
         
     /// Sort types topologically, ensuring that their initialization order is correct (see ``topologicallySortedCheckingInitializationOrder``)
-    public func prepareForRegistration() throws -> [GDExtension.InitializationLevel: [Object.Type]] {
+    public func prepareForRegistration() throws -> [ExtensionInitializationLevel: [Object.Type]] {
         let sorted = try topologicallySortedCheckingInitializationOrder()
-        var result: [GDExtension.InitializationLevel: [Object.Type]] = [:]
-        
+        var result: [ExtensionInitializationLevel: [Object.Type]] = [:]
+
         for type in sorted {
             result[type.classInitializationLevel, default: []].append(type)
         }
-        
+
         return result
     }
 }
 
-public func minimumInitializationLevel(for registration: [GDExtension.InitializationLevel: [Object.Type]]) -> GDExtension.InitializationLevel {
+public func minimumInitializationLevel(for registration: [ExtensionInitializationLevel: [Object.Type]]) -> ExtensionInitializationLevel {
     let nonEmptyLevels = registration.keys.filter { key in
         registration[key]?.isEmpty == false
     }

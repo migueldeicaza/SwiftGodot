@@ -15,22 +15,22 @@ class Hi: Node {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SwiftGodot._registerSignal(
+        SwiftGodotRuntime._registerSignal(
             Hi.pickedUpItem.name,
             in: className,
             arguments: Hi.pickedUpItem.arguments
         )
-        SwiftGodot._registerSignal(
+        SwiftGodotRuntime._registerSignal(
             Hi.scored.name,
             in: className,
             arguments: Hi.scored.arguments
         )
-        SwiftGodot._registerSignal(
+        SwiftGodotRuntime._registerSignal(
             Hi.differentInit.name,
             in: className,
             arguments: Hi.differentInit.arguments
         )
-        SwiftGodot._registerSignal(
+        SwiftGodotRuntime._registerSignal(
             Hi.differentInit2.name,
             in: className,
             arguments: Hi.differentInit2.arguments
