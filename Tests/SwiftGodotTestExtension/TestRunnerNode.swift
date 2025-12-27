@@ -42,6 +42,7 @@ public class TestRunnerNode: Node {
         MacroCallableIntegrationTests(),
         MacroIntegrationTests(),
         ValidatePropertyTests(),
+        RegistrationOrderTests(),
         IntersectRayResultTests(),
         PhysicsDirectSpaceState2DIntersectRayResultTests(),
         PhysicsDirectSpaceState3DIntersectRayResultTests(),

@@ -52,7 +52,10 @@ class TestClass: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("TestClass")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SimpleSignal.register(as: "signal", in: className, names: [])
         SwiftGodotRuntime._registerMethod(
             className: className,

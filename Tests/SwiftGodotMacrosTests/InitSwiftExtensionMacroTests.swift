@@ -16,6 +16,13 @@ final class InitSwiftExtensionMacroTests: MacroGodotTestCase {
         ["initSwiftExtension": InitSwiftExtensionMacro.self]
     }
     
+    func testInitWithSwiftExtensionMacroWithTypes() {
+        assertExpansion(of: """
+            #initSwiftExtension(cdecl: "libchrysalis_entry_point", types: [ChrysalisNode.self, CaterpillarNode.self, ButterflyNode.self])            
+            """
+        )
+    }
+    
     func testInitSwiftExtensionMacroWithUnspecifiedTypes() {
         assertExpansion(of: """
             #initSwiftExtension(cdecl: "libchrysalis_entry_point")
