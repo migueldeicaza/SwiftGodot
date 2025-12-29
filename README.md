@@ -64,6 +64,9 @@ The [SwiftGodotKick](https://github.com/EstevanBR/SwiftGodotKick) project can cr
 GDExtension with Swift, as well as a standalone SwiftGodotKit project that can be used to quickly
 iterate on your game on MacOS.
 
+[SwiftGodotCLI](https://github.com/johnsusek/SwiftGodotCLI) is a command-line tool that lets you build and run
+SwiftGodot code directly without any manual Godot project setup.
+
 # Supported Platforms
 
 Currently, SwiftGodot can be used in projects targeting the iOS, Linux, macOS,
