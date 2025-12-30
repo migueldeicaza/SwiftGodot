@@ -53,7 +53,10 @@ class CallableCollectionsNode: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("CallableCollectionsNode")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SwiftGodotRuntime._registerMethod(
             className: className,
             name: "get_ages",

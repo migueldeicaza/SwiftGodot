@@ -298,7 +298,10 @@ class GodotMacroProcessor {
         try p("private static let _initializeClass: Void = ", .curly, afterBlock: "()") {
             p("""
             let className = StringName("\(className)")
-            assert(ClassDB.classExists(class: className))
+            if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
+                // ClassDB singleton is not available prior to `.scene` level
+                assert(ClassDB.classExists(class: className))
+            }            
             """)
             var previousGroupPrefix: String? = nil
             var previousSubgroupPrefix: String? = nil

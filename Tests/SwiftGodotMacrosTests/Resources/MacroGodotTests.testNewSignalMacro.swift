@@ -18,7 +18,10 @@ class Demo: Node3D {
 
     private static let _initializeClass: Void = {
         let className = StringName("Demo")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SimpleSignal.register(as: "burp", in: className, names: [])
         SignalWithArguments<Int>.register(as: "lives_changed", in: className, names: [])
     }()

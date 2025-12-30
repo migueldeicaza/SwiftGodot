@@ -51,7 +51,10 @@ public class Issue353: Node {
 
     private static let _initializeClass: Void = {
         let className = StringName("Issue353")
-        assert(ClassDB.classExists(class: className))
+        if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
+            // ClassDB singleton is not available prior to `.scene` level
+            assert(ClassDB.classExists(class: className))
+        }
         SwiftGodotRuntime._addPropertyGroup(className: className, name: "Group With a Prefix", prefix: "prefix1")
         SwiftGodotRuntime._registerPropertyWithGetterSetter(
             className: className,

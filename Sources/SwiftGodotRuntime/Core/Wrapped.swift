@@ -288,9 +288,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     
     /// For use by the framework, you should not need to call this.
     public required init(_ context: InitContext) {
-        // TODO: move this to `register`, we've got enough global mutexes during construction
-        let _ = Self.classInitializer
-        
         handle = context.handle
         extensionInterface.objectInited(object: self)
         bindSwiftObject(self, toGodot: context.handle)
@@ -332,6 +329,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
     
     open class var classInitializer: Void { () }
+    
+    /// Indicates during which engine initialization stage this class is registered. `.scene` is default. This value is taken into consideration when using `#initSwiftExtension(cdecl:types:)`  or `EntryPointGeneratorPlugin`.
+    open class var classInitializationLevel: ExtensionInitializationLevel { .scene }
 }
 
 /// We can't simply extend `Wrapped`, because `convenience init` do not keep polymorphic `Self`.
