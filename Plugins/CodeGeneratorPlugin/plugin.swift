@@ -305,6 +305,7 @@ let runtime: [String] = [
     "Object.swift",
     "Engine.swift",
     "RefCounted.swift",
+    "Resource.swift"
 ]
 
 let core: [String] = [
