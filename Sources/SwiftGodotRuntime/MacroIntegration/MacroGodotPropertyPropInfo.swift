@@ -15,7 +15,7 @@ public func _propInfo<Root>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo {
-    Variant._propInfo(
+    return Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -33,7 +33,7 @@ public func _propInfo<Root>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo {
-    Variant._propInfo(
+    return Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -51,7 +51,7 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: VariantConvertible {
-    Variant._propInfo(
+    return Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -69,7 +69,7 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: VariantConvertible {
-    Variant._propInfo(
+    return Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -87,11 +87,63 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    T._propInfo(
+    return T._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
         usage: userUsage
+    )
+}
+
+func makeArrayHint<Element>(_ type: Element.Type) -> String where Element: _GodotContainerTypingParameter {
+    let vt = Element._variantType
+
+    switch Element._variantType {
+    case .object:
+        let className = Element._className
+        if ClassDB.isParentClass(className, inherits: "Node") {
+            return "\(vt.rawValue)/\(PropertyHint.nodeType.rawValue):\(className)"
+        }
+        if ClassDB.isParentClass(className, inherits: "Resource") {
+            return "\(vt.rawValue)/\(PropertyHint.resourceType.rawValue):\(className)"
+        }
+        fallthrough
+    default:
+        // TODO: I would need to determine what kind of
+        // thing the Element is: StringName or String could
+        // use their own encodings.
+        return "\(vt.rawValue)"
+    }
+}
+/// Internal API. TypedArray of nullable (usually objects)
+public func _propInfo<Root, Element>(
+    at keyPath: KeyPath<Root, TypedArray<Element?>>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where Element: _GodotContainerTypingParameter {
+    return TypedArray<Element?>._propInfo(
+        name: name,
+        hint: userHint ?? .arrayType,
+        hintStr: userHintStr ?? makeArrayHint<Element>(Element.self),
+        usage: userUsage
+    )
+}
+
+/// Internal API. TypedArray non-nullablemake
+public func _propInfo<Root, Element>(
+    at keyPath: KeyPath<Root, TypedArray<Element>>,
+    name: String,
+    userHint: PropertyHint? = nil,
+    userHintStr: String? = nil,
+    userUsage: PropertyUsageFlags? = nil
+) -> PropInfo where Element: _GodotContainerTypingParameter {
+    return TypedArray<Element>._propInfo(
+        name: name,
+        hint: userHint ?? .arrayType,
+        hintStr: userHintStr ?? makeArrayHint<Element>(Element.self),
+        usage: userUsage,
     )
 }
 
@@ -106,7 +158,7 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: _GodotBridgeableBuiltin {
-    Variant._propInfo(
+    return Variant._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -124,12 +176,31 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    T._propInfo(
-        name: name,
-        hint: userHint,
-        hintStr: userHintStr,
-        usage: userUsage
-    )
+    let name = String(describing: T.self)
+    if name == "Node" || ClassDB.isParentClass(StringName(name), inherits: "Node") {
+        var hint = userHint
+        var hintStr = userHintStr
+
+        if hint == nil && hintStr == nil {
+            hint = .nodeType
+            hintStr = T._builtinOrClassName
+        }
+        return PropInfo(
+            propertyType: T._variantType,
+            propertyName: StringName(name),
+            className: StringName(T._builtinOrClassName ?? ""),
+            hint: hint ?? .none,
+            hintStr: hintStr.map { GString($0) } ?? GString(),
+            usage: userUsage ?? .default
+        )
+    } else {
+        return T._propInfo(
+            name: name,
+            hint: userHint,
+            hintStr: userHintStr,
+            usage: userUsage
+        )
+    }
 }
 
 /// Internal API. Optional Object.
@@ -142,7 +213,25 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    T._propInfo(        
+    let name = String(describing: T.self)
+    if name == "Node" || ClassDB.isParentClass(StringName(name), inherits: "Node") {
+        var hint = userHint
+        var hintStr = userHintStr
+
+        if hint == nil && hintStr == nil {
+            hint = .nodeType
+            hintStr = T._builtinOrClassName
+        }
+        return PropInfo(
+            propertyType: T._variantType,
+            propertyName: StringName(name),
+            className: StringName(T._builtinOrClassName ?? ""),
+            hint: hint ?? .none,
+            hintStr: hintStr.map { GString($0) } ?? GString(),
+            usage: userUsage ?? .default
+        )
+    }
+    return T._propInfo(
         name: name,
         hint: userHint,
         hintStr: userHintStr,
@@ -187,7 +276,7 @@ public func _propInfo<Root, T>(
 ) -> PropInfo where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
     var userHint = userHint
     var userHintStr = userHintStr
-    
+
     if userHint == nil && userHintStr == nil {
         // QoL add it automatically
         userHint = .enum
@@ -214,3 +303,4 @@ public func _propInfo<Root, T>(
 ) -> PropInfo {
     fatalError("Unreachable")
 }
+
