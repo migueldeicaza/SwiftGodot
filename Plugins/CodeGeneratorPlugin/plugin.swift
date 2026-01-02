@@ -46,20 +46,22 @@ import PackagePlugin
         var arguments = [api.path, generatedSourcesDir.path]
         var outputFiles: [URL] = []
 #if os(Windows)
-        // Windows has 32K limit on CreateProcess argument length, SPM currently doesn't handle it well.
-        // We generate so many output files that passing them all into the build command would exceed the limit.
-        // So instead we combine the output into 26 swift files, one for each letter of the alphabet, each containing
-        // all the types that start with that letter.
-        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        for letter in letters {
-            outputFiles.append(generatedSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
-        }
-        arguments.append(context.package.directoryURL.appending(path: "doc").path)
-        arguments.append("--combined")
+        let useCombinedOutput = true
 #else
-        outputFiles.append(contentsOf: config.builtinFiles.map { generatedSourcesDir.appending(["generated-builtin", $0]) })
-        outputFiles.append(contentsOf: config.generatedClassFiles.map { generatedSourcesDir.appending(["generated", $0]) })
+        let useCombinedOutput = shouldUseCombinedOutput()
 #endif
+        if useCombinedOutput {
+            // Combine output to keep file counts low (always on Windows; opt-in via env var elsewhere).
+            let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            for letter in letters {
+                outputFiles.append(generatedSourcesDir.appending(path: "SwiftGodot\(letter).swift"))
+            }
+            arguments.append(context.package.directoryURL.appending(path: "doc").path)
+            arguments.append("--combined")
+        } else {
+            outputFiles.append(contentsOf: config.builtinFiles.map { generatedSourcesDir.appending(["generated-builtin", $0]) })
+            outputFiles.append(contentsOf: config.generatedClassFiles.map { generatedSourcesDir.appending(["generated", $0]) })
+        }
         arguments.append(contentsOf: [
             "--class-filter", classFilterFile.path,
             "--available-class-filter", availableClassFilterFile.path,
@@ -216,6 +218,13 @@ import PackagePlugin
         default:
             return nil
         }
+    }
+
+    private func shouldUseCombinedOutput() -> Bool {
+        if let value = ProcessInfo.processInfo.environment["SWIFTGODOT_COMBINED_OUTPUT"]?.lowercased() {
+            return value == "1" || value == "true" || value == "yes" || value == "y"
+        }
+        return ProcessInfo.processInfo.environment["XCODE_VERSION_ACTUAL"] != nil
     }
 
     private func writeIfChanged(_ contents: String, to file: URL) throws {
