@@ -176,8 +176,8 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    let name = String(describing: T.self)
-    if name == "Node" || ClassDB.isParentClass(StringName(name), inherits: "Node") {
+    let typeName = String(describing: T.self)
+    if typeName == "Node" || ClassDB.isParentClass(StringName(typeName), inherits: "Node") {
         var hint = userHint
         var hintStr = userHintStr
 
@@ -213,8 +213,8 @@ public func _propInfo<Root, T>(
     userHintStr: String? = nil,
     userUsage: PropertyUsageFlags? = nil
 ) -> PropInfo where T: Object {
-    let name = String(describing: T.self)
-    if name == "Node" || ClassDB.isParentClass(StringName(name), inherits: "Node") {
+    let typeName = String(describing: T.self)
+    if typeName == "Node" || ClassDB.isParentClass(StringName(typeName), inherits: "Node") {
         var hint = userHint
         var hintStr = userHintStr
 
