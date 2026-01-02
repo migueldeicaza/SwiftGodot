@@ -8,11 +8,11 @@
 private extension VariantDictionary {
     func unwrap<T: VariantConvertible>(key: String) -> T? {
         guard let variant = self[key] else {
-            GD.pushWarning("There was no Variant for key: \(key)")
+            GD.pushWarning(arg1: Variant("There was no Variant for key: \(key)"))
             return nil
         }
         guard let result = T.fromVariant(variant) else {
-            GD.pushWarning("\(T.self).unwrap(from: \(variant)) was nil")
+            GD.pushWarning(arg1: Variant("\(T.self).unwrap(from: \(variant)) was nil"))
             return nil
         }
 

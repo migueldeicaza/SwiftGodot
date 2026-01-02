@@ -14,10 +14,10 @@ public extension _GodotBridgeable where Self: Node {
     @inlinable
     static func _propInfo(
         name: String,
-        hint: PropertyHint?,
+        hint: SwiftGodotRuntime.PropertyHint?,
         hintStr: String?,
-        usage: PropertyUsageFlags?
-    ) -> PropInfo {
+        usage: SwiftGodotRuntime.PropertyUsageFlags?
+    ) -> SwiftGodotRuntime.PropInfo {
         var hint = hint
         var hintStr = hintStr
 
@@ -27,7 +27,7 @@ public extension _GodotBridgeable where Self: Node {
         }
 
         // This is _propInfoDefault
-        return PropInfo(
+        return SwiftGodotRuntime.PropInfo(
             propertyType: _variantType,
             propertyName: StringName(name),
             className: StringName(_builtinOrClassName ?? ""),
