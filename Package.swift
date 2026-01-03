@@ -222,7 +222,7 @@ var targets: [Target] = [
         ],
         // Windows: suppress LNK4217; if this masks real issues, consider a separate SwiftGodotRuntime DLL.
         linkerSettings: [
-            .unsafeFlags(["/IGNORE:4217"], .when(platforms: [.windows]))
+            .unsafeFlags(["-Xlinker", "/IGNORE:4217"], .when(platforms: [.windows]))
         ],
         plugins: ["CodeGeneratorPlugin"]
     ),
