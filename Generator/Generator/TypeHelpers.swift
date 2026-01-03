@@ -335,9 +335,9 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         if t.type.starts(with: "enum::Error") {
             return "GodotError"
         }
-        if t.type.starts(with: "enum::Variant.Type") {
-            return "SwiftGodotRuntime.VariantGType"
-        }
+//        if t.type.starts(with: "enum::Variant.Type") {
+//            return "SwiftGodotRuntime.VariantGType"
+//        }
         if t.type.starts(with: "enum::VisualShader.Type") {
             return "VisualShader.GType"
         }
