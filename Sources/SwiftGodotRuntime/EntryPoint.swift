@@ -93,9 +93,11 @@ class LibGodotExtensionInterface: ExtensionInterface {
     var pendingInitializers: [()->()] = []
 }
 
+// swiftlint:disable implicitly_unwrapped_optional
 /// The pointer to the Godot Extension Interface
 @usableFromInline
 var extensionInterface: ExtensionInterface!
+// swiftlint:enable implicitly_unwrapped_optional
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process
@@ -329,9 +331,9 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let get_library_path: GDExtensionInterfaceGetLibraryPath
     public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen
 }
-
+// swiftlint:disable implicitly_unwrapped_optional
 @_spi(SwiftGodotRuntimePrivate) public var gi: GodotInterface!
-
+// swiftlint:enable implicitly_unwrapped_optional
 func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddress) {
 
     func load<T>(_ name: String) -> T {

@@ -1,3 +1,6 @@
+// swiftlint:disable file_header
+// swiftlint:disable force_cast
+// swiftlint:disable legacy_multiple
 //===----------------------------------------------------------------------===//
 //
 // This source file is part of the SwiftNIO open source project

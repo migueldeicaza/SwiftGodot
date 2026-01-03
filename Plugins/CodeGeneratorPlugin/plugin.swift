@@ -221,6 +221,7 @@ import PackagePlugin
     }
 
     private func shouldUseCombinedOutput() -> Bool {
+        return true
         if let value = ProcessInfo.processInfo.environment["SWIFTGODOT_COMBINED_OUTPUT"]?.lowercased() {
             return value == "1" || value == "true" || value == "yes" || value == "y"
         }

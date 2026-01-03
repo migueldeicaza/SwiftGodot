@@ -940,8 +940,10 @@ public extension Array where Element == Variant? {
             self = array
         case .unsafeGodotArguments(let args):
             self = (0..<args.count).map { index in
-                // OOB should never happen in this scenaro
+                // OOB should never happen in this scenario
+                // swiftlint:disable force_try
                 try! args.copy(at: index)
+                // swiftlint:enable force_try
             }
         }
     }

@@ -322,8 +322,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         
         var err = GDExtensionCallError()
         
-        if arguments.count == 1 {
-            var argContent = arguments.first!.content
+        if var argContent = arguments.first, arguments.count == 1 {
             withUnsafePointer(to: &argContent) { ptr in
                 gi.variant_call(&content, &method.content, ptr, 1, &result, &err)
             }
@@ -547,8 +546,8 @@ extension Variant? {
     }
     
     public var content: Variant.ContentType {
-        if let wrapped = self {
-            return wrapped.content
+        if let self {
+            return self.content
         } else {
             return Variant.zero
         }
