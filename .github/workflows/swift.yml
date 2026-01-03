@@ -43,28 +43,27 @@ jobs:
     - name: Run Godot-based tests
       run: swift run SwiftGodotTestRunner
 
-  # Enable when Windows build is fixed
-  # build-and-test-windows:
-  #   runs-on: windows-latest
-  #   timeout-minutes: 30
+  build-and-test-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
 
-  #   steps:
-  #     - name: Swift Install
-  #       uses: compnerd/gha-setup-swift@main
-  #       with:
-  #         swift-version: swift-6.2-release
-  #         swift-build: 6.2-RELEASE
+    steps:
+      - name: Swift Install
+        uses: compnerd/gha-setup-swift@main
+        with:
+          swift-version: swift-6.2-release
+          swift-build: 6.2-RELEASE
 
-  #     - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-  #     - name: Build
-  #       run: swift build --build-tests --quiet
+      - name: Build
+        run: swift build --build-tests --quiet
 
-  #     - name: Run Swift tests (Swift Testing)
-  #       run: swift test --skip-build --no-parallel --disable-xctest
+      - name: Run Swift tests (Swift Testing)
+        run: swift test --skip-build --no-parallel --disable-xctest
 
-  #     - name: Run Swift tests (XCTest)
-  #       run: swift test --skip-build --no-parallel --disable-swift-testing
+      - name: Run Swift tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
 
   # Enable when Swift Android SDK is more stable
   # build-android:
