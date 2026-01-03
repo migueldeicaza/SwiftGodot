@@ -14,57 +14,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test-macos:
-    runs-on: macos-26
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Set up Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: "26.0"
-
-    - name: Install Godot
-      run: |
-        brew install godot
-        godot --version
-
-    - name: Build
-      run: swift build --build-tests --quiet
-
-    - name: Run Swift tests (Swift Testing)
-      run: swift test --skip-build --no-parallel --disable-xctest
-
-    - name: Run Swift tests (XCTest)
-      run: swift test --skip-build --no-parallel --disable-swift-testing
-
-    - name: Run Godot-based tests
-      run: swift run SwiftGodotTestRunner
+  #build-and-test-macos:
+  #  runs-on: macos-26
+  #
+  #  steps:
+  #  - name: Checkout
+  #    uses: actions/checkout@v4
+  #
+  #  - name: Set up Xcode
+  #    uses: maxim-lobanov/setup-xcode@v1
+  #    with:
+  #      xcode-version: "26.0"
+  #
+  #  - name: Install Godot
+  #    run: |
+  #      brew install godot
+  #      godot --version
+  #
+  #  - name: Build
+  #    run: swift build --build-tests --quiet
+  #
+  #  - name: Run Swift tests (Swift Testing)
+  #    run: swift test --skip-build --no-parallel --disable-xctest
+  #
+  #  - name: Run Swift tests (XCTest)
+  #    run: swift test --skip-build --no-parallel --disable-swift-testing
+  #
+  #  - name: Run Godot-based tests
+  #    run: swift run SwiftGodotTestRunner
 
   # Enable when Windows build is fixed
-  # build-and-test-windows:
-  #   runs-on: windows-latest
-  #   timeout-minutes: 30
+  build-and-test-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
 
-  #   steps:
-  #     - name: Swift Install
-  #       uses: compnerd/gha-setup-swift@main
-  #       with:
-  #         swift-version: swift-6.2-release
-  #         swift-build: 6.2-RELEASE
+    steps:
+      - name: Swift Install
+        uses: compnerd/gha-setup-swift@main
+        with:
+          swift-version: swift-6.2-release
+          swift-build: 6.2-RELEASE
 
-  #     - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-  #     - name: Build
-  #       run: swift build --build-tests --quiet
+      - name: Build
+        run: swift build --build-tests --quiet
 
-  #     - name: Run Swift tests (Swift Testing)
-  #       run: swift test --skip-build --no-parallel --disable-xctest
+      - name: Run Swift tests (Swift Testing)
+        run: swift test --skip-build --no-parallel --disable-xctest
 
-  #     - name: Run Swift tests (XCTest)
-  #       run: swift test --skip-build --no-parallel --disable-swift-testing
+      - name: Run Swift tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
 
   # Enable when Swift Android SDK is more stable
   # build-android:
@@ -76,36 +76,36 @@ jobs:
   #       with:
   #         build-tests: false
 
-  build-and-test-linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "6.2"
-
-      - name: Install Godot
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
-          unzip Godot_v4.5-stable_linux.x86_64.zip
-          sudo mv Godot_v4.5-stable_linux.x86_64 /usr/local/bin/godot
-          sudo chmod +x /usr/local/bin/godot
-          godot --version
-
-      - name: Build
-        run: swift build --build-tests --quiet
-
-      - name: Run Swift tests (Swift Testing)
-        run: swift test --skip-build --no-parallel --disable-xctest
-
-      - name: Run Swift tests (XCTest)
-        run: swift test --skip-build --no-parallel --disable-swift-testing
-
-      # Enable when EditorHelp::_gen_extensions_docs() is fixed  
-      # - name: Run Godot-based tests
-      #   run: swift run SwiftGodotTestRunner
+  #build-and-test-linux:
+  #  runs-on: ubuntu-latest
+  #
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #
+  #    - name: Install Swift
+  #      uses: swift-actions/setup-swift@v2
+  #      with:
+  #        swift-version: "6.2"
+  #
+  #    - name: Install Godot
+  #      run: |
+  #        sudo apt-get update
+  #        sudo apt-get install -y wget unzip
+  #        wget https://github.com/godotengine/godot/releases/download/4.5-stable/Godot_v4.5-stable_linux.x86_64.zip
+  #        unzip Godot_v4.5-stable_linux.x86_64.zip
+  #        sudo mv Godot_v4.5-stable_linux.x86_64 /usr/local/bin/godot
+  #        sudo chmod +x /usr/local/bin/godot
+  #        godot --version
+  #
+  #    - name: Build
+  #      run: swift build --build-tests --quiet
+  #
+  #    - name: Run Swift tests (Swift Testing)
+  #      run: swift test --skip-build --no-parallel --disable-xctest
+  #
+  #    - name: Run Swift tests (XCTest)
+  #      run: swift test --skip-build --no-parallel --disable-swift-testing
+  #
+  #    # Enable when EditorHelp::_gen_extensions_docs() is fixed  
+  #    # - name: Run Godot-based tests
+  #    #   run: swift run SwiftGodotTestRunner

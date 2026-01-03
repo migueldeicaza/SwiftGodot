@@ -220,6 +220,10 @@ var targets: [Target] = [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
             .unsafeFlags(["-suppress-warnings"])
         ],
+        // Windows: suppress LNK4217; if this masks real issues, consider a separate SwiftGodotRuntime DLL.
+        linkerSettings: [
+            .unsafeFlags(["/IGNORE:4217"], .when(platforms: [.windows]))
+        ],
         plugins: ["CodeGeneratorPlugin"]
     ),
 
