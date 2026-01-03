@@ -11,7 +11,6 @@ public enum ArrayError {
     case outOfRange
 }
 
-
 @available(*, deprecated, renamed: "VariantArray", message: "GArray was renamed to `VariantArray` to better communicate its semantics")
 public typealias GArray = VariantArray
 

@@ -138,7 +138,6 @@ extension ExprSyntax {
     }
 }
 
-
 private extension String {
     func swiftName() -> String {
         if self == uppercased() {

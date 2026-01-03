@@ -43,7 +43,6 @@ public func _returnValuePropInfo<T>(
     Variant._returnValuePropInfo
 }
 
-
 /// Internal API. Builtin Type.
 @inline(__always)
 @inlinable

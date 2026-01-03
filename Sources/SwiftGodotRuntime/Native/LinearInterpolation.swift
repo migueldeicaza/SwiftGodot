@@ -1,4 +1,3 @@
-
 public protocol LinearInterpolation {
     /// Linearly interpolate from self to the given value considering the weight.
     /// '0' would return 'self'

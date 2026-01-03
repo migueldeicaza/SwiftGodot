@@ -16,7 +16,6 @@ public protocol JClassInfo {
 extension JGodotBuiltinClass: JClassInfo {}
 extension JGodotExtensionAPIClass: JClassInfo {}
 
-
 // Used to unify the class methods and the utility methods
 public protocol MethodDefinition {
     var name: String { get }

@@ -382,7 +382,6 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         object_has_script_method: load("object_has_script_method"),
         object_call_script_method: load("object_call_script_method"),
 
-
         global_get_singleton: load("global_get_singleton"),
         ref_get_object: load("ref_get_object"),
         object_method_bind_call: load("object_method_bind_call"),

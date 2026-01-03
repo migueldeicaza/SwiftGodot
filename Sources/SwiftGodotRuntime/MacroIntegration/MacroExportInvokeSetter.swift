@@ -134,8 +134,6 @@ public func _invokeSetter<T>(
     }
 }
 
-
-
 @inline(__always)
 @inlinable
 func proxyClosureViaCallable<each Argument: VariantConvertible, Result: VariantConvertible>(

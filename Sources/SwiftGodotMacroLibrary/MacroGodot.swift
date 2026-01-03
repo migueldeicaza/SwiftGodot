@@ -122,7 +122,6 @@ class GodotMacroProcessor {
         } else {
             returnTypename = "Swift.Void"
         }
-                
         
         let flags: String
         if funcDecl.hasClassOrStaticModifier {
@@ -238,7 +237,6 @@ class GodotMacroProcessor {
             try processSignalVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
         }
     }
-
     
     // Returns true if it used "tryCase"
     func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {

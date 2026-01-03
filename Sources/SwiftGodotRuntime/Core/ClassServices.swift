@@ -7,7 +7,6 @@
 
 import GDExtension
 
-
 /// Provides support to expose Swift methods and signals to the Godot runtime, making it callable
 /// from its runtime and scripting language.
 ///
@@ -294,7 +293,6 @@ func bind_call (_ udata: UnsafeMutableRawPointer?,
     let finfo = udata.assumingMemoryBound(to: ClassInfo.FunctionInfo.self).pointee
     let ref = Unmanaged<WrappedReference>.fromOpaque(classInstance).takeUnretainedValue()
     guard let object = ref.value as? Object else { return }
-
     
     let ret = withArguments(pargs: variantArgs, argc: argc) { arguments in
         let bound = finfo.function(object)

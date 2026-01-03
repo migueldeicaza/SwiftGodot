@@ -148,7 +148,6 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         self.init(elements)
     }
     
-    
     /// Initialise ``TypedArray`` from the Swift ``Sequence``.
     /// For example:
     /// ```

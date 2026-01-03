@@ -8,7 +8,6 @@
 public extension _GodotBridgeable where Self: Node {
     typealias TypedArrayElement = Self?
 
-
     /// Internal API. Returns ``PropInfo`` for when any ``Object`` or its subclass instance is used as a property in API visible to Godot
     @inline(__always)
     @inlinable

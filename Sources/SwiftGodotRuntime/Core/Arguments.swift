@@ -882,7 +882,6 @@ public struct RawReturnWriter {
         }
     }
 
-
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Void) {
         // No return
     }
@@ -988,7 +987,6 @@ extension Optional: _GodotContainerTypingParameter where Wrapped: _GodotNullable
     }
 }
 
-
 // Allows static dispatch for processing `Variant?` `Object?` types during  parsing callback ``Arguments`` or using them as arguments for invoking Godot functions.
 extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotNullableBridgeable {
     public typealias TypedArrayElement = Self
@@ -1034,7 +1032,7 @@ extension Optional: _GodotBridgeable, VariantConvertible where Wrapped: _GodotNu
     
     @inline(__always)
     @inlinable
-    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Optional<Wrapped> {
+    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Wrapped? {
         try Wrapped.fromFastVariantOrThrow(variant)
     }
         
