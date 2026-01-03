@@ -406,6 +406,10 @@ public struct Arguments: ~Copyable {
 ///
 /// You should generally not use this in your code
 public struct RawArguments: Sendable {
+    // In this class we force unwrap a number of values, this will crash if bad data is provided
+    // but that is expected - a crash there means an invalid binding would have been generated.
+
+    // swiftlint:disable force_unwrapping
     public var args: UnsafePointer<UnsafeRawPointer?>
     public init (args: UnsafePointer<UnsafeRawPointer?>) {
         self.args = args
@@ -680,6 +684,7 @@ public struct RawArguments: Sendable {
         let dictionary: VariantDictionary = try fetchArgument(at: at)
         return TypedDictionary(from: dictionary)
     }
+    // swiftlint:enable force_unwrapping
 }
 
 /// This is a helper tool used by the generated bridge functions, do not use directly
@@ -688,6 +693,8 @@ public struct RawArguments: Sendable {
 // deinit methods, we make a copy, and then prevent the deinit from deallocating
 // by clearing the value
 public struct RawReturnWriter {
+    // An error in dereferencing target in generated code is an error
+    // swiftlint:disable force_unwrapping
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Int) {
         target!.assumingMemoryBound(to: Int.self).pointee = value
     }
@@ -908,7 +915,7 @@ public struct RawReturnWriter {
     public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T) where T: RawRepresentable, T.RawValue == Int64 {
         target!.assumingMemoryBound(to: Int.self).pointee = Int(value.rawValue)
     }
-
+    // swiftlint:enable force_unwrapping
 }
 
 /// Execute `body` and return the result of executing it taking temporary storage keeping Godot managed `Variant`s stored in `pargs`.

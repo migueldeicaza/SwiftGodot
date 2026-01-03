@@ -250,7 +250,9 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
             return nil
         }
 
+        // swiftlint:disable force_unwrapping
         var objectHandle: GodotNativeObjectPointer? = GodotNativeObjectPointer(bitPattern: 1)!
+        // swiftlint:enable force_unwrapping
         constructType(into: &objectHandle, constructor: Object.selfFromVariant)
         guard let objectHandle else {
             return nil

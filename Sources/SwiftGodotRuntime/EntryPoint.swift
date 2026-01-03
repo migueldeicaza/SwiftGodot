@@ -121,7 +121,10 @@ public func setExtensionInterface(interface: ExtensionInterface) {
 // Extension initialization callback
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
-    guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+
+    guard let l64 = Int64(exactly: l.rawValue), let level = ExtensionInitializationLevel(rawValue: l64) else {
+        return
+    }
     if level == .scene {
         extensionInterface.classDBReady = true
         for initializer in extensionInterface.pendingInitializers {
@@ -140,8 +143,12 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     //print ("SWIFT: extension_deinitialize")
     guard let userData else { return }
     let key = OpaquePointer(userData)
-    guard let callback = extensionDeInitCallbacks[key] else { return }
-    guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    guard let callback = extensionDeInitCallbacks[key],
+          let l64 = Int64(exactly: l.rawValue),
+          let level = ExtensionInitializationLevel(rawValue: l64)
+    else {
+        return
+    }
     callback(level)
     if level == .core {
         // Last one, remove

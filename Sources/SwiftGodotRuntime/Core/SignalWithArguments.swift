@@ -97,7 +97,7 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
         let result = target.callv(method: "emit_signal", argArray: args)
         guard let result else { return .ok }
         guard let errorCode = Int(result) else { return .ok }
-        return GodotError(rawValue: Int64(errorCode))!
+        return GodotError(rawValue: Int64(errorCode)) ?? GodotError.failed
     }
 
     /// You can await this property to wait for the signal to be emitted once.

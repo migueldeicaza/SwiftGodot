@@ -30,10 +30,10 @@ extension StringName: CustomStringConvertible {
     }
 }
 
-func stringToGodotHandle (_ str: String) -> GDExtensionStringPtr {
+func stringToGodotHandle (_ str: String) -> GDExtensionStringPtr? {
     var ret = GDExtensionStringPtr (bitPattern: 0)
     gi.string_new_with_utf8_chars (&ret, str)
-    return ret!
+    return ret
 }
 
 func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
@@ -43,7 +43,10 @@ func stringFromGodotString (_ ptr: UnsafeRawPointer) -> String? {
         // The returned size is in chars, not bytes, so not very useful for us
         _ = gi.string_to_utf8_chars (ptr, strPtr.baseAddress, n)
         strPtr [Int (n)] = 0
-        return String (cString: strPtr.baseAddress!)
+        if let baseAddress = strPtr.baseAddress {
+            return String (cString: baseAddress)
+        }
+        return nil
     }
 }
     
@@ -55,10 +58,13 @@ extension GString: CustomStringConvertible {
         }
         let len = gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), nil, 0)
         return withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(len+1)) { strPtr in
+            guard let baseAddress = strPtr.baseAddress else {
+                return nil
+            }
             // Return is in characters, not bytes, not very useful
             _ = gi.string_to_utf8_chars (UnsafeMutableRawPointer (mutating: ptr), strPtr.baseAddress, len)
             strPtr [Int (len)] = 0
-            return String (cString: strPtr.baseAddress!)
+            return String (cString: baseAddress)
         }
     }
     

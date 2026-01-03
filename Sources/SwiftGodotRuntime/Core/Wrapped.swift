@@ -270,11 +270,15 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public func callScript (method: StringName, _ arguments: Variant?...) throws -> Variant? {
         var args: [UnsafeRawPointer?] = []
         let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
+        guard let baseAddress = cptr.baseAddress else {
+            // This should never happen
+            throw CallErrorType.unknown
+        }
         defer { cptr.deallocate () }
         
         for idx in 0..<arguments.count {
             cptr [idx] = arguments[idx].content
-            args.append (cptr.baseAddress! + idx)
+            args.append (baseAddress + idx)
         }
         var result = Variant.zero
         var error = GDExtensionCallError()
@@ -419,7 +423,11 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     }
 
     func getVirtual(_ userData: UnsafeMutableRawPointer?, _ name: GDExtensionConstStringNamePtr?) ->  GDExtensionClassCallVirtual? {
-        let typeAny = Unmanaged<AnyObject>.fromOpaque(userData!).takeUnretainedValue()
+        guard let userData else {
+            pd("getVirtual: got a nil userData")
+            return nil
+        }
+        let typeAny = Unmanaged<AnyObject>.fromOpaque(userData).takeUnretainedValue()
         guard let type  = typeAny as? Object.Type else {
             pd ("The wrapped value did not contain a type: \(typeAny)")
             return nil

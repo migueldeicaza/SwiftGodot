@@ -292,7 +292,11 @@ public struct FastVariant: ~Copyable {
             return nil
         }
 
+        // I suspect that just passing nil here will work, but play it safe in this
+        // swiftlint pass.
+        // swiftlint:disable force_unwrapping
         var objectHandle: GodotNativeObjectPointer? = GodotNativeObjectPointer(bitPattern: 1)!
+        // swiftlint:enable force_unwrapping
         constructType(into: &objectHandle, constructor: Object.selfFromVariant)
         guard let objectHandle else {
             return nil

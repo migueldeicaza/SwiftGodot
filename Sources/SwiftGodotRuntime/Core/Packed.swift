@@ -38,8 +38,12 @@ extension PackedByteArray : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedByteArray``
     public subscript (index: Int) -> UInt8 {
         get {
-            let ptr = gi.packed_byte_array_operator_index_const (&content, Int64 (index))
-            return ptr!.pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_byte_array_operator_index_const (&content, Int64 (index)) {
+                return ptr.pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: Int64 (newValue))
@@ -131,8 +135,12 @@ extension PackedColorArray : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedColorArray``
     public subscript (index: Int) -> Color {
         get {
-            let ptr = gi.packed_color_array_operator_index_const (&content, Int64 (index))
-            return ptr!.assumingMemoryBound(to: Color.self).pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_color_array_operator_index_const (&content, Int64 (index)) {
+                return ptr.assumingMemoryBound(to: Color.self).pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: newValue)
@@ -167,8 +175,12 @@ extension PackedFloat32Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedFloat32Array``
     public subscript (index: Int) -> Float {
         get {
-            let ptr = gi.packed_float32_array_operator_index_const (&content, Int64 (index))
-            return ptr!.pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_float32_array_operator_index_const (&content, Int64 (index)) {
+                return ptr.pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: Double (newValue))
@@ -204,8 +216,12 @@ extension PackedFloat64Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedFloat64Array``
     public subscript (index: Int) -> Double {
         get {
-            let ptr = gi.packed_float64_array_operator_index_const (&content, Int64(index))
-            return ptr!.pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_float64_array_operator_index_const (&content, Int64(index)) {
+                return ptr.pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: newValue)
@@ -241,8 +257,12 @@ extension PackedInt32Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedInt32Array``
     public subscript (index: Int) -> Int32 {
         get {
-            let ptr = gi.packed_int32_array_operator_index_const (&content, Int64(index))
-            return ptr!.pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_int32_array_operator_index_const (&content, Int64(index)) {
+                return ptr.pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: Int64(newValue))
@@ -278,8 +298,12 @@ extension PackedInt64Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedInt64Array``
     public subscript (index: Int) -> Int64 {
         get {
-            let ptr = gi.packed_int64_array_operator_index_const(&content, Int64(index))
-            return ptr!.pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_int64_array_operator_index_const(&content, Int64(index)) {
+                return ptr.pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: newValue)
@@ -315,8 +339,12 @@ extension PackedVector2Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector2Array``
     public subscript (index: Int) -> Vector2 {
         get {
-            let ptr = gi.packed_vector2_array_operator_index_const (&content, Int64(index))
-            return ptr!.assumingMemoryBound(to: Vector2.self).pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_vector2_array_operator_index_const (&content, Int64(index)) {
+                return ptr.assumingMemoryBound(to: Vector2.self).pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: newValue)
@@ -351,8 +379,12 @@ extension PackedVector3Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector3Array``
     public subscript (index: Int) -> Vector3 {
         get {
-            let ptr = gi.packed_vector3_array_operator_index_const (&content, Int64(index))
-            return ptr!.assumingMemoryBound(to: Vector3.self).pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_vector3_array_operator_index_const (&content, Int64(index)) {
+                return ptr.assumingMemoryBound(to: Vector3.self).pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: newValue)
@@ -387,8 +419,12 @@ extension PackedVector4Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector3Array``
     public subscript (index: Int) -> Vector4 {
         get {
-            let ptr = gi.packed_vector4_array_operator_index_const (&content, Int64(index))
-            return ptr!.assumingMemoryBound(to: Vector4.self).pointee
+            // this call returns nil on out of bounds
+            if let ptr = gi.packed_vector4_array_operator_index_const (&content, Int64(index)) {
+                return ptr.assumingMemoryBound(to: Vector4.self).pointee
+            } else {
+                fatalError("Index \(index) was out of bounds")
+            }
         }
         set {
             set (index: Int64 (index), value: newValue)
