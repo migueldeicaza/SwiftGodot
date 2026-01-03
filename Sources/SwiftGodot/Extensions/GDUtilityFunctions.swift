@@ -5,6 +5,7 @@
 //  Created by Marquis Kurt on 5/16/23.
 //
 public extension GD {
+#if os(Windows)
     /// Pushes an error message to Godot's built-in debugger and to the OS terminal.
     /// - Parameter items: The items to print into the Godot console.
     /// - Parameter separator: The separator to insert between items. The default is a single space (" ").
@@ -49,7 +50,7 @@ public extension GD {
         let finalMessage = transformedItems.joined(separator: separator)
         GD.printerr(arg1: Variant(finalMessage))
     }
-
+#endif
     /// Loads a resource from the filesystem located at `path`.
     ///
     /// The resource is loaded on the method call (unless it's referenced already elsewhere, e.g. in another script or
