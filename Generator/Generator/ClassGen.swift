@@ -136,6 +136,13 @@ func generateVirtualProxy (_ p: Printer,
         if argPrep != "" {
             p (argPrep)
         }
+
+        // For Node's _ready method, call _before_ready() first to allow
+        // @Godot macro to perform setup tasks like RPC configuration
+        if cdef.name == "Node" && method.name == "_ready" {
+            p ("swiftObject._before_ready()")
+        }
+
         var call = "swiftObject.\(methodName) (\(argCall))"
         if method.returnValue?.type == "String" {
             call = "GString (\(call))"
@@ -615,8 +622,21 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             p("""
             public required init(_ context: InitContext) {
                 super.init(context)
-            
-                _ = initRef()             
+
+                _ = initRef()
+            }
+            """)
+        }
+
+        if cdef.name == "Node" {
+            p("""
+            /// Called by SwiftGodot before `_ready()` is invoked.
+            /// This method is used internally by the `@Godot` macro to perform
+            /// setup tasks like RPC configuration. Override this method in your
+            /// `@Godot`-annotated class if you need to perform additional setup
+            /// before `_ready()` is called, but always call `super._before_ready()`.
+            open func _before_ready() {
+                // Empty by default - overridden by @Godot macro when needed
             }
             """)
         }

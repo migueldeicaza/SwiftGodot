@@ -21,6 +21,7 @@ final class MacroGodotTests: MacroGodotTestCase {
             "Godot": GodotMacro.self,
             "Callable": GodotCallable.self,
             "Export": GodotExport.self,
+            "Rpc": GodotRpc.self,
             "signal": SignalMacro.self,
             "Signal": SignalAttachmentMacro.self
         ]
@@ -484,6 +485,38 @@ final class MacroGodotTests: MacroGodotTestCase {
                 }            
             }
             """
+        )
+    }
+
+    func testRpcMacro() {
+        assertExpansion(
+            of: """
+            @Godot class MultiplayerNode: Node {
+                @Callable @Rpc(mode: .anyPeer, transferMode: .reliable)
+                func syncPosition(_ position: Vector3) {
+                }
+
+                @Callable @Rpc
+                func defaultRpc() {
+                }
+
+                @Callable @Rpc(mode: .authority, callLocal: true, transferMode: .unreliableOrdered, transferChannel: 2)
+                func fullConfig() {
+                }
+            }
+            """
+        )
+    }
+
+    func testRpcMacroNotOnFunction() {
+        assertExpansion(
+            of: """
+            @Godot class MultiplayerNode: Node {
+                @Rpc
+                var notAFunction: Int = 0
+            }
+            """,
+            diagnostics: [.init(message: "@Rpc attribute can only be applied to functions", line: 2, column: 5)]
         )
     }
 
