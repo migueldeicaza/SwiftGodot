@@ -16,13 +16,26 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+/// Holds RPC configuration extracted from @Rpc attribute
+struct RpcConfiguration {
+    let methodName: String
+    let godotMethodName: String
+    let mode: String           // e.g., ".authority" or ".anyPeer"
+    let callLocal: String      // e.g., "true" or "false"
+    let transferMode: String   // e.g., ".unreliable" or ".reliable"
+    let transferChannel: String // e.g., "0"
+}
+
 class GodotMacroProcessor {
     var existingMembers: [String: DeclSyntax] = [:]
-        
+
     let classInitializerPrinter = CodePrinter()
     let classDecl: ClassDeclSyntax
     let className: String
-    
+
+    /// Tracks functions marked with @Rpc for generating rpcConfig calls
+    var rpcConfigurations: [RpcConfiguration] = []
+
     init(classDecl: ClassDeclSyntax) {
         self.classDecl = classDecl
         className = classDecl.name.text
@@ -109,7 +122,6 @@ class GodotMacroProcessor {
         } else {
             returnTypename = "Swift.Void"
         }
-                
         
         let flags: String
         if funcDecl.hasClassOrStaticModifier {
@@ -142,7 +154,81 @@ class GodotMacroProcessor {
         
         try checkNameCollision(godotFuncName, for: DeclSyntax(funcDecl))
     }
-      
+
+    /// Processes a function marked with @Rpc to extract RPC configuration
+    func processRpcFunction(_ funcDecl: FunctionDeclSyntax) {
+        guard funcDecl.hasRpcAttribute else { return }
+        guard let rpcAttribute = funcDecl.attributes.attribute(named: "Rpc") else { return }
+
+        let funcName = funcDecl.name.text
+        let godotFuncName = funcName.camelCaseToSnakeCase()
+
+        // Parse @Rpc arguments with defaults
+        var mode = ".authority"
+        var callLocal = "false"
+        var transferMode = ".unreliable"
+        var transferChannel = "0"
+
+        if let arguments = rpcAttribute.arguments?.as(LabeledExprListSyntax.self) {
+            for arg in arguments {
+                let label = arg.label?.text ?? ""
+                let value = arg.expression.trimmedDescription
+
+                switch label {
+                case "mode":
+                    mode = value
+                case "callLocal":
+                    callLocal = value
+                case "transferMode":
+                    transferMode = value
+                case "transferChannel":
+                    transferChannel = value
+                default:
+                    break
+                }
+            }
+        }
+
+        rpcConfigurations.append(RpcConfiguration(
+            methodName: funcName,
+            godotMethodName: godotFuncName,
+            mode: mode,
+            callLocal: callLocal,
+            transferMode: transferMode,
+            transferChannel: transferChannel
+        ))
+    }
+
+    /// Generates the _before_ready() override if there are any @Rpc functions.
+    /// This method is called automatically by the generated Node._ready() proxy.
+    func generateBeforeReadyOverride() -> String? {
+        guard !rpcConfigurations.isEmpty else { return nil }
+
+        var result = """
+        /// Called automatically before `_ready()`. Configures RPC for methods marked with `@Rpc`.
+        override open func _before_ready() {
+            super._before_ready()
+
+        """
+
+        for config in rpcConfigurations {
+            result += """
+                rpcConfig(
+                    method: StringName("\(config.godotMethodName)"),
+                    config: Variant([
+                        "rpc_mode": Variant(MultiplayerAPI.RPCMode\(config.mode).rawValue),
+                        "call_local": Variant(\(config.callLocal)),
+                        "transfer_mode": Variant(MultiplayerPeer.TransferMode\(config.transferMode).rawValue),
+                        "channel": Variant(\(config.transferChannel))
+                    ] as GDictionary)
+                )
+
+            """
+        }
+
+        result += "    }"
+        return result
+    }
 
     func processVariable(_ varDecl: VariableDeclSyntax, previousGroupPrefix: String?, previousSubgroupPrefix: String?) throws {
         if varDecl.hasExportAttribute {
@@ -151,7 +237,6 @@ class GodotMacroProcessor {
             try processSignalVariable(varDecl, prefix: previousSubgroupPrefix ?? previousGroupPrefix)
         }
     }
-
     
     // Returns true if it used "tryCase"
     func processExportVariable (_ varDecl: VariableDeclSyntax, prefix: String?) throws {
@@ -317,6 +402,7 @@ class GodotMacroProcessor {
                     processExportSubgroup(name: name, prefix: previousSubgroupPrefix ?? "")
                 } else if let funcDecl = FunctionDeclSyntax(decl) {
                     try processFunction (funcDecl)
+                    processRpcFunction(funcDecl)
                 } else if let varDecl = VariableDeclSyntax(decl) {
                     try processVariable(
                         varDecl,
@@ -464,6 +550,12 @@ public struct GodotMacro: MemberMacro {
                 implementedOverridesDecl.append("]\n}")
                 decls.append (DeclSyntax(extendedGraphemeClusterLiteral: implementedOverridesDecl))
             }
+
+            // Generate _before_ready() override if there are any @Rpc functions
+            if let beforeReadyOverride = processor.generateBeforeReadyOverride() {
+                decls.append(DeclSyntax(stringLiteral: beforeReadyOverride))
+            }
+
             return decls
         } catch {
             let diagnostic: Diagnostic
@@ -484,6 +576,7 @@ struct SwiftGodotCompilerPlugin: CompilerPlugin {
         GodotMacro.self,
         GodotCallable.self,
         GodotExport.self,
+        GodotRpc.self,
         GodotMacroExportGroup.self,
         InitSwiftExtensionMacro.self,
         NativeHandleDiscardingMacro.self,

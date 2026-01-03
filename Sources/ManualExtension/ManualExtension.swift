@@ -9,7 +9,6 @@ import SwiftGodot
 
 var sequence = 0
 
-
 @Godot
 class Rigid: RigidBody2D {
     override func _integrateForces(state: PhysicsDirectBodyState2D?) {

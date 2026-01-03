@@ -28,7 +28,6 @@ public extension Callable {
         }
     }
     
-    
     /// Initialize ``Callable`` using Swift closure returning `Void`, for example:
     /// ```
     /// var callable = Callable { (a: Int, b: Int) in

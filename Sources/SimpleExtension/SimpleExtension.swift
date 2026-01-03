@@ -43,7 +43,6 @@ class SwiftSprite: Sprite2D {
     @Signal var scored: SimpleSignal
     @Signal var livesChanged: SignalWithArguments<Int>
     
-    
     @Callable
     public func computeGodot (x: String, y: Int) -> Double {
         return 1.0

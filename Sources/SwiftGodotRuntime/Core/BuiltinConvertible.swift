@@ -103,12 +103,11 @@ extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgea
     /// This is O(n) operation.
     ///
     /// Swift array will be created and copied per-element.
-    public static func fromGodotBuiltinOrThrow(_ value: TypedArray<Element>) throws(VariantConversionError) -> Array<Element> {
+    public static func fromGodotBuiltinOrThrow(_ value: TypedArray<Element>) throws(VariantConversionError) -> [Element] {
         // Via Swift.Array.init<S>(_ s: S) where Element == S.Element, S : Sequence
         Array(value)
     }
 }
-
 
 extension Dictionary: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _GodotContainerTypingParameter, VariantConvertible where Key: _GodotContainerTypingParameter & Hashable, Value: _GodotContainerTypingParameter {
     /// Converts `[Key: Value]` into `TypedDictionary<Key, Value>`

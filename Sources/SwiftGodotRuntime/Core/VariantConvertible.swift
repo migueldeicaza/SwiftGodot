@@ -68,7 +68,6 @@ public enum VariantConversionError: Error, CustomStringConvertible, @unchecked S
         )
     }
     
-    
     public static func unexpectedNilContent<T>(parsing type: T.Type = T.self) -> Self {
         unexpectedContent(
             requestedType: type,
@@ -523,7 +522,6 @@ public extension BinaryInteger where Self: _GodotBridgeableBuiltin {
         Int64(self).toFastVariant()
     }
     
-    
     /// Initialze ``BinaryInteger`` from ``Variant``. Fails if `variant` doesn't contain ``Int64``, or its value is too large for this ``BinaryInteger``
     @inline(__always)
     @inlinable
@@ -786,7 +784,6 @@ extension String: _GodotBridgeableBuiltin {
         guard let variant else { return nil }
         self.init(variant)
     }
-    
     
     /// Initialze ``String`` from ``FastVariant``. Fails if `variant` doesn't contain ``String``
     @inline(__always)

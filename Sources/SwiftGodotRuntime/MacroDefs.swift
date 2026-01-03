@@ -205,7 +205,6 @@ public macro initSwiftExtension(
 //@attached(member, names: named(name))
 public macro PickerNameProvider() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "PickerNameProviderMacro")
 
-
 /// Low-level: A macro that automatically implements `init(nativeHandle:)` for nodes.
 ///
 /// Use this for a class that has a required initializer with an `UnsafeRawPointer`.
@@ -251,7 +250,6 @@ public macro SceneTree(path: String? = nil) = #externalMacro(module: "SwiftGodot
 @attached(accessor)
 public macro Node(_ path: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SceneTreeMacro")
 
-
 /// Defines a Godot signal on a class.
 ///
 /// The `@Godot` macro will register any #signal defined signals so that they can be used in the editor.
@@ -275,7 +273,7 @@ public macro Node(_ path: String? = nil) = #externalMacro(module: "SwiftGodotMac
 /// editor. Argument types are enforced on the `emit(signal:_argument)` method. Argument types must conform to GodotVariant.
 @freestanding(declaration, names: arbitrary)
 @available(*, deprecated, message: "Use the @Signal macro instead.")
-public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type> = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
+public macro signal(_ signalName: String, arguments: [String: Any.Type] = [:]) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalMacro")
 
 /// Defines a Godot signal on a class.
 ///
@@ -296,6 +294,5 @@ public macro signal(_ signalName: String, arguments: Dictionary<String, Any.Type
 
 @attached(accessor)
 public macro Signal(_ names: String...) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "SignalAttachmentMacro")
-
 
 #endif

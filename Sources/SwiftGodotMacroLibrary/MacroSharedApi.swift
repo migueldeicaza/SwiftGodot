@@ -17,6 +17,7 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case exportMacroNotOnVariable
     case signalMacroNotOnVariable
     case callableMacroNotOnFunction
+    case rpcMacroNotOnFunction
     case signalMacroNoType(String)
     case signalMacroAccessorBlock(String)
     case signalMacroInitializer(String)
@@ -49,6 +50,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
             "@Signal attribute can only be applied to variables"
         case .callableMacroNotOnFunction:
             "@Callable attribute can only be applied to functions"
+        case .rpcMacroNotOnFunction:
+            "@Rpc attribute can only be applied to functions"
         case .noIdentifier(let e):
             "Unexpected binding pattern \(e). \(IdentifierPatternSyntax.self) expected"
         case .unknownError(let e):
@@ -134,7 +137,6 @@ extension ExprSyntax {
         return nil
     }
 }
-
 
 private extension String {
     func swiftName() -> String {

@@ -86,5 +86,3 @@ public struct SignalMacro: DeclarationMacro {
     
 }
 
-
-

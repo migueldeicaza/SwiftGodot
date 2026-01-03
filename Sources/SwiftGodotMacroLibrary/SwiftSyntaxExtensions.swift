@@ -55,6 +55,10 @@ extension FunctionDeclSyntax {
     var hasCallableAttribute: Bool {
         hasAttribute(named: "Callable")
     }
+
+    var hasRpcAttribute: Bool {
+        hasAttribute(named: "Rpc")
+    }
 }
 
 extension FunctionParameterSyntax {

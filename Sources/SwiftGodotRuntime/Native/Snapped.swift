@@ -1,4 +1,3 @@
-
 public protocol Snappable {
     /// Returns a new value snapped to the nearest multiple of the specified step.
     func snapped(step: Self) -> Self
