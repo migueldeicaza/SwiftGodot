@@ -15,7 +15,7 @@ class MainLevel: Node2D {
 
     override func _ready() {
         teleportArea?.bodyEntered.connect { [self] enteredBody in
-            if enteredBody.isClass("\(PlayerController.self)") {
+            if enteredBody is PlayerController {
                 teleportPlayerToTop()
             }
         }
