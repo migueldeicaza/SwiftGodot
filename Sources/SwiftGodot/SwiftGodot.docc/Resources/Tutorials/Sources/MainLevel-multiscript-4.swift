@@ -18,6 +18,6 @@ class MainLevel: Node2D {
             GD.pushWarning("Player or spawnpoint is missing.")
             return
         }
-        
+
     }
 }

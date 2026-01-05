@@ -118,8 +118,7 @@
                 @Code(name: "PlayerController.swift", file: "PlayerController-starter-7.swift")
             }
             @Step {
-                Finally, call `moveAndSlide` to move the player, sliding along any edges the player collides with, and
-                call the parent's `physicsProcess(delta:)` method.
+                Finally, call `moveAndSlide` to move the player, sliding along any edges the player collides with.
                 
                 @Code(name: "PlayerController.swift", file: "PlayerController-starter-8.swift")
             }
