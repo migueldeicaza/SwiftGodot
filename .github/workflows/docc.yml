@@ -1,0 +1,83 @@
+name: DocC
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.0"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Generate DocC
+        env:
+          DOCC_OUTPUT: ${{ github.workspace }}/.build/docc
+          DOCC_BASE_PATH: /${{ github.event.repository.name }}
+        run: |
+          rm -rf "$DOCC_OUTPUT"
+          swift package \
+            --allow-writing-to-directory "$DOCC_OUTPUT" \
+            generate-documentation \
+            --target SwiftGodot \
+            --disable-indexing \
+            --transform-for-static-hosting \
+            --hosting-base-path "$DOCC_BASE_PATH" \
+            --source-service github \
+            --source-service-base-url https://github.com/${{ github.repository }}/blob/${{ github.ref_name }} \
+            --checkout-path . \
+            --output-path "$DOCC_OUTPUT"
+          DOCS_ENTRY="${DOCC_BASE_PATH}/documentation/swiftgodot"
+          cat > "$DOCC_OUTPUT/index.html" <<EOF
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="0; url=${DOCS_ENTRY}/">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>SwiftGodot DocC</title>
+            </head>
+            <body>
+              <p>Redirecting to <a href="${DOCS_ENTRY}/">SwiftGodot documentation</a>...</p>
+            </body>
+          </html>
+          EOF
+          touch "$DOCC_OUTPUT/.nojekyll"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .build/docc
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
