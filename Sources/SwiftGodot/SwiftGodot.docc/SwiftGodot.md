@@ -38,6 +38,7 @@ Going in depth with SwiftGodot:
 - <doc:Signals>
 - <doc:RemoteProcedureCalls>
 - <doc:CustomTypes>
+- <doc:Singletons>
 - <doc:BindingNodes>
 - <doc:RunningInEditor>
 - <doc:MemoryManagement>

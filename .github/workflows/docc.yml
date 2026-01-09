@@ -62,6 +62,7 @@ jobs:
             </body>
           </html>
           EOF
+          cp scripts/google1fb990296a5c506c.html "$DOCC_OUTPUT"/
           touch "$DOCC_OUTPUT/.nojekyll"
 
       - name: Upload Pages artifact
