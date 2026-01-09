@@ -1,0 +1,8 @@
+[configuration]
+entry_symbol = "swift_language_entry_point"
+compatibility_minimum = 4.2
+
+
+[libraries]
+macos.debug = "res://addons/SwiftGodotLanguagePackage/bin/libSwiftGodotLanguage.dylib"
+macos.release = "res://addons/SwiftGodotLanguagePackage/bin/libSwiftGodotLanguage.dylib"
