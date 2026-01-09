@@ -95,6 +95,13 @@ func godotPropertyToSwift (_ name: String) -> String {
     return v
 }
 
+func isRefCountedType(_ name: String) -> Bool {
+    if let def = classMap[name] {
+        return def.isRefcounted
+    }
+    return name == "RefCounted"
+}
+
 var core_types = [
               "String",
               "Vector2",
