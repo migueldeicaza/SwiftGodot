@@ -70,7 +70,7 @@ final class EngineVector2Tests {
     public func testLimitingMethods () {
         let vector: Vector2 = Vector2 (x: 10, y: 10)
         assertApproxEqual (vector.limitLength (), Vector2 (x: Float.sqrt12, y: Float.sqrt12), "Vector2 limitLength should work as expected.")
-        assertApproxEqual (vector.limitLength (5), Vector2 (x: Float.sqrt12, y: Float.sqrt12) * 5, "Vector2 limitLength should work as expected.")
+        assertApproxEqual (vector.limitLength (5), Vector2 (x: Float.sqrt12, y: Float.sqrt12) * 5.0, "Vector2 limitLength should work as expected.")
         
         XCTAssertEqual (Vector2 (x: -5, y: 15).clamp (min: Vector2 (), max: vector), Vector2 (x: 0, y: 10), "Vector2 clamp should work as expected.")
         XCTAssertEqual (vector.clamp (min: Vector2 (x: 0, y: 15), max: Vector2 (x: 5, y: 20)), Vector2 (x: 5, y: 15), "Vector2 clamp should work as expected.")
@@ -116,13 +116,13 @@ final class EngineVector2Tests {
         XCTAssertEqual ((power1 / power2), Vector2 (x: 1.5, y: 12.0), "Vector2 division with powers of two should give exact results.")
         XCTAssertEqual ((int1 / int2), Vector2 (x: 4, y: 2.5), "Vector2 division with integers should give exact results.")
         
-        assertApproxEqual ((decimal1 * 2), Vector2 (x: 4.6, y: 9.8), "Vector2 multiplication should behave as expected.")
-        XCTAssertEqual ((power1 * 2), Vector2 (x: 1.5, y: 3), "Vector2 multiplication with powers of two should give exact results.")
-        XCTAssertEqual ((int1 * 2), Vector2 (x: 8, y: 10), "Vector2 multiplication with integers should give exact results.")
-        
-        assertApproxEqual ((decimal1 / 2), Vector2 (x: 1.15, y: 2.45), "Vector2 division should behave as expected.")
-        XCTAssertEqual ((power1 / 2), Vector2 (x: 0.375, y: 0.75), "Vector2 division with powers of two should give exact results.")
-        XCTAssertEqual ((int1 / 2), Vector2 (x: 2, y: 2.5), "Vector2 division with integers should give exact results.")
+        assertApproxEqual ((decimal1 * 2.0), Vector2 (x: 4.6, y: 9.8), "Vector2 multiplication should behave as expected.")
+        XCTAssertEqual ((power1 * 2.0), Vector2 (x: 1.5, y: 3), "Vector2 multiplication with powers of two should give exact results.")
+        XCTAssertEqual ((int1 * 2.0), Vector2 (x: 8, y: 10), "Vector2 multiplication with integers should give exact results.")
+
+        assertApproxEqual ((decimal1 / 2.0), Vector2 (x: 1.15, y: 2.45), "Vector2 division should behave as expected.")
+        XCTAssertEqual ((power1 / 2.0), Vector2 (x: 0.375, y: 0.75), "Vector2 division with powers of two should give exact results.")
+        XCTAssertEqual ((int1 / 2.0), Vector2 (x: 2, y: 2.5), "Vector2 division with integers should give exact results.")
         
         XCTAssertEqual (Vector2i (from: decimal1), Vector2i (x: 2, y: 4), "Vector2 cast to Vector2i should work as expected.")
         XCTAssertEqual (Vector2i (from: decimal2), Vector2i (x: 1, y: 3), "Vector2 cast to Vector2i should work as expected.")
@@ -214,7 +214,7 @@ final class EngineVector2Tests {
         
         XCTAssertEqual (vectorX.dot (with: vectorY), 0.0, "Vector2 dot product of perpendicular vectors should be zero.")
         XCTAssertEqual (vectorX.dot (with: vectorX), 1.0, "Vector2 dot product of identical unit vectors should be one.")
-        XCTAssertEqual ((vectorX * 10).dot (with: vectorX * 10), 100.0, "Vector2 dot product of same direction vectors should behave as expected.")
+        XCTAssertEqual ((vectorX * 10.0).dot (with: vectorX * 10.0), 100.0, "Vector2 dot product of same direction vectors should behave as expected.")
         assertApproxEqual (a.dot (with: b), 57.3, "Vector2 dot should return expected value.")
         assertApproxEqual (Vector2 (x: -a.x, y: a.y).dot (with: Vector2 (x: b.x, y: -b.y)), -57.3, "Vector2 dot should return expected value.")
     }
