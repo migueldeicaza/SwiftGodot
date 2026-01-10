@@ -4,6 +4,7 @@ import SwiftGodot
 final class SwiftScript: ScriptExtension {
     private var storedSourceCode: String = ""
     private var baseType: StringName = StringName("Node")
+    private var className: StringName = StringName()
 
     func setBaseType(_ type: StringName) {
         baseType = type
@@ -22,7 +23,7 @@ final class SwiftScript: ScriptExtension {
     }
 
     override func _getGlobalName() -> StringName {
-        StringName()
+        className
     }
 
     override func _inheritsScript(_ script: Script?) -> Bool {
@@ -54,7 +55,7 @@ final class SwiftScript: ScriptExtension {
     }
 
     override func _setSourceCode(_ code: String) {
-        storedSourceCode = code
+        updateFromSource(code)
     }
 
     override func _reload(keepState: Bool) -> GodotError {
@@ -94,7 +95,7 @@ final class SwiftScript: ScriptExtension {
     }
 
     override func _isValid() -> Bool {
-        true
+        !storedSourceCode.isEmpty
     }
 
     override func _isAbstract() -> Bool {
@@ -150,5 +151,13 @@ final class SwiftScript: ScriptExtension {
 
     override func _getRpcConfig() -> Variant? {
         Variant(0)
+    }
+
+    func updateFromSource(_ source: String) {
+        storedSourceCode = source
+        if let metadata = SwiftScriptMetadata.parse(source: source) {
+            className = StringName(metadata.className)
+            baseType = StringName(metadata.baseType)
+        }
     }
 }

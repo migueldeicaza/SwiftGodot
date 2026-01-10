@@ -28,7 +28,6 @@ preview-docs:
 	GENERATE_DOCS=1 swift package --disable-sandbox preview-documentation --target SwiftGodot --disable-indexing --emit-digest
 
 push-docs:
-	cp scripts/google1fb990296a5c506c.html ../SwiftGodotDocs/docs/documentation/swiftgodot/
 	(cd ../SwiftGodotDocs/docs/; find . -name '*html' | sed -e 's,^.,https://migueldeicaza.github.io/SwiftGodotDocs,') > ../SwiftGodotDocs/docs/documentation/swiftgodot/sitemap.txt
 
 	(cd ../SwiftGodotDocs; mv docs tmp; git reset --hard 8b5f69a631f42a37176a040aeb5cfa1620249ff1; mv tmp docs; touch .nojekyll docs/.nojekyll; git add docs/* .nojekyll docs/.nojekyll; git commit -m "Import Docs"; git push -f; git prune)
@@ -46,3 +45,9 @@ sync:
 
 lint:
 	swiftlint lint Sources
+
+cycle:
+	rm -rf ~/Downloads/Test_Speed/addons/SwiftGodotLanguagePackage/
+	swift build -c debug
+	scripts/package_swift_language_macos.sh debug SwiftGodotLanguagePackage
+	rsync -a SwiftGodotLanguagePackage ~/Downloads/Test_Speed/addons

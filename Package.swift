@@ -55,6 +55,12 @@ var products: [Product] = [
         targets: ["ManualExtension"]
     ),
 
+    .library(
+        name: "SwiftGodotLanguage",
+        type: .dynamic,
+        targets: ["SwiftGodotLanguage"]
+    ),
+
     .executable(
         name: "SwiftGodotTestRunner",
         targets: ["SwiftGodotTestRunner"]
@@ -187,6 +193,13 @@ var targets: [Target] = [
         name: "ManualExtension",
         dependencies: ["SwiftGodot"],
         exclude: ["ManualExtension.gdextension", "README.md"],
+        swiftSettings: [.swiftLanguageMode(.v5)]
+    ),
+
+    .target(
+        name: "SwiftGodotLanguage",
+        dependencies: ["SwiftGodot"],
+        exclude: ["SwiftGodotLanguage.gdextension"],
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 

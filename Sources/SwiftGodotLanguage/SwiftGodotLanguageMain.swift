@@ -1,7 +1,6 @@
 import SwiftGodot
 
 private func updateSwiftLanguageRegistration(level: ExtensionInitializationLevel, isInit: Bool) {
-    print("SwiftGodotLanguage init hook: level=\(level) init=\(isInit)")
     switch level {
     case .scene:
         if isInit {
@@ -11,8 +10,6 @@ private func updateSwiftLanguageRegistration(level: ExtensionInitializationLevel
             if result != GodotError.ok {
                 GD.printErr("Swift language registration failed: \(result)")
             }
-            let overrides = SwiftScript.implementedOverrides().map { $0.description }.joined(separator: ", ")
-            print("SwiftScript overrides: \(overrides)")
         } else {
             if let language = swiftLanguageInstance {
                 let result = Engine.unregisterScriptLanguage(language)
@@ -25,23 +22,28 @@ private func updateSwiftLanguageRegistration(level: ExtensionInitializationLevel
     case .editor:
         if isInit {
             let saverClassName = StringName(String(describing: SwiftScriptResourceSaver.self))
-            let saverRegistered = ClassDB.classExists(class: saverClassName)
-            print("SwiftGodotLanguage: saver class exists before register? \(saverRegistered)")
-            if !saverRegistered {
+            if !ClassDB.classExists(class: saverClassName) {
                 register(type: SwiftScriptResourceSaver.self)
+            }
+            let loaderClassName = StringName(String(describing: SwiftScriptResourceLoader.self))
+            if !ClassDB.classExists(class: loaderClassName) {
+                register(type: SwiftScriptResourceLoader.self)
             }
             let saver = SwiftScriptResourceSaver()
             swiftScriptSaver = saver
             ResourceSaver.addResourceFormatSaver(saver)
-            let extensions = ResourceSaver.getRecognizedExtensions(type: SwiftScript())
-            print("SwiftGodotLanguage: saver extensions for SwiftScript: \(extensions)")
-            print("SwiftGodotLanguage: registered SwiftScriptResourceSaver")
+            let loader = SwiftScriptResourceLoader()
+            swiftScriptLoader = loader
+            ResourceLoader.addResourceFormatLoader(loader)
         } else {
             if let saver = swiftScriptSaver {
                 ResourceSaver.removeResourceFormatSaver(saver)
-                print("SwiftGodotLanguage: unregistered SwiftScriptResourceSaver")
             }
             swiftScriptSaver = nil
+            if let loader = swiftScriptLoader {
+                ResourceLoader.removeResourceFormatLoader(loader)
+            }
+            swiftScriptLoader = nil
         }
     default:
         break
@@ -50,7 +52,7 @@ private func updateSwiftLanguageRegistration(level: ExtensionInitializationLevel
 
 #initSwiftExtension(
     cdecl: "swift_language_entry_point",
-    editorTypes: [SwiftScriptResourceSaver.self],
+    editorTypes: [SwiftScriptResourceSaver.self, SwiftScriptResourceLoader.self],
     sceneTypes: [SwiftScriptLanguage.self, SwiftScript.self],
     hookMethod: updateSwiftLanguageRegistration
 )
