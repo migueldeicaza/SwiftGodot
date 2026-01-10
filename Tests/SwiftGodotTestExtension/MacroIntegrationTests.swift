@@ -177,8 +177,9 @@ final class MacroIntegrationTests {
         print(detected)
     }
 
-    class DemoProbe: Node {
-        var value: DemoProbe? = nil
+}
 
-    }
+@Godot
+class DemoProbe: Node {
+    var value: DemoProbe? = nil
 }
