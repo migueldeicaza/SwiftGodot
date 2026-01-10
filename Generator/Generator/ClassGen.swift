@@ -210,6 +210,8 @@ func generateVirtualProxy (_ p: Printer,
                     default:
                         p ("ret.content = \(type).zero")
                     }
+                } else if target == "array.content" {
+                    p("ret.array.content = VariantArray.zero")
                 }
             }
         }
