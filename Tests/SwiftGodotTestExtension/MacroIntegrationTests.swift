@@ -18,17 +18,17 @@ final class MacroIntegrationTests {
             case one = 1
             case two = 2
         }
-        
+
         struct Wow: VariantConvertible {
             static func fromFastVariantOrThrow(_ variant: borrowing SwiftGodotRuntime.FastVariant) throws(SwiftGodot.VariantConversionError) -> Wow {
                 Wow()
             }
-            
+
             func toFastVariant() -> SwiftGodotRuntime.FastVariant? {
                 nil
             }
         }
-        
+
         class NoMacroExample {
             var meshInstance: MeshInstance3D? = nil
             var variant = 1.toVariant()
@@ -46,7 +46,7 @@ final class MacroIntegrationTests {
             var wow = Wow()
             var optionalWow = Wow()
         }
-        
+
         XCTAssertEqual(_propInfo(at: \NoMacroExample.wow, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalWow, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
@@ -59,53 +59,54 @@ final class MacroIntegrationTests {
         XCTAssertEqual(_propInfo(at: \NoMacroExample.wop, name: "").propertyType, .nil)
         XCTAssertEqual(_propInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
         XCTAssertEqual(_propInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
-        
+
         let enumPropInfo = _propInfo(at: \NoMacroExample.enumExample, name: "")
         XCTAssertEqual(enumPropInfo.propertyType, .int)
         XCTAssertEqual(enumPropInfo.hintStr, "zero:0,one:1,two:2")
-        
+
         let meshInstancePropInfo = _propInfo(at: \NoMacroExample.meshInstance, name: "")
         XCTAssertEqual(meshInstancePropInfo.hint, .nodeType)
         XCTAssertEqual(meshInstancePropInfo.hintStr, "MeshInstance3D")
-        
+
         let closure = { (a: Int, b: Int) -> Int in
             a + b
         }
-        
+
         XCTAssertEqual(_invokeGetter(closure)?.gtype, .callable)
     }
-    
+
+    @SwiftGodotTest
     func testCorrectRegistrationSequence() {
         class A: Object {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .core
             }
         }
-        
+
         class B: A {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .servers
             }
         }
-        
+
         class C: B {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .scene
             }
         }
-        
+
         class D0: C {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .editor
             }
         }
-        
+
         class D1: C {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .editor
             }
         }
-        
+
         var types: [ExtensionInitializationLevel: [Object.Type]] = [:]
         do {
             types = try [A.self, B.self, C.self, D0.self, D1.self].prepareForRegistration()
@@ -113,44 +114,44 @@ final class MacroIntegrationTests {
             XCTFail("\(error)")
             return
         }
-        
+
         XCTAssertEqual(types[.core]?.contains(where: { $0 == A.self}), true)
         XCTAssertEqual(types[.servers]?.contains(where: { $0 == B.self}), true)
         XCTAssertEqual(types[.scene]?.contains(where: { $0 == C.self}), true)
         XCTAssertEqual(types[.editor]?.contains(where: { $0 == D0.self}), true)
         XCTAssertEqual(types[.editor]?.contains(where: { $0 == D1.self}), true)
-        
+
         XCTAssertEqual(types[.core]?.count, 1)
         XCTAssertEqual(types[.servers]?.count, 1)
         XCTAssertEqual(types[.scene]?.count, 1)
         XCTAssertEqual(types[.editor]?.count, 2)
-        
+
         XCTAssertEqual(minimumInitializationLevel(for: types), .core)
-        
+
         class E: Object {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .scene
             }
         }
-        
+
         class F: E {
             override class var classInitializationLevel: ExtensionInitializationLevel {
                 .core
             }
         }
-        
+
         do {
             types = try [E.self, F.self].prepareForRegistration()
             XCTFail()
         } catch {
             // expected error
         }
-        
+
         XCTAssertEqual(minimumInitializationLevel(for: [:]), .editor)
-        
+
         class G: Object {
         }
-                
+
         do {
             types = try [G.self].prepareForRegistration()
             XCTAssertEqual(minimumInitializationLevel(for: types), .scene)
@@ -159,4 +160,26 @@ final class MacroIntegrationTests {
             return
         }
     }
+
+    /// Tests that the `SwiftGodot._propInfo` is selecting the overload
+    /// that is able to resolve the optional-DemoProbe into a .nodeType and a DemoProbe
+    @SwiftGodotTest
+    func testPropertyRegistration() {
+        let detected = SwiftGodot._propInfo(
+            at: \DemoProbe.value,
+            name: "value",
+            userHint: nil,
+            userHintStr: nil,
+            userUsage: nil
+        )
+        XCTAssertEqual(detected.hint, .nodeType)
+        XCTAssertEqual(detected.hintStr, "DemoProbe")
+        print(detected)
+    }
+
+}
+
+@Godot
+class DemoProbe: Node {
+    var value: DemoProbe? = nil
 }

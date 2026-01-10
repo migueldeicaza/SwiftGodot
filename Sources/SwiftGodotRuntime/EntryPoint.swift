@@ -238,6 +238,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
 
     public let  global_get_singleton: GDExtensionInterfaceGlobalGetSingleton
     public let  ref_get_object: GDExtensionInterfaceRefGetObject
+    public let  ref_set_object: GDExtensionInterfaceRefSetObject
     public let  object_method_bind_call: GDExtensionInterfaceObjectMethodBindCall
 
     // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstVariantPtr?>?, GDExtensionInt, GDExtensionUninitializedVariantPtr?, UnsafeMutablePointer<GDExtensionCallError>?) -> Void
@@ -384,6 +385,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 
         global_get_singleton: load("global_get_singleton"),
         ref_get_object: load("ref_get_object"),
+        ref_set_object: load("ref_set_object"),
         object_method_bind_call: load("object_method_bind_call"),
 
         variant_new_nil: load("variant_new_nil"),
@@ -529,4 +531,3 @@ public func initializeSwiftModule(
 func withArgPointers(_ _args: UnsafeMutableRawPointer?..., body: ([UnsafeRawPointer?]) -> Void) {
     body(unsafeBitCast(_args, to: [UnsafeRawPointer?].self))
 }
-

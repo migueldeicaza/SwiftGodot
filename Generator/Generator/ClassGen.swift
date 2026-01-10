@@ -115,11 +115,18 @@ func generateVirtualProxy (_ p: Printer,
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
-                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
-                if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
-                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as? \(arg.type)"
+                if isRefCountedType(arg.type) {
+                    argPrep += "var resolved_\(i) = gi.ref_get_object(args [\(i)])\n"
+                    argPrep += "if resolved_\(i) == nil { resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self) }\n"
                 } else {
-                    argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as! \(arg.type)"
+                    argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
+                }
+                if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
+                    let ownsRef = isRefCountedType(arg.type) ? "true" : "false"
+                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: \(ownsRef)) as? \(arg.type)"
+                } else {
+                    let ownsRef = isRefCountedType(arg.type) ? "true" : "false"
+                    argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: \(ownsRef)) as! \(arg.type)"
                 }
             } else if let storage = builtinClassStorage[arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
@@ -184,7 +191,11 @@ func generateVirtualProxy (_ p: Printer,
                 } else {
                     target = classMap [ret.type] != nil ? "handle" : "content"
                 }
-                p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType)) // \(ret.type)")
+                if classMap [ret.type] != nil && isRefCountedType(ret.type) {
+                    p("gi.ref_set_object(retPtr, ret\(returnOptional ? "?" : "").handle)")
+                } else {
+                    p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType)) // \(ret.type)")
+                }
                 
                 // Poor man's transfer the ownership: we clear the content
                 // so the destructor has nothing to act on, because we are
@@ -199,6 +210,8 @@ func generateVirtualProxy (_ p: Printer,
                     default:
                         p ("ret.content = \(type).zero")
                     }
+                } else if target == "array.content" {
+                    p("ret.array.content = VariantArray.zero")
                 }
             }
         }
