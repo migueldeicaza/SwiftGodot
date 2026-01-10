@@ -238,14 +238,23 @@ if combineOutput {
 struct Generator {
     func run() async throws {
         let coreDefPrinter = await PrinterFactory.shared.initPrinter("core-defs", withPreamble: true)
-        generateUnsafePointerHelpers(coreDefPrinter)
-        generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
+        // Only generate global enums and related content if core-defs should be generated.
+        // This prevents duplicate GType definitions when SwiftGodot imports SwiftGodotRuntime.
+        if shouldGenerateBuiltin("core-defs") {
+            generateUnsafePointerHelpers(coreDefPrinter)
+            generateEnums(coreDefPrinter, cdef: nil, values: jsonApi.globalEnums, prefix: "")
+        } else {
+            // Still register enum definitions for name resolution in other generated code
+            registerEnumDefinitions(jsonApi.globalEnums, prefix: "")
+        }
         await generateBuiltinClasses(values: jsonApi.builtinClasses, outputDir: generatedBuiltinDir)
         await generateUtility(values: jsonApi.utilityFunctions, outputDir: generatedBuiltinDir)
         await generateClasses(values: jsonApi.classes, outputDir: generatedDir)
 
-        generateVariantGodotInterface(coreDefPrinter)
-        generateNativeStructures(coreDefPrinter, values: jsonApi.nativeStructures)
+        if shouldGenerateBuiltin("core-defs") {
+            generateVariantGodotInterface(coreDefPrinter)
+            generateNativeStructures(coreDefPrinter, values: jsonApi.nativeStructures)
+        }
 
         if let generatedBuiltinDir {
             coreDefPrinter.save(generatedBuiltinDir + "/core-defs.swift")
