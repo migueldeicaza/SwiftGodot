@@ -19,7 +19,7 @@ public struct SignalWithNoArguments {
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith1Argument<Argument: _GodotBridgeable> {
     public let name: StringName
     public let arguments: [PropInfo]
@@ -37,7 +37,7 @@ public struct SignalWith1Argument<Argument: _GodotBridgeable> {
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith2Arguments<
     Argument1: _GodotBridgeable,
     Argument2: _GodotBridgeable
@@ -60,7 +60,7 @@ public struct SignalWith2Arguments<
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith3Arguments<
     Argument1: _GodotBridgeable,
     Argument2: _GodotBridgeable,
@@ -86,7 +86,7 @@ public struct SignalWith3Arguments<
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith4Arguments<
     Argument1: _GodotBridgeable,
     Argument2: _GodotBridgeable,
@@ -115,7 +115,7 @@ public struct SignalWith4Arguments<
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith5Arguments<
     Argument1: _GodotBridgeable,
     Argument2: _GodotBridgeable,
@@ -147,7 +147,7 @@ public struct SignalWith5Arguments<
 
 /// Describes a signal and its arguments.
 /// - note: It is recommended to use the @Signal macro instead of using this directly.
-@available(*, deprecated, message: "Use the @Signal macro instead.")
+//@available(*, deprecated, message: "Use the @Signal macro instead.")
 public struct SignalWith6Arguments<
     Argument1: _GodotBridgeable,
     Argument2: _GodotBridgeable,
