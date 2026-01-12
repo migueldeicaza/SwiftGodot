@@ -30,6 +30,9 @@ public protocol JClassInfo {
 extension JGodotBuiltinClass: JClassInfo {}
 extension JGodotExtensionAPIClass: JClassInfo {}
 
+//preserving preferred naming convention for JGodotArgumentMeta
+public typealias JGodotArgumentMeta = JGodotMeta
+
 // Used to unify the class methods and the utility methods
 public protocol MethodDefinition {
     var name: String { get }

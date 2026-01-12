@@ -270,7 +270,7 @@ public struct JGodotArgument: Codable {
     public let name, type: String
     public let description: String?
     public let defaultValue: String?
-    public let meta: JGodotArgumentMeta?
+    public let meta: JGodotMeta?
 
     public enum CodingKeys: String, CodingKey {
         case name, type
@@ -279,7 +279,7 @@ public struct JGodotArgument: Codable {
         case description
     }
 
-    public init(name: String, type: String, description: String? = nil, defaultValue: String?, meta: JGodotArgumentMeta?) {
+    public init(name: String, type: String, description: String? = nil, defaultValue: String?, meta: JGodotMeta?) {
         self.name = name
         self.type = type
         self.defaultValue = defaultValue
@@ -288,7 +288,7 @@ public struct JGodotArgument: Codable {
     }
 }
 
-public enum JGodotArgumentMeta: String, Codable {
+public enum JGodotMeta: String, Codable {
     case char32 = "char32"
     case double = "double"
     case float = "float"
@@ -424,9 +424,9 @@ public struct JGodotClassMethod: Codable {
 // MARK: - JGodotReturnValue
 public struct JGodotReturnValue: Codable {
     public let type: String
-    public let meta: JGodotArgumentMeta?
+    public let meta: JGodotMeta?
 
-    public init(type: String, meta: JGodotArgumentMeta?) {
+    public init(type: String, meta: JGodotMeta?) {
         self.type = type
         self.meta = meta
     }
