@@ -18,7 +18,7 @@ public struct JGodotExtensionAPI: Codable {
     public let singletons: [JGodotArgument]
     public let nativeStructures: [JGodotNativeStructure]
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case header
         case builtinClassSizes = "builtin_class_sizes"
         case builtinClassMemberOffsets = "builtin_class_member_offsets"
@@ -49,7 +49,7 @@ public struct JGodotBuiltinClassMemberOffset: Codable {
     public let buildConfiguration: String
     public let classes: [JGodotBuiltinClassMemberOffsetClass]
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case buildConfiguration = "build_configuration"
         case classes
     }
@@ -120,7 +120,7 @@ public struct JGodotBuiltinClassSize: Codable {
     public let buildConfiguration: String
     public let sizes: [JGodotSize]
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case buildConfiguration = "build_configuration"
         case sizes
     }
@@ -156,7 +156,7 @@ public struct JGodotBuiltinClass: Codable {
     public let constants: [JGodotBuiltinClassConstant]?
     public let enums: [JGodotBuiltinClassEnum]?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case isKeyed = "is_keyed"
         case operators, constructors
@@ -244,7 +244,7 @@ public struct JGodotBuiltinClassMethod: Codable {
     public let description: String
     public let arguments: [JGodotArgument]?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case returnType = "return_type"
         case isVararg = "is_vararg"
@@ -272,7 +272,7 @@ public struct JGodotArgument: Codable {
     public let defaultValue: String?
     public let meta: JGodotArgumentMeta?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name, type
         case defaultValue = "default_value"
         case meta
@@ -309,7 +309,7 @@ public struct JGodotOperator: Codable {
     public let rightType: String?
     public let returnType: String
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case rightType = "right_type"
         case returnType = "return_type"
@@ -337,7 +337,7 @@ public struct JGodotExtensionAPIClass: Codable {
     public let signals: [JGodotSignal]?
     public let constants: [JGodotValueElement]?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case isRefcounted = "is_refcounted"
         case isInstantiable = "is_instantiable"
@@ -375,7 +375,7 @@ public struct JGodotGlobalEnumElement: Codable {
     public let isBitfield: Bool?
     public let values: [JGodotValueElement]
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case isBitfield = "is_bitfield"
         case values
@@ -397,7 +397,7 @@ public struct JGodotClassMethod: Codable {
     public let arguments: [JGodotArgument]?
     public let description: String?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case isConst = "is_const"
         case isVararg = "is_vararg"
@@ -467,7 +467,7 @@ public struct JGodotHeader: Codable {
     public let versionMajor, versionMinor, versionPatch: Int
     public let versionStatus, versionBuild, versionFullName: String
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case versionMajor = "version_major"
         case versionMinor = "version_minor"
         case versionPatch = "version_patch"
@@ -506,7 +506,7 @@ public struct JGodotUtilityFunction: Codable {
     public let arguments: [JGodotArgument]?
     public let description: String?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case name
         case returnType = "return_type"
         case category
