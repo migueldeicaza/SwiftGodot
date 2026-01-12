@@ -124,7 +124,7 @@ func dropMatchingPrefix(_ enumName: String, _ enumKey: String) -> String {
     return snake
 }
 
-var globalEnums: [String: JGodotGlobalEnumElement] = [:]
+var globalEnums: [String: JGodotEnum] = [:]
 
 // Maps from a the class name to its definition
 var classMap: [String: JGodotExtensionAPIClass] = [:]

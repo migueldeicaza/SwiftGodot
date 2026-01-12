@@ -153,7 +153,7 @@ public struct JGodotBuiltinClass: Codable {
     public let methods: [JGodotBuiltinClassMethod]?
     public let members: [JGodotArgument]?
     public let constants: [JGodotBuiltinClassConstant]?
-    public let enums: [JGodotGlobalEnumElement]?
+    public let enums: [JGodotBuiltinClassEnum]?
     public let brief_description: String?
     public let description: String?
 
@@ -168,7 +168,7 @@ public struct JGodotBuiltinClass: Codable {
         case description
     }
 
-    public init(name: String, isKeyed: Bool, brief_description: String, description: String, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotArgument]?, constants: [JGodotBuiltinClassConstant]?, enums: [JGodotGlobalEnumElement]?) {
+    public init(name: String, isKeyed: Bool, brief_description: String, description: String, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotArgument]?, constants: [JGodotBuiltinClassConstant]?, enums: [JGodotBuiltinClassEnum]?) {
         self.name = name
         self.description = description
         self.brief_description = brief_description
@@ -228,7 +228,7 @@ public struct JGodotValueElement: Codable {
     public let name: String
     public let value: Int
     public let description: String?
-    
+
     public init(name: String, value: Int, description: String) {
         self.name = name
         self.value = value

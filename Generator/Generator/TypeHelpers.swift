@@ -43,13 +43,13 @@ func isBuiltinClass (_ godotTypeName: String) -> Bool {
 /// enum value, or nil if it can not be found.
 /// Example type: "ArrowDirection", value: "0" would return ".up"
 func mapEnumValue (enumDef: String, value: String) -> String? {
-    func findEnumMatch (element:  JGodotGlobalEnumElement) -> String? {
+    func findEnumMatch (element:  JGodotEnum) -> String? {
         let enumCasePrefix = element.values.commonPrefix()
         for evalue in element.values {
             let ename = evalue.name
             if ename == "INLINE_ALIGNMENT_TOP_TO" || ename == "INLINE_ALIGNMENT_TO_TOP" || ename == "INLINE_ALIGNMENT_IMAGE_MASK" || ename == "INLINE_ALIGNMENT_TEXT_MASK" {
                 continue
-                
+
             }
 
             if "\(evalue.value)" == value {
@@ -239,10 +239,10 @@ struct SimpleType: TypeWithMeta {
 enum ArgumentKind {
     // Uses type, plus "meta" to determine what to use
     case classes
-    
+
     // Uses the hardcoded values for Int32/Float
     case builtInField
-    
+
     // Uses the builtin-size definitions
     case builtIn
 }
@@ -257,7 +257,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     guard let t else {
         return ""
     }
-    
+
     switch t.type {
     case "int":
         if let meta = t.meta {
@@ -352,7 +352,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
             return "IP.GType"
         }
         if t.type.starts(with: "enum::") {
-            
+
             return String (t.type.dropFirst(6))
         }
         if t.type.starts (with: "typedarray::") {
@@ -383,7 +383,7 @@ func getBuiltinStorage (_ name: String, asComputedProperty: Bool) -> (String, St
     guard let size = builtinSizes [name] else {
         fatalError()
     }
-    
+
     func rightHandExpression(_ valueLiteral: String) -> String {
         if asComputedProperty {
             return " { \(valueLiteral) }"
@@ -391,7 +391,7 @@ func getBuiltinStorage (_ name: String, asComputedProperty: Bool) -> (String, St
             return " = \(valueLiteral)"
         }
     }
-    
+
     switch size {
     case 4, 0:
         return ("Int32", rightHandExpression("0"))

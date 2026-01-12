@@ -10,12 +10,12 @@ import ExtensionApi
 
 /// Stores enum definitions so other generator stages (like default-value mapping)
 /// can resolve `enum::Type.Value` even when we skip emitting the corresponding type.
-func registerEnumDefinition(_ enumDef: JGodotGlobalEnumElement, prefix: String?) {
+func registerEnumDefinition(_ enumDef: JGodotEnum, prefix: String?) {
     guard let prefix else { return }
     globalEnums[prefix + enumDef.name] = enumDef
 }
 
-func registerEnumDefinitions(_ values: [JGodotGlobalEnumElement], prefix: String?) {
+func registerEnumDefinitions(_ values: [JGodotEnum], prefix: String?) {
     guard let prefix else { return }
     for enumDef in values {
         registerEnumDefinition(enumDef, prefix: prefix)
@@ -23,7 +23,7 @@ func registerEnumDefinitions(_ values: [JGodotGlobalEnumElement], prefix: String
 }
 
 // The name of the form 'bitfield::'
-func findEnumDef (name: String) -> JGodotGlobalEnumElement? {
+func findEnumDef (name: String) -> JGodotEnum? {
     guard name.starts(with: "bitfield::") else {
         return nil
     }
@@ -56,13 +56,13 @@ let droppedCases: Set<String> = [
     "Variant.Type.TYPE_MAX"
 ]
 
-func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumElement], prefix: String?) {
+func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotEnum], prefix: String?) {
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
-        
+
         var enumDefName = enumDef.name
         let enumCasePrefix = enumDef.values.commonPrefix()
-        
+
         if isBitField || enumDef.name == "ConnectFlags" {
             let optionTypeName = getGodotType (SimpleType (type: enumDef.name))
             var optionNames: [String] = []
@@ -83,7 +83,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                     optionNames.append(optionName)
                     p ("public static let \(optionName) = \(enumDef.name) (rawValue: \(enumVal.value))")
                 }
-                
+
                 p ("/// A textual representation of this instance, suitable for debugging")
                 p ("public var debugDescription: String") {
                     p ("var result = \"\"")
@@ -96,17 +96,17 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             }
             continue
         }
-        
+
         if enumDefName.starts(with: "Variant") {
             p ("extension Variant {")
             p.indent += 1
             enumDefName = String (enumDefName.dropFirst("Variant.".count))
         }
         let extraConformances = enumDefName == "Error" ? ", Error" : ""
-        
+
         p ("public enum \(getGodotType (SimpleType (type: enumDefName))): Int64, CaseIterable\(extraConformances)") {
             var used = Set<Int> ()
-            
+
             func getName (_ enumVal: JGodotValueElement) -> String? {
                 let enumValName = enumVal.name
                 if enumDefName == "InlineAlignment" {
@@ -122,7 +122,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 if droppedCases.contains("\(enumDef.name).\(enumVal.name)") {
                     continue
                 }
-                                
+
                 guard let name = getName (enumVal) else { continue }
                 let prefix: String
                 if used.contains(enumVal.value) {
@@ -139,7 +139,7 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
                 }
                 p ("\(prefix)case \(enumName) = \(enumVal.value) // \(enumVal.name)")
             }
-            
+
             if enumDefName == "Error" {
                 /// Provides the description of the error.
                 p ("public var localizedDescription: String { GD.errorString(error: self.rawValue) }")
