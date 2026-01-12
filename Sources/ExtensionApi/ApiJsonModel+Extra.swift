@@ -68,3 +68,24 @@ public protocol TypeWithMeta {
 
 extension JGodotArgument: TypeWithMeta {}
 extension JGodotReturnValue: TypeWithMeta {}
+
+// computed property to preserve snake case in SwiftGodot code
+public protocol BriefDescriptionProvider {
+    associatedtype BriefDescriptionType
+    var brief_description: BriefDescriptionType { get }
+    var briefDescription: BriefDescriptionType { get }
+}
+
+extension BriefDescriptionProvider where BriefDescriptionType == String {
+    public var brief_description: String {
+        return briefDescription
+    }
+}
+
+extension BriefDescriptionProvider where BriefDescriptionType == String? {
+    public var brief_description: String? {
+        return briefDescription
+    }
+}
+extension JGodotBuiltinClass: BriefDescriptionProvider {}
+extension JGodotExtensionAPIClass: BriefDescriptionProvider {}

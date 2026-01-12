@@ -149,33 +149,32 @@ public struct JGodotBuiltinClass: Codable {
     public let operators: [JGodotOperator]
     public let constructors: [JGodotConstructor]
     public let hasDestructor: Bool
+    public let briefDescription, description: String?
     public let indexingReturnType: String?
     public let methods: [JGodotBuiltinClassMethod]?
     public let members: [JGodotArgument]?
     public let constants: [JGodotBuiltinClassConstant]?
     public let enums: [JGodotBuiltinClassEnum]?
-    public let brief_description: String?
-    public let description: String?
 
     enum CodingKeys: String, CodingKey {
         case name
         case isKeyed = "is_keyed"
         case operators, constructors
         case hasDestructor = "has_destructor"
+        case briefDescription = "brief_description"
+        case description
         case indexingReturnType = "indexing_return_type"
         case methods, members, constants, enums
-        case brief_description
-        case description
     }
 
-    public init(name: String, isKeyed: Bool, brief_description: String, description: String, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotArgument]?, constants: [JGodotBuiltinClassConstant]?, enums: [JGodotBuiltinClassEnum]?) {
+    public init(name: String, isKeyed: Bool, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, briefDescription: String?, description: String?, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotArgument]?, constants: [JGodotBuiltinClassConstant]?, enums: [JGodotBuiltinClassEnum]?) {
         self.name = name
-        self.description = description
-        self.brief_description = brief_description
         self.isKeyed = isKeyed
         self.operators = operators
         self.constructors = constructors
         self.hasDestructor = hasDestructor
+        self.briefDescription = briefDescription
+        self.description = description
         self.indexingReturnType = indexingReturnType
         self.methods = methods
         self.members = members
@@ -202,10 +201,10 @@ public struct JGodotBuiltinClassConstant: Codable {
 // MARK: - JGodotConstructor
 public struct JGodotConstructor: Codable {
     public let index: Int
-    public let description: String?
     public let arguments: [JGodotArgument]?
+    public let description: String?
 
-    public init(index: Int, description: String, arguments: [JGodotArgument]?) {
+    public init(index: Int, arguments: [JGodotArgument]?, description: String?) {
         self.index = index
         self.arguments = arguments
         self.description = description
@@ -242,7 +241,7 @@ public struct JGodotBuiltinClassMethod: Codable {
     public let returnType: String?
     public let isVararg, isConst, isStatic: Bool
     public let hash: Int
-    public let description: String?
+    public let description: String
     public let arguments: [JGodotArgument]?
 
     enum CodingKeys: String, CodingKey {
@@ -251,11 +250,10 @@ public struct JGodotBuiltinClassMethod: Codable {
         case isVararg = "is_vararg"
         case isConst = "is_const"
         case isStatic = "is_static"
-        case hash, arguments
-        case description
+        case hash, arguments, description
     }
 
-    public init(name: String, description: String, returnType: String?, isVararg: Bool, isConst: Bool, isStatic: Bool, hash: Int, arguments: [JGodotArgument]?) {
+    public init(name: String, returnType: String?, isVararg: Bool, isConst: Bool, isStatic: Bool, hash: Int, arguments: [JGodotArgument]?, description: String) {
         self.name = name
         self.returnType = returnType
         self.isVararg = isVararg
@@ -291,6 +289,7 @@ public struct JGodotArgument: Codable {
 }
 
 public enum JGodotArgumentMeta: String, Codable {
+    case char32 = "char32"
     case double = "double"
     case float = "float"
     case int16 = "int16"
@@ -301,7 +300,6 @@ public enum JGodotArgumentMeta: String, Codable {
     case uint32 = "uint32"
     case uint64 = "uint64"
     case uint8 = "uint8"
-    case char32 = "char32"
 }
 
 // MARK: - JGodotOperator
@@ -332,10 +330,9 @@ public struct JGodotExtensionAPIClass: Codable {
     public let isRefcounted, isInstantiable: Bool
     public let inherits: String?
     public let apiType: JGodotAPIType
-    public let brief_description: String?
-    public let description: String?
     public let enums: [JGodotGlobalEnumElement]?
     public let methods: [JGodotClassMethod]?
+    public let briefDescription, description: String
     public let properties: [JGodotProperty]?
     public let signals: [JGodotSignal]?
     public let constants: [JGodotValueElement]?
@@ -346,12 +343,12 @@ public struct JGodotExtensionAPIClass: Codable {
         case isInstantiable = "is_instantiable"
         case inherits
         case apiType = "api_type"
-        case brief_description
-        case description
-        case enums, methods, properties, signals, constants
+        case enums, methods
+        case briefDescription = "brief_description"
+        case description, properties, signals, constants
     }
 
-    public init(name: String, isRefcounted: Bool, isInstantiable: Bool, inherits: String?, apiType: JGodotAPIType, brief_description: String, description: String, enums: [JGodotGlobalEnumElement]?, methods: [JGodotClassMethod]?, properties: [JGodotProperty]?, signals: [JGodotSignal]?, constants: [JGodotValueElement]?) {
+    public init(name: String, isRefcounted: Bool, isInstantiable: Bool, inherits: String?, apiType: JGodotAPIType, enums: [JGodotGlobalEnumElement]?, methods: [JGodotClassMethod]?, briefDescription: String, description: String, properties: [JGodotProperty]?, signals: [JGodotSignal]?, constants: [JGodotValueElement]?) {
         self.name = name
         self.isRefcounted = isRefcounted
         self.isInstantiable = isInstantiable
@@ -359,11 +356,11 @@ public struct JGodotExtensionAPIClass: Codable {
         self.apiType = apiType
         self.enums = enums
         self.methods = methods
+        self.briefDescription = briefDescription
+        self.description = description
         self.properties = properties
         self.signals = signals
         self.constants = constants
-        self.brief_description = brief_description
-        self.description = description
     }
 }
 
@@ -395,10 +392,10 @@ public struct JGodotGlobalEnumElement: Codable {
 public struct JGodotClassMethod: Codable {
     public let name: String
     public let isConst, isVararg, isStatic, isVirtual: Bool
-    public let hash: Int?
+    public let hash: Int
     public let returnValue: JGodotReturnValue?
-    public let description: String?
     public let arguments: [JGodotArgument]?
+    public let description: String?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -408,11 +405,10 @@ public struct JGodotClassMethod: Codable {
         case isVirtual = "is_virtual"
         case hash
         case returnValue = "return_value"
-        case arguments
-        case description
+        case arguments, description
     }
 
-    public init(name: String, isConst: Bool, isVararg: Bool, isStatic: Bool, isVirtual: Bool, hash: Int?, description: String, returnValue: JGodotReturnValue?, arguments: [JGodotArgument]?) {
+    public init(name: String, isConst: Bool, isVararg: Bool, isStatic: Bool, isVirtual: Bool, hash: Int, returnValue: JGodotReturnValue?, arguments: [JGodotArgument]?, description: String?) {
         self.name = name
         self.isConst = isConst
         self.isVararg = isVararg
@@ -444,26 +440,25 @@ public struct JGodotProperty: Codable {
     public let description: String?
     public let index: Int?
 
-    public init(type: String, name: String, setter: String?, getter: String, description: String, index: Int?) {
+    public init(type: String, name: String, setter: String?, getter: String, description: String?, index: Int?) {
         self.type = type
         self.name = name
         self.setter = setter
         self.getter = getter
-        self.index = index
         self.description = description
+        self.index = index
     }
 }
 
 // MARK: - JGodotSignal
 public struct JGodotSignal: Codable {
-    public let name: String
+    public let name, description: String
     public let arguments: [JGodotArgument]?
-    public let description: String?
 
     public init(name: String, description: String, arguments: [JGodotArgument]?) {
         self.name = name
-        self.arguments = arguments
         self.description = description
+        self.arguments = arguments
     }
 }
 
@@ -508,19 +503,18 @@ public struct JGodotUtilityFunction: Codable {
     public let category: JGodotCategory
     public let isVararg: Bool
     public let hash: Int
-    public let description: String?
     public let arguments: [JGodotArgument]?
+    public let description: String?
 
     enum CodingKeys: String, CodingKey {
         case name
         case returnType = "return_type"
         case category
         case isVararg = "is_vararg"
-        case description
-        case hash, arguments
+        case hash, arguments, description
     }
 
-    public init(name: String, returnType: String?, category: JGodotCategory, isVararg: Bool, hash: Int, description: String, arguments: [JGodotArgument]?) {
+    public init(name: String, returnType: String?, category: JGodotCategory, isVararg: Bool, hash: Int, arguments: [JGodotArgument]?, description: String) {
         self.name = name
         self.returnType = returnType
         self.category = category
