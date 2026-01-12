@@ -17,4 +17,5 @@ import SwiftGodot
     CoreLevelClass.self,
     ServersLevelClass.self,
     ThirdSceneLevelClass.self,
+    DemoProbe.self
 ])
