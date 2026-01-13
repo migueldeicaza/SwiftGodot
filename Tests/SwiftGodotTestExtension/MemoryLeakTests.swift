@@ -61,7 +61,7 @@ class GodotEncoder: Encoder {
     }
 
     func encode(key codingKey: [CodingKey], value: Variant) {
-        let key = codingKey.map { $0.stringValue }.joined(separator: ".")
+        let _ = codingKey.map { $0.stringValue }.joined(separator: ".") //rename '_' to 'key' when using commented-out code below
         fatalError()
         //dict [key] = value
 //        _ = key
@@ -81,7 +81,7 @@ class GodotEncoder: Encoder {
 
     class GodotKeyedContainer<Key:CodingKey>: KeyedEncodingContainerProtocol, GodotEncodingContainer {
         func encodeNil(forKey key: Key) throws {
-            let container = self.nestedSingleValueContainer(forKey: key)
+            let _ = self.nestedSingleValueContainer(forKey: key) //rename '_' to 'container' when using commented-out code below
             fatalError()
             //try container.encode(Variant())
 //            _ = container
@@ -434,7 +434,7 @@ final class MemoryLeakTests {
     @SwiftGodotTest
     public func testRefCountedLeak() {
         func oneIteration() {
-            let image0 = SwiftGodot.RefCounted()
+            let _ = SwiftGodot.RefCounted()
         }
 
         // Warm-up the code path in case it performs any one-time permanent allocations.
