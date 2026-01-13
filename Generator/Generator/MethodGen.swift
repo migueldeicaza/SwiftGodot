@@ -464,7 +464,7 @@ func aggregatingPreparedArguments(_ p: Printer, argumentsCount: Int, body: () ->
 ///  - className: the name of the class where this is being generated
 ///  - usedMethods: a set of methods that have been referenced by properties, to determine whether we make this public or private
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
-func generateMethod(_ p: Printer, method: MethodDefinition, className: String, cdef: JClassInfo?, usedMethods: Set<String>, generatedMethodKind: GeneratedMethodKind, asSingleton: Bool) throws -> String? {
+func generateMethod(_ p: Printer, method: MethodDefinition, className: String, cdef: (any JClassInfo)?, usedMethods: Set<String>, generatedMethodKind: GeneratedMethodKind, asSingleton: Bool) throws -> String? {
     
     let arguments = method.arguments ?? []
     

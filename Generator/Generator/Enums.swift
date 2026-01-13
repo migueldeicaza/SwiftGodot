@@ -56,7 +56,7 @@ let droppedCases: Set<String> = [
     "Variant.Type.TYPE_MAX"
 ]
 
-func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotEnum], prefix: String?) {
+func generateEnums (_ p: Printer, cdef: (any JClassInfo)?, values: [JGodotEnum], prefix: String?) {
     for enumDef in values {
         let isBitField = enumDef.isBitfield ?? false
 

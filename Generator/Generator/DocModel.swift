@@ -39,14 +39,14 @@ func splitAtLastDot (str: String.SubSequence) -> (String, String) {
 // [b]..[/b] bold
 // [method name] is a method reference, should apply the remapping we do
 // 
-func doc (_ p: Printer, _ cdef: JClassInfo?, _ text: String?) {
+func doc (_ p: Printer, _ cdef: (any JClassInfo)?, _ text: String?) {
     guard let text else { return }
 //    guard ProcessInfo.processInfo.environment ["GENERATE_DOCS"] != nil else {
 //        return
 //    }
     
     func lookupConstant (_ txt: String.SubSequence) -> String {
-        func lookInDef (def: JClassInfo, match: String, local: Bool) -> String? {
+        func lookInDef (def: any JClassInfo, match: String, local: Bool) -> String? {
             // TODO: for builtins, we wont have a cdef
             for ed in def.enums ?? [] {
                 for vp in ed.values {
