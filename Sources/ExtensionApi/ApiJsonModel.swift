@@ -226,7 +226,7 @@ public struct JGodotBuiltinClassEnum: Codable {
 public struct JGodotValueElement: Codable {
     public let name: String
     public let value: Int
-    public let description: String?
+    public let description: String
 
     public init(name: String, value: Int, description: String) {
         self.name = name
@@ -241,8 +241,8 @@ public struct JGodotBuiltinClassMethod: Codable {
     public let returnType: String?
     public let isVararg, isConst, isStatic: Bool
     public let hash: Int
-    public let description: String
     public let arguments: [JGodotArgument]?
+    public let description: String
 
     public enum CodingKeys: String, CodingKey {
         case name
@@ -305,9 +305,9 @@ public enum JGodotMeta: String, Codable {
 // MARK: - JGodotOperator
 public struct JGodotOperator: Codable {
     public let name: String
-    public let description: String?
     public let rightType: String?
     public let returnType: String
+    public let description: String?
 
     public enum CodingKeys: String, CodingKey {
         case name
@@ -316,7 +316,7 @@ public struct JGodotOperator: Codable {
         case description
     }
 
-    public init(name: String, description: String, rightType: String?, returnType: String) {
+    public init(name: String, rightType: String?, returnType: String, description: String?) {
         self.name = name
         self.rightType = rightType
         self.returnType = returnType
@@ -393,9 +393,11 @@ public struct JGodotClassMethod: Codable {
     public let name: String
     public let isConst, isVararg, isStatic, isVirtual: Bool
     public let hash: Int
+    public let hashCompatibility: [Int]?
     public let returnValue: JGodotReturnValue?
     public let arguments: [JGodotArgument]?
     public let description: String?
+    public let isRequired: Bool?
 
     public enum CodingKeys: String, CodingKey {
         case name
@@ -404,20 +406,24 @@ public struct JGodotClassMethod: Codable {
         case isStatic = "is_static"
         case isVirtual = "is_virtual"
         case hash
+        case hashCompatibility = "hash_compatibility"
         case returnValue = "return_value"
         case arguments, description
+        case isRequired = "is_required"
     }
 
-    public init(name: String, isConst: Bool, isVararg: Bool, isStatic: Bool, isVirtual: Bool, hash: Int, returnValue: JGodotReturnValue?, arguments: [JGodotArgument]?, description: String?) {
+    public init(name: String, isConst: Bool, isVararg: Bool, isStatic: Bool, isVirtual: Bool, hash: Int, hashCompatibility: [Int]?, returnValue: JGodotReturnValue?, arguments: [JGodotArgument]?, description: String?, isRequired: Bool?) {
         self.name = name
         self.isConst = isConst
         self.isVararg = isVararg
         self.isStatic = isStatic
         self.isVirtual = isVirtual
         self.hash = hash
+        self.hashCompatibility = hashCompatibility
         self.returnValue = returnValue
         self.arguments = arguments
         self.description = description
+        self.isRequired = isRequired
     }
 }
 
@@ -539,8 +545,8 @@ public class JSONNull: Codable, Hashable {
         return true
     }
 
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(0)
+    public var hashValue: Int {
+        return 0
     }
 
     public init() {}

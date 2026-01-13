@@ -92,3 +92,10 @@ extension BriefDescriptionProvider where BriefDescriptionType == String? {
 }
 extension JGodotBuiltinClass: BriefDescriptionProvider {}
 extension JGodotExtensionAPIClass: BriefDescriptionProvider {}
+
+// hash function implementation to account for hashValue deprecation
+extension JSONNull {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(0)
+    }
+}
