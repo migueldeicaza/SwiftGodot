@@ -279,7 +279,7 @@ public struct JGodotBuiltinClassMethod: Codable {
 public struct JGodotArgument: Codable {
     public let name, type: String
     public let defaultValue: String?
-    public let meta: JGodotMeta?
+    public let meta: String?
 
     public enum CodingKeys: String, CodingKey {
         case name, type
@@ -287,26 +287,12 @@ public struct JGodotArgument: Codable {
         case meta
     }
 
-    public init(name: String, type: String, defaultValue: String?, meta: JGodotMeta?) {
+    public init(name: String, type: String, defaultValue: String?, meta: String?) {
         self.name = name
         self.type = type
         self.defaultValue = defaultValue
         self.meta = meta
     }
-}
-
-public enum JGodotMeta: String, Codable {
-    case char32 = "char32"
-    case double = "double"
-    case float = "float"
-    case int16 = "int16"
-    case int32 = "int32"
-    case int64 = "int64"
-    case int8 = "int8"
-    case uint16 = "uint16"
-    case uint32 = "uint32"
-    case uint64 = "uint64"
-    case uint8 = "uint8"
 }
 
 // MARK: - JGodotOperator
@@ -437,9 +423,9 @@ public struct JGodotClassMethod: Codable {
 // MARK: - JGodotReturnValue
 public struct JGodotReturnValue: Codable {
     public let type: String
-    public let meta: JGodotMeta?
+    public let meta: String?
 
-    public init(type: String, meta: JGodotMeta?) {
+    public init(type: String, meta: String?) {
         self.type = type
         self.meta = meta
     }

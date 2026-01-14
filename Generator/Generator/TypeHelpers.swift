@@ -229,7 +229,7 @@ func gtypeFromTypeName (_ name: String) -> String {
 }
 struct SimpleType: TypeWithMeta {
     var type: String
-    var meta: JGodotArgumentMeta?
+    var meta: String?
 }
 
 // Built-ins if they declare methods/returns use one kind of returns
@@ -262,23 +262,23 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     case "int":
         if let meta = t.meta {
             switch meta {
-            case .int32:
+            case "int32":
                 return "Int32"
-            case .uint32:
+            case "uint32":
                 return "UInt32"
-            case .int64:
+            case "int64":
                 return "Int"
-            case .uint64:
+            case "uint64":
                 return "UInt"
-            case .int16:
+            case "int16":
                 return "Int16"
-            case .uint16:
+            case "uint16":
                 return "UInt16"
-            case .uint8:
+            case "uint8":
                 return "UInt8"
-            case .int8:
+            case "int8":
                 return "Int8"
-            case .char32:
+            case "char32":
                 return "Int32"
             default:
                 fatalError()
@@ -296,9 +296,9 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         } else {
             if let meta = t.meta {
                 switch meta {
-                case .double:
+                case "double":
                     return "Double"
-                case .float:
+                case "float":
                     // Looks like Godot just ignores its own
                     // metadata of "Float" and uses Double.
                     return "Double"

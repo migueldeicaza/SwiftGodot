@@ -103,6 +103,7 @@ if positionalArgs.count < 1 {
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
+try jsonApi.validateRecursive()
 
 func dropMatchingPrefix(_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel(enumKey)
