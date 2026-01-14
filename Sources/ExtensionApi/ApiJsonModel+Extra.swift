@@ -132,7 +132,7 @@ extension JGodotExtensionAPI {
     }
 }
 
-private func deepValidate(_ any: Any) throws {
+internal func deepValidate(_ any: Any) throws {
     if let validatable = any as? EnumConstrained {
         try validatable.validate()
     }
@@ -149,7 +149,7 @@ public struct InvalidEnumValueError: LocalizedError {
     let value: String
     let options: [String]
 
-    public var errorDescription: String? {
+    public var errorDescription: String {
         return "Invalid value '\(value)' for field '\(field)'. Expected one of: \(options.joined(separator: ", "))"
     }
 }
