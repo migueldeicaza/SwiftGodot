@@ -57,7 +57,7 @@ func doc (_ p: Printer, _ cdef: (any JClassInfo)?, _ text: String?) {
                         if local && false{
                             return ".\(escapeSwift (name))"
                         } else {
-                            return getGodotType(SimpleType (type: "enum::" + ed.name)) + "/" + escapeSwift (snakeToCamel (name))
+                            return getGodotType(try! SimpleType (type: "enum::" + ed.name)) + "/" + escapeSwift (snakeToCamel (name))
                         }
                     }
                 }
@@ -93,12 +93,12 @@ func doc (_ p: Printer, _ cdef: (any JClassInfo)?, _ text: String?) {
                     var lookup = ed.name
                     if let dot = ed.name.lastIndex(of: ".") {
                         let containerType = String (ed.name [ed.name.startIndex..<dot])
-                        type = getGodotType (SimpleType (type: containerType)) + "."
+                        type = getGodotType (try! SimpleType (type: containerType)) + "."
                         lookup = String (ed.name [ed.name.index(dot, offsetBy: 1)...])
                     }
                     let name = dropMatchingPrefix(lookup, ev.name)
                     
-                    return "``\(type)\(getGodotType (SimpleType (type: lookup)))/\(escapeSwift(String (name)))``"
+                    return "``\(type)\(getGodotType (try! SimpleType (type: lookup)))/\(escapeSwift(String (name)))``"
                 }
             }
         }
@@ -106,11 +106,11 @@ func doc (_ p: Printer, _ cdef: (any JClassInfo)?, _ text: String?) {
         if type != "" {
             if let ldef = classMap [type] {
                 if let r = lookInDef(def: ldef, match: name, local: false) {
-                    return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
+                    return "``\(getGodotType(try! SimpleType (type: type)) + "/" + r)``"
                 }
             } else if let ldef = builtinMap[type] {
                 if let r = lookInDef(def: ldef, match: name, local: false) {
-                    return "``\(getGodotType(SimpleType (type: type)) + "/" + r)``"
+                    return "``\(getGodotType(try! SimpleType (type: type)) + "/" + r)``"
                 }
             }
         }
@@ -254,7 +254,7 @@ func doc (_ p: Printer, _ cdef: (any JClassInfo)?, _ text: String?) {
                             }
                         }
                     }
-                    return "``\(getGodotType(SimpleType(type: "enum::" + x.output.2)))``"
+                    return "``\(getGodotType(try! SimpleType(type: "enum::" + x.output.2)))``"
                     
                 default:
                     print ("Doc: Error, unexpected \(x.output.1) tag")

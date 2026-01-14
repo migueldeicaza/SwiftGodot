@@ -64,7 +64,7 @@ func generateEnums (_ p: Printer, cdef: (any JClassInfo)?, values: [JGodotEnum],
         let enumCasePrefix = enumDef.values.commonPrefix()
 
         if isBitField || enumDef.name == "ConnectFlags" {
-            let optionTypeName = getGodotType (SimpleType (type: enumDef.name))
+            let optionTypeName = getGodotType (try! SimpleType (type: enumDef.name))
             var optionNames: [String] = []
             p ("public struct \(optionTypeName): OptionSet, CustomDebugStringConvertible") {
                 p ("public let rawValue: Int")
@@ -104,7 +104,7 @@ func generateEnums (_ p: Printer, cdef: (any JClassInfo)?, values: [JGodotEnum],
         }
         let extraConformances = enumDefName == "Error" ? ", Error" : ""
 
-        p ("public enum \(getGodotType (SimpleType (type: enumDefName))): Int64, CaseIterable\(extraConformances)") {
+        p ("public enum \(getGodotType (try! SimpleType (type: enumDefName))): Int64, CaseIterable\(extraConformances)") {
             var used = Set<Int> ()
 
             func getName (_ enumVal: JGodotValueElement) -> String? {

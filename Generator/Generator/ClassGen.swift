@@ -26,7 +26,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
         return "VariantDictionary ()"
     case let t where t.starts (with: "typedarray::"):
         let nestedTypeName = String (t.dropFirst(12))
-        let simple = SimpleType(type: nestedTypeName)
+        let simple = try! SimpleType(type: nestedTypeName)
         if classMap [nestedTypeName] != nil {
             return "TypedArray<\(getGodotType (simple))?>(\(initCollection))"
         } else {
@@ -39,7 +39,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case let e where e.starts (with: "enum::"):
         return "\(e.dropFirst(6))(rawValue: 0)!"
     case let e where e.starts (with: "bitfield::"):
-        let simple = SimpleType (type: godotType, meta: nil)
+        let simple = try! SimpleType (type: godotType, meta: nil)
         return "\(getGodotType (simple)) ()"
    
     case let other where builtinGodotTypeNames [other] != nil:
@@ -47,7 +47,7 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "void*", "const Glyph*":
         return "nil"
     default:
-        return "\(getGodotType(SimpleType (type: godotType))) ()"
+        return "\(getGodotType(try! SimpleType (type: godotType))) ()"
     }
 }
 
@@ -201,7 +201,7 @@ func generateVirtualProxy (_ p: Printer,
                 // so the destructor has nothing to act on, because we are
                 // returning the reference to the other side.
                 if target == "content" {
-                    let type = getGodotType(SimpleType(type: ret.type))
+                    let type = getGodotType(try! SimpleType(type: ret.type))
                     switch type {
                     case "String":
                         p ("ret.content = GString.zero")

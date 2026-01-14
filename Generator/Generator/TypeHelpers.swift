@@ -227,9 +227,15 @@ func gtypeFromTypeName (_ name: String) -> String {
         fatalError("Unknonw data type: \(name)")
     }
 }
-struct SimpleType: TypeWithMeta {
+struct SimpleType: JGodotMetaEnumConstrained {
     var type: String
     var meta: String?
+
+    init(type: String, meta: String? = nil) throws {
+        self.type = type
+        self.meta = meta
+        try validate()
+    }
 }
 
 // Built-ins if they declare methods/returns use one kind of returns
@@ -357,7 +363,7 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
         }
         if t.type.starts (with: "typedarray::") {
             let nestedTypeName = String (t.type.dropFirst(12))
-            let nested = SimpleType(type: nestedTypeName, meta: nil)
+            let nested = try! SimpleType(type: nestedTypeName, meta: nil)
 
             if classMap [nestedTypeName] != nil {
                 return "TypedArray<\(getGodotType (nested))?>"

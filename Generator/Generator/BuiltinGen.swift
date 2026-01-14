@@ -210,7 +210,7 @@ func generateMethodCall (_ p: Printer,
                          arguments: [JGodotArgumentType]) {
     let hasReturnStatement = godotReturnType != nil
     
-    let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
+    let resultTypeName = "\(getGodotType (try! SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
     if hasReturnStatement {
         if godotReturnType == "String" && mapStringToSwift {
             p ("let result = GString ()")
@@ -364,10 +364,10 @@ func generateBuiltinOperators (_ p: Printer,
                 gip("return gi.variant_get_ptr_operator_evaluator(\(operatorCode), \(leftTypeCode), \(rightTypeCode))!")
             }
             
-            let retType = getGodotType(SimpleType (type: op.returnType), kind: .builtIn)
+            let retType = getGodotType(try! SimpleType (type: op.returnType), kind: .builtIn)
             
             let lhsTypeName = typeName
-            let rhsTypeName = getGodotType(SimpleType(type: right), kind: .builtIn)
+            let rhsTypeName = getGodotType(try! SimpleType(type: right), kind: .builtIn)
                         
             let customImplementation = customBuiltinOperatorImplementations[OperatorSignature(name: swiftOperator, lhs: lhsTypeName, rhs: rhsTypeName)]
             
@@ -458,7 +458,7 @@ func generateBuiltinMethods (_ p: Printer,
         if m.returnType == "Variant" {
             ret = "Variant?"
         } else {
-            ret = getGodotType(SimpleType (type: m.returnType ?? ""), kind: .builtIn)
+            ret = getGodotType(try! SimpleType (type: m.returnType ?? ""), kind: .builtIn)
         }
         
         // TODO: problem caused by gobject_object being defined as "void", so it is not possible to create storage to that.
