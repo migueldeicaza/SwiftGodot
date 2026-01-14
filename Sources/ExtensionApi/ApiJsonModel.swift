@@ -62,10 +62,10 @@ public struct JGodotBuiltinClassMemberOffset: Codable {
 
 // MARK: - JGodotBuiltinClassMemberOffsetClass
 public struct JGodotBuiltinClassMemberOffsetClass: Codable {
-    public let name: JGodotTypeEnum
+    public let name: String
     public let members: [JGodotMember]
 
-    public init(name: JGodotTypeEnum, members: [JGodotMember]) {
+    public init(name: String, members: [JGodotMember]) {
         self.name = name
         self.members = members
     }
@@ -93,26 +93,6 @@ public enum JGodotMemberMeta: String, Codable {
     case vector2I = "Vector2i"
     case vector3 = "Vector3"
     case vector4 = "Vector4"
-}
-
-public enum JGodotTypeEnum: String, Codable {
-    case aabb = "AABB"
-    case basis = "Basis"
-    case color = "Color"
-    case int = "int"
-    case plane = "Plane"
-    case projection = "Projection"
-    case quaternion = "Quaternion"
-    case rect2 = "Rect2"
-    case rect2I = "Rect2i"
-    case transform2D = "Transform2D"
-    case transform3D = "Transform3D"
-    case vector2 = "Vector2"
-    case vector2I = "Vector2i"
-    case vector3 = "Vector3"
-    case vector3I = "Vector3i"
-    case vector4 = "Vector4"
-    case vector4I = "Vector4i"
 }
 
 // MARK: - JGodotBuiltinClassSize
@@ -149,8 +129,7 @@ public struct JGodotBuiltinClass: Codable {
     public let operators: [JGodotOperator]
     public let constructors: [JGodotConstructor]
     public let hasDestructor: Bool
-    public let briefDescription, description: String?
-    public let indexingReturnType: String?
+    public let briefDescription, description, indexingReturnType: String?
     public let methods: [JGodotBuiltinClassMethod]?
     public let members: [JGodotArgument]?
     public let constants: [JGodotMemberElement]?
@@ -185,12 +164,11 @@ public struct JGodotBuiltinClass: Codable {
 
 // MARK: - JGodotMemberElement
 public struct JGodotMemberElement: Codable {
-    public let name: String
-    public let type: JGodotTypeEnum
+    public let name, type: String
     public let value: String
     public let description: String?
 
-    public init(name: String, type: JGodotTypeEnum, value: String, description: String) {
+    public init(name: String, type: String, value: String, description: String) {
         self.name = name
         self.type = type
         self.value = value
@@ -278,8 +256,7 @@ public struct JGodotBuiltinClassMethod: Codable {
 // MARK: - JGodotArgument
 public struct JGodotArgument: Codable {
     public let name, type: String
-    public let defaultValue: String?
-    public let meta: String?
+    public let defaultValue, meta: String?
 
     public enum CodingKeys: String, CodingKey {
         case name, type

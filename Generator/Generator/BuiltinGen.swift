@@ -63,17 +63,6 @@ func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
     return val
 }
 
-extension JGodotTypeEnum {
-    var swiftTypeName: String {
-        switch self {
-        case .int:
-            return "Int"
-        default:
-            return rawValue
-        }
-    }
-}
-
 func generateBuiltinConstants (_ p: Printer,
                                _ bc: JGodotBuiltinClass,
                                typeName: String) {
@@ -90,7 +79,7 @@ func generateBuiltinConstants (_ p: Printer,
         if constant.description != "" {
             doc (p, bc, constant.description)
         }
-        p ("public static var \(snakeToCamel(constant.name)): \(constant.type.swiftTypeName) { \(val) }")
+        p ("public static var \(snakeToCamel(constant.name)): \(constant.swiftTypeName) { \(val) }")
     }
 }
 

@@ -212,7 +212,7 @@ var builtinMemberOffsets: [String: [JGodotMember]] = [:]
 for mo in jsonApi.builtinClassMemberOffsets {
     if mo.buildConfiguration == buildConfiguration {
         for c in mo.classes {
-            builtinMemberOffsets[c.name.rawValue] = c.members
+            builtinMemberOffsets[c.name] = c.members
         }
     }
 }

@@ -37,8 +37,6 @@ public protocol TypeWithMeta {
     var meta: String? { get }
 }
 
-extension JGodotReturnValue: TypeWithMeta {}
-
 public protocol JGodotArgumentType : TypeWithMeta {
     var name: String { get }
     var type: String { get }
@@ -183,9 +181,6 @@ public enum JGodotMeta: String, Codable, CaseIterable {
     case uint8 = "uint8"
 }
 
-//preserving preferred naming convention for JGodotArgumentMeta
-public typealias JGodotArgumentMeta = JGodotMeta
-
 public protocol JGodotMetaEnumConstrained: EnumConstrained, TypeWithMeta {}
 
 extension JGodotMetaEnumConstrained {
@@ -201,3 +196,58 @@ extension JGodotMetaEnumConstrained {
 extension JGodotArgument: JGodotMetaEnumConstrained {}
 extension JGodotSingleton: JGodotMetaEnumConstrained {}
 extension JGodotReturnValue: JGodotMetaEnumConstrained {}
+
+//preserving preferred naming convention for JGodotArgumentMeta
+public typealias JGodotArgumentMeta = JGodotMeta
+
+////Enforcing JGodotTypeEnum enum
+public enum JGodotTypeEnum: String, Codable, CaseIterable {
+    case aabb = "AABB"
+    case basis = "Basis"
+    case color = "Color"
+    case int = "int"
+    case plane = "Plane"
+    case projection = "Projection"
+    case quaternion = "Quaternion"
+    case rect2 = "Rect2"
+    case rect2I = "Rect2i"
+    case transform2D = "Transform2D"
+    case transform3D = "Transform3D"
+    case vector2 = "Vector2"
+    case vector2I = "Vector2i"
+    case vector3 = "Vector3"
+    case vector3I = "Vector3i"
+    case vector4 = "Vector4"
+    case vector4I = "Vector4i"
+}
+
+public protocol JGodotTypeEnumConstrained: EnumConstrained {}
+
+extension JGodotTypeEnumConstrained {
+    public var allowedValues: [String] {
+        return JGodotTypeEnum.allCases.map { $0.rawValue }
+    }
+    public var swiftTypeName: String {
+        guard let enumCase = JGodotTypeEnum(rawValue: validationValue) else {
+            return validationValue
+        }
+
+        switch enumCase {
+        case .int:
+            return "Int"
+        default:
+            return enumCase.rawValue
+        }
+    }
+}
+
+extension JGodotBuiltinClassMemberOffsetClass: JGodotTypeEnumConstrained {
+    public var validationValue: String { self.name }
+    public var validationFieldName: String { "name" }
+}
+
+extension JGodotMemberElement: JGodotTypeEnumConstrained {
+    public var validationValue: String { self.type }
+    public var validationFieldName: String { "type" }
+}
+
