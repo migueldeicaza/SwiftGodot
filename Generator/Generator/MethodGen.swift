@@ -736,7 +736,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         p(inlineAttribute)
     }
     // Sadly, the parameters have no useful documentation
-    doc(p, cdef, method.description)
+    doc(p, cdef, method.optionalDescription)
     // Generate the method entry point
     if let classDiscardables = discardableResultList[className] {
         if classDiscardables.contains(method.name) == true {

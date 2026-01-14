@@ -463,7 +463,7 @@ public struct JGodotUtilityFunction: Codable {
     public let isVararg: Bool
     public let hash: Int
     public let arguments: [JGodotSingleton]?
-    public let description: String?
+    public let description: String
 
     public enum CodingKeys: String, CodingKey {
         case name

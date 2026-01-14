@@ -63,12 +63,13 @@ public protocol MethodDefinition {
     var isVirtual: Bool { get }
     var optionalHash: Int? { get }
     var returnValue: JGodotReturnValue? { get }
-    var description: String? { get }
+    var optionalDescription: String? { get }
     var parameters: [JGodotArgumentType]? { get }
 }
 
 extension JGodotClassMethod: MethodDefinition {
     public var optionalHash: Int? { hash }
+    public var optionalDescription: String? { self.description ?? nil }
     public var parameters: [JGodotArgumentType]? {
         arguments
     }
@@ -79,6 +80,7 @@ extension JGodotUtilityFunction: MethodDefinition {
     public var isStatic: Bool { true }
     public var isVirtual: Bool { false }
     public var optionalHash: Int? { hash }
+    public var optionalDescription: String? { self.description }
     public var returnValue: JGodotReturnValue? {
         if let returnType {
             return JGodotReturnValue (type: returnType, meta: nil)
