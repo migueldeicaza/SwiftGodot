@@ -53,6 +53,7 @@ extension JGodotArgumentType {
 
 extension JGodotArgument: JGodotArgumentType {}
 extension JGodotSingleton: JGodotArgumentType {}
+extension JGodotMemberElement: JGodotArgumentType {}
 
 public protocol MethodDefinition {
     var name: String { get }
@@ -206,6 +207,7 @@ public enum JGodotTypeEnum: String, Codable, CaseIterable {
     case basis = "Basis"
     case color = "Color"
     case int = "int"
+    case float = "float"
     case plane = "Plane"
     case projection = "Projection"
     case quaternion = "Quaternion"

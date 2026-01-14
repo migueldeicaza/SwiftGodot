@@ -120,8 +120,7 @@ public struct JGodotBuiltinClass: Codable {
     public let hasDestructor: Bool
     public let briefDescription, description, indexingReturnType: String?
     public let methods: [JGodotBuiltinClassMethod]?
-    public let members: [JGodotArgument]?
-    public let constants: [JGodotMemberElement]?
+    public let members, constants: [JGodotMemberElement]?
     public let enums: [JGodotBuiltinClassEnum]?
 
     public enum CodingKeys: String, CodingKey {
@@ -135,7 +134,7 @@ public struct JGodotBuiltinClass: Codable {
         case methods, members, constants, enums
     }
 
-    public init(name: String, isKeyed: Bool, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, briefDescription: String?, description: String?, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotArgument]?, constants: [JGodotMemberElement]?, enums: [JGodotBuiltinClassEnum]?) {
+    public init(name: String, isKeyed: Bool, operators: [JGodotOperator], constructors: [JGodotConstructor], hasDestructor: Bool, briefDescription: String?, description: String?, indexingReturnType: String?, methods: [JGodotBuiltinClassMethod]?, members: [JGodotMemberElement]?, constants: [JGodotMemberElement]?, enums: [JGodotBuiltinClassEnum]?) {
         self.name = name
         self.isKeyed = isKeyed
         self.operators = operators
