@@ -251,3 +251,52 @@ extension JGodotMemberElement: JGodotTypeEnumConstrained {
     public var validationFieldName: String { "type" }
 }
 
+////Enforcing JGodotMemberMeta enum
+public enum JGodotMemberMeta: String, Codable, CaseIterable {
+    case basis = "Basis"
+    case double = "double"
+    case float = "float"
+    case int32 = "int32"
+    case vector2 = "Vector2"
+    case vector2I = "Vector2i"
+    case vector3 = "Vector3"
+    case vector4 = "Vector4"
+}
+
+
+extension JGodotMember: EnumConstrained {
+    public var validationValue: String { self.meta }
+    public var validationFieldName: String { "meta" }
+    public var allowedValues: [String] {
+        return JGodotMemberMeta.allCases.map { $0.rawValue }
+    }
+}
+
+////Enforcing JGodotAPIType enum
+public enum JGodotAPIType: String, Codable, CaseIterable {
+    case core = "core"
+    case editor = "editor"
+}
+
+extension JGodotExtensionAPIClass: EnumConstrained {
+    public var validationValue: String { self.apiType }
+    public var validationFieldName: String { "apiType" }
+    public var allowedValues: [String] {
+        return JGodotAPIType.allCases.map { $0.rawValue }
+    }
+}
+
+////Enforcing JGodotCategory enum
+public enum JGodotCategory: String, Codable, CaseIterable {
+    case general = "general"
+    case math = "math"
+    case random = "random"
+}
+
+extension JGodotUtilityFunction: EnumConstrained {
+    public var validationValue: String { self.category }
+    public var validationFieldName: String { "category" }
+    public var allowedValues: [String] {
+        return JGodotCategory.allCases.map { $0.rawValue }
+    }
+}

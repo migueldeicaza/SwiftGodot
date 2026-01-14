@@ -75,24 +75,13 @@ public struct JGodotBuiltinClassMemberOffsetClass: Codable {
 public struct JGodotMember: Codable {
     public let member: String
     public let offset: Int
-    public let meta: JGodotMemberMeta
+    public let meta: String
 
-    public init(member: String, offset: Int, meta: JGodotMemberMeta) {
+    public init(member: String, offset: Int, meta: String) {
         self.member = member
         self.offset = offset
         self.meta = meta
     }
-}
-
-public enum JGodotMemberMeta: String, Codable {
-    case basis = "Basis"
-    case double = "double"
-    case float = "float"
-    case int32 = "int32"
-    case vector2 = "Vector2"
-    case vector2I = "Vector2i"
-    case vector3 = "Vector3"
-    case vector4 = "Vector4"
 }
 
 // MARK: - JGodotBuiltinClassSize
@@ -299,7 +288,7 @@ public struct JGodotExtensionAPIClass: Codable {
     public let name: String
     public let isRefcounted, isInstantiable: Bool
     public let inherits: String?
-    public let apiType: JGodotAPIType
+    public let apiType: String
     public let enums: [JGodotGlobalEnumElement]?
     public let methods: [JGodotClassMethod]?
     public let briefDescription, description: String
@@ -318,7 +307,7 @@ public struct JGodotExtensionAPIClass: Codable {
         case description, properties, signals, constants
     }
 
-    public init(name: String, isRefcounted: Bool, isInstantiable: Bool, inherits: String?, apiType: JGodotAPIType, enums: [JGodotGlobalEnumElement]?, methods: [JGodotClassMethod]?, briefDescription: String, description: String, properties: [JGodotProperty]?, signals: [JGodotSignal]?, constants: [JGodotValueElement]?) {
+    public init(name: String, isRefcounted: Bool, isInstantiable: Bool, inherits: String?, apiType: String, enums: [JGodotGlobalEnumElement]?, methods: [JGodotClassMethod]?, briefDescription: String, description: String, properties: [JGodotProperty]?, signals: [JGodotSignal]?, constants: [JGodotValueElement]?) {
         self.name = name
         self.isRefcounted = isRefcounted
         self.isInstantiable = isInstantiable
@@ -332,11 +321,6 @@ public struct JGodotExtensionAPIClass: Codable {
         self.signals = signals
         self.constants = constants
     }
-}
-
-public enum JGodotAPIType: String, Codable {
-    case core = "core"
-    case editor = "editor"
 }
 
 // MARK: - JGodotGlobalEnumElement
@@ -476,7 +460,7 @@ public struct JGodotNativeStructure: Codable {
 public struct JGodotUtilityFunction: Codable {
     public let name: String
     public let returnType: String?
-    public let category: JGodotCategory
+    public let category: String
     public let isVararg: Bool
     public let hash: Int
     public let arguments: [JGodotSingleton]?
@@ -490,7 +474,7 @@ public struct JGodotUtilityFunction: Codable {
         case hash, arguments, description
     }
 
-    public init(name: String, returnType: String?, category: JGodotCategory, isVararg: Bool, hash: Int, arguments: [JGodotSingleton]?, description: String) {
+    public init(name: String, returnType: String?, category: String, isVararg: Bool, hash: Int, arguments: [JGodotSingleton]?, description: String) {
         self.name = name
         self.returnType = returnType
         self.category = category
@@ -499,12 +483,6 @@ public struct JGodotUtilityFunction: Codable {
         self.arguments = arguments
         self.description = description
     }
-}
-
-public enum JGodotCategory: String, Codable {
-    case general = "general"
-    case math = "math"
-    case random = "random"
 }
 
 // MARK: - Encode/decode helpers
