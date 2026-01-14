@@ -183,7 +183,7 @@ private extension MemoryLayoutTests {
         let metadata: ExtensionMetadata = try getMetadata ()
         let name = String (describing: type)
         guard let size = metadata.sizes.first (where: { $0.name == name }) else { throw MemoryTestError.noClassSize }
-        guard let offset = metadata.offsets.first (where: { $0.name.rawValue == name }) else { throw MemoryTestError.noClassOffsets }
+        guard let offset = metadata.offsets.first (where: { $0.name == name }) else { throw MemoryTestError.noClassOffsets }
         return MemoryLayoutChecker (type, sizeMetadata: size, offsetMetadata: offset)
     }
     
