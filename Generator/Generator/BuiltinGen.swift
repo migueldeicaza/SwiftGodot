@@ -102,7 +102,7 @@ func generateBuiltinCtors (_ p: Printer,
                            typeName: String,
                            typeGodotInterfaceName: String,
                            typeEnum: String,
-                           members: [JGodotArgument]?)
+                           members: [JGodotArgumentType]?)
 {
     let isStruct = isStruct(typeName)
 
@@ -217,7 +217,7 @@ func generateMethodCall (_ p: Printer,
                          godotReturnType: String?,
                          isStatic: Bool,
                          isVararg: Bool,
-                         arguments: [JGodotArgument]) {
+                         arguments: [JGodotArgumentType]) {
     let hasReturnStatement = godotReturnType != nil
     
     let resultTypeName = "\(getGodotType (SimpleType (type: godotReturnType ?? ""), kind: .builtIn))"
@@ -849,7 +849,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                 }
             }
-            let storedMembers: [JGodotArgument]?
+            let storedMembers: [JGodotArgumentType]?
             if bc.name == "Color" {
                 memberDoc ("r")
                 p ("public var red: Float")

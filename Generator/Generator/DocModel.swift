@@ -129,7 +129,7 @@ func doc (_ p: Printer, _ cdef: (any JClassInfo)?, _ text: String?) {
         return (nil, String (txt))
     }
 
-    func assembleArgs (_ optMethod: JGodotClassMethod?, _ arguments: [JGodotArgument]?) -> String {
+    func assembleArgs (_ optMethod: JGodotClassMethod?, _ arguments: [JGodotArgumentType]?) -> String {
         var args = ""
         
         // Assemble argument names

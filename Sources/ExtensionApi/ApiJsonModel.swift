@@ -15,7 +15,7 @@ public struct JGodotExtensionAPI: Codable {
     public let utilityFunctions: [JGodotUtilityFunction]
     public let builtinClasses: [JGodotBuiltinClass]
     public let classes: [JGodotExtensionAPIClass]
-    public let singletons: [JGodotArgument]
+    public let singletons: [JGodotSingleton]
     public let nativeStructures: [JGodotNativeStructure]
 
     public enum CodingKeys: String, CodingKey {
@@ -30,7 +30,7 @@ public struct JGodotExtensionAPI: Codable {
         case nativeStructures = "native_structures"
     }
 
-    public init(header: JGodotHeader, builtinClassSizes: [JGodotBuiltinClassSize], builtinClassMemberOffsets: [JGodotBuiltinClassMemberOffset], globalConstants: [JSONAny], globalEnums: [JGodotGlobalEnumElement], utilityFunctions: [JGodotUtilityFunction], builtinClasses: [JGodotBuiltinClass], classes: [JGodotExtensionAPIClass], singletons: [JGodotArgument], nativeStructures: [JGodotNativeStructure]) {
+    public init(header: JGodotHeader, builtinClassSizes: [JGodotBuiltinClassSize], builtinClassMemberOffsets: [JGodotBuiltinClassMemberOffset], globalConstants: [JSONAny], globalEnums: [JGodotGlobalEnumElement], utilityFunctions: [JGodotUtilityFunction], builtinClasses: [JGodotBuiltinClass], classes: [JGodotExtensionAPIClass], singletons: [JGodotSingleton], nativeStructures: [JGodotNativeStructure]) {
         self.header = header
         self.builtinClassSizes = builtinClassSizes
         self.builtinClassMemberOffsets = builtinClassMemberOffsets
@@ -201,13 +201,23 @@ public struct JGodotMemberElement: Codable {
 // MARK: - JGodotConstructor
 public struct JGodotConstructor: Codable {
     public let index: Int
-    public let arguments: [JGodotArgument]?
+    public let arguments: [JGodotSingleton]?
     public let description: String?
 
-    public init(index: Int, arguments: [JGodotArgument]?, description: String?) {
+    public init(index: Int, arguments: [JGodotSingleton]?, description: String?) {
         self.index = index
         self.arguments = arguments
         self.description = description
+    }
+}
+
+// MARK: - JGodotSingleton
+public struct JGodotSingleton: Codable {
+    public let name, type: String
+
+    public init(name: String, type: String) {
+        self.name = name
+        self.type = type
     }
 }
 
@@ -459,9 +469,9 @@ public struct JGodotProperty: Codable {
 // MARK: - JGodotSignal
 public struct JGodotSignal: Codable {
     public let name, description: String
-    public let arguments: [JGodotArgument]?
+    public let arguments: [JGodotSingleton]?
 
-    public init(name: String, description: String, arguments: [JGodotArgument]?) {
+    public init(name: String, description: String, arguments: [JGodotSingleton]?) {
         self.name = name
         self.description = description
         self.arguments = arguments
@@ -509,7 +519,7 @@ public struct JGodotUtilityFunction: Codable {
     public let category: JGodotCategory
     public let isVararg: Bool
     public let hash: Int
-    public let arguments: [JGodotArgument]?
+    public let arguments: [JGodotSingleton]?
     public let description: String?
 
     public enum CodingKeys: String, CodingKey {
@@ -520,7 +530,7 @@ public struct JGodotUtilityFunction: Codable {
         case hash, arguments, description
     }
 
-    public init(name: String, returnType: String?, category: JGodotCategory, isVararg: Bool, hash: Int, arguments: [JGodotArgument]?, description: String) {
+    public init(name: String, returnType: String?, category: JGodotCategory, isVararg: Bool, hash: Int, arguments: [JGodotSingleton]?, description: String) {
         self.name = name
         self.returnType = returnType
         self.category = category

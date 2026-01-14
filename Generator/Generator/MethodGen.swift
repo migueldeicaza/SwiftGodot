@@ -111,7 +111,7 @@ enum MethodGenError: NonCriticalError {
     }
 }
 
-/// Parsed `JGodotArgument` that derives what's the proper strategy for processing the argument and marshaling it
+/// Parsed `JGodotArgumentType` that derives what's the proper strategy for processing the argument and marshaling it
 struct MethodArgument {
     enum Translation {
         /// e.g. Float, Vector3
@@ -176,7 +176,7 @@ struct MethodArgument {
     let name: String
     let translation: Translation
     
-    init(from src: JGodotArgument, typeName: String, methodName: String, options: TranslationOptions) throws {
+    init(from src: JGodotArgumentType, typeName: String, methodName: String, options: TranslationOptions) throws {
         func makeError(reason: String) -> MethodGenError {
             MethodGenError.unsupportedArgument(typeName: typeName, methodName: methodName, argumentName: src.name, argumentTypeName: src.type, reason: reason)
         }
@@ -297,7 +297,7 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
     withNestedUnsafe(index: 0)
 }
 
-func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgument], body: () -> Void) {
+func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumentType], body: () -> Void) {
     func temporaryName(from base: String, suffix: String) -> String {
         let trimmed: String
         if base.hasPrefix("`") && base.hasSuffix("`") {
@@ -335,7 +335,7 @@ func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumen
 
 typealias CallArgsRef = String
 
-func generateMethodCall(_ p: Printer, isVariadic: Bool, arguments: [JGodotArgument], methodArguments: [MethodArgument], call: (CallArgsRef, MarshaledArgumentsCount) -> String) {
+func generateMethodCall(_ p: Printer, isVariadic: Bool, arguments: [JGodotArgumentType], methodArguments: [MethodArgument], call: (CallArgsRef, MarshaledArgumentsCount) -> String) {
     if !isVariadic {
         if methodArguments.isEmpty {
             p(call("nil", .literal(0)))
@@ -466,7 +466,7 @@ func aggregatingPreparedArguments(_ p: Printer, argumentsCount: Int, body: () ->
 /// - Returns: nil, or the method we surfaced that needs to have the virtual supporting infrastructured wired up
 func generateMethod(_ p: Printer, method: MethodDefinition, className: String, cdef: (any JClassInfo)?, usedMethods: Set<String>, generatedMethodKind: GeneratedMethodKind, asSingleton: Bool) throws -> String? {
     
-    let arguments = method.arguments ?? []
+    let arguments = method.parameters ?? []
     
     
     let argumentTranslationOptions: MethodArgument.TranslationOptions

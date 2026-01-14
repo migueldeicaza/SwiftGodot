@@ -14,7 +14,7 @@ func godotArgumentToSwift (_ name: String) -> String {
     return escapeSwift (snakeToCamel (name))
 }
 
-func isSmallInt(_ arg: JGodotArgument) -> Bool {
+func isSmallInt(_ arg: JGodotArgumentType) -> Bool {
     if arg.type != "int" {
         return false
     }
@@ -26,7 +26,7 @@ func isSmallInt(_ arg: JGodotArgument) -> Bool {
     }
 }
 
-func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
+func getArgumentDeclaration(_ argument: JGodotArgumentType, omitLabel: Bool, kind: ArgumentKind = .classes, isOptional: Bool) -> String {
     //let optNeedInOut = isCoreType(name: argument.type) ? "inout " : ""
     let optNeedInOut = ""
     
@@ -188,7 +188,7 @@ func getArgumentDeclaration(_ argument: JGodotArgument, omitLabel: Bool, kind: A
     return "\(prefix)\(godotArgumentToSwift (argument.name)): \(optNeedInOut)\(getGodotType(argument, kind: kind))\(isOptional ? "?" : "")\(def)"
 }
 
-func getArgRef (arg: JGodotArgument) -> String {
+func getArgRef (arg: JGodotArgumentType) -> String {
     var argref: String
     var optstorage: String
     var needAddress = "&"
