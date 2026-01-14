@@ -71,8 +71,9 @@ func generateBuiltinConstants (_ p: Printer,
     
     for constant in constants {
         // Check if we need to inject parameter names
-        guard let val = getInitializer (bc, constant.value) else {
-            print ("Generator: no constructor matching constant \(bc.name).\(constant.name) = \(constant.value)")
+        guard let constantValue = constant.value else { continue }
+        guard let val = getInitializer (bc, constantValue) else {
+            print ("Generator: no constructor matching constant \(bc.name).\(constant.name) = \(constantValue)")
             continue
         }
         

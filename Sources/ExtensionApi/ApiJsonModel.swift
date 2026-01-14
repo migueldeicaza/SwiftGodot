@@ -154,10 +154,10 @@ public struct JGodotBuiltinClass: Codable {
 // MARK: - JGodotMemberElement
 public struct JGodotMemberElement: Codable {
     public let name, type: String
-    public let value: String
-    public let description: String?
+    public let value: String?
+    public let description: String
 
-    public init(name: String, type: String, value: String, description: String) {
+    public init(name: String, type: String, value: String?, description: String) {
         self.name = name
         self.type = type
         self.value = value
