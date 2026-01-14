@@ -58,7 +58,7 @@ let droppedCases: Set<String> = [
 
 func generateEnums (_ p: Printer, cdef: (any JClassInfo)?, values: [JGodotEnum], prefix: String?) {
     for enumDef in values {
-        let isBitField = enumDef.isBitfield ?? false
+        let isBitField = enumDef.isBitfield
 
         var enumDefName = enumDef.name
         let enumCasePrefix = enumDef.values.commonPrefix()

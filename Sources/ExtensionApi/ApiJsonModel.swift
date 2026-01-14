@@ -325,7 +325,7 @@ public struct JGodotExtensionAPIClass: Codable {
 // MARK: - JGodotGlobalEnumElement
 public struct JGodotGlobalEnumElement: Codable {
     public let name: String
-    public let isBitfield: Bool?
+    public let isBitfield: Bool
     public let values: [JGodotValueElement]
 
     public enum CodingKeys: String, CodingKey {

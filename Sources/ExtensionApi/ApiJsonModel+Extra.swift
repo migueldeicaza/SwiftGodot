@@ -12,16 +12,19 @@ import Foundation
 public protocol JGodotEnum {
     var name: String { get }
     var values: [JGodotValueElement] { get }
-    var isBitfield: Bool? { get }
-}
+    var rawBitfield: Bool? { get }
+    var isBitfield: Bool { get }}
 
 extension JGodotEnum {
-    public var isBitfield: Bool? { return nil }
+    public var isBitfield: Bool { rawBitfield ?? false }
 }
 
-extension JGodotBuiltinClassEnum: JGodotEnum {}
-extension JGodotGlobalEnumElement: JGodotEnum {}
-
+extension JGodotBuiltinClassEnum: JGodotEnum {
+    public var rawBitfield: Bool? { nil }
+}
+extension JGodotGlobalEnumElement: JGodotEnum {
+    public var rawBitfield: Bool? { self.isBitfield }
+}
 public protocol JClassInfo {
     var name: String { get }
     associatedtype EnumType: JGodotEnum
