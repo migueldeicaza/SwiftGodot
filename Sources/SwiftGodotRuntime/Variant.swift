@@ -260,7 +260,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
     
     public var description: String {
-        var ret = GDExtensionStringPtr (bitPattern: 0xdeaddead)
+        var ret = GDExtensionStringPtr (bitPattern: 0)
         gi.variant_stringify (&content, &ret)
         
         let str = stringFromGodotString(&ret)
