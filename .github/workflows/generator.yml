@@ -49,6 +49,7 @@ jobs:
         filters: |
           generator:
             - 'Generator/**'
+            - '.github/workflows/generator.yml'
     - name: Set up Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
