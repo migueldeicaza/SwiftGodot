@@ -810,16 +810,48 @@ public struct RawReturnWriter {
         copy.content = Callable.zero
     }
 
+    public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Variant) {
+        var copy = Variant(value)
+        target!.assumingMemoryBound(to: Variant.ContentType.self).pointee = copy.content
+        copy.content = Variant.zero
+    }
+
+    public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Variant?) {
+        if let value {
+            writeResult(target, value)
+        } else {
+            target!.assumingMemoryBound(to: Variant.ContentType.self).pointee = Variant.zero
+        }
+    }
+
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: VariantDictionary) {
         var copy = VariantDictionary(from: value)
         target!.assumingMemoryBound(to: VariantDictionary.ContentType.self).pointee = copy.content
         copy.content = VariantDictionary.zero
     }
 
+    public static func writeResult<Key, Value>(
+        _ target: UnsafeMutableRawPointer?,
+        _ value: TypedDictionary<Key, Value>
+    ) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
+        writeResult(target, value.dictionary)
+    }
+
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: VariantArray) {
         var copy = VariantArray(from: value)
         target!.assumingMemoryBound(to: VariantArray.ContentType.self).pointee = copy.content
         copy.content = VariantArray.zero
+    }
+
+    public static func writeResult<Element>(
+        _ target: UnsafeMutableRawPointer?,
+        _ value: TypedArray<Element>
+    ) where Element: _GodotContainerTypingParameter {
+        writeResult(target, value.array)
+    }
+
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T) where T: GodotBuiltinConvertible {
+        writeResult(target, value.toGodotBuiltin())
     }
 
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: PackedByteArray) {
@@ -864,6 +896,12 @@ public struct RawReturnWriter {
         copy.content = PackedVector2Array.zero
     }
 
+    public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: PackedVector3Array) {
+        var copy = PackedVector3Array(from: value)
+        target!.assumingMemoryBound(to: PackedVector3Array.ContentType.self).pointee = copy.content
+        copy.content = PackedVector3Array.zero
+    }
+
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: PackedColorArray) {
         var copy = PackedColorArray(from: value)
         target!.assumingMemoryBound(to: PackedColorArray.ContentType.self).pointee = copy.content
@@ -876,9 +914,28 @@ public struct RawReturnWriter {
         copy.content = PackedVector4Array.zero
     }
 
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T?) where T: _GodotBridgeableBuiltin {
+        if let value {
+            writeResult(target, value.toVariant())
+        } else {
+            target!.assumingMemoryBound(to: Variant.ContentType.self).pointee = Variant.zero
+        }
+    }
+
     public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T?) where T: VariantConvertible {
         if let value {
             writeResult(target, value)
+        } else {
+            target!.assumingMemoryBound(to: Variant.ContentType.self).pointee = Variant.zero
+        }
+    }
+
+    @_disfavoredOverload
+    public static func writeResult<T>(_ target: UnsafeMutableRawPointer?, _ value: T) where T: VariantConvertible {
+        if let variant = value.toVariant() {
+            writeResult(target, variant)
+        } else {
+            target!.assumingMemoryBound(to: Variant.ContentType.self).pointee = Variant.zero
         }
     }
 
