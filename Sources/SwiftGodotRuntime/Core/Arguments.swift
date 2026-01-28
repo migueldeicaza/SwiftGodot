@@ -434,7 +434,7 @@ public struct RawArguments: Sendable {
     }
 
     public func fetchArgument<T: _GodotBridgeableBuiltin>(at index: Int) throws(ArgumentAccessError) -> T {
-        try T._fromRawArguments(self, at: index)
+        try T._fromRawArgument(args[index]!)
     }
 
     public func fetchArgument<T: Wrapped>(at: Int) throws(ArgumentAccessError) -> T? {

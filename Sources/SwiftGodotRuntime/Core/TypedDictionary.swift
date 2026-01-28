@@ -275,7 +275,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     }
 
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         let content = ptr.assumingMemoryBound(to: VariantDictionary.ContentType.self).pointee
         return TypedDictionary(from: VariantDictionary(content: content))
     }

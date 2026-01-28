@@ -303,7 +303,7 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     }
 
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         let content = ptr.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
         return TypedArray(from: VariantArray(content: content))
     }

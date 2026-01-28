@@ -251,19 +251,10 @@ public protocol _GodotBridgeable: VariantConvertible {
 /// ```
 public protocol _GodotBridgeableBuiltin: _GodotContainerTypingParameter where _NonOptionalType == Self {
     /// Internal API. Reads this type from a raw argument pointer passed by Godot.
-    static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self
-
-    /// Internal API. Fetches this type from RawArguments at the given index.
-    static func _fromRawArguments(_ args: RawArguments, at index: Int) throws(ArgumentAccessError) -> Self
+    static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self
 }
 
 public extension _GodotBridgeableBuiltin {
-    /// Internal API. Default implementation that fetches this type from RawArguments.
-    @inline(__always)
-    static func _fromRawArguments(_ args: RawArguments, at index: Int) throws(ArgumentAccessError) -> Self {
-        Self._fromRawArgument(args.args[index]!)
-    }
-
     /// Internal API. Required for cases where Godot expects an empty `StringName` for builtin types and actual class name for `.object`-types.
     static var _className: StringName {
         StringName("")
@@ -414,7 +405,7 @@ func _propInfoDefault(
 
 extension Int64: _GodotBridgeableBuiltin {
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         Int64(ptr.assumingMemoryBound(to: Int.self).pointee)
     }
 
@@ -504,7 +495,7 @@ extension Int64: _GodotBridgeableBuiltin {
 public extension BinaryInteger where Self: _GodotBridgeableBuiltin {
     @inline(__always)
     @inlinable
-    static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         Self(ptr.assumingMemoryBound(to: Int.self).pointee)
     }
 
@@ -619,7 +610,7 @@ public extension BinaryInteger where Self: _GodotBridgeableBuiltin {
 
 extension Bool: _GodotBridgeableBuiltin {
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         ptr.assumingMemoryBound(to: Int.self).pointee != 0
     }
 
@@ -745,7 +736,7 @@ extension Bool: _GodotBridgeableBuiltin {
 
 extension String: _GodotBridgeableBuiltin {
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         GString.toString(pContent: ptr)
     }
 
@@ -888,7 +879,7 @@ extension String: _GodotBridgeableBuiltin {
 
 extension Double: _GodotBridgeableBuiltin {
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         ptr.assumingMemoryBound(to: Double.self).pointee
     }
 
@@ -1065,7 +1056,7 @@ extension UInt8: _GodotBridgeableBuiltin {}
     
 extension Float: _GodotBridgeableBuiltin {
     @inline(__always)
-    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
         Float(ptr.assumingMemoryBound(to: Double.self).pointee)
     }
 }

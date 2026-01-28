@@ -1081,7 +1081,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p("""
                 /// Internal API. Reads this type from a raw argument pointer passed by Godot.
                 @inline(__always)
-                public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+                public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
                     Self(content: ptr.assumingMemoryBound(to: ContentType.self).pointee)
                 }
                 """)
@@ -1090,7 +1090,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 p("""
                 /// Internal API. Reads this type from a raw argument pointer passed by Godot.
                 @inline(__always)
-                public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+                public static func _fromRawArgument(_ ptr: UnsafeRawPointer) throws(ArgumentAccessError) -> Self {
                     ptr.assumingMemoryBound(to: Self.self).pointee
                 }
                 """)
