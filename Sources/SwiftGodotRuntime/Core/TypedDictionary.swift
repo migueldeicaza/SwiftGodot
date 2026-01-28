@@ -273,7 +273,13 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     public static var _variantType: Variant.GType {
         .dictionary
     }
-    
+
+    @inline(__always)
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+        let content = ptr.assumingMemoryBound(to: VariantDictionary.ContentType.self).pointee
+        return TypedDictionary(from: VariantDictionary(content: content))
+    }
+
     /// Internal API. Returns ``PropInfo`` for when any ``TypedDictionary`` is used in API visible to Godot
     @inlinable
     @inline(__always)

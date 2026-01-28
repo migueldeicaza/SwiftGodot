@@ -1071,9 +1071,30 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             @inline(__always)
             @inlinable
             public static var _variantType: Variant.GType {
-                \(propInfoPropertyType) 
+                \(propInfoPropertyType)
             }
             """)
+
+            // Generate _fromRawArgument for RawArguments support
+            if isContentRepresented == true {
+                // Class with ContentType
+                p("""
+                /// Internal API. Reads this type from a raw argument pointer passed by Godot.
+                @inline(__always)
+                public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+                    Self(content: ptr.assumingMemoryBound(to: ContentType.self).pointee)
+                }
+                """)
+            } else {
+                // Struct - direct memory layout
+                p("""
+                /// Internal API. Reads this type from a raw argument pointer passed by Godot.
+                @inline(__always)
+                public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+                    ptr.assumingMemoryBound(to: Self.self).pointee
+                }
+                """)
+            }
             
             // Generate the synthetic `end` property
             if bc.name == "Rect2" || bc.name == "Rect2i" || bc.name == "AABB" {

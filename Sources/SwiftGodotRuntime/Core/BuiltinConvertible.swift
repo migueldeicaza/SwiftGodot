@@ -30,6 +30,25 @@ public protocol GodotBuiltinConvertible: _GodotBridgeableBuiltin {
 
 extension GodotBuiltinConvertible {
     /// Internal API. Default implementation.
+    /// This is never called directly - `_fromRawArguments` handles the conversion.
+    /// Exists only to satisfy the `_GodotBridgeableBuiltin` protocol requirement.
+    @inline(__always)
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+        fatalError("_fromRawArgument should not be called directly on GodotBuiltinConvertible types")
+    }
+
+    /// Internal API. Fetches this type from RawArguments by reading the underlying GodotBuiltin and converting.
+    @inline(__always)
+    public static func _fromRawArguments(_ args: RawArguments, at index: Int) throws(ArgumentAccessError) -> Self {
+        let builtin = GodotBuiltin._fromRawArgument(args.args[index]!)
+        do {
+            return try Self.fromGodotBuiltinOrThrow(builtin)
+        } catch {
+            throw .variantConversionError(error)
+        }
+    }
+
+    /// Internal API. Default implementation.
     /// Proxy the required low-level implementation via `GodotBuiltin`.
     public static var _variantType: Variant.GType {
         GodotBuiltin._variantType
@@ -89,6 +108,11 @@ extension GodotBuiltinConvertible {
 }
 
 extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _GodotContainerTypingParameter, VariantConvertible where Element: _GodotContainerTypingParameter {
+    @inline(__always)
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+        Array(TypedArray<Element>._fromRawArgument(ptr))
+    }
+
     /// Converts `[Element]` into `TypedArray<Element>`
     ///
     /// This is O(n) operation.
@@ -97,7 +121,7 @@ extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgea
     public func toGodotBuiltin() -> TypedArray<Element> {
         TypedArray(self)
     }
-    
+
     /// Convert `TypedArray<Element>` into Swift `[Element]`
     ///
     /// This is O(n) operation.
@@ -110,6 +134,11 @@ extension Array: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgea
 }
 
 extension Dictionary: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBridgeable, _GodotContainerTypingParameter, VariantConvertible where Key: _GodotContainerTypingParameter & Hashable, Value: _GodotContainerTypingParameter {
+    @inline(__always)
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+        Dictionary(uniqueKeysWithValues: TypedDictionary<Key, Value>._fromRawArgument(ptr))
+    }
+
     /// Converts `[Key: Value]` into `TypedDictionary<Key, Value>`
     ///
     /// This is O(n) operation.
@@ -118,7 +147,7 @@ extension Dictionary: GodotBuiltinConvertible, _GodotBridgeableBuiltin, _GodotBr
     public func toGodotBuiltin() -> TypedDictionary<Key, Value> {
         TypedDictionary(self)
     }
-    
+
     /// Convert `TypedDictionary<Key, Value>` into Swift `[Key: Value]`
     ///
     /// This is O(n) operation.

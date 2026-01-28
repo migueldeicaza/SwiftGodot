@@ -301,7 +301,13 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     public static var _variantType: Variant.GType {
         .array
     }
-    
+
+    @inline(__always)
+    public static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self {
+        let content = ptr.assumingMemoryBound(to: VariantArray.ContentType.self).pointee
+        return TypedArray(from: VariantArray(content: content))
+    }
+
     /// Internal API. Returns ``PropInfo`` for when any ``TypedArray`` is used in API visible to Godot
     @inlinable
     @inline(__always)
