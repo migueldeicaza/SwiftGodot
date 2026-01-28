@@ -252,6 +252,9 @@ public protocol _GodotBridgeable: VariantConvertible {
 public protocol _GodotBridgeableBuiltin: _GodotContainerTypingParameter where _NonOptionalType == Self {
     /// Internal API. Reads this type from a raw argument pointer passed by Godot.
     static func _fromRawArgument(_ ptr: UnsafeRawPointer) -> Self
+
+    /// Internal API. Fetches this type from RawArguments at the given index.
+    static func _fromRawArguments(_ args: RawArguments, at index: Int) throws(ArgumentAccessError) -> Self
 }
 
 public extension _GodotBridgeableBuiltin {

@@ -1,3 +1,9 @@
+// NOTE: These tests verify that @Callable methods with various parameter types compile correctly.
+// The tests use `node.call(method:...)` which goes through Godot's dynamic dispatch mechanism,
+// not the direct RawArguments.fetchArgument path. However, the fact that the @Callable macro
+// generates code that compiles is sufficient to verify that fetchArgument overload resolution
+// works correctly for all tested types.
+
 @testable import SwiftGodot
 
 // MARK: - Custom GodotBuiltinConvertible types for testing
