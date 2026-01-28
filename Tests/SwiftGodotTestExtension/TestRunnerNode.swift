@@ -95,9 +95,6 @@ public class TestRunnerNode: Node {
         GD.print("=".repeated(60))
 
         let exitCode = results.summary.failed > 0 ? 1 : 0
-        // Prepare for shutdown to prevent crashes from Swift objects trying to call Godot API
-        // for deferred objects cleanup
-        prepareForShutdown()
         getTree()?.quit(exitCode: Int32(exitCode))
     }
 

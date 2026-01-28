@@ -178,11 +178,6 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     }
 
     deinit {
-        // Skip all Godot API calls, we are breaking bad
-        if isShuttingDown {
-            return
-        }
-
         // Use the following to catch the deinit happening and then the free framework
         // code running - we have no way of notifying that code that we are dead.
         #if DEBUG_DEINIT
@@ -218,7 +213,12 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     }
                 }
                 if queue {
-                    Wrapped.deferred?.callDeferred()
+                    if isShuttingDown {
+                        // During shutdown, call immediately instead of deferring
+                        releasePendingObjects()
+                    } else {
+                        Wrapped.deferred?.callDeferred()
+                    }
                 }
             }
         }
@@ -652,11 +652,11 @@ public func releasePendingObjects() {
     }
 }
 
-/// Flag to prevent Godot API calls during shutdown cleanup.
+/// Flag to prevent calling callDeferred() during shutdown cleanup.
 private var isShuttingDown = false
 
-/// A dirty workaround to prevent Swift objects to call Godot APIs during destruction mid-shutdown
-public func prepareForShutdown() {
+/// Called from extension_deinitialize to signal shutdown has begun.
+func prepareForShutdown() {
     isShuttingDown = true
 }
 

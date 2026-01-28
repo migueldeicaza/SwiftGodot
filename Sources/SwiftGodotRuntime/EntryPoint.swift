@@ -137,11 +137,14 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
 
 // Extension deinitialization callback
 func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
-    //print ("SWIFT: extension_deinitialize")
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
     guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+
+    // Set shutdown flag to avoid calling callDeferred() during cleanup
+    prepareForShutdown()
+
     callback(level)
     if level == .core {
         // Last one, remove
