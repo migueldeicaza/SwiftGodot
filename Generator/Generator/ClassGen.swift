@@ -82,7 +82,7 @@ func generateVirtualProxy (_ p: Printer,
     if let ret = method.returnValue {
         let godotReturnType = ret.type
         let godotReturnTypeIsReferenceType = classMap [godotReturnType] != nil
-        returnOptional = godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: methodName)
+        returnOptional = godotReturnTypeIsReferenceType && ret.meta != .required
 
         virtRet = getGodotType(ret)
     } else {
@@ -121,7 +121,7 @@ func generateVirtualProxy (_ p: Printer,
                 } else {
                     argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
                 }
-                if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
+                if arg.meta != .required {
                     let ownsRef = isRefCountedType(arg.type) ? "true" : "false"
                     argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: \(ownsRef)) as? \(arg.type)"
                 } else {
@@ -431,7 +431,7 @@ func generateProperties (_ p: Printer,
         let godotReturnType = method.returnValue?.type
         let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
 
-        let propertyOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: cdef.name, method: property.getter)
+        let propertyOptional = godotReturnType == "Variant" || (godotReturnTypeIsReferenceType && method.returnValue?.meta != .required)
         
         // Lookup the type from the method, not the property,
         // sometimes the method is a GString, but the property is a StringName

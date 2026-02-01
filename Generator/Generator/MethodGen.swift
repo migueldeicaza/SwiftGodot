@@ -30,55 +30,6 @@ enum GeneratedMethodKind {
     case utilityFunction
 }
 
-// To test the design, will use an external file later
-// determines whether the className/method returns an optional reference type
-func isReturnOptional (className: String, method: String) -> Bool {
-    switch className {
-    case "RenderingServer":
-        switch method {
-        case "get_rendering_device":
-            return false
-        default:
-            return true
-        }
-    default:
-        return true
-    }
-}
-
-// To test the design, will use an external file later
-// determines whether the className/method/argument is an optional reference type
-func isMethodArgumentOptional (className: String, method: String, arg: String) -> Bool {
-    switch className {
-    case "Node":
-        switch method {
-        case "_input":
-            switch arg {
-            case "event":
-                return false
-            default:
-                return true
-            }
-        default:
-            return true
-        }
-    case "Image":
-        switch method {
-        case "blit_rect":
-            switch arg {
-            case "src":
-                return false
-            default:
-                return true
-            }
-        default:
-            return true
-        }
-    default:
-        return true
-    }
-}
-
 protocol NonCriticalError: Error {
     var explanation: String { get }
 }
@@ -219,13 +170,7 @@ struct MethodArgument {
                             if options.contains(.nonOptionalObjects) {
                                 translation = .objectRef(isOptional: false)
                             } else {
-                                translation = .objectRef(
-                                    isOptional: isMethodArgumentOptional(
-                                        className: typeName,
-                                        method: methodName,
-                                        arg: src.name
-                                    )
-                                )
+                                translation = .objectRef(isOptional: src.meta != .required)
                             }
                         } else {
                             throw makeError(reason: "Unknown type")
@@ -571,7 +516,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     var signatureArgs: [String] = []
     let godotReturnType = method.returnValue?.type
     let godotReturnTypeIsReferenceType = classMap [godotReturnType ?? ""] != nil
-    let returnOptional = godotReturnType == "Variant" || godotReturnTypeIsReferenceType && isReturnOptional(className: className, method: method.name)
+    let returnOptional = godotReturnType == "Variant" || (godotReturnTypeIsReferenceType && method.returnValue?.meta != .required)
     let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
 
     /// returns appropriate declaration of the return type, used by the helper function.
@@ -711,7 +656,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             isOptional = true
         } else {
             if classMap [arg.type] != nil {
-                isOptional = isMethodArgumentOptional(className: className, method: method.name, arg: arg.name)
+                isOptional = arg.meta != .required
             } else {
                 isOptional = false
             }
