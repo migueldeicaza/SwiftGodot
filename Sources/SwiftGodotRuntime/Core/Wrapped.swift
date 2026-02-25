@@ -879,7 +879,7 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
     let className = StringName(fromPtr: classNamePtr)
     let hint = PropertyHint(rawValue: Int64(info.hint)) ?? .none
     let hintStr = GString(content: infoHintPtr.load(as: Int64.self))
-    let usage = PropertyUsageFlags(rawValue: Int(info.usage))
+    let usage = PropertyUsageFlags(rawValue: Int64(info.usage))
 
     var pinfo = PropInfo(propertyType: ptype, propertyName: pname, className: className, hint: hint, hintStr: hintStr, usage: usage)
     if instance._validateProperty(&pinfo) {
