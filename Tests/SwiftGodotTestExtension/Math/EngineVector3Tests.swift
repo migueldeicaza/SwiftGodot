@@ -79,7 +79,7 @@ final class EngineVector3Tests {
     public func testLimitingMethods () {
         let vector: Vector3 = Vector3 (x: 10, y: 10, z: 10)
         assertApproxEqual (vector.limitLength (), Vector3 (x: Float.sqrt13, y: Float.sqrt13, z: Float.sqrt13), "Vector3 limitLength should work as expected.")
-        assertApproxEqual (vector.limitLength (5), Vector3 (x: Float.sqrt13, y: Float.sqrt13, z: Float.sqrt13) * 5, "Vector3 limitLength should work as expected.")
+        assertApproxEqual (vector.limitLength (5), Vector3 (x: Float.sqrt13, y: Float.sqrt13, z: Float.sqrt13) * 5.0, "Vector3 limitLength should work as expected.")
         
         XCTAssertEqual (Vector3 (x: -5, y: 5, z: 15).clamp (min: Vector3 (), max: vector), Vector3 (x: 0, y: 5, z: 10), "Vector3 clamp should work as expected.")
         XCTAssertEqual (vector.clamp (min: Vector3 (x: 0, y: 10, z: 15), max: Vector3 (x: 5, y: 10, z: 20)), Vector3 (x: 5, y: 10, z: 15), "Vector3 clamp should work as expected.")
@@ -125,13 +125,13 @@ final class EngineVector3Tests {
         XCTAssertEqual ((power1 / power2), Vector3 (x: 1.5, y: 12.0, z: 2.5), "Vector3 division with powers of two should give exact results.")
         XCTAssertEqual ((int1 / int2), Vector3 (x: 4, y: 2.5, z: 3), "Vector3 division with integers should give exact results.")
         
-        assertApproxEqual ((decimal1 * 2), Vector3 (x: 4.6, y: 9.8, z: 15.6), "Vector3 multiplication should behave as expected.")
-        XCTAssertEqual ((power1 * 2), Vector3 (x: 1.5, y: 3, z: 1.25), "Vector3 multiplication with powers of two should give exact results.")
-        XCTAssertEqual ((int1 * 2), Vector3 (x: 8, y: 10, z: 18), "Vector3 multiplication with integers should give exact results.")
-        
-        assertApproxEqual ((decimal1 / 2), Vector3 (x: 1.15, y: 2.45, z: 3.9), "Vector3 division should behave as expected.")
-        XCTAssertEqual ((power1 / 2), Vector3 (x: 0.375, y: 0.75, z: 0.3125), "Vector3 division with powers of two should give exact results.")
-        XCTAssertEqual ((int1 / 2), Vector3 (x: 2, y: 2.5, z: 4.5), "Vector3 division with integers should give exact results.")
+        assertApproxEqual ((decimal1 * 2.0), Vector3 (x: 4.6, y: 9.8, z: 15.6), "Vector3 multiplication should behave as expected.")
+        XCTAssertEqual ((power1 * 2.0), Vector3 (x: 1.5, y: 3, z: 1.25), "Vector3 multiplication with powers of two should give exact results.")
+        XCTAssertEqual ((int1 * 2.0), Vector3 (x: 8, y: 10, z: 18), "Vector3 multiplication with integers should give exact results.")
+
+        assertApproxEqual ((decimal1 / 2.0), Vector3 (x: 1.15, y: 2.45, z: 3.9), "Vector3 division should behave as expected.")
+        XCTAssertEqual ((power1 / 2.0), Vector3 (x: 0.375, y: 0.75, z: 0.3125), "Vector3 division with powers of two should give exact results.")
+        XCTAssertEqual ((int1 / 2.0), Vector3 (x: 2, y: 2.5, z: 4.5), "Vector3 division with integers should give exact results.")
         
         XCTAssertEqual (Vector3i (from: decimal1), Vector3i (x: 2, y: 4, z: 7), "Vector3 cast to Vector3i should work as expected.")
         XCTAssertEqual (Vector3i (from: decimal2), Vector3i (x: 1, y: 3, z: 5), "Vector3 cast to Vector3i should work as expected.")
@@ -222,7 +222,7 @@ final class EngineVector3Tests {
         
         XCTAssertEqual (vectorX.dot (with: vectorY), 0.0, "Vector3 dot product of perpendicular vectors should be zero.")
         XCTAssertEqual (vectorX.dot (with: vectorX), 1.0, "Vector3 dot product of identical unit vectors should be one.")
-        XCTAssertEqual ((vectorX * 10).dot (with: vectorX * 10), 100.0, "Vector3 dot product of same direction vectors should behave as expected.")
+        XCTAssertEqual ((vectorX * 10.0).dot (with: vectorX * 10.0), 100.0, "Vector3 dot product of same direction vectors should behave as expected.")
         assertApproxEqual (a.dot (with: b), 75.24, "Vector3 dot should return expected value.")
         assertApproxEqual (Vector3 (x: -a.x, y: a.y, z: -a.z).dot (with: Vector3 (x: b.x, y: -b.y, z: b.z)), -75.24, "Vector3 dot should return expected value.")
     }
