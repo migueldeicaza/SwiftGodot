@@ -249,4 +249,33 @@ public class VariantDecoder: Decoder {
       return value
     }
   }
+
+  private enum _CodingKey: CodingKey {
+    case string(String)
+    case index(Int)
+
+    static let `super` = _CodingKey.string("__super")
+
+    var stringValue: String {
+      switch self {
+      case .string(let value): value
+      case .index(let value): "Index \(value)"
+      }
+    }
+
+    var intValue: Int? {
+      switch self {
+      case .string: nil
+      case .index(let value): value
+      }
+    }
+
+    init?(stringValue: String) {
+      self = .string(stringValue)
+    }
+
+    init?(intValue: Int) {
+      self = .index(intValue)
+    }
+  }
 }
