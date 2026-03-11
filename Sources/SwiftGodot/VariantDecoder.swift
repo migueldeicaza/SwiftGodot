@@ -104,8 +104,8 @@ public class VariantDecoder: Decoder {
     }
 
     func superDecoder() throws -> any Decoder {
-      let value = dictionary["__super"]
-      return VariantDecoder(value, forPath: codingPath)
+      let value = dictionary[_CodingKey.super.stringValue]
+      return VariantDecoder(value, forPath: codingPath + [_CodingKey.super])
     }
 
     func superDecoder(forKey key: K) throws -> any Decoder {
@@ -150,7 +150,7 @@ public class VariantDecoder: Decoder {
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
       let variant = try currentValue(ofType: type)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [IndexCodingKey(index: currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
       let value = try T(from: decoder)
       next()
       return value
@@ -161,7 +161,7 @@ public class VariantDecoder: Decoder {
     {
       let variant = try currentValue(ofType: KeyedDecodingContainer<NestedKey>.self)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [IndexCodingKey(index: currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
       let value = try decoder.container(keyedBy: type)
       next()
       return value
@@ -170,7 +170,7 @@ public class VariantDecoder: Decoder {
     func nestedUnkeyedContainer() throws -> any UnkeyedDecodingContainer {
       let variant = try currentValue(ofType: UnkeyedDecodingContainer.self)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [IndexCodingKey(index: currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
       let value = try decoder.unkeyedContainer()
       next()
       return value
@@ -179,7 +179,7 @@ public class VariantDecoder: Decoder {
     func superDecoder() throws -> any Decoder {
       let variant = try currentValue(ofType: (any Decoder).self)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [IndexCodingKey(index: currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
       next()
       return decoder
     }
@@ -189,7 +189,7 @@ public class VariantDecoder: Decoder {
         throw DecodingError.valueNotFound(
           type,
           .init(
-            codingPath: codingPath + [IndexCodingKey(index: currentIndex)],
+            codingPath: codingPath + [_CodingKey.index(currentIndex)],
             debugDescription: "Unkeyed container is at end."))
       }
       return array[currentIndex]
@@ -197,24 +197,6 @@ public class VariantDecoder: Decoder {
 
     private func next() {
       currentIndex += 1
-    }
-
-    private struct IndexCodingKey: CodingKey {
-      let intValue: Int?
-      var stringValue: String { "\(intValue!)" }
-
-      init(index: Int) {
-        self.intValue = index
-      }
-
-      init?(intValue: Int) {
-        self.init(index: intValue)
-      }
-
-      init?(stringValue: String) {
-        guard let intValue = Int(stringValue) else { return nil }
-        self.init(index: intValue)
-      }
     }
   }
 

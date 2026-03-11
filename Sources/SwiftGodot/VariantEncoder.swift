@@ -12,8 +12,14 @@ public class VariantEncoder: Encoder {
     container?.value
   }
 
+  private var writeBack: ((Variant?) -> Void)?
+
   init(forPath: [any CodingKey] = []) {
     self.codingPath = forPath
+  }
+
+  deinit {
+    writeBack?(value)
   }
 
   public func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key>
@@ -81,14 +87,14 @@ public class VariantEncoder: Encoder {
     }
 
     func superEncoder(forKey key: K) -> any Encoder {
-      let encoder = VariantEncoder()
-      dictionary[key.stringValue] = encoder.value
+      let encoder = VariantEncoder(forPath: codingPath + [key])
+      encoder.writeBack = { [dictionary] in dictionary[key.stringValue] = $0 }
       return encoder
     }
 
     func superEncoder() -> any Encoder {
-      let encoder = VariantEncoder()
-      dictionary["__super"] = encoder.value
+      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.super])
+      encoder.writeBack = { [dictionary] in dictionary[_CodingKey.super.stringValue] = $0 }
       return encoder
     }
   }
@@ -113,7 +119,7 @@ public class VariantEncoder: Encoder {
     }
 
     func encode<T>(_ value: T) throws where T: Encodable {
-      let encoder = VariantEncoder()
+      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.index(count)])
       try value.encode(to: encoder)
       array.append(encoder.value)
     }
@@ -134,8 +140,10 @@ public class VariantEncoder: Encoder {
     }
 
     func superEncoder() -> any Encoder {
-      let encoder = VariantEncoder()
-      array.append(encoder.value)
+      let index = array.count
+      array.append(nil)
+      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.index(index)])
+      encoder.writeBack = { [array] in array[index] = $0 }
       return encoder
     }
   }
@@ -209,9 +217,38 @@ public class VariantEncoder: Encoder {
     }
 
     func encode<T>(_ value: T) throws where T: Encodable {
-      let encoder = VariantEncoder()
+      let encoder = VariantEncoder(forPath: codingPath)
       try value.encode(to: encoder)
       self.value = encoder.value
     }
+  }
+}
+
+internal enum _CodingKey: CodingKey {
+  case string(String)
+  case index(Int)
+
+  static let `super` = _CodingKey.string("__super")
+
+  var stringValue: String {
+    switch self {
+    case .string(let value): value
+    case .index(let value): "Index \(value)"
+    }
+  }
+
+  var intValue: Int? {
+    switch self {
+    case .string: nil
+    case .index(let value): value
+    }
+  }
+
+  init?(stringValue: String) {
+    self = .string(stringValue)
+  }
+
+  init?(intValue: Int) {
+    self = .index(intValue)
   }
 }
