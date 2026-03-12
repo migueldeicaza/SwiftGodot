@@ -13,7 +13,7 @@ final class VariantCodableTests {
 
   // MARK: - Test Types
 
-  struct SimpleStruct: Codable, Equatable {
+  struct SimpleStruct: VariantCodable, Equatable {
     let name: String
     let damage: Int
     let speed: Double
@@ -1069,7 +1069,142 @@ final class VariantCodableTests {
       let _ = try Int(from: decoder)
       XCTFail("Expected DecodingError.valueNotFound")
     } catch {
-      // Expected
+    }
+  }
+
+  // MARK: - VariantCodable Tests
+
+  @SwiftGodotTest
+  public func testVariantCodableToVariant() {
+    let value = SimpleStruct(name: "Sword", damage: 42, speed: 1.5, equipped: true)
+    let variant = value.toVariant()
+
+    guard let variant else {
+      XCTFail("toVariant returned nil")
+      return
+    }
+
+    XCTAssertEqual(variant.gtype, .dictionary)
+
+    guard let dictionary: VariantDictionary = variant.to() else {
+      XCTFail("Could not convert to VariantDictionary")
+      return
+    }
+
+    guard let name = dictionary["name"] else {
+      XCTFail("Missing key 'name'")
+      return
+    }
+    XCTAssertEqual(String(name), "Sword")
+
+    guard let damage = dictionary["damage"] else {
+      XCTFail("Missing key 'damage'")
+      return
+    }
+    XCTAssertEqual(Int(damage), 42)
+
+    guard let speed = dictionary["speed"] else {
+      XCTFail("Missing key 'speed'")
+      return
+    }
+    XCTAssertEqual(Double(speed), 1.5)
+
+    guard let equipped = dictionary["equipped"] else {
+      XCTFail("Missing key 'equipped'")
+      return
+    }
+    XCTAssertEqual(Bool(equipped), true)
+  }
+
+  @SwiftGodotTest
+  public func testVariantCodableToFastVariant() {
+    let value = SimpleStruct(name: "Bow", damage: 10, speed: 2.0, equipped: false)
+    guard let fastVariant = value.toFastVariant() else {
+      XCTFail("toFastVariant returned nil")
+      return
+    }
+    let variant = Variant(takingOver: fastVariant)
+    XCTAssertEqual(variant.gtype, .dictionary)
+  }
+
+  @SwiftGodotTest
+  public func testVariantCodableFromVariantOrThrow() {
+    do {
+      let dictionary = VariantDictionary()
+      dictionary["name"] = Variant("Axe")
+      dictionary["damage"] = Variant(30)
+      dictionary["speed"] = Variant(1.2)
+      dictionary["equipped"] = Variant(true)
+
+      let result = try SimpleStruct.fromVariantOrThrow(Variant(dictionary))
+
+      XCTAssertEqual(result.name, "Axe")
+      XCTAssertEqual(result.damage, 30)
+      XCTAssertEqual(result.speed, 1.2)
+      XCTAssertEqual(result.equipped, true)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testVariantCodableRoundTrip() {
+    do {
+      let original = SimpleStruct(name: "Spear", damage: 30, speed: 1.8, equipped: true)
+
+      guard let variant = original.toVariant() else {
+        XCTFail("toVariant returned nil")
+        return
+      }
+
+      let decoded = try SimpleStruct.fromVariantOrThrow(variant)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testVariantCodableTypeMismatchThrows() {
+    do {
+      let _ = try SimpleStruct.fromVariantOrThrow(Variant(42))
+      XCTFail("Expected VariantConversionError")
+    } catch is VariantConversionError {
+    } catch {
+      XCTFail("Unexpected error type: \(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testVariantCodableMissingKeyThrows() {
+    let dictionary = VariantDictionary()
+    dictionary["name"] = Variant("Axe")
+
+    do {
+      let _ = try SimpleStruct.fromVariantOrThrow(Variant(dictionary))
+      XCTFail("Expected VariantConversionError")
+    } catch is VariantConversionError {
+    } catch {
+      XCTFail("Unexpected error type: \(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testVariantCodableFromFastVariantOrThrow() {
+    do {
+      let original = SimpleStruct(name: "Dagger", damage: 15, speed: 3.0, equipped: false)
+
+      guard let fastVariant = original.toFastVariant() else {
+        XCTFail("toFastVariant returned nil")
+        return
+      }
+
+      let decoded = try SimpleStruct.fromFastVariantOrThrow(fastVariant)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
     }
   }
 }
