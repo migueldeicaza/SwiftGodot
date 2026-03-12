@@ -1,3 +1,10 @@
+//
+//  VariantCodableTests.swift
+//  SwiftGodot
+//
+//  Created by Evan Wang on 3/11/26.
+//
+
 @testable import SwiftGodot
 @testable import SwiftGodotRuntime
 

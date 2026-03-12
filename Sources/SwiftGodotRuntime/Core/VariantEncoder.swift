@@ -1,3 +1,10 @@
+//
+//  VariantEncoder.swift
+//  SwiftGodot
+//
+//  Created by Evan Wang on 12/1/25.
+//
+
 public class VariantEncoder: Encoder {
   public var codingPath: [any CodingKey]
   public var userInfo: [CodingUserInfoKey: Any] = [:]
