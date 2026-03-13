@@ -94,13 +94,13 @@ public class VariantEncoder: Encoder {
   }
 
   public func unkeyedContainer() -> any UnkeyedEncodingContainer {
-    let container = VariantUnkeyedContainer(forPath: codingPath)
+    let container = VariantUnkeyedContainer(forPath: codingPath, keyEncodingStrategy: keyEncodingStrategy)
     self.container = container
     return container
   }
 
   public func singleValueContainer() -> any SingleValueEncodingContainer {
-    let container = VariantSingleValueContainer(forPath: codingPath)
+    let container = VariantSingleValueContainer(forPath: codingPath, keyEncodingStrategy: keyEncodingStrategy)
     self.container = container
     return container
   }
@@ -151,7 +151,7 @@ public class VariantEncoder: Encoder {
     func nestedUnkeyedContainer(forKey key: K) -> any UnkeyedEncodingContainer {
       let nestedArray = VariantArray()
       dictionary[encodeKey(key.stringValue)] = Variant(nestedArray)
-      return VariantUnkeyedContainer(nestedArray, forPath: self.codingPath + [key])
+      return VariantUnkeyedContainer(nestedArray, forPath: self.codingPath + [key], keyEncodingStrategy: keyEncodingStrategy)
     }
 
     func superEncoder(forKey key: K) -> any Encoder {
@@ -180,6 +180,7 @@ public class VariantEncoder: Encoder {
   class VariantUnkeyedContainer: UnkeyedEncodingContainer, VariantEncodingContainer {
     var array: VariantArray
     var codingPath: [any CodingKey]
+    let keyEncodingStrategy: KeyEncodingStrategy
 
     var count: Int { array.count }
 
@@ -187,9 +188,14 @@ public class VariantEncoder: Encoder {
       Variant(array)
     }
 
-    init(_ array: VariantArray = VariantArray(), forPath codingPath: [any CodingKey] = []) {
+    init(
+      _ array: VariantArray = VariantArray(),
+      forPath codingPath: [any CodingKey] = [],
+      keyEncodingStrategy: KeyEncodingStrategy = .convertToSnakeCase
+    ) {
       self.array = array
       self.codingPath = codingPath
+      self.keyEncodingStrategy = keyEncodingStrategy
     }
 
     func encodeNil() throws {
@@ -197,7 +203,7 @@ public class VariantEncoder: Encoder {
     }
 
     func encode<T>(_ value: T) throws where T: Encodable {
-      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.index(count)])
+      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.index(count)], keyEncodingStrategy: keyEncodingStrategy)
       try value.encode(to: encoder)
       array.append(encoder.value)
     }
@@ -208,19 +214,19 @@ public class VariantEncoder: Encoder {
       let nestedDictionary = VariantDictionary()
       array.append(Variant(nestedDictionary))
       return KeyedEncodingContainer(
-        VariantKeyedContainer<NestedKey>(nestedDictionary, forPath: self.codingPath))
+        VariantKeyedContainer<NestedKey>(nestedDictionary, forPath: self.codingPath, keyEncodingStrategy: keyEncodingStrategy))
     }
 
     func nestedUnkeyedContainer() -> any UnkeyedEncodingContainer {
       let nestedArray = VariantArray()
       array.append(Variant(nestedArray))
-      return VariantUnkeyedContainer(nestedArray, forPath: self.codingPath)
+      return VariantUnkeyedContainer(nestedArray, forPath: self.codingPath, keyEncodingStrategy: keyEncodingStrategy)
     }
 
     func superEncoder() -> any Encoder {
       let index = array.count
       array.append(nil)
-      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.index(index)])
+      let encoder = VariantEncoder(forPath: codingPath + [_CodingKey.index(index)], keyEncodingStrategy: keyEncodingStrategy)
       encoder.writeBack = { [array] in array[index] = $0 }
       return encoder
     }
@@ -229,9 +235,11 @@ public class VariantEncoder: Encoder {
   class VariantSingleValueContainer: SingleValueEncodingContainer, VariantEncodingContainer {
     var value: Variant?
     var codingPath: [any CodingKey]
+    let keyEncodingStrategy: KeyEncodingStrategy
 
-    init(forPath codingPath: [any CodingKey] = []) {
+    init(forPath codingPath: [any CodingKey] = [], keyEncodingStrategy: KeyEncodingStrategy = .convertToSnakeCase) {
       self.codingPath = codingPath
+      self.keyEncodingStrategy = keyEncodingStrategy
     }
 
     func encodeNil() throws {
@@ -295,7 +303,7 @@ public class VariantEncoder: Encoder {
     }
 
     func encode<T>(_ value: T) throws where T: Encodable {
-      let encoder = VariantEncoder(forPath: codingPath)
+      let encoder = VariantEncoder(forPath: codingPath, keyEncodingStrategy: keyEncodingStrategy)
       try value.encode(to: encoder)
       self.value = encoder.value
     }
@@ -367,11 +375,11 @@ public class VariantDecoder: Decoder {
             "Expected to decode VariantArray but found \(Variant.typeName(variant.gtype)) instead.")
       )
     }
-    return VariantUnkeyedDecodingContainer(array, forPath: codingPath)
+    return VariantUnkeyedDecodingContainer(array, forPath: codingPath, keyDecodingStrategy: keyDecodingStrategy)
   }
 
   public func singleValueContainer() throws -> any SingleValueDecodingContainer {
-    VariantSingleValueDecodingContainer(variant, forPath: codingPath)
+    VariantSingleValueDecodingContainer(variant, forPath: codingPath, keyDecodingStrategy: keyDecodingStrategy)
   }
 
   struct VariantKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainerProtocol {
@@ -481,10 +489,16 @@ public class VariantDecoder: Decoder {
     var currentIndex: Int = 0
 
     let array: VariantArray
+    let keyDecodingStrategy: KeyDecodingStrategy
 
-    init(_ array: VariantArray, forPath codingPath: [any CodingKey] = []) {
+    init(
+      _ array: VariantArray,
+      forPath codingPath: [any CodingKey] = [],
+      keyDecodingStrategy: KeyDecodingStrategy = .convertFromSnakeCase
+    ) {
       self.array = array
       self.codingPath = codingPath
+      self.keyDecodingStrategy = keyDecodingStrategy
     }
 
     func decodeNil() throws -> Bool {
@@ -499,7 +513,7 @@ public class VariantDecoder: Decoder {
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
       let variant = try currentValue(ofType: type)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)], keyDecodingStrategy: keyDecodingStrategy)
       let value = try T(from: decoder)
       next()
       return value
@@ -510,7 +524,7 @@ public class VariantDecoder: Decoder {
     {
       let variant = try currentValue(ofType: KeyedDecodingContainer<NestedKey>.self)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)], keyDecodingStrategy: keyDecodingStrategy)
       let value = try decoder.container(keyedBy: type)
       next()
       return value
@@ -519,7 +533,7 @@ public class VariantDecoder: Decoder {
     func nestedUnkeyedContainer() throws -> any UnkeyedDecodingContainer {
       let variant = try currentValue(ofType: UnkeyedDecodingContainer.self)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)], keyDecodingStrategy: keyDecodingStrategy)
       let value = try decoder.unkeyedContainer()
       next()
       return value
@@ -528,7 +542,7 @@ public class VariantDecoder: Decoder {
     func superDecoder() throws -> any Decoder {
       let variant = try currentValue(ofType: (any Decoder).self)
       let decoder = VariantDecoder(
-        variant, forPath: codingPath + [_CodingKey.index(currentIndex)])
+        variant, forPath: codingPath + [_CodingKey.index(currentIndex)], keyDecodingStrategy: keyDecodingStrategy)
       next()
       return decoder
     }
@@ -552,10 +566,16 @@ public class VariantDecoder: Decoder {
   struct VariantSingleValueDecodingContainer: SingleValueDecodingContainer {
     let variant: Variant?
     var codingPath: [any CodingKey]
+    let keyDecodingStrategy: KeyDecodingStrategy
 
-    init(_ variant: Variant?, forPath codingPath: [any CodingKey] = []) {
+    init(
+      _ variant: Variant?,
+      forPath codingPath: [any CodingKey] = [],
+      keyDecodingStrategy: KeyDecodingStrategy = .convertFromSnakeCase
+    ) {
       self.variant = variant
       self.codingPath = codingPath
+      self.keyDecodingStrategy = keyDecodingStrategy
     }
 
     func decodeNil() -> Bool { variant == nil || variant?.gtype == .nil }
@@ -575,7 +595,7 @@ public class VariantDecoder: Decoder {
     func decode(_ type: UInt64.Type) throws -> UInt64 { try decodeFromVariant() }
 
     func decode<T: Decodable>(_ type: T.Type) throws -> T {
-      let decoder = VariantDecoder(variant, forPath: codingPath)
+      let decoder = VariantDecoder(variant, forPath: codingPath, keyDecodingStrategy: keyDecodingStrategy)
       return try T(from: decoder)
     }
 

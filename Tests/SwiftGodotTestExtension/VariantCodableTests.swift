@@ -215,6 +215,29 @@ final class VariantCodableTests {
     let isPlayerControlled: Bool
   }
 
+  struct CamelCaseWrapper: Codable, Equatable {
+    let inner: CamelCaseStruct
+
+    func encode(to encoder: Encoder) throws {
+      var container = encoder.singleValueContainer()
+      try container.encode(inner)
+    }
+
+    init(inner: CamelCaseStruct) {
+      self.inner = inner
+    }
+
+    init(from decoder: Decoder) throws {
+      let container = try decoder.singleValueContainer()
+      inner = try container.decode(CamelCaseStruct.self)
+    }
+  }
+
+  struct CamelCaseArrayHolder: Codable, Equatable {
+    let playerName: String
+    let statBlocks: [CamelCaseStruct]
+  }
+
   struct UnkeyedNestedStruct: Codable, Equatable {
     let name: String
     let value: Int
@@ -1331,6 +1354,196 @@ final class VariantCodableTests {
       let decoded = try CamelCaseStruct(from: decoder)
 
       XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  // MARK: - Key Strategy Propagation Tests
+
+  @SwiftGodotTest
+  public func testStrategyPropagatesThroughUnkeyedContainer() {
+    do {
+      let values = [
+        CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true),
+        CamelCaseStruct(maxHealth: 200, attackSpeed: 2.5, isPlayerControlled: false),
+      ]
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try values.encode(to: encoder)
+
+      guard let variant = encoder.value,
+            let array: VariantArray = variant.to() else {
+        XCTFail("Encoder produced nil or non-array value")
+        return
+      }
+
+      // Check that keys inside elements (which go through unkeyed -> keyed) are snake_case
+      guard let firstElement = array[0],
+            let firstDict: VariantDictionary = firstElement.to() else {
+        XCTFail("First element is not a dictionary")
+        return
+      }
+
+      XCTAssertTrue(firstDict.has(key: Variant("max_health")))
+      XCTAssertTrue(firstDict.has(key: Variant("attack_speed")))
+      XCTAssertTrue(firstDict.has(key: Variant("is_player_controlled")))
+      XCTAssertFalse(firstDict.has(key: Variant("maxHealth")))
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testStrategyPropagatesThroughSingleValueContainer() {
+    do {
+      let value = CamelCaseWrapper(
+        inner: CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true))
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try value.encode(to: encoder)
+
+      guard let variant = encoder.value,
+            let dictionary: VariantDictionary = variant.to() else {
+        XCTFail("Encoder produced nil or non-dictionary value")
+        return
+      }
+
+      // Keys should be snake_case despite going through single-value container
+      XCTAssertTrue(dictionary.has(key: Variant("max_health")))
+      XCTAssertTrue(dictionary.has(key: Variant("attack_speed")))
+      XCTAssertTrue(dictionary.has(key: Variant("is_player_controlled")))
+      XCTAssertFalse(dictionary.has(key: Variant("maxHealth")))
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testStrategyPropagatesThroughKeyedToUnkeyedToKeyed() {
+    do {
+      let value = CamelCaseArrayHolder(
+        playerName: "Hero",
+        statBlocks: [
+          CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true),
+          CamelCaseStruct(maxHealth: 200, attackSpeed: 2.5, isPlayerControlled: false),
+        ])
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try value.encode(to: encoder)
+
+      guard let variant = encoder.value,
+            let dictionary: VariantDictionary = variant.to() else {
+        XCTFail("Encoder produced nil or non-dictionary value")
+        return
+      }
+
+      // Top-level keys should be snake_case
+      XCTAssertTrue(dictionary.has(key: Variant("player_name")))
+      XCTAssertTrue(dictionary.has(key: Variant("stat_blocks")))
+      XCTAssertFalse(dictionary.has(key: Variant("playerName")))
+      XCTAssertFalse(dictionary.has(key: Variant("statBlocks")))
+
+      // Keys inside nested array elements should also be snake_case
+      guard let statBlocksVariant = dictionary["stat_blocks"],
+            let statBlocks: VariantArray = statBlocksVariant.to(),
+            let firstElement = statBlocks[0],
+            let firstDict: VariantDictionary = firstElement.to() else {
+        XCTFail("Could not read stat_blocks array")
+        return
+      }
+
+      XCTAssertTrue(firstDict.has(key: Variant("max_health")))
+      XCTAssertTrue(firstDict.has(key: Variant("attack_speed")))
+      XCTAssertFalse(firstDict.has(key: Variant("maxHealth")))
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testRoundTripStrategyThroughUnkeyedContainer() {
+    do {
+      let original = [
+        CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true),
+        CamelCaseStruct(maxHealth: 200, attackSpeed: 2.5, isPlayerControlled: false),
+      ]
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try original.encode(to: encoder)
+
+      let decoder = VariantDecoder(encoder.value, keyDecodingStrategy: .convertFromSnakeCase)
+      let decoded = try [CamelCaseStruct](from: decoder)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testRoundTripStrategyThroughSingleValueContainer() {
+    do {
+      let original = CamelCaseWrapper(
+        inner: CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true))
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try original.encode(to: encoder)
+
+      let decoder = VariantDecoder(encoder.value, keyDecodingStrategy: .convertFromSnakeCase)
+      let decoded = try CamelCaseWrapper(from: decoder)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testRoundTripStrategyThroughKeyedToUnkeyedToKeyed() {
+    do {
+      let original = CamelCaseArrayHolder(
+        playerName: "Hero",
+        statBlocks: [
+          CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true),
+          CamelCaseStruct(maxHealth: 200, attackSpeed: 2.5, isPlayerControlled: false),
+        ])
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try original.encode(to: encoder)
+
+      let decoder = VariantDecoder(encoder.value, keyDecodingStrategy: .convertFromSnakeCase)
+      let decoded = try CamelCaseArrayHolder(from: decoder)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testUseDefaultKeysPropagatesThroughUnkeyedContainer() {
+    do {
+      let values = [
+        CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true),
+      ]
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .useDefaultKeys)
+      try values.encode(to: encoder)
+
+      guard let variant = encoder.value,
+            let array: VariantArray = variant.to(),
+            let firstElement = array[0],
+            let firstDict: VariantDictionary = firstElement.to() else {
+        XCTFail("Could not read encoded array")
+        return
+      }
+
+      // With useDefaultKeys, keys should remain camelCase
+      XCTAssertTrue(firstDict.has(key: Variant("maxHealth")))
+      XCTAssertTrue(firstDict.has(key: Variant("attackSpeed")))
+      XCTAssertTrue(firstDict.has(key: Variant("isPlayerControlled")))
+      XCTAssertFalse(firstDict.has(key: Variant("max_health")))
     } catch {
       XCTFail("\(error)")
     }
