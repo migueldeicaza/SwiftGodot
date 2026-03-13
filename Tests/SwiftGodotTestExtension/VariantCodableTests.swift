@@ -209,6 +209,12 @@ final class VariantCodableTests {
     }
   }
 
+  struct CamelCaseStruct: Codable, Equatable {
+    let maxHealth: Int
+    let attackSpeed: Double
+    let isPlayerControlled: Bool
+  }
+
   struct UnkeyedNestedStruct: Codable, Equatable {
     let name: String
     let value: Int
@@ -913,8 +919,8 @@ final class VariantCodableTests {
         return
       }
 
-      guard let parentData = dictionary["parentData"] else {
-        XCTFail("Missing key 'parentData'")
+      guard let parentData = dictionary["parent_data"] else {
+        XCTFail("Missing key 'parent_data'")
         return
       }
       XCTAssertEqual(parentData.gtype, .dictionary)
@@ -1170,9 +1176,8 @@ final class VariantCodableTests {
     do {
       let _ = try SimpleStruct.fromVariantOrThrow(Variant(42))
       XCTFail("Expected VariantConversionError")
-    } catch is VariantConversionError {
     } catch {
-      XCTFail("Unexpected error type: \(error)")
+      // Expected VariantConversionError
     }
   }
 
@@ -1184,9 +1189,8 @@ final class VariantCodableTests {
     do {
       let _ = try SimpleStruct.fromVariantOrThrow(Variant(dictionary))
       XCTFail("Expected VariantConversionError")
-    } catch is VariantConversionError {
     } catch {
-      XCTFail("Unexpected error type: \(error)")
+      // Expected VariantConversionError
     }
   }
 
@@ -1201,6 +1205,130 @@ final class VariantCodableTests {
       }
 
       let decoded = try SimpleStruct.fromFastVariantOrThrow(fastVariant)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  // MARK: - Key Strategy Tests
+
+  @SwiftGodotTest
+  public func testEncodeConvertToSnakeCase() {
+    do {
+      let value = CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true)
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try value.encode(to: encoder)
+
+      guard let variant = encoder.value,
+            let dictionary: VariantDictionary = variant.to() else {
+        XCTFail("Encoder produced nil or non-dictionary value")
+        return
+      }
+
+      XCTAssertTrue(dictionary.has(key: Variant("max_health")))
+      XCTAssertTrue(dictionary.has(key: Variant("attack_speed")))
+      XCTAssertTrue(dictionary.has(key: Variant("is_player_controlled")))
+
+      XCTAssertFalse(dictionary.has(key: Variant("maxHealth")))
+      XCTAssertFalse(dictionary.has(key: Variant("attackSpeed")))
+      XCTAssertFalse(dictionary.has(key: Variant("isPlayerControlled")))
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testEncodeUseDefaultKeys() {
+    do {
+      let value = CamelCaseStruct(maxHealth: 100, attackSpeed: 1.5, isPlayerControlled: true)
+      let encoder = VariantEncoder(keyEncodingStrategy: .useDefaultKeys)
+      try value.encode(to: encoder)
+
+      guard let variant = encoder.value,
+            let dictionary: VariantDictionary = variant.to() else {
+        XCTFail("Encoder produced nil or non-dictionary value")
+        return
+      }
+
+      XCTAssertTrue(dictionary.has(key: Variant("maxHealth")))
+      XCTAssertTrue(dictionary.has(key: Variant("attackSpeed")))
+      XCTAssertTrue(dictionary.has(key: Variant("isPlayerControlled")))
+
+      XCTAssertFalse(dictionary.has(key: Variant("max_health")))
+      XCTAssertFalse(dictionary.has(key: Variant("attack_speed")))
+      XCTAssertFalse(dictionary.has(key: Variant("is_player_controlled")))
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testDecodeConvertFromSnakeCase() {
+    do {
+      let dictionary = VariantDictionary()
+      dictionary["max_health"] = Variant(100)
+      dictionary["attack_speed"] = Variant(1.5)
+      dictionary["is_player_controlled"] = Variant(true)
+
+      let decoder = VariantDecoder(Variant(dictionary), keyDecodingStrategy: .convertFromSnakeCase)
+      let result = try CamelCaseStruct(from: decoder)
+
+      XCTAssertEqual(result.maxHealth, 100)
+      XCTAssertEqual(result.attackSpeed, 1.5)
+      XCTAssertEqual(result.isPlayerControlled, true)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testDecodeUseDefaultKeys() {
+    do {
+      let dictionary = VariantDictionary()
+      dictionary["maxHealth"] = Variant(100)
+      dictionary["attackSpeed"] = Variant(1.5)
+      dictionary["isPlayerControlled"] = Variant(true)
+
+      let decoder = VariantDecoder(Variant(dictionary), keyDecodingStrategy: .useDefaultKeys)
+      let result = try CamelCaseStruct(from: decoder)
+
+      XCTAssertEqual(result.maxHealth, 100)
+      XCTAssertEqual(result.attackSpeed, 1.5)
+      XCTAssertEqual(result.isPlayerControlled, true)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testRoundTripConvertSnakeCase() {
+    do {
+      let original = CamelCaseStruct(maxHealth: 200, attackSpeed: 2.5, isPlayerControlled: false)
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .convertToSnakeCase)
+      try original.encode(to: encoder)
+
+      let decoder = VariantDecoder(encoder.value, keyDecodingStrategy: .convertFromSnakeCase)
+      let decoded = try CamelCaseStruct(from: decoder)
+
+      XCTAssertEqual(original, decoded)
+    } catch {
+      XCTFail("\(error)")
+    }
+  }
+
+  @SwiftGodotTest
+  public func testRoundTripUseDefaultKeys() {
+    do {
+      let original = CamelCaseStruct(maxHealth: 200, attackSpeed: 2.5, isPlayerControlled: false)
+
+      let encoder = VariantEncoder(keyEncodingStrategy: .useDefaultKeys)
+      try original.encode(to: encoder)
+
+      let decoder = VariantDecoder(encoder.value, keyDecodingStrategy: .useDefaultKeys)
+      let decoded = try CamelCaseStruct(from: decoder)
 
       XCTAssertEqual(original, decoded)
     } catch {
