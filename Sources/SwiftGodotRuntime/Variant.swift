@@ -89,7 +89,10 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
 
     deinit {
-        if !extensionInterface.variantShouldDeinit(content: &content) { return }
+        if content.isZero {
+            return
+        }
+        if !extensionInterface.variantShouldDeinit(variant: self, content: &content) { return }
         gi.variant_destroy (&content)
         extensionInterface.variantDeinited(variant: self, content: &content)
     }

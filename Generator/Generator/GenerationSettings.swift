@@ -14,6 +14,10 @@ var classFilterProvided = false
 var availableClassNames: Set<String> = []
 var availableClassFilterProvided = false
 
+/// Explicitly allowed reference-type degradations for split targets.
+/// Key is the original class name and value is the only permitted fallback ancestor.
+var allowedClassFallbacks: [String: String] = [:]
+
 /// Names of builtin types (without the `.swift` suffix) that should be generated in this run.
 var builtinClassesToGenerate: Set<String> = []
 var builtinFilterProvided = false
@@ -63,7 +67,9 @@ func shouldGenerateBuiltin(_ name: String) -> Bool {
     return builtinClassesToGenerate.contains(name)
 }
 
-/// Finds the closest ancestor that is part of the whitelist, falling back to `Object`.
+/// Resolves a reference type against the available class whitelist.
+/// Missing reference types are treated as generator configuration errors and
+/// must be surfaced explicitly instead of silently degrading to `Object`.
 func fallbackClassName(for original: String) -> String {
     guard classFilterProvided else {
         return original
@@ -78,12 +84,27 @@ func fallbackClassName(for original: String) -> String {
     var currentName = original
     while let inherits = classMap[currentName]?.inherits {
         if availableClassNames.contains(inherits) {
-            return inherits
+            if allowedClassFallbacks[original] == inherits {
+                return inherits
+            }
+            fatalError("""
+            SwiftGodot Generator error: missing reference type '\(original)' in the current generation target.
+
+            The closest available ancestor is '\(inherits)', but silently degrading '\(original)' to '\(inherits)' would change the generated API surface.
+            Add '\(original).swift' to the target's generated class list or dependency class list instead of relying on fallback.
+            If this degradation is intentional for a split target, add an explicit allowed fallback entry for '\(original)=\(inherits)'.
+            """)
         }
         currentName = inherits
     }
 
-    print("SwiftGodot Generator warning: falling back to Object for missing type '\(original)'.\n")
+    if let expectedFallback = allowedClassFallbacks[original] {
+        return expectedFallback
+    }
 
-    return "Object"
+    fatalError("""
+    SwiftGodot Generator error: missing reference type '\(original)' in the current generation target.
+
+    No available ancestor was found for '\(original)'. Add '\(original).swift' to the target's generated class list or dependency class list.
+    """)
 }

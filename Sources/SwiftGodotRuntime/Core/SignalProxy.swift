@@ -21,7 +21,7 @@
 public class SignalProxy: Object {
     public static var proxyName = StringName("proxy")
 
-    public static func initClass() {
+    override public class func initClass() {
         let name = StringName("SignalProxy")
         if gi.classdb_get_class_tag(&name.content) == nil {
             register(type: SignalProxy.self)

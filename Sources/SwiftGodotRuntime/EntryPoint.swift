@@ -8,12 +8,13 @@
 import GDExtension
 
 public protocol ExtensionInterface {
+    func initClass(type: AnyClass) -> Bool
 
     func initClasses()
 
-    func variantShouldDeinit(content: UnsafeRawPointer) -> Bool
+    func variantShouldDeinit(variant: Variant?, content: UnsafeRawPointer) -> Bool
 
-    func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool
+    func objectShouldDeinit(object: Wrapped) -> Bool
 
     func objectInited(object: Wrapped)
 
@@ -37,6 +38,10 @@ public protocol ExtensionInterface {
 }
 
 public extension ExtensionInterface {
+    func initClass(type: AnyClass) -> Bool {
+        true
+    }
+
     // Register any general Godot classes/methods here
     func initClasses() {
         SignalProxy.initClass()
@@ -52,17 +57,22 @@ class LibGodotExtensionInterface: ExtensionInterface {
 
     private let library: GDExtensionClassLibraryPtr
     private let getProcAddrFun: GDExtensionInterfaceGetProcAddress
+    private var initedClasses = Set<ObjectIdentifier>()
 
     public init(library: GDExtensionClassLibraryPtr, getProcAddrFun: GDExtensionInterfaceGetProcAddress) {
         self.library = library
         self.getProcAddrFun = getProcAddrFun
     }
 
-    public func variantShouldDeinit(content: UnsafeRawPointer) -> Bool {
+    public func initClass(type: AnyClass) -> Bool {
+        initedClasses.insert(ObjectIdentifier(type)).inserted
+    }
+
+    public func variantShouldDeinit(variant: Variant?, content: UnsafeRawPointer) -> Bool {
         return !experimentalDisableVariantUnref
     }
 
-    public func objectShouldDeinit(handle: UnsafeRawPointer) -> Bool {
+    public func objectShouldDeinit(object: Wrapped) -> Bool {
         return true
     }
 
@@ -94,8 +104,11 @@ class LibGodotExtensionInterface: ExtensionInterface {
 }
 
 /// The pointer to the Godot Extension Interface
-@usableFromInline
 var extensionInterface: ExtensionInterface!
+
+public func swiftGodotShouldInitializeClass(type: AnyClass) -> Bool {
+    extensionInterface.initClass(type: type)
+}
 
 /// This variable is used to trigger a reloading of the method definitions in Godot, this is only needed
 /// for scenarios where SwiftGodot is being used with multiple active Godot runtimes in the same process

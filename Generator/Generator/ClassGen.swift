@@ -115,18 +115,11 @@ func generateVirtualProxy (_ p: Printer,
                 // This idiom guarantees that: if this is a known object, we surface this
                 // object, but if it is not known, then we create the instance
                 //
-                if isRefCountedType(arg.type) {
-                    argPrep += "var resolved_\(i) = gi.ref_get_object(args [\(i)])\n"
-                    argPrep += "if resolved_\(i) == nil { resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self) }\n"
-                } else {
-                    argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
-                }
+                argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
                 if isMethodArgumentOptional(className: cdef.name, method: methodName, arg: arg.name) {
-                    let ownsRef = isRefCountedType(arg.type) ? "true" : "false"
-                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: \(ownsRef)) as? \(arg.type)"
+                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as? \(arg.type)"
                 } else {
-                    let ownsRef = isRefCountedType(arg.type) ? "true" : "false"
-                    argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: \(ownsRef)) as! \(arg.type)"
+                    argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownsRef: false) as! \(arg.type)"
                 }
             } else if let storage = builtinClassStorage[arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
@@ -636,7 +629,19 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             public required init(_ context: InitContext) {
                 super.init(context)
 
-                _ = initRef()
+                if context.origin == .swift || context.origin == .gdscript {
+                    _ = initRef()
+                }
+            }
+            """)
+        }
+
+        if cdef.name == "Resource", cdef.methods?.contains(where: { $0.name == "finalize" }) == true {
+            p("""
+            deinit {
+                guard let handle else { return }
+                guard extensionInterface.objectShouldDeinit(object: self) else { return }
+                finalize()
             }
             """)
         }

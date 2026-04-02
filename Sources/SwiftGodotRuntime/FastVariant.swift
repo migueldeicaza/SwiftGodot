@@ -174,7 +174,7 @@ public struct FastVariant: ~Copyable {
             return
         }
                 
-        if !extensionInterface.variantShouldDeinit(content: &content) { return }
+        if !extensionInterface.variantShouldDeinit(variant: nil, content: &content) { return }
         gi.variant_destroy(&content)
     }
     
