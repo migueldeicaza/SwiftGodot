@@ -650,6 +650,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         if kind == .isStruct {
             conformances.append ("Equatable")
             conformances.append ("Hashable")
+            conformances.append ("Codable")
         } else {
             if bc.operators.contains(where: { op in op.name == "==" && op.rightType == bc.name }) {
                 conformances.append ("Equatable")
