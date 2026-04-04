@@ -277,7 +277,7 @@ public struct FastVariant: ~Copyable {
     /// String description of this ``FastVariant``
     public var description: String {
         var content = content
-        var ret = GDExtensionStringPtr(bitPattern: 0xdeaddead)
+        var ret = GDExtensionStringPtr(bitPattern: 0)
         gi.variant_stringify(&content, &ret)
         
         let str = stringFromGodotString(&ret)
