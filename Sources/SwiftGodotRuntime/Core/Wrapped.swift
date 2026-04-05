@@ -23,6 +23,7 @@ import GDExtension
 
 func pd (_ str: String) {
     #if false
+    print("anothr")
     print ("SwiftGodot: \(str)")
     #endif
 }
@@ -211,6 +212,13 @@ open class Wrapped: Equatable, Identifiable, Hashable {
 #endif
 
             if self is RefCounted {
+                // Godot may already have consumed the final native reference before
+                // the Swift wrapper is torn down, especially for editor-managed resources.
+                if let refCounted = self as? RefCounted, refCounted.getReferenceCount() <= 0 {
+		    print("RefCounted: it was already zero, flagging as deinited.");
+                    extensionInterface.objectDeinited(object: self)
+                    return
+                }
                 var queue = false
                 freeLock.withLockVoid {
                     if Wrapped.deferred == nil {
@@ -688,6 +696,32 @@ var pendingReleaseHandles: [UInt8: [GodotNativeObjectPointer]] = [:]
 var pendingReleaseHandles: [GodotNativeObjectPointer] = []
 #endif
 
+private func objectClassName(_ handle: GodotNativeObjectPointer) -> String {
+    var sc: StringName.ContentType = StringName.zero
+    if gi.object_get_class_name(handle, extensionInterface.getLibrary(), &sc) != 0 {
+        return String(StringName(content: sc))
+    }
+    var result = GString()
+    gi.object_method_bind_ptrcall(Object.method_get_class, handle, nil, &result.content)
+    return result.description
+}
+
+private func currentRefCount(_ handle: GodotNativeObjectPointer) -> Int32? {
+    let objectClass = objectClassName(handle)
+    var className = FastStringName(objectClass)
+    var methodName = FastStringName("get_reference_count")
+    guard let bind = withUnsafePointer(to: &className.content, { classPtr in
+        withUnsafePointer(to: &methodName.content) { methodPtr in
+            gi.classdb_get_method_bind(classPtr, methodPtr, 3905245786)
+        }
+    }) else {
+        return nil
+    }
+    var result: Int32 = 0
+    gi.object_method_bind_ptrcall(bind, handle, nil, &result)
+    return result
+}
+
 @inline(__always)
 private func isTrackedHandle(_ handle: GodotNativeObjectPointer) -> Bool {
     tableLock.withLock {
@@ -733,6 +767,14 @@ public func releasePendingObjects() {
         // the handle from the live tables. In that case, don't call back into Godot
         // with a stale pointer.
         guard isTrackedHandle(handle) else { continue }
+
+#if DEBUG
+	// Expensive, calls currentRefCount.
+	// Editor-managed RefCounted objects can reach zero before the deferred flush runs.
+        if let refCount = currentRefCount(handle), refCount <= 0 {
+	    fatalError("We had a zero refCount handle here, this should not happen")
+        }
+#endif
 
         var result: Bool = false
         gi.object_method_bind_ptrcall(RefCounted.method_unreference, handle, nil, &result)
@@ -959,7 +1001,7 @@ func createFunc(_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer
     let object = type.init(InitContext(handle: handle, origin: .gdscript))
     object.wrapper?.strongify()
     #else
-    let object = type.init(InitContext(handle: handle, origin: .godot))
+    let object = type.init(InitContext(handle: handle, origin: .gdscript))
     
     // We are the createFunc, and we have no other owner to this object but ourselves
     // we need to make this a strong reference, or it dies before we return
@@ -993,7 +1035,7 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, godotObjectHandle: Unsaf
     let object = type.init(InitContext(handle: godotObjectHandle, origin: .gdscript))
     object.wrapper?.strongify()
     #else
-    let object = type.init(InitContext(handle: godotObjectHandle, origin: .godot))
+    let object = type.init(InitContext(handle: godotObjectHandle, origin: .gdscript))
     
     // Just line in the createFunc
     // we need to make this a strong reference, or it dies before we return
