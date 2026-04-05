@@ -898,7 +898,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     }
     if let userType = userTypes[className] {
         let created = userType.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
+        handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: ownsRef)
         if let result = created as? T {
             return result
         } else {
@@ -907,7 +907,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     }
     if let ctor = lookupGodotType(named: className) as? T.Type {
         let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: ownsRef)
         return result
     }
 
@@ -922,7 +922,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     // This comment here for future generations that end up in this line
     // the real error is likely a registration issue.
     let result = T(InitContext(handle: nativeHandle, origin: .godot))
-    handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+    handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: ownsRef)
     return result
 }
 #endif
