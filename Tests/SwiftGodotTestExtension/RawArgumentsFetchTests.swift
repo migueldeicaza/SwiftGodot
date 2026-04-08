@@ -464,6 +464,7 @@ final class RawArgumentsFetchTests {
     func testFetchFloat() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testFloat", Variant(Float(2.5)))
+        XCTAssertEqual(result?.gtype, .float)
         XCTAssertEqual(Float(result)!, 5.0, accuracy: 0.001)
     }
 

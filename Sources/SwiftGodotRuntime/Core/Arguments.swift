@@ -509,6 +509,10 @@ public struct RawReturnWriter {
         target!.assumingMemoryBound(to: Double.self).pointee = value
     }
 
+    public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Float) {
+        target!.assumingMemoryBound(to: Double.self).pointee = Double(value)
+    }
+
     public static func writeResult(_ target: UnsafeMutableRawPointer?, _ value: Vector2) {
         target!.assumingMemoryBound(to: Vector2.self).pointee = value
     }
