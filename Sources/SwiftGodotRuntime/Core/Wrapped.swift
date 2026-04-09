@@ -31,20 +31,38 @@ func pd (_ str: String) {
 var xmap: [UnsafeRawPointer: String] = [:]
 #endif
 
-/// A specific place where the initialization happens
-/// affects how things unravel.
+/// Describes the role of a Swift wrapper.
+///
+/// This enum is about construction context, not pointer ownership.
+/// It answers where the initialization request came from.
+///
+/// Use this to decide wrapper/binding setup behavior for a new instance.
+/// Do not use it to infer whether the surfaced object pointer is borrowed,
+/// comes from an owned `Ref<>`, or already carries a return-slot lifetime.
+/// That is handled separately by ``ReturnedObjectOwnership``.
 enum InitOrigin {
     /// Directly from Swift
     /// For example: `let object = Object()`
     ///
-    /// `RefCounted` performs an `initRef` in this patch.
+    /// Swift constructs the native object first and then wraps it.
     case swift
     
-    /// Or returned back from Godot world via unwrapping a ``Variant`` or as return value from the function call
+    /// The object surfaced from Godot and Swift is wrapping an existing native instance.
+    ///
+    /// This includes paths such as:
+    /// - unwrapping a ``Variant``
+    /// - receiving a method return value
+    /// - adopting another engine-originated object pointer
+    ///
+    /// This case does not imply a single ownership policy; surfaced objects may
+    /// still be borrowed, come from an owned `Ref<>`, or arrive through a normal
+    /// Godot API return slot.
     case godot
 
     /// Constructed by Godot (from GDScript) in `createFunc`
-    /// `RefCounted` performs an `initRef` at initialization.
+    ///
+    /// Godot is creating one of our registered Swift user types and calls back
+    /// into Swift to materialize the wrapper and user instance.
     case gdscript
 }
 
@@ -821,38 +839,57 @@ func existingSwiftObject(for nativeHandle: GodotNativeObjectPointer) -> Wrapped?
     }
 }
 
+/// Describes the lifetime contract of an object pointer surfaced to Swift.
+///
+/// This enum is about refcount behavior, not construction context.
+/// It determines what is the native ownership for the pointer.
+///
+/// Use this when reconciling Swift wrapper identity with Godot native lifetime.
+/// Do not use it to distinguish whether the wrapper was initialized from Swift,
+/// from Godot, or from a GDScript-created user type. That is handled by
+/// ``InitOrigin``.
+public enum ReturnedObjectOwnership {
+    /// The object pointer is borrowed, so a new Swift wrapper must retain its own native ref.
+    case borrowed
+
+    /// Godot returned an owned `Ref<T>` wrapper that SwiftGodot should consume.
+    case refWrapper
+
+    /// Godot returned an object pointer directly from the API return slot.
+    ///
+    /// Swift should adopt this lifetime as-is. In particular, this path should
+    /// neither add a fresh native reference nor consume an extra owned `Ref<>`.
+    case godotApiReturn
+}
+
 // The following function makes the reference count of RefCounted objects consistent
-// with the semantics of Godot:
-// - Every time godot returns a RefCounted object in a Ref<> wrapper for a ptrcall,
-// its reference count is incremeneted. As object identity results in the return of
-// the same Swift proxy for the same RefCounted object, this means that every subsequent
-// return should result in an unreference() call, so that the existence of the Swift proxy
-// object always results in a single increment of the reference count.
-// - On the other hand, if a RefCounted object was returned through a non-RefCounted
-// static return type (e.g. as an Object), then Godot did not increment its reference
-// count. This means that on the first return of such an object, the reference count
-// should be incremented by a reference() call, so that similarly the existence of
-// the Swift proxy object always results in a single increment of the reference count.
-// - The ownsRef parameter is true iff Godot can pass ownership of a Ref<> wrapper to
-// SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
-func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, unref: Bool) {
-    if !ownsRef {
-        if !unref {
-            if let refCounted = object as? RefCounted {
-                refCounted.reference()
-            }
-        }
+// with the semantics of the source that surfaced them to Swift:
+// - borrowed: Swift must acquire a native reference when creating the first wrapper.
+// - refWrapper: Godot returned an owned Ref<> wrapper that Swift must consume.
+// - godotApiReturn: Godot returned the object through a standard API return slot, so
+//   Swift should adopt that lifetime without adding or consuming another reference.
+func handleReturnedObject<T: Wrapped>(
+    staticType: T.Type,
+    object: Wrapped?,
+    ownership: ReturnedObjectOwnership,
+    isExistingWrapper: Bool
+) {
+    switch ownership {
+    case .godotApiReturn:
         return
-    }
-    if let refCounted = object as? RefCounted {
+
+    case .borrowed:
+        if !isExistingWrapper, let refCounted = object as? RefCounted {
+            refCounted.reference()
+        }
+
+    case .refWrapper:
+        guard let refCounted = object as? RefCounted else { return }
+
         if staticType is RefCounted.Type {
-            if unref {
-                refCounted.unreference()
-            }
-        } else {
-            if !unref {
-                refCounted.reference()
-            }
+            refCounted.unreference()
+        } else if !isExistingWrapper {
+            refCounted.reference()
         }
     }
 }
@@ -870,7 +907,7 @@ final class ReferenceArray<Element> {
 
 let SwiftGodot_has_instance_binding = "SwiftGodot_has_instance_binding"
 
-public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
+public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownership: ReturnedObjectOwnership) -> T? {
     var hasInstanceBinding = Foundation.Thread.current.threadDictionary.object(forKey: SwiftGodot_has_instance_binding) as? ReferenceArray<Bool>
     if hasInstanceBinding == nil {
         hasInstanceBinding = ReferenceArray<Bool>()
@@ -888,11 +925,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     guard let exists = hasInstanceBinding?.items.popLast() else {
         fatalError("Corrupt has_instance_binding.")
     }
-    if exists {
-        handleRef(staticType: T.self, object: object, ownsRef: ownsRef, unref: true)
-    } else {
-        handleRef(staticType: T.self, object: object, ownsRef: ownsRef, unref: false)
-    }
+    handleReturnedObject(staticType: T.self, object: object, ownership: ownership, isExistingWrapper: exists)
 
     if let refCounted = object as? RefCounted, refCounted.getReferenceCount() <= 1 {
         reference.weakify()
@@ -922,9 +955,9 @@ func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
     return nil
 }
 #else
-public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
+public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownership: ReturnedObjectOwnership) -> T? {
     if let object = existingSwiftObject(for: nativeHandle) {
-        handleRef(staticType: T.self, object: object, ownsRef: ownsRef, unref: true)
+        handleReturnedObject(staticType: T.self, object: object, ownership: ownership, isExistingWrapper: true)
         return object as? T
     }
     
@@ -940,7 +973,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     }
     if let userType = userTypes[className] {
         let created = userType.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: ownsRef)
+        handleReturnedObject(staticType: T.self, object: created, ownership: ownership, isExistingWrapper: false)
         if let result = created as? T {
             return result
         } else {
@@ -949,7 +982,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     }
     if let ctor = lookupGodotType(named: className) as? T.Type {
         let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: ownsRef)
+        handleReturnedObject(staticType: T.self, object: result, ownership: ownership, isExistingWrapper: false)
         return result
     }
 
@@ -964,7 +997,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     // This comment here for future generations that end up in this line
     // the real error is likely a registration issue.
     let result = T(InitContext(handle: nativeHandle, origin: .godot))
-    handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: ownsRef)
+    handleReturnedObject(staticType: T.self, object: result, ownership: ownership, isExistingWrapper: false)
     return result
 }
 #endif

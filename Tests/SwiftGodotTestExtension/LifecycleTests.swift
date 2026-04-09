@@ -39,4 +39,35 @@ final class LifecycleTests {
         XCTAssertFalse (GD.isInstanceIdValid(id: id), "Expected timer to be disposed")
     }
 
+    @SwiftGodotTest
+    public func testDuplicateReturnedResourceKeepsSingleNativeReference() {
+        let original = StyleBoxFlat()
+        guard let duplicate = original.duplicate() as? StyleBoxFlat else {
+            XCTFail("duplicate() should return a StyleBoxFlat")
+            return
+        }
+
+        XCTAssertEqual(duplicate.getReferenceCount(), 1, "duplicate() should surface a single owned native reference")
+    }
+
+    @SwiftGodotTest
+    public func testEngineReturnedFileAccessKeepsSingleNativeReference() {
+        let testPath = "user://swiftgodot-engine-returned-refcount.txt"
+
+        guard let writer = FileAccess.open(path: testPath, flags: .write) else {
+            XCTFail("Expected to open a writable FileAccess")
+            return
+        }
+        XCTAssertEqual(writer.getReferenceCount(), 1, "FileAccess.open() should not add an extra native reference")
+        _ = writer.storeString("ok")
+        writer.close()
+
+        guard let reader = FileAccess.open(path: testPath, flags: .read) else {
+            XCTFail("Expected to open a readable FileAccess")
+            return
+        }
+        XCTAssertEqual(reader.getReferenceCount(), 1, "Reopened FileAccess should also surface a single native reference")
+        reader.close()
+    }
+
 }

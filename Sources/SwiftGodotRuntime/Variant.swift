@@ -258,7 +258,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         guard let objectHandle else {
             return nil
         }
-        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownsRef: false)
+        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownership: .borrowed)
         return ret
     }
     
