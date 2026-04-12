@@ -47,10 +47,13 @@ class ArrayTest: Node {
 
     override open class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: ArrayTest.self) else {
+            return
+        }
         let className = StringName("ArrayTest")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
@@ -84,5 +87,5 @@ class ArrayTest: Node {
             getterFunction: ArrayTest._mproxy_get_lastNames,
             setterFunction: ArrayTest._mproxy_set_lastNames
         )
-    }()
+    }
 }
