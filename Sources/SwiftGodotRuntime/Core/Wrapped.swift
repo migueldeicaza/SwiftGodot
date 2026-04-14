@@ -312,7 +312,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// - Returns: `true` if the object has a script and that script has a method with the given name.
     /// `false` if the object has no script.
     public func hasScript (method: StringName) -> Bool {
-        gi.object_has_script_method(handle, &method.content) != 0
+        guard let objectHasScriptMethod = gi.object_has_script_method else {
+            fatalError("Godot interface method 'object_has_script_method' was not available at runtime.")
+        }
+        return objectHasScriptMethod(handle, &method.content) != 0
     }
     
     /// Invokes the specified method on the object
@@ -331,7 +334,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         var result = Variant.zero
         var error = GDExtensionCallError()
-        gi.object_call_script_method(&handle, &method.content, &args, Int64(args.count), &result, &error)
+        guard let objectCallScriptMethod = gi.object_call_script_method else {
+            fatalError("Godot interface method 'object_call_script_method' was not available at runtime.")
+        }
+        objectCallScriptMethod(&handle, &method.content, &args, Int64(args.count), &result, &error)
         if error.error != GDEXTENSION_CALL_OK {
             throw toCallErrorType(error.error)
         }

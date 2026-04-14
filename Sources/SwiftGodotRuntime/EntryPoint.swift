@@ -235,8 +235,8 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
 
     public let  object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
     public let  object_destroy: GDExtensionInterfaceObjectDestroy
-    public let  object_has_script_method: GDExtensionInterfaceObjectHasScriptMethod
-    public let  object_call_script_method: GDExtensionInterfaceObjectCallScriptMethod
+    public let  object_has_script_method: GDExtensionInterfaceObjectHasScriptMethod?
+    public let  object_call_script_method: GDExtensionInterfaceObjectCallScriptMethod?
 
     // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
     @inline(__always)
@@ -325,8 +325,8 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  packed_vector2_array_operator_index_const: GDExtensionInterfacePackedVector2ArrayOperatorIndexConst
     public let  packed_vector3_array_operator_index: GDExtensionInterfacePackedVector3ArrayOperatorIndex
     public let  packed_vector3_array_operator_index_const: GDExtensionInterfacePackedVector3ArrayOperatorIndexConst
-    public let  packed_vector4_array_operator_index: GDExtensionInterfacePackedVector4ArrayOperatorIndex
-    public let  packed_vector4_array_operator_index_const: GDExtensionInterfacePackedVector4ArrayOperatorIndexConst
+    public let  packed_vector4_array_operator_index: GDExtensionInterfacePackedVector4ArrayOperatorIndex?
+    public let  packed_vector4_array_operator_index_const: GDExtensionInterfacePackedVector4ArrayOperatorIndexConst?
 
     public let  callable_custom_create: GDExtensionInterfaceCallableCustomCreate
 
@@ -334,7 +334,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  editor_remove_plugin: GDExtensionInterfaceEditorRemovePlugin
 
     public let get_library_path: GDExtensionInterfaceGetLibraryPath
-    public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen
+    public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen?
 }
 
 @_spi(SwiftGodotRuntimePrivate) public var gi: GodotInterface!
@@ -352,6 +352,13 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         //        let ass = rawPtr.assumingMemoryBound(to: T.self).pointee
         //        print ("For \(name) got the address \(rawPtr) and assigning \(ass)")
         //        return rawPtr.assumingMemoryBound(to: T.self).pointee
+    }
+
+    func loadOptional<T>(_ name: String) -> T? {
+        guard let rawPtr = godotGetProcAddrPtr(name) else {
+            return nil
+        }
+        return unsafeBitCast(rawPtr, to: T.self)
     }
 
     gi = GodotInterface(
@@ -393,8 +400,8 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         object_method_bind_ptrcall: load("object_method_bind_ptrcall"),
         object_destroy: load("object_destroy"),
 
-        object_has_script_method: load("object_has_script_method"),
-        object_call_script_method: load("object_call_script_method"),
+        object_has_script_method: loadOptional("object_has_script_method"),
+        object_call_script_method: loadOptional("object_call_script_method"),
 
         global_get_singleton: load("global_get_singleton"),
         ref_get_object: load("ref_get_object"),
@@ -450,15 +457,15 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         packed_vector2_array_operator_index_const: load("packed_vector2_array_operator_index_const"),
         packed_vector3_array_operator_index: load("packed_vector3_array_operator_index"),
         packed_vector3_array_operator_index_const: load("packed_vector3_array_operator_index_const"),
-        packed_vector4_array_operator_index: load("packed_vector4_array_operator_index"),
-        packed_vector4_array_operator_index_const: load("packed_vector4_array_operator_index_const"),
+        packed_vector4_array_operator_index: loadOptional("packed_vector4_array_operator_index"),
+        packed_vector4_array_operator_index_const: loadOptional("packed_vector4_array_operator_index_const"),
 
         callable_custom_create: load("callable_custom_create"),
         editor_add_plugin: load("editor_add_plugin"),
         editor_remove_plugin: load("editor_remove_plugin"),
 
         get_library_path: load("get_library_path"),
-        editor_help_load_xml_from_utf8_chars_and_len: load("editor_help_load_xml_from_utf8_chars_and_len")
+        editor_help_load_xml_from_utf8_chars_and_len: loadOptional("editor_help_load_xml_from_utf8_chars_and_len")
     )
 }
 

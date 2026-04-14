@@ -11,6 +11,13 @@ import Foundation
 #endif
 
 public class EditorInterop {
+    private static func loadHelpXmlFromUtf8CharsAndLen(_ chars: UnsafePointer<CChar>?, _ count: Int64) {
+        guard let loadHelp = gi.editor_help_load_xml_from_utf8_chars_and_len else {
+            fatalError("Godot interface method 'editor_help_load_xml_from_utf8_chars_and_len' was not available at runtime.")
+        }
+        loadHelp(chars, count)
+    }
+
     //  Gets the path to the current GDExtension library.
     public static func getLibraryPath() -> String? {
         let res = GString()
@@ -26,7 +33,7 @@ public class EditorInterop {
             span.span.withUnsafeBytes { buffer in
                 // Bind to CChar (Int8) because the imported symbol expects CChar*
                 let ptr = buffer.bindMemory(to: CChar.self)
-                gi.editor_help_load_xml_from_utf8_chars_and_len(ptr.baseAddress, Int64(span.count))
+                loadHelpXmlFromUtf8CharsAndLen(ptr.baseAddress, Int64(span.count))
             }
         } else {
             // Use raw UTF-8 bytes (no extra trailing null), then bind to CChar
@@ -34,7 +41,7 @@ public class EditorInterop {
             bytes.withUnsafeBufferPointer { buffer in
                 guard let base = buffer.baseAddress else { return }
                 let ptr = UnsafeRawPointer(base).bindMemory(to: CChar.self, capacity: buffer.count)
-                gi.editor_help_load_xml_from_utf8_chars_and_len(ptr, Int64(buffer.count))
+                loadHelpXmlFromUtf8CharsAndLen(ptr, Int64(buffer.count))
             }
         }
     }
@@ -45,7 +52,7 @@ public class EditorInterop {
             guard let base = buffer.baseAddress else { return }
             // Bind to CChar (Int8) for the imported function
             let ptr = UnsafeRawPointer(base).bindMemory(to: CChar.self, capacity: buffer.count)
-            gi.editor_help_load_xml_from_utf8_chars_and_len(ptr, Int64(buffer.count))
+            loadHelpXmlFromUtf8CharsAndLen(ptr, Int64(buffer.count))
         }
     }
 
@@ -53,7 +60,7 @@ public class EditorInterop {
     /// Adds the Godot XML documentation to the editor at runtime
     static func loadHelp(fromData data: Data) {
         data.withUnsafeBytes { ptr in
-            gi.editor_help_load_xml_from_utf8_chars_and_len(ptr, Int64(data.count))
+            loadHelpXmlFromUtf8CharsAndLen(ptr, Int64(data.count))
         }
     }
 #endif
