@@ -384,7 +384,12 @@ func generateBuiltinOperators (_ p: Printer,
             if let desc = op.description, desc != "" {
                 doc (p, bc, desc)
             }
-            
+
+            let disfavored = right == "float" && operators.contains(where: { $0.name == op.name && $0.rightType == "int" })
+            if disfavored {
+                p ("@_disfavoredOverload")
+            }
+
             p ("public static func \(swiftOperator)(lhs: \(lhsTypeName), rhs: \(rhsTypeName)) -> \(retType) "){
                 if customImplementation != nil {
                     p("#if !CUSTOM_BUILTIN_IMPLEMENTATIONS")

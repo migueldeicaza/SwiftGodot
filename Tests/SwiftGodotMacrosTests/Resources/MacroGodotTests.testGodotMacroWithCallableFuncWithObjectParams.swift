@@ -190,10 +190,13 @@ class Castro: Node {
 
     override open class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: Castro.self) else {
+            return
+        }
         let className = StringName("Castro")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
@@ -308,5 +311,5 @@ class Castro: Node {
             }
 
         )
-    }()
+    }
 }
