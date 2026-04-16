@@ -334,6 +334,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  editor_remove_plugin: GDExtensionInterfaceEditorRemovePlugin
 
     public let get_library_path: GDExtensionInterfaceGetLibraryPath
+    public let editor_help_load_xml_from_utf8_chars: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars?
     public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen?
 }
 
@@ -465,6 +466,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         editor_remove_plugin: load("editor_remove_plugin"),
 
         get_library_path: load("get_library_path"),
+        editor_help_load_xml_from_utf8_chars: loadOptional("editor_help_load_xml_from_utf8_chars"),
         editor_help_load_xml_from_utf8_chars_and_len: loadOptional("editor_help_load_xml_from_utf8_chars_and_len")
     )
 }
