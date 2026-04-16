@@ -27,7 +27,20 @@
 /// You used `YourType?` as `Key` or `Value` generic parameter.
 /// You should use `YourType` instead.
 /// Godot guarantees non-nullability of `SomeType` when used as `Key` or `Value`.
+fileprivate enum TypedDictionaryRuntimeSupport {
+    static let supportsNativeTypedDictionary: Bool = {
+        let versionInfo = Engine.getVersionInfo()
+        let major = Int(versionInfo["major"]) ?? 0
+        let minor = Int(versionInfo["minor"]) ?? 0
+        return major > 4 || (major == 4 && minor >= 4)
+    }()
+}
+
 public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter>: CustomDebugStringConvertible, _GodotBridgeableBuiltin, Sequence, ExpressibleByDictionaryLiteral {
+    @usableFromInline
+    static var supportsNativeTypedDictionary: Bool {
+        TypedDictionaryRuntimeSupport.supportsNativeTypedDictionary
+    }
     
     /// Reference to underlying `VariantDictionary` which is guaranteed to containing only `Key: Value` pairs.
     public let dictionary: VariantDictionary
@@ -93,15 +106,21 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     
     /// Initialise an empty ``TypedDictionary``.
     public init() {
-        self.dictionary = VariantDictionary(
-            base: VariantDictionary(),
-            keyType: Int32(Key._variantType.rawValue),
-            keyClassName: Key._className,
-            keyScript: nil,
-            valueType: Int32(Value._variantType.rawValue),
-            valueClassName: Value._className,
-            valueScript: nil
-        )
+        if Self.supportsNativeTypedDictionary {
+            self.dictionary = VariantDictionary(
+                base: VariantDictionary(),
+                keyType: Int32(Key._variantType.rawValue),
+                keyClassName: Key._className,
+                keyScript: nil,
+                valueType: Int32(Value._variantType.rawValue),
+                valueClassName: Value._className,
+                valueScript: nil
+            )
+        } else {
+            // Godot added typed Dictionary support after earlier 4.x releases.
+            // On legacy runtimes, keep Swift-side type safety but back it with a plain Dictionary.
+            self.dictionary = VariantDictionary()
+        }
     }
     
     /// Initialise ``TypedDictionary`` from the Swift `[Key: Value]` dictionary.
@@ -186,7 +205,7 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         if Self.isTypingCompatible(with: dictionary) {
             // wrap the existing storage
             self.dictionary = dictionary
-        } else {
+        } else if Self.supportsNativeTypedDictionary {
             self.dictionary = VariantDictionary(
                 base: dictionary,
                 keyType: Int32(Key._variantType.rawValue),
@@ -196,6 +215,8 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
                 valueClassName: Value._className,
                 valueScript: nil
             )
+        } else {
+            self.dictionary = VariantDictionary(from: dictionary)
         }
     }
     
