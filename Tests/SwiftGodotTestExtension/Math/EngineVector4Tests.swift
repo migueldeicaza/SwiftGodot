@@ -90,13 +90,13 @@ final class EngineVector4Tests {
         XCTAssertEqual ((power1 / power2), Vector4 (x: 1.5, y: 12.0, z: 2.5, w: 1.0 / 6.0), "Vector4 division with powers of two should give exact results.")
         XCTAssertEqual ((int1 / int2), Vector4 (x: 4, y: 2.5, z: 3, w: 2), "Vector4 division with integers should give exact results.")
         
-        assertApproxEqual ((decimal1 * 2), Vector4 (x: 4.6, y: 9.8, z: 15.6, w: 6.4), "Vector4 multiplication should behave as expected.")
-        XCTAssertEqual ((power1 * 2), Vector4 (x: 1.5, y: 3, z: 1.25, w: 0.25), "Vector4 multiplication with powers of two should give exact results.")
-        XCTAssertEqual ((int1 * 2), Vector4 (x: 8, y: 10, z: 18, w: 4), "Vector4 multiplication with integers should give exact results.")
-        
-        assertApproxEqual ((decimal1 / 2), Vector4 (x: 1.15, y: 2.45, z: 3.9, w: 1.6), "Vector4 division should behave as expected.")
-        XCTAssertEqual ((power1 / 2), Vector4 (x: 0.375, y: 0.75, z: 0.3125, w: 0.0625), "Vector4 division with powers of two should give exact results.")
-        XCTAssertEqual ((int1 / 2), Vector4 (x: 2, y: 2.5, z: 4.5, w: 1), "Vector4 division with integers should give exact results.")
+        assertApproxEqual ((decimal1 * Int64(2)), Vector4 (x: 4.6, y: 9.8, z: 15.6, w: 6.4), "Vector4 multiplication should behave as expected.")
+        XCTAssertEqual ((power1 * Int64(2)), Vector4 (x: 1.5, y: 3, z: 1.25, w: 0.25), "Vector4 multiplication with powers of two should give exact results.")
+        XCTAssertEqual ((int1 * Int64(2)), Vector4 (x: 8, y: 10, z: 18, w: 4), "Vector4 multiplication with integers should give exact results.")
+
+        assertApproxEqual ((decimal1 / Int64(2)), Vector4 (x: 1.15, y: 2.45, z: 3.9, w: 1.6), "Vector4 division should behave as expected.")
+        XCTAssertEqual ((power1 / Int64(2)), Vector4 (x: 0.375, y: 0.75, z: 0.3125, w: 0.0625), "Vector4 division with powers of two should give exact results.")
+        XCTAssertEqual ((int1 / Int64(2)), Vector4 (x: 2, y: 2.5, z: 4.5, w: 1), "Vector4 division with integers should give exact results.")
         
         XCTAssertEqual (Variant (decimal1).description, "(2.3, 4.9, 7.8, 3.2)", "Vector4 cast to String should work as expected.")
         XCTAssertEqual (Variant (decimal2).description, "(1.2, 3.4, 5.6, 1.7)", "Vector4 cast to String should work as expected.")
@@ -150,8 +150,8 @@ final class EngineVector4Tests {
         
         XCTAssertEqual (vectorX.dot (with: vectorY), 0.0, "Vector4 dot product of perpendicular vectors should be zero.")
         XCTAssertEqual (vectorX.dot (with: vectorX), 1.0, "Vector4 dot product of identical unit vectors should be one.")
-        XCTAssertEqual ((vectorX * 10).dot (with: vectorX * 10), 100.0, "Vector4 dot product of same direction vectors should behave as expected.")
-        assertApproxEqual ((vector1 * 2).dot (with: vector2 * 4), -25.9 * 8, "Vector4 dot product should work as expected.")
+        XCTAssertEqual ((vectorX * Int64(10)).dot (with: vectorX * Int64(10)), 100.0, "Vector4 dot product of same direction vectors should behave as expected.")
+        assertApproxEqual ((vector1 * Int64(2)).dot (with: vector2 * Int64(4)), -25.9 * 8, "Vector4 dot product should work as expected.")
     }
     
     @SwiftGodotTest
