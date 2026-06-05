@@ -34,6 +34,7 @@ public class TestRunnerNode: Node {
         VariantTests(),
         MarshalTests(),
         MemoryLeakTests(),
+        EngineTests(),
         LifecycleTests(),
         SnappingTests(),
         LinearInterpolationTests(),

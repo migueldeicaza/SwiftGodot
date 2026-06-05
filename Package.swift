@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.3
 
 import CompilerPluginSupport
 import PackageDescription
@@ -236,6 +236,17 @@ var targets: [Target] = [
             "ExtensionApiJson",
         ],
         swiftSettings: [.swiftLanguageMode(.v5)]
+    ),
+
+    // Compile-only diagnostics tests. These intentionally build selected
+    // client idioms with warnings promoted to errors.
+    .testTarget(
+        name: "SwiftGodotCompileDiagnosticsTests",
+        dependencies: ["SwiftGodot"],
+        swiftSettings: [
+            .unsafeFlags(["-warnings-as-errors"]),
+            .swiftLanguageMode(.v5),
+        ]
     ),
 
     // Test runner CLI executable

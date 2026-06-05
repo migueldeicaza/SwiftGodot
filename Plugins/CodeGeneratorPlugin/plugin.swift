@@ -270,7 +270,8 @@ struct GenerationConfig {
     }
 
     var generatedClassFiles: [String] {
-        classFiles.uniqued()
+        let dependencies = Set(dependencyClassFiles)
+        return classFiles.filter { !dependencies.contains($0) }.uniqued()
     }
 
     var availableClassFiles: [String] {
