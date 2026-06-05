@@ -106,17 +106,17 @@ class RawArgumentsTestNode: Node {
 
     @Callable
     func testVector2(_ value: Vector2) -> Vector2 {
-        return value * 2
+        return value * 2.0
     }
 
     @Callable
     func testVector3(_ value: Vector3) -> Vector3 {
-        return value * 2
+        return value * 2.0
     }
 
     @Callable
     func testVector4(_ value: Vector4) -> Vector4 {
-        return value * 2
+        return value * 2.0
     }
 
     @Callable
@@ -136,12 +136,12 @@ class RawArgumentsTestNode: Node {
 
     @Callable
     func testColor(_ value: Color) -> Color {
-        return Color(r: value.red * 2, g: value.green * 2, b: value.blue * 2, a: value.alpha)
+        return Color(r: value.red * 2.0, g: value.green * 2.0, b: value.blue * 2.0, a: value.alpha)
     }
 
     @Callable
     func testRect2(_ value: Rect2) -> Rect2 {
-        return Rect2(position: value.position * 2, size: value.size * 2)
+        return Rect2(position: value.position * 2.0, size: value.size * 2.0)
     }
 
     @Callable
@@ -368,7 +368,7 @@ class RawArgumentsTestNode: Node {
 
     @Callable
     func testCustomVector2Wrapper(_ value: CustomVector2Wrapper) -> Vector2 {
-        return value.vec * 3
+        return value.vec * 3.0
     }
 
     // MARK: - Multiple parameters of different types
