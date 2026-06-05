@@ -232,6 +232,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  object_set_instance_binding: GDExtensionInterfaceObjectSetInstanceBinding
     public let  object_free_instance_binding: GDExtensionInterfaceObjectFreeInstanceBinding
     public let  object_get_class_name: GDExtensionInterfaceObjectGetClassName
+    public let  object_cast_to: GDExtensionInterfaceObjectCastTo
 
     public let  object_method_bind_ptrcall: GDExtensionInterfaceObjectMethodBindPtrcall
     public let  object_destroy: GDExtensionInterfaceObjectDestroy
@@ -398,6 +399,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         object_set_instance_binding: load("object_set_instance_binding"),
         object_free_instance_binding: load("object_free_instance_binding"),
         object_get_class_name: load("object_get_class_name"),
+        object_cast_to: load("object_cast_to"),
         object_method_bind_ptrcall: load("object_method_bind_ptrcall"),
         object_destroy: load("object_destroy"),
 

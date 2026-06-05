@@ -957,6 +957,12 @@ func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
         return created
     }
 
+    var requestedClass = T.godotClassName.content
+    if let classTag = gi.classdb_get_class_tag(&requestedClass),
+       gi.object_cast_to(nativeHandle, classTag) != nil {
+        return T(InitContext(handle: nativeHandle, origin: .godot))
+    }
+
     print("Object of class \(className) could not be created")
     return nil
 }
