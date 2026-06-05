@@ -1,7 +1,9 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.1
 
 import CompilerPluginSupport
 import PackageDescription
+
+let withMultiProcessTrait = "with_multi_process"
 
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
@@ -197,6 +199,7 @@ var targets: [Target] = [
         dependencies: ["GDExtension"],
         swiftSettings: [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+            .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
             .unsafeFlags(
                 [
                     "-suppress-warnings",
@@ -218,6 +221,7 @@ var targets: [Target] = [
         swiftSettings: [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
+            .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
             .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin"]
@@ -277,6 +281,12 @@ let package = Package(
         .iOS (.v17)
     ],
     products: products,
+    traits: [
+        .trait(
+            name: withMultiProcessTrait,
+            description: "Use multi-process-safe code generation with reinitialization support."
+        ),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),

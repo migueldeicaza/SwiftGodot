@@ -11,6 +11,27 @@ import Foundation
 #endif
 
 public class EditorInterop {
+    private static func loadHelp(xmlBytes: [UInt8]) {
+        if let loadHelpWithLength = gi.editor_help_load_xml_from_utf8_chars_and_len {
+            xmlBytes.withUnsafeBufferPointer { buffer in
+                guard let base = buffer.baseAddress else { return }
+                let ptr = UnsafeRawPointer(base).bindMemory(to: CChar.self, capacity: buffer.count)
+                loadHelpWithLength(ptr, Int64(buffer.count))
+            }
+            return
+        }
+
+        guard let loadHelp = gi.editor_help_load_xml_from_utf8_chars else {
+            return
+        }
+
+        var nullTerminated = xmlBytes.map { CChar(bitPattern: $0) }
+        nullTerminated.append(0)
+        nullTerminated.withUnsafeBufferPointer { buffer in
+            loadHelp(buffer.baseAddress)
+        }
+    }
+
     //  Gets the path to the current GDExtension library.
     public static func getLibraryPath() -> String? {
         let res = GString()
@@ -21,40 +42,18 @@ public class EditorInterop {
     /// Adds the Godot XML documentation to the editor at runtime
     public static func loadHelp(xmlString: String) {
         GD.print("Loading from \(getLibraryPath())")
-        if #available(iOS 26.0, macOS 26.0, *) {
-            let span = xmlString.utf8Span
-            span.span.withUnsafeBytes { buffer in
-                // Bind to CChar (Int8) because the imported symbol expects CChar*
-                let ptr = buffer.bindMemory(to: CChar.self)
-                gi.editor_help_load_xml_from_utf8_chars_and_len(ptr.baseAddress, Int64(span.count))
-            }
-        } else {
-            // Use raw UTF-8 bytes (no extra trailing null), then bind to CChar
-            let bytes = Array(xmlString.utf8)
-            bytes.withUnsafeBufferPointer { buffer in
-                guard let base = buffer.baseAddress else { return }
-                let ptr = UnsafeRawPointer(base).bindMemory(to: CChar.self, capacity: buffer.count)
-                gi.editor_help_load_xml_from_utf8_chars_and_len(ptr, Int64(buffer.count))
-            }
-        }
+        loadHelp(xmlBytes: Array(xmlString.utf8))
     }
 
     /// Adds the Godot XML documentation to the editor at runtime
     public static func loadHelp(buffer: [UInt8]) {
-        buffer.withUnsafeBufferPointer { buffer in
-            guard let base = buffer.baseAddress else { return }
-            // Bind to CChar (Int8) for the imported function
-            let ptr = UnsafeRawPointer(base).bindMemory(to: CChar.self, capacity: buffer.count)
-            gi.editor_help_load_xml_from_utf8_chars_and_len(ptr, Int64(buffer.count))
-        }
+        loadHelp(xmlBytes: buffer)
     }
 
 #if os(macOS)
     /// Adds the Godot XML documentation to the editor at runtime
     static func loadHelp(fromData data: Data) {
-        data.withUnsafeBytes { ptr in
-            gi.editor_help_load_xml_from_utf8_chars_and_len(ptr, Int64(data.count))
-        }
+        loadHelp(xmlBytes: [UInt8](data))
     }
 #endif
 

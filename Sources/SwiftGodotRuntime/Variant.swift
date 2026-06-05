@@ -89,7 +89,10 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     }
 
     deinit {
-        if !extensionInterface.variantShouldDeinit(content: &content) { return }
+        if content.isZero {
+            return
+        }
+        if !extensionInterface.variantShouldDeinit(variant: self, content: &content) { return }
         gi.variant_destroy (&content)
         extensionInterface.variantDeinited(variant: self, content: &content)
     }
@@ -255,7 +258,7 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         guard let objectHandle else {
             return nil
         }
-        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownsRef: false)
+        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownership: .borrowed)
         return ret
     }
     

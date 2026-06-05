@@ -375,6 +375,21 @@ func getGodotType (_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String 
     }
 }
 
+/// Documentation can legitimately reference types that are not generated in the
+/// current split target. For those cases we want the original type name for the
+/// doc link text, not API-surface fallback or generation failure.
+func getGodotDocType(_ t: TypeWithMeta?, kind: ArgumentKind = .classes) -> String {
+    guard let t else {
+        return ""
+    }
+
+    if classMap[t.type] != nil {
+        return t.type
+    }
+
+    return getGodotType(t, kind: kind)
+}
+
 /// Built-ins classes keep their data stored internally in a variable called
 /// "content", given a godotType name of those, this returns a pair
 /// containing the Swift-type that is used to store this, and a suitable initialization
