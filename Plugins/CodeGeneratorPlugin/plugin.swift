@@ -328,6 +328,7 @@ let runtime: [String] = [
     "ClassDB.swift",
     "Object.swift",
     "Engine.swift",
+    "Logger.swift",
     "MainLoop.swift",
     "RefCounted.swift",
     "Resource.swift",
