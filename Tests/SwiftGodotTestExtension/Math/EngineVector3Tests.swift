@@ -128,7 +128,7 @@ final class EngineVector3Tests {
         assertApproxEqual ((decimal1 * 2.0), Vector3 (x: 4.6, y: 9.8, z: 15.6), "Vector3 multiplication should behave as expected.")
         XCTAssertEqual ((power1 * 2.0), Vector3 (x: 1.5, y: 3, z: 1.25), "Vector3 multiplication with powers of two should give exact results.")
         XCTAssertEqual ((int1 * 2.0), Vector3 (x: 8, y: 10, z: 18), "Vector3 multiplication with integers should give exact results.")
-
+        
         assertApproxEqual ((decimal1 / 2.0), Vector3 (x: 1.15, y: 2.45, z: 3.9), "Vector3 division should behave as expected.")
         XCTAssertEqual ((power1 / 2.0), Vector3 (x: 0.375, y: 0.75, z: 0.3125), "Vector3 division with powers of two should give exact results.")
         XCTAssertEqual ((int1 / 2.0), Vector3 (x: 2, y: 2.5, z: 4.5), "Vector3 division with integers should give exact results.")

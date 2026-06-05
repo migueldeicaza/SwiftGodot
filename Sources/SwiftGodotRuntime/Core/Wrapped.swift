@@ -18,11 +18,12 @@
 #if canImport(AppKit) || canImport(UIKit)
 import Foundation
 #endif
-
+import Foundation
 import GDExtension
 
 func pd (_ str: String) {
     #if false
+    print("anothr")
     print ("SwiftGodot: \(str)")
     #endif
 }
@@ -30,19 +31,39 @@ func pd (_ str: String) {
 var xmap: [UnsafeRawPointer: String] = [:]
 #endif
 
-/// A specific place where the initialization happens
-/// affects how things unravel.
+/// Describes the role of a Swift wrapper.
+///
+/// This enum is about construction context, not pointer ownership.
+/// It answers where the initialization request came from.
+///
+/// Use this to decide wrapper/binding setup behavior for a new instance.
+/// Do not use it to infer whether the surfaced object pointer is borrowed,
+/// comes from an owned `Ref<>`, or already carries a return-slot lifetime.
+/// That is handled separately by ``ReturnedObjectOwnership``.
 enum InitOrigin {
     /// Directly from Swift
     /// For example: `let object = Object()`
     ///
-    /// `RefCounted` performs an `initRef` in this patch.
+    /// Swift constructs the native object first and then wraps it.
     case swift
     
-    /// Constructed by Godot (from GDScript) in `createFunc`
-    /// Or returned back from Godot world via unwrapping a ``Variant`` or as return value from the function call
-    /// ``WrappedReference`` will `strongify` the wrapped Swift reference to avoid it being immediately destroyed
+    /// The object surfaced from Godot and Swift is wrapping an existing native instance.
+    ///
+    /// This includes paths such as:
+    /// - unwrapping a ``Variant``
+    /// - receiving a method return value
+    /// - adopting another engine-originated object pointer
+    ///
+    /// This case does not imply a single ownership policy; surfaced objects may
+    /// still be borrowed, come from an owned `Ref<>`, or arrive through a normal
+    /// Godot API return slot.
     case godot
+
+    /// Constructed by Godot (from GDScript) in `createFunc`
+    ///
+    /// Godot is creating one of our registered Swift user types and calls back
+    /// into Swift to materialize the wrapper and user instance.
+    case gdscript
 }
 
 /// Opaque pointer representing Godot `Object *`
@@ -132,8 +153,13 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     
     weak var wrapper: WrappedReference?
     
+    #if SWIFTGODOT_WITH_MULTI_PROCESS
+    public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.bindingCallback))
+    public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.bindingCallback))
+    #else
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
+    #endif
     public static var deferred: Callable? = nil
 
     /// Conformance to Identifiable by using the native handle to the object
@@ -177,6 +203,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         return nil
     }
 
+    // Override this to add some custom logic to the class initialization of @Godot annotated classes.
+    // This function will only be called if the class in question is annotated with @Godot
+    public class func initClass() {
+    }
+
     deinit {
         // Use the following to catch the deinit happening and then the free framework
         // code running - we have no way of notifying that code that we are dead.
@@ -192,13 +223,20 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         #endif
         if let handle {
-            guard extensionInterface.objectShouldDeinit(handle: handle) else { return }
+            guard extensionInterface.objectShouldDeinit(object: self) else { return }
 #if DEBUG_INSTANCES
             let type = xmap[handle] ?? "unknown"
             let txt = "DEINIT for object=\(type) handle=\(handle)"
 #endif
 
             if self is RefCounted {
+                // Godot may already have consumed the final native reference before
+                // the Swift wrapper is torn down, especially for editor-managed resources.
+                if let refCounted = self as? RefCounted, refCounted.getReferenceCount() <= 0 {
+		    print("RefCounted: it was already zero, flagging as deinited.");
+                    extensionInterface.objectDeinited(object: self)
+                    return
+                }
                 var queue = false
                 freeLock.withLockVoid {
                     if Wrapped.deferred == nil {
@@ -207,10 +245,18 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                             return nil
                         })
                     }
+                    #if SWIFTGODOT_WITH_MULTI_PROCESS
+                    let id = extensionInterface.getCurrenDomain()
+                    pendingReleaseHandles[id, default: []].append(handle)
+                    if pendingReleaseHandles[id]?.count == 1 {
+                        queue = true
+                    }
+                    #else
                     pendingReleaseHandles.append(handle)
                     if pendingReleaseHandles.count == 1 {
                         queue = true
                     }
+                    #endif
                 }
                 if queue {
                     Wrapped.deferred?.callDeferred()
@@ -219,6 +265,12 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         extensionInterface.objectDeinited(object: self)
     }
+    #if SWIFTGODOT_WITH_MULTI_PROCESS
+    static var bindingCallback = GDExtensionInstanceBindingCallbacks(
+        create_callback: bindingCreate,
+        free_callback: bindingFree,
+        reference_callback: bindingReference)
+    #else
     static var userTypeBindingCallback = GDExtensionInstanceBindingCallbacks(
         create_callback: userTypeBindingCreate,
         free_callback: userTypeBindingFree,
@@ -228,6 +280,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         create_callback: frameworkTypeBindingCreate,
         free_callback: frameworkTypeBindingFree,
         reference_callback: frameworkTypeBindingReference)
+    #endif
 
     /// Returns the Godot's class name as a `StringName`, returns the empty string on error
     public var godotClassName: StringName {
@@ -259,7 +312,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// - Returns: `true` if the object has a script and that script has a method with the given name.
     /// `false` if the object has no script.
     public func hasScript (method: StringName) -> Bool {
-        gi.object_has_script_method(handle, &method.content) != 0
+        guard let objectHasScriptMethod = gi.object_has_script_method else {
+            fatalError("Godot interface method 'object_has_script_method' was not available at runtime.")
+        }
+        return objectHasScriptMethod(handle, &method.content) != 0
     }
     
     /// Invokes the specified method on the object
@@ -278,7 +334,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         var result = Variant.zero
         var error = GDExtensionCallError()
-        gi.object_call_script_method(&handle, &method.content, &args, Int64(args.count), &result, &error)
+        guard let objectCallScriptMethod = gi.object_call_script_method else {
+            fatalError("Godot interface method 'object_call_script_method' was not available at runtime.")
+        }
+        objectCallScriptMethod(&handle, &method.content, &args, Int64(args.count), &result, &error)
         if error.error != GDEXTENSION_CALL_OK {
             throw toCallErrorType(error.error)
         }
@@ -290,7 +349,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public required init(_ context: InitContext) {
         handle = context.handle
         extensionInterface.objectInited(object: self)
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        bindSwiftObject(self, context)
+        #else
         bindSwiftObject(self, toGodot: context.handle)
+        #endif
     }
     
     /// This property indicates if the instance is valid or not.
@@ -318,6 +381,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         }
         guard isValid else {
             print ("SwiftGodot: free() called on an invalid object.")
+            return
+        }
+        guard extensionInterface.objectShouldDeinit(object: self) else {
+            print ("SwiftGodot: free() called with an invalid instance.")
             return
         }
 
@@ -352,6 +419,46 @@ public extension _GodotBridgeable where Self: Wrapped {
     }
 }
 
+#if SWIFTGODOT_WITH_MULTI_PROCESS
+func bindSwiftObject(_ object: some Wrapped, _ context: InitContext) {
+    let name = object.self.godotClassName
+    let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: object)))
+    let frameworkType = thisTypeName == name
+
+    var callbacks: GDExtensionInstanceBindingCallbacks = Wrapped.bindingCallback
+
+    let reference: WrappedReference
+    if let refCounted = object as? RefCounted, refCounted.getReferenceCount() < 1 {
+        fatalError ("Attempting to create a RefCounted wrapper to an object that is not referenced")
+    } else {
+        reference = WrappedReference(object, strong: true)
+    }
+
+    object.wrapper = reference
+
+    tableLock.withLockVoid {
+        if let handle = object.handle {
+            if frameworkType {
+                liveFrameworkObjects[handle] = reference
+            } else {
+                liveSubtypedObjects[handle] = reference
+            }
+        }
+    }
+
+    let unmanaged = Unmanaged<WrappedReference>.passUnretained(reference)
+
+    if !frameworkType {
+        withUnsafeMutablePointer(to: &thisTypeName.content) { ptr in
+            gi.object_set_instance(context.handle, ptr, unmanaged.retain().toOpaque())
+        }
+    }
+
+    if context.origin == .swift || context.origin == .gdscript {
+        gi.object_set_instance_binding(context.handle, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
+    }
+}
+#else
 func bindSwiftObject(_ instance: some Wrapped, toGodot handle: GodotNativeObjectPointer) {
     let name = instance.self.godotClassName
     let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: instance)))
@@ -396,6 +503,7 @@ func bindSwiftObject(_ instance: some Wrapped, toGodot handle: GodotNativeObject
     
     gi.object_set_instance_binding(handle, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
 }
+#endif
 
 var userTypes: [String: Object.Type] = [:]
 
@@ -606,7 +714,37 @@ var tableLock = NIOLock()
 
 // Lock for the pending free list
 var freeLock = NIOLock()
+#if SWIFTGODOT_WITH_MULTI_PROCESS
+var pendingReleaseHandles: [UInt8: [GodotNativeObjectPointer]] = [:]
+#else
 var pendingReleaseHandles: [GodotNativeObjectPointer] = []
+#endif
+
+private func objectClassName(_ handle: GodotNativeObjectPointer) -> String {
+    var sc: StringName.ContentType = StringName.zero
+    if gi.object_get_class_name(handle, extensionInterface.getLibrary(), &sc) != 0 {
+        return String(StringName(content: sc))
+    }
+    var result = GString()
+    gi.object_method_bind_ptrcall(Object.method_get_class, handle, nil, &result.content)
+    return result.description
+}
+
+private func currentRefCount(_ handle: GodotNativeObjectPointer) -> Int32? {
+    let objectClass = objectClassName(handle)
+    var className = FastStringName(objectClass)
+    var methodName = FastStringName("get_reference_count")
+    guard let bind = withUnsafePointer(to: &className.content, { classPtr in
+        withUnsafePointer(to: &methodName.content) { methodPtr in
+            gi.classdb_get_method_bind(classPtr, methodPtr, 3905245786)
+        }
+    }) else {
+        return nil
+    }
+    var result: Int32 = 0
+    gi.object_method_bind_ptrcall(bind, handle, nil, &result)
+    return result
+}
 
 @inline(__always)
 private func isTrackedHandle(_ handle: GodotNativeObjectPointer) -> Bool {
@@ -618,7 +756,16 @@ private func isTrackedHandle(_ handle: GodotNativeObjectPointer) -> Bool {
 @inline(__always)
 private func removePendingReleaseHandle(_ handle: GodotNativeObjectPointer) {
     freeLock.withLockVoid {
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        for key in pendingReleaseHandles.keys {
+            pendingReleaseHandles[key]?.removeAll { $0 == handle }
+            if pendingReleaseHandles[key]?.isEmpty == true {
+                pendingReleaseHandles.removeValue(forKey: key)
+            }
+        }
+        #else
         pendingReleaseHandles.removeAll { $0 == handle }
+        #endif
     }
 }
 
@@ -629,8 +776,14 @@ public func releasePendingObjects() {
     var copy: [GodotNativeObjectPointer] = []
 
     freeLock.withLock {
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        let id = extensionInterface.getCurrenDomain()
+        copy = pendingReleaseHandles[id] ?? []
+        pendingReleaseHandles.removeValue(forKey: id)
+        #else
         copy = pendingReleaseHandles
         pendingReleaseHandles = []
+        #endif
     }
     for handle in copy {
         // During shutdown, Godot may destroy RefCounted objects before the deferred
@@ -638,6 +791,14 @@ public func releasePendingObjects() {
         // the handle from the live tables. In that case, don't call back into Godot
         // with a stale pointer.
         guard isTrackedHandle(handle) else { continue }
+
+#if DEBUG
+	// Expensive, calls currentRefCount.
+	// Editor-managed RefCounted objects can reach zero before the deferred flush runs.
+        if let refCount = currentRefCount(handle), refCount <= 0 {
+	    fatalError("We had a zero refCount handle here, this should not happen")
+        }
+#endif
 
         var result: Bool = false
         gi.object_method_bind_ptrcall(RefCounted.method_unreference, handle, nil, &result)
@@ -684,47 +845,131 @@ func existingSwiftObject(for nativeHandle: GodotNativeObjectPointer) -> Wrapped?
     }
 }
 
+/// Describes the lifetime contract of an object pointer surfaced to Swift.
+///
+/// This enum is about refcount behavior, not construction context.
+/// It determines what is the native ownership for the pointer.
+///
+/// Use this when reconciling Swift wrapper identity with Godot native lifetime.
+/// Do not use it to distinguish whether the wrapper was initialized from Swift,
+/// from Godot, or from a GDScript-created user type. That is handled by
+/// ``InitOrigin``.
+public enum ReturnedObjectOwnership {
+    /// The object pointer is borrowed, so a new Swift wrapper must retain its own native ref.
+    case borrowed
+
+    /// Godot returned an owned `Ref<T>` wrapper that SwiftGodot should consume.
+    case refWrapper
+
+    /// Godot returned an object pointer directly from the API return slot.
+    ///
+    /// Swift should adopt this lifetime as-is. In particular, this path should
+    /// neither add a fresh native reference nor consume an extra owned `Ref<>`.
+    case godotApiReturn
+}
+
 // The following function makes the reference count of RefCounted objects consistent
-// with the semantics of Godot:
-// - Every time godot returns a RefCounted object in a Ref<> wrapper for a ptrcall,
-// its reference count is incremeneted. As object identity results in the return of
-// the same Swift proxy for the same RefCounted object, this means that every subsequent
-// return should result in an unreference() call, so that the existence of the Swift proxy
-// object always results in a single increment of the reference count.
-// - On the other hand, if a RefCounted object was returned through a non-RefCounted
-// static return type (e.g. as an Object), then Godot did not increment its reference
-// count. This means that on the first return of such an object, the reference count
-// should be incremented by a reference() call, so that similarly the existence of
-// the Swift proxy object always results in a single increment of the reference count.
-// - The ownsRef parameter is true iff Godot can pass ownership of a Ref<> wrapper to
-// SwiftGodot, e.g. with a Ref<> return value of a ptrcall.
-func handleRef<T: Wrapped>(staticType: T.Type, object: Wrapped?, ownsRef: Bool, unref: Bool) {
-    if !ownsRef {
-        if !unref {
-            if let refCounted = object as? RefCounted {
-                refCounted.reference()
-            }
-        }
+// with the semantics of the source that surfaced them to Swift:
+// - borrowed: Swift must acquire a native reference when creating the first wrapper.
+// - refWrapper: Godot returned an owned Ref<> wrapper that Swift must consume.
+// - godotApiReturn: Godot returned the object through a standard API return slot, so
+//   Swift should adopt that lifetime without adding or consuming another reference.
+func handleReturnedObject<T: Wrapped>(
+    staticType: T.Type,
+    object: Wrapped?,
+    ownership: ReturnedObjectOwnership,
+    isExistingWrapper: Bool
+) {
+    switch ownership {
+    case .godotApiReturn:
         return
-    }
-    if let refCounted = object as? RefCounted {
+
+    case .borrowed:
+        if !isExistingWrapper, let refCounted = object as? RefCounted {
+            refCounted.reference()
+        }
+
+    case .refWrapper:
+        guard let refCounted = object as? RefCounted else { return }
+
         if staticType is RefCounted.Type {
-            if unref {
-                refCounted.unreference()
-            }
-        } else {
-            if !unref {
-                refCounted.reference()
-            }
+            refCounted.unreference()
+        } else if !isExistingWrapper {
+            refCounted.reference()
         }
     }
 }
 
 /// Get an existing Swift object which is bound to Godot `nativeHandle` or initialize a new one and bind it
 // @_spi(SwiftGodotRuntimePrivate)
-public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownsRef: Bool) -> T? {
+#if SWIFTGODOT_WITH_MULTI_PROCESS
+final class ReferenceArray<Element> {
+    var items: [Element]
+
+    init(_ items: [Element] = []) {
+        self.items = items
+    }
+}
+
+let SwiftGodot_has_instance_binding = "SwiftGodot_has_instance_binding"
+
+public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownership: ReturnedObjectOwnership) -> T? {
+    var hasInstanceBinding = Foundation.Thread.current.threadDictionary.object(forKey: SwiftGodot_has_instance_binding) as? ReferenceArray<Bool>
+    if hasInstanceBinding == nil {
+        hasInstanceBinding = ReferenceArray<Bool>()
+        Foundation.Thread.current.threadDictionary[SwiftGodot_has_instance_binding] = hasInstanceBinding
+    }
+    hasInstanceBinding?.items.append(true)
+
+    guard let binding = gi.object_get_instance_binding(nativeHandle, extensionInterface.getLibrary(), &Wrapped.bindingCallback) else {
+        return nil
+    }
+
+    let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+    let object = reference.value
+
+    guard let exists = hasInstanceBinding?.items.popLast() else {
+        fatalError("Corrupt has_instance_binding.")
+    }
+    handleReturnedObject(staticType: T.self, object: object, ownership: ownership, isExistingWrapper: exists)
+
+    if let refCounted = object as? RefCounted, refCounted.getReferenceCount() <= 1 {
+        reference.weakify()
+    }
+
+    return object as? T
+}
+
+func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
+    var className: String = ""
+    var sc: StringName.ContentType = StringName.zero
+    if gi.object_get_class_name(nativeHandle, extensionInterface.getLibrary(), &sc) != 0 {
+        let sn = StringName(content: sc)
+        className = String(sn)
+    } else {
+        var result = GString()
+        gi.object_method_bind_ptrcall(Object.method_get_class, nativeHandle, nil, &result.content)
+        className = result.description
+    }
+
+    if let type = typeOfClass(named: className) {
+        let created = type.init(InitContext(handle: nativeHandle, origin: .godot))
+        return created
+    }
+
+    var requestedClass = T.godotClassName.content
+    if let classTag = gi.classdb_get_class_tag(&requestedClass),
+       gi.object_cast_to(nativeHandle, classTag) != nil {
+        return T(InitContext(handle: nativeHandle, origin: .godot))
+    }
+
+    print("Object of class \(className) could not be created")
+    return nil
+}
+#else
+public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownership: ReturnedObjectOwnership) -> T? {
     if let object = existingSwiftObject(for: nativeHandle) {
-        handleRef(staticType: T.self, object: object, ownsRef: ownsRef, unref: true)
+        handleReturnedObject(staticType: T.self, object: object, ownership: ownership, isExistingWrapper: true)
         return object as? T
     }
     
@@ -740,7 +985,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     }
     if let userType = userTypes[className] {
         let created = userType.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: created, ownsRef: ownsRef, unref: false)
+        handleReturnedObject(staticType: T.self, object: created, ownership: ownership, isExistingWrapper: false)
         if let result = created as? T {
             return result
         } else {
@@ -749,7 +994,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     }
     if let ctor = lookupGodotType(named: className) as? T.Type {
         let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
-        handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+        handleReturnedObject(staticType: T.self, object: result, ownership: ownership, isExistingWrapper: false)
         return result
     }
 
@@ -764,9 +1009,10 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     // This comment here for future generations that end up in this line
     // the real error is likely a registration issue.
     let result = T(InitContext(handle: nativeHandle, origin: .godot))
-    handleRef(staticType: T.self, object: result, ownsRef: ownsRef, unref: false)
+    handleReturnedObject(staticType: T.self, object: result, ownership: ownership, isExistingWrapper: false)
     return result
 }
+#endif
 
 func referenceFunc(_ userData: UnsafeMutableRawPointer) {
     fatalError()
@@ -796,7 +1042,11 @@ func createFunc(_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer
         fatalError("SWIFT: It was not possible to construct a \(type.godotClassName.description)")
     }
 
-    let object = type.init(InitContext(handle: handle, origin: .godot))
+    #if SWIFTGODOT_WITH_MULTI_PROCESS
+    let object = type.init(InitContext(handle: handle, origin: .gdscript))
+    object.wrapper?.strongify()
+    #else
+    let object = type.init(InitContext(handle: handle, origin: .gdscript))
     
     // We are the createFunc, and we have no other owner to this object but ourselves
     // we need to make this a strong reference, or it dies before we return
@@ -805,6 +1055,7 @@ func createFunc(_ userData: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer
     }
     
     wrapper.strongify()
+    #endif
     
     return handle
 }
@@ -825,7 +1076,11 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, godotObjectHandle: Unsaf
         print ("SwiftGodot.recreateFunc: The wrapped value did not contain a type: \(typeAny)")
         return nil
     }
-    let object = type.init(InitContext(handle: godotObjectHandle, origin: .godot))
+    #if SWIFTGODOT_WITH_MULTI_PROCESS
+    let object = type.init(InitContext(handle: godotObjectHandle, origin: .gdscript))
+    object.wrapper?.strongify()
+    #else
+    let object = type.init(InitContext(handle: godotObjectHandle, origin: .gdscript))
     
     // Just line in the createFunc
     // we need to make this a strong reference, or it dies before we return
@@ -834,6 +1089,7 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, godotObjectHandle: Unsaf
     }
     
     wrapper.strongify()
+    #endif
     
     return godotObjectHandle
 }
@@ -897,6 +1153,91 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
     return 0
 }
 
+#if SWIFTGODOT_WITH_MULTI_PROCESS
+// This is invoked to take a reference on the object and ensure our Swift-land object
+// does not go away while the object is in use.
+func bindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?, _ reference: UInt8) -> UInt8 {
+    guard let binding else { return 0 }
+    let ref = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+    weak var refCounted = ref.value as? RefCounted
+
+    guard let rc = refCounted?.getReferenceCount() else {
+        // unreference() was called by Wrapped.deinit, so we allow the object to be destroyed.
+        return 1
+    }
+    
+    if reference != 0 {
+        // In addition to a reference by SwiftGodot, Godot also retained a reference.
+        if rc == 2 {
+            if let refCounted, refCounted.handle != nil {
+                ref.strongify()
+            }
+        }
+    } else {
+        // Only SwiftGodot holds a reference, so we make the Wrapped's deinit available.
+        if rc == 1 {
+            if let refCounted, refCounted.handle != nil {
+                ref.weakify()
+            }
+        }
+    }
+    
+    // As long as the Wrapped's deinit is not called, we do not allow the object to be destroyed.
+    return 0
+}
+
+func bindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    guard let instance else { return nil }
+    guard let object = createSwiftObject(nativeHandle: instance) else { return nil }
+    guard let reference = object.wrapper else {
+        fatalError("WrappedReference is not created for object.")
+    }
+
+    if let handle = object.handle {
+        let frameworkType = String(describing: type(of: object)) == object.godotClassName.description
+        tableLock.withLockVoid {
+            if frameworkType {
+                liveFrameworkObjects[handle] = reference
+            } else {
+                liveSubtypedObjects[handle] = reference
+            }
+        }
+    }
+
+    guard let hasInstanceBinding = Foundation.Thread.current.threadDictionary.object(forKey: SwiftGodot_has_instance_binding) as? ReferenceArray<Bool> else {
+        fatalError("has_instance_binding is not found.")
+    }
+    hasInstanceBinding.items[hasInstanceBinding.items.count - 1] = false
+
+    return Unmanaged<WrappedReference>.passUnretained(reference).toOpaque()
+}
+
+func bindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
+    guard let binding else { return }
+    let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+
+    if let obj = reference.value {
+        if let handle = obj.handle {
+            tableLock.withLockVoid {
+                if liveFrameworkObjects.removeValue(forKey: handle) == nil {
+                    _ = liveSubtypedObjects.removeValue(forKey: handle)
+                }
+            }
+            removePendingReleaseHandle(handle)
+        }
+        obj.handle = nil
+    } else if let instance {
+        tableLock.withLockVoid {
+            if liveFrameworkObjects.removeValue(forKey: instance) == nil {
+                _ = liveSubtypedObjects.removeValue(forKey: instance)
+            }
+        }
+        removePendingReleaseHandle(instance)
+    } else {
+        print("bindingFree: instance was nil")
+    }
+}
+#else
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
     // Godot-cpp does nothing for user types
     //print ("SWIFT: instanceBindingCreate")
@@ -1033,6 +1374,7 @@ func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: Un
         }
     }
 }
+#endif
 
 /// This function is called by Godot to invoke our callable, and contains our context in `userData`,
 /// pointer to Variants, an argument count, and a way of returing an error.

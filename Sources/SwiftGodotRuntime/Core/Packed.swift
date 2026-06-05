@@ -387,7 +387,10 @@ extension PackedVector4Array : ExpressibleByArrayLiteral {
     /// Accesses a specific element in the ``PackedVector3Array``
     public subscript (index: Int) -> Vector4 {
         get {
-            let ptr = gi.packed_vector4_array_operator_index_const (&content, Int64(index))
+            guard let packedVector4ArrayOperatorIndexConst = gi.packed_vector4_array_operator_index_const else {
+                fatalError("Godot interface method 'packed_vector4_array_operator_index_const' was not available at runtime.")
+            }
+            let ptr = packedVector4ArrayOperatorIndexConst(&content, Int64(index))
             return ptr!.assumingMemoryBound(to: Vector4.self).pointee
         }
         set {
@@ -399,7 +402,10 @@ extension PackedVector4Array : ExpressibleByArrayLiteral {
     public convenience init (_ data: [Vector4]) {
         self.init ()
         _ = resize(newSize: Int64(data.count))
-        if let ptr = gi.packed_vector4_array_operator_index(&content, 0) {
+        guard let packedVector4ArrayOperatorIndex = gi.packed_vector4_array_operator_index else {
+            fatalError("Godot interface method 'packed_vector4_array_operator_index' was not available at runtime.")
+        }
+        if let ptr = packedVector4ArrayOperatorIndex(&content, 0) {
             ptr.withMemoryRebound(to: Vector4.self, capacity: data.count) { typed in
                 var idx = 0
                 for value in data {

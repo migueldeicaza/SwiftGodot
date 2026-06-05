@@ -32,6 +32,16 @@ while index < args.count {
         availableClassNames = Set(normalizedSymbolEntries(from: contents))
         availableClassFilterProvided = true
         index += 1
+    case "--allowed-class-fallback":
+        let entry = args[index + 1]
+        let parts = entry.split(separator: "=", maxSplits: 1).map(String.init)
+        guard parts.count == 2, !parts[0].isEmpty, !parts[1].isEmpty else {
+            fatalError("Invalid allowed class fallback entry '\(entry)'. Expected format Original=Fallback.")
+        }
+        allowedClassFallbacks[parts[0]] = parts[1]
+        index += 1
+    case "--support-reinit", "--enable-static-caches":
+        break
     case "--builtin-filter":
         let path = args[index + 1]
         let contents = try! String(contentsOfFile: path, encoding: .utf8)
@@ -85,15 +95,20 @@ var docRoot = positionalArgs.count > 2 ? positionalArgs[2] : defaultDocRootUrl.p
 let outputDir = positionalArgs.count > 1 ? positionalArgs[1] : generatorOutput
 
 /// Special case for Xogot to avoid caching godot interface pointers
-let noStaticCaches = false
+let noStaticCaches = !args.contains("--enable-static-caches")
+
+let supportReinit = args.contains("--support-reinit")
 
 if positionalArgs.count < 1 {
     print(
         """
-        Usage is: generator path-to-extension-api output-directory doc-directory
+        Usage is: generator path-to-extension-api output-directory doc-directory [--combined] [--enable-static-caches] [--support-reinit]
         - path-to-extension-api is the full path to extension_api.json from Godot
         - output-directory is where the files will be placed
         - doc-directory is the Godot documentation resides (godot/doc)
+        - combined generates a smaller number of files that are combined
+        - enable-static-caches enables static caches that optimize execution for a single run
+        - support-reinit disables static caches where it would break reinitialization
         Running with defaults:
             path-to-extension-api = "\(jsonFile)"
             output-directory = "\(outputDir)"

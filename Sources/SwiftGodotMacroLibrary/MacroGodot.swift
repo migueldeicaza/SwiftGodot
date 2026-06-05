@@ -380,8 +380,9 @@ class GodotMacroProcessor {
     func processType() throws -> String {
         let p = classInitializerPrinter
         
-        try p("private static let _initializeClass: Void = ", .curly, afterBlock: "()") {
+        try p("private static func _initializeClass()", .curly) {
             p("""
+            guard swiftGodotShouldInitializeClass(type: \(className).self) else { return }
             let className = StringName("\(className)")
             if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
                 // ClassDB singleton is not available prior to `.scene` level
@@ -509,15 +510,35 @@ public struct GodotMacro: MemberMacro {
                 .contains(.keyword(.final))
 
             let accessControlLevel = isFinal ? "public" : "open"
-
-            let classInitProperty = DeclSyntax(
-            """
-            override \(raw: accessControlLevel) class var classInitializer: Void {
-                let _ = super.classInitializer
-                return _initializeClass
+            let isMainActor = classDecl.attributes.contains { attr in
+                if let attrIdent = attr.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self) {
+                    return attrIdent.name.text == "MainActor"
+                }
+                return false
             }
-            """
-            )
+
+            let classInitProperty: DeclSyntax
+            if isMainActor {
+                classInitProperty = DeclSyntax(
+                """
+                override \(raw: accessControlLevel) class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    MainActor.assumeIsolated {
+                        _initializeClass()
+                    }
+                }
+                """
+                )
+            } else {
+                classInitProperty = DeclSyntax(
+                """
+                override \(raw: accessControlLevel) class var classInitializer: Void {
+                    let _ = super.classInitializer
+                    return _initializeClass()
+                }
+                """
+                )
+            }
             
             var decls = [classInitProperty, DeclSyntax(stringLiteral: classInit)]
 
@@ -645,4 +666,3 @@ private extension MacroExpansionDeclSyntax {
             .text
     }
 }
-

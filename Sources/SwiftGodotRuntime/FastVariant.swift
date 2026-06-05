@@ -174,7 +174,7 @@ public struct FastVariant: ~Copyable {
             return
         }
                 
-        if !extensionInterface.variantShouldDeinit(content: &content) { return }
+        if !extensionInterface.variantShouldDeinit(variant: nil, content: &content) { return }
         gi.variant_destroy(&content)
     }
     
@@ -297,7 +297,7 @@ public struct FastVariant: ~Copyable {
         guard let objectHandle else {
             return nil
         }
-        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownsRef: false)
+        let ret: T? = getOrInitSwiftObject(nativeHandle: objectHandle, ownership: .borrowed)
         return ret
     }
     

@@ -45,6 +45,9 @@ import PackagePlugin
 
         var arguments = [api.path, generatedSourcesDir.path]
         var outputFiles: [URL] = []
+        let supportsMultiProcess = (target as? SwiftSourceModuleTarget)?
+            .compilationConditions
+            .contains("SWIFTGODOT_WITH_MULTI_PROCESS") == true
 #if os(Windows)
         let useCombinedOutput = true
 #else
@@ -67,6 +70,10 @@ import PackagePlugin
             "--available-class-filter", availableClassFilterFile.path,
             "--builtin-filter", builtinFilterFile.path
         ])
+        for fallback in config.allowedClassFallbacks {
+            arguments.append(contentsOf: ["--allowed-class-fallback", fallback])
+        }
+        arguments.append(supportsMultiProcess ? "--support-reinit" : "--enable-static-caches")
 
         var inputFiles: [URL] = [api, classFilterFile, availableClassFilterFile, builtinFilterFile]
 
@@ -94,7 +101,12 @@ import PackagePlugin
             return GenerationConfig(
                 classFiles: runtime.uniqued(),
                 builtinFiles: knownBuiltin,
-                preamble: nil
+                preamble: nil,
+                allowedClassFallbacks: [
+                    "MainLoop=Object",
+                    "Node=Object",
+                    "ScriptBacktrace=RefCounted",
+                ]
             )
 
 
@@ -241,17 +253,20 @@ struct GenerationConfig {
     let builtinFiles: [String]
     let preamble: String?
     let dependencyClassFiles: [String]
+    let allowedClassFallbacks: [String]
 
     init(
         classFiles: [String],
         builtinFiles: [String],
         preamble: String?,
-        dependencyClassFiles: [String] = []
+        dependencyClassFiles: [String] = [],
+        allowedClassFallbacks: [String] = []
     ) {
         self.classFiles = classFiles
         self.builtinFiles = builtinFiles
         self.preamble = preamble
         self.dependencyClassFiles = dependencyClassFiles
+        self.allowedClassFallbacks = allowedClassFallbacks
     }
 
     var generatedClassFiles: [String] {
@@ -313,8 +328,11 @@ let runtime: [String] = [
     "ClassDB.swift",
     "Object.swift",
     "Engine.swift",
+    "Logger.swift",
+    "MainLoop.swift",
     "RefCounted.swift",
-    "Resource.swift"
+    "Resource.swift",
+    "ScriptLanguage.swift"
 ]
 
 let core: [String] = [
@@ -442,7 +460,6 @@ let core: [String] = [
     "DTLSServer.swift",
     "DirAccess.swift",
     "DisplayServer.swift",
-    "DisplayServerEmbedded.swift",
     "ENetConnection.swift",
     "ENetMultiplayerPeer.swift",
     "ENetPacketPeer.swift",
@@ -634,9 +651,6 @@ let core: [String] = [
     "RenderSceneDataExtension.swift",
     "RenderSceneDataRD.swift",
     "RenderingDevice.swift",
-    "RenderingNativeSurface.swift",
-    "RenderingNativeSurfaceApple.swift",
-    "RenderingNativeSurfaceVulkan.swift",
     "RenderingServer.swift",
     "Resource.swift",
     "ResourceFormatLoader.swift",
@@ -696,6 +710,7 @@ let core: [String] = [
     "StreamPeerBuffer.swift",
     "StreamPeerExtension.swift",
     "StreamPeerGZIP.swift",
+    "StreamPeerSocket.swift",
     "StreamPeerTCP.swift",
     "StreamPeerTLS.swift",
     "StyleBox.swift",
@@ -707,6 +722,7 @@ let core: [String] = [
     "SubtweenTweener.swift",
     "SurfaceTool.swift",
     "SystemFont.swift",
+    "SocketServer.swift",
     "TCPServer.swift",
     "TLSOptions.swift",
     "TextLine.swift",
@@ -1089,6 +1105,7 @@ let xr: [String] = [
     "OpenXRCompositionLayerEquirect.swift",
     "OpenXRCompositionLayerQuad.swift",
     "OpenXRDpadBindingModifier.swift",
+    "OpenXRExtensionWrapper.swift",
     "OpenXRExtensionWrapperExtension.swift",
     
     "OpenXRHand.swift",
@@ -1239,8 +1256,10 @@ let editor: [String] = [
     "EditorContextMenuPlugin.swift",
     "EditorDebuggerPlugin.swift",
     "EditorDebuggerSession.swift",
+    "EditorDock.swift",
     "EditorExportPlatform.swift",
     "EditorExportPlatformAndroid.swift",
+    "EditorExportPlatformAppleEmbedded.swift",
     "EditorExportPlatformExtension.swift",
     "EditorExportPlatformIOS.swift",
     "EditorExportPlatformLinuxBSD.swift",
