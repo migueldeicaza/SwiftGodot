@@ -59,13 +59,17 @@ public class EditorInterop {
 
     public static func loadLibraryDocs() {
         guard let basePath = getLibraryPath() else {
+            GD.print("loadLibraryDocs: no library path")
             return
         }
 #if os(macOS)
+        GD.print("loadLibraryDocs: library path \(basePath)")
         let url = URL(fileURLWithPath: basePath)
         let parent = url.deletingLastPathComponent()
         let docs = parent.appending(components: "Resources", "doc_classes")
+        GD.print("loadLibraryDocs: docs path \(docs.path())")
         if let contents = try? FileManager.default.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) {
+            GD.print("loadLibraryDocs: found \(contents.count) files")
             for file in contents {
                 guard file.path().hasSuffix(".xml") else {
                     continue
@@ -74,6 +78,8 @@ public class EditorInterop {
                     loadHelp(fromData: contents)
                 }
             }
+        } else {
+            GD.print("loadLibraryDocs: no doc_classes found")
         }
 #else
         // MacOS has .frameworks that are convenient ways of distributing this, but
