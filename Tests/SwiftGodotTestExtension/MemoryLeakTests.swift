@@ -18,25 +18,6 @@ protocol GodotEncodingContainer {
     var data: Variant? { get }
 }
 
-extension Vector2: Codable {
-    enum CodingKeys: String, CodingKey {
-        case x
-        case y
-    }
-
-    public init (from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        let x = try values.decode(Float.self, forKey: .x)
-        let y = try values.decode(Float.self, forKey: .y)
-        self.init (x: x, y: y)
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(x, forKey: .x)
-        try container.encode(y, forKey: .y)
-    }
-}
 
 /// Notes on encoding:
 ///   - Int8 is encoded as an Int
