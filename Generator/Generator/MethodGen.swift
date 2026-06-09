@@ -519,6 +519,13 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let returnOptional = godotReturnType == "Variant" || (godotReturnTypeIsReferenceType && method.returnValue?.meta != .required)
     let returnType = getGodotType(method.returnValue) + (returnOptional ? "?" : "")
 
+    func usesRawBuiltinReturnStorage(godotReturnType: String) -> Bool {
+        !method.isVararg
+            && godotReturnType != "String"
+            && godotReturnType != "Variant"
+            && builtinGodotTypeNames[godotReturnType] == .isClass
+    }
+
     /// returns appropriate declaration of the return type, used by the helper function.
     let frameworkType = godotReturnTypeIsReferenceType
     func returnTypeDecl() -> String {
@@ -535,6 +542,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             } else if godotReturnType.starts(with: "typedarray::") {
                 let (storage, initialize) = getBuiltinStorage ("Array", asComputedProperty: false)
                 return "var _result: \(storage)\(initialize)"
+            } else if usesRawBuiltinReturnStorage(godotReturnType: godotReturnType) {
+                return "var _result: \(returnType).ContentType = \(returnType).zero"
             } else if godotReturnType == "String" {
                 return "let _result = GString ()"
             } else {
@@ -576,6 +585,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 } else {
                     ptrResult = "&_result"
                 }
+            } else if usesRawBuiltinReturnStorage(godotReturnType: godotReturnType) {
+                ptrResult = "&_result"
             } else if argTypeNeedsCopy(godotType: godotReturnType) {
                 let isClass = builtinGodotTypeNames [godotReturnType] == .isClass
                 
@@ -637,6 +648,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         } else if frameworkType {
             //print ("OBJ RETURN: \(className) \(method.name)")
             return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return getOrInitSwiftObject (nativeHandle: _result, ownership: .godotApiReturn)\(returnOptional ? "" : "!")"
+        } else if let godotReturnType, usesRawBuiltinReturnStorage(godotReturnType: godotReturnType) {
+            return "return \(returnType)(takingOver: _result)"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
             let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"

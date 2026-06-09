@@ -835,7 +835,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 
                 p("""
                 /// Initialize with existing `ContentType` assuming this ``\(typeName)`` owns it since now.
-                init(takingOver content: ContentType)
+                @_spi(SwiftGodotRuntimePrivate) public init(takingOver content: ContentType)
                 """) {
                     p("self.content = content")
                 }
