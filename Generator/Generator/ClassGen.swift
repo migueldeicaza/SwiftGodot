@@ -117,9 +117,17 @@ func generateVirtualProxy (_ p: Printer,
                 //
                 argPrep += "let resolved_\(i) = args [\(i)]!.load (as: GodotNativeObjectPointer?.self)\n"
                 if arg.meta != .required {
-                    argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed) as? \(arg.type)"
+                    if arg.type == "Object" {
+                        argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed)"
+                    } else {
+                        argCall += "resolved_\(i) == nil ? nil : getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed) as? \(arg.type)"
+                    }
                 } else {
-                    argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed) as! \(arg.type)"
+                    if arg.type == "Object" {
+                        argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed)!"
+                    } else {
+                        argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed) as! \(arg.type)"
+                    }
                 }
             } else if let storage = builtinClassStorage[arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
