@@ -1,147 +1,36 @@
 // swift-tools-version: 6.3
 
+// SwiftGodot (umbrella). The library is split into one dynamic-library package
+// per area (runtime, core, controls, 2D, 3D, gltf, visual-shader-nodes, xr,
+// editor) under Packages/, each its own dylib that references the others
+// dynamically (no embedding). This root package is the umbrella: it re-exports
+// every module as a single `import SwiftGodot`, hosts the macro plugin, and
+// carries the examples and tests.
+
 import CompilerPluginSupport
 import PackageDescription
 
-let withMultiProcessTrait = "with_multi_process"
-
-// Products define the executables and libraries a package produces, and make them visible to other packages.
-var products: [Product] = [
-    .library(
-        name: "SwiftGodotRuntime",
-        type: .dynamic,
-        targets: ["SwiftGodotRuntime"]
-    ),
-    .library(
-        name: "SwiftGodot",
-        type: .dynamic,
-        targets: ["SwiftGodot"]
-    ),
-
-    .library(
-        name: "SwiftGodotRuntimeStatic",
-        targets: ["SwiftGodotRuntime"]
-    ),
-    .library(
-        name: "SwiftGodotStatic",
-        targets: ["SwiftGodot"]
-    ),
-
-    .library(
-        name: "ExtensionApi",
-        targets: [
-            "ExtensionApi",
-            "ExtensionApiJson",
-        ]
-    ),
-
-    .plugin(
-        name: "CodeGeneratorPlugin",
-        targets: ["CodeGeneratorPlugin"]
-    ),
-
-    .plugin(
-        name: "EntryPointGeneratorPlugin",
-        targets: ["EntryPointGeneratorPlugin"]
-    ),
-
-    .library(
-        name: "SimpleExtension",
-        type: .dynamic,
-        targets: ["SimpleExtension"]
-    ),
-
-    .library(
-        name: "ManualExtension",
-        type: .dynamic,
-        targets: ["ManualExtension"]
-    ),
-
-    .executable(
-        name: "SwiftGodotTestRunner",
-        targets: ["SwiftGodotTestRunner"]
-    ),
-
-    .library(
-        name: "SwiftGodotTestExtension",
-        type: .dynamic,
-        targets: ["SwiftGodotTestExtension"]
-    ),
+// Each module dylib re-exported by the umbrella so a consumer that links only
+// `SwiftGodot` resolves symbols from all of them.
+let reexportedModules = [
+    "SwiftGodotRuntime", "SwiftGodotCore", "SwiftGodotControls",
+    "SwiftGodot2D", "SwiftGodot3D", "SwiftGodotGLTF",
+    "SwiftGodotVisualShaderNodes", "SwiftGodotXR", "SwiftGodotEditor",
 ]
+let reexportFlags: [String] = reexportedModules.flatMap { ["-Xlinker", "-reexport-l\($0)"] }
 
-/// Targets are the basic building blocks of a package. A target can define a module, plugin, test suite, etc.
+// Forward the umbrella's `with_multi_process` trait to a module dependency only
+// when it is enabled here.
+let mp: PackageDescription.Package.Dependency.Trait = .trait(
+    name: "with_multi_process",
+    condition: .when(traits: ["with_multi_process"])
+)
+
 var targets: [Target] = [
-    .executableTarget(
-        name: "EntryPointGenerator",
-        dependencies: [
-            .product(name: "SwiftSyntax", package: "swift-syntax"),
-            .product(name: "SwiftParser", package: "swift-syntax"),
-            .product(name: "ArgumentParser", package: "swift-argument-parser"),
-        ],
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    // This contains GDExtension's JSON API data models
-    .target(
-        name: "ExtensionApi",
-        exclude: ["ExtensionApiJson.swift", "extension_api.json"],
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    // This contains a resource bundle with extension_api.json
-    .target(
-        name: "ExtensionApiJson",
-        path: "Sources/ExtensionApi",
-        exclude: ["ApiJsonModel.swift", "ApiJsonModel+Extra.swift"],
-        sources: ["ExtensionApiJson.swift"],
-        resources: [.process("extension_api.json")],
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    // The generator takes Godot's JSON-based API description as input and
-    // produces Swift API bindings that can be used to call into Godot.
-    .executableTarget(
-        name: "Generator",
-        dependencies: [
-            "ExtensionApi",
-            .product(name: "SwiftSyntax", package: "swift-syntax"),
-            .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
-        ],
-        path: "Generator",
-        exclude: ["README.md"],
-        swiftSettings: [
-            .swiftLanguageMode(.v5)
-            // Uncomment for using legacy array-based marshalling
-            //.define("LEGACY_MARSHALING")
-        ]
-    ),
-
-    // This is a build-time plugin that invokes the generator and produces
-    // the bindings that are compiled into SwiftGodot.
-    .plugin(
-        name: "CodeGeneratorPlugin",
-        capability: .buildTool(),
-        dependencies: ["Generator"]
-    ),
-
-    // This is a build-time plugin that generates the EntryPoint.swift file,
-    // which is used to bootstrap the SwiftGodot API and register your
-    // extension and classes with Godot.
-    .plugin(
-        name: "EntryPointGeneratorPlugin",
-        capability: .buildTool(),
-        dependencies: ["EntryPointGenerator"]
-    ),
-
-    // This allows the Swift code to call into the Godot bridge API (GDExtension)
-    .target(
-        name: "GDExtension",
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    // These are macros that can be used by third parties to simplify their
-    // SwiftGodot development experience, these are used at compile time by
-    // third party projects
+    // Macros used by third parties (@Godot/@Export/@Callable/...). The macro
+    // *declarations* live in the module packages (re-exported up); this is the
+    // compiler-plugin implementation, applied to the umbrella so it propagates
+    // to consumers.
     .macro(
         name: "SwiftGodotMacroLibrary",
         dependencies: [
@@ -156,7 +45,29 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // Test macro implementations for @SwiftGodotTest and @SwiftGodotTestSuite
+    // The umbrella module: re-exports every split module + carries the macro.
+    .target(
+        name: "SwiftGodot",
+        dependencies: [
+            .product(name: "SwiftGodotRuntime", package: "Runtime"),
+            .product(name: "SwiftGodotCore", package: "Core"),
+            .product(name: "SwiftGodotControls", package: "Controls"),
+            .product(name: "SwiftGodot2D", package: "TwoD"),
+            .product(name: "SwiftGodot3D", package: "ThreeD"),
+            .product(name: "SwiftGodotGLTF", package: "GLTF"),
+            .product(name: "SwiftGodotVisualShaderNodes", package: "VisualShaderNodes"),
+            .product(name: "SwiftGodotXR", package: "XR"),
+            .product(name: "SwiftGodotEditor", package: "Editor"),
+            "SwiftGodotMacroLibrary",
+        ],
+        swiftSettings: [
+            .unsafeFlags(["-suppress-warnings"]),
+            .swiftLanguageMode(.v5),
+        ],
+        linkerSettings: [.unsafeFlags(reexportFlags)]
+    ),
+
+    // Test macro implementations for @SwiftGodotTest and @SwiftGodotTestSuite.
     .macro(
         name: "SwiftGodotTestMacrosLibrary",
         dependencies: [
@@ -167,24 +78,24 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // Test macro definitions and SwiftGodotTestSuiteProtocol
+    // Test macro definitions and SwiftGodotTestSuiteProtocol.
     .target(
         name: "SwiftGodotTestMacros",
         dependencies: ["SwiftGodot"],
         swiftSettings: [.swiftLanguageMode(.v5)],
         plugins: ["SwiftGodotTestMacrosLibrary"]
     ),
-    // This contains sample code showing how to use the SwiftGodot API
+
+    // Sample extension using the macro-based registration.
     .target(
         name: "SimpleExtension",
         dependencies: ["SwiftGodot"],
         exclude: ["SimpleExtension.gdextension", "README.md"],
         swiftSettings: [.swiftLanguageMode(.v5)],
-        plugins: [.plugin(name: "EntryPointGeneratorPlugin")]
+        plugins: [.plugin(name: "EntryPointGeneratorPlugin", package: "Infra")]
     ),
 
-    // This contains sample code showing how to use the SwiftGodot API
-    // with manual registration of methods and properties
+    // Sample extension using manual registration.
     .target(
         name: "ManualExtension",
         dependencies: ["SwiftGodot"],
@@ -192,54 +103,34 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // This is the core runtime for SwiftGodot, it only contains the builtins
-    // the Object and RefCounted classes.
-    .target(
-        name: "SwiftGodotRuntime",
-        dependencies: ["GDExtension"],
-        swiftSettings: [
-            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-            .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
-            .unsafeFlags(
-                [
-                    "-suppress-warnings",
-                    "-Xfrontend", "-conditional-runtime-records",
-                    "-Xfrontend", "-internalize-at-link",
-                    "-Xfrontend", "-lto=llvm-full",
-                ]
-            ),
-            .swiftLanguageMode(.v5),
-        ],
-        plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
+    // Test runner CLI.
+    .executableTarget(
+        name: "SwiftGodotTestRunner",
+        dependencies: [],
+        path: "Sources/SwiftGodotTestRunner",
+        swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // This binds the rest of the Godot API, it will eventually be split
-    // up in chunks
+    // Test extension loaded by Godot.
     .target(
-        name: "SwiftGodot",
-        dependencies: ["GDExtension", "SwiftGodotRuntime"],
-        swiftSettings: [
-            .swiftLanguageMode(.v5),
-            .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
-            .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
-            .unsafeFlags(["-suppress-warnings"])
-        ],
-        plugins: ["CodeGeneratorPlugin"]
+        name: "SwiftGodotTestExtension",
+        dependencies: ["SwiftGodot", "SwiftGodotTestMacros"],
+        path: "Tests/SwiftGodotTestExtension",
+        swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // General purpose cross-platform tests
+    // General-purpose cross-platform tests.
     .testTarget(
         name: "SwiftGodotUniversalTests",
         dependencies: [
             "SwiftGodot",
-            "ExtensionApi",
-            "ExtensionApiJson",
+            .product(name: "ExtensionApi", package: "Infra"),
+            .product(name: "ExtensionApiJson", package: "Infra"),
         ],
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // Compile-only diagnostics tests. These intentionally build selected
-    // client idioms with warnings promoted to errors.
+    // Compile-only diagnostics tests (warnings promoted to errors).
     .testTarget(
         name: "SwiftGodotCompileDiagnosticsTests",
         dependencies: ["SwiftGodot"],
@@ -248,27 +139,10 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
         ]
     ),
-
-    // Test runner CLI executable
-    .executableTarget(
-        name: "SwiftGodotTestRunner",
-        dependencies: [],
-        path: "Sources/SwiftGodotTestRunner",
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
-
-    // Test extension (loaded by Godot) - includes all test infrastructure and test suites
-    .target(
-        name: "SwiftGodotTestExtension",
-        dependencies: ["SwiftGodot", "SwiftGodotTestMacros"],
-        path: "Tests/SwiftGodotTestExtension",
-        swiftSettings: [.swiftLanguageMode(.v5)]
-    ),
 ]
 
-// Macro tests don't work on Windows yet
+// Macro tests don't work on Windows yet.
 #if !os(Windows)
-    // Idea: -mark_dead_strippable_dylib
     targets.append(
         .testTarget(
             name: "SwiftGodotMacrosTests",
@@ -278,9 +152,7 @@ var targets: [Target] = [
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ],
             exclude: ["Resources"],
-            resources: [
-                .copy("Resources")
-            ],
+            resources: [.copy("Resources")],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ))
 #endif
@@ -289,19 +161,34 @@ let package = Package(
     name: "SwiftGodot",
     platforms: [
         .macOS(.v14),
-        .iOS (.v17)
+        .iOS(.v17),
     ],
-    products: products,
+    products: [
+        .library(name: "SwiftGodot", type: .dynamic, targets: ["SwiftGodot"]),
+        .library(name: "SimpleExtension", type: .dynamic, targets: ["SimpleExtension"]),
+        .library(name: "ManualExtension", type: .dynamic, targets: ["ManualExtension"]),
+        .executable(name: "SwiftGodotTestRunner", targets: ["SwiftGodotTestRunner"]),
+        .library(name: "SwiftGodotTestExtension", type: .dynamic, targets: ["SwiftGodotTestExtension"]),
+    ],
     traits: [
         .trait(
-            name: withMultiProcessTrait,
+            name: "with_multi_process",
             description: "Use multi-process-safe code generation with reinitialization support."
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
-        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),
+        .package(path: "Packages/Infra"),
+        .package(path: "Packages/Runtime", traits: [mp]),
+        .package(path: "Packages/Core", traits: [mp]),
+        .package(path: "Packages/Controls", traits: [mp]),
+        .package(path: "Packages/TwoD", traits: [mp]),
+        .package(path: "Packages/ThreeD", traits: [mp]),
+        .package(path: "Packages/GLTF", traits: [mp]),
+        .package(path: "Packages/VisualShaderNodes", traits: [mp]),
+        .package(path: "Packages/XR", traits: [mp]),
+        .package(path: "Packages/Editor", traits: [mp]),
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "600.0.1"),
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.3.0"),
     ],
     targets: targets
 )
