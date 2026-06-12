@@ -9,6 +9,102 @@ import Foundation
 
 @main
 struct SwiftGodotTestRunner {
+    /// Locates an executable by name on PATH, returning its full path, or `nil` if not found.
+    /// Uses `where.exe` on Windows and `/usr/bin/which` elsewhere.
+    static func findExecutable(_ name: String) -> String? {
+        let process = Process()
+        #if os(Windows)
+        let systemRoot = ProcessInfo.processInfo.environment["SystemRoot"] ?? "C:\\Windows"
+        process.executableURL = URL(fileURLWithPath: "\(systemRoot)\\System32\\where.exe")
+        #else
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        #endif
+        process.arguments = [name]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return nil
+        }
+        guard process.terminationStatus == 0 else { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        guard let output = String(data: data, encoding: .utf8) else { return nil }
+        // `where` can report multiple matches (one per line); take the first non-empty one.
+        return output
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .first { !$0.isEmpty }
+    }
+
+    /// True once `path` exists, is non-empty, and its size has stabilized across a
+    /// short interval (so we never read a half-written file).
+    static func fileIsReady(_ path: String) -> Bool {
+        let fm = FileManager.default
+        guard let a = try? fm.attributesOfItem(atPath: path),
+              let size = a[.size] as? Int, size > 0 else { return false }
+        Thread.sleep(forTimeInterval: 0.2)
+        guard let b = try? fm.attributesOfItem(atPath: path),
+              let size2 = b[.size] as? Int else { return false }
+        return size2 == size
+    }
+
+    /// Runs Godot and waits for its work to finish. On Windows the Godot process
+    /// can hang on shutdown after the SwiftGodot extension is loaded, long after
+    /// the useful work is done, so we don't rely on a clean exit: if a
+    /// `completionFile` is given we terminate the process once that file is fully
+    /// written; otherwise we wait up to `timeout` and then terminate. A process
+    /// that exits on its own first is handled normally.
+    /// Returns the termination status, or 0 when we terminated it after the work
+    /// completed (completion file written).
+    static func runGodot(
+        _ godotPath: String,
+        arguments: [String],
+        cwd: String,
+        completionFile: String?,
+        timeout: TimeInterval
+    ) -> Int32 {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: godotPath)
+        process.arguments = arguments
+        process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+        process.standardOutput = FileHandle.standardOutput
+        process.standardError = FileHandle.standardError
+        do {
+            try process.run()
+        } catch {
+            print("      Godot launch failed: \(error)")
+            exit(1)
+        }
+
+        let start = Date()
+        var completed = false
+        while process.isRunning {
+            if let completionFile, fileIsReady(completionFile) {
+                completed = true
+                process.terminate()
+                break
+            }
+            if Date().timeIntervalSince(start) > timeout {
+                if completionFile == nil {
+                    // No completion signal to wait on (e.g. the import step); the
+                    // work is expected to be done by now and the process is just
+                    // hanging on shutdown.
+                    completed = true
+                } else {
+                    print("      Timed out after \(Int(timeout))s waiting for Godot.")
+                }
+                process.terminate()
+                break
+            }
+            Thread.sleep(forTimeInterval: 0.25)
+        }
+        process.waitUntilExit()
+        return completed ? 0 : process.terminationStatus
+    }
+
     static func main() async {
         let projectPath = "Tests/SwiftGodotTestProject"
         let resultsPath = "Tests/SwiftGodotTestProject/test_results.json"
@@ -29,25 +125,10 @@ struct SwiftGodotTestRunner {
         print("  Build config:      \(buildConfiguration)")
 
         // Find swift executable from PATH
-        let whichSwiftProcess = Process()
-        whichSwiftProcess.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        whichSwiftProcess.arguments = ["swift"]
-        let whichSwiftPipe = Pipe()
-        whichSwiftProcess.standardOutput = whichSwiftPipe
-        whichSwiftProcess.standardError = whichSwiftPipe
-        do {
-            try whichSwiftProcess.run()
-            whichSwiftProcess.waitUntilExit()
-        } catch {
-            print("      Failed to find swift: \(error)")
-            exit(1)
-        }
-        if whichSwiftProcess.terminationStatus != 0 {
+        guard let swiftPath = findExecutable("swift") else {
             print("      Swift not found in PATH")
             exit(1)
         }
-        let swiftPathData = whichSwiftPipe.fileHandleForReading.readDataToEndOfFile()
-        let swiftPath = String(data: swiftPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "swift"
 
         // 1. Build the test extension and dependencies
         print("\n[1/5] Building test extension...")
@@ -143,62 +224,81 @@ struct SwiftGodotTestRunner {
         }
         print("      Copy successful")
 
-        // Find godot
-        let whichProcess = Process()
-        whichProcess.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        whichProcess.arguments = ["godot"]
-        let whichPipe = Pipe()
-        whichProcess.standardOutput = whichPipe
-        whichProcess.standardError = whichPipe
-        do {
-            try whichProcess.run()
-            whichProcess.waitUntilExit()
-        } catch {
-            print("      Failed to find godot: \(error)")
-            exit(1)
+        #if os(Windows)
+        // Godot's `open_dynamic_library` on Windows uses LoadLibraryExW with the
+        // LOAD_LIBRARY_SEARCH_* flags, which ignore the PATH environment variable.
+        // So the Swift runtime DLLs the extension links against must sit next to it
+        // in `bin/`, even though they are on PATH for normal execution. Without this
+        // the extension fails to load with "Error 126: The specified module could
+        // not be found." We locate each DLL on PATH (via `where`) and copy it in.
+        let runtimeDLLs = [
+            "swiftCore.dll", "swiftCRT.dll", "swiftWinSDK.dll",
+            "swift_Concurrency.dll", "swift_StringProcessing.dll", "swift_RegexParser.dll",
+            "swiftRegexBuilder.dll", "swiftSwiftOnoneSupport.dll", "swiftDispatch.dll",
+            "swiftDistributed.dll", "swiftObservation.dll", "swiftRemoteMirror.dll",
+            "swiftSynchronization.dll",
+            "Foundation.dll", "FoundationNetworking.dll", "FoundationXML.dll",
+            "FoundationEssentials.dll", "FoundationInternationalization.dll",
+            "_FoundationICU.dll",
+            "BlocksRuntime.dll", "dispatch.dll",
+        ]
+        var copiedRuntime = 0
+        for dll in runtimeDLLs {
+            guard let source = findExecutable(dll) else { continue }
+            let dest = "\(destDir)/\(dll)"
+            do {
+                if fm.fileExists(atPath: dest) {
+                    try fm.removeItem(atPath: dest)
+                }
+                try fm.copyItem(atPath: source, toPath: dest)
+                copiedRuntime += 1
+            } catch {
+                print("      Warning: failed to copy runtime \(dll): \(error)")
+            }
         }
-        if whichProcess.terminationStatus != 0 {
+        print("      Copied \(copiedRuntime) Swift runtime DLLs")
+        #endif
+
+        // Find godot
+        guard let godotPath = findExecutable("godot") else {
             print("      Godot not found in PATH")
             exit(1)
         }
-        let godotPathData = whichPipe.fileHandleForReading.readDataToEndOfFile()
-        let godotPath = String(data: godotPathData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "godot"
 
-        // 3. Import project (needed to detect GDExtensions)
+        // On Windows the Godot process does not terminate once the SwiftGodot
+        // extension is loaded (it hangs on shutdown after the work is done), so we
+        // can't wait for a clean exit. `runGodot` watches for the work to complete
+        // instead. These timeouts are upper bounds that only matter on Windows --
+        // on macOS/Linux Godot exits on its own well before they elapse.
+        let importTimeout: TimeInterval = 60
+        let runTimeout: TimeInterval = 120
+
+        // 3. Import project (needed to register the extension's nodes, e.g.
+        //    TestRunnerNode, before the main scene loads). There is no file signal
+        //    for import completion, so we rely on the timeout on Windows.
         print("\n[3/5] Importing Godot project...")
-        let importProcess = Process()
-        importProcess.executableURL = URL(fileURLWithPath: godotPath)
-        importProcess.arguments = ["--headless", "--verbose","--import", "--path", absoluteProjectPath]
-        importProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
-        importProcess.standardOutput = FileHandle.standardOutput
-        importProcess.standardError = FileHandle.standardError
-        do {
-            try importProcess.run()
-            importProcess.waitUntilExit()
-        } catch {
-            print("      Import failed: \(error)")
-            exit(1)
-        }
+        _ = runGodot(
+            godotPath,
+            arguments: ["--headless", "--import", "--path", absoluteProjectPath],
+            cwd: absoluteProjectPath,
+            completionFile: nil,
+            timeout: importTimeout
+        )
         print("      Import successful")
 
-        // 4. Launch Godot
+        // 4. Launch Godot to run the tests. The test extension writes the results
+        //    JSON when the run completes; we terminate Godot as soon as that file
+        //    is fully written rather than waiting on a clean exit.
         print("\n[4/5] Running tests in Godot...")
-        let godotProcess = Process()
-        godotProcess.executableURL = URL(fileURLWithPath: godotPath)
-        godotProcess.arguments = ["--headless", "--verbose", "--path", absoluteProjectPath]
-        godotProcess.currentDirectoryURL = URL(fileURLWithPath: absoluteProjectPath)
-        godotProcess.standardOutput = FileHandle.standardOutput
-        godotProcess.standardError = FileHandle.standardError
-        var godotExitCode: Int32 = 0
-        do {
-            try godotProcess.run()
-            godotProcess.waitUntilExit()
-            godotExitCode = godotProcess.terminationStatus
-            print("      Godot exited with code: \(godotExitCode)")
-        } catch {
-            print("      Godot launch failed: \(error)")
-            exit(1)
-        }
+        try? fm.removeItem(atPath: absoluteResultsPath) // clear stale results
+        let godotExitCode = runGodot(
+            godotPath,
+            arguments: ["--headless", "--verbose", "--path", absoluteProjectPath],
+            cwd: absoluteProjectPath,
+            completionFile: absoluteResultsPath,
+            timeout: runTimeout
+        )
+        print("      Godot finished with code: \(godotExitCode)")
 
         // 5. Read and report results
         print("\n[5/5] Reading results...")
