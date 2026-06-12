@@ -1,6 +1,5 @@
 import Foundation
 
-@testable import SwiftGodotRuntime
 @testable import SwiftGodot
 
 extension Date: VariantConvertible {
@@ -403,4 +402,3 @@ final class MarshalTests {
         XCTAssertEqual(fulfillmentCount, 5, "Expected 5 fulfillments")
     }
 }
-

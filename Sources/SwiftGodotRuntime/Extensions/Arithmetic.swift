@@ -13,23 +13,33 @@ public protocol IntScalable {
 }
 
 public extension IntScalable {
-    
+
+#if !os(Windows)
     static func / (lhs: Self, rhs: Int) -> Self {
         return lhs / Int64(rhs)
     }
-    
+
     static func * (lhs: Self, rhs: Int) -> Self {
         return lhs * Int64(rhs)
     }
-    
+
     static func /= (_ lhs: inout Self, _ rhs: Int) {
         lhs = lhs / rhs
     }
-    
+
     static func *= (_ lhs: inout Self, _ rhs: Int) {
         lhs = lhs * rhs
     }
-    
+#else
+    static func /= (_ lhs: inout Self, _ rhs: Int64) {
+        lhs = lhs / rhs
+    }
+
+    static func *= (_ lhs: inout Self, _ rhs: Int64) {
+        lhs = lhs * rhs
+    }
+#endif
+
 }
 public protocol DoubleScalable {
     

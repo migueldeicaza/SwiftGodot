@@ -148,6 +148,12 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
         if enumDef.name.starts (with: "Variant") {
             p.indent -= 1
             p ("}\n")
+            // Add top-level type alias for cross-module access without ambiguity
+            // (Windows Swift compiler has issues with re-exported nested types)
+            if enumDefName == "Type" {
+                p ("/// Alias for ``Variant.GType`` that can be referenced unambiguously across modules.")
+                p ("public typealias VariantGType = Variant.GType\n")
+            }
         }
         registerEnumDefinition(enumDef, prefix: prefix)
     }
