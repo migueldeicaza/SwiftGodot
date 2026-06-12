@@ -21,10 +21,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    # Xcode 26.5 bundles Swift 6.3.2, which satisfies the package's
+    # swift-tools-version 6.3 (Xcode 26.2/26.3 only ship Swift 6.2.x).
     - name: Set up Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: "26.2"
+        xcode-version: "26.5"
 
     - name: Install Godot
       run: |
@@ -87,36 +89,28 @@ jobs:
       - name: Run Godot-based tests
         run: swift run SwiftGodotTestRunner
 
-  build-android:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: skiptools/swift-android-action@v2
-        with:
-          swift-version: '6.2'
-          build-tests: false
+  # Disabled: the package requires swift-tools-version 6.3, but
+  # skiptools/swift-android-toolchain does not yet publish a Swift 6.3 Android
+  # toolchain (latest is 6.2.3). Re-enable and bump swift-version once a 6.3
+  # release is available.
+  # build-android:
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: skiptools/swift-android-action@v2
+  #       with:
+  #         swift-version: '6.3'
+  #         build-tests: false
 
   build-and-test-linux:
     runs-on: ubuntu-latest
+    # The package requires swift-tools-version 6.3; run in the official Swift
+    # 6.3.2 container since swift-actions/setup-swift does not yet offer 6.3.
+    container: swift:6.3.2
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "6.3"
-
-      - name: Install Godot
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip
-          unzip Godot_v4.6-stable_linux.x86_64.zip
-          sudo mv Godot_v4.6-stable_linux.x86_64 /usr/local/bin/godot
-          sudo chmod +x /usr/local/bin/godot
-          godot --version
 
       - name: Build
         run: swift build --build-tests --quiet
@@ -127,6 +121,8 @@ jobs:
       - name: Run Swift tests (XCTest)
         run: swift test --skip-build --no-parallel --disable-swift-testing
 
-      # Enable when EditorHelp::_gen_extensions_docs() is fixed  
+      # Godot-based tests are disabled on Linux until
+      # EditorHelp::_gen_extensions_docs() is fixed. When re-enabling, install
+      # Godot and its runtime dependencies in the container first.
       # - name: Run Godot-based tests
       #   run: swift run SwiftGodotTestRunner
