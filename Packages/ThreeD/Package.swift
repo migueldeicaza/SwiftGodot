@@ -24,6 +24,7 @@ let package = Package(
         .package(path: "../Infra"),
         .package(path: "../Runtime", traits: [.trait(name: "with_multi_process", condition: .when(traits: ["with_multi_process"]))]),
         .package(path: "../Core", traits: [.trait(name: "with_multi_process", condition: .when(traits: ["with_multi_process"]))]),
+        .package(path: "../Servers", traits: [.trait(name: "with_multi_process", condition: .when(traits: ["with_multi_process"]))]),
     ],
     targets: [
         .target(
@@ -32,6 +33,7 @@ let package = Package(
                 .product(name: "GDExtension", package: "Infra"),
                 .product(name: "SwiftGodotRuntime", package: "Runtime"),
                 .product(name: "SwiftGodotCore", package: "Core"),
+                .product(name: "SwiftGodotServers", package: "Servers"),
             ],
             swiftSettings: [
                 .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
@@ -40,7 +42,7 @@ let package = Package(
                 .swiftLanguageMode(.v5),
             ],
             linkerSettings: [
-                .unsafeFlags(["-Xlinker", "-reexport-lSwiftGodotCore"]),
+                .unsafeFlags(["-Xlinker", "-reexport-lSwiftGodotCore", "-Xlinker", "-reexport-lSwiftGodotServers"]),
             ],
             plugins: [ .plugin(name: "CodeGeneratorPlugin", package: "Infra") ]
         ),

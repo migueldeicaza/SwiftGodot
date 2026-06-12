@@ -13,7 +13,7 @@ import PackageDescription
 // Each module dylib re-exported by the umbrella so a consumer that links only
 // `SwiftGodot` resolves symbols from all of them.
 let reexportedModules = [
-    "SwiftGodotRuntime", "SwiftGodotCore", "SwiftGodotControls",
+    "SwiftGodotRuntime", "SwiftGodotCore", "SwiftGodotServers", "SwiftGodotControls",
     "SwiftGodot2D", "SwiftGodot3D", "SwiftGodotGLTF",
     "SwiftGodotVisualShaderNodes", "SwiftGodotXR", "SwiftGodotEditor",
 ]
@@ -51,6 +51,7 @@ var targets: [Target] = [
         dependencies: [
             .product(name: "SwiftGodotRuntime", package: "Runtime"),
             .product(name: "SwiftGodotCore", package: "Core"),
+            .product(name: "SwiftGodotServers", package: "Servers"),
             .product(name: "SwiftGodotControls", package: "Controls"),
             .product(name: "SwiftGodot2D", package: "TwoD"),
             .product(name: "SwiftGodot3D", package: "ThreeD"),
@@ -180,6 +181,7 @@ let package = Package(
         .package(path: "Packages/Infra"),
         .package(path: "Packages/Runtime", traits: [mp]),
         .package(path: "Packages/Core", traits: [mp]),
+        .package(path: "Packages/Servers", traits: [mp]),
         .package(path: "Packages/Controls", traits: [mp]),
         .package(path: "Packages/TwoD", traits: [mp]),
         .package(path: "Packages/ThreeD", traits: [mp]),

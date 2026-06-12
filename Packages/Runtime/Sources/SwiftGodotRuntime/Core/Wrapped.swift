@@ -1460,6 +1460,7 @@ let swiftGodotBindingModules = [
     "SwiftGodot",
     "SwiftGodotRuntime",
     "SwiftGodotCore",
+    "SwiftGodotServers",
     "SwiftGodotControls",
     "SwiftGodot2D",
     "SwiftGodot3D",

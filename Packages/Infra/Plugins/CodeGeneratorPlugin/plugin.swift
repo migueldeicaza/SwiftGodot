@@ -158,7 +158,7 @@ import PackagePlugin
         // just generate everything the same way
         case "SwiftGodot":
             return GenerationConfig(
-                classFiles: (core + controls + threeD + gltf + twoD + xr + editor + visualShaderNodes).uniqued(),
+                classFiles: (core + servers + controls + threeD + gltf + twoD + xr + editor + visualShaderNodes).uniqued(),
                 builtinFiles: [],
                 preamble: """
 @_exported import SwiftGodotRuntime
@@ -183,6 +183,16 @@ import PackagePlugin
                 // leaf module that introduces the type (skip-and-defer), so the API
                 // is preserved exactly without moving types or degrading them.
             )
+        case "SwiftGodotServers":
+            return GenerationConfig(
+                classFiles: servers.uniqued(),
+                builtinFiles: [],
+                preamble: """
+@_exported import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+""",
+                dependencyClassFiles: core + runtime
+            )
         case "SwiftGodotControls":
             fallthrough
         case "SwiftGodot2D":
@@ -204,69 +214,83 @@ import PackagePlugin
                 classFiles = controls
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 """
-                dependencyClassFiles = core + runtime
+                dependencyClassFiles = core + servers + runtime
             case "SwiftGodot2D":
                 classFiles = twoD
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 """
-                dependencyClassFiles = core + runtime
+                dependencyClassFiles = core + servers + runtime
             case "SwiftGodot3D":
                 classFiles = threeD
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 """
-                dependencyClassFiles = core + runtime
+                dependencyClassFiles = core + servers + runtime
             case "SwiftGodotGLTF":
                 classFiles = gltf
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 """
-                dependencyClassFiles = core + runtime
+                dependencyClassFiles = core + servers + runtime
             case "SwiftGodotXR":
                 classFiles = xr
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_exported import SwiftGodotControls
 @_exported import SwiftGodot3D
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotControls
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
 """
-                dependencyClassFiles = core + controls + threeD + runtime
+                dependencyClassFiles = core + servers + controls + threeD + runtime
             case "SwiftGodotVisualShaderNodes":
                 classFiles = visualShaderNodes
                 // VisualShaderNodeTexture3D references Texture3D, so this module
                 // depends on SwiftGodot3D.
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_exported import SwiftGodot3D
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
 """
-                dependencyClassFiles = core + threeD + runtime
+                dependencyClassFiles = core + servers + threeD + runtime
             case "SwiftGodotEditor":
                 classFiles = editor
                 // The OpenXR*Editor classes reference XR types, so the editor
                 // module depends on SwiftGodotXR.
                 preamble = """
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_exported import SwiftGodotControls
 @_exported import SwiftGodot3D
 @_exported import SwiftGodotGLTF
 @_exported import SwiftGodotXR
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotCore
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotServers
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotControls
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodot3D
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotGLTF
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotXR
 """
-                dependencyClassFiles = core + controls + threeD + gltf + xr + runtime
+                dependencyClassFiles = core + servers + controls + threeD + gltf + xr + runtime
             default:
                 classFiles = []
                 preamble = """
@@ -393,6 +417,68 @@ let runtime: [String] = [
     "ScriptLanguage.swift"
 ]
 
+let servers: [String] = [
+    "AudioServer.swift",
+    "CameraServer.swift",
+    "DisplayServer.swift",
+    "FramebufferCacheRD.swift",
+    "PhysicsDirectBodyState2D.swift",
+    "PhysicsDirectBodyState2DExtension.swift",
+    "PhysicsDirectBodyState3D.swift",
+    "PhysicsDirectBodyState3DExtension.swift",
+    "PhysicsDirectSpaceState2D.swift",
+    "PhysicsDirectSpaceState2DExtension.swift",
+    "PhysicsDirectSpaceState3D.swift",
+    "PhysicsDirectSpaceState3DExtension.swift",
+    "PhysicsPointQueryParameters2D.swift",
+    "PhysicsPointQueryParameters3D.swift",
+    "PhysicsRayQueryParameters2D.swift",
+    "PhysicsRayQueryParameters3D.swift",
+    "PhysicsServer2D.swift",
+    "PhysicsServer2DExtension.swift",
+    "PhysicsServer2DManager.swift",
+    "PhysicsServer3D.swift",
+    "PhysicsServer3DExtension.swift",
+    "PhysicsServer3DManager.swift",
+    "PhysicsServer3DRenderingServerHandler.swift",
+    "PhysicsShapeQueryParameters2D.swift",
+    "PhysicsShapeQueryParameters3D.swift",
+    "PhysicsTestMotionParameters2D.swift",
+    "PhysicsTestMotionParameters3D.swift",
+    "PhysicsTestMotionResult2D.swift",
+    "PhysicsTestMotionResult3D.swift",
+    "RDAttachmentFormat.swift",
+    "RDFramebufferPass.swift",
+    "RDPipelineColorBlendState.swift",
+    "RDPipelineColorBlendStateAttachment.swift",
+    "RDPipelineDepthStencilState.swift",
+    "RDPipelineMultisampleState.swift",
+    "RDPipelineRasterizationState.swift",
+    "RDPipelineSpecializationConstant.swift",
+    "RDSamplerState.swift",
+    "RDShaderFile.swift",
+    "RDShaderSPIRV.swift",
+    "RDShaderSource.swift",
+    "RDTextureFormat.swift",
+    "RDTextureView.swift",
+    "RDUniform.swift",
+    "RDVertexAttribute.swift",
+    "RenderData.swift",
+    "RenderDataExtension.swift",
+    "RenderDataRD.swift",
+    "RenderSceneBuffers.swift",
+    "RenderSceneBuffersConfiguration.swift",
+    "RenderSceneBuffersExtension.swift",
+    "RenderSceneBuffersRD.swift",
+    "RenderSceneData.swift",
+    "RenderSceneDataExtension.swift",
+    "RenderSceneDataRD.swift",
+    "RenderingDevice.swift",
+    "RenderingServer.swift",
+    "TranslationServer.swift",
+    "UniformSetCacheRD.swift",
+]
+
 let core: [String] = [
     "AESContext.swift",
     "AnimatedTexture.swift",
@@ -458,7 +544,6 @@ let core: [String] = [
     "AudioListener3D.swift",
     "AudioSample.swift",
     "AudioSamplePlayback.swift",
-    "AudioServer.swift",
     "AudioStream.swift",
     "AudioStreamGenerator.swift",
     "AudioStreamGeneratorPlayback.swift",
@@ -491,7 +576,6 @@ let core: [String] = [
     "CameraAttributesPhysical.swift",
     "CameraAttributesPractical.swift",
     "CameraFeed.swift",
-    "CameraServer.swift",
     "CameraTexture.swift",
     "CanvasItem.swift",
     "CanvasItemMaterial.swift",
@@ -517,7 +601,6 @@ let core: [String] = [
     "CylinderMesh.swift",
     "DTLSServer.swift",
     "DirAccess.swift",
-    "DisplayServer.swift",
     "ENetConnection.swift",
     "ENetMultiplayerPeer.swift",
     "ENetPacketPeer.swift",
@@ -533,7 +616,6 @@ let core: [String] = [
     "Font.swift",
     "FontFile.swift",
     "FontVariation.swift",
-    "FramebufferCacheRD.swift",
     "GDExtension.swift",
     "GDExtensionManager.swift",
     "GDScript.swift",
@@ -636,32 +718,7 @@ let core: [String] = [
     "ParticleProcessMaterial.swift",
     "Performance.swift",
     "PhysicalSkyMaterial.swift",
-    "PhysicsDirectBodyState2D.swift",
-    "PhysicsDirectBodyState2DExtension.swift",
-    "PhysicsDirectBodyState3D.swift",
-    "PhysicsDirectBodyState3DExtension.swift",
-    "PhysicsDirectSpaceState2D.swift",
-    "PhysicsDirectSpaceState2DExtension.swift",
-    "PhysicsDirectSpaceState3D.swift",
-    "PhysicsDirectSpaceState3DExtension.swift",
     "PhysicsMaterial.swift",
-    "PhysicsPointQueryParameters2D.swift",
-    "PhysicsPointQueryParameters3D.swift",
-    "PhysicsRayQueryParameters2D.swift",
-    "PhysicsRayQueryParameters3D.swift",
-    "PhysicsServer2D.swift",
-    "PhysicsServer2DExtension.swift",
-    "PhysicsServer2DManager.swift",
-    "PhysicsServer3D.swift",
-    "PhysicsServer3DExtension.swift",
-    "PhysicsServer3DManager.swift",
-    "PhysicsServer3DRenderingServerHandler.swift",
-    "PhysicsShapeQueryParameters2D.swift",
-    "PhysicsShapeQueryParameters3D.swift",
-    "PhysicsTestMotionParameters2D.swift",
-    "PhysicsTestMotionParameters3D.swift",
-    "PhysicsTestMotionResult2D.swift",
-    "PhysicsTestMotionResult3D.swift",
     "PlaceholderCubemap.swift",
     "PlaceholderCubemapArray.swift",
     "PlaceholderMaterial.swift",
@@ -679,37 +736,9 @@ let core: [String] = [
     "ProjectSettings.swift",
     "PropertyTweener.swift",
     "QuadMesh.swift",
-    "RDAttachmentFormat.swift",
-    "RDFramebufferPass.swift",
-    "RDPipelineColorBlendState.swift",
-    "RDPipelineColorBlendStateAttachment.swift",
-    "RDPipelineDepthStencilState.swift",
-    "RDPipelineMultisampleState.swift",
-    "RDPipelineRasterizationState.swift",
-    "RDPipelineSpecializationConstant.swift",
-    "RDSamplerState.swift",
-    "RDShaderFile.swift",
-    "RDShaderSPIRV.swift",
-    "RDShaderSource.swift",
-    "RDTextureFormat.swift",
-    "RDTextureView.swift",
-    "RDUniform.swift",
-    "RDVertexAttribute.swift",
     "RandomNumberGenerator.swift",
     "RegEx.swift",
     "RegExMatch.swift",
-    "RenderData.swift",
-    "RenderDataExtension.swift",
-    "RenderDataRD.swift",
-    "RenderSceneBuffers.swift",
-    "RenderSceneBuffersConfiguration.swift",
-    "RenderSceneBuffersExtension.swift",
-    "RenderSceneBuffersRD.swift",
-    "RenderSceneData.swift",
-    "RenderSceneDataExtension.swift",
-    "RenderSceneDataRD.swift",
-    "RenderingDevice.swift",
-    "RenderingServer.swift",
     "Resource.swift",
     "ResourceFormatLoader.swift",
     "ResourceFormatSaver.swift",
@@ -811,7 +840,6 @@ let core: [String] = [
     "TorusMesh.swift",
     "Translation.swift",
     "TranslationDomain.swift",
-    "TranslationServer.swift",
     "TriangleMesh.swift",
     "TubeTrailMesh.swift",
     "Tween.swift",
@@ -820,7 +848,6 @@ let core: [String] = [
     "UPNP.swift",
     "UPNPDevice.swift",
     "UndoRedo.swift",
-    "UniformSetCacheRD.swift",
     "VideoStream.swift",
     "VideoStreamPlayback.swift",
     "VideoStreamTheora.swift",
@@ -1380,6 +1407,7 @@ let editor: [String] = [
 let moduleClassLists: [(String, [String])] = [
     ("runtime", runtime),
     ("core", core),
+    ("servers", servers),
     ("controls", controls),
     ("twoD", twoD),
     ("threeD", threeD),
@@ -1392,13 +1420,14 @@ let moduleClassLists: [(String, [String])] = [
 let moduleDirectDeps: [String: [String]] = [
     "runtime": [],
     "core": ["runtime"],
-    "controls": ["core"],
-    "twoD": ["core"],
-    "threeD": ["core"],
-    "gltf": ["core"],
-    "visualShaderNodes": ["core", "threeD"],
-    "xr": ["core", "controls", "threeD"],
-    "editor": ["core", "controls", "threeD", "gltf", "xr"],
+    "servers": ["core"],
+    "controls": ["core", "servers"],
+    "twoD": ["core", "servers"],
+    "threeD": ["core", "servers"],
+    "gltf": ["core", "servers"],
+    "visualShaderNodes": ["core", "servers", "threeD"],
+    "xr": ["core", "servers", "controls", "threeD"],
+    "editor": ["core", "servers", "controls", "threeD", "gltf", "xr"],
 ]
 
 /// Serializes the module graph (class→home + module deps) as JSON for the generator.

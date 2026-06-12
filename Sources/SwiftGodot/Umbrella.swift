@@ -3,6 +3,7 @@
 // macro plugin) makes `@Godot`/`@Export`/etc. available to consumers.
 @_exported import SwiftGodotRuntime
 @_exported import SwiftGodotCore
+@_exported import SwiftGodotServers
 @_exported import SwiftGodotControls
 @_exported import SwiftGodot2D
 @_exported import SwiftGodot3D
