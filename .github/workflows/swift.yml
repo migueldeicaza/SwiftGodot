@@ -43,27 +43,43 @@ jobs:
     - name: Run Godot-based tests
       run: swift run SwiftGodotTestRunner
 
-#  build-and-test-windows:
-#    runs-on: windows-latest
-#    timeout-minutes: 30
-#
-#    steps:
-#      - name: Swift Install
-#        uses: compnerd/gha-setup-swift@main
-#        with:
-#          swift-version: swift-6.2-release
-#          swift-build: 6.2-RELEASE
-#
-#      - uses: actions/checkout@v4
-#
-#      - name: Build
-#        run: swift build --build-tests --quiet
-#
-#      - name: Run Swift tests (Swift Testing)
-#        run: swift test --skip-build --no-parallel --disable-xctest
-#
-#      - name: Run Swift tests (XCTest)
-#        run: swift test --skip-build --no-parallel --disable-swift-testing
+  build-and-test-windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Install Swift
+        uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-6.3.2-release
+          tag: 6.3.2-RELEASE
+
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        shell: pwsh
+        run: |
+          $url = "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_win64.exe.zip"
+          Invoke-WebRequest -Uri $url -OutFile godot.zip
+          Expand-Archive godot.zip -DestinationPath godot
+          $exe = Get-ChildItem godot -Filter *.exe | Select-Object -First 1
+          Rename-Item $exe.FullName "godot.exe"
+          $dir = (Resolve-Path godot).Path
+          # Put godot.exe on PATH so SwiftGodotTestRunner (which uses `where godot`) can find it.
+          Add-Content -Path $env:GITHUB_PATH -Value $dir
+          & "$dir\godot.exe" --version
+
+      - name: Build
+        run: swift build --build-tests --quiet
+
+      - name: Run Swift tests (Swift Testing)
+        run: swift test --skip-build --no-parallel --disable-xctest
+
+      - name: Run Swift tests (XCTest)
+        run: swift test --skip-build --no-parallel --disable-swift-testing
+
+      - name: Run Godot-based tests
+        run: swift run SwiftGodotTestRunner
 
   build-android:
     runs-on: ubuntu-latest
