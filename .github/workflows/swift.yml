@@ -62,8 +62,14 @@ jobs:
           $url = "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_win64.exe.zip"
           Invoke-WebRequest -Uri $url -OutFile godot.zip
           Expand-Archive godot.zip -DestinationPath godot
-          $exe = Get-ChildItem godot -Filter *.exe | Select-Object -First 1
-          Rename-Item $exe.FullName "godot.exe"
+          # The zip ships the GUI editor plus a small console wrapper. The GUI build
+          # relaunches through a wrapper named "<basename>.console.exe", so both must
+          # be renamed as a matched pair; renaming only the GUI exe breaks the pairing
+          # ("Invalid wrapper executable name").
+          $gui = Get-ChildItem godot -Filter *.exe | Where-Object { $_.Name -notlike "*_console.exe" } | Select-Object -First 1
+          $console = Get-ChildItem godot -Filter *_console.exe | Select-Object -First 1
+          Rename-Item $gui.FullName "godot.exe"
+          Rename-Item $console.FullName "godot.console.exe"
           $dir = (Resolve-Path godot).Path
           # Put godot.exe on PATH so SwiftGodotTestRunner (which uses `where godot`) can find it.
           Add-Content -Path $env:GITHUB_PATH -Value $dir
