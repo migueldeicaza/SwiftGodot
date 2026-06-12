@@ -112,6 +112,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Disabled along with the Godot-based test below. Note: no sudo here since
+      # the container runs as root, and Godot's runtime deps may also be needed.
+      # - name: Install Godot
+      #   run: |
+      #     apt-get update
+      #     apt-get install -y wget unzip
+      #     wget https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip
+      #     unzip Godot_v4.6-stable_linux.x86_64.zip
+      #     mv Godot_v4.6-stable_linux.x86_64 /usr/local/bin/godot
+      #     chmod +x /usr/local/bin/godot
+      #     godot --version
+
       - name: Build
         run: swift build --build-tests --quiet
 
@@ -122,7 +134,7 @@ jobs:
         run: swift test --skip-build --no-parallel --disable-swift-testing
 
       # Godot-based tests are disabled on Linux until
-      # EditorHelp::_gen_extensions_docs() is fixed. When re-enabling, install
-      # Godot and its runtime dependencies in the container first.
+      # EditorHelp::_gen_extensions_docs() is fixed (re-enable the Godot install
+      # above as well).
       # - name: Run Godot-based tests
       #   run: swift run SwiftGodotTestRunner
