@@ -159,9 +159,18 @@ actor PrinterFactory {
     }
 
     func saveMultiplexed(_ root: String) {
+        // Only emit printers that belong to this target. The `core-defs` and
+        // `utility` printers are registered with the factory unconditionally (for
+        // their registration side-effects, e.g. global enum metadata), so without
+        // this filter the combined output would duplicate the builtins/core-defs
+        // that already live in a dependency module (e.g. SwiftGodotRuntime),
+        // producing ambiguous symbols like `Variant.GType`. The non-combined path
+        // achieves the same exclusion by only compiling the files listed for the
+        // target, so this keeps both paths in sync.
+        let included = printers.filter { shouldGenerateClass($0.name) || shouldGenerateBuiltin($0.name) }
         for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
             let combined =
-                printers
+                included
                 .filter({ $0.name.uppercased().first == letter })
                 .sorted(by: { $0.name < $1.name })
                 .map ({ $0.result })

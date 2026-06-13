@@ -7,6 +7,53 @@
 
 import GDExtension
 
+#if os(Windows)
+import WinSDK
+
+/// On Windows, Godot unloads GDExtension DLLs via `FreeLibrary` during shutdown.
+/// That cascades into unloading the Swift/Foundation runtime DLLs, and Foundation's
+/// `DLL_PROCESS_DETACH` runs its Fiber-Local-Storage / activation-context teardown
+/// *under the loader lock*, where it deadlocks:
+///
+///     ntdll!LdrUnloadDll -> kernelbase!FreeLibrary -> Foundation detach
+///         -> kernelbase!FlsFree / FlsSetValue -> (hang)
+///
+/// Pinning these modules (`GET_MODULE_HANDLE_EX_FLAG_PIN`) makes them permanent, so
+/// `FreeLibrary` never unloads them and the deadlocking detach path is never taken.
+/// The runtime is then only torn down at real process exit via `ExitProcess`, where
+/// `DllMain` receives `lpReserved != NULL` ("process terminating") and skips the
+/// problematic cleanup entirely. This lets the process exit cleanly instead of
+/// hanging on shutdown once a SwiftGodot extension has been loaded.
+private func pinSwiftRuntimeModules() {
+    // The PIN flag is a plain macro in the Windows headers; spell it out to avoid
+    // depending on whether it is surfaced by the WinSDK Swift overlay.
+    let GET_MODULE_HANDLE_EX_FLAG_PIN: DWORD = 0x0000_0001
+
+    // Only the runtime DLLs that carry process-wide state / teardown need pinning.
+    // Each is pinned only if already loaded (no LOAD flag is passed), so missing
+    // optional components are simply skipped.
+    let modules = [
+        "Foundation.dll",
+        "FoundationEssentials.dll",
+        "FoundationInternationalization.dll",
+        "FoundationNetworking.dll",
+        "FoundationXML.dll",
+        "_FoundationICU.dll",
+        "swiftCore.dll",
+        "swift_Concurrency.dll",
+        "swiftDispatch.dll",
+        "dispatch.dll",
+        "BlocksRuntime.dll",
+    ]
+    for name in modules {
+        name.withCString(encodedAs: UTF16.self) { wname in
+            var handle: HMODULE?
+            _ = GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, wname, &handle)
+        }
+    }
+}
+#endif
+
 public protocol ExtensionInterface {
     func initClass(type: AnyClass) -> Bool
 
@@ -531,6 +578,11 @@ public func initializeSwiftModule(
     // https://github.com/migueldeicaza/SwiftGodot/issues/72
     if extensionInterface == nil {
         extensionInterface = LibGodotExtensionInterface(library: GDExtensionClassLibraryPtr(libraryPtr), getProcAddrFun: getProcAddrFun)
+        #if os(Windows)
+        // Prevent the Windows loader-lock deadlock when Godot unloads the extension
+        // on shutdown (see pinSwiftRuntimeModules). Done once, on first init.
+        pinSwiftRuntimeModules()
+        #endif
     }
     extensionInitCallbacks[libraryPtr] = initHook
     extensionDeInitCallbacks[libraryPtr] = deInitHook

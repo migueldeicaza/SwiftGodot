@@ -37,10 +37,13 @@ class MultiplierNode: Node {
 
     override open class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: MultiplierNode.self) else {
+            return
+        }
         let className = StringName("MultiplierNode")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
@@ -64,5 +67,5 @@ class MultiplierNode: Node {
             }
 
         )
-    }()
+    }
 }
