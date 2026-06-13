@@ -421,9 +421,9 @@ public extension _GodotBridgeable where Self: Wrapped {
 
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 func bindSwiftObject(_ object: some Wrapped, _ context: InitContext) {
-    let name = object.self.godotClassName
-    let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: object)))
-    let frameworkType = thisTypeName == name
+    let type = Swift.type(of: object)
+    let thisTypeName = StringName (stringLiteral: String (describing: type))
+    let frameworkType = thisTypeName == type.godotClassName
 
     var callbacks: GDExtensionInstanceBindingCallbacks = Wrapped.bindingCallback
 
@@ -460,9 +460,9 @@ func bindSwiftObject(_ object: some Wrapped, _ context: InitContext) {
 }
 #else
 func bindSwiftObject(_ instance: some Wrapped, toGodot handle: GodotNativeObjectPointer) {
-    let name = instance.self.godotClassName
-    let thisTypeName = StringName (stringLiteral: String (describing: Swift.type(of: instance)))
-    let frameworkType = thisTypeName == name
+    let type = Swift.type(of: instance)
+    let thisTypeName = StringName (stringLiteral: String (describing: type))
+    let frameworkType = thisTypeName == type.godotClassName
     
     var callbacks: GDExtensionInstanceBindingCallbacks
     if frameworkType {
@@ -952,15 +952,9 @@ func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
         className = result.description
     }
 
-    if let type = typeOfClass(named: className) {
+    if let type = typeOfClassOrNearestKnownParent(named: className) {
         let created = type.init(InitContext(handle: nativeHandle, origin: .godot))
         return created
-    }
-
-    var requestedClass = T.godotClassName.content
-    if let classTag = gi.classdb_get_class_tag(&requestedClass),
-       gi.object_cast_to(nativeHandle, classTag) != nil {
-        return T(InitContext(handle: nativeHandle, origin: .godot))
     }
 
     print("Object of class \(className) could not be created")
@@ -1194,7 +1188,8 @@ func bindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutable
     }
 
     if let handle = object.handle {
-        let frameworkType = String(describing: type(of: object)) == object.godotClassName.description
+        let type = Swift.type(of: object)
+        let frameworkType = String(describing: type) == type.godotClassName.description
         tableLock.withLockVoid {
             if frameworkType {
                 liveFrameworkObjects[handle] = reference
@@ -1492,5 +1487,19 @@ func typeOfClass(named className: String) -> Object.Type? {
     if let type = lookupGodotType(named: className) as? Object.Type {
         return type
     }
+    return nil
+}
+
+func typeOfClassOrNearestKnownParent(named className: String) -> Object.Type? {
+    var current = StringName(className)
+
+    while current != "" {
+        if let type = typeOfClass(named: current.description) {
+            return type
+        }
+
+        current = ClassDB.getParentClass(current)
+    }
+
     return nil
 }
