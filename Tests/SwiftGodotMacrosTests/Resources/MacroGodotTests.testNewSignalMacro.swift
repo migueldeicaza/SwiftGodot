@@ -13,10 +13,13 @@ class Demo: Node3D {
 
     override open class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: Demo.self) else {
+            return
+        }
         let className = StringName("Demo")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
@@ -24,5 +27,5 @@ class Demo: Node3D {
         }
         SimpleSignal.register(as: "burp", in: className, names: [])
         SignalWithArguments<Int>.register(as: "lives_changed", in: className, names: [])
-    }()
+    }
 }

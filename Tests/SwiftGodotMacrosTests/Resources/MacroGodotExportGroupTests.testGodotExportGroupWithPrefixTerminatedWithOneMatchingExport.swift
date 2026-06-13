@@ -46,10 +46,13 @@ public class Issue353: Node {
 
     override open class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: Issue353.self) else {
+            return
+        }
         let className = StringName("Issue353")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
@@ -84,5 +87,5 @@ public class Issue353: Node {
             getterFunction: Issue353._mproxy_get_non_prefixed_bool,
             setterFunction: Issue353._mproxy_set_non_prefixed_bool
         )
-    }()
+    }
 }

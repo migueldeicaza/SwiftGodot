@@ -2,16 +2,19 @@ final class MyData: Resource {
 
     override public class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: MyData.self) else {
+            return
+        }
         let className = StringName("MyData")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-    }()
+    }
 }
 final class MyClass: Node {
     var data: MyData = .init()
@@ -39,10 +42,13 @@ final class MyClass: Node {
 
     override public class var classInitializer: Void {
         let _ = super.classInitializer
-        return _initializeClass
+        return _initializeClass()
     }
 
-    private static let _initializeClass: Void = {
+    private static func _initializeClass() {
+        guard swiftGodotShouldInitializeClass(type: MyClass.self) else {
+            return
+        }
         let className = StringName("MyClass")
         if classInitializationLevel.rawValue >= ExtensionInitializationLevel.scene.rawValue {
             // ClassDB singleton is not available prior to `.scene` level
@@ -62,5 +68,5 @@ final class MyClass: Node {
             getterFunction: MyClass._mproxy_get_data,
             setterFunction: MyClass._mproxy_set_data
         )
-    }()
+    }
 }
