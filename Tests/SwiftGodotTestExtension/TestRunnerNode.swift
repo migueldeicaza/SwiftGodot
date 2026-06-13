@@ -48,6 +48,7 @@ public class TestRunnerNode: Node {
         IntersectRayResultTests(),
         PhysicsDirectSpaceState2DIntersectRayResultTests(),
         PhysicsDirectSpaceState3DIntersectRayResultTests(),
+        VariantCodableTests(),
 
         // BuiltIn type tests
         ColorTests(),
