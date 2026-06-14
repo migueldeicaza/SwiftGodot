@@ -619,7 +619,13 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
         if isSingleton {
             p ("/// The shared instance of this class")
             p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
-                p ("return withUnsafePointer(to: &\(cdef.name).godotClassName.content)", arg: " ptr in") {
+                // Copy the class name's content into a local first. Taking the
+                // `withUnsafePointer` exclusive access directly on the static
+                // `godotClassName` conflicts with the read of that same static
+                // performed while binding the singleton's Swift object inside
+                // the closure (a Swift exclusivity violation).
+                p ("var content = \(cdef.name).godotClassName.content")
+                p ("return withUnsafePointer(to: &content)", arg: " ptr in") {
                     p ("getOrInitSwiftObject(nativeHandle: gi.global_get_singleton(ptr)!, ownership: .borrowed)!")
                 }
             }
