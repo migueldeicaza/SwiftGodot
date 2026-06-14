@@ -2,7 +2,6 @@
 
 @SwiftGodotTestSuite
 final class SnappingTests {
-    @SwiftGodotTest
     public func testSnapDouble() {
         XCTAssertEqual(Double(0).snapped(step: 10), 0)
         XCTAssertEqual(Double(1).snapped(step: 10), 0)
@@ -37,7 +36,6 @@ final class SnappingTests {
         XCTAssertEqual(Double(128).snapped(step: 200), 200)
     }
 
-    @SwiftGodotTest
     public func testSnapFloat() {
         XCTAssertEqual(Float(1008).snapped(step: 1000), 1000)
         XCTAssertEqual(Float(4023).snapped(step: 1000), 4000)
@@ -45,7 +43,6 @@ final class SnappingTests {
         XCTAssertEqual(Float(128).snapped(step: 200), 200)
     }
 
-    @SwiftGodotTest
     public func testSnapInt() {
         XCTAssertEqual(Int(0).snapped(step: 10), 0)
         XCTAssertEqual(Int(1).snapped(step: 10), 0)
@@ -65,7 +62,6 @@ final class SnappingTests {
         XCTAssertEqual(Int(128).snapped(step: 200), 200)
     }
 
-    @SwiftGodotTest
     public func testSnapVector4() {
         XCTAssertEqual(Vector4(x: 1008, y: 1008, z: 1008, w: 1008)
             .snapped(step: Vector4(x: 1000, y: 1000, z: 1000, w: 1000)),
@@ -81,7 +77,6 @@ final class SnappingTests {
                        Vector4(x: 0, y: 0, z: 0, w: 0))
     }
 
-    @SwiftGodotTest
     public func testSnapVector3() {
         XCTAssertEqual(Vector3(x: 1008, y: 1008, z: 1008)
             .snapped(step: Vector3(x: 1000, y: 1000, z: 1000)), Vector3(x: 1000, y: 1000, z: 1000))
@@ -93,7 +88,6 @@ final class SnappingTests {
             .snapped(step: Vector3(x: 1000, y: 1000, z: 1000)), Vector3(x: 0, y: 0, z: 0))
     }
 
-    @SwiftGodotTest
     public func testSnapVector2() {
         XCTAssertEqual(Vector2(x: 1008, y: 1008)
             .snapped(step: Vector2(x: 1000, y: 1000)), Vector2(x: 1000, y: 1000))

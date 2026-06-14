@@ -24,63 +24,12 @@ public class TestRunnerNode: Node {
         return TestFilter(filter)
     }
 
-    /// All test suites to run
-    private let suites: [any SwiftGodotTestSuiteProtocol] = [
-        // Core tests
-        SignalTests(),
-        WrappedTests(),
-        DuplicateClassRegistrationTests(),
-        PerformanceTests(),
-        VariantTests(),
-        MarshalTests(),
-        MemoryLeakTests(),
-        EngineTests(),
-        LifecycleTests(),
-        SnappingTests(),
-        LinearInterpolationTests(),
-        TypedArrayTests(),
-        TypedDictionaryTests(),
-        MacroCallableIntegrationTests(),
-        MacroIntegrationTests(),
-        ValidatePropertyTests(),
-        RawArgumentsFetchTests(),
-        RegistrationOrderTests(),
-        IntersectRayResultTests(),
-        PhysicsDirectSpaceState2DIntersectRayResultTests(),
-        PhysicsDirectSpaceState3DIntersectRayResultTests(),
-
-        // BuiltIn type tests
-        ColorTests(),
-        PackedArrayTests(),
-        PlaneTests(),
-        QuaternionTests(),
-        Vector2Tests(),
-        Vector2iTests(),
-        Vector3Tests(),
-        Vector3iTests(),
-        Vector4Tests(),
-        Vector4iTests(),
-
-        // Engine math tests
-        AABBTests(),
-        BasisTests(),
-        EngineColorTests(),
-        Geometry2DTests(),
-        Geometry3DTests(),
-        EnginePlaneTests(),
-        EngineQuaternionTests(),
-        Rect2Tests(),
-        Rect2iTests(),
-        Transform2DTests(),
-        Transform3DTests(),
-        EngineVector2Tests(),
-        EngineVector2iTests(),
-        EngineVector3Tests(),
-        EngineVector3iTests(),
-        EngineVector4Tests(),
-        EngineVector4iTests(),
-        AStarTests(),
-    ]
+    /// All test suites to run.
+    ///
+    /// Populated from `TestRunnerNode.generatedSuites`, which is produced at
+    /// build time by the TestSuiteGeneratorPlugin from every class annotated
+    /// with @SwiftGodotTestSuite.
+    private let suites: [any SwiftGodotTestSuiteProtocol] = TestRunnerNode.generatedSuites
 
     public override func _ready() {
         print("[TestRunnerNode] _ready() called")

@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class Vector3iTests {
-    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Vector3i
         
@@ -41,7 +40,6 @@ final class Vector3iTests {
         XCTAssertEqual (value.z, Int32.min)
     }
 
-    @SwiftGodotTest
     public func testOperatorPlus() {
         var value: Vector3i
         
@@ -76,7 +74,6 @@ final class Vector3iTests {
         XCTAssertEqual (value.z, Int32.max)
     }
 
-    @SwiftGodotTest
     public func testOperatorMinus() {
         var value: Vector3i
         

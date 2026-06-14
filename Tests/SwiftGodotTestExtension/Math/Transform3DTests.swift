@@ -14,7 +14,6 @@ final class Transform3DTests {
         return Transform3D ()
     }
     
-    @SwiftGodotTest
     public func testTranslation () {
         let offset: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
@@ -28,7 +27,6 @@ final class Transform3DTests {
         XCTAssertEqual (orig.translatedLocal (offset: offset), orig * T)
     }
 
-    @SwiftGodotTest
     public func testScaling () {
         let scaling: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
@@ -42,7 +40,6 @@ final class Transform3DTests {
         XCTAssertEqual (orig.scaledLocal (scale: scaling), orig * S)
     }
 
-    @SwiftGodotTest
     public func testRotation () {
         let axis: Vector3 = Vector3 (x: 1, y: 2, z: 3).normalized ()
         let phi: Double = 1.0
@@ -57,7 +54,6 @@ final class Transform3DTests {
         XCTAssertEqual (orig.rotatedLocal (axis: axis, angle: phi), orig * R)
     }
 
-    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let y: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infiniteVec: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)

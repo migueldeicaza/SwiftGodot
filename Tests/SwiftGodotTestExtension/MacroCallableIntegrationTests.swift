@@ -37,7 +37,6 @@ final class MacroCallableIntegrationTests {
         return [TestObject.self, TestObject2.self]
     }
 
-    @SwiftGodotTest
     public func testImplicitTypingOfUntypedObjectArray() {
         let testObject = TestObject()
         
@@ -60,7 +59,6 @@ final class MacroCallableIntegrationTests {
         object2.free()
     }
 
-    @SwiftGodotTest
     public func testImplicitTypingOfUntypedObjectArrayFailure() {
         let testObject = TestObject()
         
@@ -84,7 +82,6 @@ final class MacroCallableIntegrationTests {
         object2.free()
     }
 
-    @SwiftGodotTest
     public func testExplicitlyTypedObjectArrayGodotSideMismatch() {
         let testObject = TestObject()
         
@@ -112,7 +109,6 @@ final class MacroCallableIntegrationTests {
         object2.free()
     }
 
-    @SwiftGodotTest
     public func testTypedObjectArray() {
         let testObject = TestObject()
         
@@ -135,7 +131,6 @@ final class MacroCallableIntegrationTests {
         object2.free()
     }
 
-    @SwiftGodotTest
     public func testImplicitlyTypingBuiltinsArray() {
         let testObject = TestObject()
         
@@ -148,7 +143,6 @@ final class MacroCallableIntegrationTests {
         testObject.free()
     }
 
-    @SwiftGodotTest
     public func testImplicitTypingOfUntypedBuiltinArrayFailure() {
         let testObject = TestObject()
         
@@ -166,7 +160,6 @@ final class MacroCallableIntegrationTests {
         testObject.free()
     }
 
-    @SwiftGodotTest
     public func testExplicitlyTypedBuiltinArrayGodotSideMismatch() {
         let testObject = TestObject()
         
@@ -181,7 +174,6 @@ final class MacroCallableIntegrationTests {
         testObject.free()
     }
 
-    @SwiftGodotTest
     public func testExplicitlyTypedBuiltinArray() {
         let testObject = TestObject()
         
@@ -194,7 +186,6 @@ final class MacroCallableIntegrationTests {
         testObject.free()
     }
 
-    @SwiftGodotTest
     public func testCountMixed() {
         let testObject = TestObject()
         

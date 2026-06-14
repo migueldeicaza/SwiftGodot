@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class Vector2Tests {
-    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Vector2
         

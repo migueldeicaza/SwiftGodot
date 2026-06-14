@@ -2,38 +2,19 @@
 //  MacroDefs.swift
 //
 
-/// Marks a method as a test to be collected by @SwiftGodotTestSuite.
-///
-/// Use this attribute on test methods within a @SwiftGodotTestSuite class:
-/// ```swift
-/// @SwiftGodotTestSuite
-/// class MyTests {
-///     @SwiftGodotTest
-///     func testSomething() {
-///         // test code
-///     }
-/// }
-/// ```
-@attached(peer)
-public macro SwiftGodotTest() = #externalMacro(
-    module: "SwiftGodotTestMacrosLibrary",
-    type: "SwiftGodotTestMacro"
-)
-
 /// Adds SwiftGodotTestSuiteProtocol conformance and generates allTests property.
 ///
 /// This macro:
 /// - Adds conformance to SwiftGodotTestSuiteProtocol
-/// - Generates `allTests` computed property containing all @SwiftGodotTest methods
+/// - Generates `allTests` computed property containing every method whose name
+///   begins with `test` (taking no arguments and returning nothing)
 ///
 /// Usage:
 /// ```swift
 /// @SwiftGodotTestSuite
 /// class MyTests {
-///     @SwiftGodotTest
 ///     func testFoo() { }
 ///
-///     @SwiftGodotTest
 ///     func testBar() { }
 /// }
 /// ```

@@ -19,7 +19,6 @@ final class WrappedTests {
     // which is not available in the new external Godot test architecture.
     // This test needs to be reimplemented using the scene tree available in the running Godot instance.
 
-    @SwiftGodotTest
     public func testTopologicalSort() {
         class A: Object {
         }
@@ -66,7 +65,6 @@ class DuplicateClassTestNode: Node { }
 final class DuplicateClassRegistrationTests {
     var duplicateClassNames: [StringName] = []
 
-    @SwiftGodotTest
     public func testDuplicateClassNameIsDetected() {
         register(type: DuplicateClassTestNode.self)
         defer { unregister(type: DuplicateClassTestNode.self) }

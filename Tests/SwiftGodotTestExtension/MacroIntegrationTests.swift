@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class MacroIntegrationTests {
-    @SwiftGodotTest
     public func testCorrectPropInfoInferrenceWithoutMacro() {
         enum EnumExample: Int, CaseIterable {
             case zero = 0
@@ -75,7 +74,6 @@ final class MacroIntegrationTests {
         XCTAssertEqual(_invokeGetter(closure)?.gtype, .callable)
     }
 
-    @SwiftGodotTest
     func testCorrectRegistrationSequence() {
         class A: Object {
             override class var classInitializationLevel: ExtensionInitializationLevel {
@@ -163,7 +161,6 @@ final class MacroIntegrationTests {
 
     /// Tests that the `SwiftGodot._propInfo` is selecting the overload
     /// that is able to resolve the optional-DemoProbe into a .nodeType and a DemoProbe
-    @SwiftGodotTest
     func testPropertyRegistration() {
         let detected = SwiftGodot._propInfo(
             at: \DemoProbe.value,

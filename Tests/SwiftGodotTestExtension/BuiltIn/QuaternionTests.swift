@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class QuaternionTests {
-    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Quaternion
         
