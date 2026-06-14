@@ -39,12 +39,32 @@ struct SwiftGodotTestRunner {
             .first { !$0.isEmpty }
     }
 
-    /// Runs Godot to completion and waits for a clean exit, returning its
-    /// termination status.
+    /// True once `path` exists, is non-empty, and its size has stabilized across a
+    /// short interval (so we never read a half-written file).
+    static func fileIsReady(_ path: String) -> Bool {
+        let fm = FileManager.default
+        guard let a = try? fm.attributesOfItem(atPath: path),
+              let size = a[.size] as? Int, size > 0 else { return false }
+        Thread.sleep(forTimeInterval: 0.2)
+        guard let b = try? fm.attributesOfItem(atPath: path),
+              let size2 = b[.size] as? Int else { return false }
+        return size2 == size
+    }
+
+    /// Runs Godot and waits for its work to finish. On Windows the Godot process
+    /// can hang on shutdown after the SwiftGodot extension is loaded, long after
+    /// the useful work is done, so we don't rely on a clean exit: if a
+    /// `completionFile` is given we terminate the process once that file is fully
+    /// written; otherwise we wait up to `timeout` and then terminate. A process
+    /// that exits on its own first is handled normally.
+    /// Returns the termination status, or 0 when we terminated it after the work
+    /// completed (completion file written).
     static func runGodot(
         _ godotPath: String,
         arguments: [String],
-        cwd: String
+        cwd: String,
+        completionFile: String?,
+        timeout: TimeInterval
     ) -> Int32 {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: godotPath)
@@ -58,8 +78,31 @@ struct SwiftGodotTestRunner {
             print("      Godot launch failed: \(error)")
             exit(1)
         }
+
+        let start = Date()
+        var completed = false
+        while process.isRunning {
+            if let completionFile, fileIsReady(completionFile) {
+                completed = true
+                process.terminate()
+                break
+            }
+            if Date().timeIntervalSince(start) > timeout {
+                if completionFile == nil {
+                    // No completion signal to wait on (e.g. the import step); the
+                    // work is expected to be done by now and the process is just
+                    // hanging on shutdown.
+                    completed = true
+                } else {
+                    print("      Timed out after \(Int(timeout))s waiting for Godot.")
+                }
+                process.terminate()
+                break
+            }
+            Thread.sleep(forTimeInterval: 0.25)
+        }
         process.waitUntilExit()
-        return process.terminationStatus
+        return completed ? 0 : process.terminationStatus
     }
 
     static func main() async {
@@ -222,24 +265,38 @@ struct SwiftGodotTestRunner {
             exit(1)
         }
 
+        // On Windows the Godot process does not terminate once the SwiftGodot
+        // extension is loaded (it hangs on shutdown after the work is done), so we
+        // can't wait for a clean exit. `runGodot` watches for the work to complete
+        // instead. These timeouts are upper bounds that only matter on Windows --
+        // on macOS/Linux Godot exits on its own well before they elapse.
+        let importTimeout: TimeInterval = 60
+        let runTimeout: TimeInterval = 120
+
         // 3. Import project (needed to register the extension's nodes, e.g.
-        //    TestRunnerNode, before the main scene loads).
+        //    TestRunnerNode, before the main scene loads). There is no file signal
+        //    for import completion, so we rely on the timeout on Windows.
         print("\n[3/5] Importing Godot project...")
         _ = runGodot(
             godotPath,
             arguments: ["--headless", "--import", "--path", absoluteProjectPath],
-            cwd: absoluteProjectPath
+            cwd: absoluteProjectPath,
+            completionFile: nil,
+            timeout: importTimeout
         )
         print("      Import successful")
 
         // 4. Launch Godot to run the tests. The test extension writes the results
-        //    JSON when the run completes, then Godot exits on its own.
+        //    JSON when the run completes; we terminate Godot as soon as that file
+        //    is fully written rather than waiting on a clean exit.
         print("\n[4/5] Running tests in Godot...")
         try? fm.removeItem(atPath: absoluteResultsPath) // clear stale results
         let godotExitCode = runGodot(
             godotPath,
             arguments: ["--headless", "--verbose", "--path", absoluteProjectPath],
-            cwd: absoluteProjectPath
+            cwd: absoluteProjectPath,
+            completionFile: absoluteResultsPath,
+            timeout: runTimeout
         )
         print("      Godot finished with code: \(godotExitCode)")
 
