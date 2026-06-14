@@ -176,7 +176,7 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
-    // Test macro implementations for @SwiftGodotTest and @SwiftGodotTestSuite
+    // Test macro implementation for @SwiftGodotTestSuite
     .macro(
         name: "SwiftGodotTestMacrosLibrary",
         dependencies: [

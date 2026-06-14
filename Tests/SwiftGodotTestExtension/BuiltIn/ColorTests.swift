@@ -9,10 +9,6 @@
 
 @testable import SwiftGodot
 
-enum SwiftGodotTest {
-    case simple(name: String, run: () -> Void)
-}
-
 @SwiftGodotTestSuite
 final class ColorTests {
     public func testOperatorUnaryMinus() {
