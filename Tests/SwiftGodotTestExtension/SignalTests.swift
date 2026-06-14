@@ -25,7 +25,6 @@ final class SignalTests {
         return [TestSignalNode.self]
     }
 
-    @SwiftGodotTest
     public func testUserDefinedSignal() {
         let node = TestSignalNode()
 
@@ -36,7 +35,6 @@ final class SignalTests {
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
     }
 
-    @SwiftGodotTest
     public func testNuSignal() {
         let node = TestSignalNode()
         var signalReceived = false
@@ -50,7 +48,6 @@ final class SignalTests {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
-    @SwiftGodotTest
     public func testBuiltInSignalWithNoArgument() {
         let node = Node()
         var signalReceived = false
@@ -61,7 +58,6 @@ final class SignalTests {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
-    @SwiftGodotTest
     public func testBuiltInSignalWithArgument() {
         let node = Node()
         var signalReceived = false
@@ -73,7 +69,6 @@ final class SignalTests {
         XCTAssertTrue (signalReceived, "signal should have been received")
     }
 
-    @SwiftGodotTest
     public func testBuiltInSignalWithPrimitiveArguments() {
         let node = AnimationNode()
         var signalReceived = false

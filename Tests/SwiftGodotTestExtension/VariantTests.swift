@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class VariantTests {
-    @SwiftGodotTest
     public func testVariant () {
         let testString = "Hi"
         let variant = Variant (testString)
@@ -20,14 +19,12 @@ final class VariantTests {
         XCTAssertEqual (unwrapped, testString)
     }
 
-    @SwiftGodotTest
     public func testWrap() {
         let x: Node? = Node()
         let _ = Variant(x)
     }
     
     
-    @SwiftGodotTest
     public func testVariantCall() {
         let string = "Hello Hello Hello Hello"
         let variant = Variant(string)
@@ -104,7 +101,6 @@ final class VariantTests {
                               
     }
     
-    @SwiftGodotTest
     public func testInitVariantConvertible() {
         var variant: Variant
         
@@ -143,7 +139,6 @@ final class VariantTests {
         XCTAssertEqual (string, newString)
     }
     
-    @SwiftGodotTest
     public func testOperatorEqualsEquals () {
         XCTAssertTrue (Variant (false) == Variant (false))
         XCTAssertTrue (Variant (true) == Variant (true))
@@ -160,7 +155,6 @@ final class VariantTests {
         XCTAssertFalse (Variant (node) == Variant (node2))
     }
     
-    @SwiftGodotTest
     public func testUnwrappingApi() {
         func someFunctionTakingBool(_ bool: Bool?, successCount: inout Int) {
             if let bool {
@@ -221,7 +215,6 @@ final class VariantTests {
         }
     }
     
-    @SwiftGodotTest
     public func testNoMisconversions() {
         let variant = Vector2(x: 1, y: 2).toVariant()
         

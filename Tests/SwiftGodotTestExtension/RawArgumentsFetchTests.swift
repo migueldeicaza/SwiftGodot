@@ -423,21 +423,18 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Primitive type tests
 
-    @SwiftGodotTest
     func testFetchInt() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testInt", Variant(42))
         XCTAssertEqual(Int(result), 84)
     }
 
-    @SwiftGodotTest
     func testFetchInt64() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testInt64", Variant(Int64(100)))
         XCTAssertEqual(Int64(result), 200)
     }
 
-    @SwiftGodotTest
     func testFetchBool() {
         let node = RawArgumentsTestNode()
         let resultTrue = node.call(method: "testBool", Variant(true))
@@ -446,21 +443,18 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Bool(resultFalse), true)
     }
 
-    @SwiftGodotTest
     func testFetchString() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testString", Variant("hello"))
         XCTAssertEqual(String(result), "hello_suffix")
     }
 
-    @SwiftGodotTest
     func testFetchDouble() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testDouble", Variant(3.14))
         XCTAssertEqual(Double(result)!, 6.28, accuracy: 0.001)
     }
 
-    @SwiftGodotTest
     func testFetchFloat() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testFloat", Variant(Float(2.5)))
@@ -470,21 +464,18 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Generated builtin type tests
 
-    @SwiftGodotTest
     func testFetchStringName() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testStringName", Variant(StringName("test")))
         XCTAssertEqual(String(StringName(result)!), "test_modified")
     }
 
-    @SwiftGodotTest
     func testFetchNodePath() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testNodePath", Variant(NodePath("root/parent")))
         XCTAssertEqual(String(NodePath(result)!), "root/parent/child")
     }
 
-    @SwiftGodotTest
     func testFetchVector2() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector2", Variant(Vector2(x: 1, y: 2)))
@@ -493,7 +484,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(vec.y, 4)
     }
 
-    @SwiftGodotTest
     func testFetchVector3() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector3", Variant(Vector3(x: 1, y: 2, z: 3)))
@@ -503,7 +493,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(vec.z, 6)
     }
 
-    @SwiftGodotTest
     func testFetchVector4() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector4", Variant(Vector4(x: 1, y: 2, z: 3, w: 4)))
@@ -514,7 +503,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(vec.w, 8)
     }
 
-    @SwiftGodotTest
     func testFetchVector2i() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector2i", Variant(Vector2i(x: 3, y: 4)))
@@ -523,7 +511,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(vec.y, 8)
     }
 
-    @SwiftGodotTest
     func testFetchVector3i() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector3i", Variant(Vector3i(x: 1, y: 2, z: 3)))
@@ -533,7 +520,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(vec.z, 6)
     }
 
-    @SwiftGodotTest
     func testFetchVector4i() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector4i", Variant(Vector4i(x: 1, y: 2, z: 3, w: 4)))
@@ -544,7 +530,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(vec.w, 8)
     }
 
-    @SwiftGodotTest
     func testFetchColor() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testColor", Variant(Color(r: 0.25, g: 0.5, b: 0.125, a: 1.0)))
@@ -555,7 +540,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(color.alpha, 1.0, accuracy: 0.001)
     }
 
-    @SwiftGodotTest
     func testFetchRect2() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testRect2", Variant(Rect2(position: Vector2(x: 1, y: 2), size: Vector2(x: 3, y: 4))))
@@ -566,7 +550,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(rect.size.y, 8)
     }
 
-    @SwiftGodotTest
     func testFetchRect2i() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testRect2i", Variant(Rect2i(position: Vector2i(x: 1, y: 2), size: Vector2i(x: 3, y: 4))))
@@ -577,7 +560,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(rect.size.y, 8)
     }
 
-    @SwiftGodotTest
     func testFetchTransform2D() {
         let node = RawArgumentsTestNode()
         let transform = Transform2D()
@@ -585,7 +567,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Transform2D(result))
     }
 
-    @SwiftGodotTest
     func testFetchTransform3D() {
         let node = RawArgumentsTestNode()
         let transform = Transform3D()
@@ -593,7 +574,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Transform3D(result))
     }
 
-    @SwiftGodotTest
     func testFetchBasis() {
         let node = RawArgumentsTestNode()
         let basis = Basis()
@@ -601,7 +581,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Basis(result))
     }
 
-    @SwiftGodotTest
     func testFetchQuaternion() {
         let node = RawArgumentsTestNode()
         let quat = Quaternion()
@@ -609,7 +588,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Quaternion(result))
     }
 
-    @SwiftGodotTest
     func testFetchPlane() {
         let node = RawArgumentsTestNode()
         let plane = Plane()
@@ -617,7 +595,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Plane(result))
     }
 
-    @SwiftGodotTest
     func testFetchAABB() {
         let node = RawArgumentsTestNode()
         let aabb = AABB()
@@ -625,7 +602,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(AABB(result))
     }
 
-    @SwiftGodotTest
     func testFetchProjection() {
         let node = RawArgumentsTestNode()
         let projection = Projection()
@@ -633,7 +609,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Projection(result))
     }
 
-    @SwiftGodotTest
     func testFetchRID() {
         let node = RawArgumentsTestNode()
         let rid = RID()
@@ -641,7 +616,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(RID(result))
     }
 
-    @SwiftGodotTest
     func testFetchCallable() {
         let node = RawArgumentsTestNode()
         let callable = Callable()
@@ -649,7 +623,6 @@ final class RawArgumentsFetchTests {
         XCTAssertNotNil(Callable(result))
     }
 
-    @SwiftGodotTest
     func testFetchSignal() {
         let node = RawArgumentsTestNode()
         let signal = Signal()
@@ -659,7 +632,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Array type tests
 
-    @SwiftGodotTest
     func testFetchVariantArray() {
         let node = RawArgumentsTestNode()
         let array = VariantArray()
@@ -670,7 +642,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 3)
     }
 
-    @SwiftGodotTest
     func testFetchVariantDictionary() {
         let node = RawArgumentsTestNode()
         let dict = VariantDictionary()
@@ -680,7 +651,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchPackedByteArray() {
         let node = RawArgumentsTestNode()
         var array = PackedByteArray()
@@ -691,7 +661,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 3)
     }
 
-    @SwiftGodotTest
     func testFetchPackedInt32Array() {
         let node = RawArgumentsTestNode()
         var array = PackedInt32Array()
@@ -701,7 +670,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchPackedInt64Array() {
         let node = RawArgumentsTestNode()
         var array = PackedInt64Array()
@@ -713,7 +681,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 4)
     }
 
-    @SwiftGodotTest
     func testFetchPackedFloat32Array() {
         let node = RawArgumentsTestNode()
         var array = PackedFloat32Array()
@@ -723,7 +690,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchPackedFloat64Array() {
         let node = RawArgumentsTestNode()
         var array = PackedFloat64Array()
@@ -734,7 +700,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 3)
     }
 
-    @SwiftGodotTest
     func testFetchPackedStringArray() {
         let node = RawArgumentsTestNode()
         var array = PackedStringArray()
@@ -744,7 +709,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchPackedVector2Array() {
         let node = RawArgumentsTestNode()
         var array = PackedVector2Array()
@@ -753,7 +717,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 1)
     }
 
-    @SwiftGodotTest
     func testFetchPackedVector3Array() {
         let node = RawArgumentsTestNode()
         var array = PackedVector3Array()
@@ -763,7 +726,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchPackedVector4Array() {
         let node = RawArgumentsTestNode()
         var array = PackedVector4Array()
@@ -772,7 +734,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 1)
     }
 
-    @SwiftGodotTest
     func testFetchPackedColorArray() {
         let node = RawArgumentsTestNode()
         var array = PackedColorArray()
@@ -785,7 +746,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - TypedArray and TypedDictionary tests
 
-    @SwiftGodotTest
     func testFetchTypedArrayInt() {
         let node = RawArgumentsTestNode()
         let array = TypedArray<Int>()
@@ -796,7 +756,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 3)
     }
 
-    @SwiftGodotTest
     func testFetchTypedArrayString() {
         let node = RawArgumentsTestNode()
         let array = TypedArray<String>()
@@ -806,7 +765,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchTypedDictionaryIntString() {
         let node = RawArgumentsTestNode()
         let dict = TypedDictionary<Int, String>()
@@ -816,7 +774,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchTypedDictionaryStringInt() {
         let node = RawArgumentsTestNode()
         let dict = TypedDictionary<String, Int>()
@@ -829,7 +786,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Swift Array and Dictionary tests
 
-    @SwiftGodotTest
     func testFetchSwiftArrayInt() {
         let node = RawArgumentsTestNode()
         let swiftArray: [Int] = [1, 2, 3, 4, 5]
@@ -838,7 +794,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 15) // 1+2+3+4+5 = 15
     }
 
-    @SwiftGodotTest
     func testFetchSwiftArrayString() {
         let node = RawArgumentsTestNode()
         let swiftArray: [String] = ["a", "b", "c"]
@@ -847,7 +802,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(String(result), "a,b,c")
     }
 
-    @SwiftGodotTest
     func testFetchSwiftDictionaryIntString() {
         let node = RawArgumentsTestNode()
         let swiftDict: [Int: String] = [1: "one", 2: "two"]
@@ -856,7 +810,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 2)
     }
 
-    @SwiftGodotTest
     func testFetchSwiftDictionaryStringInt() {
         let node = RawArgumentsTestNode()
         let swiftDict: [String: Int] = ["a": 10, "b": 20, "c": 30]
@@ -867,14 +820,12 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Variant tests
 
-    @SwiftGodotTest
     func testFetchVariant() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVariant", Variant(42))
         XCTAssertEqual(String(result), "42")
     }
 
-    @SwiftGodotTest
     func testFetchVariantOptionalWithValue() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVariantOptional", Variant("hello"))
@@ -883,7 +834,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Object tests
 
-    @SwiftGodotTest
     func testFetchNodeOptionalWithValue() {
         let node = RawArgumentsTestNode()
         let testNode = Node()
@@ -892,7 +842,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(String(result), "TestNode")
     }
 
-    @SwiftGodotTest
     func testFetchNode() {
         let node = RawArgumentsTestNode()
         let testNode = Node()
@@ -901,7 +850,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(String(result), "MyTestNode")
     }
 
-    @SwiftGodotTest
     func testFetchRefCountedOptional() {
         let node = RawArgumentsTestNode()
         let refCounted = RefCounted()
@@ -911,7 +859,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - RawRepresentable enum tests
 
-    @SwiftGodotTest
     func testFetchIntEnum() {
         let node = RawArgumentsTestNode()
         // Pass the raw value since Godot doesn't know about our Swift enum
@@ -919,7 +866,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 20) // 2 * 10 = 20
     }
 
-    @SwiftGodotTest
     func testFetchInt64Enum() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testInt64Enum", Variant(200)) // TestInt64Enum.beta
@@ -928,7 +874,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - GodotBuiltinConvertible custom type tests
 
-    @SwiftGodotTest
     func testFetchCustomIntWrapper() {
         let node = RawArgumentsTestNode()
         // CustomIntWrapper is backed by Int, so we pass an Int
@@ -936,7 +881,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 21) // 7 * 3 = 21
     }
 
-    @SwiftGodotTest
     func testFetchCustomStringWrapper() {
         let node = RawArgumentsTestNode()
         // CustomStringWrapper is backed by String
@@ -944,7 +888,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(String(result), "HELLO")
     }
 
-    @SwiftGodotTest
     func testFetchCustomVector2Wrapper() {
         let node = RawArgumentsTestNode()
         // CustomVector2Wrapper is backed by Vector2
@@ -956,7 +899,6 @@ final class RawArgumentsFetchTests {
 
     // MARK: - Mixed parameter tests
 
-    @SwiftGodotTest
     func testFetchMixedParams() {
         let node = RawArgumentsTestNode()
         let result = node.call(
@@ -969,7 +911,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(String(result), "42_test_true_1.5,2.5")
     }
 
-    @SwiftGodotTest
     func testFetchMixedWithCustom() {
         let node = RawArgumentsTestNode()
         // intWrapper(5) + stringWrapper("abc").count(3) + normalInt(10) = 18
@@ -982,7 +923,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 18)
     }
 
-    @SwiftGodotTest
     func testFetchMixedWithArrays() {
         let node = RawArgumentsTestNode()
 
@@ -1005,7 +945,6 @@ final class RawArgumentsFetchTests {
         XCTAssertEqual(Int(result), 6)
     }
 
-    @SwiftGodotTest
     func testFetchMixedWithObjects() {
         let node = RawArgumentsTestNode()
         let testNode = Node()

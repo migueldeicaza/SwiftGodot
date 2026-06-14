@@ -6,20 +6,17 @@
 
 @SwiftGodotTestSuite
 final class AABBTests {
-    @SwiftGodotTest
     public func testConstructorMethods() {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         let aabbCopy: AABB = AABB (from: aabb)
         XCTAssertEqual (aabb, aabbCopy, "AABBs created with the same dimensions but by different methods should be equal.")
     }
 
-    @SwiftGodotTest
     public func testStringConversion() {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (Variant (aabb).description, "[P: (-1.5, 2.0, -2.5), S: (4.0, 5.0, 6.0)]", "The string representation should match the expected value.")
     }
 
-    @SwiftGodotTest
     public func testBasicGetters() {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (aabb.position, Vector3 (x: -1.5, y: 2, z: -2.5), "position getter should return the expected value.")
@@ -28,7 +25,6 @@ final class AABBTests {
         XCTAssertEqual (aabb.getCenter (), Vector3 (x: 0.5, y: 4.5, z: 0.5), "getCenter() should return the expected value.")
     }
 
-    @SwiftGodotTest
     public func testBasicSetters() {
         var aabb: AABB
         
@@ -45,7 +41,6 @@ final class AABBTests {
         XCTAssertEqual (aabb, AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 0, y: 0, z: -50)), "Setting position should result in the expected AABB.")
     }
 
-    @SwiftGodotTest
     public func testVolumeGetters() {
         var aabb: AABB
         
@@ -69,7 +64,6 @@ final class AABBTests {
         XCTAssertFalse (aabb.hasVolume (), "Empty AABB should not have a volume.")
     }
 
-    @SwiftGodotTest
     public func testSurfaceGetters() {
         var aabb: AABB
         
@@ -86,7 +80,6 @@ final class AABBTests {
         XCTAssertFalse (aabb.hasSurface (), "Empty AABB should not have an surface.")
     }
 
-    @SwiftGodotTest
     public func testIntersection() {
         let aabbBig: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         var aabbSmall: AABB
@@ -121,7 +114,6 @@ final class AABBTests {
         XCTAssertEqual (aabbBig.intersectsSegment (from: Vector3 (x: 0, y: 300, z: 0), to: Vector3 (x: 0, y: 300, z: 0))?.gtype, nil, "intersectsSegment() should return the expected result with segment of length 0.")
     }
 
-    @SwiftGodotTest
     public func testMerging() {
         let aabbBig: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         var aabbSmall: AABB
@@ -136,7 +128,6 @@ final class AABBTests {
         XCTAssertEqual (aabbBig.merge (with: aabbSmall), AABB (position: Vector3 (x: -1.5, y: -10, z: -10), size: Vector3 (x: 12.5, y: 17, z: 13.5)), "merge() with non-contained AABB should return the expected result.")
     }
 
-    @SwiftGodotTest
     public func testEncloses() {
         let aabbBig: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         var aabbSmall: AABB
@@ -151,7 +142,6 @@ final class AABBTests {
         XCTAssertFalse (aabbBig.encloses (with: aabbSmall), "encloses() with non-contained AABB should return the expected result.")
     }
 
-    @SwiftGodotTest
     public func testGetEndpoints() {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (aabb.getEndpoint (idx: 0), Vector3 (x: -1.5, y: 2, z: -2.5), "The endpoint at index 0 should match the expected value.")
@@ -166,7 +156,6 @@ final class AABBTests {
         XCTAssertEqual (aabb.getEndpoint (idx: -1), Vector3 (), "The endpoint at invalid index -1 should match the expected value.")
     }
 
-    @SwiftGodotTest
     public func testGetLongestShortestAxis() {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (aabb.getLongestAxis (), Vector3 (x: 0, y: 0, z: 1), "getLongestAxis() should return the expected value.")
@@ -177,7 +166,6 @@ final class AABBTests {
         XCTAssertEqual (aabb.getShortestAxisSize (), 4, "getShortestAxisSize() should return the expected value.")
     }
 
-    @SwiftGodotTest
     public func testGetSupport () {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (aabb.getSupport (direction: Vector3 (x: 1, y: 0, z: 0)), Vector3 (x: 2.5, y: 2, z: -2.5), "getSupport() should return the expected value.")
@@ -188,7 +176,6 @@ final class AABBTests {
         XCTAssertEqual (aabb.getSupport (direction: Vector3 ()), Vector3 (x: -1.5, y: 2, z: -2.5), "getSupport() should return the expected value with a null vector.")
     }
 
-    @SwiftGodotTest
     public func testGrow () {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (aabb.grow (by: 0.25), AABB (position: Vector3 (x: -1.75, y: 1.75, z: -2.75), size: Vector3 (x: 4.5, y: 5.5, z: 6.5)), "grow() with positive value should return the expected AABB.")
@@ -196,7 +183,6 @@ final class AABBTests {
         XCTAssertEqual (aabb.grow (by: -10), AABB (position: Vector3 (x: 8.5, y: 12, z: 7.5), size: Vector3 (x: -16, y: -15, z: -14)), "grow() with large negative value should return the expected AABB.")
     }
 
-    @SwiftGodotTest
     public func testHasPoint () {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         
@@ -212,7 +198,6 @@ final class AABBTests {
         XCTAssertTrue (aabb.hasPoint (Vector3 (x: 0, y: 3, z: 3.5)), "hasPoint() with positive size should include point on far face (Z axis).")
     }
 
-    @SwiftGodotTest
     public func testExpanding () {
         let aabb: AABB = AABB (position: Vector3 (x: -1.5, y: 2, z: -2.5), size: Vector3 (x: 4, y: 5, z: 6))
         XCTAssertEqual (aabb.expand (toPoint: Vector3 (x: -1, y: 3, z: 0)), aabb, "expand() with contained point should return the expected AABB.")
@@ -222,7 +207,6 @@ final class AABBTests {
         XCTAssertEqual (aabb.expand (toPoint: Vector3 (x: -20, y: 0, z: 0)), AABB (position: Vector3 (x: -20, y: 0, z: -2.5), size: Vector3 (x: 22.5, y: 7, z: 6)), "expand() with non-contained point should return the expected AABB.")
     }
 
-    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)

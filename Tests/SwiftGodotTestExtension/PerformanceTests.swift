@@ -16,7 +16,6 @@ extension Vector2 {
 // in the new test framework. This test has been converted to a basic functional test.
 @SwiftGodotTestSuite
 final class PerformanceTests {
-    @SwiftGodotTest
     public func testInputGetVector() {
         let ui_left = StringName("ui_left")
         let ui_right = StringName("ui_right")

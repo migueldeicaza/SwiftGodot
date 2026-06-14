@@ -29,7 +29,6 @@ final class ValidatePropertyTests {
         return [TestProp.self]
     }
 
-    @SwiftGodotTest
     public func testThing() {
         var found = false
         let node = TestProp()

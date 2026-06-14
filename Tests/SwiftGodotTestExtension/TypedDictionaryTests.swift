@@ -12,7 +12,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Initialization Tests
 
-    @SwiftGodotTest
     func testEmptyInitialization() {
         let dictionary = TypedDictionary<Int, String>()
 
@@ -20,7 +19,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.isEmpty())
     }
 
-    @SwiftGodotTest
     func testDictionaryLiteralInitialization() {
         let dictionary: TypedDictionary<Int, String> = [1: "one", 2: "two", 3: "three"]
 
@@ -31,7 +29,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[3], "three")
     }
 
-    @SwiftGodotTest
     func testSwiftDictionaryInitialization() {
         let swiftDict: [String: Int] = ["a": 1, "b": 2, "c": 3]
         let dictionary = TypedDictionary(swiftDict)
@@ -42,7 +39,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary["c"], 3)
     }
 
-    @SwiftGodotTest
     func testFromVariantDictionaryInitialization() {
         let variantDict = VariantDictionary()
         variantDict[Variant(1)] = Variant("one")
@@ -56,7 +52,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Subscript Tests
 
-    @SwiftGodotTest
     func testSubscriptGetSet() {
         let dictionary = TypedDictionary<String, Int>()
 
@@ -68,7 +63,6 @@ final class TypedDictionaryTests {
         XCTAssertNil(dictionary["nonexistent"])
     }
 
-    @SwiftGodotTest
     func testSubscriptOverwrite() {
         let dictionary: TypedDictionary<String, Int> = ["key": 1]
 
@@ -78,7 +72,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary.size(), 1)
     }
 
-    @SwiftGodotTest
     func testSubscriptNilErasesValue() {
         let dictionary: TypedDictionary<String, Int> = ["key": 42]
 
@@ -90,7 +83,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.isEmpty())
     }
 
-    @SwiftGodotTest
     func testSubscriptWithObjectValue() {
         let dictionary = TypedDictionary<Int, RefCounted?>()
 
@@ -106,7 +98,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.has(key: 1))
     }
 
-    @SwiftGodotTest
     func testSubscriptWithVariantValue() {
         let dictionary = TypedDictionary<String, Variant?>()
 
@@ -122,7 +113,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Size and Empty Tests
 
-    @SwiftGodotTest
     func testSizeIncreasesWithAdditions() {
         let dictionary = TypedDictionary<Int, Int>()
 
@@ -138,7 +128,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary.size(), 3)
     }
 
-    @SwiftGodotTest
     func testIsEmptyReflectsState() {
         let dictionary = TypedDictionary<Int, Int>()
 
@@ -153,7 +142,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Clear Tests
 
-    @SwiftGodotTest
     func testClearRemovesAllEntries() {
         let dictionary: TypedDictionary<Int, String> = [1: "a", 2: "b", 3: "c"]
 
@@ -168,7 +156,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Erase Tests
 
-    @SwiftGodotTest
     func testEraseRemovesExistingKey() {
         let dictionary: TypedDictionary<String, Int> = ["key": 42]
 
@@ -179,7 +166,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.isEmpty())
     }
 
-    @SwiftGodotTest
     func testEraseReturnsFalseForNonexistentKey() {
         let dictionary = TypedDictionary<String, Int>()
 
@@ -190,7 +176,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Has Tests
 
-    @SwiftGodotTest
     func testHasReturnsTrueForExistingKey() {
         let dictionary: TypedDictionary<Int, String> = [1: "one", 2: "two"]
 
@@ -198,14 +183,12 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.has(key: 2))
     }
 
-    @SwiftGodotTest
     func testHasReturnsFalseForNonexistentKey() {
         let dictionary: TypedDictionary<Int, String> = [1: "one"]
 
         XCTAssertFalse(dictionary.has(key: 999))
     }
 
-    @SwiftGodotTest
     func testHasAllReturnsCorrectly() {
         let dictionary: TypedDictionary<Int, String> = [1: "a", 2: "b", 3: "c"]
 
@@ -223,7 +206,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Keys and Values Tests
 
-    @SwiftGodotTest
     func testKeysReturnsAllKeys() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1, "b": 2, "c": 3]
 
@@ -235,7 +217,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(keys.contains { $0 == "c" })
     }
 
-    @SwiftGodotTest
     func testValuesReturnsAllValues() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1, "b": 2, "c": 3]
 
@@ -249,7 +230,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Get with Default Tests
 
-    @SwiftGodotTest
     func testGetReturnsValueForExistingKey() {
         let dictionary: TypedDictionary<String, Int> = ["key": 42]
 
@@ -258,7 +238,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(value, 42)
     }
 
-    @SwiftGodotTest
     func testGetReturnsDefaultForNonexistentKey() {
         let dictionary = TypedDictionary<String, Int>()
 
@@ -269,7 +248,6 @@ final class TypedDictionaryTests {
 
     // MARK: - GetOrAdd Tests
 
-    @SwiftGodotTest
     func testGetOrAddReturnsExistingValue() {
         let dictionary: TypedDictionary<String, Int> = ["key": 42]
 
@@ -279,7 +257,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary.size(), 1)
     }
 
-    @SwiftGodotTest
     func testGetOrAddInsertsAndReturnsDefault() {
         let dictionary = TypedDictionary<String, Int>()
 
@@ -292,7 +269,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Set Tests
 
-    @SwiftGodotTest
     func testSetAddsNewEntry() {
         let dictionary = TypedDictionary<Int, String>()
 
@@ -302,7 +278,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[1], "one")
     }
 
-    @SwiftGodotTest
     func testSetUpdatesExistingEntry() {
         let dictionary: TypedDictionary<Int, String> = [1: "uno"]
 
@@ -315,7 +290,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Duplicate Tests
 
-    @SwiftGodotTest
     func testDuplicateCreatesShallowCopy() {
         let original: TypedDictionary<String, Int> = ["a": 1, "b": 2]
 
@@ -331,7 +305,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(copy["a"], 100)
     }
 
-    @SwiftGodotTest
     func testDuplicateDeepCopy() {
         let original: TypedDictionary<String, Int> = ["x": 10, "y": 20]
 
@@ -344,7 +317,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Iteration Tests
 
-    @SwiftGodotTest
     func testIterationVisitsAllEntries() {
         let dictionary: TypedDictionary<Int, String> = [1: "one", 2: "two", 3: "three"]
 
@@ -367,7 +339,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(visitedValues.contains("three"))
     }
 
-    @SwiftGodotTest
     func testIterationOnEmptyDictionary() {
         let dictionary = TypedDictionary<Int, Int>()
 
@@ -381,7 +352,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Merge Tests
 
-    @SwiftGodotTest
     func testMergeWithoutOverwrite() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1, "b": 2]
 
@@ -396,7 +366,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary["c"], 3) // Added
     }
 
-    @SwiftGodotTest
     func testMergeWithOverwrite() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1, "b": 2]
 
@@ -411,7 +380,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary["c"], 3)
     }
 
-    @SwiftGodotTest
     func testMergedReturnsNewDictionary() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1]
 
@@ -429,7 +397,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Sort Tests
 
-    @SwiftGodotTest
     func testSortOrdersKeys() {
         let dictionary = TypedDictionary<Int, String>()
         dictionary[3] = "three"
@@ -446,14 +413,12 @@ final class TypedDictionaryTests {
 
     // MARK: - ReadOnly Tests
 
-    @SwiftGodotTest
     func testIsReadOnlyInitiallyFalse() {
         let dictionary = TypedDictionary<Int, Int>()
 
         XCTAssertFalse(dictionary.isReadOnly())
     }
 
-    @SwiftGodotTest
     func testMakeReadOnlySetsFlag() {
         let dictionary: TypedDictionary<Int, Int> = [1: 1]
 
@@ -464,7 +429,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Type Comparison Tests
 
-    @SwiftGodotTest
     func testIsSameTypedWithIdenticalTypes() {
         let dict1 = TypedDictionary<Int, String>()
         let dict2 = TypedDictionary<Int, String>()
@@ -472,7 +436,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dict1.isSameTyped(dictionary: dict2.dictionary))
     }
 
-    @SwiftGodotTest
     func testIsSameTypedKeyWithIdenticalKeyTypes() {
         let dict1 = TypedDictionary<Int, String>()
         let dict2 = TypedDictionary<Int, Float>()
@@ -480,7 +443,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dict1.isSameTypedKey(dictionary: dict2.dictionary))
     }
 
-    @SwiftGodotTest
     func testIsSameTypedValueWithIdenticalValueTypes() {
         let dict1 = TypedDictionary<Int, String>()
         let dict2 = TypedDictionary<Float, String>()
@@ -490,7 +452,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Variant Conversion Tests
 
-    @SwiftGodotTest
     func testToVariantAndBack() {
         let original: TypedDictionary<String, Int> = ["key": 42]
 
@@ -501,7 +462,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(restored?["key"], 42)
     }
 
-    @SwiftGodotTest
     func testToFastVariantAndBack() {
         let original: TypedDictionary<Int, Int> = [1: 100, 2: 200]
 
@@ -515,7 +475,6 @@ final class TypedDictionaryTests {
 
     // MARK: - FindKey Tests
 
-    @SwiftGodotTest
     func testFindKeyReturnsCorrectKey() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1, "b": 2, "c": 3]
 
@@ -525,7 +484,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(String(foundKey!), "b")
     }
 
-    @SwiftGodotTest
     func testFindKeyReturnsNilForNonexistentValue() {
         let dictionary: TypedDictionary<String, Int> = ["a": 1, "b": 2]
 
@@ -536,7 +494,6 @@ final class TypedDictionaryTests {
 
     // MARK: - RecursiveEqual Tests
 
-    @SwiftGodotTest
     func testRecursiveEqualWithEqualDictionaries() {
         let dict1: TypedDictionary<Int, Int> = [1: 10, 2: 20]
         let dict2: TypedDictionary<Int, Int> = [1: 10, 2: 20]
@@ -544,7 +501,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dict1.recursiveEqual(dictionary: dict2.dictionary, recursionCount: 1))
     }
 
-    @SwiftGodotTest
     func testRecursiveEqualWithDifferentDictionaries() {
         let dict1: TypedDictionary<Int, Int> = [1: 10, 2: 20]
         let dict2: TypedDictionary<Int, Int> = [1: 10, 2: 99]
@@ -554,7 +510,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Various Key/Value Type Combinations
 
-    @SwiftGodotTest
     func testIntToIntDictionary() {
         let dictionary: TypedDictionary<Int, Int> = [1: 100, 2: 200, 3: 300]
 
@@ -563,7 +518,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[3], 300)
     }
 
-    @SwiftGodotTest
     func testStringToStringDictionary() {
         let dictionary: TypedDictionary<String, String> = ["hello": "world", "foo": "bar"]
 
@@ -571,7 +525,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary["foo"], "bar")
     }
 
-    @SwiftGodotTest
     func testFloatKeyDictionary() {
         let dictionary = TypedDictionary<Float, String>()
 
@@ -582,7 +535,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[2.5], "two and a half")
     }
 
-    @SwiftGodotTest
     func testVector2KeyDictionary() {
         let dictionary = TypedDictionary<Vector2, Int>()
 
@@ -596,7 +548,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[key2], 20)
     }
 
-    @SwiftGodotTest
     func testVector3ValueDictionary() {
         let dictionary = TypedDictionary<String, Vector3>()
 
@@ -610,7 +561,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary["pos2"], value2)
     }
 
-    @SwiftGodotTest
     func testColorValueDictionary() {
         let dictionary = TypedDictionary<String, Color>()
 
@@ -625,7 +575,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Debug Description Test
 
-    @SwiftGodotTest
     func testDebugDescriptionNotEmpty() {
         let dictionary: TypedDictionary<Int, String> = [1: "one"]
 
@@ -636,7 +585,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Assign Tests
 
-    @SwiftGodotTest
     func testAssignReplacesContent() {
         let dictionary: TypedDictionary<Int, Int> = [1: 1, 2: 2]
 
@@ -653,7 +601,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Edge Cases
 
-    @SwiftGodotTest
     func testEmptyStringKey() {
         let dictionary = TypedDictionary<String, Int>()
 
@@ -663,7 +610,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.has(key: ""))
     }
 
-    @SwiftGodotTest
     func testZeroKey() {
         let dictionary = TypedDictionary<Int, String>()
 
@@ -673,7 +619,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(dictionary.has(key: 0))
     }
 
-    @SwiftGodotTest
     func testNegativeKey() {
         let dictionary = TypedDictionary<Int, String>()
 
@@ -684,7 +629,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(dictionary[-100], "negative hundred")
     }
 
-    @SwiftGodotTest
     func testLargeNumberOfEntries() {
         let dictionary = TypedDictionary<Int, Int>()
 
@@ -700,7 +644,6 @@ final class TypedDictionaryTests {
 
     // MARK: - Type Mismatch Tests (Godot prints errors, operations ignored)
 
-    @SwiftGodotTest
     func testTypeMismatchKeyViaUnderlyingDictionary() {
         // Create typed dictionary expecting Int keys
         let typed = TypedDictionary<Int, String>()
@@ -715,7 +658,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed[1], "one")
     }
 
-    @SwiftGodotTest
     func testTypeMismatchValueViaUnderlyingDictionary() {
         // Create typed dictionary expecting String values
         let typed = TypedDictionary<Int, String>()
@@ -730,7 +672,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed[1], "one")
     }
 
-    @SwiftGodotTest
     func testTypeMismatchBothKeyAndValueViaUnderlyingDictionary() {
         // Create typed dictionary expecting Int keys and String values
         let typed = TypedDictionary<Int, String>()
@@ -745,7 +686,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed[1], "one")
     }
 
-    @SwiftGodotTest
     func testTypeMismatchMergeWithIncompatibleTypes() {
         // Create typed dictionary
         let typed = TypedDictionary<Int, Int>()
@@ -765,7 +705,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed[1], 100)
     }
 
-    @SwiftGodotTest
     func testTypeMismatchAssignWithIncompatibleTypes() {
         // Create typed dictionary
         let typed = TypedDictionary<Int, String>()
@@ -785,7 +724,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed[1], "original")
     }
 
-    @SwiftGodotTest
     func testTypeMismatchFromVariantDictionaryWithWrongTypes() {
         // Create untyped dictionary with mixed types
         let untyped = VariantDictionary()
@@ -801,7 +739,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed.size(), 0)
     }
 
-    @SwiftGodotTest
     func testTypeMismatchUpdateExistingKeyWithWrongValueType() {
         // Create typed dictionary
         let typed = TypedDictionary<String, Int>()
@@ -815,7 +752,6 @@ final class TypedDictionaryTests {
         XCTAssertEqual(typed["key"], 42)
     }
 
-    @SwiftGodotTest
     func testTypeMismatchObjectTypeDictionaryWithWrongObjectType() {
         // Create typed dictionary expecting RefCounted
         let typed = TypedDictionary<Int, RefCounted?>()
@@ -832,7 +768,6 @@ final class TypedDictionaryTests {
         XCTAssertTrue(typed[1] === refCounted)
     }
 
-    @SwiftGodotTest
     func testTypeMismatchMultipleInvalidInserts() {
         // Create typed dictionary
         let typed = TypedDictionary<Int, Float>()

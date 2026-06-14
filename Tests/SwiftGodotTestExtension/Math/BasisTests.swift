@@ -55,7 +55,6 @@ final class BasisTests {
         XCTAssert ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Double check with XYZ rot order failed, due to Z \(res.z)")
     }
 
-    @SwiftGodotTest
     public func testEulerConversions () {
         let eulerOrders: [EulerOrder] = [
             EulerOrder.xyz,
@@ -126,7 +125,6 @@ final class BasisTests {
         }
     }
 
-    @SwiftGodotTest
     public func testEulerConversionsRandom () {
         let eulerOrders: [EulerOrder] = [
             EulerOrder.xyz,
@@ -151,7 +149,6 @@ final class BasisTests {
         }
     }
 
-    @SwiftGodotTest
     public func testGetAxisAngle () {
         var basis: Basis
         var axis: Vector3
@@ -216,7 +213,6 @@ final class BasisTests {
         XCTAssertFalse (basis.getRotationQuaternion ().getAngle ().isNaN)
     }
 
-    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)
@@ -234,7 +230,6 @@ final class BasisTests {
         XCTAssertFalse (Basis (xAxis: infinite, yAxis: infinite, zAxis: infinite).isFinite (), "Basis with three components infinite should not be finite.")
     }
 
-    @SwiftGodotTest
     public func testIsConformalChecks () {
         var basis: Basis
         

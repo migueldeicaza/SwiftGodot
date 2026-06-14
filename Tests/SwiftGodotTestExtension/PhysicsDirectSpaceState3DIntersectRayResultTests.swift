@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class PhysicsDirectSpaceState3DIntersectRayResultTests {
-    @SwiftGodotTest
     public func testIntersectRayResultPropertiesMatchDictionary_whenAllPropertiesPresent() {
         let collider: Object = GridMap()
 
@@ -41,7 +40,6 @@ final class PhysicsDirectSpaceState3DIntersectRayResultTests {
         XCTAssertEqual(result.faceIndex, 44)
     }
 
-    @SwiftGodotTest
     public func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
         let collider: Object = GridMap()
         

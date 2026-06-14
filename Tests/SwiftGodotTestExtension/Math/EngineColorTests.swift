@@ -6,7 +6,6 @@
 
 @SwiftGodotTestSuite
 final class EngineColorTests {
-    @SwiftGodotTest
     public func testConstructorMethods () {
         let blueRgba: Color = Color (r: 0.25098, g: 0.376471, b: 1, a: 0.501961)
         let blueHtml: Color = Color.html (rgba: "#4060ff80")
@@ -27,7 +26,6 @@ final class EngineColorTests {
         XCTAssertTrue (greenRgba.isEqualApprox (to: greenHsva), "Creation with HSV notation should result in components approximately equal to the default constructor.")
     }
 
-    @SwiftGodotTest
     public func testOperators () {
         let blue: Color = Color (r: 0.2, g: 0.2, b: 1)
         let darkRed: Color = Color (r: 0.3, g: 0.1, b: 0.1)
@@ -42,7 +40,6 @@ final class EngineColorTests {
         assertApproxEqual (-blue, Color (r: 0.8, g: 0.8, b: 0, a: 0), "Color negation should behave as expected (affecting the alpha channel, unlike `invert ()`).")
     }
 
-    @SwiftGodotTest
     public func testReadingMethods () {
         let darkBlue: Color = Color (r: 0, g: 0, b: 0.5, a: 0.4)
         XCTAssertEqual (darkBlue.hue, 240.0 / 360.0, "The returned HSV hue should match the expected value.")
@@ -51,7 +48,6 @@ final class EngineColorTests {
     }
 
 
-    @SwiftGodotTest
     public func testConversionMethods () {
         let cyan: Color = Color (r: 0, g: 1, b: 1)
         let cyanTransparent: Color = Color (r: 0, g: 1, b: 1, a: 0)
@@ -67,7 +63,6 @@ final class EngineColorTests {
         XCTAssertEqual (Variant (cyan).description, "(0.0, 1.0, 1.0, 1.0)", "The string representation should match the expected value.")
     }
 
-    @SwiftGodotTest
     public func testSrgbConversion () {
         let color: Color = Color (r: 0.35, g: 0.5, b: 0.6, a: 0.7)
         let colorLinear: Color = color.srgbToLinear ()
@@ -78,7 +73,6 @@ final class EngineColorTests {
         XCTAssertTrue (colorSrgb.srgbToLinear ().isEqualApprox (to: Color (r: 0.35, g: 0.5, b: 0.6, a: 0.7)), "The sRGB color converted back to linear color space should match the expected value.")
     }
 
-    @SwiftGodotTest
     public func testNamedColors () {
         XCTAssertEqual (Color (code: "red"), Color.hex (hex: 0xFF0000FF), "The named color \"red\" should match the expected value.")
         
@@ -89,7 +83,6 @@ final class EngineColorTests {
         XCTAssertTrue (Color (code: "doesn't exist").isEqualApprox (to: Color ()), "The invalid named color \"doesn't exist\" should result in a Color with the default values.")
     }
 
-    @SwiftGodotTest
     public func testValidationMethods () {
         XCTAssertTrue (Color.htmlIsValid (color: "#4080ff"), "Valid HTML color (with leading #) should be considered valid.")
         XCTAssertTrue (Color.htmlIsValid (color: "4080ff"), "Valid HTML color (without leading #) should be considered valid.")
@@ -97,7 +90,6 @@ final class EngineColorTests {
         XCTAssertTrue (!Color.htmlIsValid (color: "#fuf"), "Invalid HTML color should be considered invalid.")
     }
 
-    @SwiftGodotTest
     public func testManipulationMethods () {
         let blue: Color = Color (r: 0, g: 0, b: 1, a: 0.4)
         

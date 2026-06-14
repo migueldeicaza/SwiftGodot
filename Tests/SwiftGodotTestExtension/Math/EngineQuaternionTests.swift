@@ -6,7 +6,6 @@
 
 @SwiftGodotTestSuite
 final class EngineQuaternionTests {
-    @SwiftGodotTest
     public func testDefaultConstruct () {
         let q: Quaternion = Quaternion ()
         XCTAssertEqual (q.x, 0)
@@ -15,7 +14,6 @@ final class EngineQuaternionTests {
         XCTAssertEqual (q.w, 1)
     }
     
-    @SwiftGodotTest
     public func testConstructXYZW () {
         // Values are taken from actual use in another project & are valid (except roundoff error).
         let q = Quaternion (x: 0.2391, y: 0.099, z: 0.3696, w: 0.8924)
@@ -25,7 +23,6 @@ final class EngineQuaternionTests {
         XCTAssertEqual (q.w, 0.8924)
     }
     
-    @SwiftGodotTest
     public func testConstructAxisAngle () {
         var q: Quaternion
         
@@ -60,7 +57,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (q.w, 0.953717)
     }
     
-    @SwiftGodotTest
     public func testConstructFromQuaternion () {
         let axis: Vector3 = Vector3 (x: 1.0, y: 2.0, z: 0.5)
         let qSrc: Quaternion = Quaternion (axis: axis.normalized (), angle: Float (35).degreesToRadians)
@@ -71,7 +67,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (q.w, 0.953717)
     }
     
-    @SwiftGodotTest
     public func testConstructEulerSingleAxis () {
         let yaw: Float = Float (45.0).degreesToRadians
         let pitch: Float = Float (30.0).degreesToRadians
@@ -99,7 +94,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (qR.w, 0.996195)
     }
     
-    @SwiftGodotTest
     public func testConstructEulerYXZDynamicAxes () {
         let yaw: Float = Float (45.0).degreesToRadians
         let pitch: Float = Float (30.0).degreesToRadians
@@ -124,7 +118,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (q, checkYxz)
     }
     
-    @SwiftGodotTest
     public func testConstructBasisEuler () {
         let yaw: Float = Float (45.0).degreesToRadians
         let pitch: Float = Float (30.0).degreesToRadians
@@ -136,7 +129,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (q, qYxz)
     }
     
-    @SwiftGodotTest
     public func testConstructBasisAxes () {
         func quatEulerYxzDeg (angle: Vector3) -> Quaternion {
             let yaw: Float = angle.y.degreesToRadians
@@ -195,7 +187,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (q.w, 0.8582598)
     }
     
-    @SwiftGodotTest
     public func testGetEulerOrders () {
         let x: Float = Float (45.0).degreesToRadians
         let y: Float = Float (30.0).degreesToRadians
@@ -216,7 +207,6 @@ final class EngineQuaternionTests {
         }
     }
     
-    @SwiftGodotTest
     public func testProductBook () {
         // Example from "Quaternions and Rotation Sequences" by Jack Kuipers, p. 108.
         let p: Quaternion = Quaternion (x: 1.0, y: -2.0, z: 1.0, w: 3.0)
@@ -228,7 +218,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (pq.w, 8.0)
     }
     
-    @SwiftGodotTest
     public func testProduct () {
         let yaw: Float = Float (45.0).degreesToRadians
         let pitch: Float = Float (30.0).degreesToRadians
@@ -271,7 +260,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (qRYP.w, 0.897636)
     }
     
-    @SwiftGodotTest
     public func testXformUnitVectors () {
         // Easy to visualize: 120 deg about X-axis.
         // Transform the i, j, & k unit vectors.
@@ -332,7 +320,6 @@ final class EngineQuaternionTests {
         XCTAssertEqual (kT.length (), 1)
     }
     
-    @SwiftGodotTest
     public func testXformVector () {
         // Arbitrary quaternion rotates an arbitrary vector.
         let eulerYzx: Vector3 = Vector3 (x: Float (31.41).degreesToRadians, y: Float (-49.16).degreesToRadians, z: Float (12.34).degreesToRadians)
@@ -347,7 +334,6 @@ final class EngineQuaternionTests {
         assertApproxEqual (vRot, vCompare)
     }
     
-    @SwiftGodotTest
     public func testManyVectorXforms () {
         // Test vector xform for a single combination of Quaternion and Vector.
         func assertQuatVecRotate (eulerYzx: Vector3, vIn: Vector3) {
@@ -389,7 +375,6 @@ final class EngineQuaternionTests {
         }
     }
     
-    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         XCTAssertTrue (Quaternion (x: 0, y: 1, z: 2, w: 3).isFinite (), "Quaternion with all components finite should be finite")
         

@@ -12,7 +12,6 @@
 @SwiftGodotTestSuite
 final class LifecycleTests {
     /// Checks memory leaks of Resource objects, this tests the Resource codepath
-    @SwiftGodotTest
     public func testFreeResource() {
         func createImageAndGetId () -> Int64 {
             let img = Image()
@@ -26,7 +25,6 @@ final class LifecycleTests {
     }
 
     /// Checks memory leaks of Resource objects, this tests the non-Resource, non-Node codepath
-    @SwiftGodotTest
     public func testFreeObjects() {
         func createTimerAndGetId () -> Int64 {
             let img = UndoRedo()
@@ -39,7 +37,6 @@ final class LifecycleTests {
         XCTAssertFalse (GD.isInstanceIdValid(id: id), "Expected timer to be disposed")
     }
 
-    @SwiftGodotTest
     public func testDuplicateReturnedResourceKeepsSingleNativeReference() {
         let original = StyleBoxFlat()
         guard let duplicate = original.duplicate() as? StyleBoxFlat else {
@@ -50,7 +47,6 @@ final class LifecycleTests {
         XCTAssertEqual(duplicate.getReferenceCount(), 1, "duplicate() should surface a single owned native reference")
     }
 
-    @SwiftGodotTest
     public func testEngineReturnedFileAccessKeepsSingleNativeReference() {
         let testPath = "user://swiftgodot-engine-returned-refcount.txt"
 
