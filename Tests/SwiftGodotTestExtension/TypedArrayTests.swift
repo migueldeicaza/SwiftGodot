@@ -4,7 +4,6 @@
 
 @SwiftGodotTestSuite
 final class TypedArrayTests {
-    @SwiftGodotTest
     public func testAppendingElementStoresInArray() {
         let sut: TypedArray<Int> = []
 
@@ -18,7 +17,6 @@ final class TypedArrayTests {
         XCTAssertEqual(Int(variant), 111, "After appending an Int with the value of 111, the first variant in the \(VariantArray.self) should hold an Int with the value 111")
     }
 
-    @SwiftGodotTest
     func testInitWithElementsStoresInArray() {
         let sut: TypedArray<Int> = [333]
 
@@ -30,7 +28,6 @@ final class TypedArrayTests {
         XCTAssertEqual(Int(variant), 333, "After initializing with an Int with the value of 333, the first variant in the \(VariantArray.self) should hold an Int with the value 333")
     }
 
-    @SwiftGodotTest
     func testArrayCanBeModifiedOutsideOfTheCollection() {
         let sut: TypedArray<Int> = []
         
@@ -40,7 +37,6 @@ final class TypedArrayTests {
         XCTAssertEqual(sut[0], 222, "After 222 is appended to the \(VariantArray.self), the first value should be to 222")
     }
     
-    @SwiftGodotTest
     func testExplicitVariantTypedArray() {
         let typed = TypedArray<Variant?>()
         
@@ -48,7 +44,6 @@ final class TypedArrayTests {
         XCTAssertEqual(typed[0], 10.toVariant())
     }
     
-    @SwiftGodotTest
     func testCompatibleArrays() {
         let typed = TypedArray<Object?>()
         let anotherTyped = TypedArray<Object?>(from: typed.array)
@@ -56,7 +51,6 @@ final class TypedArrayTests {
         XCTAssert(typed.array === anotherTyped.array)
     }
     
-    @SwiftGodotTest
     func testObjectArrayInvariance() {
         let typed = TypedArray<Node?>()
         let anotherTyped = TypedArray<Object?>(from: typed.array)
@@ -65,7 +59,6 @@ final class TypedArrayTests {
         XCTAssert(typed.array != anotherTyped.array)
     }
     
-    @SwiftGodotTest
     func testSequenceInitializer() {
         let sequence = [1, 2, 3, 4]
                 

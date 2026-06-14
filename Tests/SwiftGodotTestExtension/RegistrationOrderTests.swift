@@ -42,7 +42,6 @@ class ThirdSceneLevelClass: RefCounted {
 
 @SwiftGodotTestSuite
 final class RegistrationOrderTests {
-    @SwiftGodotTest
     func testRegisteredClassesExistInClassDB() {
         // Verify that all test classes are actually registered in Godot's ClassDB
         XCTAssertTrue(ClassDB.classExists(class: "CoreLevelClass"), "CoreLevelClass should exist in ClassDB")
@@ -52,7 +51,6 @@ final class RegistrationOrderTests {
         XCTAssertTrue(ClassDB.classExists(class: "ThirdSceneLevelClass"), "ThirdSceneLevelClass should exist in ClassDB")
     }
 
-    @SwiftGodotTest
     func testClassInheritanceIsCorrect() {
         // Verify that the inheritance chain is correct in ClassDB
         XCTAssertEqual(ClassDB.getParentClass("CoreLevelClass"), "RefCounted")
@@ -62,7 +60,6 @@ final class RegistrationOrderTests {
         XCTAssertEqual(ClassDB.getParentClass("ThirdSceneLevelClass"), "RefCounted")
     }
 
-    @SwiftGodotTest
     func testInstancesReportCorrectClassName() {
         // Verify that instances report their correct class name via Godot's type system
         let coreInstance = CoreLevelClass()
@@ -81,7 +78,6 @@ final class RegistrationOrderTests {
         XCTAssertEqual(thirdSceneInstance.getClass(), "ThirdSceneLevelClass")
     }
 
-    @SwiftGodotTest
     func testClassesHaveCorrectInitializationLevels() {
         XCTAssertEqual(CoreLevelClass.classInitializationLevel, .core)
         XCTAssertEqual(ServersLevelClass.classInitializationLevel, .servers)

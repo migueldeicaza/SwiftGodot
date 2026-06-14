@@ -14,7 +14,6 @@ final class Transform2DTests {
         return Transform2D ()
     }
     
-    @SwiftGodotTest
     public func testTranslation () {
         let offset: Vector2 = Vector2 (x: 1, y: 2)
         
@@ -28,7 +27,6 @@ final class Transform2DTests {
         XCTAssertEqual (orig.translatedLocal (offset: offset), orig * T)
     }
 
-    @SwiftGodotTest
     public func testScaling () {
         let scaling: Vector2 = Vector2 (x: 1, y: 2)
         
@@ -42,7 +40,6 @@ final class Transform2DTests {
         XCTAssertEqual (orig.scaledLocal (scale: scaling), orig * S)
     }
 
-    @SwiftGodotTest
     public func testRotation () {
         let phi: Double = 1.0
         
@@ -56,7 +53,6 @@ final class Transform2DTests {
         XCTAssertEqual (orig.rotatedLocal (angle: phi), orig * R)
     }
 
-    @SwiftGodotTest
     public func testInterpolation () {
         let rotateScaleSkewPos: Transform2D = Transform2D (rotation: Float (170.0).degreesToRadians, scale: Vector2 (x: 3.6, y: 8.0), skew: Float (20.0).degreesToRadians, position: Vector2 (x: 2.4, y: 6.8))
         let rotateScaleSkewPosHalfway: Transform2D = Transform2D (rotation: Float (85.0).degreesToRadians, scale: Vector2 (x: 2.3, y: 4.5), skew: Float (10.0).degreesToRadians, position: Vector2 (x: 1.2, y: 3.4))
@@ -70,7 +66,6 @@ final class Transform2DTests {
         XCTAssertTrue (interpolated.isEqualApprox (xform: rotateScaleSkewPosHalfway))
     }
 
-    @SwiftGodotTest
     public func testFiniteNumberChecks () {
         let x: Vector2 = Vector2 (x: 0, y: 1)
         let infinite: Vector2 = Vector2 (x: .nan, y: .nan)
@@ -88,7 +83,6 @@ final class Transform2DTests {
         XCTAssertFalse (Transform2D (xAxis: infinite, yAxis: infinite, origin: infinite).isFinite (), "Transform2D with three components infinite should not be finite.")
     }
 
-    @SwiftGodotTest
     public func testIsConformalChecks () {
         XCTAssertTrue (Transform2D ().isConformal (), "Identity Transform2D should be conformal.")
         XCTAssertTrue (Transform2D (rotation: 1.2, position: Vector2 ()).isConformal (), "Transform2D with only rotation should be conformal.")

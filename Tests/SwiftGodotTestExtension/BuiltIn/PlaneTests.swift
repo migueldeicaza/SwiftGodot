@@ -11,7 +11,6 @@
 
 @SwiftGodotTestSuite
 final class PlaneTests {
-    @SwiftGodotTest
     public func testOperatorUnaryMinus() {
         var value: Plane
         

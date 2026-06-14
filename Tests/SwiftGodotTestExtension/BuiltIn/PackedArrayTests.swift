@@ -12,7 +12,6 @@ import Foundation
 
 @SwiftGodotTestSuite
 final class PackedArrayTests {
-    @SwiftGodotTest
     public func testCustomInitializers() {
         let bytes: [UInt8] = [10, 20, 30, 255, 0, 3]
         
@@ -85,7 +84,6 @@ final class PackedArrayTests {
         }
     }
 
-    @SwiftGodotTest
     public func testPackedByteArrayExtract() {
         let bytes: [UInt8] = [10, 20, 30, 255, 0, 3]
         let packed = PackedByteArray(bytes)

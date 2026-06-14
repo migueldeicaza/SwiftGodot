@@ -41,7 +41,6 @@ final class AStarTests {
         return [ABCX.self]
     }
 
-    @SwiftGodotTest
     public func testAbcPath () {
         let abcx = ABCX ()
         let path = abcx.getIdPath (fromId: ABCX.A, toId: ABCX.C)
@@ -51,7 +50,6 @@ final class AStarTests {
         XCTAssertEqual (path [safe: 2], Int64 (ABCX.C))
     }
 
-    @SwiftGodotTest
     public func testAbcxPath () {
         let abcx = ABCX ()
         let path = abcx.getIdPath (fromId: ABCX.X, toId: ABCX.C)
@@ -62,7 +60,6 @@ final class AStarTests {
         XCTAssertEqual (path [safe: 3], Int64 (ABCX.C))
     }
 
-    @SwiftGodotTest
     public func testAddRemove () {
         let a = AStar3D ()
         
@@ -188,7 +185,6 @@ final class AStarTests {
         // It's been great work, cheers. \(^ ^)/
     }
 
-    @SwiftGodotTest
     public func testFindPaths () {
         // Random stress tests with Floyd-Warshall.
         let N: Int = 30

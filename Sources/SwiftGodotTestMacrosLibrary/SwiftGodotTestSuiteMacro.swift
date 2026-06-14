@@ -7,7 +7,7 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 
 /// Macro that adds SwiftGodotTestSuiteProtocol conformance and generates allTests property.
-/// Scans the class for methods decorated with @SwiftGodotTest and generates the allTests array.
+/// Scans the class for methods whose name begins with `test` and generates the allTests array.
 public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
 
     // MARK: - MemberMacro: Generates allTests property
@@ -22,22 +22,24 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
             throw SwiftGodotTestMacroError.notAClass
         }
 
-        // Find all methods with @SwiftGodotTest attribute
+        // Find all test methods: instance methods whose name begins with `test`,
+        // take no arguments, and have no effect specifiers (async/throws).
         let testMethods = declaration.memberBlock.members.compactMap { member -> String? in
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self) else {
                 return nil
             }
 
-            let hasTestAttribute = funcDecl.attributes.contains { attribute in
-                guard let attr = attribute.as(AttributeSyntax.self),
-                      let identifierType = attr.attributeName.as(IdentifierTypeSyntax.self) else {
-                    return false
-                }
-                return identifierType.name.text == "SwiftGodotTest"
-            }
+            // The token text strips surrounding backticks, so a method written as
+            // `func \`test\`()` reports a name of "test" here.
+            let name = funcDecl.name.text
+            guard name.hasPrefix("test") else { return nil }
 
-            guard hasTestAttribute else { return nil }
-            return funcDecl.name.text
+            let signature = funcDecl.signature
+            guard signature.parameterClause.parameters.isEmpty else { return nil }
+            guard signature.effectSpecifiers == nil else { return nil }
+            guard signature.returnClause == nil else { return nil }
+
+            return name
         }
 
         let testEntries: String
@@ -45,7 +47,8 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
             testEntries = ""
         } else {
             testEntries = testMethods.map { name in
-                "SwiftGodotTestInvocation(name: \"\(name)\", run: \(name))"
+                // Escape the reference in case the method name needs backticks.
+                "SwiftGodotTestInvocation(name: \"\(name)\", run: `\(name)`)"
             }.joined(separator: ",\n            ")
         }
 

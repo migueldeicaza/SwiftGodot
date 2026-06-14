@@ -81,6 +81,18 @@ var targets: [Target] = [
         swiftSettings: [.swiftLanguageMode(.v5)]
     ),
 
+    // Scans test sources for @SwiftGodotTestSuite classes and generates the
+    // TestRunnerNode.generatedSuites array consumed by the test runner.
+    .executableTarget(
+        name: "TestSuiteGenerator",
+        dependencies: [
+            .product(name: "SwiftSyntax", package: "swift-syntax"),
+            .product(name: "SwiftParser", package: "swift-syntax"),
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+        ],
+        swiftSettings: [.swiftLanguageMode(.v5)]
+    ),
+
     // This contains GDExtension's JSON API data models
     .target(
         name: "ExtensionApi",
@@ -131,6 +143,14 @@ var targets: [Target] = [
         name: "EntryPointGeneratorPlugin",
         capability: .buildTool(),
         dependencies: ["EntryPointGenerator"]
+    ),
+
+    // This is a build-time plugin that generates the list of test suites
+    // (TestRunnerNode.generatedSuites) by scanning for @SwiftGodotTestSuite.
+    .plugin(
+        name: "TestSuiteGeneratorPlugin",
+        capability: .buildTool(),
+        dependencies: ["TestSuiteGenerator"]
     ),
 
     // This allows the Swift code to call into the Godot bridge API (GDExtension)
@@ -262,7 +282,8 @@ var targets: [Target] = [
         name: "SwiftGodotTestExtension",
         dependencies: ["SwiftGodot", "SwiftGodotTestMacros"],
         path: "Tests/SwiftGodotTestExtension",
-        swiftSettings: [.swiftLanguageMode(.v5)]
+        swiftSettings: [.swiftLanguageMode(.v5)],
+        plugins: ["TestSuiteGeneratorPlugin"]
     ),
 ]
 

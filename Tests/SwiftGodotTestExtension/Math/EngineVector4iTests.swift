@@ -6,14 +6,12 @@
 
 @SwiftGodotTestSuite
 final class EngineVector4iTests {
-    @SwiftGodotTest
     public func testConstructorMethods () {
         let vectorEmpty: Vector4i = Vector4i ()
         let vectorZero: Vector4i = Vector4i (x: 0, y: 0, z: 0, w: 0)
         XCTAssertEqual (vectorEmpty, vectorZero, "Vector4i Constructor with no inputs should return a zero Vector4i.")
     }
 
-    @SwiftGodotTest
     public func testAxisMethods () {
         var vector: Vector4i = Vector4i (x: 1, y: 2, z: 3, w: 4)
         XCTAssertEqual (vector.maxAxisIndex (), Vector4i.Axis.w.rawValue, "Vector4i maxAxisIndex should work as expected.")
@@ -25,14 +23,12 @@ final class EngineVector4iTests {
         XCTAssertEqual (vector [Vector4i.Axis.y.rawValue], 5, "Vector4i array operator setter should work as expected.")
     }
 
-    @SwiftGodotTest
     public func testClampMethod () {
         let vector: Vector4i = Vector4i (x: 10, y: 10, z: 10, w: 10)
         XCTAssertEqual (Vector4i (x: -5, y: 5, z: 15, w: Int32.max).clamp (min: Vector4i (), max: vector), Vector4i (x: 0, y: 5, z: 10, w: 10), "Vector4i clamp should work as expected.")
         XCTAssertEqual (vector.clamp (min: Vector4i (x: 0, y: 10, z: 15, w: -10), max: Vector4i (x: 5, y: 10, z: 20, w: -5)), Vector4i (x: 5, y: 10, z: 15, w: -5), "Vector4i clamp should work as expected.")
     }
 
-    @SwiftGodotTest
     public func testLengthMethods () {
         let vector1: Vector4i = Vector4i (x: 10, y: 10, z: 10, w: 10)
         let vector2: Vector4i = Vector4i (x: 20, y: 30, z: 40, w: 50)
@@ -42,7 +38,6 @@ final class EngineVector4iTests {
         assertApproxEqual (vector2.length (), 73.4846922835, "Vector4i length should work as expected.")
     }
 
-    @SwiftGodotTest
     public func testOperators () {
         let vector1: Vector4i = Vector4i (x: 4, y: 5, z: 9, w: 2)
         let vector2: Vector4i = Vector4i (x: 1, y: 2, z: 3, w: 4)
@@ -61,7 +56,6 @@ final class EngineVector4iTests {
         XCTAssertEqual (Vector4i (from: Vector4 (x: 1.1, y: 2.9, z: 3.9, w: 100.5)), Vector4i (x: 1, y: 2, z: 3, w: 100), "Vector4i constructed from Vector4 should work as expected.")
     }
 
-    @SwiftGodotTest
     public func testOtherMethods () {
         let vector: Vector4i = Vector4i (x: 1, y: 3, z: -7, w: 13)
         
@@ -72,7 +66,6 @@ final class EngineVector4iTests {
         XCTAssertEqual (vector.snapped (step: Vector4i (x: 4, y: 2, z: 5, w: 8)), Vector4i (x: 0, y: 4, z: -5, w: 16), "Vector4i snapped should work as expected.")
     }
 
-    @SwiftGodotTest
     public func testAbsAndSignMethods () {
         let vector1: Vector4i = Vector4i (x: 1, y: 3, z: 5, w: 7)
         let vector2: Vector4i = Vector4i (x: 1, y: -3, z: -5, w: 7)
