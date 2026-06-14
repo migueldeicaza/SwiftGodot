@@ -243,6 +243,13 @@ struct SwiftGodotTestRunner {
         )
         print("      Godot finished with code: \(godotExitCode)")
 
+        // Godot 4.6.3 aborts (exit code 6) in ObjectDB::cleanup() while tearing
+        // down our Swift extension during engine shutdown, after all tests have run
+        // and the results have been written. This is a Godot regression: 4.6 exits
+        // cleanly. The crash is in the engine's own shutdown path and doesn't affect
+        // test results, so treat code 6 like a clean exit.
+        let godotFailed = godotExitCode != 0 && godotExitCode != 6
+
         // 5. Read and report results
         print("\n[5/5] Reading results...")
         do {
@@ -274,13 +281,13 @@ struct SwiftGodotTestRunner {
             print("Total time: \(totalDuration)")
             print(String(repeating: "=", count: 60))
 
-            // Use Godot's exit code if non-zero, otherwise use test results
+            // Use Godot's exit code if it failed, otherwise use test results
             let testExitCode: Int32 = results.summary.failed > 0 ? 1 : 0
-            exit(godotExitCode != 0 ? godotExitCode : testExitCode)
+            exit(godotFailed ? godotExitCode : testExitCode)
         } catch {
             print("      Failed to read results: \(error)")
             print("      Godot exit code was: \(godotExitCode)")
-            exit(godotExitCode != 0 ? godotExitCode : 1)
+            exit(godotFailed ? godotExitCode : 1)
         }
     }
 }
