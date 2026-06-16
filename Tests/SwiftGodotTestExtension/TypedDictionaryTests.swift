@@ -766,6 +766,8 @@ final class TypedDictionaryTests {
         // Dictionary should only have the valid entry
         XCTAssertEqual(typed.size(), 1)
         XCTAssertTrue(typed[1] === refCounted)
+
+        node.queueFree()
     }
 
     func testTypeMismatchMultipleInvalidInserts() {

@@ -33,6 +33,7 @@ final class SignalTests {
 
         XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
         XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
+        node.queueFree()
     }
 
     public func testNuSignal() {
@@ -46,6 +47,7 @@ final class SignalTests {
         }
         node.nuSignal.emit(22, "Sam")
         XCTAssertTrue (signalReceived, "signal should have been received")
+        node.queueFree()
     }
 
     public func testBuiltInSignalWithNoArgument() {
@@ -56,6 +58,7 @@ final class SignalTests {
         }
         node.ready.emit()
         XCTAssertTrue (signalReceived, "signal should have been received")
+        node.queueFree()
     }
 
     public func testBuiltInSignalWithArgument() {
@@ -67,6 +70,7 @@ final class SignalTests {
         }
         node.childExitingTree.emit(node)
         XCTAssertTrue (signalReceived, "signal should have been received")
+        node.queueFree()
     }
 
     public func testBuiltInSignalWithPrimitiveArguments() {
@@ -80,6 +84,7 @@ final class SignalTests {
         }
         node.animationNodeRenamed.emit(123, "old name", "new name")
         XCTAssertTrue (signalReceived, "signal should have been received")
+        // AnimationNode is a Resource (reference-counted) — no manual free needed.
     }
 }
 

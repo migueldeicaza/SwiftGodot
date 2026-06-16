@@ -44,5 +44,6 @@ final class ValidatePropertyTests {
             }
         }
         XCTAssertTrue(found, "Should have found a property named hideThisVariable with the usage set to 'readOnly'")
+        node.queueFree()
     }
 }

@@ -1,5 +1,7 @@
-[gd_scene format=3 uid="uid://ctest_runner_scene"]
+[gd_scene format=3 uid="uid://0onbdtks1hu3"]
 
-[node name="Main" type="Node"]
+[ext_resource type="Script" uid="uid://b8uhwycgmueu4" path="res://test_orchestrator.gd" id="1_ig7tw"]
 
-[node name="TestRunner" type="TestRunnerNode" parent="."]
+[node name="TestOrchestrator" type="Node" unique_id=1317884604]
+script = ExtResource("1_ig7tw")
+metadata/_custom_type_script = "uid://b8uhwycgmueu4"
