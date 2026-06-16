@@ -268,10 +268,15 @@ where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
 @usableFromInline
 func enumClassInfoName<T>(_ type: T.Type = T.self) -> StringName {
     let components = String(reflecting: type).split(separator: ".")
-    guard components.count >= 2 else {
+    if components.count >= 3 {
+        return StringName("\(components[components.count - 2]).\(components[components.count - 1])")
+    }
+    if let enumName = components.last {
+        return StringName(String(enumName))
+    }
+    else {
         return StringName(String(describing: type))
     }
-    return StringName("\(components[components.count - 2]).\(components[components.count - 1])")
 }
 
 /// Internal API.  CaseIterable enum with BinaryInteger RawValue.
