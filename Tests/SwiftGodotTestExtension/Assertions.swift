@@ -468,3 +468,66 @@ public func XCTUnwrap<T>(
 public enum UnwrapError: Error {
     case nilValue
 }
+
+// MARK: - Enum Registration Assertions
+
+/// Assert that `enumName` is registered as an enum on Godot class `cls`, and that it
+/// exposes exactly the given `cases` (case name -> integer value) as class constants.
+///
+/// Used to verify the `@Godot` macro's automatic nested-enum registration
+/// (`_registerEnumIfPossible`) against Godot's `ClassDB`.
+public func assertEnumRegistered(
+    _ cls: StringName,
+    _ enumName: StringName,
+    cases: [String: Int],
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    guard ClassDB.classHasEnum(class: cls, name: enumName) else {
+        TestContext.current?.recordFailure(
+            message: "Expected class \(cls) to have enum \(enumName), but it does not",
+            file: String(describing: file),
+            line: Int(line)
+        )
+        return
+    }
+
+    let registered = ClassDB.classGetEnumConstants(class: cls, enum: enumName).map { String($0) }
+    assertEqual(
+        Set(registered),
+        Set(cases.keys),
+        "Enum \(cls).\(enumName) registered cases \(registered.sorted()), expected \(Array(cases.keys).sorted())",
+        file: file,
+        line: line
+    )
+
+    for (name, expected) in cases {
+        let actual = ClassDB.classGetIntegerConstant(class: cls, name: StringName(name))
+        assertEqual(
+            actual,
+            expected,
+            "Enum constant \(cls).\(name) has value \(actual), expected \(expected)",
+            file: file,
+            line: line
+        )
+    }
+}
+
+/// Assert that `enumName` is NOT registered as an enum on Godot class `cls`.
+///
+/// Used to verify that nested enums which are not `CaseIterable` & `RawRepresentable`
+/// with a `BinaryInteger` raw value resolve to the no-op `_registerEnumIfPossible`
+/// overload and therefore register nothing.
+public func assertEnumNotRegistered(
+    _ cls: StringName,
+    _ enumName: StringName,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    assertFalse(
+        ClassDB.classHasEnum(class: cls, name: enumName),
+        "Expected class \(cls) to NOT have enum \(enumName), but it does",
+        file: file,
+        line: line
+    )
+}
