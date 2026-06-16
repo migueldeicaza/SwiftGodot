@@ -22,6 +22,7 @@ final class VariantTests {
     public func testWrap() {
         let x: Node? = Node()
         let _ = Variant(x)
+        x?.queueFree()
     }
     
     
@@ -137,6 +138,7 @@ final class VariantTests {
         XCTAssertEqual (variant.gtype, Variant.GType.string)
         let newString = String (variant)
         XCTAssertEqual (string, newString)
+        sprite.queueFree()
     }
     
     public func testOperatorEqualsEquals () {
@@ -153,6 +155,8 @@ final class VariantTests {
         let node2 = Node()
         XCTAssertTrue (Variant (node) == Variant (node))
         XCTAssertFalse (Variant (node) == Variant (node2))
+        node.queueFree()
+        node2.queueFree()
     }
     
     public func testUnwrappingApi() {

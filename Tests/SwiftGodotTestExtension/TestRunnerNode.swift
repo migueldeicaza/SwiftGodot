@@ -8,8 +8,13 @@
 import Foundation
 import SwiftGodot
 
-/// A Node that runs all registered tests when added to the scene tree.
-/// This is the entry point for test execution inside Godot.
+/// A Node that runs all registered tests on demand.
+///
+/// This type is **not** baked into the test scene. Instead a pure-GDScript
+/// orchestrator (`test_orchestrator.gd`) instantiates it at runtime, calls
+/// ``runTests()``, and frees it again before quitting. Keeping the only live
+/// instance short-lived and out of any saved resource is what lets the
+/// SwiftGodot extension be unloaded cleanly.
 @Godot
 public class TestRunnerNode: Node {
     /// Path where JSON results will be written
@@ -31,8 +36,30 @@ public class TestRunnerNode: Node {
     /// with @SwiftGodotTestSuite.
     private let suites: [any SwiftGodotTestSuiteProtocol] = TestRunnerNode.generatedSuites
 
-    public override func _ready() {
-        print("[TestRunnerNode] _ready() called")
+    /// Every Godot subclass registered for the run, in registration order.
+    ///
+    /// These are deregistered by ``deregisterTypes()`` — not per-suite — because
+    /// tests free their nodes with `queue_free`, so an instance is only actually
+    /// gone after the orchestrator pumps frames. Deregistering a class while a
+    /// pending-deletion instance still exists would be unsafe, so we hold the
+    /// list and tear it down only once everything has been freed.
+    private var registeredSubclasses: [Object.Type] = []
+
+    /// Emitted once all tests have finished, carrying the process exit code
+    /// (non-zero when any test failed). The GDScript orchestrator awaits this,
+    /// then frees this node and quits the tree.
+    @Signal var finished: SignalWithArguments<Int>
+
+    /// Runs every registered test, writes the JSON results, and emits ``finished``
+    /// with the resulting exit code.
+    ///
+    /// The orchestrator invokes this *deferred* (rather than relying on `_ready`)
+    /// so the signal can never fire before the orchestrator has started awaiting
+    /// it. `emit` is the final statement: an awaiting listener resumes inside the
+    /// emit call, so nothing must touch `self` afterwards.
+    @Callable
+    func runTests() {
+        print("[TestRunnerNode] runTests() called")
         GD.print("=".repeated(60))
         GD.print("SwiftGodot Test Runner")
         GD.print("=".repeated(60))
@@ -46,7 +73,22 @@ public class TestRunnerNode: Node {
         GD.print("=".repeated(60))
 
         let exitCode = results.summary.failed > 0 ? 1 : 0
-        getTree()?.quit(exitCode: Int32(exitCode))
+        finished.emit(exitCode)
+    }
+
+    /// Deregisters every Godot subclass that was registered during the run.
+    ///
+    /// The orchestrator calls this *after* it has pumped frames following
+    /// ``finished``, so the scene tree's deletion queue has flushed and no
+    /// instance of these classes is still alive. Deregistering only once
+    /// everything is freed is what keeps the extension safely unloadable.
+    @Callable
+    func deregisterTypes() {
+        releasePendingObjects()
+        for subclass in registeredSubclasses.reversed() {
+            unregister(type: subclass)
+        }
+        registeredSubclasses.removeAll()
     }
 
     // MARK: - Test Execution
@@ -83,9 +125,12 @@ public class TestRunnerNode: Node {
         let suiteName = suiteType.name
         GD.printRich("[color=blue][b]\(suiteName)[/b][/color]")
 
-        // Register Godot subclasses needed by this suite
+        // Register Godot subclasses needed by this suite. They are torn down
+        // later by deregisterTypes(), once every queue_free'd test instance has
+        // actually been freed — not here, where instances may still be pending.
         for subclass in suiteType.registeredTypes {
             register(type: subclass)
+            registeredSubclasses.append(subclass)
         }
 
         // Run test methods (filtered if specified)
@@ -102,12 +147,6 @@ public class TestRunnerNode: Node {
                 GD.printRich("[color=red][b]FAILED:[/b] \(failure.message)[/color]")
                 GD.printRich("[color=red]  at \(failure.file):\(failure.line)[/color]")
             }
-        }
-
-        // Unregister Godot subclasses
-        for subclass in suiteType.registeredTypes.reversed() {
-            releasePendingObjects()
-            unregister(type: subclass)
         }
 
         GD.print("")

@@ -427,6 +427,8 @@ final class MemoryLeakTests {
                 oneIteration(object: object)
             }
         }
+
+        object.free()
     }
 
     public func testRefCountedLeak() {
@@ -579,6 +581,8 @@ final class MemoryLeakTests {
                 _ = object.emit(signal: signal)
             }
         }
+
+        object.free()
     }
 
     public func test_gstring_string_variant_leak() {

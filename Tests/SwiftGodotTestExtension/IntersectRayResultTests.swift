@@ -38,6 +38,8 @@ final class IntersectRayResultTests {
         XCTAssertEqual(result.rid, RID())
         XCTAssertEqual(result.shape, 22)
         XCTAssertEqual(result.faceIndex, 44)
+
+        (collider as? Node)?.queueFree()
     }
 
     public func testIntersectRayResultIsNil_whenColliderPropertyIsMissing() {
@@ -56,7 +58,9 @@ final class IntersectRayResultTests {
         }()
         
         let result = PhysicsDirectSpaceState3D.IntersectRayResult<GridMap>(dictionary)
-        
+
         XCTAssertNil(result)
+
+        (collider as? Node)?.queueFree()
     }
 }

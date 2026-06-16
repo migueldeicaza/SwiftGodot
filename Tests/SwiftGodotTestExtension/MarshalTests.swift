@@ -97,6 +97,8 @@ final class MarshalTests {
         }.toVariant())
         
         XCTAssertEqual(node.closure(2, 3, 4), 24)
+
+        node.queueFree()
     }
 
     public func testDateNode() {
@@ -106,6 +108,8 @@ final class MarshalTests {
         _ = node.call(method: "set_date", (date.timeIntervalSince1970 + 1).toVariant())
         
         XCTAssertEqual(node.date, Date(timeIntervalSince1970: date.timeIntervalSince1970 + 1))
+
+        node.queueFree()
     }
 
     public func testClassesMethodsPerformance() {
@@ -128,6 +132,9 @@ final class MarshalTests {
             _ = node.call(method: removeChildName, Variant(child))
             XCTAssertEqual(node.call(method: getChildCountName), Variant(0))
         }
+
+        node.queueFree()
+        child.queueFree()
     }
 
     public func testSignals() {
@@ -143,6 +150,8 @@ final class MarshalTests {
         node.someSignal.connect(node.funcTakingInt)
         node.someSignal.emit(10)
         XCTAssertEqual(node.intTaken, 10)
+
+        node.queueFree()
     }
 
     public func testBuiltinsTypesMethodsPerformance() {
@@ -204,8 +213,10 @@ final class MarshalTests {
             55.toVariant(),
             22.toVariant()
         ).to(Int.self)
-        
+
         XCTAssertEqual(anotherResult, 33)
+
+        testNode.queueFree()
     }
 
     public func testSwiftArrays() {
@@ -216,11 +227,13 @@ final class MarshalTests {
         
         guard let variant = testNode.call(method: "double", array.toVariant()) else {
             XCTFail()
+            testNode.queueFree()
             return
         }
-        
+
         guard let collection = TypedArray<Double>(variant) else {
             XCTFail()
+            testNode.queueFree()
             return
         }
         
@@ -232,8 +245,10 @@ final class MarshalTests {
         XCTAssertEqual([9, 4, 8], testNode.swiftArray)
         
         _ = testNode.call(method: "set_swift_array", [12, 1, 9].toVariant())
-        
+
         XCTAssertEqual([12, 1, 9], testNode.swiftArray)
+
+        testNode.queueFree()
     }
 
     public func testSomeVariantConvertible() {
@@ -258,6 +273,8 @@ final class MarshalTests {
         XCTAssertEqual(testNode.call(method: "bar", Variant(42)), Variant(42))
         XCTAssertEqual(testNode.call(method: "bar", Variant("Foo")), Variant("Foo"))
         XCTAssertEqual(testNode.call(method: "bar", nil), nil)
+
+        testNode.queueFree()
     }
 
     public func testUnsafePointersNMemoryLayout() {
@@ -294,6 +311,8 @@ final class MarshalTests {
         
         XCTAssertNotNil(object0)
         XCTAssertTrue(object0 === object1)
+
+        node0?.queueFree()
     }
 
     public func testCallableViaSwiftClosure() {
@@ -386,6 +405,8 @@ final class MarshalTests {
         }
 
         XCTAssertEqual(fulfillmentCount, 5, "Expected 5 fulfillments")
+
+        testNode.queueFree()
     }
 }
 
