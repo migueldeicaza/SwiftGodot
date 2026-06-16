@@ -114,7 +114,7 @@ final class EnumRegistrationTests {
         // with the registered constants: Godot's native convention is a property whose
         // class_name is "Class.Enum" while the constants live under the bare enum name.
         let host = EnumRegistrationHost()
-        defer { host.free() }
+        defer { host.queueFree() }
 
         var found = false
         for prop in host.getPropertyList() {
