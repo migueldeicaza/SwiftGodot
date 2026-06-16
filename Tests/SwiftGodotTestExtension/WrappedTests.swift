@@ -43,7 +43,7 @@ final class WrappedTests {
             .topologicallySorted()
             .map { ObjectIdentifier($0) }
 
-        XCTAssertEqual(expected, output)
+        assertEqual(expected, output)
     }
 }
 
@@ -54,7 +54,7 @@ final class ReferenceChecker {
     weak var reference: AnyObject?
 
     func assertDisposed (file: StaticString = #file, line: UInt = #line) {
-        XCTAssertTrue (reference == nil, "Object was not disposed", file: file, line: line)
+        assertTrue (reference == nil, "Object was not disposed", file: file, line: line)
     }
 }
 
@@ -78,6 +78,6 @@ final class DuplicateClassRegistrationTests {
 
         register(type: DuplicateClassTestNode.self)
 
-        XCTAssertEqual(duplicateClassNames, ["DuplicateClassTestNode"])
+        assertEqual(duplicateClassNames, ["DuplicateClassTestNode"])
     }
 }

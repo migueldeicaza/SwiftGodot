@@ -2,7 +2,7 @@
 //  Assertions.swift
 //  SwiftGodotTestability
 //
-//  XCTest-compatible assertion functions for Godot runtime tests
+//  Assertion functions for Godot runtime tests
 //
 
 import SwiftGodot
@@ -299,135 +299,10 @@ public func assertApproxEqual(
     assertApproxEqual(a.alpha, b.alpha, "Fail due to A. " + message, file: file, line: line)
 }
 
-// MARK: - XCTest Compatibility Aliases
+// MARK: - Floating-point and optional helpers
 
-/// XCTest compatibility alias for assertTrue
-public func XCTAssertTrue(
-    _ condition: Bool,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertTrue(condition, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertFalse
-public func XCTAssertFalse(
-    _ condition: Bool,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertFalse(condition, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertEqual
-public func XCTAssertEqual<T: Equatable>(
-    _ a: T?,
-    _ b: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertNotEqual
-public func XCTAssertNotEqual<T: Equatable>(
-    _ a: T?,
-    _ b: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertNotEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertNil
-public func XCTAssertNil<T>(
-    _ value: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertNil(value, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertNotNil
-public func XCTAssertNotNil<T>(
-    _ value: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertNotNil(value, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for fail
-public func XCTFail(
-    _ message: String = "Test failed",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    fail(message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertGreaterThan
-public func XCTAssertGreaterThan<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertGreaterThan(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertGreaterThanOrEqual
-public func XCTAssertGreaterThanOrEqual<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertGreaterThanOrEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertLessThan
-public func XCTAssertLessThan<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertLessThan(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertLessThanOrEqual
-public func XCTAssertLessThanOrEqual<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertLessThanOrEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertTrue (XCTAssert is just XCTAssertTrue)
-public func XCTAssert(
-    _ condition: Bool,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertTrue(condition, message, file: file, line: line)
-}
-
-/// XCTest compatibility - assertEqual with accuracy for floating point
-public func XCTAssertEqual<T: FloatingPoint>(
+/// assertEqual with an absolute accuracy tolerance for floating point
+public func assertEqual<T: FloatingPoint>(
     _ a: T,
     _ b: T,
     accuracy: T,
@@ -445,8 +320,8 @@ public func XCTAssertEqual<T: FloatingPoint>(
     }
 }
 
-/// XCTest compatibility - unwrap optional or fail
-public func XCTUnwrap<T>(
+/// Unwrap an optional or record a failure and throw if it is nil
+public func unwrapOrFail<T>(
     _ value: T?,
     _ message: String = "",
     file: StaticString = #file,
@@ -464,7 +339,70 @@ public func XCTUnwrap<T>(
     return unwrapped
 }
 
-/// Error thrown by XCTUnwrap when value is nil
+/// Error thrown by `unwrapOrFail` when value is nil
 public enum UnwrapError: Error {
     case nilValue
+}
+
+// MARK: - Enum Registration Assertions
+
+/// Assert that `enumName` is registered as an enum on Godot class `cls`, and that it
+/// exposes exactly the given `cases` (case name -> integer value) as class constants.
+///
+/// Used to verify the `@Godot` macro's automatic nested-enum registration
+/// (`_registerEnumIfPossible`) against Godot's `ClassDB`.
+public func assertEnumRegistered(
+    _ cls: StringName,
+    _ enumName: StringName,
+    cases: [String: Int],
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    guard ClassDB.classHasEnum(class: cls, name: enumName) else {
+        TestContext.current?.recordFailure(
+            message: "Expected class \(cls) to have enum \(enumName), but it does not",
+            file: String(describing: file),
+            line: Int(line)
+        )
+        return
+    }
+
+    let registered = ClassDB.classGetEnumConstants(class: cls, enum: enumName).map { String($0) }
+    assertEqual(
+        Set(registered),
+        Set(cases.keys),
+        "Enum \(cls).\(enumName) registered cases \(registered.sorted()), expected \(Array(cases.keys).sorted())",
+        file: file,
+        line: line
+    )
+
+    for (name, expected) in cases {
+        let actual = ClassDB.classGetIntegerConstant(class: cls, name: StringName(name))
+        assertEqual(
+            actual,
+            expected,
+            "Enum constant \(cls).\(name) has value \(actual), expected \(expected)",
+            file: file,
+            line: line
+        )
+    }
+}
+
+/// Assert that `enumName` is NOT registered as an enum on Godot class `cls`.
+///
+/// Used to verify that nested enums which are not `CaseIterable` & `RawRepresentable`
+/// with a `BinaryInteger` raw value resolve to the no-op `_registerEnumIfPossible`
+/// overload and therefore register nothing.
+public func assertEnumNotRegistered(
+    _ cls: StringName,
+    _ enumName: StringName,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    assertFalse(
+        ClassDB.classHasEnum(class: cls, name: enumName),
+        "Expected class \(cls) to NOT have enum \(enumName), but it does",
+        file: file,
+        line: line
+    )
 }

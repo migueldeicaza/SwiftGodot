@@ -74,16 +74,16 @@ final class MarshalTests {
         let node = TestNode()
         
         guard let callable = node.call(method: "get_closure").map({ Callable.fromVariant($0) }) as? Callable else {
-            XCTFail()
+            fail()
             return
         }
         
         guard let result = callable.call(1.toVariant(), 2.toVariant(), 3.toVariant()).to(Int.self) else {
-            XCTFail()
+            fail()
             return
         }
         
-        XCTAssertEqual(6, result)
+        assertEqual(6, result)
 
         _ = node.call(method: "set_closure", Callable { arguments in
             do {
@@ -96,7 +96,7 @@ final class MarshalTests {
             }
         }.toVariant())
         
-        XCTAssertEqual(node.closure(2, 3, 4), 24)
+        assertEqual(node.closure(2, 3, 4), 24)
 
         node.queueFree()
     }
@@ -107,7 +107,7 @@ final class MarshalTests {
         
         _ = node.call(method: "set_date", (date.timeIntervalSince1970 + 1).toVariant())
         
-        XCTAssertEqual(node.date, Date(timeIntervalSince1970: date.timeIntervalSince1970 + 1))
+        assertEqual(node.date, Date(timeIntervalSince1970: date.timeIntervalSince1970 + 1))
 
         node.queueFree()
     }
@@ -123,14 +123,14 @@ final class MarshalTests {
         // Reduced iterations since we're not measuring performance
         for _ in 0..<100 {
             node.addChild(node: child)
-            XCTAssertEqual(node.getChildCount(), 1)
+            assertEqual(node.getChildCount(), 1)
             node.removeChild(node: child)
-            XCTAssertEqual(node.getChildCount(), 0)
+            assertEqual(node.getChildCount(), 0)
 
             _ = node.call(method: addChildName, Variant(child), Variant(false), Variant(Node.InternalMode.disabled.rawValue))
-            XCTAssertEqual(node.call(method: getChildCountName), Variant(1))
+            assertEqual(node.call(method: getChildCountName), Variant(1))
             _ = node.call(method: removeChildName, Variant(child))
-            XCTAssertEqual(node.call(method: getChildCountName), Variant(0))
+            assertEqual(node.call(method: getChildCountName), Variant(0))
         }
 
         node.queueFree()
@@ -145,11 +145,11 @@ final class MarshalTests {
             value = int
         }
         node.someSignal.emit(5)
-        XCTAssertEqual(value, 5)
+        assertEqual(value, 5)
         
         node.someSignal.connect(node.funcTakingInt)
         node.someSignal.emit(10)
-        XCTAssertEqual(node.intTaken, 10)
+        assertEqual(node.intTaken, 10)
 
         node.queueFree()
     }
@@ -180,7 +180,7 @@ final class MarshalTests {
         // Reduced iterations since we're not measuring performance
         for _ in 0..<100 {
             let maxVariant = GD.max(arg1: randomValues[0], arg2: randomValues[1], randomValues[2], randomValues[3], randomValues[4], randomValues[5], randomValues[6], randomValues[7], randomValues[8], randomValues[9])
-            XCTAssertEqual(max, maxVariant)
+            assertEqual(max, maxVariant)
         }
     }
 
@@ -197,7 +197,7 @@ final class MarshalTests {
             }
         }), a: 11, b: 6)
         
-        XCTAssertTrue(result == 66)
+        assertTrue(result == 66)
         
         let anotherResult = testNode.call(
             method: "foo",
@@ -214,7 +214,7 @@ final class MarshalTests {
             22.toVariant()
         ).to(Int.self)
 
-        XCTAssertEqual(anotherResult, 33)
+        assertEqual(anotherResult, 33)
 
         testNode.queueFree()
     }
@@ -226,27 +226,27 @@ final class MarshalTests {
         array.append(Variant(40))
         
         guard let variant = testNode.call(method: "double", array.toVariant()) else {
-            XCTFail()
+            fail()
             testNode.queueFree()
             return
         }
 
         guard let collection = TypedArray<Double>(variant) else {
-            XCTFail()
+            fail()
             testNode.queueFree()
             return
         }
         
-        XCTAssertEqual(collection[0], 40.0)
-        XCTAssertEqual(collection[1], 80.0)
+        assertEqual(collection[0], 40.0)
+        assertEqual(collection[1], 80.0)
         
         _ = testNode.call(method: "set_swift_array", TypedArray<Int>([9, 4, 8]).toVariant())
         
-        XCTAssertEqual([9, 4, 8], testNode.swiftArray)
+        assertEqual([9, 4, 8], testNode.swiftArray)
         
         _ = testNode.call(method: "set_swift_array", [12, 1, 9].toVariant())
 
-        XCTAssertEqual([12, 1, 9], testNode.swiftArray)
+        assertEqual([12, 1, 9], testNode.swiftArray)
 
         testNode.queueFree()
     }
@@ -270,27 +270,27 @@ final class MarshalTests {
     public func testCallableMethodReturningVariant() {
         let testNode = TestNode()
         
-        XCTAssertEqual(testNode.call(method: "bar", Variant(42)), Variant(42))
-        XCTAssertEqual(testNode.call(method: "bar", Variant("Foo")), Variant("Foo"))
-        XCTAssertEqual(testNode.call(method: "bar", nil), nil)
+        assertEqual(testNode.call(method: "bar", Variant(42)), Variant(42))
+        assertEqual(testNode.call(method: "bar", Variant("Foo")), Variant("Foo"))
+        assertEqual(testNode.call(method: "bar", nil), nil)
 
         testNode.queueFree()
     }
 
     public func testUnsafePointersNMemoryLayout() {
         // UnsafeRawPointersN# is keeping `UnsafeRawPointer?` inside, but Swift Compiler is smart enough to confine the optionality of `UnsafeRawPointer` as a property of its payload (being a zero address or not) instead of introducing an extra byte and consequential alignment padding.
-        //XCTAssertEqual(MemoryLayout<UnsafeRawPointersN9>.size, MemoryLayout<UnsafeRawPointer>.stride * 9, "UnsafeRawPointersN should have the same size as a N of UnsafeRawPointers")
+        //assertEqual(MemoryLayout<UnsafeRawPointersN9>.size, MemoryLayout<UnsafeRawPointer>.stride * 9, "UnsafeRawPointersN should have the same size as a N of UnsafeRawPointers")
     }
 
     public func testVariants() {
         let dc = Double.pi
         
-        XCTAssertEqual (1, Int.fromVariant(1.toVariant()))
-        XCTAssertEqual ("The Dog", String.fromVariant("The Dog".toVariant()))
-        XCTAssertEqual(dc, Double.fromVariant(dc.toVariant()))
-        XCTAssertEqual(true, Bool.fromVariant(true.toVariant()))
-        XCTAssertEqual(false, Bool.fromVariant(false.toVariant()))
-        XCTAssertEqual(2.toVariant(), 2.toVariant())
+        assertEqual (1, Int.fromVariant(1.toVariant()))
+        assertEqual ("The Dog", String.fromVariant("The Dog".toVariant()))
+        assertEqual(dc, Double.fromVariant(dc.toVariant()))
+        assertEqual(true, Bool.fromVariant(true.toVariant()))
+        assertEqual(false, Bool.fromVariant(false.toVariant()))
+        assertEqual(2.toVariant(), 2.toVariant())
     }
 
     public func testUnwrapping() {
@@ -303,14 +303,14 @@ final class MarshalTests {
         let node0 = TestNode.fromVariant(variant)
         let node1 = variant.to(TestNode.self)
         
-        XCTAssertNotNil(node0)
-        XCTAssertTrue(node0 === node1)
+        assertNotNil(node0)
+        assertTrue(node0 === node1)
         
         let object0 = Object.fromVariant(variant)
         let object1 = variant.to(Object.self)
         
-        XCTAssertNotNil(object0)
-        XCTAssertTrue(object0 === object1)
+        assertNotNil(object0)
+        assertTrue(object0 === object1)
 
         node0?.queueFree()
     }
@@ -326,7 +326,7 @@ final class MarshalTests {
             "Amazing!".toVariant()
         )
         
-        XCTAssertEqual(result.to(String.self), "Amazing! Amazing! Amazing!")
+        assertEqual(result.to(String.self), "Amazing! Amazing! Amazing!")
         
         callable = Callable { (yes: Bool, ifYes: String, array: TypedArray<String>) -> String in
             yes ? ifYes : array.joined(separator: " ")
@@ -342,7 +342,7 @@ final class MarshalTests {
             collection.toVariant()
         )
         
-        XCTAssertEqual(result.to(String.self), "YES!")
+        assertEqual(result.to(String.self), "YES!")
         
         result = callable.call(
             false.toVariant(),
@@ -350,7 +350,7 @@ final class MarshalTests {
             collection.toVariant()
         )
         
-        XCTAssertEqual(result.to(String.self), "Never Gonna Give You Up")
+        assertEqual(result.to(String.self), "Never Gonna Give You Up")
         
         result = callable.call(
             false.toVariant(),
@@ -358,7 +358,7 @@ final class MarshalTests {
         )
         
         // Wrong parameters logged
-        XCTAssertEqual(result, nil)
+        assertEqual(result, nil)
         
         
         callable = Callable { (a: Int, b: Int) in
@@ -377,7 +377,7 @@ final class MarshalTests {
         var fulfillmentCount = 0
         do {
             let a = try arguments.argument(ofType: Node?.self, at: 0)
-            XCTAssertNil(a)
+            assertNil(a)
             let _ = try arguments.argument(ofType: Node.self, at: 1)
             fulfillmentCount += 1 // 1
             let _ = try arguments.argument(ofType: Node.self, at: 2)
@@ -401,10 +401,10 @@ final class MarshalTests {
             _ = try arguments.argument(ofType: Int?.self, at: 0)
             fulfillmentCount += 1 // 5
         } catch {
-            XCTFail()
+            fail()
         }
 
-        XCTAssertEqual(fulfillmentCount, 5, "Expected 5 fulfillments")
+        assertEqual(fulfillmentCount, 5, "Expected 5 fulfillments")
 
         testNode.queueFree()
     }

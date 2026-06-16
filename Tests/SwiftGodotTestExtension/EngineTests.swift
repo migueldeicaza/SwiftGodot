@@ -9,10 +9,10 @@
 final class EngineTests {
     public func testGetMainLoopCanBeCastToSceneTree() {
         guard let sceneTree = Engine.getMainLoop() as? SceneTree else {
-            XCTFail("Expected Engine.getMainLoop() to return a SceneTree")
+            fail("Expected Engine.getMainLoop() to return a SceneTree")
             return
         }
 
-        XCTAssertNotNil(sceneTree.root, "SceneTree should expose the root window")
+        assertNotNil(sceneTree.root, "SceneTree should expose the root window")
     }
 }

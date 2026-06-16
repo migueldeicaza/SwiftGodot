@@ -18,26 +18,26 @@ final class Transform3DTests {
         let offset: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
         // Both versions should give the same result applied to identity.
-        XCTAssertEqual (identity ().translated (offset: offset), identity ().translatedLocal (offset: offset))
+        assertEqual (identity ().translated (offset: offset), identity ().translatedLocal (offset: offset))
         
         // Check both versions against left and right multiplications.
         let orig: Transform3D = createDummyTransform ()
         let T: Transform3D = identity ().translated (offset: offset)
-        XCTAssertEqual (orig.translated (offset: offset), T * orig)
-        XCTAssertEqual (orig.translatedLocal (offset: offset), orig * T)
+        assertEqual (orig.translated (offset: offset), T * orig)
+        assertEqual (orig.translatedLocal (offset: offset), orig * T)
     }
 
     public func testScaling () {
         let scaling: Vector3 = Vector3 (x: 1, y: 2, z: 3)
         
         // Both versions should give the same result applied to identity.
-        XCTAssertEqual (identity ().scaled (scale: scaling), identity ().scaledLocal (scale: scaling))
+        assertEqual (identity ().scaled (scale: scaling), identity ().scaledLocal (scale: scaling))
         
         // Check both versions against left and right multiplications.
         let orig: Transform3D = createDummyTransform ()
         let S: Transform3D = identity ().scaled (scale: scaling)
-        XCTAssertEqual (orig.scaled (scale: scaling), S * orig)
-        XCTAssertEqual (orig.scaledLocal (scale: scaling), orig * S)
+        assertEqual (orig.scaled (scale: scaling), S * orig)
+        assertEqual (orig.scaledLocal (scale: scaling), orig * S)
     }
 
     public func testRotation () {
@@ -45,13 +45,13 @@ final class Transform3DTests {
         let phi: Double = 1.0
         
         // Both versions should give the same result applied to identity.
-        XCTAssertEqual (identity ().rotated (axis: axis, angle: phi), identity ().rotatedLocal (axis: axis, angle: phi))
+        assertEqual (identity ().rotated (axis: axis, angle: phi), identity ().rotatedLocal (axis: axis, angle: phi))
         
         // Check both versions against left and right multiplications.
         let orig: Transform3D = createDummyTransform ()
         let R: Transform3D = identity ().rotated (axis: axis, angle: phi)
-        XCTAssertEqual (orig.rotated (axis: axis, angle: phi), R * orig)
-        XCTAssertEqual (orig.rotatedLocal (axis: axis, angle: phi), orig * R)
+        assertEqual (orig.rotated (axis: axis, angle: phi), R * orig)
+        assertEqual (orig.rotatedLocal (axis: axis, angle: phi), orig * R)
     }
 
     public func testFiniteNumberChecks () {
@@ -60,12 +60,12 @@ final class Transform3DTests {
         let x: Basis = Basis (xAxis: y, yAxis: y, zAxis: y)
         let infiniteBasis: Basis = Basis (xAxis: infiniteVec, yAxis: infiniteVec, zAxis: infiniteVec)
         
-        XCTAssertTrue (Transform3D (basis: x, origin: y).isFinite (), "Transform3D with all components finite should be finite")
+        assertTrue (Transform3D (basis: x, origin: y).isFinite (), "Transform3D with all components finite should be finite")
         
-        XCTAssertFalse (Transform3D (basis: x, origin: infiniteVec).isFinite (), "Transform3D with one component infinite should not be finite.")
-        XCTAssertFalse (Transform3D (basis: infiniteBasis, origin: y).isFinite (), "Transform3D with one component infinite should not be finite.")
+        assertFalse (Transform3D (basis: x, origin: infiniteVec).isFinite (), "Transform3D with one component infinite should not be finite.")
+        assertFalse (Transform3D (basis: infiniteBasis, origin: y).isFinite (), "Transform3D with one component infinite should not be finite.")
         
-        XCTAssertFalse (Transform3D (basis: infiniteBasis, origin: infiniteVec).isFinite (), "Transform3D with two components infinite should not be finite.")
+        assertFalse (Transform3D (basis: infiniteBasis, origin: infiniteVec).isFinite (), "Transform3D with two components infinite should not be finite.")
     }
     
 }

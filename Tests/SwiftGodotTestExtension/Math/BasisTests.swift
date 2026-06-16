@@ -38,9 +38,9 @@ final class BasisTests {
         
         var res: Basis = toRotation.inverse () * rotationFromComputedEuler
         
-        XCTAssert ((res.x - Vector3 (x: 1, y: 0, z: 0)).length () <= 0.1, "Fail due to X \(res.x)", file: file, line: line)
-        XCTAssert ((res.y - Vector3 (x: 0, y: 1, z: 0)).length () <= 0.1, "Fail due to Y \(res.y)", file: file, line: line)
-        XCTAssert ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Fail due to Z \(res.z)", file: file, line: line)
+        assertTrue ((res.x - Vector3 (x: 1, y: 0, z: 0)).length () <= 0.1, "Fail due to X \(res.x)", file: file, line: line)
+        assertTrue ((res.y - Vector3 (x: 0, y: 1, z: 0)).length () <= 0.1, "Fail due to Y \(res.y)", file: file, line: line)
+        assertTrue ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Fail due to Z \(res.z)", file: file, line: line)
         
         // Double check `toRotation` decomposing with XYZ rotation order.
         
@@ -50,9 +50,9 @@ final class BasisTests {
         
         res = toRotation.inverse () * rotationFromXyzComputedEuler
         
-        XCTAssert ((res.x - Vector3 (x: 1, y: 0, z: 0)).length () <= 0.1, "Double check with XYZ rot order failed, due to X \(res.x)")
-        XCTAssert ((res.y - Vector3 (x: 0, y: 1, z: 0)).length () <= 0.1, "Double check with XYZ rot order failed, due to Y \(res.y)")
-        XCTAssert ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Double check with XYZ rot order failed, due to Z \(res.z)")
+        assertTrue ((res.x - Vector3 (x: 1, y: 0, z: 0)).length () <= 0.1, "Double check with XYZ rot order failed, due to X \(res.x)")
+        assertTrue ((res.y - Vector3 (x: 0, y: 1, z: 0)).length () <= 0.1, "Double check with XYZ rot order failed, due to Y \(res.y)")
+        assertTrue ((res.z - Vector3 (x: 0, y: 0, z: 1)).length () <= 0.1, "Double check with XYZ rot order failed, due to Z \(res.z)")
     }
 
     public func testEulerConversions () {
@@ -155,7 +155,7 @@ final class BasisTests {
         
         // Testing the singularity when the angle is 0°.
         basis = Basis (xAxis: Vector3 (x: 1, y: 0, z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertEqual (basis.getRotationQuaternion ().getAngle (), 0)
+        assertEqual (basis.getRotationQuaternion ().getAngle (), 0)
         
         // Testing the singularity when the angle is 180°.
         basis = Basis (xAxis: Vector3 (x: -1, y: 0, z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: -1))
@@ -210,49 +210,49 @@ final class BasisTests {
         
         // Regression test: checks that the method returns an angle which is a number (not NaN)
         basis = Basis (xAxis: Vector3 (x: 1.00000024, y: 0, z: 0.000100001693), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: -0.000100009143, y: 0, z: 1.00000024))
-        XCTAssertFalse (basis.getRotationQuaternion ().getAngle ().isNaN)
+        assertFalse (basis.getRotationQuaternion ().getAngle ().isNaN)
     }
 
     public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)
 
-        XCTAssertTrue (Basis (xAxis: x, yAxis: x, zAxis: x).isFinite (), "Basis with all components finite should be finite")
+        assertTrue (Basis (xAxis: x, yAxis: x, zAxis: x).isFinite (), "Basis with all components finite should be finite")
         
-        XCTAssertFalse (Basis (xAxis: infinite, yAxis: x, zAxis: x).isFinite (), "Basis with one component infinite should not be finite.")
-        XCTAssertFalse (Basis (xAxis: x, yAxis: infinite, zAxis: x).isFinite (), "Basis with one component infinite should not be finite.")
-        XCTAssertFalse (Basis (xAxis: x, yAxis: x, zAxis: infinite).isFinite (), "Basis with one component infinite should not be finite.")
+        assertFalse (Basis (xAxis: infinite, yAxis: x, zAxis: x).isFinite (), "Basis with one component infinite should not be finite.")
+        assertFalse (Basis (xAxis: x, yAxis: infinite, zAxis: x).isFinite (), "Basis with one component infinite should not be finite.")
+        assertFalse (Basis (xAxis: x, yAxis: x, zAxis: infinite).isFinite (), "Basis with one component infinite should not be finite.")
 
-        XCTAssertFalse (Basis (xAxis: infinite, yAxis: infinite, zAxis: x).isFinite (), "Basis with two components infinite should not be finite.")
-        XCTAssertFalse (Basis (xAxis: infinite, yAxis: x, zAxis: infinite).isFinite (), "Basis with two components infinite should not be finite.")
-        XCTAssertFalse (Basis (xAxis: x, yAxis: infinite, zAxis: infinite).isFinite (), "Basis with two components infinite should not be finite.")
+        assertFalse (Basis (xAxis: infinite, yAxis: infinite, zAxis: x).isFinite (), "Basis with two components infinite should not be finite.")
+        assertFalse (Basis (xAxis: infinite, yAxis: x, zAxis: infinite).isFinite (), "Basis with two components infinite should not be finite.")
+        assertFalse (Basis (xAxis: x, yAxis: infinite, zAxis: infinite).isFinite (), "Basis with two components infinite should not be finite.")
         
-        XCTAssertFalse (Basis (xAxis: infinite, yAxis: infinite, zAxis: infinite).isFinite (), "Basis with three components infinite should not be finite.")
+        assertFalse (Basis (xAxis: infinite, yAxis: infinite, zAxis: infinite).isFinite (), "Basis with three components infinite should not be finite.")
     }
 
     public func testIsConformalChecks () {
         var basis: Basis
         
         basis = Basis ()
-        XCTAssertTrue (basis.isConformal (), "Identity Basis should be conformal.")
+        assertTrue (basis.isConformal (), "Identity Basis should be conformal.")
         
         basis = Basis.fromEuler (Vector3 (x: 1.2, y: 3.4, z: 5.6))
-        XCTAssertTrue (basis.isConformal (), "Basis with only rotation should be conformal.")
+        assertTrue (basis.isConformal (), "Basis with only rotation should be conformal.")
         
         basis = Basis.fromScale (Vector3 (x: -1, y: -1, z: -1))
-        XCTAssertTrue (basis.isConformal (), "Basis with only a flip should be conformal.")
+        assertTrue (basis.isConformal (), "Basis with only a flip should be conformal.")
         
         basis = Basis.fromScale (Vector3 (x: 1.2, y: 1.2, z: 1.2))
-        XCTAssertTrue (basis.isConformal (), "Basis with only uniform scale should be conformal.")
+        assertTrue (basis.isConformal (), "Basis with only uniform scale should be conformal.")
         
         basis = Basis (xAxis: Vector3 (x: 3, y: 4, z: 0), yAxis: Vector3 (x: 4, y: -3, z: 0.0), zAxis: Vector3 (x: 0, y: 0, z: 5))
-        XCTAssertTrue (basis.isConformal (), "Basis with a flip, rotation, and uniform scale should be conformal.")
+        assertTrue (basis.isConformal (), "Basis with a flip, rotation, and uniform scale should be conformal.")
         
         basis = Basis.fromScale (Vector3 (x: 1.2, y: 3.4, z: 5.6))
-        XCTAssertFalse (basis.isConformal (), "Basis with non-uniform scale should not be conformal.")
+        assertFalse (basis.isConformal (), "Basis with non-uniform scale should not be conformal.")
         
         basis = Basis (xAxis: Vector3 (x: Float.sqrt12, y: Float.sqrt12, z: 0), yAxis: Vector3 (x: 0, y: 1, z: 0), zAxis: Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertFalse (basis.isConformal (), "Basis with the X axis skewed 45 degrees should not be conformal.")
+        assertFalse (basis.isConformal (), "Basis with the X axis skewed 45 degrees should not be conformal.")
     }
     
 }

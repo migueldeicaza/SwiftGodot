@@ -8,19 +8,19 @@
 final class EngineQuaternionTests {
     public func testDefaultConstruct () {
         let q: Quaternion = Quaternion ()
-        XCTAssertEqual (q.x, 0)
-        XCTAssertEqual (q.y, 0)
-        XCTAssertEqual (q.z, 0)
-        XCTAssertEqual (q.w, 1)
+        assertEqual (q.x, 0)
+        assertEqual (q.y, 0)
+        assertEqual (q.z, 0)
+        assertEqual (q.w, 1)
     }
     
     public func testConstructXYZW () {
         // Values are taken from actual use in another project & are valid (except roundoff error).
         let q = Quaternion (x: 0.2391, y: 0.099, z: 0.3696, w: 0.8924)
-        XCTAssertEqual (q.x, 0.2391)
-        XCTAssertEqual (q.y, 0.099)
-        XCTAssertEqual (q.z, 0.3696)
-        XCTAssertEqual (q.w, 0.8924)
+        assertEqual (q.x, 0.2391)
+        assertEqual (q.y, 0.099)
+        assertEqual (q.z, 0.3696)
+        assertEqual (q.w, 0.8924)
     }
     
     public func testConstructAxisAngle () {
@@ -296,9 +296,9 @@ final class EngineQuaternionTests {
         assertApproxEqual (kT.x, 0.5)
         assertApproxEqual (kT.y, 0.0)
         assertApproxEqual (kT.z, 0.866025)
-        XCTAssertEqual (iT.length (), 1)
-        XCTAssertEqual (jT.length (), 1)
-        XCTAssertEqual (kT.length (), 1)
+        assertEqual (iT.length (), 1)
+        assertEqual (jT.length (), 1)
+        assertEqual (kT.length (), 1)
         
         // Easy to visualize: 60 deg about Z-axis.
         q = Quaternion (axis: Vector3 (x: 0.0, y: 0.0, z: 1.0), angle: Float (60).degreesToRadians)
@@ -315,9 +315,9 @@ final class EngineQuaternionTests {
         assertApproxEqual (kT.x, 0.0)
         assertApproxEqual (kT.y, 0.0)
         assertApproxEqual (kT.z, 1.0)
-        XCTAssertEqual (iT.length (), 1)
-        XCTAssertEqual (jT.length (), 1)
-        XCTAssertEqual (kT.length (), 1)
+        assertEqual (iT.length (), 1)
+        assertEqual (jT.length (), 1)
+        assertEqual (kT.length (), 1)
     }
     
     public func testXformVector () {
@@ -376,26 +376,26 @@ final class EngineQuaternionTests {
     }
     
     public func testFiniteNumberChecks () {
-        XCTAssertTrue (Quaternion (x: 0, y: 1, z: 2, w: 3).isFinite (), "Quaternion with all components finite should be finite")
+        assertTrue (Quaternion (x: 0, y: 1, z: 2, w: 3).isFinite (), "Quaternion with all components finite should be finite")
         
-        XCTAssertFalse (Quaternion (x: .nan, y: 1, z: 2, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: 0, y: .nan, z: 2, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: 0, y: 1, z: .nan, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: 0, y: 1, z: 2, w: .nan).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: 1, z: 2, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: .nan, z: 2, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: 1, z: .nan, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: 1, z: 2, w: .nan).isFinite (), "Quaternion with one component infinite should not be finite.")
         
-        XCTAssertFalse (Quaternion (x: .nan, y: .nan, z: 2, w: 3).isFinite (), "Quaternion with two components infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: .nan, y: 1, z: .nan, w: 3).isFinite (), "Quaternion with two components infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: .nan, y: 1, z: 2, w: .nan).isFinite (), "Quaternion with two components infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: 0, y: .nan, z: .nan, w: 3).isFinite (), "Quaternion with two components infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: 0, y: .nan, z: 2, w: .nan).isFinite (), "Quaternion with two components infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: 0, y: 1, z: .nan, w: .nan).isFinite (), "Quaternion with two components infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: .nan, z: 2, w: 3).isFinite (), "Quaternion with two components infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: 1, z: .nan, w: 3).isFinite (), "Quaternion with two components infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: 1, z: 2, w: .nan).isFinite (), "Quaternion with two components infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: .nan, z: .nan, w: 3).isFinite (), "Quaternion with two components infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: .nan, z: 2, w: .nan).isFinite (), "Quaternion with two components infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: 1, z: .nan, w: .nan).isFinite (), "Quaternion with two components infinite should not be finite.")
         
-        XCTAssertFalse (Quaternion (x: 0, y: .nan, z: .nan, w: .nan).isFinite (), "Quaternion with one component infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: .nan, y: 1, z: .nan, w: .nan).isFinite (), "Quaternion with one component infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: .nan, y: .nan, z: .nan, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
-        XCTAssertFalse (Quaternion (x: .nan, y: .nan, z: .nan, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: 0, y: .nan, z: .nan, w: .nan).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: 1, z: .nan, w: .nan).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: .nan, z: .nan, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: .nan, z: .nan, w: 3).isFinite (), "Quaternion with one component infinite should not be finite.")
         
-        XCTAssertFalse (Quaternion (x: .nan, y: .nan, z: .nan, w: .nan).isFinite (), "Quaternion with four components infinite should not be finite.")
+        assertFalse (Quaternion (x: .nan, y: .nan, z: .nan, w: .nan).isFinite (), "Quaternion with four components infinite should not be finite.")
     }
     
 }

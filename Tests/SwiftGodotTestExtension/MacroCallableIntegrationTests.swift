@@ -52,7 +52,7 @@ final class MacroCallableIntegrationTests {
         objectsArray.append(Variant(object2))
         objectsArray.append(nil)
                 
-        XCTAssertEqual(testObject.call(method: "countObjects", objectsArray.toVariant()).to(), 6)
+        assertEqual(testObject.call(method: "countObjects", objectsArray.toVariant()).to(), 6)
         testObject.free()
         object0.free()
         object1.free()
@@ -75,7 +75,7 @@ final class MacroCallableIntegrationTests {
         objectsArray.append(nil)
         objectsArray.append(Variant(RefCounted())) // this one causes the failure
                 
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), 0.toVariant())
+        assertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), 0.toVariant())
         testObject.free()
         object0.free()
         object1.free()
@@ -101,7 +101,7 @@ final class MacroCallableIntegrationTests {
         objectsArray.append(Variant(RefCounted()))
         
         let result = testObject.call(method: "countObjects", objectsArray.toVariant())
-        XCTAssertEqual(result.to(), 6)
+        assertEqual(result.to(), 6)
         
         testObject.free()
         object0.free()
@@ -124,7 +124,7 @@ final class MacroCallableIntegrationTests {
         objectsArray.append(object2) // 5
         objectsArray.append(nil) // 6
         
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
+        assertEqual(testObject.call(method: "countObjects", Variant(objectsArray)), Variant(6))
         testObject.free()
         object0.free()
         object1.free()
@@ -139,7 +139,7 @@ final class MacroCallableIntegrationTests {
         builtinsArray.append(Variant(2))
         builtinsArray.append(Variant(3))
         
-        XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        assertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
 
@@ -156,7 +156,7 @@ final class MacroCallableIntegrationTests {
         array.append(Variant(4))
         
         // Fails, prints into console and returns nil due to typed builtin array not allowing nils
-        XCTAssertEqual(testObject.call(method: "countObjects", Variant(array)), 0.toVariant())
+        assertEqual(testObject.call(method: "countObjects", Variant(array)), 0.toVariant())
         testObject.free()
     }
 
@@ -170,7 +170,7 @@ final class MacroCallableIntegrationTests {
         // this one won't be added, error is logged from Godot, nil Builtins are not allowed in typed Arrays
         builtinsArray.append(nil)
         
-        XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        assertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
 
@@ -182,7 +182,7 @@ final class MacroCallableIntegrationTests {
         builtinsArray.append(2)
         builtinsArray.append(3)
         
-        XCTAssertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
+        assertEqual(testObject.call(method: "countBuiltins", Variant(builtinsArray)), Variant(3))
         testObject.free()
     }
 
@@ -203,7 +203,7 @@ final class MacroCallableIntegrationTests {
         variants.append(Variant(true)) // 7
         
         
-        XCTAssertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(7))
+        assertEqual(testObject.call(method: "countMixed", Variant(builtins), Variant(objects), Variant(variants), Variant("ignored")), Variant(7))
         testObject.free()
     }
 }

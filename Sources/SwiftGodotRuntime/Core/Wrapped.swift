@@ -688,6 +688,54 @@ where T: RawRepresentable & CaseIterable, T.RawValue == Int {
     }
 }
 
+/// Internal API. Emitted by the `@Godot` macro for every nested enum declaration.
+///
+/// When the enum is `CaseIterable` and `RawRepresentable` with a `BinaryInteger`
+/// raw value, its cases are registered with Godot as integer constants grouped
+/// under the enum's name. The disfavored overload below makes this a no-op for
+/// any enum that does not satisfy those constraints, so the macro can emit an
+/// unconditional call without inspecting the enum's conformances.
+public func _registerEnumIfPossible<T>(_ type: T.Type)
+where T: RawRepresentable & CaseIterable, T.RawValue: BinaryInteger {
+    let fullname = String(reflecting: type)
+    let split = fullname.split(separator: ".")
+    if split.count != 3 {
+        GD.print("Could not register enum \(fullname) it needs 3 components")
+        return
+    }
+
+    var className = StringName(split[1])
+    var enumName  = StringName(split[2])
+
+    withUnsafePointer(to: &className.content) { classPtr in
+        withUnsafePointer(to: &enumName.content) { enumPtr in
+            for v in type.allCases {
+                let keyString = String(describing: v)          // e.g. "foo", "bar"
+                var key   = StringName(keyString)
+                let value = Int64(v.rawValue)
+
+                withUnsafePointer(to: &key.content) { keyPtr in
+                    gi.classdb_register_extension_class_integer_constant(
+                        extensionInterface.getLibrary(),
+                        classPtr,
+                        enumPtr,
+                        keyPtr,
+                        value,
+                        0)
+                }
+            }
+        }
+    }
+}
+
+/// Internal API. No-op fallback for enums that are not `CaseIterable` &
+/// `RawRepresentable` with a `BinaryInteger` raw value. See the constrained
+/// overload above.
+@_disfavoredOverload
+public func _registerEnumIfPossible<T>(_ type: T.Type) {
+    // Nothing to register: the enum cannot be mapped to Godot integer constants.
+}
+
 public func unregister<T: Object>(type: T.Type) {
     let typeStr = String (describing: type)
     let name = StringName (typeStr)

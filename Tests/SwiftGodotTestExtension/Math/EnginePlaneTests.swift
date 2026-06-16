@@ -10,31 +10,31 @@ final class EnginePlaneTests {
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let planeVector: Plane  = Plane (normal: Vector3 (x: 32, y: 22, z: 16), d: 3)
         let planeCopyPlane: Plane = Plane (from: plane)
-        XCTAssertEqual (plane, planeVector, "Planes created with same values but different methods should be equal.")
-        XCTAssertEqual (plane, planeCopyPlane, "Planes created with same values but different methods should be equal.")
+        assertEqual (plane, planeVector, "Planes created with same values but different methods should be equal.")
+        assertEqual (plane, planeCopyPlane, "Planes created with same values but different methods should be equal.")
     }
     
     public func testBasicGetters () {        
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let planeNormalized: Plane = Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42)
-        XCTAssertEqual (plane.normal, Vector3 (x: 32, y: 22, z: 16), "normal getter should return the expected value.")
-        XCTAssertEqual (plane.normalized (), planeNormalized, "normalized() should return a copy of the normalized value.")
+        assertEqual (plane.normal, Vector3 (x: 32, y: 22, z: 16), "normal getter should return the expected value.")
+        assertEqual (plane.normalized (), planeNormalized, "normalized() should return a copy of the normalized value.")
     }
     
     public func testBasicSetters () {
         var plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         plane.normal = Vector3 (x: 4, y: 2, z: 3)
-        XCTAssertEqual (plane, Plane (a: 4, b: 2, c: 3, d: 3), "Setting normal should result in the expected plane.")
+        assertEqual (plane, Plane (a: 4, b: 2, c: 3, d: 3), "Setting normal should result in the expected plane.")
         plane = Plane (a: 32, b: 22, c: 16, d: 3).normalized ()
-        XCTAssertEqual (plane, Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42), "normalize() should result in the expected plane.")
+        assertEqual (plane, Plane (a: 32.0 / 42, b: 22.0 / 42, c: 16.0 / 42, d: 3.0 / 42), "normalize() should result in the expected plane.")
     }
     
     public func testPlanePointOperations () {
         let plane: Plane = Plane (a: 32, b: 22, c: 16, d: 3)
         let yFacingPlane: Plane = Plane (a: 0, b: 1, c: 0, d: 4)
-        XCTAssertEqual (plane.getCenter (), Vector3 (x: 32 * 3, y: 22 * 3, z: 16 * 3), "getCenter() should return a vector pointing to the center of the plane.")
-        XCTAssertTrue (yFacingPlane.isPointOver (point: Vector3 (x: 0, y: 5, z: 0)), "isPointOver() should return the expected result.")
-        XCTAssertEqual (yFacingPlane.getAnyPerpendicularNormal (), Vector3 (x: 1, y: 0, z: 0), "getAnyPerpendicularNormal() should return the expected result.")
+        assertEqual (plane.getCenter (), Vector3 (x: 32 * 3, y: 22 * 3, z: 16 * 3), "getCenter() should return a vector pointing to the center of the plane.")
+        assertTrue (yFacingPlane.isPointOver (point: Vector3 (x: 0, y: 5, z: 0)), "isPointOver() should return the expected result.")
+        assertEqual (yFacingPlane.getAnyPerpendicularNormal (), Vector3 (x: 1, y: 0, z: 0), "getAnyPerpendicularNormal() should return the expected result.")
     }
     
     public func testHasPoint () {
@@ -49,16 +49,16 @@ final class EnginePlaneTests {
         let xFacingPlaneWithDOffset: Plane = Plane (a: 1, b: 0, c: 0, d: 1)
         let yXxisPointWithDOffset: Vector3 = Vector3 (x: 1, y: 10, z: 0)
         
-        XCTAssertTrue (xFacingPlane.hasPoint (yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
-        XCTAssertTrue (xFacingPlane.hasPoint (zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        assertTrue (xFacingPlane.hasPoint (yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        assertTrue (xFacingPlane.hasPoint (zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
         
-        XCTAssertTrue (yFacingPlane.hasPoint (xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
-        XCTAssertTrue (yFacingPlane.hasPoint (zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        assertTrue (yFacingPlane.hasPoint (xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        assertTrue (yFacingPlane.hasPoint (zAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
         
-        XCTAssertTrue (zFacingPlane.hasPoint (yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
-        XCTAssertTrue (zFacingPlane.hasPoint (xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        assertTrue (zFacingPlane.hasPoint (yAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
+        assertTrue (zFacingPlane.hasPoint (xAxisPoint), "hasPoint() with contained Vector3 should return the expected result.")
         
-        XCTAssertTrue (xFacingPlaneWithDOffset.hasPoint (yXxisPointWithDOffset), "hasPoint () with passed Vector3 should return the expected result.")
+        assertTrue (xFacingPlaneWithDOffset.hasPoint (yXxisPointWithDOffset), "hasPoint () with passed Vector3 should return the expected result.")
     }
     
     public func testIntersection () {
@@ -72,38 +72,38 @@ final class EnginePlaneTests {
         varOut = xFacingPlane.intersect3 (b: yFacingPlane, c: zFacingPlane)
         if let varOut {
             vecOut = Vector3 (varOut)
-            XCTAssertEqual (varOut.gtype, .vector3, "intersect3() should return the expected result.")
-            XCTAssertEqual (vecOut, Vector3 (x: 1, y: 2, z: 3), "intersect3() should return the expected result.")
+            assertEqual (varOut.gtype, .vector3, "intersect3() should return the expected result.")
+            assertEqual (vecOut, Vector3 (x: 1, y: 2, z: 3), "intersect3() should return the expected result.")
         } else {
-            XCTFail()
+            fail()
         }
                 
         varOut = xFacingPlane.intersectsRay (from: Vector3 (x: 0, y: 1, z: 1), dir: Vector3 (x: 2, y: 0, z: 0))
         if let varOut {
             vecOut = Vector3 (varOut)
-            XCTAssertEqual (varOut.gtype, .vector3, "intersectsRay() should return the expected result.")
-            XCTAssertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsRay() should return the expected result.")
+            assertEqual (varOut.gtype, .vector3, "intersectsRay() should return the expected result.")
+            assertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsRay() should return the expected result.")
         } else {
-            XCTFail()
+            fail()
         }
         
         varOut = xFacingPlane.intersectsSegment (from: Vector3 (x: 0, y: 1, z: 1), to: Vector3 (x: 2, y: 1, z: 1))
         if let varOut {
             vecOut = Vector3 (varOut)
-            XCTAssertEqual (varOut.gtype, .vector3, "intersectsSegment() should return the expected result.")
-            XCTAssertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsSegment() should return the expected result.")
+            assertEqual (varOut.gtype, .vector3, "intersectsSegment() should return the expected result.")
+            assertEqual (vecOut, Vector3 (x: 1, y: 1, z: 1), "intersectsSegment() should return the expected result.")
         } else {
-            XCTFail()
+            fail()
         }
     }
     
     public func testFiniteNumberChecks () {
         let x: Vector3 = Vector3 (x: 0, y: 1, z: 2)
         let infinite: Vector3 = Vector3 (x: .nan, y: .nan, z: .nan)
-        XCTAssertTrue (Plane (normal: x, point: .zero).isFinite (), "Plane with all components finite should be finite")
-        XCTAssertFalse (Plane (normal: x, d: .nan).isFinite (), "Plane with one component infinite should not be finite.")
-        XCTAssertFalse (Plane (normal: infinite, d: .zero).isFinite (), "Plane with one component infinite should not be finite.")
-        XCTAssertFalse (Plane (normal: infinite, d: .nan).isFinite (), "Plane with two components infinite should not be finite.")
+        assertTrue (Plane (normal: x, point: .zero).isFinite (), "Plane with all components finite should be finite")
+        assertFalse (Plane (normal: x, d: .nan).isFinite (), "Plane with one component infinite should not be finite.")
+        assertFalse (Plane (normal: infinite, d: .zero).isFinite (), "Plane with one component infinite should not be finite.")
+        assertFalse (Plane (normal: infinite, d: .nan).isFinite (), "Plane with two components infinite should not be finite.")
     }
     
 }

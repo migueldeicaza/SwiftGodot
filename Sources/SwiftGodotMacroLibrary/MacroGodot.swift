@@ -80,7 +80,14 @@ class GodotMacroProcessor {
         SwiftGodotRuntime._addPropertySubgroup(className: className, name: "\(name)", prefix: "\(prefix)")
         """)
     }
-        
+
+    func processEnum(_ enumDecl: EnumDeclSyntax) {
+        let enumName = enumDecl.name.text
+        classInitializerPrinter("""
+        SwiftGodotRuntime._registerEnumIfPossible(\(className).\(enumName).self)
+        """)
+    }
+
     func processFunction(_ funcDecl: FunctionDeclSyntax) throws {
         guard let callableAttribute = funcDecl.attributes.attribute(named: "Callable") else {
             return
@@ -410,6 +417,8 @@ class GodotMacroProcessor {
                         previousGroupPrefix: previousGroupPrefix,
                         previousSubgroupPrefix: previousSubgroupPrefix
                     )
+                } else if let enumDecl = EnumDeclSyntax(decl) {
+                    processEnum(enumDecl)
                 } else if let macroExpansion {
                     try classInitSignals(macroExpansion)
                 }

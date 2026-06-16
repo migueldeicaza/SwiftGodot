@@ -16,38 +16,38 @@ final class Geometry3DTests {
     public func testBuildBoxPlanes () {
         let extents: Vector3 = Vector3 (x: 5, y: 5, z: 20)
         let box = Geometry3D.buildBoxPlanes (extents: extents)
-        XCTAssertEqual (box.size (), 6)
-        XCTAssertEqual (extents.x, box [safe: 0]?.d)
-        XCTAssertEqual (box [safe: 0]?.normal, Vector3 (x: 1, y: 0, z: 0))
-        XCTAssertEqual (extents.x, box [safe: 1]?.d)
-        XCTAssertEqual (box [safe: 1]?.normal, Vector3 (x: -1, y: 0, z: 0))
-        XCTAssertEqual (extents.y, box [safe: 2]?.d)
-        XCTAssertEqual (box [safe: 2]?.normal, Vector3 (x: 0, y: 1, z: 0))
-        XCTAssertEqual (extents.y, box [safe: 3]?.d)
-        XCTAssertEqual (box [safe: 3]?.normal, Vector3 (x: 0, y: -1, z: 0))
-        XCTAssertEqual (extents.z, box [safe: 4]?.d)
-        XCTAssertEqual (box [safe: 4]?.normal, Vector3 (x: 0, y: 0, z: 1))
-        XCTAssertEqual (extents.z, box [safe: 5]?.d)
-        XCTAssertEqual (box [safe: 5]?.normal, Vector3 (x: 0, y: 0, z: -1))
+        assertEqual (box.size (), 6)
+        assertEqual (extents.x, box [safe: 0]?.d)
+        assertEqual (box [safe: 0]?.normal, Vector3 (x: 1, y: 0, z: 0))
+        assertEqual (extents.x, box [safe: 1]?.d)
+        assertEqual (box [safe: 1]?.normal, Vector3 (x: -1, y: 0, z: 0))
+        assertEqual (extents.y, box [safe: 2]?.d)
+        assertEqual (box [safe: 2]?.normal, Vector3 (x: 0, y: 1, z: 0))
+        assertEqual (extents.y, box [safe: 3]?.d)
+        assertEqual (box [safe: 3]?.normal, Vector3 (x: 0, y: -1, z: 0))
+        assertEqual (extents.z, box [safe: 4]?.d)
+        assertEqual (box [safe: 4]?.normal, Vector3 (x: 0, y: 0, z: 1))
+        assertEqual (extents.z, box [safe: 5]?.d)
+        assertEqual (box [safe: 5]?.normal, Vector3 (x: 0, y: 0, z: -1))
     }
 
     public func testBuildCapsulePlanes () {
         let capsule = Geometry3D.buildCapsulePlanes (radius: 10, height: 20, sides: 6, lats: 10)
-        XCTAssertEqual (capsule.size (), 126)
+        assertEqual (capsule.size (), 126)
     }
 
     public func testBuildCylinderPlanes () {
         let planes = Geometry3D.buildCylinderPlanes (radius: 3.0, height: 10.0, sides: 10)
-        XCTAssertEqual (planes.size (), 12)
+        assertEqual (planes.size (), 12)
     }
     
     public func testClipPolygon () {
         let boxPlanes = Geometry3D.buildBoxPlanes (extents: Vector3 (x: 5, y: 10, z: 5))
         let box = Geometry3D.computeConvexMeshPoints (planes: boxPlanes)
         var output = Geometry3D.clipPolygon (points: box, plane: Plane ())
-        XCTAssertEqual (output, box)
+        assertEqual (output, box)
         output = Geometry3D.clipPolygon (points: box, plane: Plane (normal: Vector3 (x: 0, y: 1, z: 0), point: Vector3 (x: 0, y: 3, z: 0)))
-        XCTAssertTrue (output != box)
+        assertTrue (output != box)
     }
 
     public func testComputeConvexMeshPoints () {
@@ -61,7 +61,7 @@ final class Geometry3DTests {
         cube.pushBack (value: Vector3 (x: -5, y: 5, z: 5))
         cube.pushBack (value: Vector3 (x: 5, y: 5, z: 5))
         let boxPlanes = Geometry3D.buildBoxPlanes (extents: Vector3 (x: 5, y: 5, z: 5))
-        XCTAssertEqual (Geometry3D.computeConvexMeshPoints (planes: boxPlanes), cube)
+        assertEqual (Geometry3D.computeConvexMeshPoints (planes: boxPlanes), cube)
     }
 
     public func testGetClosestPointToSegment () {
@@ -72,51 +72,51 @@ final class Geometry3DTests {
     public func testDoesRayIntersectTriangle () {
         var result: Variant?
         result = Geometry3D.rayIntersectsTriangle (from: Vector3 (x: 0, y: 1, z: 1), dir: Vector3 (x: 0, y: 0, z: -10), a: Vector3 (x: 0, y: 3, z: 0), b: Vector3 (x: -3, y: 0, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result?.gtype, .vector3)
-        XCTAssertEqual (result.map { Vector3($0) }, Vector3 (x: 0, y: 1, z: 0))
+        assertEqual (result?.gtype, .vector3)
+        assertEqual (result.map { Vector3($0) }, Vector3 (x: 0, y: 1, z: 0))
         result = Geometry3D.rayIntersectsTriangle (from: Vector3 (x: 5, y: 10, z: 1), dir: Vector3 (x: 0, y: 0, z: -10), a: Vector3 (x: 0, y: 3, z: 0), b: Vector3 (x: -3, y: 0, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result, nil)
+        assertEqual (result, nil)
         result = Geometry3D.rayIntersectsTriangle (from: Vector3 (x: 0, y: 1, z: 1), dir: Vector3 (x: 0, y: 0, z: 10), a: Vector3 (x: 0, y: 3, z: 0), b: Vector3 (x: -3, y: 0, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result, nil)
+        assertEqual (result, nil)
     }
 
     public func testDoesSegmentIntersectConvex () {
         let boxPlanes = Geometry3D.buildBoxPlanes (extents: Vector3 (x: 5, y: 5, z: 5))
         var result: PackedVector3Array
         result = Geometry3D.segmentIntersectsConvex (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 0, y: 0, z: 0), planes: boxPlanes)
-        XCTAssertFalse (result.isEmpty ())
+        assertFalse (result.isEmpty ())
         result = Geometry3D.segmentIntersectsConvex (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 5, y: 5, z: 5), planes: boxPlanes)
-        XCTAssertFalse (result.isEmpty ())
+        assertFalse (result.isEmpty ())
         result = Geometry3D.segmentIntersectsConvex (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 6, y: 5, z: 5), planes: boxPlanes)
-        XCTAssertTrue (result.isEmpty ())
+        assertTrue (result.isEmpty ())
     }
 
     public func testSegmentIntersectsCylinder () {
         var result: PackedVector3Array
         result = Geometry3D.segmentIntersectsCylinder (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 0, y: 0, z: 0), height: 5, radius: 5)
-        XCTAssertFalse (result.isEmpty ())
+        assertFalse (result.isEmpty ())
         result = Geometry3D.segmentIntersectsCylinder (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 6, y: 6, z: 6), height: 5, radius: 5)
-        XCTAssertTrue (result.isEmpty ())
+        assertTrue (result.isEmpty ())
     }
 
     public func testSegmentIntersectsSphere () {
         var result: PackedVector3Array
         result = Geometry3D.segmentIntersectsSphere (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 0, y: 0, z: 0), spherePosition: Vector3 (x: 0, y: 0, z: 0), sphereRadius: 5)
-        XCTAssertFalse (result.isEmpty ())
+        assertFalse (result.isEmpty ())
         result = Geometry3D.segmentIntersectsSphere (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 0, y: 0, z: 2.5), spherePosition: Vector3 (x: 0, y: 0, z: 0), sphereRadius: 5)
-        XCTAssertFalse (result.isEmpty ())
+        assertFalse (result.isEmpty ())
         result = Geometry3D.segmentIntersectsSphere (from: Vector3 (x: 10, y: 10, z: 10), to: Vector3 (x: 5, y: 5, z: 5), spherePosition: Vector3 (x: 0, y: 0, z: 0), sphereRadius: 5)
-        XCTAssertTrue (result.isEmpty ())
+        assertTrue (result.isEmpty ())
     }
 
     public func testSegmentIntersectsTriangle () {
         var result: Variant?
         result = Geometry3D.segmentIntersectsTriangle (from: Vector3 (x: 1, y: 1, z: 1), to: Vector3 (x: -1, y: -1, z: -1), a: Vector3 (x: -3, y: 0, z: 0), b: Vector3 (x: 0, y: 3, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result?.gtype, .vector3)
+        assertEqual (result?.gtype, .vector3)
         result = Geometry3D.segmentIntersectsTriangle (from: Vector3 (x: 1, y: 1, z: 1), to: Vector3 (x: 3, y: 0, z: 0), a: Vector3 (x: -3, y: 0, z: 0), b: Vector3 (x: 0, y: 3, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result?.gtype, .vector3)
+        assertEqual (result?.gtype, .vector3)
         result = Geometry3D.segmentIntersectsTriangle (from: Vector3 (x: 1, y: 1, z: 1), to: Vector3 (x: 10, y: -1, z: -1), a: Vector3 (x: -3, y: 0, z: 0), b: Vector3 (x: 0, y: 3, z: 0), c: Vector3 (x: 3, y: 0, z: 0))
-        XCTAssertEqual (result, nil)
+        assertEqual (result, nil)
     }
     
 }
