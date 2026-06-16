@@ -60,20 +60,13 @@ public func _argumentPropInfo<T>(
     _ type: T.Type,
     name: String = ""
 ) -> PropInfo where T: CaseIterable & RawRepresentable, T.RawValue == Int {
-    var hintStr = ""
-    for c in T.allCases {
-        if hintStr != "" {
-            hintStr += ","
-        }
-        hintStr += "\(c):\(c.rawValue)"
-    }
     return PropInfo(
         propertyType: .int,
         propertyName: StringName(name),
-        className: StringName(String(describing: T.self)),
-        hint: .enum,
-        hintStr: GString(hintStr),
-        usage: .default
+        className: enumClassInfoName(T.self),
+        hint: .none,
+        hintStr: GString(),
+        usage: [.default, .classIsEnum]
     )
 }
 
@@ -101,20 +94,13 @@ public func _argumentPropInfo<T>(
     _ type: T.Type,
     name: String = ""
 ) -> PropInfo where T: CaseIterable & RawRepresentable, T.RawValue == Int64 {
-    var hintStr = ""
-    for c in T.allCases {
-        if hintStr != "" {
-            hintStr += ","
-        }
-        hintStr += "\(c):\(c.rawValue)"
-    }
     return PropInfo(
         propertyType: .int,
         propertyName: StringName(name),
-        className: StringName(String(describing: T.self)),
-        hint: .enum,
-        hintStr: GString(hintStr),
-        usage: .default
+        className: enumClassInfoName(T.self),
+        hint: .none,
+        hintStr: GString(),
+        usage: [.default, .classIsEnum]
     )
 }
 
@@ -185,4 +171,3 @@ public func _argumentPropInfo<T>(
 ) -> PropInfo {
     fatalError("Unreachable")
 }
-

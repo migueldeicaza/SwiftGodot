@@ -125,6 +125,21 @@ public func _returnValuePropInfo<T>(
 @inlinable
 public func _returnValuePropInfo<T>(
     _ type: T.Type
+) -> PropInfo where T: RawRepresentable, T: CaseIterable, T.RawValue == Int {
+    PropInfo(
+        propertyType: .int,
+        propertyName: StringName(""),
+        className: enumClassInfoName(T.self),
+        hint: .none,
+        hintStr: GString(),
+        usage: [.default, .classIsEnum]
+    )
+}
+
+@inline(__always)
+@inlinable
+public func _returnValuePropInfo<T>(
+    _ type: T.Type
 ) -> PropInfo where T: RawRepresentable, T.RawValue == Int64 {
     PropInfo(
         propertyType: .int,
@@ -133,5 +148,20 @@ public func _returnValuePropInfo<T>(
         hint: .none,
         hintStr: GString(""),
         usage: .default
+    )
+}
+
+@inline(__always)
+@inlinable
+public func _returnValuePropInfo<T>(
+    _ type: T.Type
+) -> PropInfo where T: RawRepresentable, T: CaseIterable, T.RawValue == Int64 {
+    PropInfo(
+        propertyType: .int,
+        propertyName: StringName(""),
+        className: enumClassInfoName(T.self),
+        hint: .none,
+        hintStr: GString(),
+        usage: [.default, .classIsEnum]
     )
 }

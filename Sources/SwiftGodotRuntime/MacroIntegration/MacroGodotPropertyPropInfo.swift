@@ -264,6 +264,16 @@ where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
         .joined(separator: ",")
 }
 
+@inline(__always)
+@usableFromInline
+func enumClassInfoName<T>(_ type: T.Type = T.self) -> StringName {
+    let components = String(reflecting: type).split(separator: ".")
+    guard components.count >= 2 else {
+        return StringName(String(describing: type))
+    }
+    return StringName("\(components[components.count - 2]).\(components[components.count - 1])")
+}
+
 /// Internal API.  CaseIterable enum with BinaryInteger RawValue.
 @inline(__always)
 @inlinable
@@ -286,9 +296,10 @@ public func _propInfo<Root, T>(
     return _propInfoDefault(
         propertyType: .int,
         name: name,
+        className: enumClassInfoName(T.self),
         hint: userHint,
         hintStr: userHintStr,
-        usage: userUsage
+        usage: userUsage ?? [.default, .classIsEnum]
     )
 }
 
@@ -303,4 +314,3 @@ public func _propInfo<Root, T>(
 ) -> PropInfo {
     fatalError("Unreachable")
 }
-
