@@ -31,8 +31,8 @@ final class SignalTests {
         node.connect (signal: TestSignalNode.mySignal, to: node, method: "receiveSignal")
         node.emit (signal: TestSignalNode.mySignal, 22, "Joey")
 
-        XCTAssertEqual (node.receivedInt, 22, "Integers should have been the same")
-        XCTAssertEqual (node.receivedString, "Joey", "Strings should have been the same")
+        assertEqual (node.receivedInt, 22, "Integers should have been the same")
+        assertEqual (node.receivedString, "Joey", "Strings should have been the same")
         node.queueFree()
     }
 
@@ -41,12 +41,12 @@ final class SignalTests {
         var signalReceived = false
 
         node.nuSignal.connect { age, name in
-            XCTAssertEqual (age, 22)
-            XCTAssertEqual (name, "Sam")
+            assertEqual (age, 22)
+            assertEqual (name, "Sam")
             signalReceived = true
         }
         node.nuSignal.emit(22, "Sam")
-        XCTAssertTrue (signalReceived, "signal should have been received")
+        assertTrue (signalReceived, "signal should have been received")
         node.queueFree()
     }
 
@@ -57,7 +57,7 @@ final class SignalTests {
             signalReceived = true
         }
         node.ready.emit()
-        XCTAssertTrue (signalReceived, "signal should have been received")
+        assertTrue (signalReceived, "signal should have been received")
         node.queueFree()
     }
 
@@ -66,10 +66,10 @@ final class SignalTests {
         var signalReceived = false
         node.childExitingTree.connect { (nodeParameter: Node?) in // full signature is specified here to check that it's being generated with the right types
             signalReceived = true
-            XCTAssertEqual(node, nodeParameter)
+            assertEqual(node, nodeParameter)
         }
         node.childExitingTree.emit(node)
-        XCTAssertTrue (signalReceived, "signal should have been received")
+        assertTrue (signalReceived, "signal should have been received")
         node.queueFree()
     }
 
@@ -78,12 +78,12 @@ final class SignalTests {
         var signalReceived = false
         node.animationNodeRenamed.connect { (id: Int64, oldName: String, newName: String) in  // full signature is specified here to check that it's being generated with the right types
             signalReceived = true
-            XCTAssertEqual(id, 123)
-            XCTAssertEqual(oldName, "old name")
-            XCTAssertEqual(newName, "new name")
+            assertEqual(id, 123)
+            assertEqual(oldName, "old name")
+            assertEqual(newName, "new name")
         }
         node.animationNodeRenamed.emit(123, "old name", "new name")
-        XCTAssertTrue (signalReceived, "signal should have been received")
+        assertTrue (signalReceived, "signal should have been received")
         // AnimationNode is a Resource (reference-counted) — no manual free needed.
     }
 }

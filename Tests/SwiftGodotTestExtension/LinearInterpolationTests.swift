@@ -6,35 +6,35 @@
 final class LinearInterpolationTests {
     public func testDoubleLinearInterpolation() {
         let result = Double(1000).lerp(to: 1100, weight: 0.5)
-        XCTAssertEqual(result, 1050)
+        assertEqual(result, 1050)
         
         let result2 = Double(1000).lerp(to: 1100, weight: 0)
-        XCTAssertEqual(result2, 1000)
+        assertEqual(result2, 1000)
         
         let result3 = Double(1000).lerp(to: 1100, weight: 1)
-        XCTAssertEqual(result3, 1100)
+        assertEqual(result3, 1100)
     }
     
     public func testFloatLinearInterpolation() {
         let result = Float(1000).lerp(to: 1100, weight: 0.5)
-        XCTAssertEqual(result, 1050)
+        assertEqual(result, 1050)
         
         let result2 = Float(1000).lerp(to: 1100, weight: 0)
-        XCTAssertEqual(result2, 1000)
+        assertEqual(result2, 1000)
         
         let result3 = Float(1000).lerp(to: 1100, weight: 1)
-        XCTAssertEqual(result3, 1100)
+        assertEqual(result3, 1100)
     }
     
     public func testIntLinearInterpolation() {
         let result = Int(1000).lerp(to: 1100, weight: 0.5)
-        XCTAssertEqual(result, 1050)
+        assertEqual(result, 1050)
         
         let result2 = Int(1000).lerp(to: 1100, weight: 0)
-        XCTAssertEqual(result2, 1000)
+        assertEqual(result2, 1000)
         
         let result3 = Int(1000).lerp(to: 1100, weight: 1)
-        XCTAssertEqual(result3, 1100)
+        assertEqual(result3, 1100)
     }
     
     public func testVector2LinearInterpolation() {
@@ -42,13 +42,13 @@ final class LinearInterpolationTests {
         let to = Vector2(x: 200, y: 200)
         
         let result = from.lerp(to: to, weight: 0.5)
-        XCTAssertEqual(result, Vector2(x: 150, y: 150))
+        assertEqual(result, Vector2(x: 150, y: 150))
         
         let result2 = from.lerp(to: to, weight: 0)
-        XCTAssertEqual(result2, from)
+        assertEqual(result2, from)
         
         let result3 = from.lerp(to: to, weight: 1)
-        XCTAssertEqual(result3, to)
+        assertEqual(result3, to)
     }
     
     public func testVector3LinearInterpolation() {
@@ -56,13 +56,13 @@ final class LinearInterpolationTests {
         let to = Vector3(x: 200, y: 200, z: 200)
         
         let result = from.lerp(to: to, weight: 0.5)
-        XCTAssertEqual(result, Vector3(x: 150, y: 150, z: 150))
+        assertEqual(result, Vector3(x: 150, y: 150, z: 150))
         
         let result2 = from.lerp(to: to, weight: 0)
-        XCTAssertEqual(result2, from)
+        assertEqual(result2, from)
         
         let result3 = from.lerp(to: to, weight: 1)
-        XCTAssertEqual(result3, to)
+        assertEqual(result3, to)
     }
     
     public func testVector4LinearInterpolation() {
@@ -70,13 +70,13 @@ final class LinearInterpolationTests {
         let to = Vector4(x: 200, y: 200, z: 200, w: 200)
         
         let result = from.lerp(to: to, weight: 0.5)
-        XCTAssertEqual(result, Vector4(x: 150, y: 150, z: 150, w: 150))
+        assertEqual(result, Vector4(x: 150, y: 150, z: 150, w: 150))
         
         let result2 = from.lerp(to: to, weight: 0)
-        XCTAssertEqual(result2, from)
+        assertEqual(result2, from)
         
         let result3 = from.lerp(to: to, weight: 1)
-        XCTAssertEqual(result3, to)
+        assertEqual(result3, to)
     }
     
     public func testColorLinearInterpolation() {
@@ -84,13 +84,13 @@ final class LinearInterpolationTests {
         let to = Color(r: 1, g: 1, b: 1, a: 1)
         
         let result = from.lerp(to: to, weight: 0.5)
-        XCTAssertEqual(result, Color(r: 0.8, g: 0.8, b: 0.8, a: 0.8))
+        assertEqual(result, Color(r: 0.8, g: 0.8, b: 0.8, a: 0.8))
         
         let result2 = from.lerp(to: to, weight: 0)
-        XCTAssertEqual(result2, from)
+        assertEqual(result2, from)
         
         let result3 = from.lerp(to: to, weight: 1)
-        XCTAssertEqual(result3, to)
+        assertEqual(result3, to)
     }
     
     public func testInverseInterpolation() {
@@ -98,8 +98,8 @@ final class LinearInterpolationTests {
         let to: Double = 1100
         let weight = 0.5
         let result = from.lerp(to: to, weight: 0.5)
-        XCTAssertEqual(result, 1050)
+        assertEqual(result, 1050)
         let inverseResult = result.inverseLerp(from: from, to: to)
-        XCTAssertEqual(weight, Double(inverseResult))
+        assertEqual(weight, Double(inverseResult))
     }
 }

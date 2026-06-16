@@ -12,8 +12,8 @@ extension Vector2 {
     static let zero = Vector2(x: 0, y: 0)
 }
 
-// Note: Performance testing using XCTCPUMetric and measure() is not available
-// in the new test framework. This test has been converted to a basic functional test.
+// Note: CPU/performance metrics and measure() are not available in this test
+// framework. This test has been converted to a basic functional test.
 @SwiftGodotTestSuite
 final class PerformanceTests {
     public func testInputGetVector() {
@@ -26,6 +26,6 @@ final class PerformanceTests {
             negativeX: ui_left, positiveX: ui_right,
             negativeY: ui_up, positiveY: ui_down
         )
-        XCTAssertEqual(velocity, .zero)
+        assertEqual(velocity, .zero)
     }
 }

@@ -44,20 +44,20 @@ final class AStarTests {
     public func testAbcPath () {
         let abcx = ABCX ()
         let path = abcx.getIdPath (fromId: ABCX.A, toId: ABCX.C)
-        XCTAssertEqual (path.size (), 3)
-        XCTAssertEqual (path [safe: 0], Int64 (ABCX.A))
-        XCTAssertEqual (path [safe: 1], Int64 (ABCX.B))
-        XCTAssertEqual (path [safe: 2], Int64 (ABCX.C))
+        assertEqual (path.size (), 3)
+        assertEqual (path [safe: 0], Int64 (ABCX.A))
+        assertEqual (path [safe: 1], Int64 (ABCX.B))
+        assertEqual (path [safe: 2], Int64 (ABCX.C))
     }
 
     public func testAbcxPath () {
         let abcx = ABCX ()
         let path = abcx.getIdPath (fromId: ABCX.X, toId: ABCX.C)
-        XCTAssertEqual (path.size (), 4)
-        XCTAssertEqual (path [safe: 0], Int64 (ABCX.X))
-        XCTAssertEqual (path [safe: 1], Int64 (ABCX.A))
-        XCTAssertEqual (path [safe: 2], Int64 (ABCX.B))
-        XCTAssertEqual (path [safe: 3], Int64 (ABCX.C))
+        assertEqual (path.size (), 4)
+        assertEqual (path [safe: 0], Int64 (ABCX.X))
+        assertEqual (path [safe: 1], Int64 (ABCX.A))
+        assertEqual (path [safe: 2], Int64 (ABCX.B))
+        assertEqual (path [safe: 3], Int64 (ABCX.C))
     }
 
     public func testAddRemove () {
@@ -72,47 +72,47 @@ final class AStarTests {
         a.connectPoints (id: 1, toId: 3, bidirectional: true)
         a.connectPoints (id: 1, toId: 4, bidirectional: false)
         
-        XCTAssertTrue (a.arePointsConnected (id: 2, toId: 1))
-        XCTAssertTrue (a.arePointsConnected (id: 4, toId: 1))
-        XCTAssertTrue (a.arePointsConnected (id: 2, toId: 1, bidirectional: false))
-        XCTAssertFalse (a.arePointsConnected (id: 4, toId: 1, bidirectional: false))
+        assertTrue (a.arePointsConnected (id: 2, toId: 1))
+        assertTrue (a.arePointsConnected (id: 4, toId: 1))
+        assertTrue (a.arePointsConnected (id: 2, toId: 1, bidirectional: false))
+        assertFalse (a.arePointsConnected (id: 4, toId: 1, bidirectional: false))
         
         a.disconnectPoints (id: 1, toId: 2, bidirectional: true)
-        XCTAssertEqual (a.getPointConnections (id: 1).size (), 2) // 3, 4
-        XCTAssertEqual (a.getPointConnections (id: 2).size (), 0)
+        assertEqual (a.getPointConnections (id: 1).size (), 2) // 3, 4
+        assertEqual (a.getPointConnections (id: 2).size (), 0)
         
         a.disconnectPoints (id: 4, toId: 1, bidirectional: false)
-        XCTAssertEqual (a.getPointConnections (id: 1).size (), 2) // 3, 4
-        XCTAssertEqual (a.getPointConnections (id: 4).size (), 0)
+        assertEqual (a.getPointConnections (id: 1).size (), 2) // 3, 4
+        assertEqual (a.getPointConnections (id: 4).size (), 0)
         
         a.disconnectPoints (id: 4, toId: 1, bidirectional: true)
-        XCTAssertEqual (a.getPointConnections (id: 1).size (), 1) // 3
-        XCTAssertEqual (a.getPointConnections (id: 4).size (), 0)
+        assertEqual (a.getPointConnections (id: 1).size (), 1) // 3
+        assertEqual (a.getPointConnections (id: 4).size (), 0)
         
         a.connectPoints (id: 2, toId: 3, bidirectional: false)
-        XCTAssertEqual (a.getPointConnections (id: 2).size (), 1) // 3
-        XCTAssertEqual (a.getPointConnections (id: 3).size (), 1) // 1
+        assertEqual (a.getPointConnections (id: 2).size (), 1) // 3
+        assertEqual (a.getPointConnections (id: 3).size (), 1) // 1
         
         a.connectPoints (id: 2, toId: 3, bidirectional: true)
-        XCTAssertEqual (a.getPointConnections (id: 2).size (), 1) // 3
-        XCTAssertEqual (a.getPointConnections (id: 3).size (), 2) // 1, 2
+        assertEqual (a.getPointConnections (id: 2).size (), 1) // 3
+        assertEqual (a.getPointConnections (id: 3).size (), 2) // 1, 2
         
         a.disconnectPoints (id: 2, toId: 3, bidirectional: false)
-        XCTAssertEqual (a.getPointConnections (id: 2).size (), 0)
-        XCTAssertEqual (a.getPointConnections (id: 3).size (), 2) // 1, 2
+        assertEqual (a.getPointConnections (id: 2).size (), 0)
+        assertEqual (a.getPointConnections (id: 3).size (), 2) // 1, 2
         
         a.connectPoints (id: 4, toId: 3, bidirectional: true)
-        XCTAssertEqual (a.getPointConnections (id: 3).size (), 3) // 1, 2, 4
-        XCTAssertEqual (a.getPointConnections (id: 4).size (), 1) // 3
+        assertEqual (a.getPointConnections (id: 3).size (), 3) // 1, 2, 4
+        assertEqual (a.getPointConnections (id: 4).size (), 1) // 3
         
         a.disconnectPoints (id: 3, toId: 4, bidirectional: false)
-        XCTAssertEqual (a.getPointConnections (id: 3).size (), 2) // 1, 2
-        XCTAssertEqual (a.getPointConnections (id: 4).size (), 1) // 3
+        assertEqual (a.getPointConnections (id: 3).size (), 2) // 1, 2
+        assertEqual (a.getPointConnections (id: 4).size (), 1) // 3
         
         a.removePoint (id: 3)
-        XCTAssertEqual (a.getPointConnections (id: 1).size (), 0)
-        XCTAssertEqual (a.getPointConnections (id: 2).size (), 0)
-        XCTAssertEqual (a.getPointConnections (id: 4).size (), 0)
+        assertEqual (a.getPointConnections (id: 1).size (), 0)
+        assertEqual (a.getPointConnections (id: 2).size (), 0)
+        assertEqual (a.getPointConnections (id: 4).size (), 0)
         
         a.addPoint (id: 0, position: Vector3 (x: 0, y: -1, z: 0))
         a.addPoint (id: 3, position: Vector3 (x: 2, y: 1, z: 0))
@@ -124,7 +124,7 @@ final class AStarTests {
         
         // Tests for getClosestPositionInSegment.
         a.connectPoints (id: 2, toId: 3)
-        XCTAssertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 0.5, y: 0.5, z: 0)), Vector3 (x: 0.5, y: 1, z: 0))
+        assertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 0.5, y: 0.5, z: 0)), Vector3 (x: 0.5, y: 1, z: 0))
         
         a.connectPoints (id: 3, toId: 4)
         a.connectPoints (id: 0, toId: 3)
@@ -133,9 +133,9 @@ final class AStarTests {
         a.disconnectPoints (id: 4, toId: 3, bidirectional: false)
         a.disconnectPoints (id: 3, toId: 4, bidirectional: false)
         // Remaining edges: <2, 3>, <0, 3>, <1, 4> (directed).
-        XCTAssertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 2, y: 0.5, z: 0)), Vector3 (x: 1.75, y: 0.75, z: 0))
-        XCTAssertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: -1, y: 0.2, z: 0)), Vector3 (x: 0, y: 0, z: 0))
-        XCTAssertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 3, y: 2, z: 0)), Vector3 (x: 2, y: 1, z: 0))
+        assertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 2, y: 0.5, z: 0)), Vector3 (x: 1.75, y: 0.75, z: 0))
+        assertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: -1, y: 0.2, z: 0)), Vector3 (x: 0, y: 0, z: 0))
+        assertEqual (a.getClosestPositionInSegment (toPosition: Vector3 (x: 3, y: 2, z: 0)), Vector3 (x: 2, y: 1, z: 0))
         
         // Random tests for connectivity checks
         for _ in 0..<2000 {
@@ -147,11 +147,11 @@ final class AStarTests {
             if Bool.random () {
                 // Add a (possibly existing) directed edge and confirm connectivity.
                 a.connectPoints (id: u, toId: v, bidirectional: false)
-                XCTAssertTrue (a.arePointsConnected (id: u, toId: v, bidirectional: false))
+                assertTrue (a.arePointsConnected (id: u, toId: v, bidirectional: false))
             } else {
                 // Remove a (possibly nonexistent) directed edge and confirm disconnectivity.
                 a.disconnectPoints (id: u, toId: v, bidirectional: false)
-                XCTAssertFalse (a.arePointsConnected (id: u, toId: v, bidirectional: false))
+                assertFalse (a.arePointsConnected (id: u, toId: v, bidirectional: false))
             }
         }
         
@@ -179,7 +179,7 @@ final class AStarTests {
             a.removePoint (id: 0)
             // White box: this will check all edges remaining in the segments set.
             for j in 0..<5 {
-                XCTAssertFalse (a.arePointsConnected (id: 0, toId: j, bidirectional: true))
+                assertFalse (a.arePointsConnected (id: 0, toId: j, bidirectional: true))
             }
         }
         // It's been great work, cheers. \(^ ^)/
@@ -313,7 +313,7 @@ final class AStarTests {
                 }
                 return true
             }
-            XCTAssertTrue (checkMatches (), "Found all paths.")
+            assertTrue (checkMatches (), "Found all paths.")
         }
     }
     

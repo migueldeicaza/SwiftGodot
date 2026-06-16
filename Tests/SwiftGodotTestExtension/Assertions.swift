@@ -2,7 +2,7 @@
 //  Assertions.swift
 //  SwiftGodotTestability
 //
-//  XCTest-compatible assertion functions for Godot runtime tests
+//  Assertion functions for Godot runtime tests
 //
 
 import SwiftGodot
@@ -299,135 +299,10 @@ public func assertApproxEqual(
     assertApproxEqual(a.alpha, b.alpha, "Fail due to A. " + message, file: file, line: line)
 }
 
-// MARK: - XCTest Compatibility Aliases
+// MARK: - Floating-point and optional helpers
 
-/// XCTest compatibility alias for assertTrue
-public func XCTAssertTrue(
-    _ condition: Bool,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertTrue(condition, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertFalse
-public func XCTAssertFalse(
-    _ condition: Bool,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertFalse(condition, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertEqual
-public func XCTAssertEqual<T: Equatable>(
-    _ a: T?,
-    _ b: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertNotEqual
-public func XCTAssertNotEqual<T: Equatable>(
-    _ a: T?,
-    _ b: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertNotEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertNil
-public func XCTAssertNil<T>(
-    _ value: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertNil(value, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertNotNil
-public func XCTAssertNotNil<T>(
-    _ value: T?,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertNotNil(value, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for fail
-public func XCTFail(
-    _ message: String = "Test failed",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    fail(message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertGreaterThan
-public func XCTAssertGreaterThan<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertGreaterThan(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertGreaterThanOrEqual
-public func XCTAssertGreaterThanOrEqual<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertGreaterThanOrEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertLessThan
-public func XCTAssertLessThan<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertLessThan(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertLessThanOrEqual
-public func XCTAssertLessThanOrEqual<T: Comparable>(
-    _ a: T,
-    _ b: T,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertLessThanOrEqual(a, b, message, file: file, line: line)
-}
-
-/// XCTest compatibility alias for assertTrue (XCTAssert is just XCTAssertTrue)
-public func XCTAssert(
-    _ condition: Bool,
-    _ message: String = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) {
-    assertTrue(condition, message, file: file, line: line)
-}
-
-/// XCTest compatibility - assertEqual with accuracy for floating point
-public func XCTAssertEqual<T: FloatingPoint>(
+/// assertEqual with an absolute accuracy tolerance for floating point
+public func assertEqual<T: FloatingPoint>(
     _ a: T,
     _ b: T,
     accuracy: T,
@@ -445,8 +320,8 @@ public func XCTAssertEqual<T: FloatingPoint>(
     }
 }
 
-/// XCTest compatibility - unwrap optional or fail
-public func XCTUnwrap<T>(
+/// Unwrap an optional or record a failure and throw if it is nil
+public func unwrapOrFail<T>(
     _ value: T?,
     _ message: String = "",
     file: StaticString = #file,
@@ -464,7 +339,7 @@ public func XCTUnwrap<T>(
     return unwrapped
 }
 
-/// Error thrown by XCTUnwrap when value is nil
+/// Error thrown by `unwrapOrFail` when value is nil
 public enum UnwrapError: Error {
     case nilValue
 }

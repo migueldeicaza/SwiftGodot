@@ -392,10 +392,10 @@ final class MemoryLeakTests {
 
 
         if useUnoReverseCard {
-            XCTAssertNotEqual(before, after, "It should leak!")
+            assertNotEqual(before, after, "It should leak!")
         } else {
             print("object count=\(afterO-beforeO), resource count=\(afterR-beforeR), leaked \(after - before) bytes")
-            XCTAssertEqual(before, after, "Leaked \(after - before) bytes")
+            assertEqual(before, after, "Leaked \(after - before) bytes")
         }
         return after-before
     }
@@ -503,14 +503,14 @@ final class MemoryLeakTests {
                 let g = Variant(b)
                 let h = FastVariant(b)
                                 
-                XCTAssertEqual(a.description, string)
-                XCTAssertEqual(b.description, string)
-                XCTAssertEqual(c.to(String.self), string)
-                XCTAssertEqual(d.to(String.self), string)
-                XCTAssertEqual(e.description, string)
-                XCTAssertEqual(f.description, string)
-                XCTAssertEqual(g.to(String.self), string)
-                XCTAssertEqual(h.to(String.self), string)                
+                assertEqual(a.description, string)
+                assertEqual(b.description, string)
+                assertEqual(c.to(String.self), string)
+                assertEqual(d.to(String.self), string)
+                assertEqual(e.description, string)
+                assertEqual(f.description, string)
+                assertEqual(g.to(String.self), string)
+                assertEqual(h.to(String.self), string)                
             }
         }
     }
@@ -546,7 +546,7 @@ final class MemoryLeakTests {
         array.append(Variant("M"))
         
         checkLeaks {
-            XCTAssertEqual(array[0], Variant("S"))
+            assertEqual(array[0], Variant("S"))
             
             for _ in 0 ..< 1_000 {
                 array[0] = Variant("T")
@@ -554,22 +554,22 @@ final class MemoryLeakTests {
             }
         }
         
-        XCTAssertEqual(array[0], Variant("T"))
+        assertEqual(array[0], Variant("T"))
         
         let variant = Variant(array)
         
         checkLeaks {
-            XCTAssertEqual(variant[0], Variant("T"))
+            assertEqual(variant[0], Variant("T"))
             
             for _ in 0 ..< 1_000 {
                 variant[0] = Variant("U")
                 variant[1] = Variant("K")
             }
             
-            XCTAssertEqual(variant[1], Variant("K"))
+            assertEqual(variant[1], Variant("K"))
         }
         
-        XCTAssertEqual(variant[0], Variant("U"))
+        assertEqual(variant[0], Variant("U"))
     }
 
     public func test_emit_signal_leak() {
@@ -594,7 +594,7 @@ final class MemoryLeakTests {
                 let varFoo = Variant(gstrFoo)
                 let strFoo0 = varFoo.description
                 guard let gstrFoo0 = GString(varFoo) else {
-                    XCTFail()
+                    fail()
                     
                     return
                 }
@@ -611,7 +611,7 @@ final class MemoryLeakTests {
                 let varBar = Variant(gstrBar)
                 let strBar0 = varBar.description
                 guard let gstrBar0 = GString(varBar) else {
-                    XCTFail()
+                    fail()
                     
                     return
                 }
@@ -625,7 +625,7 @@ final class MemoryLeakTests {
         checkLeaks {
             for i in 0 ..< 200 {
                 let str = GD.str(arg1: Variant(i))
-                XCTAssertEqual("\(i)", str)
+                assertEqual("\(i)", str)
             }
         }
     }
@@ -657,7 +657,7 @@ final class MemoryLeakTests {
         checkLeaks {
             for _ in 0 ..< 100 {
                 guard let gstring = GString(variant) else {
-                    XCTFail()
+                    fail()
                     break
                 }
                 

@@ -15,28 +15,28 @@ final class TypedDictionaryTests {
     func testEmptyInitialization() {
         let dictionary = TypedDictionary<Int, String>()
 
-        XCTAssertEqual(dictionary.size(), 0)
-        XCTAssertTrue(dictionary.isEmpty())
+        assertEqual(dictionary.size(), 0)
+        assertTrue(dictionary.isEmpty())
     }
 
     func testDictionaryLiteralInitialization() {
         let dictionary: TypedDictionary<Int, String> = [1: "one", 2: "two", 3: "three"]
 
-        XCTAssertEqual(dictionary.size(), 3)
-        XCTAssertFalse(dictionary.isEmpty())
-        XCTAssertEqual(dictionary[1], "one")
-        XCTAssertEqual(dictionary[2], "two")
-        XCTAssertEqual(dictionary[3], "three")
+        assertEqual(dictionary.size(), 3)
+        assertFalse(dictionary.isEmpty())
+        assertEqual(dictionary[1], "one")
+        assertEqual(dictionary[2], "two")
+        assertEqual(dictionary[3], "three")
     }
 
     func testSwiftDictionaryInitialization() {
         let swiftDict: [String: Int] = ["a": 1, "b": 2, "c": 3]
         let dictionary = TypedDictionary(swiftDict)
 
-        XCTAssertEqual(dictionary.size(), 3)
-        XCTAssertEqual(dictionary["a"], 1)
-        XCTAssertEqual(dictionary["b"], 2)
-        XCTAssertEqual(dictionary["c"], 3)
+        assertEqual(dictionary.size(), 3)
+        assertEqual(dictionary["a"], 1)
+        assertEqual(dictionary["b"], 2)
+        assertEqual(dictionary["c"], 3)
     }
 
     func testFromVariantDictionaryInitialization() {
@@ -47,7 +47,7 @@ final class TypedDictionaryTests {
         let typed = TypedDictionary<Int, String>(from: variantDict)
 
         // Note: Godot may or may not preserve data depending on type compatibility
-        XCTAssertTrue(typed.size() >= 0)
+        assertTrue(typed.size() >= 0)
     }
 
     // MARK: - Subscript Tests
@@ -58,9 +58,9 @@ final class TypedDictionaryTests {
         dictionary["key1"] = 100
         dictionary["key2"] = 200
 
-        XCTAssertEqual(dictionary["key1"], 100)
-        XCTAssertEqual(dictionary["key2"], 200)
-        XCTAssertNil(dictionary["nonexistent"])
+        assertEqual(dictionary["key1"], 100)
+        assertEqual(dictionary["key2"], 200)
+        assertNil(dictionary["nonexistent"])
     }
 
     func testSubscriptOverwrite() {
@@ -68,19 +68,19 @@ final class TypedDictionaryTests {
 
         dictionary["key"] = 2
 
-        XCTAssertEqual(dictionary["key"], 2)
-        XCTAssertEqual(dictionary.size(), 1)
+        assertEqual(dictionary["key"], 2)
+        assertEqual(dictionary.size(), 1)
     }
 
     func testSubscriptNilErasesValue() {
         let dictionary: TypedDictionary<String, Int> = ["key": 42]
 
-        XCTAssertEqual(dictionary["key"], 42)
+        assertEqual(dictionary["key"], 42)
 
         dictionary["key"] = nil
 
-        XCTAssertNil(dictionary["key"])
-        XCTAssertTrue(dictionary.isEmpty())
+        assertNil(dictionary["key"])
+        assertTrue(dictionary.isEmpty())
     }
 
     func testSubscriptWithObjectValue() {
@@ -89,13 +89,13 @@ final class TypedDictionaryTests {
         let obj = RefCounted()
         dictionary[1] = obj
 
-        XCTAssertTrue(dictionary[1] === obj)
+        assertTrue(dictionary[1] === obj)
 
         dictionary[1] = nil
 
-        XCTAssertNil(dictionary[1])
+        assertNil(dictionary[1])
         // Object-typed values allow nil, so it should still be in dictionary
-        XCTAssertTrue(dictionary.has(key: 1))
+        assertTrue(dictionary.has(key: 1))
     }
 
     func testSubscriptWithVariantValue() {
@@ -105,10 +105,10 @@ final class TypedDictionaryTests {
         dictionary["string"] = Variant("hello")
         dictionary["nil"] = nil
 
-        XCTAssertEqual(Int(dictionary["int"]!), 42)
-        XCTAssertEqual(String(dictionary["string"]!), "hello")
-        XCTAssertNil(dictionary["nil"])
-        XCTAssertTrue(dictionary.has(key: "nil"))
+        assertEqual(Int(dictionary["int"]!), 42)
+        assertEqual(String(dictionary["string"]!), "hello")
+        assertNil(dictionary["nil"])
+        assertTrue(dictionary.has(key: "nil"))
     }
 
     // MARK: - Size and Empty Tests
@@ -116,28 +116,28 @@ final class TypedDictionaryTests {
     func testSizeIncreasesWithAdditions() {
         let dictionary = TypedDictionary<Int, Int>()
 
-        XCTAssertEqual(dictionary.size(), 0)
+        assertEqual(dictionary.size(), 0)
 
         dictionary[1] = 10
-        XCTAssertEqual(dictionary.size(), 1)
+        assertEqual(dictionary.size(), 1)
 
         dictionary[2] = 20
-        XCTAssertEqual(dictionary.size(), 2)
+        assertEqual(dictionary.size(), 2)
 
         dictionary[3] = 30
-        XCTAssertEqual(dictionary.size(), 3)
+        assertEqual(dictionary.size(), 3)
     }
 
     func testIsEmptyReflectsState() {
         let dictionary = TypedDictionary<Int, Int>()
 
-        XCTAssertTrue(dictionary.isEmpty())
+        assertTrue(dictionary.isEmpty())
 
         dictionary[1] = 1
-        XCTAssertFalse(dictionary.isEmpty())
+        assertFalse(dictionary.isEmpty())
 
         _ = dictionary.erase(key: 1)
-        XCTAssertTrue(dictionary.isEmpty())
+        assertTrue(dictionary.isEmpty())
     }
 
     // MARK: - Clear Tests
@@ -145,13 +145,13 @@ final class TypedDictionaryTests {
     func testClearRemovesAllEntries() {
         let dictionary: TypedDictionary<Int, String> = [1: "a", 2: "b", 3: "c"]
 
-        XCTAssertEqual(dictionary.size(), 3)
+        assertEqual(dictionary.size(), 3)
 
         dictionary.clear()
 
-        XCTAssertEqual(dictionary.size(), 0)
-        XCTAssertTrue(dictionary.isEmpty())
-        XCTAssertNil(dictionary[1])
+        assertEqual(dictionary.size(), 0)
+        assertTrue(dictionary.isEmpty())
+        assertNil(dictionary[1])
     }
 
     // MARK: - Erase Tests
@@ -161,9 +161,9 @@ final class TypedDictionaryTests {
 
         let erased = dictionary.erase(key: "key")
 
-        XCTAssertTrue(erased)
-        XCTAssertNil(dictionary["key"])
-        XCTAssertTrue(dictionary.isEmpty())
+        assertTrue(erased)
+        assertNil(dictionary["key"])
+        assertTrue(dictionary.isEmpty())
     }
 
     func testEraseReturnsFalseForNonexistentKey() {
@@ -171,7 +171,7 @@ final class TypedDictionaryTests {
 
         let erased = dictionary.erase(key: "nonexistent")
 
-        XCTAssertFalse(erased)
+        assertFalse(erased)
     }
 
     // MARK: - Has Tests
@@ -179,14 +179,14 @@ final class TypedDictionaryTests {
     func testHasReturnsTrueForExistingKey() {
         let dictionary: TypedDictionary<Int, String> = [1: "one", 2: "two"]
 
-        XCTAssertTrue(dictionary.has(key: 1))
-        XCTAssertTrue(dictionary.has(key: 2))
+        assertTrue(dictionary.has(key: 1))
+        assertTrue(dictionary.has(key: 2))
     }
 
     func testHasReturnsFalseForNonexistentKey() {
         let dictionary: TypedDictionary<Int, String> = [1: "one"]
 
-        XCTAssertFalse(dictionary.has(key: 999))
+        assertFalse(dictionary.has(key: 999))
     }
 
     func testHasAllReturnsCorrectly() {
@@ -200,8 +200,8 @@ final class TypedDictionaryTests {
         mixedKeys.append(Variant(1))
         mixedKeys.append(Variant(999))
 
-        XCTAssertTrue(dictionary.hasAll(keys: presentKeys))
-        XCTAssertFalse(dictionary.hasAll(keys: mixedKeys))
+        assertTrue(dictionary.hasAll(keys: presentKeys))
+        assertFalse(dictionary.hasAll(keys: mixedKeys))
     }
 
     // MARK: - Keys and Values Tests
@@ -211,10 +211,10 @@ final class TypedDictionaryTests {
 
         let keys = dictionary.keys()
 
-        XCTAssertEqual(keys.count, 3)
-        XCTAssertTrue(keys.contains { $0 == "a" })
-        XCTAssertTrue(keys.contains { $0 == "b" })
-        XCTAssertTrue(keys.contains { $0 == "c" })
+        assertEqual(keys.count, 3)
+        assertTrue(keys.contains { $0 == "a" })
+        assertTrue(keys.contains { $0 == "b" })
+        assertTrue(keys.contains { $0 == "c" })
     }
 
     func testValuesReturnsAllValues() {
@@ -222,10 +222,10 @@ final class TypedDictionaryTests {
 
         let values = dictionary.values()
 
-        XCTAssertEqual(values.count, 3)
-        XCTAssertTrue(values.contains { $0 == 1 })
-        XCTAssertTrue(values.contains { $0 == 2 })
-        XCTAssertTrue(values.contains { $0 == 3 })
+        assertEqual(values.count, 3)
+        assertTrue(values.contains { $0 == 1 })
+        assertTrue(values.contains { $0 == 2 })
+        assertTrue(values.contains { $0 == 3 })
     }
 
     // MARK: - Get with Default Tests
@@ -235,7 +235,7 @@ final class TypedDictionaryTests {
 
         let value = dictionary.get(key: "key", default: 0)
 
-        XCTAssertEqual(value, 42)
+        assertEqual(value, 42)
     }
 
     func testGetReturnsDefaultForNonexistentKey() {
@@ -243,7 +243,7 @@ final class TypedDictionaryTests {
 
         let value = dictionary.get(key: "nonexistent", default: 999)
 
-        XCTAssertEqual(value, 999)
+        assertEqual(value, 999)
     }
 
     // MARK: - GetOrAdd Tests
@@ -253,8 +253,8 @@ final class TypedDictionaryTests {
 
         let value = dictionary.getOrAdd(key: "key", default: 0)
 
-        XCTAssertEqual(value, 42)
-        XCTAssertEqual(dictionary.size(), 1)
+        assertEqual(value, 42)
+        assertEqual(dictionary.size(), 1)
     }
 
     func testGetOrAddInsertsAndReturnsDefault() {
@@ -262,9 +262,9 @@ final class TypedDictionaryTests {
 
         let value = dictionary.getOrAdd(key: "newKey", default: 100)
 
-        XCTAssertEqual(value, 100)
-        XCTAssertEqual(dictionary["newKey"], 100)
-        XCTAssertEqual(dictionary.size(), 1)
+        assertEqual(value, 100)
+        assertEqual(dictionary["newKey"], 100)
+        assertEqual(dictionary.size(), 1)
     }
 
     // MARK: - Set Tests
@@ -274,8 +274,8 @@ final class TypedDictionaryTests {
 
         let result = dictionary.set(key: 1, value: "one")
 
-        XCTAssertTrue(result)
-        XCTAssertEqual(dictionary[1], "one")
+        assertTrue(result)
+        assertEqual(dictionary[1], "one")
     }
 
     func testSetUpdatesExistingEntry() {
@@ -283,9 +283,9 @@ final class TypedDictionaryTests {
 
         let result = dictionary.set(key: 1, value: "one")
 
-        XCTAssertTrue(result)
-        XCTAssertEqual(dictionary[1], "one")
-        XCTAssertEqual(dictionary.size(), 1)
+        assertTrue(result)
+        assertEqual(dictionary[1], "one")
+        assertEqual(dictionary.size(), 1)
     }
 
     // MARK: - Duplicate Tests
@@ -295,14 +295,14 @@ final class TypedDictionaryTests {
 
         let copy = original.duplicate()
 
-        XCTAssertEqual(copy.size(), 2)
-        XCTAssertEqual(copy["a"], 1)
-        XCTAssertEqual(copy["b"], 2)
+        assertEqual(copy.size(), 2)
+        assertEqual(copy["a"], 1)
+        assertEqual(copy["b"], 2)
 
         // Modify copy, original should be unchanged
         copy["a"] = 100
-        XCTAssertEqual(original["a"], 1)
-        XCTAssertEqual(copy["a"], 100)
+        assertEqual(original["a"], 1)
+        assertEqual(copy["a"], 100)
     }
 
     func testDuplicateDeepCopy() {
@@ -310,9 +310,9 @@ final class TypedDictionaryTests {
 
         let deepCopy = original.duplicate(deep: true)
 
-        XCTAssertEqual(deepCopy.size(), 2)
-        XCTAssertEqual(deepCopy["x"], 10)
-        XCTAssertEqual(deepCopy["y"], 20)
+        assertEqual(deepCopy.size(), 2)
+        assertEqual(deepCopy["x"], 10)
+        assertEqual(deepCopy["y"], 20)
     }
 
     // MARK: - Iteration Tests
@@ -328,15 +328,15 @@ final class TypedDictionaryTests {
             visitedValues.insert(value)
         }
 
-        XCTAssertEqual(visitedKeys.count, 3)
-        XCTAssertTrue(visitedKeys.contains(1))
-        XCTAssertTrue(visitedKeys.contains(2))
-        XCTAssertTrue(visitedKeys.contains(3))
+        assertEqual(visitedKeys.count, 3)
+        assertTrue(visitedKeys.contains(1))
+        assertTrue(visitedKeys.contains(2))
+        assertTrue(visitedKeys.contains(3))
 
-        XCTAssertEqual(visitedValues.count, 3)
-        XCTAssertTrue(visitedValues.contains("one"))
-        XCTAssertTrue(visitedValues.contains("two"))
-        XCTAssertTrue(visitedValues.contains("three"))
+        assertEqual(visitedValues.count, 3)
+        assertTrue(visitedValues.contains("one"))
+        assertTrue(visitedValues.contains("two"))
+        assertTrue(visitedValues.contains("three"))
     }
 
     func testIterationOnEmptyDictionary() {
@@ -347,7 +347,7 @@ final class TypedDictionaryTests {
             count += 1
         }
 
-        XCTAssertEqual(count, 0)
+        assertEqual(count, 0)
     }
 
     // MARK: - Merge Tests
@@ -361,9 +361,9 @@ final class TypedDictionaryTests {
 
         dictionary.merge(dictionary: other, overwrite: false)
 
-        XCTAssertEqual(dictionary["a"], 1)
-        XCTAssertEqual(dictionary["b"], 2) // Not overwritten
-        XCTAssertEqual(dictionary["c"], 3) // Added
+        assertEqual(dictionary["a"], 1)
+        assertEqual(dictionary["b"], 2) // Not overwritten
+        assertEqual(dictionary["c"], 3) // Added
     }
 
     func testMergeWithOverwrite() {
@@ -375,9 +375,9 @@ final class TypedDictionaryTests {
 
         dictionary.merge(dictionary: other, overwrite: true)
 
-        XCTAssertEqual(dictionary["a"], 1)
-        XCTAssertEqual(dictionary["b"], 200) // Overwritten
-        XCTAssertEqual(dictionary["c"], 3)
+        assertEqual(dictionary["a"], 1)
+        assertEqual(dictionary["b"], 200) // Overwritten
+        assertEqual(dictionary["c"], 3)
     }
 
     func testMergedReturnsNewDictionary() {
@@ -389,10 +389,10 @@ final class TypedDictionaryTests {
         let merged = dictionary.merged(dictionary: other)
 
         // Original unchanged
-        XCTAssertEqual(dictionary.size(), 1)
+        assertEqual(dictionary.size(), 1)
 
         // Merged has both
-        XCTAssertEqual(merged.size(), 2)
+        assertEqual(merged.size(), 2)
     }
 
     // MARK: - Sort Tests
@@ -406,9 +406,9 @@ final class TypedDictionaryTests {
         dictionary.sort()
 
         let keys = dictionary.keys()
-        XCTAssertEqual(keys[0], 1)
-        XCTAssertEqual(keys[1], 2)
-        XCTAssertEqual(keys[2], 3)
+        assertEqual(keys[0], 1)
+        assertEqual(keys[1], 2)
+        assertEqual(keys[2], 3)
     }
 
     // MARK: - ReadOnly Tests
@@ -416,7 +416,7 @@ final class TypedDictionaryTests {
     func testIsReadOnlyInitiallyFalse() {
         let dictionary = TypedDictionary<Int, Int>()
 
-        XCTAssertFalse(dictionary.isReadOnly())
+        assertFalse(dictionary.isReadOnly())
     }
 
     func testMakeReadOnlySetsFlag() {
@@ -424,7 +424,7 @@ final class TypedDictionaryTests {
 
         dictionary.makeReadOnly()
 
-        XCTAssertTrue(dictionary.isReadOnly())
+        assertTrue(dictionary.isReadOnly())
     }
 
     // MARK: - Type Comparison Tests
@@ -433,21 +433,21 @@ final class TypedDictionaryTests {
         let dict1 = TypedDictionary<Int, String>()
         let dict2 = TypedDictionary<Int, String>()
 
-        XCTAssertTrue(dict1.isSameTyped(dictionary: dict2.dictionary))
+        assertTrue(dict1.isSameTyped(dictionary: dict2.dictionary))
     }
 
     func testIsSameTypedKeyWithIdenticalKeyTypes() {
         let dict1 = TypedDictionary<Int, String>()
         let dict2 = TypedDictionary<Int, Float>()
 
-        XCTAssertTrue(dict1.isSameTypedKey(dictionary: dict2.dictionary))
+        assertTrue(dict1.isSameTypedKey(dictionary: dict2.dictionary))
     }
 
     func testIsSameTypedValueWithIdenticalValueTypes() {
         let dict1 = TypedDictionary<Int, String>()
         let dict2 = TypedDictionary<Float, String>()
 
-        XCTAssertTrue(dict1.isSameTypedValue(dictionary: dict2.dictionary))
+        assertTrue(dict1.isSameTypedValue(dictionary: dict2.dictionary))
     }
 
     // MARK: - Variant Conversion Tests
@@ -458,8 +458,8 @@ final class TypedDictionaryTests {
         let variant: Variant = original.toVariant()
         let restored = TypedDictionary<String, Int>(variant)
 
-        XCTAssertNotNil(restored)
-        XCTAssertEqual(restored?["key"], 42)
+        assertNotNil(restored)
+        assertEqual(restored?["key"], 42)
     }
 
     func testToFastVariantAndBack() {
@@ -468,9 +468,9 @@ final class TypedDictionaryTests {
         let fastVariant: FastVariant = original.toFastVariant()
         let restored = TypedDictionary<Int, Int>(fastVariant)
 
-        XCTAssertNotNil(restored)
-        XCTAssertEqual(restored?[1], 100)
-        XCTAssertEqual(restored?[2], 200)
+        assertNotNil(restored)
+        assertEqual(restored?[1], 100)
+        assertEqual(restored?[2], 200)
     }
 
     // MARK: - FindKey Tests
@@ -480,8 +480,8 @@ final class TypedDictionaryTests {
 
         let foundKey = dictionary.findKey(value: Variant(2))
 
-        XCTAssertNotNil(foundKey)
-        XCTAssertEqual(String(foundKey!), "b")
+        assertNotNil(foundKey)
+        assertEqual(String(foundKey!), "b")
     }
 
     func testFindKeyReturnsNilForNonexistentValue() {
@@ -489,7 +489,7 @@ final class TypedDictionaryTests {
 
         let foundKey = dictionary.findKey(value: Variant(999))
 
-        XCTAssertNil(foundKey)
+        assertNil(foundKey)
     }
 
     // MARK: - RecursiveEqual Tests
@@ -498,14 +498,14 @@ final class TypedDictionaryTests {
         let dict1: TypedDictionary<Int, Int> = [1: 10, 2: 20]
         let dict2: TypedDictionary<Int, Int> = [1: 10, 2: 20]
 
-        XCTAssertTrue(dict1.recursiveEqual(dictionary: dict2.dictionary, recursionCount: 1))
+        assertTrue(dict1.recursiveEqual(dictionary: dict2.dictionary, recursionCount: 1))
     }
 
     func testRecursiveEqualWithDifferentDictionaries() {
         let dict1: TypedDictionary<Int, Int> = [1: 10, 2: 20]
         let dict2: TypedDictionary<Int, Int> = [1: 10, 2: 99]
 
-        XCTAssertFalse(dict1.recursiveEqual(dictionary: dict2.dictionary, recursionCount: 1))
+        assertFalse(dict1.recursiveEqual(dictionary: dict2.dictionary, recursionCount: 1))
     }
 
     // MARK: - Various Key/Value Type Combinations
@@ -513,16 +513,16 @@ final class TypedDictionaryTests {
     func testIntToIntDictionary() {
         let dictionary: TypedDictionary<Int, Int> = [1: 100, 2: 200, 3: 300]
 
-        XCTAssertEqual(dictionary[1], 100)
-        XCTAssertEqual(dictionary[2], 200)
-        XCTAssertEqual(dictionary[3], 300)
+        assertEqual(dictionary[1], 100)
+        assertEqual(dictionary[2], 200)
+        assertEqual(dictionary[3], 300)
     }
 
     func testStringToStringDictionary() {
         let dictionary: TypedDictionary<String, String> = ["hello": "world", "foo": "bar"]
 
-        XCTAssertEqual(dictionary["hello"], "world")
-        XCTAssertEqual(dictionary["foo"], "bar")
+        assertEqual(dictionary["hello"], "world")
+        assertEqual(dictionary["foo"], "bar")
     }
 
     func testFloatKeyDictionary() {
@@ -531,8 +531,8 @@ final class TypedDictionaryTests {
         dictionary[1.5] = "one and a half"
         dictionary[2.5] = "two and a half"
 
-        XCTAssertEqual(dictionary[1.5], "one and a half")
-        XCTAssertEqual(dictionary[2.5], "two and a half")
+        assertEqual(dictionary[1.5], "one and a half")
+        assertEqual(dictionary[2.5], "two and a half")
     }
 
     func testVector2KeyDictionary() {
@@ -544,8 +544,8 @@ final class TypedDictionaryTests {
         dictionary[key1] = 10
         dictionary[key2] = 20
 
-        XCTAssertEqual(dictionary[key1], 10)
-        XCTAssertEqual(dictionary[key2], 20)
+        assertEqual(dictionary[key1], 10)
+        assertEqual(dictionary[key2], 20)
     }
 
     func testVector3ValueDictionary() {
@@ -557,8 +557,8 @@ final class TypedDictionaryTests {
         dictionary["pos1"] = value1
         dictionary["pos2"] = value2
 
-        XCTAssertEqual(dictionary["pos1"], value1)
-        XCTAssertEqual(dictionary["pos2"], value2)
+        assertEqual(dictionary["pos1"], value1)
+        assertEqual(dictionary["pos2"], value2)
     }
 
     func testColorValueDictionary() {
@@ -568,9 +568,9 @@ final class TypedDictionaryTests {
         dictionary["green"] = Color(r: 0, g: 1, b: 0, a: 1)
         dictionary["blue"] = Color(r: 0, g: 0, b: 1, a: 1)
 
-        XCTAssertEqual(dictionary["red"]?.red, 1)
-        XCTAssertEqual(dictionary["green"]?.green, 1)
-        XCTAssertEqual(dictionary["blue"]?.blue, 1)
+        assertEqual(dictionary["red"]?.red, 1)
+        assertEqual(dictionary["green"]?.green, 1)
+        assertEqual(dictionary["blue"]?.blue, 1)
     }
 
     // MARK: - Debug Description Test
@@ -580,7 +580,7 @@ final class TypedDictionaryTests {
 
         let description = dictionary.debugDescription
 
-        XCTAssertFalse(description.isEmpty)
+        assertFalse(description.isEmpty)
     }
 
     // MARK: - Assign Tests
@@ -595,8 +595,8 @@ final class TypedDictionaryTests {
         dictionary.assign(dictionary: newContent)
 
         // After assign, dictionary should have new content
-        XCTAssertEqual(dictionary[10], 100)
-        XCTAssertEqual(dictionary[20], 200)
+        assertEqual(dictionary[10], 100)
+        assertEqual(dictionary[20], 200)
     }
 
     // MARK: - Edge Cases
@@ -606,8 +606,8 @@ final class TypedDictionaryTests {
 
         dictionary[""] = 42
 
-        XCTAssertEqual(dictionary[""], 42)
-        XCTAssertTrue(dictionary.has(key: ""))
+        assertEqual(dictionary[""], 42)
+        assertTrue(dictionary.has(key: ""))
     }
 
     func testZeroKey() {
@@ -615,8 +615,8 @@ final class TypedDictionaryTests {
 
         dictionary[0] = "zero"
 
-        XCTAssertEqual(dictionary[0], "zero")
-        XCTAssertTrue(dictionary.has(key: 0))
+        assertEqual(dictionary[0], "zero")
+        assertTrue(dictionary.has(key: 0))
     }
 
     func testNegativeKey() {
@@ -625,8 +625,8 @@ final class TypedDictionaryTests {
         dictionary[-1] = "negative one"
         dictionary[-100] = "negative hundred"
 
-        XCTAssertEqual(dictionary[-1], "negative one")
-        XCTAssertEqual(dictionary[-100], "negative hundred")
+        assertEqual(dictionary[-1], "negative one")
+        assertEqual(dictionary[-100], "negative hundred")
     }
 
     func testLargeNumberOfEntries() {
@@ -636,10 +636,10 @@ final class TypedDictionaryTests {
             dictionary[i] = i * 2
         }
 
-        XCTAssertEqual(dictionary.size(), 1000)
-        XCTAssertEqual(dictionary[0], 0)
-        XCTAssertEqual(dictionary[500], 1000)
-        XCTAssertEqual(dictionary[999], 1998)
+        assertEqual(dictionary.size(), 1000)
+        assertEqual(dictionary[0], 0)
+        assertEqual(dictionary[500], 1000)
+        assertEqual(dictionary[999], 1998)
     }
 
     // MARK: - Type Mismatch Tests (Godot prints errors, operations ignored)
@@ -654,8 +654,8 @@ final class TypedDictionaryTests {
         typed.dictionary[Variant("wrong_key_type")] = Variant("value")
 
         // Dictionary should remain unchanged (only the valid entry)
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertEqual(typed[1], "one")
+        assertEqual(typed.size(), 1)
+        assertEqual(typed[1], "one")
     }
 
     func testTypeMismatchValueViaUnderlyingDictionary() {
@@ -668,8 +668,8 @@ final class TypedDictionaryTests {
         typed.dictionary[Variant(2)] = Variant(12345) // Int instead of String
 
         // Dictionary should remain unchanged (only the valid entry)
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertEqual(typed[1], "one")
+        assertEqual(typed.size(), 1)
+        assertEqual(typed[1], "one")
     }
 
     func testTypeMismatchBothKeyAndValueViaUnderlyingDictionary() {
@@ -682,8 +682,8 @@ final class TypedDictionaryTests {
         typed.dictionary[Variant("wrong")] = Variant(Vector2(x: 1, y: 2))
 
         // Dictionary should remain unchanged
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertEqual(typed[1], "one")
+        assertEqual(typed.size(), 1)
+        assertEqual(typed[1], "one")
     }
 
     func testTypeMismatchMergeWithIncompatibleTypes() {
@@ -701,8 +701,8 @@ final class TypedDictionaryTests {
         typed.merge(dictionary: untyped, overwrite: false)
 
         // Dictionary remains unchanged due to type mismatch in source
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertEqual(typed[1], 100)
+        assertEqual(typed.size(), 1)
+        assertEqual(typed[1], 100)
     }
 
     func testTypeMismatchAssignWithIncompatibleTypes() {
@@ -720,8 +720,8 @@ final class TypedDictionaryTests {
         typed.assign(dictionary: untyped)
 
         // Original dictionary content preserved due to failed assignment
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertEqual(typed[1], "original")
+        assertEqual(typed.size(), 1)
+        assertEqual(typed[1], "original")
     }
 
     func testTypeMismatchFromVariantDictionaryWithWrongTypes() {
@@ -736,7 +736,7 @@ final class TypedDictionaryTests {
         let typed = TypedDictionary<Int, String>(from: untyped)
 
         // Result is empty because source had incompatible types
-        XCTAssertEqual(typed.size(), 0)
+        assertEqual(typed.size(), 0)
     }
 
     func testTypeMismatchUpdateExistingKeyWithWrongValueType() {
@@ -749,7 +749,7 @@ final class TypedDictionaryTests {
         typed.dictionary[Variant("key")] = Variant("not_an_int")
 
         // Value should remain unchanged
-        XCTAssertEqual(typed["key"], 42)
+        assertEqual(typed["key"], 42)
     }
 
     func testTypeMismatchObjectTypeDictionaryWithWrongObjectType() {
@@ -764,8 +764,8 @@ final class TypedDictionaryTests {
         typed.dictionary[Variant(2)] = Variant(node)
 
         // Dictionary should only have the valid entry
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertTrue(typed[1] === refCounted)
+        assertEqual(typed.size(), 1)
+        assertTrue(typed[1] === refCounted)
 
         node.queueFree()
     }
@@ -782,7 +782,7 @@ final class TypedDictionaryTests {
         typed.dictionary[Variant(3)] = Variant(Vector3()) // Wrong value
 
         // Dictionary should remain with only the original entry
-        XCTAssertEqual(typed.size(), 1)
-        XCTAssertEqual(typed[1], 1.5)
+        assertEqual(typed.size(), 1)
+        assertEqual(typed[1], 1.5)
     }
 }

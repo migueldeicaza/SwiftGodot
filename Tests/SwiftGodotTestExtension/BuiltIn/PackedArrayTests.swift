@@ -17,31 +17,31 @@ final class PackedArrayTests {
         
         let a = PackedByteArray (bytes)
         for (idx, v) in bytes.enumerated () {
-            XCTAssertEqual (v, a [idx])
+            assertEqual (v, a [idx])
         }
         
         let ints: [Int32] = [10, 1024, 0xf00dca7, 0, 23, Int32.max, Int32.min]
         let b = PackedInt32Array (ints)
         for (idx, v) in ints.enumerated () {
-            XCTAssertEqual (v, b [idx])
+            assertEqual (v, b [idx])
         }
 
         let longs: [Int64] = [10, 1024, 0xf00dca7dead, 0, Int64.max, Int64.min]
         let c = PackedInt64Array (longs)
         for (idx, v) in longs.enumerated () {
-            XCTAssertEqual (v, c [idx])
+            assertEqual (v, c [idx])
         }
 
         let floats: [Float] = [0, 0.3, .pi, 0.3, 1000000.3]
         let d = PackedFloat32Array(floats)
         for (idx, v) in floats.enumerated() {
-            XCTAssertEqual (v, d [idx])
+            assertEqual (v, d [idx])
         }
 
         let doubles: [Double] = [0, 0.3, .pi, 0.3, 1000000.3]
         let e = PackedFloat64Array(doubles)
         for (idx, v) in doubles.enumerated() {
-            XCTAssertEqual (v, e [idx])
+            assertEqual (v, e [idx])
         }
 
         let vec2s: [Vector2] = [
@@ -52,7 +52,7 @@ final class PackedArrayTests {
         ]
         let f = PackedVector2Array(vec2s)
         for (idx, v) in vec2s.enumerated() {
-            XCTAssertEqual (v, f [idx])
+            assertEqual (v, f [idx])
         }
         
         let vec3s: [Vector3] = [
@@ -63,7 +63,7 @@ final class PackedArrayTests {
         ]
         let g = PackedVector3Array(vec3s)
         for (idx, v) in vec3s.enumerated() {
-            XCTAssertEqual (v, g [idx])
+            assertEqual (v, g [idx])
         }
         
         let vec4s: [Vector4] = [
@@ -74,13 +74,13 @@ final class PackedArrayTests {
         ]
         let h = PackedVector4Array(vec4s)
         for (idx, v) in vec4s.enumerated() {
-            XCTAssertEqual (v, h [idx])
+            assertEqual (v, h [idx])
         }
         
         let colors: [Color] = [ Color(), .red, .green, .blue, Color(r: 0.1, g: 0.2, b: 0.3, a: 0.4)]
         let i = PackedColorArray(colors)
         for (idx, v) in colors.enumerated() {
-            XCTAssertEqual (v, i [idx])
+            assertEqual (v, i [idx])
         }
     }
 
@@ -88,6 +88,6 @@ final class PackedArrayTests {
         let bytes: [UInt8] = [10, 20, 30, 255, 0, 3]
         let packed = PackedByteArray(bytes)
         let ret = packed.asBytes()
-        XCTAssertEqual (ret, bytes)
+        assertEqual (ret, bytes)
     }
 }

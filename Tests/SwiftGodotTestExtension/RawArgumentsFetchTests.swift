@@ -426,14 +426,14 @@ final class RawArgumentsFetchTests {
     func testFetchInt() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testInt", Variant(42))
-        XCTAssertEqual(Int(result), 84)
+        assertEqual(Int(result), 84)
         node.queueFree()
     }
 
     func testFetchInt64() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testInt64", Variant(Int64(100)))
-        XCTAssertEqual(Int64(result), 200)
+        assertEqual(Int64(result), 200)
         node.queueFree()
     }
 
@@ -441,30 +441,30 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let resultTrue = node.call(method: "testBool", Variant(true))
         let resultFalse = node.call(method: "testBool", Variant(false))
-        XCTAssertEqual(Bool(resultTrue), false)
-        XCTAssertEqual(Bool(resultFalse), true)
+        assertEqual(Bool(resultTrue), false)
+        assertEqual(Bool(resultFalse), true)
         node.queueFree()
     }
 
     func testFetchString() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testString", Variant("hello"))
-        XCTAssertEqual(String(result), "hello_suffix")
+        assertEqual(String(result), "hello_suffix")
         node.queueFree()
     }
 
     func testFetchDouble() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testDouble", Variant(3.14))
-        XCTAssertEqual(Double(result)!, 6.28, accuracy: 0.001)
+        assertEqual(Double(result)!, 6.28, accuracy: 0.001)
         node.queueFree()
     }
 
     func testFetchFloat() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testFloat", Variant(Float(2.5)))
-        XCTAssertEqual(result?.gtype, .float)
-        XCTAssertEqual(Float(result)!, 5.0, accuracy: 0.001)
+        assertEqual(result?.gtype, .float)
+        assertEqual(Float(result)!, 5.0, accuracy: 0.001)
         node.queueFree()
     }
 
@@ -473,14 +473,14 @@ final class RawArgumentsFetchTests {
     func testFetchStringName() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testStringName", Variant(StringName("test")))
-        XCTAssertEqual(String(StringName(result)!), "test_modified")
+        assertEqual(String(StringName(result)!), "test_modified")
         node.queueFree()
     }
 
     func testFetchNodePath() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testNodePath", Variant(NodePath("root/parent")))
-        XCTAssertEqual(String(NodePath(result)!), "root/parent/child")
+        assertEqual(String(NodePath(result)!), "root/parent/child")
         node.queueFree()
     }
 
@@ -488,8 +488,8 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector2", Variant(Vector2(x: 1, y: 2)))
         let vec = Vector2(result)!
-        XCTAssertEqual(vec.x, 2)
-        XCTAssertEqual(vec.y, 4)
+        assertEqual(vec.x, 2)
+        assertEqual(vec.y, 4)
         node.queueFree()
     }
 
@@ -497,9 +497,9 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector3", Variant(Vector3(x: 1, y: 2, z: 3)))
         let vec = Vector3(result)!
-        XCTAssertEqual(vec.x, 2)
-        XCTAssertEqual(vec.y, 4)
-        XCTAssertEqual(vec.z, 6)
+        assertEqual(vec.x, 2)
+        assertEqual(vec.y, 4)
+        assertEqual(vec.z, 6)
         node.queueFree()
     }
 
@@ -507,10 +507,10 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector4", Variant(Vector4(x: 1, y: 2, z: 3, w: 4)))
         let vec = Vector4(result)!
-        XCTAssertEqual(vec.x, 2)
-        XCTAssertEqual(vec.y, 4)
-        XCTAssertEqual(vec.z, 6)
-        XCTAssertEqual(vec.w, 8)
+        assertEqual(vec.x, 2)
+        assertEqual(vec.y, 4)
+        assertEqual(vec.z, 6)
+        assertEqual(vec.w, 8)
         node.queueFree()
     }
 
@@ -518,8 +518,8 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector2i", Variant(Vector2i(x: 3, y: 4)))
         let vec = Vector2i(result)!
-        XCTAssertEqual(vec.x, 6)
-        XCTAssertEqual(vec.y, 8)
+        assertEqual(vec.x, 6)
+        assertEqual(vec.y, 8)
         node.queueFree()
     }
 
@@ -527,9 +527,9 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector3i", Variant(Vector3i(x: 1, y: 2, z: 3)))
         let vec = Vector3i(result)!
-        XCTAssertEqual(vec.x, 2)
-        XCTAssertEqual(vec.y, 4)
-        XCTAssertEqual(vec.z, 6)
+        assertEqual(vec.x, 2)
+        assertEqual(vec.y, 4)
+        assertEqual(vec.z, 6)
         node.queueFree()
     }
 
@@ -537,10 +537,10 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVector4i", Variant(Vector4i(x: 1, y: 2, z: 3, w: 4)))
         let vec = Vector4i(result)!
-        XCTAssertEqual(vec.x, 2)
-        XCTAssertEqual(vec.y, 4)
-        XCTAssertEqual(vec.z, 6)
-        XCTAssertEqual(vec.w, 8)
+        assertEqual(vec.x, 2)
+        assertEqual(vec.y, 4)
+        assertEqual(vec.z, 6)
+        assertEqual(vec.w, 8)
         node.queueFree()
     }
 
@@ -548,10 +548,10 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testColor", Variant(Color(r: 0.25, g: 0.5, b: 0.125, a: 1.0)))
         let color = Color(result)!
-        XCTAssertEqual(color.red, 0.5, accuracy: 0.001)
-        XCTAssertEqual(color.green, 1.0, accuracy: 0.001)
-        XCTAssertEqual(color.blue, 0.25, accuracy: 0.001)
-        XCTAssertEqual(color.alpha, 1.0, accuracy: 0.001)
+        assertEqual(color.red, 0.5, accuracy: 0.001)
+        assertEqual(color.green, 1.0, accuracy: 0.001)
+        assertEqual(color.blue, 0.25, accuracy: 0.001)
+        assertEqual(color.alpha, 1.0, accuracy: 0.001)
         node.queueFree()
     }
 
@@ -559,10 +559,10 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testRect2", Variant(Rect2(position: Vector2(x: 1, y: 2), size: Vector2(x: 3, y: 4))))
         let rect = Rect2(result)!
-        XCTAssertEqual(rect.position.x, 2)
-        XCTAssertEqual(rect.position.y, 4)
-        XCTAssertEqual(rect.size.x, 6)
-        XCTAssertEqual(rect.size.y, 8)
+        assertEqual(rect.position.x, 2)
+        assertEqual(rect.position.y, 4)
+        assertEqual(rect.size.x, 6)
+        assertEqual(rect.size.y, 8)
         node.queueFree()
     }
 
@@ -570,10 +570,10 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testRect2i", Variant(Rect2i(position: Vector2i(x: 1, y: 2), size: Vector2i(x: 3, y: 4))))
         let rect = Rect2i(result)!
-        XCTAssertEqual(rect.position.x, 2)
-        XCTAssertEqual(rect.position.y, 4)
-        XCTAssertEqual(rect.size.x, 6)
-        XCTAssertEqual(rect.size.y, 8)
+        assertEqual(rect.position.x, 2)
+        assertEqual(rect.position.y, 4)
+        assertEqual(rect.size.x, 6)
+        assertEqual(rect.size.y, 8)
         node.queueFree()
     }
 
@@ -581,7 +581,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let transform = Transform2D()
         let result = node.call(method: "testTransform2D", Variant(transform))
-        XCTAssertNotNil(Transform2D(result))
+        assertNotNil(Transform2D(result))
         node.queueFree()
     }
 
@@ -589,7 +589,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let transform = Transform3D()
         let result = node.call(method: "testTransform3D", Variant(transform))
-        XCTAssertNotNil(Transform3D(result))
+        assertNotNil(Transform3D(result))
         node.queueFree()
     }
 
@@ -597,7 +597,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let basis = Basis()
         let result = node.call(method: "testBasis", Variant(basis))
-        XCTAssertNotNil(Basis(result))
+        assertNotNil(Basis(result))
         node.queueFree()
     }
 
@@ -605,7 +605,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let quat = Quaternion()
         let result = node.call(method: "testQuaternion", Variant(quat))
-        XCTAssertNotNil(Quaternion(result))
+        assertNotNil(Quaternion(result))
         node.queueFree()
     }
 
@@ -613,7 +613,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let plane = Plane()
         let result = node.call(method: "testPlane", Variant(plane))
-        XCTAssertNotNil(Plane(result))
+        assertNotNil(Plane(result))
         node.queueFree()
     }
 
@@ -621,7 +621,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let aabb = AABB()
         let result = node.call(method: "testAABB", Variant(aabb))
-        XCTAssertNotNil(AABB(result))
+        assertNotNil(AABB(result))
         node.queueFree()
     }
 
@@ -629,7 +629,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let projection = Projection()
         let result = node.call(method: "testProjection", Variant(projection))
-        XCTAssertNotNil(Projection(result))
+        assertNotNil(Projection(result))
         node.queueFree()
     }
 
@@ -637,7 +637,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let rid = RID()
         let result = node.call(method: "testRID", Variant(rid))
-        XCTAssertNotNil(RID(result))
+        assertNotNil(RID(result))
         node.queueFree()
     }
 
@@ -645,7 +645,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let callable = Callable()
         let result = node.call(method: "testCallable", Variant(callable))
-        XCTAssertNotNil(Callable(result))
+        assertNotNil(Callable(result))
         node.queueFree()
     }
 
@@ -653,7 +653,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let signal = Signal()
         let result = node.call(method: "testSignalArg", Variant(signal))
-        XCTAssertNotNil(Signal(result))
+        assertNotNil(Signal(result))
         node.queueFree()
     }
 
@@ -666,7 +666,7 @@ final class RawArgumentsFetchTests {
         array.append(Variant(2))
         array.append(Variant(3))
         let result = node.call(method: "testVariantArray", Variant(array))
-        XCTAssertEqual(Int(result), 3)
+        assertEqual(Int(result), 3)
         node.queueFree()
     }
 
@@ -676,7 +676,7 @@ final class RawArgumentsFetchTests {
         dict["a"] = Variant(1)
         dict["b"] = Variant(2)
         let result = node.call(method: "testVariantDictionary", Variant(dict))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -687,7 +687,7 @@ final class RawArgumentsFetchTests {
         array.append(2)
         array.append(3)
         let result = node.call(method: "testPackedByteArray", Variant(array))
-        XCTAssertEqual(Int(result), 3)
+        assertEqual(Int(result), 3)
         node.queueFree()
     }
 
@@ -697,7 +697,7 @@ final class RawArgumentsFetchTests {
         array.append(1)
         array.append(2)
         let result = node.call(method: "testPackedInt32Array", Variant(array))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -709,7 +709,7 @@ final class RawArgumentsFetchTests {
         array.append(3)
         array.append(4)
         let result = node.call(method: "testPackedInt64Array", Variant(array))
-        XCTAssertEqual(Int(result), 4)
+        assertEqual(Int(result), 4)
         node.queueFree()
     }
 
@@ -719,7 +719,7 @@ final class RawArgumentsFetchTests {
         array.append(1.0)
         array.append(2.0)
         let result = node.call(method: "testPackedFloat32Array", Variant(array))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -730,7 +730,7 @@ final class RawArgumentsFetchTests {
         array.append(2.0)
         array.append(3.0)
         let result = node.call(method: "testPackedFloat64Array", Variant(array))
-        XCTAssertEqual(Int(result), 3)
+        assertEqual(Int(result), 3)
         node.queueFree()
     }
 
@@ -740,7 +740,7 @@ final class RawArgumentsFetchTests {
         array.append("a")
         array.append("b")
         let result = node.call(method: "testPackedStringArray", Variant(array))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -749,7 +749,7 @@ final class RawArgumentsFetchTests {
         var array = PackedVector2Array()
         array.append(Vector2(x: 1, y: 2))
         let result = node.call(method: "testPackedVector2Array", Variant(array))
-        XCTAssertEqual(Int(result), 1)
+        assertEqual(Int(result), 1)
         node.queueFree()
     }
 
@@ -759,7 +759,7 @@ final class RawArgumentsFetchTests {
         array.append(Vector3(x: 1, y: 2, z: 3))
         array.append(Vector3(x: 4, y: 5, z: 6))
         let result = node.call(method: "testPackedVector3Array", Variant(array))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -768,7 +768,7 @@ final class RawArgumentsFetchTests {
         var array = PackedVector4Array()
         array.append(value: Vector4(x: 1, y: 2, z: 3, w: 4))
         let result = node.call(method: "testPackedVector4Array", Variant(array))
-        XCTAssertEqual(Int(result), 1)
+        assertEqual(Int(result), 1)
         node.queueFree()
     }
 
@@ -779,7 +779,7 @@ final class RawArgumentsFetchTests {
         array.append(Color.green)
         array.append(Color.blue)
         let result = node.call(method: "testPackedColorArray", Variant(array))
-        XCTAssertEqual(Int(result), 3)
+        assertEqual(Int(result), 3)
         node.queueFree()
     }
 
@@ -792,7 +792,7 @@ final class RawArgumentsFetchTests {
         array.append(2)
         array.append(3)
         let result = node.call(method: "testTypedArrayInt", Variant(array.array))
-        XCTAssertEqual(Int(result), 3)
+        assertEqual(Int(result), 3)
         node.queueFree()
     }
 
@@ -802,7 +802,7 @@ final class RawArgumentsFetchTests {
         array.append("hello")
         array.append("world")
         let result = node.call(method: "testTypedArrayString", Variant(array.array))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -812,7 +812,7 @@ final class RawArgumentsFetchTests {
         dict[1] = "one"
         dict[2] = "two"
         let result = node.call(method: "testTypedDictionaryIntString", Variant(dict.dictionary))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -823,7 +823,7 @@ final class RawArgumentsFetchTests {
         dict["b"] = 2
         dict["c"] = 3
         let result = node.call(method: "testTypedDictionaryStringInt", Variant(dict.dictionary))
-        XCTAssertEqual(Int(result), 3)
+        assertEqual(Int(result), 3)
         node.queueFree()
     }
 
@@ -834,7 +834,7 @@ final class RawArgumentsFetchTests {
         let swiftArray: [Int] = [1, 2, 3, 4, 5]
         let typedArray = TypedArray<Int>(swiftArray)
         let result = node.call(method: "testSwiftArrayInt", Variant(typedArray.array))
-        XCTAssertEqual(Int(result), 15) // 1+2+3+4+5 = 15
+        assertEqual(Int(result), 15) // 1+2+3+4+5 = 15
         node.queueFree()
     }
 
@@ -843,7 +843,7 @@ final class RawArgumentsFetchTests {
         let swiftArray: [String] = ["a", "b", "c"]
         let typedArray = TypedArray<String>(swiftArray)
         let result = node.call(method: "testSwiftArrayString", Variant(typedArray.array))
-        XCTAssertEqual(String(result), "a,b,c")
+        assertEqual(String(result), "a,b,c")
         node.queueFree()
     }
 
@@ -852,7 +852,7 @@ final class RawArgumentsFetchTests {
         let swiftDict: [Int: String] = [1: "one", 2: "two"]
         let typedDict = TypedDictionary<Int, String>(swiftDict)
         let result = node.call(method: "testSwiftDictionaryIntString", Variant(typedDict.dictionary))
-        XCTAssertEqual(Int(result), 2)
+        assertEqual(Int(result), 2)
         node.queueFree()
     }
 
@@ -861,7 +861,7 @@ final class RawArgumentsFetchTests {
         let swiftDict: [String: Int] = ["a": 10, "b": 20, "c": 30]
         let typedDict = TypedDictionary<String, Int>(swiftDict)
         let result = node.call(method: "testSwiftDictionaryStringInt", Variant(typedDict.dictionary))
-        XCTAssertEqual(Int(result), 60) // 10+20+30 = 60
+        assertEqual(Int(result), 60) // 10+20+30 = 60
         node.queueFree()
     }
 
@@ -870,14 +870,14 @@ final class RawArgumentsFetchTests {
     func testFetchVariant() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVariant", Variant(42))
-        XCTAssertEqual(String(result), "42")
+        assertEqual(String(result), "42")
         node.queueFree()
     }
 
     func testFetchVariantOptionalWithValue() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testVariantOptional", Variant("hello"))
-        XCTAssertEqual(String(result), "hello")
+        assertEqual(String(result), "hello")
         node.queueFree()
     }
 
@@ -888,7 +888,7 @@ final class RawArgumentsFetchTests {
         let testNode = Node()
         testNode.name = "TestNode"
         let result = node.call(method: "testNodeOptional", Variant(testNode))
-        XCTAssertEqual(String(result), "TestNode")
+        assertEqual(String(result), "TestNode")
         testNode.queueFree()
         node.queueFree()
     }
@@ -898,7 +898,7 @@ final class RawArgumentsFetchTests {
         let testNode = Node()
         testNode.name = "MyTestNode"
         let result = node.call(method: "testNode", Variant(testNode))
-        XCTAssertEqual(String(result), "MyTestNode")
+        assertEqual(String(result), "MyTestNode")
         testNode.queueFree()
         node.queueFree()
     }
@@ -907,7 +907,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         let refCounted = RefCounted()
         let result = node.call(method: "testRefCountedOptional", Variant(refCounted))
-        XCTAssertEqual(Bool(result), true)
+        assertEqual(Bool(result), true)
         node.queueFree()
     }
 
@@ -917,14 +917,14 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         // Pass the raw value since Godot doesn't know about our Swift enum
         let result = node.call(method: "testIntEnum", Variant(2)) // TestIntEnum.second
-        XCTAssertEqual(Int(result), 20) // 2 * 10 = 20
+        assertEqual(Int(result), 20) // 2 * 10 = 20
         node.queueFree()
     }
 
     func testFetchInt64Enum() {
         let node = RawArgumentsTestNode()
         let result = node.call(method: "testInt64Enum", Variant(200)) // TestInt64Enum.beta
-        XCTAssertEqual(Int64(result), 2000) // 200 * 10 = 2000
+        assertEqual(Int64(result), 2000) // 200 * 10 = 2000
         node.queueFree()
     }
 
@@ -934,7 +934,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         // CustomIntWrapper is backed by Int, so we pass an Int
         let result = node.call(method: "testCustomIntWrapper", Variant(7))
-        XCTAssertEqual(Int(result), 21) // 7 * 3 = 21
+        assertEqual(Int(result), 21) // 7 * 3 = 21
         node.queueFree()
     }
 
@@ -942,7 +942,7 @@ final class RawArgumentsFetchTests {
         let node = RawArgumentsTestNode()
         // CustomStringWrapper is backed by String
         let result = node.call(method: "testCustomStringWrapper", Variant("hello"))
-        XCTAssertEqual(String(result), "HELLO")
+        assertEqual(String(result), "HELLO")
         node.queueFree()
     }
 
@@ -951,8 +951,8 @@ final class RawArgumentsFetchTests {
         // CustomVector2Wrapper is backed by Vector2
         let result = node.call(method: "testCustomVector2Wrapper", Variant(Vector2(x: 2, y: 3)))
         let vec = Vector2(result)!
-        XCTAssertEqual(vec.x, 6) // 2 * 3 = 6
-        XCTAssertEqual(vec.y, 9) // 3 * 3 = 9
+        assertEqual(vec.x, 6) // 2 * 3 = 6
+        assertEqual(vec.y, 9) // 3 * 3 = 9
         node.queueFree()
     }
 
@@ -967,7 +967,7 @@ final class RawArgumentsFetchTests {
             Variant(true),
             Variant(Vector2(x: 1.5, y: 2.5))
         )
-        XCTAssertEqual(String(result), "42_test_true_1.5,2.5")
+        assertEqual(String(result), "42_test_true_1.5,2.5")
         node.queueFree()
     }
 
@@ -980,7 +980,7 @@ final class RawArgumentsFetchTests {
             Variant("abc"),  // CustomStringWrapper
             Variant(10)      // normal Int
         )
-        XCTAssertEqual(Int(result), 18)
+        assertEqual(Int(result), 18)
         node.queueFree()
     }
 
@@ -1003,7 +1003,7 @@ final class RawArgumentsFetchTests {
             Variant(swiftArray.array),
             Variant(packedArray)
         )
-        XCTAssertEqual(Int(result), 6)
+        assertEqual(Int(result), 6)
         node.queueFree()
     }
 
@@ -1018,7 +1018,7 @@ final class RawArgumentsFetchTests {
             Variant(123),
             Variant(3) // TestIntEnum.third
         )
-        XCTAssertEqual(String(result), "ObjNode_123_3")
+        assertEqual(String(result), "ObjNode_123_3")
         testNode.queueFree()
         node.queueFree()
     }

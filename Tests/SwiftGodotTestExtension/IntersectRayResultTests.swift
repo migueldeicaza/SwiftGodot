@@ -27,17 +27,17 @@ final class IntersectRayResultTests {
         }()
 
         guard let result = PhysicsDirectSpaceState3D.IntersectRayResult<GridMap>(dictionary) else {
-            XCTFail("Expected non-nil result")
+            fail("Expected non-nil result")
             return
         }
 
-        XCTAssertEqual(result.position, Vector3(x: 1, y: 2, z: 3))
-        XCTAssertEqual(result.normal, Vector3(x: 4, y: 5, z: 6))
-        XCTAssertEqual(result.collider, collider)
-        XCTAssertEqual(result.colliderId, collider.id)
-        XCTAssertEqual(result.rid, RID())
-        XCTAssertEqual(result.shape, 22)
-        XCTAssertEqual(result.faceIndex, 44)
+        assertEqual(result.position, Vector3(x: 1, y: 2, z: 3))
+        assertEqual(result.normal, Vector3(x: 4, y: 5, z: 6))
+        assertEqual(result.collider, collider)
+        assertEqual(result.colliderId, collider.id)
+        assertEqual(result.rid, RID())
+        assertEqual(result.shape, 22)
+        assertEqual(result.faceIndex, 44)
 
         (collider as? Node)?.queueFree()
     }
@@ -59,7 +59,7 @@ final class IntersectRayResultTests {
         
         let result = PhysicsDirectSpaceState3D.IntersectRayResult<GridMap>(dictionary)
 
-        XCTAssertNil(result)
+        assertNil(result)
 
         (collider as? Node)?.queueFree()
     }

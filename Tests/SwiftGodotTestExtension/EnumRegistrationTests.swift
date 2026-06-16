@@ -106,7 +106,7 @@ final class EnumRegistrationTests {
 
     func testRegisteredEnumListContainsExactlyTheQualifyingEnums() {
         let enums = Set(ClassDB.classGetEnumList(class: "EnumRegistrationHost", noInheritance: true).map { String($0) })
-        XCTAssertEqual(enums, ["IntEnum", "Int64Enum", "Int32Enum", "UInt8Enum"])
+        assertEqual(enums, ["IntEnum", "Int64Enum", "Int32Enum", "UInt8Enum"])
     }
 
     func testExportedEnumPropertyMetadataMatchesRegistration() {
@@ -123,19 +123,19 @@ final class EnumRegistrationTests {
             found = true
 
             if let classV = prop["class_name"] {
-                XCTAssertEqual(String(classV), "EnumRegistrationHost.IntEnum")
+                assertEqual(String(classV), "EnumRegistrationHost.IntEnum")
             } else {
                 fail("'mode' property is missing a class_name")
             }
 
             if let flagsV = prop["usage"], let iflags = Int(flagsV) {
                 let flags = PropertyUsageFlags(rawValue: iflags)
-                XCTAssertTrue(flags.contains(.classIsEnum), "'mode' property should have the classIsEnum usage flag")
+                assertTrue(flags.contains(.classIsEnum), "'mode' property should have the classIsEnum usage flag")
             } else {
                 fail("'mode' property is missing usage flags")
             }
         }
 
-        XCTAssertTrue(found, "Expected to find an exported 'mode' property on EnumRegistrationHost")
+        assertTrue(found, "Expected to find an exported 'mode' property on EnumRegistrationHost")
     }
 }

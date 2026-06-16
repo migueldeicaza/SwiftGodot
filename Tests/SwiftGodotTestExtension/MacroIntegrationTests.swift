@@ -46,32 +46,32 @@ final class MacroIntegrationTests {
             var optionalWow = Wow()
         }
 
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.wow, name: "").propertyType, .nil)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalWow, name: "").propertyType, .nil)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.variant, name: "").usage, [.nilIsVariant, .default])
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.optionalVariant, name: "").propertyType, .nil)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.garray, name: "").propertyType, .array)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.object, name: "").propertyType, .object)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.lala, name: "").propertyType, .int)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.someNode, name: "").propertyType, .object)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.wop, name: "").propertyType, .nil)
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
-        XCTAssertEqual(_propInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
+        assertEqual(_propInfo(at: \NoMacroExample.wow, name: "").propertyType, .nil)
+        assertEqual(_propInfo(at: \NoMacroExample.optionalWow, name: "").propertyType, .nil)
+        assertEqual(_propInfo(at: \NoMacroExample.variant, name: "").propertyType, .nil)
+        assertEqual(_propInfo(at: \NoMacroExample.variant, name: "").usage, [.nilIsVariant, .default])
+        assertEqual(_propInfo(at: \NoMacroExample.optionalVariant, name: "").propertyType, .nil)
+        assertEqual(_propInfo(at: \NoMacroExample.garray, name: "").propertyType, .array)
+        assertEqual(_propInfo(at: \NoMacroExample.object, name: "").propertyType, .object)
+        assertEqual(_propInfo(at: \NoMacroExample.lala, name: "").propertyType, .int)
+        assertEqual(_propInfo(at: \NoMacroExample.someNode, name: "").propertyType, .object)
+        assertEqual(_propInfo(at: \NoMacroExample.wop, name: "").propertyType, .nil)
+        assertEqual(_propInfo(at: \NoMacroExample.variantCollection, name: "").className, "Array[int]")
+        assertEqual(_propInfo(at: \NoMacroExample.objectCollection, name: "").className, "Array[MeshInstance2D]")
 
         let enumPropInfo = _propInfo(at: \NoMacroExample.enumExample, name: "")
-        XCTAssertEqual(enumPropInfo.propertyType, .int)
-        XCTAssertEqual(enumPropInfo.hintStr, "zero:0,one:1,two:2")
+        assertEqual(enumPropInfo.propertyType, .int)
+        assertEqual(enumPropInfo.hintStr, "zero:0,one:1,two:2")
 
         let meshInstancePropInfo = _propInfo(at: \NoMacroExample.meshInstance, name: "")
-        XCTAssertEqual(meshInstancePropInfo.hint, .nodeType)
-        XCTAssertEqual(meshInstancePropInfo.hintStr, "MeshInstance3D")
+        assertEqual(meshInstancePropInfo.hint, .nodeType)
+        assertEqual(meshInstancePropInfo.hintStr, "MeshInstance3D")
 
         let closure = { (a: Int, b: Int) -> Int in
             a + b
         }
 
-        XCTAssertEqual(_invokeGetter(closure)?.gtype, .callable)
+        assertEqual(_invokeGetter(closure)?.gtype, .callable)
     }
 
     func testCorrectRegistrationSequence() {
@@ -109,22 +109,22 @@ final class MacroIntegrationTests {
         do {
             types = try [A.self, B.self, C.self, D0.self, D1.self].prepareForRegistration()
         } catch {
-            XCTFail("\(error)")
+            fail("\(error)")
             return
         }
 
-        XCTAssertEqual(types[.core]?.contains(where: { $0 == A.self}), true)
-        XCTAssertEqual(types[.servers]?.contains(where: { $0 == B.self}), true)
-        XCTAssertEqual(types[.scene]?.contains(where: { $0 == C.self}), true)
-        XCTAssertEqual(types[.editor]?.contains(where: { $0 == D0.self}), true)
-        XCTAssertEqual(types[.editor]?.contains(where: { $0 == D1.self}), true)
+        assertEqual(types[.core]?.contains(where: { $0 == A.self}), true)
+        assertEqual(types[.servers]?.contains(where: { $0 == B.self}), true)
+        assertEqual(types[.scene]?.contains(where: { $0 == C.self}), true)
+        assertEqual(types[.editor]?.contains(where: { $0 == D0.self}), true)
+        assertEqual(types[.editor]?.contains(where: { $0 == D1.self}), true)
 
-        XCTAssertEqual(types[.core]?.count, 1)
-        XCTAssertEqual(types[.servers]?.count, 1)
-        XCTAssertEqual(types[.scene]?.count, 1)
-        XCTAssertEqual(types[.editor]?.count, 2)
+        assertEqual(types[.core]?.count, 1)
+        assertEqual(types[.servers]?.count, 1)
+        assertEqual(types[.scene]?.count, 1)
+        assertEqual(types[.editor]?.count, 2)
 
-        XCTAssertEqual(minimumInitializationLevel(for: types), .core)
+        assertEqual(minimumInitializationLevel(for: types), .core)
 
         class E: Object {
             override class var classInitializationLevel: ExtensionInitializationLevel {
@@ -140,21 +140,21 @@ final class MacroIntegrationTests {
 
         do {
             types = try [E.self, F.self].prepareForRegistration()
-            XCTFail()
+            fail()
         } catch {
             // expected error
         }
 
-        XCTAssertEqual(minimumInitializationLevel(for: [:]), .editor)
+        assertEqual(minimumInitializationLevel(for: [:]), .editor)
 
         class G: Object {
         }
 
         do {
             types = try [G.self].prepareForRegistration()
-            XCTAssertEqual(minimumInitializationLevel(for: types), .scene)
+            assertEqual(minimumInitializationLevel(for: types), .scene)
         } catch {
-            XCTFail("\(error)")
+            fail("\(error)")
             return
         }
     }
@@ -169,8 +169,8 @@ final class MacroIntegrationTests {
             userHintStr: nil,
             userUsage: nil
         )
-        XCTAssertEqual(detected.hint, .nodeType)
-        XCTAssertEqual(detected.hintStr, "DemoProbe")
+        assertEqual(detected.hint, .nodeType)
+        assertEqual(detected.hintStr, "DemoProbe")
         print(detected)
     }
 

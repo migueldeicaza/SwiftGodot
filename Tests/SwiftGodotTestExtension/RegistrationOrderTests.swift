@@ -44,45 +44,45 @@ class ThirdSceneLevelClass: RefCounted {
 final class RegistrationOrderTests {
     func testRegisteredClassesExistInClassDB() {
         // Verify that all test classes are actually registered in Godot's ClassDB
-        XCTAssertTrue(ClassDB.classExists(class: "CoreLevelClass"), "CoreLevelClass should exist in ClassDB")
-        XCTAssertTrue(ClassDB.classExists(class: "ServersLevelClass"), "ServersLevelClass should exist in ClassDB")
-        XCTAssertTrue(ClassDB.classExists(class: "SceneLevelClass"), "SceneLevelClass should exist in ClassDB")
-        XCTAssertTrue(ClassDB.classExists(class: "AnotherSceneLevelClass"), "AnotherSceneLevelClass should exist in ClassDB")
-        XCTAssertTrue(ClassDB.classExists(class: "ThirdSceneLevelClass"), "ThirdSceneLevelClass should exist in ClassDB")
+        assertTrue(ClassDB.classExists(class: "CoreLevelClass"), "CoreLevelClass should exist in ClassDB")
+        assertTrue(ClassDB.classExists(class: "ServersLevelClass"), "ServersLevelClass should exist in ClassDB")
+        assertTrue(ClassDB.classExists(class: "SceneLevelClass"), "SceneLevelClass should exist in ClassDB")
+        assertTrue(ClassDB.classExists(class: "AnotherSceneLevelClass"), "AnotherSceneLevelClass should exist in ClassDB")
+        assertTrue(ClassDB.classExists(class: "ThirdSceneLevelClass"), "ThirdSceneLevelClass should exist in ClassDB")
     }
 
     func testClassInheritanceIsCorrect() {
         // Verify that the inheritance chain is correct in ClassDB
-        XCTAssertEqual(ClassDB.getParentClass("CoreLevelClass"), "RefCounted")
-        XCTAssertEqual(ClassDB.getParentClass("ServersLevelClass"), "CoreLevelClass")
-        XCTAssertEqual(ClassDB.getParentClass("SceneLevelClass"), "ServersLevelClass")
-        XCTAssertEqual(ClassDB.getParentClass("AnotherSceneLevelClass"), "SceneLevelClass")
-        XCTAssertEqual(ClassDB.getParentClass("ThirdSceneLevelClass"), "RefCounted")
+        assertEqual(ClassDB.getParentClass("CoreLevelClass"), "RefCounted")
+        assertEqual(ClassDB.getParentClass("ServersLevelClass"), "CoreLevelClass")
+        assertEqual(ClassDB.getParentClass("SceneLevelClass"), "ServersLevelClass")
+        assertEqual(ClassDB.getParentClass("AnotherSceneLevelClass"), "SceneLevelClass")
+        assertEqual(ClassDB.getParentClass("ThirdSceneLevelClass"), "RefCounted")
     }
 
     func testInstancesReportCorrectClassName() {
         // Verify that instances report their correct class name via Godot's type system
         let coreInstance = CoreLevelClass()
-        XCTAssertEqual(coreInstance.getClass(), "CoreLevelClass")
+        assertEqual(coreInstance.getClass(), "CoreLevelClass")
 
         let serversInstance = ServersLevelClass()
-        XCTAssertEqual(serversInstance.getClass(), "ServersLevelClass")
+        assertEqual(serversInstance.getClass(), "ServersLevelClass")
 
         let sceneInstance = SceneLevelClass()
-        XCTAssertEqual(sceneInstance.getClass(), "SceneLevelClass")
+        assertEqual(sceneInstance.getClass(), "SceneLevelClass")
 
         let anotherSceneInstance = AnotherSceneLevelClass()
-        XCTAssertEqual(anotherSceneInstance.getClass(), "AnotherSceneLevelClass")
+        assertEqual(anotherSceneInstance.getClass(), "AnotherSceneLevelClass")
 
         let thirdSceneInstance = ThirdSceneLevelClass()
-        XCTAssertEqual(thirdSceneInstance.getClass(), "ThirdSceneLevelClass")
+        assertEqual(thirdSceneInstance.getClass(), "ThirdSceneLevelClass")
     }
 
     func testClassesHaveCorrectInitializationLevels() {
-        XCTAssertEqual(CoreLevelClass.classInitializationLevel, .core)
-        XCTAssertEqual(ServersLevelClass.classInitializationLevel, .servers)
-        XCTAssertEqual(SceneLevelClass.classInitializationLevel, .scene)
-        XCTAssertEqual(AnotherSceneLevelClass.classInitializationLevel, .scene)
-        XCTAssertEqual(ThirdSceneLevelClass.classInitializationLevel, .scene)
+        assertEqual(CoreLevelClass.classInitializationLevel, .core)
+        assertEqual(ServersLevelClass.classInitializationLevel, .servers)
+        assertEqual(SceneLevelClass.classInitializationLevel, .scene)
+        assertEqual(AnotherSceneLevelClass.classInitializationLevel, .scene)
+        assertEqual(ThirdSceneLevelClass.classInitializationLevel, .scene)
     }
 }

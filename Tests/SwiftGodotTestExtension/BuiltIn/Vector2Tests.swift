@@ -15,24 +15,24 @@ final class Vector2Tests {
         var value: Vector2
         
         value = -Vector2 (x: -1.1, y: 2.2)
-        XCTAssertEqual (value.x, 1.1)
-        XCTAssertEqual (value.y, -2.2)
+        assertEqual (value.x, 1.1)
+        assertEqual (value.y, -2.2)
         
         value = -Vector2 (x: 3.3, y: -4.4)
-        XCTAssertEqual (value.x, -3.3)
-        XCTAssertEqual (value.y, 4.4)
+        assertEqual (value.x, -3.3)
+        assertEqual (value.y, 4.4)
         
         value = -Vector2 (x: -.greatestFiniteMagnitude, y: .greatestFiniteMagnitude)
-        XCTAssertEqual (value.x, .greatestFiniteMagnitude)
-        XCTAssertEqual (value.y, -.greatestFiniteMagnitude)
+        assertEqual (value.x, .greatestFiniteMagnitude)
+        assertEqual (value.y, -.greatestFiniteMagnitude)
         
         value = -Vector2 (x: .infinity, y: -.infinity)
-        XCTAssertEqual (value.x, -.infinity)
-        XCTAssertEqual (value.y, .infinity)
+        assertEqual (value.x, -.infinity)
+        assertEqual (value.y, .infinity)
         
         value = -Vector2 (x: .nan, y: .nan)
-        XCTAssertTrue (value.x.isNaN)
-        XCTAssertTrue (value.y.isNaN)
+        assertTrue (value.x.isNaN)
+        assertTrue (value.y.isNaN)
     }
     
 }
