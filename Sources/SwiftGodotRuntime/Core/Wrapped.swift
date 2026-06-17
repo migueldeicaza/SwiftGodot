@@ -337,7 +337,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
         guard let objectCallScriptMethod = gi.object_call_script_method else {
             fatalError("Godot interface method 'object_call_script_method' was not available at runtime.")
         }
-        objectCallScriptMethod(&handle, &method.content, &args, Int64(args.count), &result, &error)
+        objectCallScriptMethod(handle, &method.content, &args, Int64(args.count), &result, &error)
         if error.error != GDEXTENSION_CALL_OK {
             throw toCallErrorType(error.error)
         }
