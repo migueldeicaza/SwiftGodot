@@ -229,6 +229,19 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
+    func testCallableWithDefaultArguments() {
+        assertExpansion(
+            of: """
+            @Godot class Greeter: Node {
+                @Callable func greet(_ name: String, greeting: String = "Hello", times: Int = 1) -> String {
+                    Array(repeating: "\\(greeting), \\(name)", count: times).joined(separator: " ")
+                }
+                @Callable func attach(to node: Node? = nil) {}
+            }
+            """
+        )
+    }
+
     func testNewSignalMacro() {
         assertExpansion(
             of: """

@@ -78,6 +78,11 @@ extension FunctionParameterSyntax {
     var internalName: String {
         secondName?.text ?? firstName.text
     }
+
+    /// The default value expression, e.g. `5` in `(b: Int = 5)`, or `nil` if the parameter has no default.
+    var defaultValueExpr: ExprSyntax? {
+        defaultValue?.value
+    }
 }
 
 extension VariableDeclSyntax {

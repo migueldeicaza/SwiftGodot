@@ -189,6 +189,28 @@ floats, the Godot Object subclasses as well as ``TypedArray`` and ``TypedDiction
 The `@Callable` macro only works in your class definition, and will not work
 on Swift class extensions.
 
+#### Default arguments
+
+Parameters with default values are surfaced to Godot as optional arguments, so
+callers from the editor or other scripting languages may omit them:
+
+```swift
+@Callable
+func greet(_ name: String, greeting: String = "Hello", times: Int = 1) -> String {
+    Array(repeating: "\(greeting), \(name)", count: times).joined(separator: " ")
+}
+```
+
+From GDScript, all of `greet("World")`, `greet("World", "Hi")`, and
+`greet("World", "Hi", 2)` are valid; omitted trailing arguments use the Swift
+default values.
+
+Godot only supports default values for a contiguous run of *trailing*
+parameters (matching how default arguments work in GDScript). If a parameter
+with a default is followed by one without, only the trailing run is exposed to
+Godot as optional; the earlier defaults are treated as required when called from
+Godot, though they still apply when the method is called directly from Swift.
+
 ### Surfacing Properties and Variables
 
 To surface properties and variables, use the ``Export`` attribute on them.

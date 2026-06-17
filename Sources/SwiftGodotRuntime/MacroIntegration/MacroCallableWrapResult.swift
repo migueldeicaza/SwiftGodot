@@ -78,3 +78,11 @@ public func _wrapCallableResult(_ value: Void) -> FastVariant? {
 public func _wrapCallableResult<T>(_ value: T?) -> FastVariant? {
     fatalError("Unreachable")
 }
+
+/// Internal API. Wraps a `@Callable` parameter's default value into a `Variant?` suitable for
+/// method registration. A `nil` result represents a Godot `nil` default argument.
+@inline(__always)
+@inlinable
+public func _wrapDefaultArgument(_ value: consuming FastVariant?) -> Variant? {
+    Variant(takingOver: value)
+}
