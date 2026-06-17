@@ -114,7 +114,7 @@ class GodotMacroProcessor {
         }
         
         let p = classInitializerPrinter
-                        
+
         let arguments = funcDecl
             .parameters
             .map { parameter in
@@ -122,7 +122,27 @@ class GodotMacroProcessor {
                 return "SwiftGodotRuntime._argumentPropInfo(\(typename).self, name: \"\(parameter.internalName)\")"
             }
             .joined(separator: ",\n")
-                
+
+        // Godot only supports default values for a contiguous run of trailing arguments,
+        // matching the `default_arguments` array in `GDExtensionClassMethodInfo`. We expose
+        // the longest such trailing run; any earlier Swift defaults are treated as required
+        // by Godot (they remain usable when the function is called directly from Swift).
+        let parameterList = Array(funcDecl.parameters)
+        var trailingDefaultCount = 0
+        for parameter in parameterList.reversed() {
+            guard parameter.defaultValueExpr != nil else { break }
+            trailingDefaultCount += 1
+        }
+
+        let defaultArguments = parameterList
+            .suffix(trailingDefaultCount)
+            .compactMap { parameter -> String? in
+                guard let defaultExpr = parameter.defaultValueExpr else { return nil }
+                let typename = parameter.type.trimmedDescription
+                return "SwiftGodotRuntime._wrapDefaultArgument(SwiftGodotRuntime._wrapCallableResult(\(defaultExpr.trimmedDescription) as \(typename)))"
+            }
+            .joined(separator: ",\n")
+
         let returnTypename: String
         if let type = funcDecl.signature.returnClause?.type {
             returnTypename = type.trimmedDescription
@@ -146,6 +166,11 @@ class GodotMacroProcessor {
             """)
             p("arguments: ", .square, afterBlock: ",") {
                 p(arguments)
+            }
+            if trailingDefaultCount > 0 {
+                p("defaultArguments: ", .square, afterBlock: ",") {
+                    p(defaultArguments)
+                }
             }
             p(("function: \(className)._mproxy_\(funcName)") + (generatePtrCall ? "," : ""))
             if generatePtrCall {

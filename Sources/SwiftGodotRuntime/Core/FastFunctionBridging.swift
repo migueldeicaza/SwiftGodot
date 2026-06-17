@@ -78,6 +78,34 @@ public func _registerPropertyWithGetterSetter(
     _registerProperty(className: className, info: info, getter: getterName, setter: setterName)
 }
 
+/// Invokes `body` with a pointer to an array of `default_argument_count` `GDExtensionVariantPtr`s,
+/// matching the layout Godot expects for `GDExtensionClassMethodInfo.default_arguments`. The
+/// pointers (and the `Variant`s they reference) are only valid for the duration of `body`; Godot
+/// copies the default values into the method bind during registration. A `nil` entry is passed as a
+/// Godot `nil` `Variant`.
+private func withDefaultArgumentPointers<R>(
+    _ defaultArguments: [Variant?],
+    _ body: (UnsafeMutablePointer<GDExtensionVariantPtr?>?, UInt32) -> R
+) -> R {
+    let count = defaultArguments.count
+    guard count > 0 else {
+        return body(nil, 0)
+    }
+
+    return withExtendedLifetime(defaultArguments) {
+        withUnsafeTemporaryAllocation(of: VariantContent.self, capacity: count) { contentBuffer in
+            withUnsafeTemporaryAllocation(of: GDExtensionVariantPtr?.self, capacity: count) { ptrBuffer in
+                for (index, variant) in defaultArguments.enumerated() {
+                    contentBuffer.initializeElement(at: index, to: variant?.content ?? Variant.zero)
+                    ptrBuffer.initializeElement(at: index, to: UnsafeMutableRawPointer(contentBuffer.baseAddress! + index))
+                }
+
+                return body(ptrBuffer.baseAddress, UInt32(count))
+            }
+        }
+    }
+}
+
 /// Internal API.
 public func _registerMethod(
     className: StringName,
@@ -85,6 +113,7 @@ public func _registerMethod(
     flags: MethodFlags,
     returnValue: PropInfo?,
     arguments: [PropInfo],
+    defaultArguments: [Variant?] = [],
     function: @escaping BridgedFunction
 ) {
     let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
@@ -102,11 +131,12 @@ public func _registerMethod(
     if let returnValue {
         retInfo = returnValue.makeNativeStruct()
     }
-    
+
     // TODO: leaks, never deallocated
     let userdata = UnsafeMutablePointer<BridgedFunctionInfo>.allocate(capacity: 1)
     userdata.initialize(to: .init(function: function, returnedType: returnValue?.propertyType))
-    
+
+    withDefaultArgumentPointers(defaultArguments) { defaultArgsPtr, defaultArgsCount in
     withUnsafeMutablePointer(to: &name.content) { namePtr in
         withUnsafeMutablePointer(to: &retInfo) { retInfoPtr in
         var info = GDExtensionClassMethodInfo (
@@ -121,12 +151,13 @@ public func _registerMethod(
             argument_count: UInt32(arguments.count),
             arguments_info: argPtr,
             arguments_metadata: argMeta, // GDExtensionClassMethodArgumentMetadata
-            default_argument_count: 0,
-            default_arguments: nil) // GDExtensionVariantPtr)
+            default_argument_count: defaultArgsCount,
+            default_arguments: defaultArgsPtr) // GDExtensionVariantPtr)
             withUnsafePointer(to: &className.content) { namePtr in
                 gi.classdb_register_extension_class_method (extensionInterface.getLibrary(), namePtr, &info)
             }
         }
+    }
     }
 }
 
@@ -136,6 +167,7 @@ public func _registerMethod(
     flags: MethodFlags,
     returnValue: PropInfo?,
     arguments: [PropInfo],
+    defaultArguments: [Variant?] = [],
     function: @escaping BridgedFunction,
     ptrFunction: @escaping GDExtensionClassMethodPtrCall
 ) {
@@ -158,6 +190,7 @@ public func _registerMethod(
     let userdata = UnsafeMutablePointer<BridgedFunctionInfo>.allocate(capacity: 1)
     userdata.initialize(to: .init(function: function, returnedType: returnValue?.propertyType))
 
+    withDefaultArgumentPointers(defaultArguments) { defaultArgsPtr, defaultArgsCount in
     withUnsafeMutablePointer(to: &name.content) { namePtr in
         withUnsafeMutablePointer(to: &retInfo) { retInfoPtr in
         var info = GDExtensionClassMethodInfo (
@@ -172,12 +205,13 @@ public func _registerMethod(
             argument_count: UInt32(arguments.count),
             arguments_info: argPtr,
             arguments_metadata: argMeta, // GDExtensionClassMethodArgumentMetadata
-            default_argument_count: 0,
-            default_arguments: nil) // GDExtensionVariantPtr)
+            default_argument_count: defaultArgsCount,
+            default_arguments: defaultArgsPtr) // GDExtensionVariantPtr)
             withUnsafePointer(to: &className.content) { namePtr in
                 gi.classdb_register_extension_class_method (extensionInterface.getLibrary(), namePtr, &info)
             }
         }
+    }
     }
 }
 

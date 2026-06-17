@@ -51,13 +51,31 @@ public struct GodotCallable: PeerMacro {
 
         let objectOrSelf = isStatic ? "self" : "object"
 
+        // Godot only fills in default values for a contiguous run of trailing arguments. When the
+        // variant call path is invoked with fewer arguments than declared, fall back to the Swift
+        // default expression for any omitted trailing parameter. The ptrcall path always receives a
+        // complete argument list, so it does not need the fallback.
+        let parameterArray = Array(parameters)
+        var trailingDefaultCount = 0
+        for parameter in parameterArray.reversed() {
+            guard parameter.defaultValueExpr != nil else { break }
+            trailingDefaultCount += 1
+        }
+        let firstDefaultIndex = parameterArray.count - trailingDefaultCount
+
         for (index, parameter) in parameters.enumerated() {
             let ptype = parameter.type.trimmedDescription
-            
-            body += """
-                    let arg\(index) = try arguments.argument(ofType: \(ptype).self, at: \(index))            
-            """
-                        
+
+            if index >= firstDefaultIndex, let defaultExpr = parameter.defaultValueExpr {
+                body += """
+                        let arg\(index) = arguments.count > \(index) ? try arguments.argument(ofType: \(ptype).self, at: \(index)) : (\(defaultExpr.trimmedDescription) as \(ptype))
+                """
+            } else {
+                body += """
+                        let arg\(index) = try arguments.argument(ofType: \(ptype).self, at: \(index))
+                """
+            }
+
             callArgsList.append("\(parameter.labelForCaller)arg\(index)")
 
             bodyPtr += """
