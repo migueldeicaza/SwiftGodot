@@ -757,6 +757,57 @@ public func printSwiftGodotStats() {
 
 }
 
+/// Relinquishes SwiftGodot's references to the framework ``RefCounted`` objects
+/// it still holds, as part of the extension being unloaded.
+///
+/// SwiftGodot normally guarantees that the Swift wrapper destroys a RefCounted
+/// eventually: the wrapper keeps a reference and is pinned alive while Godot
+/// co-owns the object, so our release (and `object_destroy`) only runs once
+/// Godot's refcount falls to "just us". For objects Godot keeps alive until it
+/// shuts down — e.g. a `reload()`-ed `GDScript`, cached by the GDScript language
+/// until teardown — that release is forced into `Main::cleanup`, where Godot
+/// flushes its deferred-call queue *after* finalizing subsystems. Destroying a
+/// GDScript there crashes (`~GDScript` locks the already-gone language mutex).
+///
+/// Godot calls `extension_deinitialize` while those subsystems are still alive,
+/// which is the last safe point to act. Here we drop our reference to each held
+/// framework RefCounted and detach its wrapper, so:
+/// - objects Godot still co-owns are left for Godot to destroy in its own order;
+/// - objects we solely own are destroyed now, in the safe window;
+/// - no wrapper deinit re-enters the deferred queue afterwards.
+///
+/// It operates only on currently-live objects and holds no persistent state, so
+/// it is safe to call on every unload, including the editor's load/scan/unload
+/// cycle and subsequent reloads.
+func relinquishFrameworkReferencesForUnload() {
+    // Anything already queued is safe to release now while the engine is alive.
+    releasePendingObjects()
+
+    let snapshot: [(GodotNativeObjectPointer, WrappedReference)] = tableLock.withLock {
+        liveFrameworkObjects.map { ($0.key, $0.value) }
+    }
+    for (handle, reference) in snapshot {
+        // Only RefCounted participate in our reference bookkeeping; other
+        // framework objects (singletons, etc.) are owned by Godot.
+        guard let wrapped = reference.value, wrapped is RefCounted, wrapped.handle == handle else {
+            continue
+        }
+
+        // Detach the wrapper first so its eventual deinit becomes a no-op and
+        // cannot re-queue this handle, and drop it from the pending queue.
+        wrapped.handle = nil
+        removePendingReleaseHandle(handle)
+
+        var result = false
+        gi.object_method_bind_ptrcall(RefCounted.method_unreference, handle, nil, &result)
+        // result == true means we held the last reference; destroying here is
+        // safe because the engine has not yet finalized its subsystems.
+        if result {
+            gi.object_destroy(handle)
+        }
+    }
+}
+
 // Lock for accessing the above
 var tableLock = NIOLock()
 
