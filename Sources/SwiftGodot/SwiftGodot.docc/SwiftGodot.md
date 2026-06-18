@@ -33,6 +33,7 @@ Visual Studio on Linux, Mac and Windows:
 Going in depth with SwiftGodot:
 
 - <doc:Differences>
+- <doc:NamingConvention>
 - <doc:Variants>
 - <doc:Exports>
 - <doc:Signals>
