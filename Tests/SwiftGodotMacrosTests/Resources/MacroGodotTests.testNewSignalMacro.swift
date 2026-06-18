@@ -1,13 +1,13 @@
 class Demo: Node3D {
     var burp: SimpleSignal {
         get {
-            SimpleSignal(target: self, signalName: "burp")
+            SimpleSignal(target: self, signalName: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("burp"))
         }
     }
 
     var livesChanged: SignalWithArguments<Int> {
         get {
-            SignalWithArguments<Int>(target: self, signalName: "lives_changed")
+            SignalWithArguments<Int>(target: self, signalName: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("livesChanged"))
         }
     }
 
@@ -25,7 +25,7 @@ class Demo: Node3D {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SimpleSignal.register(as: "burp", in: className, names: [])
-        SignalWithArguments<Int>.register(as: "lives_changed", in: className, names: [])
+        SimpleSignal.register(as: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("burp")), in: className, names: [])
+        SignalWithArguments<Int>.register(as: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("livesChanged")), in: className, names: [])
     }
 }

@@ -62,7 +62,7 @@ class CallableCollectionsNode: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "get_ages",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("get_ages")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo([Int].self),
             arguments: [
@@ -80,7 +80,7 @@ class CallableCollectionsNode: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "get_markers",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("get_markers")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo([Marker3D].self),
             arguments: [

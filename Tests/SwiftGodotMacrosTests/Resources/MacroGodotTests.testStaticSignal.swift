@@ -1,7 +1,7 @@
 class Hi: Node {
     static var int: SimpleSignal {
         get {
-            SimpleSignal(target: self, signalName: "int")
+            SimpleSignal(target: self, signalName: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("int"))
         }
     }
 }

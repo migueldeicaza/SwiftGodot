@@ -63,13 +63,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.make,
-                name: "make",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("make"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_make",
-            setterName: "set_make",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("make")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("make")),
             getterFunction: Car._mproxy_get_make,
             setterFunction: Car._mproxy_set_make
         )
@@ -77,13 +77,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.model,
-                name: "model",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("model"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_model",
-            setterName: "set_model",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("model")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("model")),
             getterFunction: Car._mproxy_get_model,
             setterFunction: Car._mproxy_set_model
         )

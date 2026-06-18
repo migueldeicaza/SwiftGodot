@@ -62,19 +62,19 @@ class Thing: SwiftGodot.Object {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Thing.value,
-                name: "value",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("value"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_value",
-            setterName: "set_value",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("value")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("value")),
             getterFunction: Thing._mproxy_get_value,
             setterFunction: Thing._mproxy_set_value
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "get_some",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("get_some")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Int64.self),
             arguments: [

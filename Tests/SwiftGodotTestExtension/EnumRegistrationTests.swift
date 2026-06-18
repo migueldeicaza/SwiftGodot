@@ -70,28 +70,29 @@ final class EnumRegistrationTests {
     }
 
     func testIntEnumRegistered() {
+        // Case names follow Godot's UPPER_SNAKE_CASE convention (automatic_godot_naming_convention trait).
         assertEnumRegistered("EnumRegistrationHost", "IntEnum", cases: [
-            "a": 0, "b": 1, "c": 2,
+            "A": 0, "B": 1, "C": 2,
         ])
     }
 
     func testInt64EnumRegistered() {
         // Includes a negative raw value to confirm signed values round-trip.
         assertEnumRegistered("EnumRegistrationHost", "Int64Enum", cases: [
-            "low": -5, "high": 100,
+            "LOW": -5, "HIGH": 100,
         ])
     }
 
     func testInt32EnumRegistered() {
         assertEnumRegistered("EnumRegistrationHost", "Int32Enum", cases: [
-            "x": 7, "y": 8,
+            "X": 7, "Y": 8,
         ])
     }
 
     func testUInt8EnumRegistered() {
         // Confirms an unsigned, narrower-than-Int64 raw value registers correctly.
         assertEnumRegistered("EnumRegistrationHost", "UInt8Enum", cases: [
-            "small": 3, "big": 200,
+            "SMALL": 3, "BIG": 200,
         ])
     }
 

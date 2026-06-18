@@ -99,11 +99,11 @@ class MultiplayerNode: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "syncPosition",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("syncPosition")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Vector3.self, name: "position")
+                SwiftGodotRuntime._argumentPropInfo(Vector3.self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("position"))
             ],
             function: MultiplayerNode._mproxy_syncPosition,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -117,7 +117,7 @@ class MultiplayerNode: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "defaultRpc",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("defaultRpc")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -135,7 +135,7 @@ class MultiplayerNode: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "fullConfig",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("fullConfig")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -156,32 +156,32 @@ class MultiplayerNode: Node {
     /// Called automatically before `_ready()`. Configures RPC for methods marked with `@Rpc`.
     override open func _before_ready() {
         super._before_ready()
+        let rpcConfigDictionary0 = GDictionary()
+        rpcConfigDictionary0[Variant("rpc_mode")] = Variant(MultiplayerAPI.RPCMode.anyPeer.rawValue)
+        rpcConfigDictionary0[Variant("call_local")] = Variant(false)
+        rpcConfigDictionary0[Variant("transfer_mode")] = Variant(MultiplayerPeer.TransferMode.reliable.rawValue)
+        rpcConfigDictionary0[Variant("channel")] = Variant(0)
         rpcConfig(
-            method: StringName("sync_position"),
-            config: Variant([
-                "rpc_mode": Variant(MultiplayerAPI.RPCMode.anyPeer.rawValue),
-                "call_local": Variant(false),
-                "transfer_mode": Variant(MultiplayerPeer.TransferMode.reliable.rawValue),
-                "channel": Variant(0)
-            ] as GDictionary)
+            method: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("syncPosition")),
+            config: Variant(rpcConfigDictionary0)
         )
+        let rpcConfigDictionary1 = GDictionary()
+        rpcConfigDictionary1[Variant("rpc_mode")] = Variant(MultiplayerAPI.RPCMode.authority.rawValue)
+        rpcConfigDictionary1[Variant("call_local")] = Variant(false)
+        rpcConfigDictionary1[Variant("transfer_mode")] = Variant(MultiplayerPeer.TransferMode.unreliable.rawValue)
+        rpcConfigDictionary1[Variant("channel")] = Variant(0)
         rpcConfig(
-            method: StringName("default_rpc"),
-            config: Variant([
-                "rpc_mode": Variant(MultiplayerAPI.RPCMode.authority.rawValue),
-                "call_local": Variant(false),
-                "transfer_mode": Variant(MultiplayerPeer.TransferMode.unreliable.rawValue),
-                "channel": Variant(0)
-            ] as GDictionary)
+            method: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("defaultRpc")),
+            config: Variant(rpcConfigDictionary1)
         )
+        let rpcConfigDictionary2 = GDictionary()
+        rpcConfigDictionary2[Variant("rpc_mode")] = Variant(MultiplayerAPI.RPCMode.authority.rawValue)
+        rpcConfigDictionary2[Variant("call_local")] = Variant(true)
+        rpcConfigDictionary2[Variant("transfer_mode")] = Variant(MultiplayerPeer.TransferMode.unreliableOrdered.rawValue)
+        rpcConfigDictionary2[Variant("channel")] = Variant(2)
         rpcConfig(
-            method: StringName("full_config"),
-            config: Variant([
-                "rpc_mode": Variant(MultiplayerAPI.RPCMode.authority.rawValue),
-                "call_local": Variant(true),
-                "transfer_mode": Variant(MultiplayerPeer.TransferMode.unreliableOrdered.rawValue),
-                "channel": Variant(2)
-            ] as GDictionary)
+            method: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("fullConfig")),
+            config: Variant(rpcConfigDictionary2)
         )
         }
 }

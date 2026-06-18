@@ -28,7 +28,7 @@ final class SignalTests {
     public func testUserDefinedSignal() {
         let node = TestSignalNode()
 
-        node.connect (signal: TestSignalNode.mySignal, to: node, method: "receiveSignal")
+        node.connect (signal: TestSignalNode.mySignal, to: node, method: "receive_signal")
         node.emit (signal: TestSignalNode.mySignal, 22, "Joey")
 
         assertEqual (node.receivedInt, 22, "Integers should have been the same")

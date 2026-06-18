@@ -15,7 +15,7 @@ class OtherThing: SwiftGodot.Node {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SimpleSignal.register(as: "signal0", in: className, names: [])
-        SimpleSignal.register(as: "signal1", in: className, names: [])
+        SimpleSignal.register(as: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("signal0")), in: className, names: [])
+        SimpleSignal.register(as: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("signal1")), in: className, names: [])
     }
 }

@@ -63,13 +63,13 @@ public class Issue353: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Issue353.prefix1_prefixed_bool,
-                name: "prefix1_prefixed_bool",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("prefix1_prefixed_bool"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get__prefixed_bool",
-            setterName: "set__prefixed_bool",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("_prefixed_bool")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("_prefixed_bool")),
             getterFunction: Issue353._mproxy_get_prefix1_prefixed_bool,
             setterFunction: Issue353._mproxy_set_prefix1_prefixed_bool
         )
@@ -77,13 +77,13 @@ public class Issue353: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Issue353.non_prefixed_bool,
-                name: "non_prefixed_bool",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("non_prefixed_bool"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_non_prefixed_bool",
-            setterName: "set_non_prefixed_bool",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("non_prefixed_bool")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("non_prefixed_bool")),
             getterFunction: Issue353._mproxy_get_non_prefixed_bool,
             setterFunction: Issue353._mproxy_set_non_prefixed_bool
         )

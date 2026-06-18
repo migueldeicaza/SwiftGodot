@@ -18,7 +18,7 @@
 /// `_process` run in editor, making the class work like `@tool` annotated script in GDScript
 ///
 @attached(member,
-          names: named (_initializeClass), named(classInitializer), named (implementedOverrides))
+          names: named (_initializeClass), named(classInitializer), named (implementedOverrides), named(_before_ready))
 public macro Godot(_ behavior: ClassBehavior = .gameplay) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotMacro")
 
 public enum ClassBehavior: Int {
@@ -32,9 +32,19 @@ public enum ClassBehavior: Int {
 ///
 /// The parameters and returns type of the function must be `_GodotBridgeable`.
 ///
-/// - Parameter autoSnakeCase: if `true` (default value is `false`), the function name will be automatically translated from `camelCase` to `snake_case` when exposed to Godot
+/// The name exposed to Godot follows the engine's naming convention (`snake_case`)
+/// when the `automatic_godot_naming_convention` package trait is enabled (the default). Disable the
+/// trait to expose Swift identifiers verbatim.
 @attached(peer, names: prefixed(_mproxy_), prefixed(_pproxy_))
-public macro Callable(autoSnakeCase: Bool = false) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
+public macro Callable() = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
+
+/// Exposes the function to the Godot runtime.
+///
+/// - Parameter autoSnakeCase: Ignored. Naming is now controlled by the
+///   `automatic_godot_naming_convention` package trait.
+@available(*, deprecated, message: "Naming is now controlled by the `automatic_godot_naming_convention` package trait; the `autoSnakeCase` argument is ignored. Use `@Callable` without arguments.")
+@attached(peer, names: prefixed(_mproxy_), prefixed(_pproxy_))
+public macro Callable(autoSnakeCase: Bool) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
 
 /// Exposes a property or variable to the Godot runtime
 ///

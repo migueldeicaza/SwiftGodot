@@ -1,7 +1,7 @@
 class DebugThing: SwiftGodot.Object {
     var livesChanged: SignalWithArguments<Swift.Int> {
         get {
-            SignalWithArguments<Swift.Int>(target: self, signalName: "lives_changed")
+            SignalWithArguments<Swift.Int>(target: self, signalName: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("livesChanged"))
         }
     }
     func do_thing(value: SwiftGodot.Variant?) -> SwiftGodot.Variant? {
@@ -54,14 +54,14 @@ class DebugThing: SwiftGodot.Object {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SignalWithArguments<Swift.Int>.register(as: "lives_changed", in: className, names: [])
+        SignalWithArguments<Swift.Int>.register(as: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("livesChanged")), in: className, names: [])
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "do_thing",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("do_thing")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(SwiftGodot.Variant?.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(SwiftGodot.Variant?.self, name: "value")
+                SwiftGodotRuntime._argumentPropInfo(SwiftGodot.Variant?.self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("value"))
             ],
             function: DebugThing._mproxy_do_thing,
             ptrFunction: { udata, classInstance, argsPtr, retValue in

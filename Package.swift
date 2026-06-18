@@ -4,6 +4,7 @@ import CompilerPluginSupport
 import PackageDescription
 
 let withMultiProcessTrait = "with_multi_process"
+let automaticGodotNamingConventionTrait = "automatic_godot_naming_convention"
 
 // Products define the executables and libraries a package produces, and make them visible to other packages.
 var products: [Product] = [
@@ -220,6 +221,7 @@ var targets: [Target] = [
         swiftSettings: [
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
             .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
+            .define("SWIFTGODOT_GODOT_NAMING", .when(traits: [automaticGodotNamingConventionTrait])),
             .unsafeFlags(
                 [
                     "-suppress-warnings",
@@ -242,6 +244,7 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
             .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
+            .define("SWIFTGODOT_GODOT_NAMING", .when(traits: [automaticGodotNamingConventionTrait])),
             .unsafeFlags(["-suppress-warnings"])
         ],
         plugins: ["CodeGeneratorPlugin"]
@@ -318,6 +321,11 @@ let package = Package(
             name: withMultiProcessTrait,
             description: "Use multi-process-safe code generation with reinitialization support."
         ),
+        .trait(
+            name: automaticGodotNamingConventionTrait,
+            description: "Automatically convert Swift identifiers registered with Godot to Godot's naming convention (snake_case members, UPPER_SNAKE_CASE enum constants)."
+        ),
+        .default(enabledTraits: [automaticGodotNamingConventionTrait]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),

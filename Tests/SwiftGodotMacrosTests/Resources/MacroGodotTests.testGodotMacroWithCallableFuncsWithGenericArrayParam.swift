@@ -51,11 +51,11 @@ class MultiplierNode: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "multiply",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("multiply")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Int.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Array<Int>.self, name: "integers")
+                SwiftGodotRuntime._argumentPropInfo(Array<Int>.self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("integers"))
             ],
             function: MultiplierNode._mproxy_multiply,
             ptrFunction: { udata, classInstance, argsPtr, retValue in

@@ -30,10 +30,18 @@ import GDExtension
 /// ```
 public class ClassInfo<T:Object> {
     var name: StringName
-    
+
     /// Initializes a ClassInfo structure to register operations with Godot
     public init (name: StringName) {
         self.name = name
+    }
+
+    /// Applies the Godot naming convention to a symbol name (gated by the
+    /// `automatic_godot_naming_convention` trait). Idempotent for names that already follow the
+    /// convention, so manual registrations that pass snake_case names are
+    /// unaffected.
+    private func godotConventionName(_ name: StringName) -> StringName {
+        StringName(_convertMemberNameToMatchGodotConvention(String(name)))
     }
     
     /// Registers a signal on this type with the specified name and with the specified arguments.  To trigger
@@ -47,6 +55,7 @@ public class ClassInfo<T:Object> {
     ///  - name: the name we want to use to register the signal
     ///  - arguments: an array of PropInfo structures that describe each argument that must be passed to the signal
     public func registerSignal (name signalName: StringName, arguments: [PropInfo] = []) {
+        var signalName = godotConventionName(signalName)
         withUnsafeTemporaryAllocation(of: GDExtensionPropertyInfo.self, capacity: arguments.count) { bufferPtr in
             guard let ptr = bufferPtr.baseAddress else {
                 GD.print("Swift.withUnsafeTemporaryAllocation failed at `ClassInfo.registerSignal`")
@@ -127,6 +136,7 @@ public class ClassInfo<T:Object> {
     ///  - arguments: an array describing the parameters that this method takes
     ///  - function: this is a curried function that will be registered.   It will be invoked on the instance of your object
     public func registerMethod (name: StringName, flags: MethodFlags, returnValue: PropInfo?, arguments: [PropInfo], function: @escaping (T) -> (borrowing Arguments) -> Variant?) {
+        var name = godotConventionName(name)
         let argPtr = UnsafeMutablePointer<GDExtensionPropertyInfo>.allocate(capacity: arguments.count)
         defer { argPtr.deallocate() }
         let argMeta = UnsafeMutablePointer<GDExtensionClassMethodArgumentMetadata>.allocate(capacity: arguments.count)
@@ -198,9 +208,13 @@ public class ClassInfo<T:Object> {
     ///  - getter: the name of the method you have already registered and will provide the getter functionality
     ///  - setter: the name of the method you have already registered and will provide the setter functionality
     public func registerProperty (_ info: PropInfo, getter: StringName, setter: StringName) {
+        var info = info
+        info.propertyName = godotConventionName(info.propertyName)
+        var getter = godotConventionName(getter)
+        var setter = godotConventionName(setter)
         var pinfo = GDExtensionPropertyInfo ()
         pinfo = info.makeNativeStruct()
-        
+
         gi.classdb_register_extension_class_property (extensionInterface.getLibrary(), &self.name.content, &pinfo, &setter.content, &getter.content)
     }
     

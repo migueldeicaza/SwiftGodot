@@ -41,13 +41,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.bar,
-                name: "bar",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("bar"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_bar",
-            setterName: "set_bar",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("bar")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("bar")),
             getterFunction: Garage._mproxy_get_bar,
             setterFunction: Garage._mproxy_set_bar
         )

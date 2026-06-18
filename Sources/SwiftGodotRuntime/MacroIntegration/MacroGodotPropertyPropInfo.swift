@@ -259,7 +259,9 @@ where T: RawRepresentable, T: CaseIterable, T.RawValue: BinaryInteger {
     type
         .allCases
         .map {
-            "\($0):\($0.rawValue)"
+            // The case name follows the Godot naming convention (gated by the
+            // `automatic_godot_naming_convention` trait) so it matches the registered constant.
+            "\(_convertEnumCaseNameToMatchGodotConvention(String(describing: $0))):\($0.rawValue)"
         }
         .joined(separator: ",")
 }

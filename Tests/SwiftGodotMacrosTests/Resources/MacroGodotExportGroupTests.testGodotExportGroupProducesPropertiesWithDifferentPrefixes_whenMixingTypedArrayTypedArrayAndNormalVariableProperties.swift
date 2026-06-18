@@ -195,13 +195,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.name,
-                name: "name",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("name"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_name",
-            setterName: "set_name",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("name")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("name")),
             getterFunction: Garage._mproxy_get_name,
             setterFunction: Garage._mproxy_set_name
         )
@@ -209,13 +209,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.rating,
-                name: "rating",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("rating"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_rating",
-            setterName: "set_rating",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("rating")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("rating")),
             getterFunction: Garage._mproxy_get_rating,
             setterFunction: Garage._mproxy_set_rating
         )
@@ -224,13 +224,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.reviews,
-                name: "reviews",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("reviews"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_reviews",
-            setterName: "set_reviews",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("reviews")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("reviews")),
             getterFunction: Garage._mproxy_get_reviews,
             setterFunction: Garage._mproxy_set_reviews
         )
@@ -238,13 +238,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.checkIns,
-                name: "check_ins",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("checkIns"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_check_ins",
-            setterName: "set_check_ins",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("checkIns")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("checkIns")),
             getterFunction: Garage._mproxy_get_checkIns,
             setterFunction: Garage._mproxy_set_checkIns
         )
@@ -252,13 +252,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.address,
-                name: "address",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("address"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_address",
-            setterName: "set_address",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("address")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("address")),
             getterFunction: Garage._mproxy_get_address,
             setterFunction: Garage._mproxy_set_address
         )
@@ -267,13 +267,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.daysOfOperation,
-                name: "days_of_operation",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("daysOfOperation"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_days_of_operation",
-            setterName: "set_days_of_operation",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("daysOfOperation")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("daysOfOperation")),
             getterFunction: Garage._mproxy_get_daysOfOperation,
             setterFunction: Garage._mproxy_set_daysOfOperation
         )
@@ -281,13 +281,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.hours,
-                name: "hours",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("hours"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_hours",
-            setterName: "set_hours",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("hours")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("hours")),
             getterFunction: Garage._mproxy_get_hours,
             setterFunction: Garage._mproxy_set_hours
         )
@@ -295,13 +295,13 @@ class Garage: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Garage.insuranceProvidersAccepted,
-                name: "insurance_providers_accepted",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("insuranceProvidersAccepted"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_insurance_providers_accepted",
-            setterName: "set_insurance_providers_accepted",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("insuranceProvidersAccepted")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("insuranceProvidersAccepted")),
             getterFunction: Garage._mproxy_get_insuranceProvidersAccepted,
             setterFunction: Garage._mproxy_set_insuranceProvidersAccepted
         )

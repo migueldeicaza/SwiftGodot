@@ -89,7 +89,7 @@ class GodotMacroProcessor {
     }
 
     func processFunction(_ funcDecl: FunctionDeclSyntax) throws {
-        guard let callableAttribute = funcDecl.attributes.attribute(named: "Callable") else {
+        guard funcDecl.attributes.attribute(named: "Callable") != nil else {
             return
         }
 
@@ -104,22 +104,17 @@ class GodotMacroProcessor {
             generatePtrCall = true
         }
         
+        // The Swift identifier is emitted verbatim; the runtime applies the Godot
+        // naming convention (gated by the `automatic_godot_naming_convention` trait).
         let funcName = funcDecl.name.text
-        
-        let godotFuncName: String
-        if try callableAttribute.callableAutoSnakeCaseArgument {
-            godotFuncName = funcName.camelCaseToSnakeCase()
-        } else {
-            godotFuncName = funcName
-        }
-        
+
         let p = classInitializerPrinter
 
         let arguments = funcDecl
             .parameters
             .map { parameter in
                 let typename = parameter.type.trimmedDescription
-                return "SwiftGodotRuntime._argumentPropInfo(\(typename).self, name: \"\(parameter.internalName)\")"
+                return "SwiftGodotRuntime._argumentPropInfo(\(typename).self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention(\"\(parameter.internalName)\"))"
             }
             .joined(separator: ",\n")
 
@@ -160,8 +155,8 @@ class GodotMacroProcessor {
         p("SwiftGodotRuntime._registerMethod", .parentheses) {
             p("""
             className: className,
-            name: "\(godotFuncName)", 
-            flags: \(flags), 
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("\(funcName)")),
+            flags: \(flags),
             returnValue: SwiftGodotRuntime._returnValuePropInfo(\(returnTypename).self),    
             """)
             p("arguments: ", .square, afterBlock: ",") {
@@ -184,7 +179,7 @@ class GodotMacroProcessor {
             }
         }
         
-        try checkNameCollision(godotFuncName, for: DeclSyntax(funcDecl))
+        try checkNameCollision(funcName, for: DeclSyntax(funcDecl))
     }
 
     /// Processes a function marked with @Rpc to extract RPC configuration
@@ -193,7 +188,6 @@ class GodotMacroProcessor {
         guard let rpcAttribute = funcDecl.attributes.attribute(named: "Rpc") else { return }
 
         let funcName = funcDecl.name.text
-        let godotFuncName = funcName.camelCaseToSnakeCase()
 
         // Parse @Rpc arguments with defaults
         var mode = ".authority"
@@ -223,7 +217,7 @@ class GodotMacroProcessor {
 
         rpcConfigurations.append(RpcConfiguration(
             methodName: funcName,
-            godotMethodName: godotFuncName,
+            godotMethodName: funcName,
             mode: mode,
             callLocal: callLocal,
             transferMode: transferMode,
@@ -243,16 +237,16 @@ class GodotMacroProcessor {
 
         """
 
-        for config in rpcConfigurations {
+        for (index, config) in rpcConfigurations.enumerated() {
             result += """
+                let rpcConfigDictionary\(index) = GDictionary()
+                rpcConfigDictionary\(index)[Variant("rpc_mode")] = Variant(MultiplayerAPI.RPCMode\(config.mode).rawValue)
+                rpcConfigDictionary\(index)[Variant("call_local")] = Variant(\(config.callLocal))
+                rpcConfigDictionary\(index)[Variant("transfer_mode")] = Variant(MultiplayerPeer.TransferMode\(config.transferMode).rawValue)
+                rpcConfigDictionary\(index)[Variant("channel")] = Variant(\(config.transferChannel))
                 rpcConfig(
-                    method: StringName("\(config.godotMethodName)"),
-                    config: Variant([
-                        "rpc_mode": Variant(MultiplayerAPI.RPCMode\(config.mode).rawValue),
-                        "call_local": Variant(\(config.callLocal)),
-                        "transfer_mode": Variant(MultiplayerPeer.TransferMode\(config.transferMode).rawValue),
-                        "channel": Variant(\(config.transferChannel))
-                    ] as GDictionary)
+                    method: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("\(config.godotMethodName)")),
+                    config: Variant(rpcConfigDictionary\(index))
                 )
 
             """
@@ -307,14 +301,17 @@ class GodotMacroProcessor {
             // For the case where there is no setter, set the proxySetterName to the empty string
             let proxySetterName = needsSetter ? "_mproxy_set_\(varNameWithPrefix)" : ""
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
-            let setterName = "set_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
-            let getterName = "get_\(varNameWithoutPrefix.camelCaseToSnakeCase())"
-            
+            // Raw (pre-conversion) getter/setter identifiers. The runtime applies the
+            // Godot naming convention; these raw forms are used only for compile-time
+            // collision checks, which are unique within a type regardless of the trait.
+            let setterName = "set_\(varNameWithoutPrefix)"
+            let getterName = "get_\(varNameWithoutPrefix)"
+
             // Do not throw for read-only properties anymore; allow registration to proceed.
             // Keep building the args list as before.
             var args: [String] = [
                 "at: \\\(className).\(varNameWithPrefix)",
-                "name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
+                "name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention(\"\(varNameWithPrefix)\")"
             ]
             
             if let hint = hintExpr?.trimmedDescription {
@@ -345,10 +342,13 @@ class GodotMacroProcessor {
                     p(argsStr)
                 }
                 let setterFunction = needsSetter ? "\(className).\(proxySetterName)" : "nil"
-                let setterNameArg = needsSetter ? "\"\(setterName)\"" : "StringName()"
+                // The Godot naming convention is applied to the property base name, then
+                // the standard get_/set_ prefix is added — keeping the prefix out of the
+                // converter so it never sees a mixed `get_camelCase` string.
+                let setterNameArg = needsSetter ? "StringName(\"set_\" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention(\"\(varNameWithoutPrefix)\"))" : "StringName()"
 
                 p("""
-                getterName: "\(getterName)\",
+                getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("\(varNameWithoutPrefix)")),
                 setterName: \(setterNameArg),
                 getterFunction: \(className).\(proxyGetterName),
                 setterFunction: \(setterFunction)
@@ -374,7 +374,6 @@ class GodotMacroProcessor {
             
             let nameWithPrefix = ips.identifier.text
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
-            let godotName = name.camelCaseToSnakeCase()
 
             guard let typeAnnotation = binding.typeAnnotation else {
                 throw GodotMacroError.signalMacroNoType(nameWithPrefix)
@@ -393,19 +392,19 @@ class GodotMacroProcessor {
                             if let s = seg.as(StringSegmentSyntax.self) { return s.content.text }
                             return nil
                         }.joined()
-                        parts.append("\"\(text)\"")
+                        parts.append("SwiftGodotRuntime._convertMemberNameToMatchGodotConvention(\"\(text)\")")
                     } else {
-                        parts.append(expr.trimmedDescription)
+                        parts.append("SwiftGodotRuntime._convertMemberNameToMatchGodotConvention(\(expr.trimmedDescription))")
                     }
                 }
                 namesExpr = "[" + parts.joined(separator: ", ") + "]"
             }
 
             classInitializerPrinter("""
-            \(typeName).register(as: \"\(godotName)\", in: className, names: \(namesExpr))
+            \(typeName).register(as: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention(\"\(name)\")), in: className, names: \(namesExpr))
             """)
-            
-            try checkNameCollision(godotName, for: DeclSyntax(varDecl))
+
+            try checkNameCollision(name, for: DeclSyntax(varDecl))
         }
     }
 

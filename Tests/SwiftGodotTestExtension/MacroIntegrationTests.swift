@@ -61,7 +61,8 @@ final class MacroIntegrationTests {
 
         let enumPropInfo = _propInfo(at: \NoMacroExample.enumExample, name: "")
         assertEqual(enumPropInfo.propertyType, .int)
-        assertEqual(enumPropInfo.hintStr, "zero:0,one:1,two:2")
+        // Enum case names follow Godot's UPPER_SNAKE_CASE convention (automatic_godot_naming_convention trait).
+        assertEqual(enumPropInfo.hintStr, "ZERO:0,ONE:1,TWO:2")
 
         let meshInstancePropInfo = _propInfo(at: \NoMacroExample.meshInstance, name: "")
         assertEqual(meshInstancePropInfo.hint, .nodeType)

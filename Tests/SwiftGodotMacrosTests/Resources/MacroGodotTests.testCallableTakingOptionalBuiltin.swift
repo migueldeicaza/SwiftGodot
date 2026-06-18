@@ -127,11 +127,11 @@ class OtherThing: SwiftGodot.Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "do_string",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("do_string")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(String?.self, name: "value")
+                SwiftGodotRuntime._argumentPropInfo(String?.self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("value"))
             ],
             function: OtherThing._mproxy_do_string,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -145,11 +145,11 @@ class OtherThing: SwiftGodot.Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "do_int",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("do_int")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Int?.self, name: "value")
+                SwiftGodotRuntime._argumentPropInfo(Int?.self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("value"))
             ],
             function: OtherThing._mproxy_do_int,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -163,7 +163,7 @@ class OtherThing: SwiftGodot.Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "get_thing",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("get_thing")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(MyThing?.self),
             arguments: [

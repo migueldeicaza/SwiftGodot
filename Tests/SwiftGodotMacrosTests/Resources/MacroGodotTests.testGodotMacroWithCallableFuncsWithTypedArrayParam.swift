@@ -51,11 +51,11 @@ class SomeNode: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "square",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("square")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(TypedArray<Int>.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(TypedArray<Int>.self, name: "integers")
+                SwiftGodotRuntime._argumentPropInfo(TypedArray<Int>.self, name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("integers"))
             ],
             function: SomeNode._mproxy_square,
             ptrFunction: { udata, classInstance, argsPtr, retValue in

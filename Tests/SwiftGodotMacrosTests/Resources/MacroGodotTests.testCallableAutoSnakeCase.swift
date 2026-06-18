@@ -100,7 +100,7 @@ class TestClass: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "no_need_to_snake_case_functions_now",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("noNeedToSnakeCaseFunctionsNow")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -118,7 +118,7 @@ class TestClass: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "or_is_there",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("or_is_there")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -136,7 +136,7 @@ class TestClass: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "thatIsHideous",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("thatIsHideous")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -154,7 +154,7 @@ class TestClass: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "defaultIsLegacyCompatible",
+            name: StringName(SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("defaultIsLegacyCompatible")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [

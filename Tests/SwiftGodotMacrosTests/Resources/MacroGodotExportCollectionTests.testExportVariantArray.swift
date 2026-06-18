@@ -40,13 +40,13 @@ class SomeNode: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \SomeNode.someArray,
-                name: "some_array",
+                name: SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("someArray"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_some_array",
-            setterName: "set_some_array",
+            getterName: StringName("get_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("someArray")),
+            setterName: StringName("set_" + SwiftGodotRuntime._convertMemberNameToMatchGodotConvention("someArray")),
             getterFunction: SomeNode._mproxy_get_someArray,
             setterFunction: SomeNode._mproxy_set_someArray
         )
