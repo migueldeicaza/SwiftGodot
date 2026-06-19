@@ -40,13 +40,13 @@ class Hi: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Hi.goodName,
-                name: "good_name",
+                name: SwiftGodotRuntime._translateMemberIdentifier("goodName"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_good_name",
-            setterName: "set_good_name",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("goodName")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("goodName")),
             getterFunction: Hi._mproxy_get_goodName,
             setterFunction: Hi._mproxy_set_goodName
         )

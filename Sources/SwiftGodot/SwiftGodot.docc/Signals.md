@@ -90,7 +90,9 @@ Godot signals using snake-case.
 
 So for example if you were to declare a signal called 'livesChanged' it
 would be exposed to Godot as 'lives_changed', and to your Swift code as
-'livesChanged'.
+'livesChanged'. This conversion is governed by the
+`consistent_name_translation` package trait (on by default); see
+<doc:NamingConvention> for details and how to disable it.
 
 ### Signals with parameters
 

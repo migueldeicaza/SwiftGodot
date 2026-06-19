@@ -2,7 +2,7 @@
 class TestClass: Node {     
     /* comment *//* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal // Comment {
         get {
-            SimpleSignal(target: self, signalName: "signal")
+            SimpleSignal(target: self, signalName: SwiftGodotRuntime._translateMemberIdentifier("signal"))
         }
     }
     /* comment */
@@ -59,14 +59,14 @@ class TestClass: Node {
             // ClassDB singleton is not available prior to `.scene` level
             assert(ClassDB.classExists(class: className))
         }
-        SimpleSignal.register(as: "signal", in: className, names: [])
+        SimpleSignal.register(as: StringName(SwiftGodotRuntime._translateMemberIdentifier("signal")), in: className, names: [])
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "foo",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("foo")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Int.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Int.self, name: "lala")
+                SwiftGodotRuntime._argumentPropInfo(Int.self, name: SwiftGodotRuntime._translateMemberIdentifier("lala"))
             ],
             function: TestClass._mproxy_foo,
             ptrFunction: { udata, classInstance, argsPtr, retValue in

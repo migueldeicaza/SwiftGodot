@@ -130,13 +130,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.vin,
-                name: "vin",
+                name: SwiftGodotRuntime._translateMemberIdentifier("vin"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_vin",
-            setterName: "set_vin",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("vin")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("vin")),
             getterFunction: Car._mproxy_get_vin,
             setterFunction: Car._mproxy_set_vin
         )
@@ -145,13 +145,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.ymms_year,
-                name: "ymms_year",
+                name: SwiftGodotRuntime._translateMemberIdentifier("ymms_year"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_year",
-            setterName: "set_year",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("year")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("year")),
             getterFunction: Car._mproxy_get_ymms_year,
             setterFunction: Car._mproxy_set_ymms_year
         )
@@ -159,13 +159,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.ymms_make,
-                name: "ymms_make",
+                name: SwiftGodotRuntime._translateMemberIdentifier("ymms_make"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_make",
-            setterName: "set_make",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("make")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("make")),
             getterFunction: Car._mproxy_get_ymms_make,
             setterFunction: Car._mproxy_set_ymms_make
         )
@@ -173,13 +173,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.ymms_model,
-                name: "ymms_model",
+                name: SwiftGodotRuntime._translateMemberIdentifier("ymms_model"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_model",
-            setterName: "set_model",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("model")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("model")),
             getterFunction: Car._mproxy_get_ymms_model,
             setterFunction: Car._mproxy_set_ymms_model
         )
@@ -187,13 +187,13 @@ class Car: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Car.ymms_series,
-                name: "ymms_series",
+                name: SwiftGodotRuntime._translateMemberIdentifier("ymms_series"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_series",
-            setterName: "set_series",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("series")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("series")),
             getterFunction: Car._mproxy_get_ymms_series,
             setterFunction: Car._mproxy_set_ymms_series
         )

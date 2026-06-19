@@ -68,13 +68,13 @@ class SomeNode: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \SomeNode.demo,
-                name: "demo",
+                name: SwiftGodotRuntime._translateMemberIdentifier("demo"),
                 userHint: .enum,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_demo",
-            setterName: "set_demo",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("demo")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("demo")),
             getterFunction: SomeNode._mproxy_get_demo,
             setterFunction: SomeNode._mproxy_set_demo
         )
@@ -82,13 +82,13 @@ class SomeNode: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \SomeNode.demo64,
-                name: "demo64",
+                name: SwiftGodotRuntime._translateMemberIdentifier("demo64"),
                 userHint: .enum,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_demo64",
-            setterName: "set_demo64",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("demo64")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("demo64")),
             getterFunction: SomeNode._mproxy_get_demo64,
             setterFunction: SomeNode._mproxy_set_demo64
         )

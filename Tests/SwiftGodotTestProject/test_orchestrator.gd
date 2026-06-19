@@ -11,8 +11,9 @@ func _ready() -> void:
 	var runner := TestRunnerNode.new()
 	add_child(runner)
 
-	# Run deferred so `runTests` can't emit `finished` before we await it below.
-	runner.call_deferred("runTests")
+	# Run deferred so `run_tests` can't emit `finished` before we await it below.
+	# Names follow Godot's convention: the Swift `runTests` is exposed as `run_tests`.
+	runner.call_deferred("run_tests")
 	var exit_code: int = await runner.finished
 
 	# The tests free their nodes with queue_free, so the actual deletions only
@@ -21,7 +22,7 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	# ...then deregister the classes (must happen AFTER their instances are freed).
-	runner.deregisterTypes()
+	runner.deregister_types()
 
 	# Now tear down the runner itself and let its free settle before quitting,
 	# so no extension instance survives and the extension can be unloaded cleanly.

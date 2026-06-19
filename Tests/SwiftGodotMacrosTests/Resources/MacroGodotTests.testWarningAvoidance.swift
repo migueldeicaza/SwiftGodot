@@ -58,13 +58,13 @@ final class MyClass: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \MyClass.data,
-                name: "data",
+                name: SwiftGodotRuntime._translateMemberIdentifier("data"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_data",
-            setterName: "set_data",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("data")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("data")),
             getterFunction: MyClass._mproxy_get_data,
             setterFunction: MyClass._mproxy_set_data
         )

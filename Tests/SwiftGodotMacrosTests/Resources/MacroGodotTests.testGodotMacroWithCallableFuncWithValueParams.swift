@@ -121,12 +121,12 @@ class MathHelper: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "multiply",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("multiply")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Int.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Int.self, name: "a"),
-                SwiftGodotRuntime._argumentPropInfo(Int.self, name: "b")
+                SwiftGodotRuntime._argumentPropInfo(Int.self, name: SwiftGodotRuntime._translateMemberIdentifier("a")),
+                SwiftGodotRuntime._argumentPropInfo(Int.self, name: SwiftGodotRuntime._translateMemberIdentifier("b"))
             ],
             function: MathHelper._mproxy_multiply,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -140,12 +140,12 @@ class MathHelper: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "divide",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("divide")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Float.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Float.self, name: "a"),
-                SwiftGodotRuntime._argumentPropInfo(Float.self, name: "b")
+                SwiftGodotRuntime._argumentPropInfo(Float.self, name: SwiftGodotRuntime._translateMemberIdentifier("a")),
+                SwiftGodotRuntime._argumentPropInfo(Float.self, name: SwiftGodotRuntime._translateMemberIdentifier("b"))
             ],
             function: MathHelper._mproxy_divide,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -159,12 +159,12 @@ class MathHelper: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "areBothTrue",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("areBothTrue")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Bool.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Bool.self, name: "a"),
-                SwiftGodotRuntime._argumentPropInfo(Bool.self, name: "b")
+                SwiftGodotRuntime._argumentPropInfo(Bool.self, name: SwiftGodotRuntime._translateMemberIdentifier("a")),
+                SwiftGodotRuntime._argumentPropInfo(Bool.self, name: SwiftGodotRuntime._translateMemberIdentifier("b"))
             ],
             function: MathHelper._mproxy_areBothTrue,
             ptrFunction: { udata, classInstance, argsPtr, retValue in

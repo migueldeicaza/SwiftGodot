@@ -16,6 +16,12 @@ In Swift, function definitions take parameter names, and sometimes this
 parameter name is omitted for the first argument. Instead of
 `myNode.add_child(box)`, you would use `myNode.addChild (node: box)`.
 
+The reverse also applies to the symbols *you* expose to Godot: the methods,
+properties, signals, arguments, and enum cases you register with `@Callable`,
+`@Export`, `@Signal`, and friends are automatically translated to Godot's
+naming convention. See <doc:NamingConvention> for the details and for how to
+turn this off.
+
 ## Global Scope
 
 Global functions and some constants had to be moved to classes to avoid

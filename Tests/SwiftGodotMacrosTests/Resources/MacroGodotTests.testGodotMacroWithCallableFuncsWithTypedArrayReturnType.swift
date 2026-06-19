@@ -40,7 +40,7 @@ class SomeNode: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "getIntegerCollection",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("getIntegerCollection")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(TypedArray<Int>.self),
             arguments: [

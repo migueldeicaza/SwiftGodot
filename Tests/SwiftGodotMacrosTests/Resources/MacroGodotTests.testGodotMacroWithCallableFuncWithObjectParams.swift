@@ -204,7 +204,7 @@ class Castro: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "deleteEpisode",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("deleteEpisode")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
@@ -222,11 +222,11 @@ class Castro: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "subscribe",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("subscribe")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: "podcast")
+                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: SwiftGodotRuntime._translateMemberIdentifier("podcast"))
             ],
             function: Castro._mproxy_subscribe,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -240,11 +240,11 @@ class Castro: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "perhapsSubscribe",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("perhapsSubscribe")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Podcast?.self, name: "podcast")
+                SwiftGodotRuntime._argumentPropInfo(Podcast?.self, name: SwiftGodotRuntime._translateMemberIdentifier("podcast"))
             ],
             function: Castro._mproxy_perhapsSubscribe,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -258,11 +258,11 @@ class Castro: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "removeSilences",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("removeSilences")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Variant.self, name: "from")
+                SwiftGodotRuntime._argumentPropInfo(Variant.self, name: SwiftGodotRuntime._translateMemberIdentifier("from"))
             ],
             function: Castro._mproxy_removeSilences,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -276,11 +276,11 @@ class Castro: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "getLatestEpisode",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("getLatestEpisode")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Episode.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: "podcast")
+                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: SwiftGodotRuntime._translateMemberIdentifier("podcast"))
             ],
             function: Castro._mproxy_getLatestEpisode,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
@@ -294,12 +294,12 @@ class Castro: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "queue",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("queue")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: "podcast"),
-                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: "preceedingPodcast")
+                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: SwiftGodotRuntime._translateMemberIdentifier("podcast")),
+                SwiftGodotRuntime._argumentPropInfo(Podcast.self, name: SwiftGodotRuntime._translateMemberIdentifier("preceedingPodcast"))
             ],
             function: Castro._mproxy_queue,
             ptrFunction: { udata, classInstance, argsPtr, retValue in
