@@ -88,13 +88,13 @@ class Greeter: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "greet",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("greet")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(String.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(String.self, name: "name"),
-                SwiftGodotRuntime._argumentPropInfo(String.self, name: "greeting"),
-                SwiftGodotRuntime._argumentPropInfo(Int.self, name: "times")
+                SwiftGodotRuntime._argumentPropInfo(String.self, name: SwiftGodotRuntime._translateMemberIdentifier("name")),
+                SwiftGodotRuntime._argumentPropInfo(String.self, name: SwiftGodotRuntime._translateMemberIdentifier("greeting")),
+                SwiftGodotRuntime._argumentPropInfo(Int.self, name: SwiftGodotRuntime._translateMemberIdentifier("times"))
             ],
             defaultArguments: [
                 SwiftGodotRuntime._wrapDefaultArgument(SwiftGodotRuntime._wrapCallableResult("Hello" as String)),
@@ -112,11 +112,11 @@ class Greeter: Node {
         )
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "attach",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("attach")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Swift.Void.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Node?.self, name: "node")
+                SwiftGodotRuntime._argumentPropInfo(Node?.self, name: SwiftGodotRuntime._translateMemberIdentifier("node"))
             ],
             defaultArguments: [
                 SwiftGodotRuntime._wrapDefaultArgument(SwiftGodotRuntime._wrapCallableResult(nil as Node?))

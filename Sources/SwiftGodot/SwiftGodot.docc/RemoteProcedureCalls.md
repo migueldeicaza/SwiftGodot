@@ -169,7 +169,9 @@ rpcId(peerId, StringName("take_damage"), Variant(10))
 ```
 
 Note that method names are converted to snake_case when exposed to Godot,
-so `syncPosition` becomes `sync_position` in RPC calls.
+so `syncPosition` becomes `sync_position` in RPC calls. This is governed by the
+`consistent_name_translation` package trait (on by default); see
+<doc:NamingConvention> to change it.
 
 ## Requirements
 

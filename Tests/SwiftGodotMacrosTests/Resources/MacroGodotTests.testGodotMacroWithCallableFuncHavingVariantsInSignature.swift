@@ -51,11 +51,11 @@ private class TestNode: Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "foo",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("foo")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(Variant?.self),
             arguments: [
-                SwiftGodotRuntime._argumentPropInfo(Variant?.self, name: "variant")
+                SwiftGodotRuntime._argumentPropInfo(Variant?.self, name: SwiftGodotRuntime._translateMemberIdentifier("variant"))
             ],
             function: TestNode._mproxy_foo,
             ptrFunction: { udata, classInstance, argsPtr, retValue in

@@ -40,13 +40,13 @@ class SomeNode: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \SomeNode.greetings,
-                name: "greetings",
+                name: SwiftGodotRuntime._translateMemberIdentifier("greetings"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_greetings",
-            setterName: "set_greetings",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("greetings")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("greetings")),
             getterFunction: SomeNode._mproxy_get_greetings,
             setterFunction: SomeNode._mproxy_set_greetings
         )

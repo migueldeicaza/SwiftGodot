@@ -63,13 +63,13 @@ class ArrayTest: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \ArrayTest.firstNames,
-                name: "first_names",
+                name: SwiftGodotRuntime._translateMemberIdentifier("firstNames"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_first_names",
-            setterName: "set_first_names",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("firstNames")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("firstNames")),
             getterFunction: ArrayTest._mproxy_get_firstNames,
             setterFunction: ArrayTest._mproxy_set_firstNames
         )
@@ -77,13 +77,13 @@ class ArrayTest: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \ArrayTest.lastNames,
-                name: "last_names",
+                name: SwiftGodotRuntime._translateMemberIdentifier("lastNames"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_last_names",
-            setterName: "set_last_names",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("lastNames")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("lastNames")),
             getterFunction: ArrayTest._mproxy_get_lastNames,
             setterFunction: ArrayTest._mproxy_set_lastNames
         )

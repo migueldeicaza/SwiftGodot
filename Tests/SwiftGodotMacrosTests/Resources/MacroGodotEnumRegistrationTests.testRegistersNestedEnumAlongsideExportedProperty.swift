@@ -45,13 +45,13 @@ class Player: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \Player.state,
-                name: "state",
+                name: SwiftGodotRuntime._translateMemberIdentifier("state"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_state",
-            setterName: "set_state",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("state")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("state")),
             getterFunction: Player._mproxy_get_state,
             setterFunction: Player._mproxy_set_state
         )

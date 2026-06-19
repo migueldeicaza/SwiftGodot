@@ -13,7 +13,7 @@ public struct SignalWithNoArguments {
     public let arguments: [PropInfo] = [] // needed for registration in macro, but always []
     
     public init(_ signalName: String) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
     }
 }
 
@@ -28,9 +28,9 @@ public struct SignalWith1Argument<Argument: _GodotBridgeable> {
         _ signalName: String,
         argument1Name: String? = nil
     ) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
         arguments = [
-            PropInfo(propertyType: Argument.self, propertyName: .init(argument1Name ?? "arg1"))
+            PropInfo(propertyType: Argument.self, propertyName: .init(_translateMemberIdentifier(argument1Name ?? "arg1")))
         ]
     }
 }
@@ -50,10 +50,10 @@ public struct SignalWith2Arguments<
         argument1Name: String? = nil,
         argument2Name: String? = nil
     ) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
         arguments = [
-            PropInfo(propertyType: Argument1.self, propertyName: .init(argument1Name ?? "arg1")),
-            PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
+            PropInfo(propertyType: Argument1.self, propertyName: .init(_translateMemberIdentifier(argument1Name ?? "arg1"))),
+            PropInfo(propertyType: Argument2.self, propertyName: .init(_translateMemberIdentifier(argument2Name ?? "arg2"))),
         ]
     }
 }
@@ -75,11 +75,11 @@ public struct SignalWith3Arguments<
         argument2Name: String? = nil,
         argument3Name: String? = nil
     ) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
         arguments = [
-            PropInfo(propertyType: Argument1.self, propertyName: .init(argument1Name ?? "arg1")),
-            PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
-            PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
+            PropInfo(propertyType: Argument1.self, propertyName: .init(_translateMemberIdentifier(argument1Name ?? "arg1"))),
+            PropInfo(propertyType: Argument2.self, propertyName: .init(_translateMemberIdentifier(argument2Name ?? "arg2"))),
+            PropInfo(propertyType: Argument3.self, propertyName: .init(_translateMemberIdentifier(argument3Name ?? "arg3"))),
         ]
     }
 }
@@ -103,12 +103,12 @@ public struct SignalWith4Arguments<
         argument3Name: String? = nil,
         argument4Name: String? = nil
     ) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
         arguments = [
-            PropInfo(propertyType: Argument1.self, propertyName: .init(argument1Name ?? "arg1")),
-            PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
-            PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
-            PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4"))
+            PropInfo(propertyType: Argument1.self, propertyName: .init(_translateMemberIdentifier(argument1Name ?? "arg1"))),
+            PropInfo(propertyType: Argument2.self, propertyName: .init(_translateMemberIdentifier(argument2Name ?? "arg2"))),
+            PropInfo(propertyType: Argument3.self, propertyName: .init(_translateMemberIdentifier(argument3Name ?? "arg3"))),
+            PropInfo(propertyType: Argument4.self, propertyName: .init(_translateMemberIdentifier(argument4Name ?? "arg4")))
         ]
     }
 }
@@ -134,13 +134,13 @@ public struct SignalWith5Arguments<
         argument4Name: String? = nil,
         argument5Name: String? = nil
     ) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
         arguments = [
-            PropInfo(propertyType: Argument1.self, propertyName: .init(argument1Name ?? "arg1")),
-            PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
-            PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
-            PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4")),
-            PropInfo(propertyType: Argument5.self, propertyName: .init(argument5Name ?? "arg5"))
+            PropInfo(propertyType: Argument1.self, propertyName: .init(_translateMemberIdentifier(argument1Name ?? "arg1"))),
+            PropInfo(propertyType: Argument2.self, propertyName: .init(_translateMemberIdentifier(argument2Name ?? "arg2"))),
+            PropInfo(propertyType: Argument3.self, propertyName: .init(_translateMemberIdentifier(argument3Name ?? "arg3"))),
+            PropInfo(propertyType: Argument4.self, propertyName: .init(_translateMemberIdentifier(argument4Name ?? "arg4"))),
+            PropInfo(propertyType: Argument5.self, propertyName: .init(_translateMemberIdentifier(argument5Name ?? "arg5")))
         ]
     }
 }
@@ -168,14 +168,14 @@ public struct SignalWith6Arguments<
         argument5Name: String? = nil,
         argument6Name: String? = nil
     ) {
-        name = StringName(signalName)
+        name = StringName(_translateMemberIdentifier(signalName))
         arguments = [
-            PropInfo(propertyType: Argument1.self, propertyName: .init(argument1Name ?? "arg1")),
-            PropInfo(propertyType: Argument2.self, propertyName: .init(argument2Name ?? "arg2")),
-            PropInfo(propertyType: Argument3.self, propertyName: .init(argument3Name ?? "arg3")),
-            PropInfo(propertyType: Argument4.self, propertyName: .init(argument4Name ?? "arg4")),
-            PropInfo(propertyType: Argument5.self, propertyName: .init(argument5Name ?? "arg5")),
-            PropInfo(propertyType: Argument6.self, propertyName: .init(argument6Name ?? "arg6"))
+            PropInfo(propertyType: Argument1.self, propertyName: .init(_translateMemberIdentifier(argument1Name ?? "arg1"))),
+            PropInfo(propertyType: Argument2.self, propertyName: .init(_translateMemberIdentifier(argument2Name ?? "arg2"))),
+            PropInfo(propertyType: Argument3.self, propertyName: .init(_translateMemberIdentifier(argument3Name ?? "arg3"))),
+            PropInfo(propertyType: Argument4.self, propertyName: .init(_translateMemberIdentifier(argument4Name ?? "arg4"))),
+            PropInfo(propertyType: Argument5.self, propertyName: .init(_translateMemberIdentifier(argument5Name ?? "arg5"))),
+            PropInfo(propertyType: Argument6.self, propertyName: .init(_translateMemberIdentifier(argument6Name ?? "arg6")))
         ]
     }
 }

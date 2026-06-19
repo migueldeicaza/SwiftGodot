@@ -59,7 +59,7 @@ class OtherThing: SwiftGodot.Node {
         }
         SwiftGodotRuntime._registerMethod(
             className: className,
-            name: "get_thing",
+            name: StringName(SwiftGodotRuntime._translateMemberIdentifier("get_thing")),
             flags: .default,
             returnValue: SwiftGodotRuntime._returnValuePropInfo(MyThing?.self),
             arguments: [

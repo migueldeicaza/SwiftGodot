@@ -62,13 +62,13 @@ class SomeNode: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \SomeNode.someNumbers,
-                name: "some_numbers",
+                name: SwiftGodotRuntime._translateMemberIdentifier("someNumbers"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_some_numbers",
-            setterName: "set_some_numbers",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("someNumbers")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("someNumbers")),
             getterFunction: SomeNode._mproxy_get_someNumbers,
             setterFunction: SomeNode._mproxy_set_someNumbers
         )
@@ -76,13 +76,13 @@ class SomeNode: Node {
             className: className,
             info: SwiftGodotRuntime._propInfo(
                 at: \SomeNode.someOtherNumbers,
-                name: "some_other_numbers",
+                name: SwiftGodotRuntime._translateMemberIdentifier("someOtherNumbers"),
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_some_other_numbers",
-            setterName: "set_some_other_numbers",
+            getterName: StringName("get_" + SwiftGodotRuntime._translateMemberIdentifier("someOtherNumbers")),
+            setterName: StringName("set_" + SwiftGodotRuntime._translateMemberIdentifier("someOtherNumbers")),
             getterFunction: SomeNode._mproxy_get_someOtherNumbers,
             setterFunction: SomeNode._mproxy_set_someOtherNumbers
         )

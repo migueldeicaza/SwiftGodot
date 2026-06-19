@@ -636,7 +636,8 @@ where T: RawRepresentable & CaseIterable, T.RawValue == Int64 {
     withUnsafePointer(to: &className.content) { classPtr in
         withUnsafePointer(to: &enumName.content) { enumPtr in
             for v in type.allCases {
-                let keyString = String(describing: v)          // e.g. "foo", "bar"
+                // The Godot naming convention is applied (gated by the `consistent_name_translation` trait).
+                let keyString = _translateConstantIdentifier(String(describing: v))
                 var key   = StringName(keyString)
                 let value = v.rawValue                         // Int64
 
@@ -670,7 +671,8 @@ where T: RawRepresentable & CaseIterable, T.RawValue == Int {
     withUnsafePointer(to: &className.content) { classPtr in
         withUnsafePointer(to: &enumName.content) { enumPtr in
             for v in type.allCases {
-                let keyString = String(describing: v)          // e.g. "foo", "bar"
+                // The Godot naming convention is applied (gated by the `consistent_name_translation` trait).
+                let keyString = _translateConstantIdentifier(String(describing: v))
                 var key   = StringName(keyString)
                 let value = v.rawValue                         // Int64
 
@@ -710,7 +712,8 @@ where T: RawRepresentable & CaseIterable, T.RawValue: BinaryInteger {
     withUnsafePointer(to: &className.content) { classPtr in
         withUnsafePointer(to: &enumName.content) { enumPtr in
             for v in type.allCases {
-                let keyString = String(describing: v)          // e.g. "foo", "bar"
+                // The Godot naming convention is applied (gated by the `consistent_name_translation` trait).
+                let keyString = _translateConstantIdentifier(String(describing: v))
                 var key   = StringName(keyString)
                 let value = Int64(v.rawValue)
 

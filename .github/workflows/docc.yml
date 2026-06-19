@@ -22,10 +22,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Xcode 26.5 bundles Swift 6.3.2, which satisfies the package's
+      # swift-tools-version 6.3 (Xcode 26.2/26.3 only ship Swift 6.2.x).
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "26.0"
+          xcode-version: "26.5"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
