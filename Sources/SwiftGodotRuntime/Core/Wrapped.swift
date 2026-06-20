@@ -263,6 +263,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                 }
             }
         }
+		propertyListStorageCache = nil
+		propertyListPropInfoCache = nil
         extensionInterface.objectDeinited(object: self)
     }
     #if SWIFTGODOT_WITH_MULTI_PROCESS
@@ -305,6 +307,38 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// Return true if you made changes to the PropInfo value you got
     open func _validateProperty(_ property: inout PropInfo) -> Bool {
         return false
+    }
+    
+    open func _set(property: StringName, value: consuming Variant?) -> Bool {
+        return false
+    }
+
+    public enum GetPropertyResult: ~Copyable {
+        case unhandledProperty
+        case variant(FastVariant?)
+        
+        static public func from(_ value: some VariantConvertible) -> Self {
+            .variant(value.toFastVariant())
+        }
+    }
+    
+    open func _get(property: StringName) -> GetPropertyResult {
+        return .unhandledProperty
+    }
+
+    /// Works like getPropertyList, except it can be overridden by subclasses to expose programmatic properties
+    /// to Godot. Base properties are not included in the passed-in array, so they cannot be modified or removed by this method.
+    /// Values should be PropertyInfo wrapped in Variants.
+    open func _getPropertyList() -> [PropInfo]? {
+        return nil
+    }
+    
+    open func _propertyCanRevert(_ property: StringName, canRevert: inout Bool) -> Bool {
+        return false
+    }
+
+    open func _propertyGetRevert(_ property: StringName) -> GetPropertyResult {
+        return .unhandledProperty
     }
 
     /// Checks if this object has a script with the given method.
@@ -542,6 +576,12 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     info.notification_func = notificationFunc
     info.recreate_instance_func = recreateFunc
     info.validate_property_func = validatePropertyFunc
+    info.get_property_list_func = propertyListFunc
+    info.free_property_list_func = propertyListFreeFunc
+    info.set_func = setFunc
+    info.get_func = getFunc
+    info.property_can_revert_func = canRevertFunc
+    info.property_get_revert_func = getRevertFunc
     info.is_exposed = 1
     
     userTypes[name.description] = T.self
@@ -1192,6 +1232,108 @@ func validatePropertyFunc(ptr: UnsafeMutableRawPointer?, _info: UnsafeMutablePoi
 
         return 1
     }
+    return 0
+}
+
+func setFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?, valuePtr: UnsafeRawPointer? ) -> UInt8
+{
+    guard let ptr,
+        let valuePtr else { return 0 }
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return 0 }
+    let pname = StringName(fromPtr: namePtr)
+    
+    if let variant = Variant(copying: valuePtr.bindMemory(to: VariantContent.self, capacity: 1).pointee),
+       instance._set(property: pname, value: variant) {
+        return 1
+    }
+    
+    return 0
+}
+
+func getFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?, retValuePtr: UnsafeMutableRawPointer?) -> UInt8 {
+    guard let ptr else { return 0 }
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return 0 }
+    let pname = StringName(fromPtr: namePtr)
+
+    let result = instance._get(property: pname)
+    switch consume result {
+        case .unhandledProperty:
+            return 0
+        case let .variant(fastVariant):
+            if let fastVariant {
+                retValuePtr?.storeBytes(of: fastVariant.content, as: VariantContent.self)
+                fastVariant.unsafelyForget() // Godot assumed ownership over `fastVariant.content`
+                return 1
+            }
+    }
+    return 0
+}
+
+var propertyListStorageCache: [PropertyInfoStorage]? = nil
+var propertyListPropInfoCache: [GDExtensionPropertyInfo]? = nil
+func propertyListFunc(ptr: UnsafeMutableRawPointer?, countPtr: UnsafeMutablePointer<UInt32>?) -> UnsafePointer<GDExtensionPropertyInfo>? {
+    guard let ptr else { return nil }
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return nil }
+
+    if let propertyList = instance._getPropertyList() {
+        let propertyListData = propertyList.map { $0.makeOwnedNativeStruct() }
+        propertyListStorageCache = propertyListData.map { $0.0 }
+        
+        var gdPropInfo: [GDExtensionPropertyInfo] = .init()
+        propertyListPropInfoCache = gdPropInfo
+        // Ensure the elements have contiguous storage
+        gdPropInfo.reserveCapacity(propertyListData.count)
+        gdPropInfo.append(contentsOf: propertyListData.map{  $0.1 })
+        
+        countPtr?.pointee = UInt32(propertyListData.count)
+        return UnsafePointer<GDExtensionPropertyInfo>(gdPropInfo)
+    }
+    
+    countPtr?.pointee = 0
+    return nil
+}
+
+func propertyListFreeFunc(ptr: UnsafeMutableRawPointer?, list: UnsafePointer<GDExtensionPropertyInfo>?)
+{
+    propertyListStorageCache = nil
+    propertyListPropInfoCache = nil
+}
+
+func canRevertFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?) -> UInt8 {
+    guard let ptr else { return 0 }
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return 0 }
+    let pname = StringName(fromPtr: namePtr)
+    
+    var canRevert: Bool = false
+    if instance._propertyCanRevert(pname, canRevert: &canRevert) {
+        return canRevert ? 1 : 0
+    }
+
+    return 0
+}
+
+func getRevertFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?, retValuePtr: UnsafeMutableRawPointer?) -> UInt8 {
+    guard let ptr else { return 0 }
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return 0 }
+    let pname = StringName(fromPtr: namePtr)
+
+    let result = instance._propertyGetRevert(pname)
+    switch consume result {
+        case .unhandledProperty:
+            return 0
+        case let .variant(fastVariant):
+            if let fastVariant {
+                retValuePtr?.storeBytes(of: fastVariant.content, as: VariantContent.self)
+                fastVariant.unsafelyForget() // Godot assumed ownership over `fastVariant.content`
+                return 1
+            }
+    }
+    
     return 0
 }
 

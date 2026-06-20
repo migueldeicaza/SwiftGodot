@@ -270,6 +270,21 @@ public struct PropInfo: CustomDebugStringConvertible {
             }
         }
     }
+	
+	func makeOwnedNativeStruct() -> (PropertyInfoStorage, GDExtensionPropertyInfo) {
+		// Create a Storage object to make sure pointers survive
+		let propInfoStorage = PropertyInfoStorage(propertyName: propertyName, className: className, hintStr: hintStr)
+		
+		let gdPropInfo = GDExtensionPropertyInfo(
+			type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
+			name: propInfoStorage.propertyNameContentPtr,
+			class_name: propInfoStorage.classNameContentPtr,
+			hint: UInt32 (hint.rawValue),
+			hint_string: propInfoStorage.hintStrContentPtr,
+			usage: UInt32 (usage.rawValue))
+
+		return (propInfoStorage, gdPropInfo)
+	}
 
     /// Provides a human-readable description of the property
     public var debugDescription: String {
@@ -279,6 +294,26 @@ public struct PropInfo: CustomDebugStringConvertible {
         }
         return "PropInfo (propertyType: \(propertyType), name: \"\(propertyName.description)\", className: \"\(className.description)\", hint: [\(hint)], \(hs)usage: \(usage))"
     }
+}
+
+class PropertyInfoStorage {
+	let propertyName: StringName
+	let className: StringName
+	let hintStr: GString
+	
+	var propertyNameContentPtr: UnsafeMutableRawPointer?
+	var classNameContentPtr: UnsafeMutableRawPointer?
+	var hintStrContentPtr: UnsafeMutableRawPointer?
+	
+	init(propertyName: StringName, className: StringName, hintStr: GString) {
+		self.propertyName = propertyName
+		self.className = className
+		self.hintStr = hintStr
+		
+		propertyNameContentPtr = withUnsafePointer(to: &propertyName.content) { UnsafeMutableRawPointer(mutating: $0) }
+		classNameContentPtr = withUnsafePointer(to: &className.content) { UnsafeMutableRawPointer(mutating: $0) }
+		hintStrContentPtr = withUnsafePointer(to: &hintStr.content) { UnsafeMutableRawPointer(mutating: $0) }
+	}
 }
 
 func bind_call (_ udata: UnsafeMutableRawPointer?,
