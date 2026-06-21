@@ -4,12 +4,12 @@ import Foundation
 @testable import SwiftGodot
 
 extension Date: VariantConvertible {
-    public func toFastVariant() -> FastVariant? {
-        timeIntervalSince1970.toFastVariant()
+    public func toVariant() -> Variant? {
+        timeIntervalSince1970.toVariant()
     }
     
-    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Date {
-        Date(timeIntervalSince1970: try TimeInterval.fromFastVariantOrThrow(variant))
+    public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Date {
+        Date(timeIntervalSince1970: try TimeInterval.fromVariantOrThrow(variant))
     }
 }
 
@@ -253,7 +253,7 @@ final class MarshalTests {
 
     public func testSomeVariantConvertible() {
         
-        func returnsVariant() -> FastVariant? {
+        func returnsVariant() -> Variant? {
             return nil
         }
         
@@ -264,7 +264,7 @@ final class MarshalTests {
         _ = int
 
         // Or I can store it for long-term use as `Variant`
-        let _ = Variant(takingOver: result)
+        let _ = result
     }
 
     public func testCallableMethodReturningVariant() {

@@ -4,7 +4,7 @@ class SomeNode: Node {
         nodes.forEach { print($0.name) }
     }
 
-    static func _mproxy_printNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_printNames(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `printNames`: failed to unwrap instance \(String(describing: pInstance))")

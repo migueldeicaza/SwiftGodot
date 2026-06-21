@@ -162,9 +162,9 @@ func generateVirtualProxy (_ p: Printer,
         }
         if let ret = method.returnValue {
             if ret.type == "Variant" {
+                // `ret` is `Variant?`; build an owned content and hand ownership to Godot.
                 p("""
-                retPtr!.storeBytes(of: ret.content, as: Variant.ContentType.self)
-                ret?.content = Variant.zero
+                retPtr!.storeBytes(of: ret.makeContent(), as: VariantContent.self)
                 """)
             } else if isStruct(ret.type) || isStruct(virtRet ?? "NON_EXISTENT") || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
@@ -720,38 +720,13 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             /// Extract ``\(cdef.name)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
             @inline(__always)
             @inlinable
-            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
                 guard let value = variant.asObject(Self.self) else {
                     throw .unexpectedContent(parsing: self, from: variant)
                 }
-                return value                
+                return value
             }
-            
-            /// Wrap ``\(cdef.name)`` into a ``FastVariant``
-            @inline(__always)
-            @inlinable
-            public func toFastVariant() -> FastVariant {
-                FastVariant(self)                
-            }
-            
-            /// Wrap ``\(cdef.name)`` into a ``FastVariant?``
-            @inline(__always)
-            @inlinable
-            @_disfavoredOverload
-            public func toFastVariant() -> FastVariant? {
-                FastVariant(self)                
-            }
-            
-            /// Extract ``\(cdef.name)`` from a ``FastVariant``. Throws `VariantConversionError` if it's not possible.
-            @inline(__always)
-            @inlinable
-            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
-                guard let value = variant.to(self) else {
-                    throw .unexpectedContent(parsing: self, from: variant)
-                }
-                return value                
-            }
-            
+
             /// Internal API
             public func _macroRcRef() {
                 // no-op, needed for virtual dispatch when RefCounted is stored as Object

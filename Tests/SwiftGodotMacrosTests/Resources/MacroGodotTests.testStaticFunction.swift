@@ -1,7 +1,7 @@
 class Hi: Node {
     static func get_some() -> Int64 { 10 }
 
-    static func _mproxy_get_some(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_some(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         return SwiftGodotRuntime._wrapCallableResult(self.get_some())
 
     }

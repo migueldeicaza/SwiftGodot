@@ -80,64 +80,43 @@ extension VariantArray: CustomDebugStringConvertible {
             return Variant(copying: ptr.pointee)
         }
         set {
-            guard let ret = gi.array_operator_index(&content, Int64 (index)) else {
-                return
-            }
-            let ptr = ret.assumingMemoryBound(to: VariantContent.self)
-            
-            guard ptr.pointee != newValue.content else {
-                return
-            }
-                        
-            // We are taking the variant from the array at the `index` and assuming control over it. Since we don't need it, we just destroy it
-            gi.variant_destroy(ptr)
-            
-            // We are giving array a copy of `newValue` Variant to manage
-            withUnsafePointer(to: newValue.content) { src in
-                gi.variant_new_copy(ptr, src)
-            }
+            setVariant(newValue, at: index)
         }
     }
-    
-    /// Borrows ``FastVariant`` at `index` to perform some action on it.
-    public func withFastVariant<R>(at index: Int, _ body: (borrowing FastVariant?) -> R) -> R {
+
+    /// Reads the ``Variant?`` at `index` and passes it to `body`.
+    public func withVariant<R>(at index: Int, _ body: (Variant?) -> R) -> R {
         guard let ret = gi.array_operator_index(&content, Int64 (index)) else {
             return body(nil)
         }
-        
+
         let ptr = ret.assumingMemoryBound(to: VariantContent.self)
-        let variant = FastVariant(unsafelyBorrowing: ptr.pointee)
-        
-        let result = body(variant)
-        
-        variant?.unsafelyForget()
-        
-        return result
+        // We make a copy of the variant managed by the array; the array keeps managing its own.
+        return body(Variant(copying: ptr.pointee))
     }
-    
-    /// Set ``FastVariant`` at `index`, consuming it
-    public func setFastVariant(_ variantOrNil: consuming FastVariant?, at index: Int) {
+
+    /// Set ``Variant?`` at `index`.
+    public func setVariant(_ variantOrNil: Variant?, at index: Int) {
         guard let ret = gi.array_operator_index(&content, Int64 (index)) else {
             return
         }
-        
+
         let ptr = ret.assumingMemoryBound(to: VariantContent.self)
-        
-        let newContent = variantOrNil?.content ?? .zero
-        
+
+        // Owned content describing the new value.
+        let newContent = variantOrNil.makeContent()
+
         guard ptr.pointee != newContent else {
-            /// Already has same value, our `variantOrNil` will be simply destroyed after `return`
+            // Already holds the same value; release the content we just built.
+            var c = newContent
+            if !c.isZero { gi.variant_destroy(&c) }
             return
         }
-                    
-        // We are taking the variant from the array at the `index` and assuming control over it. Since we don't need it, we just destroy it
+
+        // Destroy the element the array currently owns at `index`.
         gi.variant_destroy(ptr)
-        
-        // We are passing ownership over fast variant here, no copy is needed
-        withUnsafePointer(to: newContent) { src in
-            ptr.pointee = newContent
-        }
-        
-        variantOrNil?.unsafelyForget()
+
+        // Transfer ownership of the freshly built content to the array.
+        ptr.pointee = newContent
     }
 }

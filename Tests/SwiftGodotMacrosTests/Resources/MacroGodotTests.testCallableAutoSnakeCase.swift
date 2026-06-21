@@ -1,7 +1,7 @@
 class TestClass: Node {
     func noNeedToSnakeCaseFunctionsNow() {}
 
-    static func _mproxy_noNeedToSnakeCaseFunctionsNow(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_noNeedToSnakeCaseFunctionsNow(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `noNeedToSnakeCaseFunctionsNow`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -22,7 +22,7 @@ class TestClass: Node {
     }
     func or_is_there() {}
 
-    static func _mproxy_or_is_there(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_or_is_there(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `or_is_there`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -43,7 +43,7 @@ class TestClass: Node {
     }
     func thatIsHideous() {}
 
-    static func _mproxy_thatIsHideous(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_thatIsHideous(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `thatIsHideous`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -64,7 +64,7 @@ class TestClass: Node {
     }
     func defaultIsLegacyCompatible() {}
 
-    static func _mproxy_defaultIsLegacyCompatible(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_defaultIsLegacyCompatible(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `defaultIsLegacyCompatible`: failed to unwrap instance \(String(describing: pInstance))")
             return nil

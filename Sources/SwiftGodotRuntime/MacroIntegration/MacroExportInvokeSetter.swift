@@ -31,16 +31,16 @@ public func _invokeSetter<T>(
     _ set: (T?) -> Void
 ) where T: VariantConvertible {
     do {
-        let variantOrNil = try arguments.argument(ofType: FastVariant?.self, at: 0)
-        
+        let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
+
         guard let variant = variantOrNil else {
             // Expected nil, set to nil
             set(nil)
             return
         }
-                
+
         // If type mismatch happens, we don't set a variable at all and log error
-        let value = try T.fromFastVariantOrThrow(variant)
+        let value = try T.fromVariantOrThrow(variant)
         set(value)
     } catch let error as ArgumentAccessError {
         GD.printErr(error.description)
@@ -112,16 +112,16 @@ public func _invokeSetter<T>(
     _ set: (T?) -> Void
 ) where T: Object {
     do {
-        let variantOrNil = try arguments.argument(ofType: FastVariant?.self, at: 0)
-        
+        let variantOrNil = try arguments.argument(ofType: Variant?.self, at: 0)
+
         guard let variant = variantOrNil else {
             // Expected nil, set to nil
             old?._macroRcUnref()
             set(nil)
             return
         }
-                
-        let value = try T.fromFastVariantOrThrow(variant)
+
+        let value = try T.fromVariantOrThrow(variant)
         value._macroRcRef()
         set(value)
         old?._macroRcUnref()

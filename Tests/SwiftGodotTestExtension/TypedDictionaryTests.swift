@@ -462,11 +462,11 @@ final class TypedDictionaryTests {
         assertEqual(restored?["key"], 42)
     }
 
-    func testToFastVariantAndBack() {
+    func testToVariantAndBackIntKeys() {
         let original: TypedDictionary<Int, Int> = [1: 100, 2: 200]
 
-        let fastVariant: FastVariant = original.toFastVariant()
-        let restored = TypedDictionary<Int, Int>(fastVariant)
+        let variant: Variant = original.toVariant()
+        let restored = TypedDictionary<Int, Int>(variant)
 
         assertNotNil(restored)
         assertEqual(restored?[1], 100)

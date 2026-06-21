@@ -10,7 +10,7 @@ import GDExtension
 public typealias BridgedFunction = (
     UnsafeRawPointer?, // pInstance
     borrowing Arguments
-) -> FastVariant?
+) -> Variant?
 
 struct BridgedFunctionInfo {
     let function: BridgedFunction
@@ -96,8 +96,15 @@ private func withDefaultArgumentPointers<R>(
         withUnsafeTemporaryAllocation(of: VariantContent.self, capacity: count) { contentBuffer in
             withUnsafeTemporaryAllocation(of: GDExtensionVariantPtr?.self, capacity: count) { ptrBuffer in
                 for (index, variant) in defaultArguments.enumerated() {
-                    contentBuffer.initializeElement(at: index, to: variant?.content ?? Variant.zero)
+                    // Owned content; Godot copies it into the method bind during registration.
+                    contentBuffer.initializeElement(at: index, to: variant.makeContent())
                     ptrBuffer.initializeElement(at: index, to: UnsafeMutableRawPointer(contentBuffer.baseAddress! + index))
+                }
+
+                defer {
+                    for index in 0..<count where !contentBuffer[index].isZero {
+                        gi.variant_destroy(&contentBuffer[index])
+                    }
                 }
 
                 return body(ptrBuffer.baseAddress, UInt32(count))
@@ -261,11 +268,9 @@ private func call_func(
             }
             return
         }
+        // Ownership over the freshly constructed content is transferred to Godot
         let retContent = returnValue.assumingMemoryBound(to: VariantContent.self)
-        retContent.pointee = ret.content
-        
-        // Ownership over variant is transferred to Godot
-        ret.unsafelyForget()
+        retContent.pointee = ret.makeContent()
     }
 }
 

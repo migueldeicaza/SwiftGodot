@@ -72,20 +72,6 @@ extension GodotBuiltinConvertible {
 
     /// Internal API. Default implementation.
     /// Proxy the required low-level implementation via `GodotBuiltin`.
-    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
-        try fromGodotBuiltinOrThrow(
-            GodotBuiltin.fromFastVariantOrThrow(variant)
-        )
-    }
-
-    /// Internal API. Default implementation.
-    /// Proxy the required low-level implementation via `GodotBuiltin`.
-    public func toFastVariant() -> FastVariant? {
-        toGodotBuiltin().toFastVariant()
-    }
-    
-    /// Internal API. Default implementation.
-    /// Proxy the required low-level implementation via `GodotBuiltin`.
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         try fromGodotBuiltinOrThrow(
             GodotBuiltin.fromVariantOrThrow(variant)
