@@ -8,7 +8,7 @@
 @testable import SwiftGodot
 
 @Godot
-private class TestPropList: Node {
+class TestPropList: Node {
     @Export
     var standardVariable: Int = 1
 
