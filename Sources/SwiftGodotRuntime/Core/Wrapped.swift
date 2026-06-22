@@ -162,6 +162,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     #endif
     public static var deferred: Callable? = nil
 
+    // These exist to hold references to property list objects that are passed back to Godot,
+    // but we retain ownership until `propertyListFreeFunc` is invoked, or the class is deinit'ed.
+    public var propertyListStorageCache: [PropertyInfoStorage]? = nil
+    public var propertyListPropInfoCache: [GDExtensionPropertyInfo]? = nil
+    
     /// Conformance to Identifiable by using the native handle to the object
     public var id: Int { Int (bitPattern: handle) }
     
@@ -263,8 +268,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                 }
             }
         }
-		propertyListStorageCache = nil
-		propertyListPropInfoCache = nil
+        propertyListStorageCache = nil
+        propertyListPropInfoCache = nil
         extensionInterface.objectDeinited(object: self)
     }
     #if SWIFTGODOT_WITH_MULTI_PROCESS
@@ -345,10 +350,13 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// `true` for any properties that you are not applying special handling to. Standard properties and any `@Export` properties will be handled appropriately even
     /// if you return `false` here.
     ///  - Returns:
-    ///  `true` if the named property supports reverting - this will almost always result in a subsequent call to `_propertyGetRevert()`
+	/// `.unhandledProperty` if the method does not recognize the named property or chooses not to act on it. This doesn't imply the property doesn't exist,
+    ///                 and it's still possible the revert can happen if another implementation in the chain responds to allow it.
+    ///  `.handledProperty` if the method recognizes and handles the named property. The value will be:
+    ///   `true` if the named property supports reverting - this will almost always result in a subsequent call to `_propertyGetRevert()`
     ///  `false` if the property does not support reverting.
-    open func _propertyCanRevert(_ property: StringName, canRevert: inout Bool) -> Bool {
-        return false
+    open func _propertyCanRevert(property: StringName) -> PropertyCanRevertResult {
+		return .unhandledProperty
     }
 
     /// Override to return the revert value for any special properties in your class. Note that if you do not also override `_propertyCanRevert()`for the same property,
@@ -356,7 +364,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// - Returns:
     /// If you do not handle the named property, return .unhandledProperty. If it's a standard or `@Export` property, Godot will still revert it so you don't need to worry
     /// about any of those. Otherwise return the revert value as a Variant.
-    open func _propertyGetRevert(_ property: StringName) -> GetPropertyResult {
+    open func _propertyGetRevert(property: StringName) -> GetPropertyResult {
         return .unhandledProperty
     }
 
@@ -965,6 +973,15 @@ public enum GetPropertyResult: ~Copyable {
 	}
 }
 
+/// Return value for methods which may or may not return a value for a named property
+public enum PropertyCanRevertResult: ~Copyable {
+	/// The method doesn't recognize or chooses not to operate on the named property. This does not neccesarily mean the property doesn't exist.
+	case unhandledProperty
+	/// The method recognizes the property in question and is providing an answer as to whether revert is allowed.
+	case handledProperty(Bool)
+}
+
+
 /// Describes the lifetime contract of an object pointer surfaced to Swift.
 ///
 /// This enum is about refcount behavior, not construction context.
@@ -1311,11 +1328,6 @@ func getFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?, retValue
     return 0
 }
 
-// These exist to hold references to property list objects that are passed back to Godot,
-// but we retain ownership until `propertyListFreeFunc` is invoked, or the class is deinit'ed.
-var propertyListStorageCache: [PropertyInfoStorage]? = nil
-var propertyListPropInfoCache: [GDExtensionPropertyInfo]? = nil
-
 /// If our instance overrides `_getPropertyList(), we return those properties to Godot. Godot treats these
 /// as additive to any existing properties the object has, and thus doesn't allow us to directly override getPropertyList()
 func propertyListFunc(ptr: UnsafeMutableRawPointer?, countPtr: UnsafeMutablePointer<UInt32>?) -> UnsafePointer<GDExtensionPropertyInfo>? {
@@ -1330,13 +1342,13 @@ func propertyListFunc(ptr: UnsafeMutableRawPointer?, countPtr: UnsafeMutablePoin
         // Note: Godot is not expected to call this function multiple times without first calling the propertyListFreeFunc
         // in between, so we can just overwrite whatever's already stored. We could assert that it's currently `nil` for
         // extra safety?
-        propertyListStorageCache = propertyListData.map { $0.0 }
+        instance.propertyListStorageCache = propertyListData.map { $0.0 }
         
         var gdPropInfo: [GDExtensionPropertyInfo] = .init()
         // Ensure the elements have contiguous storage
         gdPropInfo.reserveCapacity(propertyListData.count)
         gdPropInfo.append(contentsOf: propertyListData.map{  $0.1 })
-        propertyListPropInfoCache = gdPropInfo
+        instance.propertyListPropInfoCache = gdPropInfo
 
         countPtr?.pointee = UInt32(propertyListData.count)
         return UnsafePointer<GDExtensionPropertyInfo>(gdPropInfo)
@@ -1349,8 +1361,11 @@ func propertyListFunc(ptr: UnsafeMutableRawPointer?, countPtr: UnsafeMutablePoin
 /// Frees previously cached propertly list information because Godot is finished with it.
 func propertyListFreeFunc(ptr: UnsafeMutableRawPointer?, list: UnsafePointer<GDExtensionPropertyInfo>?)
 {
-    propertyListStorageCache = nil
-    propertyListPropInfoCache = nil
+    guard let ptr else { return }
+    let original = Unmanaged<WrappedReference>.fromOpaque(ptr).takeUnretainedValue()
+    guard let instance = original.value else { return }
+    instance.propertyListStorageCache = nil
+    instance.propertyListPropInfoCache = nil
 }
 
 /// Allows subclasses to override the behavior of `propertyCanRevert()` via our own `_propertyCanRevert()` function.
@@ -1364,8 +1379,12 @@ func canRevertFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?) ->
     let pname = StringName(fromPtr: namePtr)
     
     var canRevert: Bool = false
-    if instance._propertyCanRevert(pname, canRevert: &canRevert) {
-        return canRevert ? 1 : 0
+    switch instance._propertyCanRevert(property: pname)
+    {
+        case .unhandledProperty:
+            return 0
+        case .handledProperty(let result):
+            return result ? 1 : 0
     }
 
     return 0
@@ -1381,7 +1400,7 @@ func getRevertFunc(ptr: UnsafeMutableRawPointer?, namePtr: UnsafeRawPointer?, re
     guard let instance = original.value else { return 0 }
     let pname = StringName(fromPtr: namePtr)
 
-    let result = instance._propertyGetRevert(pname)
+    let result = instance._propertyGetRevert(property: pname)
     switch consume result {
         case .unhandledProperty:
             return 0

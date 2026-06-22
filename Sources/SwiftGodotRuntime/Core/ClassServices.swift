@@ -296,24 +296,24 @@ public struct PropInfo: CustomDebugStringConvertible {
     }
 }
 
-class PropertyInfoStorage {
-	let propertyName: StringName
-	let className: StringName
-	let hintStr: GString
-	
-	var propertyNameContentPtr: UnsafeMutableRawPointer?
-	var classNameContentPtr: UnsafeMutableRawPointer?
-	var hintStrContentPtr: UnsafeMutableRawPointer?
-	
-	init(propertyName: StringName, className: StringName, hintStr: GString) {
-		self.propertyName = propertyName
-		self.className = className
-		self.hintStr = hintStr
-		
-		propertyNameContentPtr = withUnsafePointer(to: &propertyName.content) { UnsafeMutableRawPointer(mutating: $0) }
-		classNameContentPtr = withUnsafePointer(to: &className.content) { UnsafeMutableRawPointer(mutating: $0) }
-		hintStrContentPtr = withUnsafePointer(to: &hintStr.content) { UnsafeMutableRawPointer(mutating: $0) }
-	}
+public class PropertyInfoStorage {
+    let propertyName: StringName
+    let className: StringName
+    let hintStr: GString
+    
+    var propertyNameContentPtr: UnsafeMutableRawPointer?
+    var classNameContentPtr: UnsafeMutableRawPointer?
+    var hintStrContentPtr: UnsafeMutableRawPointer?
+    
+    init(propertyName: StringName, className: StringName, hintStr: GString) {
+        self.propertyName = propertyName
+        self.className = className
+        self.hintStr = hintStr
+        
+        propertyNameContentPtr = withUnsafeMutablePointer(to: &propertyName.content) { UnsafeMutableRawPointer($0) }
+        classNameContentPtr = withUnsafeMutablePointer(to: &className.content) { UnsafeMutableRawPointer($0) }
+        hintStrContentPtr = withUnsafeMutablePointer(to: &hintStr.content) { UnsafeMutableRawPointer($0) }
+    }
 }
 
 func bind_call (_ udata: UnsafeMutableRawPointer?,

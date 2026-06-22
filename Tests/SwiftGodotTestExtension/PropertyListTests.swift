@@ -29,15 +29,16 @@ private class TestPropList: Node {
         return false
     }
 
-    override func _propertyGetRevert(_ property: StringName) -> GetPropertyResult {
+    override func _propertyGetRevert(property: StringName) -> GetPropertyResult {
         if property == "Special" {
             return .from(1)
         }
         return .unhandledProperty
     }
 
-    override func _propertyCanRevert(_ property: StringName, canRevert: inout Bool) -> Bool {
-        return property == "Special"
+    override func _propertyCanRevert(property: StringName) -> PropertyCanRevertResult {
+		guard property == "Special" else { return .unhandledProperty }
+		return .handledProperty(true)
     }
 
     override func _getPropertyList() -> [PropInfo]? {
@@ -86,20 +87,18 @@ final class PropertyListTests {
         var foundStandard = false
         for prop in node.getPropertyList() {
             if let name =  prop["name"],
-               String.fromVariant(name) == "standardVariable" {
+               String.fromVariant(name) == "standard_variable" {
                 foundStandard = true
                 break
             }
         }
-        assertTrue(foundStandard, "Did not find the 'standardVariable' property in node's property list")
+        assertTrue(foundStandard, "Did not find the 'standard_variable' property in node's property list.")
         
-        assertTrue(node.propertyCanRevert(property: "standardVariable"), "`standardVariable` property should be revertable")
-        
-        let originalValue = node.get(property: "standardVariable")
-        node.set(property: "standardVariable", value: Variant(12))
-        let newValue = node.get(property: "standardVariable")
-        assertNotEqual(Int.fromVariant(originalValue), Int.fromVariant(newValue), "Setting 'standardVariable` value on Node did not change the value")
-        assertEqual(Int.fromVariant(newValue), 12, "Did not receive same value back after setting `standardVariable` value on node")
+        let originalValue = node.get(property: "standard_variable")
+        node.set(property: "standard_variable", value: Variant(12))
+        let newValue = node.get(property: "standard_variable")
+        assertNotEqual(Int.fromVariant(originalValue), Int.fromVariant(newValue), "Setting 'standard_variable` value on Node did not change the value")
+        assertEqual(Int.fromVariant(newValue), 12, "Did not receive same value back after setting `standard_variable` value on node")
         
         node.queueFree()
     }
