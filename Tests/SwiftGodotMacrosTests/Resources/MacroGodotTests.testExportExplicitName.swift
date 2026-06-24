@@ -39,16 +39,16 @@ class TestClass: Node {
         SwiftGodotRuntime._registerPropertyWithGetterSetter(
             className: className,
             info: SwiftGodotRuntime._propInfo(
-                at: \TestClass.testExplicitName,
+                at: \TestClass.originalName,
                 name: "testExplicitName",
                 userHint: nil,
                 userHintStr: nil,
                 userUsage: nil
             ),
-            getterName: "get_test_explicit_name",
-            setterName: "set_test_explicit_name",
-            getterFunction: TestClass._mproxy_get_testExplicitName,
-            setterFunction: TestClass._mproxy_set_testExplicitName
+            getterName: "get_original_name",
+            setterName: "set_original_name",
+            getterFunction: TestClass._mproxy_get_originalName,
+            setterFunction: TestClass._mproxy_set_originalName
         )
     }
 }

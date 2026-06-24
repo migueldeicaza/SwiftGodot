@@ -307,18 +307,15 @@ class GodotMacroProcessor {
             // Determine if this property needs a setter (same logic as Export macro)
             let needsSetter = Self.bindingNeedsSetter(variableDecl: varDecl, binding: binding)
             
-            // Decide what we're going to name this property
-            var godotNameIsExplicit = false
-            let varNameWithPrefix: String
-            let varNameWithoutPrefix: String
+            let varNameWithPrefix = ips.identifier.text
+            let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
+            var nameGodotSees: String
             if let explicitName = try exportAttribute.explicitNameArgument {
-                varNameWithPrefix = "\(prefix ?? "")\(explicitName)"
-                varNameWithoutPrefix = explicitName
-                godotNameIsExplicit = true
+                nameGodotSees = explicitName
             } else {
-                varNameWithPrefix = ips.identifier.text
-                varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
+                nameGodotSees = varNameWithPrefix.camelCaseToSnakeCase()
             }
+            
             
             // For the case where there is no setter, set the proxySetterName to the empty string
             let proxySetterName = needsSetter ? "_mproxy_set_\(varNameWithPrefix)" : ""
@@ -330,7 +327,7 @@ class GodotMacroProcessor {
             // Keep building the args list as before.
             var args: [String] = [
                 "at: \\\(className).\(varNameWithPrefix)",
-                "name: \"\(godotNameIsExplicit ? varNameWithPrefix : varNameWithPrefix.camelCaseToSnakeCase())\""
+                "name: \"\(nameGodotSees)\""
             ]
             
             if let hint = hintExpr?.trimmedDescription {
