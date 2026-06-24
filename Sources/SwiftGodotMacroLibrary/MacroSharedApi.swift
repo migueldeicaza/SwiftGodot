@@ -30,7 +30,9 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case nameCollision(String)
     case legacySignalMacroUnexpectedArgumentsSyntax
     case legacySignalMacroTooManyArguments
-    case illegalCallableAutoSnakeCaseArgument(String)    
+    case illegalCallableAutoSnakeCaseArgument(String)
+    case invalidExplicitNameArgument(String)
+    case invalidArgumentCombination((String, String))
     
     var severity: DiagnosticSeverity {
         return .error
@@ -38,6 +40,10 @@ enum GodotMacroError: Error, DiagnosticMessage {
 
     var message: String {
         switch self {
+        case .invalidArgumentCombination(let args):
+            "The arguments \(args.0) and \(args.1) are mutually exclusive."
+        case .invalidExplicitNameArgument(let expr):
+            "`explicitName` \(expr) is illegal."
         case .illegalCallableAutoSnakeCaseArgument(let expr):
             "`autoSnakeCase: \(expr)` is illegal. `true` or `false` expected."
         case .exportMacroOnReadonlyVariable:

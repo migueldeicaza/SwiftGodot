@@ -135,6 +135,23 @@ extension AttributeSyntax {
     }
 }
 
+extension AttributeSyntax {
+    var explicitNameArgument: String? {
+        get throws {
+            guard let exprSyntax = arguments?.argument(labeled: "explicitName") else {
+                return nil
+            }
+            
+            guard let stringExprSyntax: StringLiteralExprSyntax = exprSyntax.expression.as(StringLiteralExprSyntax.self),
+                  let expr = stringExprSyntax.segments.first?.as(StringSegmentSyntax.self)?.trimmedDescription,
+                  !expr.isEmpty else {
+                throw GodotMacroError.invalidExplicitNameArgument(exprSyntax.expression.trimmedDescription)
+            }
+            return expr
+        }
+    }
+}
+
 extension AttributeListSyntax {
     func attribute(named name: String) -> AttributeSyntax? {
         for element in self {

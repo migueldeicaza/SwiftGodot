@@ -32,9 +32,11 @@ public enum ClassBehavior: Int {
 ///
 /// The parameters and returns type of the function must be `_GodotBridgeable`.
 ///
-/// - Parameter autoSnakeCase: if `true` (default value is `false`), the function name will be automatically translated from `camelCase` to `snake_case` when exposed to Godot
+/// - Parameter autoSnakeCase: if `true` (default value is `false`), the function name will be automatically translated from `camelCase` to `snake_case` when exposed to Godot. `explicitName` must be set to nil to use autoSnakeCase.
+/// - Parameter explicitName: If not nil, this will be used as the function name exported to Godot exactly as written.  If using `explicitName`, `autoSnakeCase` must be false.
+///
 @attached(peer, names: prefixed(_mproxy_), prefixed(_pproxy_))
-public macro Callable(autoSnakeCase: Bool = false) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
+public macro Callable(autoSnakeCase: Bool = false, explicitName: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotCallable")
 
 /// Exposes a property or variable to the Godot runtime
 ///
@@ -49,9 +51,10 @@ public macro Callable(autoSnakeCase: Bool = false) = #externalMacro(module: "Swi
 /// - Parameter hintStr: some of the hint types can use an additional configuration option as a string
 /// and this is used for this.  For example the `.file` option can have a mask to select files, for example `"*.png"`
 /// - Parameter usage: The desired usage flags, applies to exported variables
+/// - Parameter explicitName:If not nil, this will be used as the property name exported to Godot exactly as written.
 ///
 @attached(peer, names: prefixed(_mproxy_get_), prefixed(_mproxy_set_), arbitrary)
-public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil, usage: PropertyUsageFlags = .default) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
+public macro Export(_ hint: PropertyHint = .none, _ hintStr: String? = nil, usage: PropertyUsageFlags = .default, explicitName: String? = nil) = #externalMacro(module: "SwiftGodotMacroLibrary", type: "GodotExport")
 
 // MARK: - Freestanding Macros
 
