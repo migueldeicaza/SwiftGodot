@@ -109,9 +109,6 @@ class GodotMacroProcessor {
         let godotFuncName: String
         let autoSnakeCase = try callableAttribute.callableAutoSnakeCaseArgument
         let explicitName = try callableAttribute.explicitNameArgument
-        guard autoSnakeCase == false || explicitName == nil else {
-            throw GodotMacroError.invalidArgumentCombination(("autoSnakeCase", "explicitName"))
-        }
         if autoSnakeCase {
             godotFuncName = funcName.camelCaseToSnakeCase()
         } else if let explicitName {
