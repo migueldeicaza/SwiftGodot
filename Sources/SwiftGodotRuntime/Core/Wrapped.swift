@@ -978,7 +978,7 @@ public enum PropertyCanRevertResult: ~Copyable {
 	/// The method doesn't recognize or chooses not to operate on the named property. This does not neccesarily mean the property doesn't exist.
 	case unhandledProperty
 	/// The method recognizes the property in question and is providing an answer as to whether revert is allowed.
-	case handledProperty(Bool)
+	case handledProperty(canRevert: Bool)
 }
 
 

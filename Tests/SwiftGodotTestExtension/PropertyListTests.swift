@@ -38,7 +38,7 @@ class TestPropList: Node {
 
     override func _propertyCanRevert(property: StringName) -> PropertyCanRevertResult {
 		guard property == "Special" else { return .unhandledProperty }
-		return .handledProperty(true)
+		return .handledProperty(canRevert: true)
     }
 
     override func _getPropertyList() -> [PropInfo]? {
