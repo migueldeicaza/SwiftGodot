@@ -270,6 +270,21 @@ public struct PropInfo: CustomDebugStringConvertible {
             }
         }
     }
+	
+	func makeOwnedNativeStruct() -> (PropertyInfoStorage, GDExtensionPropertyInfo) {
+		// Create a Storage object to make sure pointers survive
+		let propInfoStorage = PropertyInfoStorage(propertyName: propertyName, className: className, hintStr: hintStr)
+		
+		let gdPropInfo = GDExtensionPropertyInfo(
+			type: GDExtensionVariantType(GDExtensionVariantType.RawValue (propertyType.rawValue)),
+			name: propInfoStorage.propertyNameContentPtr,
+			class_name: propInfoStorage.classNameContentPtr,
+			hint: UInt32 (hint.rawValue),
+			hint_string: propInfoStorage.hintStrContentPtr,
+			usage: UInt32 (usage.rawValue))
+
+		return (propInfoStorage, gdPropInfo)
+	}
 
     /// Provides a human-readable description of the property
     public var debugDescription: String {
@@ -278,6 +293,26 @@ public struct PropInfo: CustomDebugStringConvertible {
             hs = "hintStr: \"" + hs + "\", "
         }
         return "PropInfo (propertyType: \(propertyType), name: \"\(propertyName.description)\", className: \"\(className.description)\", hint: [\(hint)], \(hs)usage: \(usage))"
+    }
+}
+
+public class PropertyInfoStorage {
+    let propertyName: StringName
+    let className: StringName
+    let hintStr: GString
+    
+    var propertyNameContentPtr: UnsafeMutableRawPointer?
+    var classNameContentPtr: UnsafeMutableRawPointer?
+    var hintStrContentPtr: UnsafeMutableRawPointer?
+    
+    init(propertyName: StringName, className: StringName, hintStr: GString) {
+        self.propertyName = propertyName
+        self.className = className
+        self.hintStr = hintStr
+        
+        propertyNameContentPtr = withUnsafeMutablePointer(to: &propertyName.content) { UnsafeMutableRawPointer($0) }
+        classNameContentPtr = withUnsafeMutablePointer(to: &className.content) { UnsafeMutableRawPointer($0) }
+        hintStrContentPtr = withUnsafeMutablePointer(to: &hintStr.content) { UnsafeMutableRawPointer($0) }
     }
 }
 

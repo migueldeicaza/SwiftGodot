@@ -702,4 +702,15 @@ final class MemoryLeakTests {
             dictionary.clear()
         }
     }
+    
+    public func test_propertylist_leaks() {
+        let node  = TestPropList()
+        checkLeaks {
+             _ = node.getPropertyList()
+            _ = node.propertyCanRevert(property: "Special")
+            _ = node.propertyGetRevert(property: "Special")
+            _ = node.get(property: "Special")
+             node.set(property: "Special", value: Variant(100))
+        }
+	}
 }
