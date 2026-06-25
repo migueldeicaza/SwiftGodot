@@ -88,7 +88,7 @@ public struct FastVariant: ~Copyable {
     /// ### WARNING
     /// Delicate API
     ///
-    /// Zero the `content` to avoid `variant_destroy` during `deinit`.
+    /// Prevent deinitializer from running and destroying the `content`.
     ///
     /// Assumes that this ``FastVariant`` was either
     /// 1. constructed by ``init(unsafelyBorrowing:)``
@@ -96,7 +96,7 @@ public struct FastVariant: ~Copyable {
     @inline(__always)
     @inlinable
     consuming func unsafelyForget() {
-        content = .zero
+        discard self
     }
     
     /// Initialize by requested an owned copy of the `VariantContent`. Fails if `VariantContent` represents Godot nil, or copied variant is a `nil` Variant for some reason.
