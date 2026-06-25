@@ -107,9 +107,14 @@ class GodotMacroProcessor {
         let funcName = funcDecl.name.text
         
         let godotFuncName: String
-        if try callableAttribute.callableAutoSnakeCaseArgument {
+        let autoSnakeCase = try callableAttribute.callableAutoSnakeCaseArgument
+        let explicitName = try callableAttribute.explicitNameArgument
+        if autoSnakeCase {
             godotFuncName = funcName.camelCaseToSnakeCase()
-        } else {
+        } else if let explicitName {
+            godotFuncName = explicitName
+        }
+        else {
             godotFuncName = funcName
         }
         
@@ -304,6 +309,14 @@ class GodotMacroProcessor {
             
             let varNameWithPrefix = ips.identifier.text
             let varNameWithoutPrefix = String(varNameWithPrefix.trimmingPrefix(prefix ?? ""))
+            var nameGodotSees: String
+            if let explicitName = try exportAttribute.explicitNameArgument {
+                nameGodotSees = explicitName
+            } else {
+                nameGodotSees = varNameWithPrefix.camelCaseToSnakeCase()
+            }
+            
+            
             // For the case where there is no setter, set the proxySetterName to the empty string
             let proxySetterName = needsSetter ? "_mproxy_set_\(varNameWithPrefix)" : ""
             let proxyGetterName = "_mproxy_get_\(varNameWithPrefix)"
@@ -314,7 +327,7 @@ class GodotMacroProcessor {
             // Keep building the args list as before.
             var args: [String] = [
                 "at: \\\(className).\(varNameWithPrefix)",
-                "name: \"\(varNameWithPrefix.camelCaseToSnakeCase())\""
+                "name: \"\(nameGodotSees)\""
             ]
             
             if let hint = hintExpr?.trimmedDescription {

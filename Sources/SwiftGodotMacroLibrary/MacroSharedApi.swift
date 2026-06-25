@@ -30,7 +30,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
     case nameCollision(String)
     case legacySignalMacroUnexpectedArgumentsSyntax
     case legacySignalMacroTooManyArguments
-    case illegalCallableAutoSnakeCaseArgument(String)    
+    case illegalCallableAutoSnakeCaseArgument(String)
+    case invalidExplicitNameArgument(String)
     
     var severity: DiagnosticSeverity {
         return .error
@@ -38,6 +39,8 @@ enum GodotMacroError: Error, DiagnosticMessage {
 
     var message: String {
         switch self {
+        case .invalidExplicitNameArgument(let expr):
+            "`explicitName` \(expr) is illegal."
         case .illegalCallableAutoSnakeCaseArgument(let expr):
             "`autoSnakeCase: \(expr)` is illegal. `true` or `false` expected."
         case .exportMacroOnReadonlyVariable:

@@ -482,6 +482,28 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
+    func testCallableExplicitName() {
+        assertExpansion(
+            of: """
+            @Godot class TestClass: Node {
+                @Callable(explicitName: "testExplicitName")
+                func originalName() {}
+            }
+            """
+        )
+    }
+
+    func testExportExplicitName() {
+        assertExpansion(
+            of: """
+            @Godot class TestClass: Node {
+                @Export(explicitName: "testExplicitName")
+                var originalName: Node? = nil
+            }
+            """
+        )
+    }
+    
     func testNoTypeAnnotationTrivia() {
         assertExpansion(
             of: """
