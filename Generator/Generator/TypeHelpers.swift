@@ -92,6 +92,11 @@ func godotPropertyToSwift (_ name: String) -> String {
     if v == "description" {
         return "additionalDescription"
     }
+    // `id` collides with `Identifiable.id` declared on `Wrapped`, which is
+    // `public` (non-overridable) and typed `Int`; rename to avoid the clash.
+    if v == "id" {
+        return "instanceId"
+    }
     return v
 }
 
