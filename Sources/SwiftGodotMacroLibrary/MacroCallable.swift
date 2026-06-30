@@ -121,13 +121,13 @@ public struct GodotCallable: PeerMacro {
 
         if parameters.isEmpty {
             return """
-            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
             \(body)                
             }\(ptrCallDecl)
             """
         } else {
             return """
-            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+            static func _mproxy_\(funcName)(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
                 do { // safe arguments access scope
             \(body)        
                 } catch {

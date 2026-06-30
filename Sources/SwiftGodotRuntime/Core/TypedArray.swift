@@ -209,36 +209,32 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     public subscript(position: Int) -> Element {
         get {
             // Workaround for Swift compiler bug.
-            // Keeping this inside `withFastVariant` breaks `throws(VariantConversionError)` inference
-            func subscriptGetUnwrap(_ variant: borrowing FastVariant?, at position: Int) -> Element {
+            // Keeping this inside `withVariant` breaks `throws(VariantConversionError)` inference
+            func subscriptGetUnwrap(_ variant: Variant?, at position: Int) -> Element {
                 do {
-                    return try Element.fromFastVariantOrThrow(variant)
+                    return try Element.fromVariantOrThrow(variant)
                 } catch {
                     fatalError("Fatal error during subscript/get `TypedArray<\(Element.self)>[\(position)]` wrapping \(array.debugDescription) at index \(position). Type invariant violated. \(error.description)")
                 }
             }
-            
-            return array.withFastVariant(at: position) { variant in
+
+            return array.withVariant(at: position) { variant in
                 subscriptGetUnwrap(variant, at: position)
             }
         }
-        
+
         set {
-            array.setFastVariant(newValue.toFastVariant(), at: position)
+            array.setVariant(newValue.toVariant(), at: position)
         }
     }
-    
+
     /// Initialze ``TypedArray`` from ``Variant``. Fails if `variant` doesn't contain ``VariantArray``
     @inline(__always)
     public init?(_ variant: Variant) {
-        guard Self._variantType == variant.gtype else { return nil }
-        var content = VariantArray.zero
-        withUnsafeMutablePointer(to: &content) { pPayload in
-            variant.constructType(into: pPayload, constructor: GodotInterfaceForArray.selfFromVariant)
-        }
-        self.init(takingOver: content)
+        guard case .array(let array) = variant else { return nil }
+        self.init(from: array)
     }
-    
+
     /// Initialze ``TypedArray`` from ``Variant``. Fails if `variant` doesn't contain ``VariantArray`` or is `nil`
     @inline(__always)
     @inlinable
@@ -246,58 +242,27 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         guard let variant else { return nil }
         self.init(variant)
     }
-    
-    /// Initialze ``TypedArray`` from ``FastVariant``. Fails if `variant` doesn't contain ``VariantArray``
-    @inline(__always)
-    public init?(_ variant: borrowing FastVariant) {
-        guard Self._variantType == variant.gtype else { return nil }
-        var content = VariantArray.zero
-        withUnsafeMutablePointer(to: &content) { pPayload in
-            variant.constructType(into: pPayload, constructor: GodotInterfaceForArray.selfFromVariant)
-        }
-        self.init(takingOver: content)
-    }
-        
+
     @inline(__always)
     @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         array.toVariant()
     }
-    
+
     @inline(__always)
     @inlinable
     public func toVariant() -> Variant {
         array.toVariant()
     }
-    
-    @inline(__always)
-    @inlinable
-    @_disfavoredOverload
-    public func toFastVariant() -> FastVariant? {
-        array.toFastVariant()
-    }
-    
-    @inline(__always)
-    @inlinable
-    public func toFastVariant() -> FastVariant {
-        array.toFastVariant()
-    }
-    
+
     @inline(__always)
     @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         let array = try VariantArray.fromVariantOrThrow(variant)
         return Self(from: array)
     }
-    
-    @inline(__always)
-    @inlinable
-    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
-        let array = try VariantArray.fromFastVariantOrThrow(variant)
-        return Self(from: array)
-    }
-    
+
     public static var _variantType: Variant.GType {
         .array
     }
@@ -652,19 +617,6 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
         }
     }
     
-    /// `Element` is `Object?` here.
-    /// It doesn't throw if it's `nil`, it returns `nil`.
-    /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
-    @inline(__always)
-    @usableFromInline
-    func unwrapOrCrash(_ variant: borrowing FastVariant?, invoking function: StaticString = #function, at index: Int64? = nil) -> Element {
-        do {
-            return try Element.fromFastVariantOrThrow(variant)
-        } catch {
-            typeInvariantViolation(invoking: function, error: error, at: index)
-        }
-    }
-        
     @inline(__always)
     @inlinable
     func typeInvariantViolation(invoking function: StaticString, error: VariantConversionError, at index: Int64?) -> Never {
@@ -781,26 +733,11 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
 
 public extension Variant {
     /// Initialize ``Variant`` by wrapping ``TypedArray``
-    convenience init<T>(_ from: TypedArray<T>) where T: _GodotContainerTypingParameter {
-        self.init(from.array)
-    }
-    
-    /// Initialize ``Variant`` by wrapping ``TypedArray?``, fails if it's `nil`
-    convenience init?<T>(_ from: TypedArray<T>?) where T: _GodotContainerTypingParameter {
-        guard let from else {
-            return nil
-        }
-        self.init(from)
-    }
-}
-
-public extension FastVariant {
-    /// Initialize ``FastVariant`` by wrapping ``TypedArray``
     init<T>(_ from: TypedArray<T>) where T: _GodotContainerTypingParameter {
-        self.init(from.array)
+        self = .array(from.array)
     }
-    
-    /// Initialize ``FastVariant`` by wrapping ``TypedArray?``, fails if it's `nil`
+
+    /// Initialize ``Variant`` by wrapping ``TypedArray?``, fails if it's `nil`
     init?<T>(_ from: TypedArray<T>?) where T: _GodotContainerTypingParameter {
         guard let from else {
             return nil

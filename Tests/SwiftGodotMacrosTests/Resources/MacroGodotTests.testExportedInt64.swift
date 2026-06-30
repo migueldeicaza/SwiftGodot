@@ -1,7 +1,7 @@
 class Thing: SwiftGodot.Object {
     var value: Int64 = 0
 
-    static func _mproxy_set_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for value: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -13,7 +13,7 @@ class Thing: SwiftGodot.Object {
         return nil
     }
 
-    static func _mproxy_get_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_value(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for value: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -24,7 +24,7 @@ class Thing: SwiftGodot.Object {
 
     func get_some() -> Int64 { 10 }
 
-    static func _mproxy_get_some(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_some(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_some`: failed to unwrap instance \(String(describing: pInstance))")
             return nil

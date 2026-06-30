@@ -23,7 +23,7 @@ class OtherThing: SwiftGodot.Node {
         return nil
     }
 
-    static func _mproxy_get_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_thing`: failed to unwrap instance \(String(describing: pInstance))")
             return nil

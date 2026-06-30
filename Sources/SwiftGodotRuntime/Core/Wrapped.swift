@@ -1664,7 +1664,9 @@ struct CallableWrapper {
         
     func invoke(arguments: borrowing Arguments, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
         if let methodRet = function(arguments) {
-            gi.variant_new_copy(retPtr, &methodRet.content)            
+            var content = methodRet.makeContent()
+            gi.variant_new_copy(retPtr, &content)
+            gi.variant_destroy(&content)
         }
         err?.pointee.error = GDEXTENSION_CALL_OK
     }

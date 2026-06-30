@@ -3,7 +3,7 @@ class Greeter: Node {
         Array(repeating: "\(greeting), \(name)", count: times).joined(separator: " ")
     }
 
-    static func _mproxy_greet(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_greet(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `greet`: failed to unwrap instance \(String(describing: pInstance))")
@@ -40,7 +40,7 @@ class Greeter: Node {
     }
     func attach(to node: Node? = nil) {}
 
-    static func _mproxy_attach(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_attach(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `attach`: failed to unwrap instance \(String(describing: pInstance))")

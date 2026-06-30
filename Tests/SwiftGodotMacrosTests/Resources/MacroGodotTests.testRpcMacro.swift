@@ -3,7 +3,7 @@ class MultiplayerNode: Node {
     func syncPosition(_ position: Vector3) {
     }
 
-    static func _mproxy_syncPosition(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_syncPosition(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `syncPosition`: failed to unwrap instance \(String(describing: pInstance))")
@@ -39,7 +39,7 @@ class MultiplayerNode: Node {
     func defaultRpc() {
     }
 
-    static func _mproxy_defaultRpc(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_defaultRpc(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `defaultRpc`: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -63,7 +63,7 @@ class MultiplayerNode: Node {
     func fullConfig() {
     }
 
-    static func _mproxy_fullConfig(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_fullConfig(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `fullConfig`: failed to unwrap instance \(String(describing: pInstance))")
             return nil

@@ -21,7 +21,7 @@ class MyThing: SwiftGodot.RefCounted {
 class OtherThing: SwiftGodot.Node {
     func do_string(value: String?) { }
 
-    static func _mproxy_do_string(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_do_string(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `do_string`: failed to unwrap instance \(String(describing: pInstance))")
@@ -55,7 +55,7 @@ class OtherThing: SwiftGodot.Node {
 
     func do_int(value: Int?) {  }
 
-    static func _mproxy_do_int(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_do_int(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `do_int`: failed to unwrap instance \(String(describing: pInstance))")
@@ -91,7 +91,7 @@ class OtherThing: SwiftGodot.Node {
         return nil
     }
 
-    static func _mproxy_get_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_thing(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling `get_thing`: failed to unwrap instance \(String(describing: pInstance))")
             return nil

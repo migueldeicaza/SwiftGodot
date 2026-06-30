@@ -198,6 +198,18 @@ struct MethodArgument {
     }
 }
 
+/// Builds a valid Swift identifier by stripping any backtick escaping from `base`,
+/// appending `suffix`, and re-escaping if the result collides with a keyword.
+func temporaryArgumentName(from base: String, suffix: String) -> String {
+    let trimmed: String
+    if base.hasPrefix("`") && base.hasSuffix("`") {
+        trimmed = String(base.dropFirst().dropLast())
+    } else {
+        trimmed = base
+    }
+    return escapeSwift(trimmed + suffix)
+}
+
 func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> Void) {
     func withNestedUnsafe(index: Int) {
         if index >= arguments.count {
@@ -208,7 +220,12 @@ func preparingArguments(_ p: Printer, arguments: [MethodArgument], body: () -> V
             
             switch argument.translation {
             case .variant:
-                accessor = "\(argument.name).content"
+                // `Variant` is a value enum now; materialize an owned content for the
+                // duration of the call and release it afterwards.
+                let contentName = temporaryArgumentName(from: argument.name, suffix: "Content")
+                p("var \(contentName) = \(argument.name).makeContent()")
+                p("defer { gi.variant_destroy(&\(contentName)) }")
+                accessor = contentName
             case .contentRef:
                 accessor = "\(argument.name).content"
             case .string:
@@ -259,17 +276,16 @@ func preparingMandatoryVariadicArguments(_ p: Printer, arguments: [JGodotArgumen
         } else {
             let argument = arguments[index]
             let argumentName = godotArgumentToSwift(argument.name)
-            let pointerName: String
-                        
+            let contentName = temporaryName(from: argumentName, suffix: "Content")
+
             if argument.type != "Variant" {
-                let convertedName = temporaryName(from: argumentName, suffix: "Variant")
-                p("let \(convertedName) = \(argumentName).toVariant()")
-                pointerName = convertedName
+                p("var \(contentName) = \(argumentName).toVariant().makeContent()")
             } else {
-                pointerName = argumentName
+                p("var \(contentName) = \(argumentName).makeContent()")
             }
-            
-            p("withUnsafePointer(to: \(pointerName).content)", arg: " pArg\(index) in") {
+            p("defer { gi.variant_destroy(&\(contentName)) }")
+
+            p("withUnsafePointer(to: \(contentName))", arg: " pArg\(index) in") {
                 withNestedUnsafe(index: index + 1)
             }
         }
@@ -315,13 +331,18 @@ func generateMethodCall(_ p: Printer, isVariadic: Bool, arguments: [JGodotArgume
                         }
 
                         for i in 0..<arguments.count {
-                            // Copy `content`s of the variadic `Variant`s into `contentBuffer`
-                            contentsBuffer.initializeElement(at: i, to: arguments[i].content)
+                            // Build owned `content`s for the variadic `Variant`s.
+                            contentsBuffer.initializeElement(at: i, to: arguments[i].makeContent())
                             // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
                             pArgsBuffer.initializeElement(at: i, to: contentsPtr + i)
                         }
 
                         \(call("pArgs", .expression("arguments.count")))
+
+                        // Release the owned argument contents now that the call has read them.
+                        for i in 0..<arguments.count where !contentsBuffer[i].isZero {
+                            gi.variant_destroy(&contentsBuffer[i])
+                        }
                     }
                 }
             }
@@ -357,14 +378,19 @@ func generateMethodCall(_ p: Printer, isVariadic: Bool, arguments: [JGodotArgume
                             }
                             
                             for i in 0..<arguments.count {
-                                // Copy `content`s of the variadic `Variant`s into `contentBuffer`
-                                contentsBuffer.initializeElement(at: i, to: arguments[i].content)
-                                // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`                                        
+                                // Build owned `content`s for the variadic `Variant`s.
+                                contentsBuffer.initializeElement(at: i, to: arguments[i].makeContent())
+                                // Initialize `pArgs` elements following mandatory arguments to point at respective contents of `contentsBuffer`
                                 pArgsBuffer.initializeElement(at: \(arguments.count) + i, to: contentsPtr + i)
                             }
-                        
+
                             \(call("pArgs", .expression("\(arguments.count) + arguments.count")))
-                        }                           
+
+                            // Release the owned argument contents now that the call has read them.
+                            for i in 0..<arguments.count where !contentsBuffer[i].isZero {
+                                gi.variant_destroy(&contentsBuffer[i])
+                            }
+                        }
                         """)
                     }
                 })

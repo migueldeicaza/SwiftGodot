@@ -8,6 +8,20 @@
 import Foundation
 import ExtensionApi
 
+/// Maps a Godot builtin type name to the corresponding case label of the `Variant` enum.
+func variantEnumCaseName(_ godotName: String) -> String {
+    switch godotName {
+    case "Array": return "array"
+    case "Dictionary": return "dictionary"
+    case "AABB": return "aabb"
+    case "RID": return "rid"
+    case "Transform2D": return "transform2d"
+    case "Transform3D": return "transform3d"
+    default:
+        return godotName.prefix(1).lowercased() + godotName.dropFirst()
+    }
+}
+
 /// Given an initializer of the form "Vector (0, 1, 0)" returns a proper Swift "Vector (x: 0, y: 1, z: 0)" value
 ///
 func getInitializer (_ bc: JGodotBuiltinClass, _ val: String) -> String? {
@@ -545,8 +559,10 @@ func generateBuiltinMethods (_ p: Printer,
         }
         p("""
         public subscript(key: Variant?) -> Variant? {
-            get {                            
-                withUnsafePointer(to: key.content) { pKeyContent in
+            get {
+                var keyContent = key.makeContent()
+                defer { gi.variant_destroy(&keyContent) }
+                return withUnsafePointer(to: keyContent) { pKeyContent in
                     if \(typeGodotInterfaceName).keyed_checker(&content, pKeyContent) != 0 {
                         var result = Variant.zero
                         \(typeGodotInterfaceName).keyed_getter(&content, pKeyContent, &result)
@@ -555,21 +571,22 @@ func generateBuiltinMethods (_ p: Printer,
                     } else {
                         return nil
                     }
-                }                
+                }
             }
-        
+
             set {
-                withUnsafePointer(to: key.content) { pKeyContent in
-                    if let newValue {
-                        \(typeGodotInterfaceName).keyed_setter(&content, pKeyContent, &newValue.content)
-                    } else {                    
-                        var nilContent = Variant.zero
-                        \(typeGodotInterfaceName).keyed_setter(&content, pKeyContent, &nilContent)
+                var keyContent = key.makeContent()
+                defer { gi.variant_destroy(&keyContent) }
+                var valueContent = newValue.makeContent()
+                defer { gi.variant_destroy(&valueContent) }
+                withUnsafePointer(to: keyContent) { pKeyContent in
+                    withUnsafePointer(to: valueContent) { pValueContent in
+                        \(typeGodotInterfaceName).keyed_setter(&content, pKeyContent, pValueContent)
                     }
-                }                                
+                }
             }
         }
-        """)        
+        """)
     }
     if let returnType = bc.indexingReturnType, !bc.isKeyed, !bc.name.hasSuffix ("Array"), bc.name != "String" {
         let godotType = getGodotType (JGodotReturnValue (type: returnType, meta: nil))
@@ -908,6 +925,8 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                 """)
             }
                                                 
+            let variantCase = variantEnumCaseName(bc.name)
+
             p("""
             /// Wrap ``\(typeName)`` into a ``Variant``
             @inline(__always)
@@ -915,7 +934,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             public func toVariant() -> Variant {
                 Variant(self)
             }
-            
+
             /// Wrap ``\(typeName)`` into a ``Variant?``
             @inline(__always)
             @inlinable
@@ -923,56 +942,31 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
             public func toVariant() -> Variant? {
                 Variant(self)
             }
-            
-            /// Wrap ``\(typeName)`` into a ``FastVariant``
-            @inline(__always)
-            @inlinable
-            public func toFastVariant() -> FastVariant {
-                FastVariant(self)
-            }
-            
-            /// Wrap ``\(typeName)`` into a ``FastVariant?``
-            @inline(__always)
-            @inlinable
-            @_disfavoredOverload
-            public func toFastVariant() -> FastVariant? {
-                FastVariant(self)
-            }
-            
+
             /// Extract ``\(typeName)`` from a ``Variant``. Throws `VariantConversionError` if it's not possible.
             @inline(__always)
             @inlinable
-            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {                
+            public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
                 guard let value = Self(variant) else {
                     throw .unexpectedContent(parsing: self, from: variant)
                 }
-                return value                
+                return value
             }
-            
-            @inline(__always)
-            @inlinable
-            public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {                
-                guard let value = Self(variant) else {
-                    throw .unexpectedContent(parsing: self, from: variant)
-                }
-                return value                
-            }
-            
+
             """)
-            
+
+            // `GString` (Godot "String") is bridged through the `.string(String)` case.
+            let fromVariantValueInit = bc.name == "String" ? "self.init(value)" : "self.init(from: value)"
+
             if isContentRepresented == true {
                 p("""
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
-                @inline(__always)                                
+                @inline(__always)
                 public convenience init?(_ variant: Variant) {
-                    guard Self._variantType == variant.gtype else { return nil }
-                    var content = \(typeName).zero
-                    withUnsafeMutablePointer(to: &content) { pPayload in
-                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
-                    }
-                    self.init(takingOver: content)
+                    guard case .\(variantCase)(let value) = variant else { return nil }
+                    \(fromVariantValueInit)
                 }
-                
+
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
                 @inline(__always)
                 @inlinable
@@ -980,43 +974,16 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     guard let variant else { return nil }
                     self.init(variant)
                 }
-                
-                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
-                @inline(__always)                                
-                public convenience init?(_ variant: borrowing FastVariant) {
-                    guard Self._variantType == variant.gtype else { return nil }
-                    var content = \(typeName).zero
-                    withUnsafeMutablePointer(to: &content) { pPayload in
-                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
-                    }
-                    self.init(takingOver: content)
-                }
-                
-                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
-                @inline(__always)
-                @inlinable
-                public convenience init?(_ variant: borrowing FastVariant?) {                    
-                    switch variant {
-                    case .some(let variant):
-                        self.init(variant)
-                    case .none:
-                        return nil
-                    }
-                }
                 """)
             } else {
                 p("""
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)``
-                @inline(__always)                
+                @inline(__always)
                 public init?(_ variant: Variant) {
-                    guard Self._variantType == variant.gtype else { return nil }
-                    self.init()
-                    
-                    withUnsafeMutablePointer(to: &self) { pPayload in
-                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
-                    }
+                    guard case .\(variantCase)(let value) = variant else { return nil }
+                    self = value
                 }
-                
+
                 /// Initialze ``\(typeName)`` from ``Variant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
                 @inline(__always)
                 @inlinable
@@ -1024,30 +991,7 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     guard let variant else { return nil }
                     self.init(variant)
                 }
-                
-                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)``
-                @inline(__always)                
-                public init?(_ variant: borrowing FastVariant) {
-                    guard Self._variantType == variant.gtype else { return nil }
-                    self.init()
-                    
-                    withUnsafeMutablePointer(to: &self) { pPayload in
-                        variant.constructType(into: pPayload, constructor: \(typeGodotInterfaceName).selfFromVariant)                        
-                    }
-                }
-                
-                /// Initialze ``\(typeName)`` from ``FastVariant``. Fails if `variant` doesn't contain ``\(typeName)`` or is `nil`
-                @inline(__always)
-                @inlinable
-                public init?(_ variant: borrowing FastVariant?) {
-                    switch variant {
-                    case .some(let variant):
-                        self.init(variant)
-                    case .none:
-                        return nil
-                    }
-                }
-                
+
                 """)
             }
                         
@@ -1135,37 +1079,11 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
         }
         
         if let isContentRepresented {
+            _ = isContentRepresented
+            let variantCase = variantEnumCaseName(bc.name)
             p("public extension Variant") {
                 p("""
                 /// Initialize ``Variant`` by wrapping ``\(typeName)?``, fails if it's `nil`
-                @inline(__always)
-                @inlinable
-                convenience init?(_ from: \(typeName)?) {
-                    guard let from else {
-                        return nil
-                    }
-                    self.init(from)
-                }
-                
-                /// Initialize ``Variant`` by wrapping ``\(typeName)``
-                @inline(__always)
-                convenience init(_ from: \(typeName))
-                """) {
-                    if isContentRepresented {
-                        p("""
-                        self.init(payload: from.content, constructor: \(typeGodotInterfaceName).variantFromSelf)
-                        """)
-                    } else {
-                        p("""
-                        self.init(payload: from, constructor: \(typeGodotInterfaceName).variantFromSelf)
-                        """)
-                    }
-                }
-            }
-            
-            p("public extension FastVariant") {
-                p("""
-                /// Initialize ``FastVariant`` by wrapping ``\(typeName)?``, fails if it's `nil`
                 @inline(__always)
                 @inlinable
                 init?(_ from: \(typeName)?) {
@@ -1174,23 +1092,15 @@ func generateBuiltinClasses (values: [JGodotBuiltinClass], outputDir: String?) a
                     }
                     self.init(from)
                 }
-                
-                /// Initialize ``FastVariant`` by wrapping ``\(typeName)``
+
+                /// Initialize ``Variant`` by wrapping ``\(typeName)``
                 @inline(__always)
-                init(_ from: \(typeName))
-                """) {
-                    if isContentRepresented {
-                        p("""
-                        self.init(payload: from.content, constructor: \(typeGodotInterfaceName).variantFromSelf)
-                        """)
-                    } else {
-                        p("""
-                        self.init(payload: from, constructor: \(typeGodotInterfaceName).variantFromSelf)
-                        """)
-                    }
+                init(_ from: \(typeName)) {
+                    self = .\(variantCase)(\(bc.name == "String" ? "from.description" : "from"))
                 }
+                """)
             }
-            
+
             p("""
             /// Static storage for keeping pointers to Godot implementation wrapped by \(typeName)
             enum \(typeGodotInterfaceName)

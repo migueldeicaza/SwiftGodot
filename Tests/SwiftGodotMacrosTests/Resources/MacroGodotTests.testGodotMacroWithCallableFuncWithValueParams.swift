@@ -1,7 +1,7 @@
 class MathHelper: Node {
     func multiply(_ a: Int, by b: Int) -> Int { a * b}
 
-    static func _mproxy_multiply(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_multiply(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `multiply`: failed to unwrap instance \(String(describing: pInstance))")
@@ -36,7 +36,7 @@ class MathHelper: Node {
     }
     func divide(_ a: Float, by b: Float) -> Float { a / b }
 
-    static func _mproxy_divide(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_divide(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `divide`: failed to unwrap instance \(String(describing: pInstance))")
@@ -71,7 +71,7 @@ class MathHelper: Node {
     }
     func areBothTrue(_ a: Bool, and b: Bool) -> Bool { a == b }
 
-    static func _mproxy_areBothTrue(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_areBothTrue(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `areBothTrue`: failed to unwrap instance \(String(describing: pInstance))")

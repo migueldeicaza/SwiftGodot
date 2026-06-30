@@ -19,7 +19,7 @@ final class MyData: Resource {
 final class MyClass: Node {
     var data: MyData = .init()
 
-    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -31,7 +31,7 @@ final class MyClass: Node {
         return nil
     }
 
-    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_data(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for data: failed to unwrap instance \(String(describing: pInstance))")
             return nil

@@ -1,7 +1,7 @@
 class SomeNode: Node {
     var someNumbers: TypedArray<Int> = []
 
-    static func _mproxy_set_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for someNumbers: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -13,7 +13,7 @@ class SomeNode: Node {
         return nil
     }
 
-    static func _mproxy_get_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_someNumbers(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for someNumbers: failed to unwrap instance \(String(describing: pInstance))")
             return nil

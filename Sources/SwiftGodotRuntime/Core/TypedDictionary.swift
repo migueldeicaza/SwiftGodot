@@ -154,14 +154,14 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     public subscript(key: Key) -> Value? where Value: _GodotBridgeableBuiltin {
         get {
             let variant = dictionary[key]
-            return Value.fromFastVariant(variant)
+            return Value.fromVariant(variant)
         }
-        
+
         nonmutating set {
             if newValue == nil {
-                _ = dictionary.erase(fastKey: key.toFastVariant())
+                _ = dictionary.erase(variantKey: key.toVariant())
             } else {
-                dictionary[key] = newValue.toFastVariant()
+                dictionary[key] = newValue.toVariant()
             }
         }
     }
@@ -187,9 +187,9 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
             // This is a error which should be fixed if it happens.
             return unwrapOrCrash(variant, at: key)
         }
-        
+
         nonmutating set {
-            dictionary[key] = newValue.toFastVariant()
+            dictionary[key] = newValue.toVariant()
         }
     }
 
@@ -224,14 +224,10 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
     /// Initialze ``TypedDictionary`` from ``Variant``. Fails if `variant` doesn't contain ``TypedDictionary``
     @inline(__always)
     public init?(_ variant: Variant) {
-        guard Self._variantType == variant.gtype else { return nil }
-        var content = VariantDictionary.zero
-        withUnsafeMutablePointer(to: &content) { pPayload in
-            variant.constructType(into: pPayload, constructor: GodotInterfaceForDictionary.selfFromVariant)
-        }
-        self.init(takingOver: content)
+        guard case .dictionary(let dictionary) = variant else { return nil }
+        self.init(from: dictionary)
     }
-    
+
     /// Initialze ``TypedDictionary`` from ``Variant?``. Fails if `variant` doesn't contain ``TypedDictionary`` or is `nil`
     @inline(__always)
     @inlinable
@@ -239,58 +235,27 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         guard let variant else { return nil }
         self.init(variant)
     }
-    
-    /// Initialze ``TypedDictionary`` from ``FastVariant``. Fails if `variant` doesn't contain ``TypedDictionary``
-    @inline(__always)
-    public init?(_ variant: borrowing FastVariant) {
-        guard Self._variantType == variant.gtype else { return nil }
-        var content = VariantDictionary.zero
-        withUnsafeMutablePointer(to: &content) { pPayload in
-            variant.constructType(into: pPayload, constructor: GodotInterfaceForDictionary.selfFromVariant)
-        }
-        self.init(takingOver: content)
-    }
-        
+
     @inline(__always)
     @inlinable
     @_disfavoredOverload
     public func toVariant() -> Variant? {
         dictionary.toVariant()
     }
-    
+
     @inline(__always)
     @inlinable
     public func toVariant() -> Variant {
         dictionary.toVariant()
     }
-    
-    @inline(__always)
-    @inlinable
-    @_disfavoredOverload
-    public func toFastVariant() -> FastVariant? {
-        dictionary.toFastVariant()
-    }
-    
-    @inline(__always)
-    @inlinable
-    public func toFastVariant() -> FastVariant {
-        dictionary.toFastVariant()
-    }
-    
+
     @inline(__always)
     @inlinable
     public static func fromVariantOrThrow(_ variant: Variant) throws(VariantConversionError) -> Self {
         let dictionary = try VariantDictionary.fromVariantOrThrow(variant)
         return Self(from: dictionary)
     }
-    
-    @inline(__always)
-    @inlinable
-    public static func fromFastVariantOrThrow(_ variant: borrowing FastVariant) throws(VariantConversionError) -> Self {
-        let dictionary = try VariantDictionary.fromFastVariantOrThrow(variant)
-        return Self(from: dictionary)
-    }
-    
+
     public static var _variantType: Variant.GType {
         .dictionary
     }
@@ -602,19 +567,6 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
         }
     }
     
-    /// `Value` is `Object?` or `Variant?` here. Or it's in the context where unwrapping is never expected to fail.
-    /// It doesn't throw if it's `nil`, it returns `nil`.
-    /// It only throws if the incompatible type was stored which is an invariant violation and a bug that we need to fix.
-    @inline(__always)
-    @usableFromInline
-    func unwrapOrCrash(_ variant: borrowing FastVariant?, invoking function: StaticString = #function, at key: Key? = nil) -> Value {
-        do {
-            return try Value.fromFastVariantOrThrow(variant)
-        } catch {
-            typeInvariantViolation(invoking: function, error: error, at: key)
-        }
-    }
-        
     @inline(__always)
     @inlinable
     func typeInvariantViolation(invoking function: StaticString, error: VariantConversionError, at key: Key?) -> Never {
@@ -663,26 +615,11 @@ public struct TypedDictionary<Key: _GodotContainerTypingParameter, Value: _Godot
 
 public extension Variant {
     /// Initialize ``Variant`` by wrapping ``TypedDictionary``
-    convenience init<Key, Value>(_ from: TypedDictionary<Key, Value>) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        self.init(from.dictionary)
-    }
-    
-    /// Initialize ``Variant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
-    convenience init?<Key, Value>(_ from: TypedDictionary<Key, Value>?) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        guard let from else {
-            return nil
-        }
-        self.init(from)
-    }
-}
-
-public extension FastVariant {
-    /// Initialize ``FastVariant`` by wrapping ``TypedDictionary``
     init<Key, Value>(_ from: TypedDictionary<Key, Value>) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
-        self.init(from.dictionary)
+        self = .dictionary(from.dictionary)
     }
-    
-    /// Initialize ``FastVariant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
+
+    /// Initialize ``Variant`` by wrapping ``TypedDictionary?``, fails if it's `nil`
     init?<Key, Value>(_ from: TypedDictionary<Key, Value>?) where Key: _GodotContainerTypingParameter, Value: _GodotContainerTypingParameter {
         guard let from else {
             return nil

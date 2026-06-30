@@ -1,7 +1,7 @@
 class Car: Node {
     var make: String = "Mazda"
 
-    static func _mproxy_set_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for make: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -13,7 +13,7 @@ class Car: Node {
         return nil
     }
 
-    static func _mproxy_get_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_make(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for make: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -23,7 +23,7 @@ class Car: Node {
     }
     var model: String = "RX7"
 
-    static func _mproxy_set_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for model: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -35,7 +35,7 @@ class Car: Node {
         return nil
     }
 
-    static func _mproxy_get_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_model(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for model: failed to unwrap instance \(String(describing: pInstance))")
             return nil

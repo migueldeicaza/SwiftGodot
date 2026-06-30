@@ -4,7 +4,7 @@ class SomeNode: Node {
         integers.map { $0 * $0 }.reduce(into: TypedArray<Int>()) { $0.append(value: $1) }
     }
 
-    static func _mproxy_square(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_square(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         do { // safe arguments access scope
             guard let object = SwiftGodotRuntime._unwrap(self, pInstance: pInstance) else {
                 SwiftGodotRuntime.GD.printErr("Error calling `square`: failed to unwrap instance \(String(describing: pInstance))")

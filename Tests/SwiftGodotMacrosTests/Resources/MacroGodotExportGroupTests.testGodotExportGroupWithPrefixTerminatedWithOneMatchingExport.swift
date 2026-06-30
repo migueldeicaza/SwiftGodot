@@ -1,7 +1,7 @@
 public class Issue353: Node {
     var prefix1_prefixed_bool: Bool = true
 
-    static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -13,7 +13,7 @@ public class Issue353: Node {
         return nil
     }
 
-    static func _mproxy_get_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_prefix1_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for prefix1_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -23,7 +23,7 @@ public class Issue353: Node {
     }
     var non_prefixed_bool: Bool = true
 
-    static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_set_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling setter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
@@ -35,7 +35,7 @@ public class Issue353: Node {
         return nil
     }
 
-    static func _mproxy_get_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.FastVariant? {
+    static func _mproxy_get_non_prefixed_bool(pInstance: UnsafeRawPointer?, arguments: borrowing SwiftGodotRuntime.Arguments) -> SwiftGodotRuntime.Variant? {
         guard let object = _unwrap(self, pInstance: pInstance) else {
             SwiftGodotRuntime.GD.printErr("Error calling getter for non_prefixed_bool: failed to unwrap instance \(String(describing: pInstance))")
             return nil
