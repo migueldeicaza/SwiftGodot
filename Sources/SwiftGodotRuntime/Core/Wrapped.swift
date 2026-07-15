@@ -611,7 +611,11 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     info.property_get_revert_func = getRevertFunc
     info.is_exposed = 1
     
-    userTypes[name.description] = T.self
+    // `type`, not `T.self`: when registration is driven from an array of metatypes - as
+    // `#initSwiftExtension(types:)` and the entry-point generator do - `T` binds to the array's
+    // static element type, so `T.self` would record every class as `Object`.
+    userTypes[name.description] = type
+
     
     let retained = Unmanaged<AnyObject>.passRetained(type as AnyObject)
     info.class_userdata = retained.toOpaque()
