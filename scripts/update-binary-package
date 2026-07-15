@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 5 ]]; then
+    echo "Usage: $0 PACKAGE_DIRECTORY TAG SOURCE_REPOSITORY SWIFTGODOT_CHECKSUM RUNTIME_CHECKSUM" >&2
+    exit 1
+fi
+
+package_directory=$1
+tag=$2
+source_repository=$3
+swiftgodot_checksum=$4
+runtime_checksum=$5
+root=$(cd "$(dirname "$0")/.." && pwd)
+template_root="$root/scripts/binary-package"
+
+if [[ -z $package_directory || $package_directory == / || $package_directory == . || $package_directory == .. ]]; then
+    echo "Refusing unsafe package directory: $package_directory" >&2
+    exit 1
+fi
+mkdir -p "$package_directory"
+package_directory=$(cd "$package_directory" && pwd -P)
+if [[ $package_directory == "$root" ]]; then
+    echo "Refusing to update the SwiftGodot source repository as a binary package" >&2
+    exit 1
+fi
+
+if [[ ! $tag =~ ^[A-Za-z0-9._-]+$ ]]; then
+    echo "Invalid release tag: $tag" >&2
+    exit 1
+fi
+if [[ ! $source_repository =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+    echo "Invalid source repository: $source_repository" >&2
+    exit 1
+fi
+for checksum in "$swiftgodot_checksum" "$runtime_checksum"; do
+    if [[ ! $checksum =~ ^[0-9a-f]{64}$ ]]; then
+        echo "Invalid SwiftPM checksum: $checksum" >&2
+        exit 1
+    fi
+done
+
+rm -rf \
+    "$package_directory/Sources/GDExtension" \
+    "$package_directory/Sources/SwiftGodotMacros" \
+    "$package_directory/Sources/SwiftGodotSupport" \
+    "$package_directory/Sources/SwiftGodotRuntimeSupport"
+
+mkdir -p \
+    "$package_directory/Sources/GDExtension/include" \
+    "$package_directory/Sources/SwiftGodotSupport" \
+    "$package_directory/Sources/SwiftGodotRuntimeSupport"
+
+rsync -a --delete --delete-excluded \
+    --include='*/' \
+    --include='*.swift' \
+    --exclude='*' \
+    "$root/Sources/SwiftGodotMacroLibrary/" \
+    "$package_directory/Sources/SwiftGodotMacroLibrary/"
+rsync -a --delete \
+    "$root/Sources/GDExtension/include/" \
+    "$package_directory/Sources/GDExtension/include/"
+cp "$template_root/GDExtensionShim.c" "$package_directory/Sources/GDExtension/GDExtensionShim.c"
+cp "$template_root/SwiftGodotSupport.swift" "$package_directory/Sources/SwiftGodotSupport/SwiftGodotSupport.swift"
+cp "$template_root/SwiftGodotRuntimeSupport.swift" "$package_directory/Sources/SwiftGodotRuntimeSupport/SwiftGodotRuntimeSupport.swift"
+
+render() {
+    local source=$1
+    local destination=$2
+    sed \
+        -e "s|__TAG__|$tag|g" \
+        -e "s|__SOURCE_REPOSITORY__|$source_repository|g" \
+        -e "s|__SWIFTGODOT_CHECKSUM__|$swiftgodot_checksum|g" \
+        -e "s|__RUNTIME_CHECKSUM__|$runtime_checksum|g" \
+        "$source" > "$destination.tmp"
+    mv "$destination.tmp" "$destination"
+}
+
+render "$template_root/Package.swift.template" "$package_directory/Package.swift"
+render "$template_root/README.md.template" "$package_directory/README.md"
+
+scratch_directory=$(mktemp -d "${TMPDIR:-/tmp}/swiftgodot-binary-validation.XXXXXX")
+trap 'rm -rf "$scratch_directory"' EXIT
+swift package \
+    --package-path "$package_directory" \
+    --scratch-path "$scratch_directory" \
+    dump-package > /dev/null
+rm -rf "$scratch_directory"
+trap - EXIT
+echo "Updated $package_directory for SwiftGodot $tag"

@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+    echo "Usage: $0 [OUTPUT_DIRECTORY]"
+    echo ""
+    echo "Build SwiftGodot and SwiftGodotRuntime XCFrameworks."
+    echo "Set SWIFTGODOT_PLATFORMS to a space-separated subset of:"
+    echo "  macos ios ios-simulator"
+    exit 0
+fi
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+output=${1:-"$root/.build/binary-artifacts"}
+derived_root=${SWIFTGODOT_DERIVED_DATA:-"$root/.build/binary-derived-data"}
+platforms=${SWIFTGODOT_PLATFORMS:-"macos ios ios-simulator"}
+configuration=Release
+skip_build=${SWIFTGODOT_SKIP_BUILD:-0}
+
+absolute_path() {
+    local path=$1
+    if [[ -z $path || $path == / || $path == . || $path == .. ]]; then
+        echo "Refusing unsafe build directory: $path" >&2
+        exit 1
+    fi
+    local parent
+    parent=$(dirname "$path")
+    mkdir -p "$parent"
+    parent=$(cd "$parent" && pwd -P)
+    echo "$parent/$(basename "$path")"
+}
+
+output=$(absolute_path "$output")
+derived_root=$(absolute_path "$derived_root")
+if [[ $output == "$root" || $derived_root == "$root" ]]; then
+    echo "Refusing to use the repository root as a build directory" >&2
+    exit 1
+fi
+
+rm -rf "$output"
+if [[ $skip_build == 1 ]]; then
+    rm -rf "$derived_root/frameworks"
+    rm -f "$derived_root/SwiftGodot.frameworks" "$derived_root/SwiftGodotRuntime.frameworks"
+else
+    rm -rf "$derived_root"
+fi
+mkdir -p "$output" "$derived_root"
+
+framework_path() {
+    local products=$1
+    local module=$2
+    find "$products" -path "*/PackageFrameworks/$module.framework" -print -quit
+}
+
+module_directory() {
+    local framework=$1
+    if [[ -d "$framework/Versions/A" ]]; then
+        mkdir -p "$framework/Versions/A/Modules"
+        ln -sfn Versions/Current/Modules "$framework/Modules"
+        echo "$framework/Versions/A/Modules"
+    else
+        mkdir -p "$framework/Modules"
+        echo "$framework/Modules"
+    fi
+}
+
+binary_path() {
+    local framework=$1
+    local module=$2
+    if [[ -e "$framework/Versions/A/$module" ]]; then
+        echo "$framework/Versions/A/$module"
+    else
+        echo "$framework/$module"
+    fi
+}
+
+target_link_file() {
+    local derived=$1
+    local module=$2
+    local arch=$3
+    find "$derived/Build/Intermediates.noindex/SwiftGodot.build" \
+        -path "*/$module-t.build/Objects-normal/$arch/$module.LinkFileList" \
+        -print -quit
+}
+
+target_interface() {
+    local derived=$1
+    local module=$2
+    local arch=$3
+    local suffix=$4
+    find "$derived/Build/Intermediates.noindex/SwiftGodot.build" \
+        -path "*/$module-t.build/Objects-normal/$arch/$module$suffix.swiftinterface" \
+        -print -quit
+}
+
+build_platform() {
+    local key=$1
+    local destination sdk triple_suffix
+    case "$key" in
+        macos)
+            destination="generic/platform=macOS"
+            sdk=macosx
+            triple_suffix=apple-macos
+            ;;
+        ios)
+            destination="generic/platform=iOS"
+            sdk=iphoneos
+            triple_suffix=apple-ios
+            ;;
+        ios-simulator)
+            destination="generic/platform=iOS Simulator"
+            sdk=iphonesimulator
+            triple_suffix=apple-ios-simulator
+            ;;
+        *)
+            echo "Unsupported platform: $key" >&2
+            exit 1
+            ;;
+    esac
+
+    local derived="$derived_root/$key"
+    local staging="$derived_root/frameworks/$key"
+    mkdir -p "$staging"
+
+    if [[ $skip_build != 1 ]]; then
+        for scheme in SwiftGodot SwiftGodotRuntime; do
+            xcodebuild \
+                -scheme "$scheme" \
+                -configuration "$configuration" \
+                -destination "$destination" \
+                -derivedDataPath "$derived" \
+                SKIP_INSTALL=NO \
+                CODE_SIGNING_ALLOWED=NO \
+                build
+        done
+    fi
+
+    local products="$derived/Build/Products"
+    local full_source runtime_source
+    full_source=$(framework_path "$products" SwiftGodot)
+    runtime_source=$(framework_path "$products" SwiftGodotRuntime)
+    if [[ -z "$full_source" || -z "$runtime_source" ]]; then
+        echo "Xcode did not produce both package frameworks for $key" >&2
+        exit 1
+    fi
+
+    cp -a "$full_source" "$staging/SwiftGodot.framework"
+    cp -a "$runtime_source" "$staging/SwiftGodotRuntime.framework"
+
+    # SwiftPM statically folds target dependencies into a dynamic product. Relink
+    # SwiftGodot's own target object against the separately packaged runtime so
+    # clients get the same module boundary as the source package without duplicate
+    # runtime symbols.
+    local full_framework="$staging/SwiftGodot.framework"
+    local source_binary
+    source_binary=$(binary_path "$full_source" SwiftGodot)
+    local archs
+    archs=$(xcrun lipo -archs "$source_binary")
+    local relinked=()
+    local deployment_target
+    case "$key" in
+        macos) deployment_target=14.0 ;;
+        *) deployment_target=17.0 ;;
+    esac
+    local sdk_path
+    sdk_path=$(xcrun --sdk "$sdk" --show-sdk-path)
+
+    for arch in $archs; do
+        local link_file
+        link_file=$(target_link_file "$derived" SwiftGodot "$arch")
+        if [[ -z "$link_file" ]]; then
+            echo "Missing SwiftGodot target linker inputs for $key/$arch" >&2
+            exit 1
+        fi
+        local linked="$derived_root/$key-$arch-SwiftGodot"
+        local install_name="@rpath/SwiftGodot.framework/SwiftGodot"
+        if [[ $key == macos ]]; then
+            install_name="@rpath/SwiftGodot.framework/Versions/A/SwiftGodot"
+        fi
+        local link_target
+        case "$key" in
+            macos) link_target="$arch-apple-macos$deployment_target" ;;
+            ios) link_target="$arch-apple-ios$deployment_target" ;;
+            ios-simulator) link_target="$arch-apple-ios$deployment_target-simulator" ;;
+        esac
+        xcrun --sdk "$sdk" swiftc \
+            -target "$link_target" \
+            -emit-library \
+            -sdk "$sdk_path" \
+            -F "$(dirname "$runtime_source")" \
+            @"$link_file" \
+            -framework SwiftGodotRuntime \
+            -Xlinker -install_name \
+            -Xlinker "$install_name" \
+            -o "$linked"
+        relinked+=("$linked")
+    done
+
+    local full_binary
+    full_binary=$(binary_path "$full_framework" SwiftGodot)
+    if [[ ${#relinked[@]} -eq 1 ]]; then
+        cp "${relinked[0]}" "$full_binary"
+    else
+        xcrun lipo -create "${relinked[@]}" -output "$full_binary"
+    fi
+
+    for module in SwiftGodot SwiftGodotRuntime; do
+        local framework="$staging/$module.framework"
+        local modules
+        modules=$(module_directory "$framework")
+        local built_modules
+        built_modules=$(find "$products" -type d -name "$module.swiftmodule" -print -quit)
+        if [[ -z "$built_modules" ]]; then
+            echo "Missing $module module metadata for $key" >&2
+            exit 1
+        fi
+        cp -a "$built_modules" "$modules/"
+
+        for arch in $archs; do
+            local triple="$arch-$triple_suffix"
+            local public_interface private_interface package_interface
+            public_interface=$(target_interface "$derived" "$module" "$arch" "")
+            private_interface=$(target_interface "$derived" "$module" "$arch" ".private")
+            package_interface=$(target_interface "$derived" "$module" "$arch" ".package")
+            if [[ -z "$public_interface" ]]; then
+                echo "Missing $module textual interface for $key/$arch" >&2
+                exit 1
+            fi
+            cp "$public_interface" "$modules/$module.swiftmodule/$triple.swiftinterface"
+            if [[ -n "$private_interface" ]]; then
+                cp "$private_interface" "$modules/$module.swiftmodule/$triple.private.swiftinterface"
+            fi
+            if [[ -n "$package_interface" ]]; then
+                cp "$package_interface" "$modules/$module.swiftmodule/$triple.package.swiftinterface"
+            fi
+        done
+    done
+
+    if ! otool -L "$full_binary" | grep -q 'SwiftGodotRuntime.framework'; then
+        echo "SwiftGodot does not link the packaged runtime on $key" >&2
+        exit 1
+    fi
+
+    echo "$full_framework" >> "$derived_root/SwiftGodot.frameworks"
+    echo "$staging/SwiftGodotRuntime.framework" >> "$derived_root/SwiftGodotRuntime.frameworks"
+}
+
+for platform in $platforms; do
+    build_platform "$platform"
+done
+
+for module in SwiftGodot SwiftGodotRuntime; do
+    args=()
+    while IFS= read -r framework; do
+        args+=( -framework "$framework" )
+    done < "$derived_root/$module.frameworks"
+    xcodebuild -create-xcframework \
+        "${args[@]}" \
+        -output "$output/$module.xcframework"
+done
+
+echo "Created binary artifacts in $output"

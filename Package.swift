@@ -228,6 +228,12 @@ var targets: [Target] = [
                     "-Xfrontend", "-lto=llvm-full",
                 ]
             ),
+            // Release binaries are distributed as XCFrameworks. Emit stable module
+            // interfaces for clients that use a different compatible Swift compiler.
+            .unsafeFlags(
+                ["-enable-library-evolution", "-emit-module-interface"],
+                .when(configuration: .release)
+            ),
             .swiftLanguageMode(.v5),
         ],
         plugins: ["CodeGeneratorPlugin", "SwiftGodotMacroLibrary"]
@@ -242,7 +248,11 @@ var targets: [Target] = [
             .swiftLanguageMode(.v5),
             .define("CUSTOM_BUILTIN_IMPLEMENTATIONS"),
             .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
-            .unsafeFlags(["-suppress-warnings"])
+            .unsafeFlags(["-suppress-warnings"]),
+            .unsafeFlags(
+                ["-enable-library-evolution", "-emit-module-interface"],
+                .when(configuration: .release)
+            ),
         ],
         plugins: ["CodeGeneratorPlugin"]
     ),

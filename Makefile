@@ -5,8 +5,8 @@ all:
 	echo    - build-docs: Builds the documentation
 	echo    - preview-docs: Start local web server serving the documentation
 	echo    - push-docs: Pushes the existing documentation, requires SwiftGodotDocs peer checked out
-	echo    - release: Builds an xcframework package, documentation and pushes documentation
-	echo    - sync: synchronizes the Macro system to the ../SwiftGodotBinary module
+	echo    - release: Dispatches binary publishing for an existing GitHub release
+	echo    - binary-artifacts: Builds binary XCFrameworks locally
 
 build-docs:
 	GENERATE_DOCS=1 DOCC_HTML_DIR=/Users/miguel/cvs/swift-docc-render-artifact/dist swift package \
@@ -27,16 +27,14 @@ build-docs:
 preview-docs:
 	GENERATE_DOCS=1 swift package --disable-sandbox preview-documentation --target SwiftGodot --disable-indexing --emit-digest
 
-release: check-args build-release build-docs push-docs
+release: check-version
+	scripts/release $(VERSION)
 
-build-release: check-args
-	sh -x scripts/release $(VERSION) $(NOTES) `git rev-parse HEAD`
+check-version:
+	@if test x$(VERSION) = x; then echo You need to provide VERSION=TAG; exit 1; fi
 
-check-args:
-	@if test x$(VERSION)$(NOTES) = x; then echo You need to provide both VERSION=XX NOTES=FILENAME arguments to this makefile target; exit 1; fi
-
-sync:
-	@if test ../SwiftGodotBinary; then rsync -a Sources/SwiftGodotMacroLibrary ../SwiftGodotBinary/Sources; else echo "missing directory ../SwiftGodotBinary"; fi
+binary-artifacts:
+	scripts/build-binary-artifacts .build/binary-artifacts
 
 lint:
 	swiftlint lint Sources

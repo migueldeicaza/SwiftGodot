@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 ARTIFACT_DIRECTORY" >&2
+    exit 1
+fi
+
+artifact_directory=$(cd "$1" && pwd)
+root=$(cd "$(dirname "$0")/.." && pwd)
+package_directory=$(mktemp -d)
+trap 'rm -rf "$package_directory"' EXIT
+checksum=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+for module in SwiftGodot SwiftGodotRuntime; do
+    if [[ ! -d "$artifact_directory/$module.xcframework" ]]; then
+        echo "Missing $artifact_directory/$module.xcframework" >&2
+        exit 1
+    fi
+done
+
+"$root/scripts/update-binary-package" \
+    "$package_directory" \
+    local-test \
+    migueldeicaza/SwiftGodot \
+    "$checksum" \
+    "$checksum"
+
+mkdir -p "$package_directory/Artifacts" "$package_directory/Client"
+cp -a "$artifact_directory/SwiftGodot.xcframework" "$package_directory/Artifacts/"
+cp -a "$artifact_directory/SwiftGodotRuntime.xcframework" "$package_directory/Artifacts/"
+cp "$root/scripts/binary-package/Package.local.swift" "$package_directory/Package.swift"
+cp "$root/scripts/binary-package/BinaryClient.swift" "$package_directory/Client/main.swift"
+
+swift run --package-path "$package_directory" BinaryClient

@@ -1,0 +1,62 @@
+// swift-tools-version: 6.3
+
+import CompilerPluginSupport
+import PackageDescription
+
+let package = Package(
+    name: "SwiftGodot",
+    platforms: [
+        .macOS(.v14),
+        .iOS(.v17),
+    ],
+    products: [
+        .library(name: "SwiftGodot", targets: ["SwiftGodotSupport"]),
+        .library(name: "SwiftGodotRuntime", targets: ["SwiftGodotRuntimeSupport"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "600.0.1"),
+    ],
+    targets: [
+        .binaryTarget(
+            name: "SwiftGodot",
+            url: "https://github.com/__SOURCE_REPOSITORY__/releases/download/__TAG__/SwiftGodot.xcframework.zip",
+            checksum: "__SWIFTGODOT_CHECKSUM__"
+        ),
+        .binaryTarget(
+            name: "SwiftGodotRuntime",
+            url: "https://github.com/__SOURCE_REPOSITORY__/releases/download/__TAG__/SwiftGodotRuntime.xcframework.zip",
+            checksum: "__RUNTIME_CHECKSUM__"
+        ),
+        .target(name: "GDExtension"),
+        .macro(
+            name: "SwiftGodotMacroLibrary",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftBasicFormat", package: "swift-syntax"),
+            ],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+        .target(
+            name: "SwiftGodotSupport",
+            dependencies: [
+                "SwiftGodot",
+                "SwiftGodotRuntime",
+                "GDExtension",
+                "SwiftGodotMacroLibrary",
+            ]
+        ),
+        .target(
+            name: "SwiftGodotRuntimeSupport",
+            dependencies: [
+                "SwiftGodotRuntime",
+                "GDExtension",
+                "SwiftGodotMacroLibrary",
+            ]
+        ),
+    ]
+)

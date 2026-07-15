@@ -1,0 +1,17 @@
+# SwiftGodot binaries
+
+This package provides prebuilt Apple-platform binaries for
+[SwiftGodot](https://github.com/__SOURCE_REPOSITORY__) __TAG__.
+
+Add this repository as a Swift package dependency and select either the
+`SwiftGodot` product (the complete API) or `SwiftGodotRuntime` (the smaller
+runtime API). Client source continues to use `import SwiftGodot` or
+`import SwiftGodotRuntime` respectively.
+
+The XCFrameworks contain macOS (Apple silicon and Intel), iOS device, and iOS
+Simulator slices. The SwiftGodot macro implementation and the small C module
+shim remain source targets so macros such as `@Godot`, `@Callable`, and
+`@Export` work normally.
+
+For non-Apple platforms or source builds, depend directly on
+https://github.com/__SOURCE_REPOSITORY__.

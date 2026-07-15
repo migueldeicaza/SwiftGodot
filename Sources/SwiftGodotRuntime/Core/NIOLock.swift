@@ -157,7 +157,6 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         }
     }
 
-    @inlinable
     deinit {
         self.withUnsafeMutablePointerToElements { lockPtr in
             LockOperations.destroy(lockPtr)
@@ -196,6 +195,7 @@ extension LockStorage: Sendable {}
 /// of lock is safe to use with `libpthread`-based threading models, such as the
 /// one used by NIO. On Windows, the lock is based on the substantially similar
 /// `SRWLOCK` type.
+@frozen
 public struct NIOLock {
     @usableFromInline
     internal let _storage: LockStorage<Void>

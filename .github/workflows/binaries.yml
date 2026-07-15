@@ -1,0 +1,124 @@
+name: SwiftGodot binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing SwiftGodot release tag to build
+        required: true
+        type: string
+      publish:
+        description: Upload assets and update SwiftGodotBinary
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: swiftgodot-binaries-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: macos-26
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      SHOULD_PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}
+      ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
+
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.5"
+
+      - name: Build XCFrameworks
+        run: scripts/build-binary-artifacts "$ARTIFACT_DIRECTORY"
+
+      - name: Test the binary package
+        run: scripts/test-binary-package "$ARTIFACT_DIRECTORY"
+
+      - name: Archive and checksum XCFrameworks
+        id: artifacts
+        run: |
+          for module in SwiftGodot SwiftGodotRuntime; do
+            ditto -c -k --sequesterRsrc --keepParent \
+              "$ARTIFACT_DIRECTORY/$module.xcframework" \
+              "$ARTIFACT_DIRECTORY/$module.xcframework.zip"
+          done
+          echo "swiftgodot_checksum=$(swift package compute-checksum "$ARTIFACT_DIRECTORY/SwiftGodot.xcframework.zip")" >> "$GITHUB_OUTPUT"
+          echo "runtime_checksum=$(swift package compute-checksum "$ARTIFACT_DIRECTORY/SwiftGodotRuntime.xcframework.zip")" >> "$GITHUB_OUTPUT"
+
+      - name: Keep a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwiftGodot-${{ env.RELEASE_TAG }}-XCFrameworks
+          path: ${{ env.ARTIFACT_DIRECTORY }}/*.zip
+          if-no-files-found: error
+
+      - name: Check out SwiftGodotBinary
+        if: env.SHOULD_PUBLISH == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: migueldeicaza/SwiftGodotBinary
+          token: ${{ secrets.SWIFTGODOT_BINARY_TOKEN }}
+          path: SwiftGodotBinary
+          fetch-depth: 0
+
+      - name: Prepare SwiftGodotBinary update
+        if: env.SHOULD_PUBLISH == 'true'
+        env:
+          SWIFTGODOT_CHECKSUM: ${{ steps.artifacts.outputs.swiftgodot_checksum }}
+          RUNTIME_CHECKSUM: ${{ steps.artifacts.outputs.runtime_checksum }}
+        run: |
+          scripts/update-binary-package \
+            SwiftGodotBinary \
+            "$RELEASE_TAG" \
+            "${{ github.repository }}" \
+            "$SWIFTGODOT_CHECKSUM" \
+            "$RUNTIME_CHECKSUM"
+
+          cd SwiftGodotBinary
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Package.swift README.md Sources
+
+          if git diff --cached --quiet; then
+            echo "SwiftGodotBinary already describes $RELEASE_TAG"
+          else
+            git commit -m "Update to $RELEASE_TAG"
+          fi
+
+          if git rev-parse -q --verify "refs/tags/$RELEASE_TAG" > /dev/null; then
+            if [[ "$(git rev-list -n 1 "$RELEASE_TAG")" != "$(git rev-parse HEAD)" ]]; then
+              echo "Tag $RELEASE_TAG already exists at a different commit" >&2
+              exit 1
+            fi
+          else
+            git tag "$RELEASE_TAG"
+          fi
+
+      - name: Upload release assets
+        if: env.SHOULD_PUBLISH == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "$ARTIFACT_DIRECTORY/SwiftGodot.xcframework.zip" \
+            "$ARTIFACT_DIRECTORY/SwiftGodotRuntime.xcframework.zip" \
+            --clobber
+
+      - name: Push SwiftGodotBinary update
+        if: env.SHOULD_PUBLISH == 'true'
+        run: |
+          cd SwiftGodotBinary
+          git push origin HEAD:main "refs/tags/$RELEASE_TAG"

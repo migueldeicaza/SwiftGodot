@@ -76,13 +76,14 @@ verified at this time.
 
 # Consuming SwiftGodot
 
-There are two ways of consuming SwiftGodot, you can either reference
-this module in SwiftPM by using this address - and it will trigger a
-complete source code build for you, or to quickly iterate on MacOS,
-you can use a convenient binary in the peer
-https://github.com/migueldeicaza/SwiftGodotBinary
+There are two ways of consuming SwiftGodot. Reference this repository from
+SwiftPM for a complete source build on any supported platform, or use the
+prebuilt Apple-platform package from
+[SwiftGodotBinary](https://github.com/migueldeicaza/SwiftGodotBinary) for faster
+iteration on macOS and iOS. See [Binary releases](BINARY_RELEASES.md) for the
+published slices and release process.
 
-Currently this requires Swift 5.9 or Xcode 15.
+SwiftGodot currently requires Swift 6.3.
 
 # Working with this Repository
 
@@ -135,11 +136,10 @@ let package = Package(
 )
 ```
 
-The above will compile all of SwiftGodot for you - alternatively, if
-you do not need access to the source, you can use the `.binaryTarget`
-feature of SwiftPM and reference an `.xcframework` that I have
-conveniently published on GitHub at
-https://github.com/migueldeicaza/SwiftGodotBinary
+The above compiles all of SwiftGodot. On Apple platforms, you can instead add
+the prebuilt [SwiftGodotBinary](https://github.com/migueldeicaza/SwiftGodotBinary)
+package and select its `SwiftGodot` product. Client code still uses
+`import SwiftGodot`, including macros such as `@Godot` and `@Export`.
 
 The next step is to create your source file with the magic on it,
 here we declare a spinning cube:

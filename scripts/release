@@ -1,94 +1,24 @@
-if test x$3 = x; then
-   echo Usage is: relase TAG RELEASE_NOTES_FILE COMMIT
-   exit 1
-fi
-commit=$3
-if test ! -e $2; then
-   echo "Expected a release notes file"
-   exit 1 
-fi
+#!/usr/bin/env bash
 
-if test ! -e scripts/make-swiftgodot-framework; then
-   echo expected this to run from the SwiftGodot directory
-   exit 1
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 TAG" >&2
+    echo "Dispatches binary publishing for an existing SwiftGodot GitHub release." >&2
+    exit 1
 fi
 
-if [ -z "$SWIFT_GODOT_NODEPLOY" ]; then
-    if test ! -e ../SwiftGodotBinary; then
-       echo expected to have a peer directory SwiftGodotBinary to publish results
-       exit 1
-    fi
-
-    case $1 in
-        v*)
-	    echo We are no longer using vXXX for releases, instead we are using 0.xx.yy
-	    exit 1;;
-        *)
-            echo Tagging with $1
-            git tag $1
-            tag=$1
-            ;;
-    esac
+tag=$1
+if [[ ! $tag =~ ^[A-Za-z0-9._-]+$ ]]; then
+    echo "Invalid release tag: $tag" >&2
+    exit 1
 fi
 
-arch=`uname -m`
+gh release view "$tag" --repo migueldeicaza/SwiftGodot > /dev/null
+gh workflow run binaries.yml \
+    --repo migueldeicaza/SwiftGodot \
+    --ref main \
+    -f "tag=$tag" \
+    -f publish=true
 
-outputDir=$HOME/sg-builds
-dir=$outputDir/$$-build
-
-derivedData=$dir/derived
-archivePath=$dir/archive
-mkdir -p $derivedData
-mkdir -p $archivePath
-
-echo Building on $dir
-echo DerivedData: $derivedData
-echo ArchiveData: $archivePath
-echo Commit: $3
-start=`date`
-
-ssh -A macpro.localdomain "mkdir -p $derivedData && mkdir -p $archivePath"
-ssh -A macpro.localdomain "cd cvs/SwiftGodot && git fetch && git reset --hard $commit && xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=x86_64 -derivedDataPath $derivedData -archivePath $archivePath" >& $dir/x86_64.log
-rsync -a macpro.localdomain:$dir/derived/ $dir/derived
-if [ $arch = "arm64" ]; then
-    xcodebuild -scheme SwiftGodot -destination platform=macOS,arch=arm64 -derivedDataPath "${derivedData}_arm" -archivePath $archivePath >& $dir/arm64.log
-fi
-xcodebuild -scheme SwiftGodot -destination generic/platform=iOS -derivedDataPath $derivedData -archivePath $archivePath >& $dir/ios_arm64.log
-sh scripts/make-swiftgodot-framework $dir/derived/ $outputDir/SwiftGodot.xcframework
-
-if [ ! -z "$SWIFT_GODOT_NODEPLOY" ]; then
-    echo "Skipping deployment stage."
-    exit
-fi
-
-#(cd $outputDir; zip --symlinks -ru SwiftGodot.xcframework.zip SwiftGodot.xcframework)
-(cd $outputDir; ditto -c -k --sequesterRsrc --keepParent SwiftGodot.xcframework SwiftGodot.xcframework.zip)
-csum=`swift package compute-checksum $outputDir/SwiftGodot.xcframework.zip`
-
-gh release create $tag $outputDir/SwiftGodot.xcframework.zip -R migueldeicaza/SwiftGodot -F $2
-cat > ../SwiftGodotBinary/Package.swift  <<EOF
-// swift-tools-version:5.7
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
-import PackageDescription
-
-let package = Package(
-    name: "SwiftGodot",
-    products: [
-        .library(
-            name: "SwiftGodot",
-            targets: ["SwiftGodot"])
-    ],
-    targets: [
-        .binaryTarget(
-            name: "SwiftGodot",
-            url: "https://github.com/migueldeicaza/SwiftGodot/releases/download/$tag/SwiftGodot.xcframework.zip",
-            checksum: "$csum"),
-        .testTarget(name: "SwiftGodotTests", dependencies: ["SwiftGodot"]),
-    ]
-)
-EOF
-
-(cd ../SwiftGodotBinary; git tag $tag; git commit -m "Update to $tag" -a; git push; git push --tags)
-echo Started at: $start
-echo Ended at `date`
+echo "Dispatched binary publishing for $tag"

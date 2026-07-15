@@ -100,7 +100,6 @@ public struct TypedArray<Element: _GodotContainerTypingParameter>: CustomDebugSt
     /// - If not - it returns an empty typed array.
     /// See: ``VariantArray.init(base:type:className:script:)``
     @inline(__always)
-    @inlinable
     public init(from array: VariantArray) {
         switch array.typing {
         case .builtin(let gtype):
@@ -808,4 +807,3 @@ public extension FastVariant {
         self.init(from)
     }
 }
-
