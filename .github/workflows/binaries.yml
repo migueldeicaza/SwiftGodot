@@ -28,7 +28,6 @@ jobs:
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
       SHOULD_PUBLISH: ${{ github.event_name == 'release' || inputs.publish }}
-      ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
 
     steps:
       - name: Check out release source
@@ -42,13 +41,19 @@ jobs:
           xcode-version: "26.5"
 
       - name: Build XCFrameworks
+        env:
+          ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
         run: scripts/build-binary-artifacts "$ARTIFACT_DIRECTORY"
 
       - name: Test the binary package
+        env:
+          ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
         run: scripts/test-binary-package "$ARTIFACT_DIRECTORY"
 
       - name: Archive and checksum XCFrameworks
         id: artifacts
+        env:
+          ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
         run: |
           for module in SwiftGodot SwiftGodotRuntime; do
             ditto -c -k --sequesterRsrc --keepParent \
@@ -62,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SwiftGodot-${{ env.RELEASE_TAG }}-XCFrameworks
-          path: ${{ env.ARTIFACT_DIRECTORY }}/*.zip
+          path: ${{ runner.temp }}/swiftgodot-binaries/*.zip
           if-no-files-found: error
 
       - name: Check out SwiftGodotBinary
@@ -111,6 +116,7 @@ jobs:
         if: env.SHOULD_PUBLISH == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
         run: |
           gh release upload "$RELEASE_TAG" \
             "$ARTIFACT_DIRECTORY/SwiftGodot.xcframework.zip" \
