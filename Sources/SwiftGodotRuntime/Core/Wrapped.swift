@@ -570,10 +570,8 @@ var userTypes: [String: Object.Type] = [:]
 
 @_spi(SwiftGodotRuntimePrivate) public
 var duplicateClassNameDetected: (_ name: StringName, _ type: Object.Type) -> Void = { name, type in
-    preconditionFailure(
-                """
-                Godot already has a class named \(name), so I cannot register \(type) using that name. This is a fatal error because the only way I can tell whether Godot is handing me a pointer to a class I'm responsible for is by checking the class name.
-                """
+    GD.print(
+        "Godot already has a class named \(name); registering \(type) using that name may cause unexpected behavior."
     )
 }
 
