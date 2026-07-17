@@ -13,7 +13,7 @@ package_directory=$(mktemp -d)
 trap 'rm -rf "$package_directory"' EXIT
 checksum=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
-for module in SwiftGodot SwiftGodotRuntime; do
+for module in GDExtension SwiftGodot SwiftGodotRuntime; do
     if [[ ! -d "$artifact_directory/$module.xcframework" ]]; then
         echo "Missing $artifact_directory/$module.xcframework" >&2
         exit 1
@@ -25,11 +25,13 @@ done
     local-test \
     migueldeicaza/SwiftGodot \
     "$checksum" \
+    "$checksum" \
     "$checksum"
 
 mkdir -p "$package_directory/Artifacts" "$package_directory/Client"
-cp -a "$artifact_directory/SwiftGodot.xcframework" "$package_directory/Artifacts/"
-cp -a "$artifact_directory/SwiftGodotRuntime.xcframework" "$package_directory/Artifacts/"
+for module in GDExtension SwiftGodot SwiftGodotRuntime; do
+    cp -a "$artifact_directory/$module.xcframework" "$package_directory/Artifacts/"
+done
 cp "$root/scripts/binary-package/Package.local.swift" "$package_directory/Package.swift"
 cp "$root/scripts/binary-package/BinaryClient.swift" "$package_directory/Client/main.swift"
 

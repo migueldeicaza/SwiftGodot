@@ -27,7 +27,11 @@ let package = Package(
             url: "https://github.com/__SOURCE_REPOSITORY__/releases/download/__TAG__/SwiftGodotRuntime.xcframework.zip",
             checksum: "__RUNTIME_CHECKSUM__"
         ),
-        .target(name: "GDExtension"),
+        .binaryTarget(
+            name: "GDExtension",
+            url: "https://github.com/__SOURCE_REPOSITORY__/releases/download/__TAG__/GDExtension.xcframework.zip",
+            checksum: "__GDEXTENSION_CHECKSUM__"
+        ),
         .macro(
             name: "SwiftGodotMacroLibrary",
             dependencies: [

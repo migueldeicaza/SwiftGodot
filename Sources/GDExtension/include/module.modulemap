@@ -1,0 +1,4 @@
+module GDExtension {
+    header "GDExtensionSupport.h"
+    export *
+}

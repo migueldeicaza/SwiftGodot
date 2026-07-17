@@ -231,7 +231,11 @@ var targets: [Target] = [
             // Release binaries are distributed as XCFrameworks. Emit stable module
             // interfaces for clients that use a different compatible Swift compiler.
             .unsafeFlags(
-                ["-enable-library-evolution", "-emit-module-interface"],
+                [
+                    "-enable-library-evolution",
+                    "-emit-module-interface",
+                    "-Xfrontend", "-module-interface-preserve-types-as-written",
+                ],
                 .when(configuration: .release)
             ),
             .swiftLanguageMode(.v5),
@@ -250,7 +254,11 @@ var targets: [Target] = [
             .define("SWIFTGODOT_WITH_MULTI_PROCESS", .when(traits: [withMultiProcessTrait])),
             .unsafeFlags(["-suppress-warnings"]),
             .unsafeFlags(
-                ["-enable-library-evolution", "-emit-module-interface"],
+                [
+                    "-enable-library-evolution",
+                    "-emit-module-interface",
+                    "-Xfrontend", "-module-interface-preserve-types-as-written",
+                ],
                 .when(configuration: .release)
             ),
         ],

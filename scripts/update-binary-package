@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-if [[ $# -ne 5 ]]; then
-    echo "Usage: $0 PACKAGE_DIRECTORY TAG SOURCE_REPOSITORY SWIFTGODOT_CHECKSUM RUNTIME_CHECKSUM" >&2
+if [[ $# -ne 6 ]]; then
+    echo "Usage: $0 PACKAGE_DIRECTORY TAG SOURCE_REPOSITORY SWIFTGODOT_CHECKSUM RUNTIME_CHECKSUM GDEXTENSION_CHECKSUM" >&2
     exit 1
 fi
 
@@ -12,6 +12,7 @@ tag=$2
 source_repository=$3
 swiftgodot_checksum=$4
 runtime_checksum=$5
+gdextension_checksum=$6
 root=$(cd "$(dirname "$0")/.." && pwd)
 template_root="$root/scripts/binary-package"
 
@@ -34,7 +35,7 @@ if [[ ! $source_repository =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
     echo "Invalid source repository: $source_repository" >&2
     exit 1
 fi
-for checksum in "$swiftgodot_checksum" "$runtime_checksum"; do
+for checksum in "$swiftgodot_checksum" "$runtime_checksum" "$gdextension_checksum"; do
     if [[ ! $checksum =~ ^[0-9a-f]{64}$ ]]; then
         echo "Invalid SwiftPM checksum: $checksum" >&2
         exit 1
@@ -48,7 +49,6 @@ rm -rf \
     "$package_directory/Sources/SwiftGodotRuntimeSupport"
 
 mkdir -p \
-    "$package_directory/Sources/GDExtension/include" \
     "$package_directory/Sources/SwiftGodotSupport" \
     "$package_directory/Sources/SwiftGodotRuntimeSupport"
 
@@ -58,10 +58,6 @@ rsync -a --delete --delete-excluded \
     --exclude='*' \
     "$root/Sources/SwiftGodotMacroLibrary/" \
     "$package_directory/Sources/SwiftGodotMacroLibrary/"
-rsync -a --delete \
-    "$root/Sources/GDExtension/include/" \
-    "$package_directory/Sources/GDExtension/include/"
-cp "$template_root/GDExtensionShim.c" "$package_directory/Sources/GDExtension/GDExtensionShim.c"
 cp "$template_root/SwiftGodotSupport.swift" "$package_directory/Sources/SwiftGodotSupport/SwiftGodotSupport.swift"
 cp "$template_root/SwiftGodotRuntimeSupport.swift" "$package_directory/Sources/SwiftGodotRuntimeSupport/SwiftGodotRuntimeSupport.swift"
 
@@ -73,6 +69,7 @@ render() {
         -e "s|__SOURCE_REPOSITORY__|$source_repository|g" \
         -e "s|__SWIFTGODOT_CHECKSUM__|$swiftgodot_checksum|g" \
         -e "s|__RUNTIME_CHECKSUM__|$runtime_checksum|g" \
+        -e "s|__GDEXTENSION_CHECKSUM__|$gdextension_checksum|g" \
         "$source" > "$destination.tmp"
     mv "$destination.tmp" "$destination"
 }

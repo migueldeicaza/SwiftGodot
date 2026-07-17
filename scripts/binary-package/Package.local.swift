@@ -12,7 +12,7 @@ let package = Package(
     targets: [
         .binaryTarget(name: "SwiftGodot", path: "Artifacts/SwiftGodot.xcframework"),
         .binaryTarget(name: "SwiftGodotRuntime", path: "Artifacts/SwiftGodotRuntime.xcframework"),
-        .target(name: "GDExtension"),
+        .binaryTarget(name: "GDExtension", path: "Artifacts/GDExtension.xcframework"),
         .macro(
             name: "SwiftGodotMacroLibrary",
             dependencies: [

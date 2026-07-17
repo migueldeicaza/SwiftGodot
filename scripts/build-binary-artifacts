@@ -5,7 +5,7 @@ set -euo pipefail
 if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
     echo "Usage: $0 [OUTPUT_DIRECTORY]"
     echo ""
-    echo "Build SwiftGodot and SwiftGodotRuntime XCFrameworks."
+    echo "Build SwiftGodot, SwiftGodotRuntime, and GDExtension XCFrameworks."
     echo "Set SWIFTGODOT_PLATFORMS to a space-separated subset of:"
     echo "  macos ios ios-simulator"
     exit 0
@@ -41,7 +41,10 @@ fi
 rm -rf "$output"
 if [[ $skip_build == 1 ]]; then
     rm -rf "$derived_root/frameworks"
-    rm -f "$derived_root/SwiftGodot.frameworks" "$derived_root/SwiftGodotRuntime.frameworks"
+    rm -f \
+        "$derived_root/GDExtension.libraries" \
+        "$derived_root/SwiftGodot.frameworks" \
+        "$derived_root/SwiftGodotRuntime.frameworks"
 else
     rm -rf "$derived_root"
 fi
@@ -75,13 +78,31 @@ binary_path() {
     fi
 }
 
+target_build_artifact() {
+    local derived=$1
+    local module=$2
+    local arch=$3
+    local filename=$4
+    local build_directory artifact
+
+    # Xcode 27 names SwiftPM target intermediates "<target>-t.build", while
+    # Xcode 26 uses "<target>.build". Release artifacts must support both.
+    for build_directory in "$module-t.build" "$module.build"; do
+        artifact=$(find "$derived/Build/Intermediates.noindex/SwiftGodot.build" \
+            -path "*/$build_directory/Objects-normal/$arch/$filename" \
+            -print -quit)
+        if [[ -n $artifact ]]; then
+            echo "$artifact"
+            return
+        fi
+    done
+}
+
 target_link_file() {
     local derived=$1
     local module=$2
     local arch=$3
-    find "$derived/Build/Intermediates.noindex/SwiftGodot.build" \
-        -path "*/$module-t.build/Objects-normal/$arch/$module.LinkFileList" \
-        -print -quit
+    target_build_artifact "$derived" "$module" "$arch" "$module.LinkFileList"
 }
 
 target_interface() {
@@ -89,9 +110,7 @@ target_interface() {
     local module=$2
     local arch=$3
     local suffix=$4
-    find "$derived/Build/Intermediates.noindex/SwiftGodot.build" \
-        -path "*/$module-t.build/Objects-normal/$arch/$module$suffix.swiftinterface" \
-        -print -quit
+    target_build_artifact "$derived" "$module" "$arch" "$module$suffix.swiftinterface"
 }
 
 build_platform() {
@@ -158,6 +177,7 @@ build_platform() {
     local archs
     archs=$(xcrun lipo -archs "$source_binary")
     local relinked=()
+    local gdextension_archives=()
     local deployment_target
     case "$key" in
         macos) deployment_target=14.0 ;;
@@ -195,6 +215,20 @@ build_platform() {
             -Xlinker "$install_name" \
             -o "$linked"
         relinked+=("$linked")
+
+        # SwiftGodot's public module interface exposes GDExtension C types.
+        # Package the headers with an otherwise empty static library so clients
+        # can resolve that Clang module without duplicating runtime symbols.
+        local gdextension_object="$derived_root/$key-$arch-GDExtensionShim.o"
+        local gdextension_archive="$derived_root/$key-$arch-libGDExtension.a"
+        xcrun --sdk "$sdk" clang \
+            -target "$link_target" \
+            -isysroot "$sdk_path" \
+            -I "$root/Sources/GDExtension/include" \
+            -c "$root/scripts/binary-package/GDExtensionShim.c" \
+            -o "$gdextension_object"
+        xcrun libtool -static -o "$gdextension_archive" "$gdextension_object"
+        gdextension_archives+=("$gdextension_archive")
     done
 
     local full_binary
@@ -203,6 +237,13 @@ build_platform() {
         cp "${relinked[0]}" "$full_binary"
     else
         xcrun lipo -create "${relinked[@]}" -output "$full_binary"
+    fi
+
+    local gdextension_library="$staging/libGDExtension.a"
+    if [[ ${#gdextension_archives[@]} -eq 1 ]]; then
+        cp "${gdextension_archives[0]}" "$gdextension_library"
+    else
+        xcrun lipo -create "${gdextension_archives[@]}" -output "$gdextension_library"
     fi
 
     for module in SwiftGodot SwiftGodotRuntime; do
@@ -244,6 +285,7 @@ build_platform() {
 
     echo "$full_framework" >> "$derived_root/SwiftGodot.frameworks"
     echo "$staging/SwiftGodotRuntime.framework" >> "$derived_root/SwiftGodotRuntime.frameworks"
+    echo "$gdextension_library" >> "$derived_root/GDExtension.libraries"
 }
 
 for platform in $platforms; do
@@ -259,5 +301,16 @@ for module in SwiftGodot SwiftGodotRuntime; do
         "${args[@]}" \
         -output "$output/$module.xcframework"
 done
+
+args=()
+while IFS= read -r library; do
+    args+=(
+        -library "$library"
+        -headers "$root/Sources/GDExtension/include"
+    )
+done < "$derived_root/GDExtension.libraries"
+xcodebuild -create-xcframework \
+    "${args[@]}" \
+    -output "$output/GDExtension.xcframework"
 
 echo "Created binary artifacts in $output"
