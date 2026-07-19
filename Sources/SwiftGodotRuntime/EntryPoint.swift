@@ -197,7 +197,11 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
 
 // Extension deinitialization callback
 func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
-    //print ("SWIFT: extension_deinitialize")
+    // The extension is being unloaded while the engine's subsystems are still
+    // alive. Relinquish our references to held framework RefCounted objects now,
+    // so the engine reclaims them in its own ordered teardown and we never run
+    // object destruction during the later, unsafe `Main::cleanup` flush.
+    relinquishFrameworkReferencesForUnload()
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
