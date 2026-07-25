@@ -37,7 +37,9 @@ func makeDefaultInit (godotType: String, initCollection: String = "") -> String 
     case "enum::Variant.Type":
         return ".`nil`"
     case let e where e.starts (with: "enum::"):
-        return "\(e.dropFirst(6))(rawValue: 0)!"
+        // Not `e.dropFirst(6)`: the Swift name of the enum can differ from the Godot one, as
+        // `VisualShader.Type` (which would collide with Swift's metatypes) becoming `GType`.
+        return "\(getGodotType (SimpleType (type: e)))(rawValue: 0)!"
     case let e where e.starts (with: "bitfield::"):
         let simple = SimpleType (type: godotType, meta: nil)
         return "\(getGodotType (simple)) ()"
@@ -78,24 +80,37 @@ func generateVirtualProxy (_ p: Printer,
         return
     }
     let virtRet: String?
-    var returnOptional = false
     if let ret = method.returnValue {
-        let godotReturnType = ret.type
-        let godotReturnTypeIsReferenceType = classMap [godotReturnType] != nil
-        returnOptional = godotReturnTypeIsReferenceType && ret.meta != .required
-
         virtRet = getGodotType(ret)
     } else {
         virtRet = nil
     }
-    p ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
-        p ("guard let instance else { return }")
-        if let arguments = method.arguments, arguments.count > 0 {
-            p ("guard let args else { return }")
+    // The type and the fallback value produced by the nested `invoke ()` function below.  Godot
+    // hands us an uninitialized return slot and unconditionally reads (and destroys) whatever is
+    // left in it, so a proxy for a method with a return value has to produce a value on *every*
+    // path, including the guards that fail when the Swift object is already gone.
+    let bodyRetType: String?
+    var bodyRetDefault = ""
+    if let ret = method.returnValue {
+        if ret.type == "Variant" {
+            bodyRetType = "Variant?"
+            bodyRetDefault = "nil"
+        } else if classMap [ret.type] != nil {
+            // Always optional: there is no object to hand back when the guards fail.
+            bodyRetType = "\(virtRet!)?"
+            bodyRetDefault = "nil"
+        } else if ret.type == "String" {
+            // The call below is wrapped in `GString (...)`, so that is what `invoke ()` returns.
+            bodyRetType = "GString"
+            bodyRetDefault = "GString ()"
+        } else {
+            bodyRetType = virtRet!
+            bodyRetDefault = makeDefaultInit (godotType: ret.type)
         }
-        p ("let reference = Unmanaged<WrappedReference>.fromOpaque(instance).takeUnretainedValue()")
-        p ("guard let swiftObject = reference.value as? \(cdef.name) else { return }")
-        
+    } else {
+        bodyRetType = nil
+    }
+    p ("func _\(cdef.name)_proxy\(method.name) (instance: UnsafeMutableRawPointer?, args: UnsafePointer<UnsafeRawPointer?>?, retPtr: UnsafeMutableRawPointer?)") {
         var argCall = ""
         var argPrep = ""
         var i = 0
@@ -110,6 +125,11 @@ func generateVirtualProxy (_ p: Printer,
             }
             if arg.type == "String" {
                 argCall += "GString.stringFromGStringPtr (ptr: args [\(i)]!) ?? \"\""
+            } else if arg.type == "Variant" {
+                // Virtual ptrcall arguments point to Godot's native Variant storage, not to a
+                // Swift Variant class reference. Copy the borrowed contents into a Swift wrapper;
+                // loading `Variant.self` from this address attempts to retain native bytes.
+                argCall += "Variant.fromVirtualArgument (args [\(i)]!)"
             } else if classMap [arg.type] != nil {
                 //
                 // This idiom guarantees that: if this is a known object, we surface this
@@ -129,8 +149,19 @@ func generateVirtualProxy (_ p: Printer,
                         argCall += "getOrInitSwiftObject (nativeHandle: resolved_\(i)!, ownership: .borrowed) as! \(arg.type)"
                     }
                 }
+            } else if arg.type.starts (with: "typedarray::") {
+                // `TypedArray` is a struct whose single stored property is the `VariantArray`
+                // *class*, so loading one out of the ptrcall slot would reinterpret Godot's
+                // native array storage as a Swift object reference.  `VariantArray (content:)`
+                // runs Godot's copy constructor over the borrowed storage instead.
+                argCall += "\(getGodotType (arg)) (from: VariantArray (content: args [\(i)]!.assumingMemoryBound (to: VariantArray.ContentType.self).pointee))"
             } else if let storage = builtinClassStorage[arg.type] {
                 argCall += "\(mapTypeName (arg.type)) (content: args [\(i)]!.assumingMemoryBound (to: \(storage).self).pointee)"
+            } else if arg.type.starts (with: "enum::") {
+                // Godot encodes enums in a ptrcall slot as an int64_t, while a Swift enum is laid
+                // out in memory as its *case index*, not as its raw value.  Rebuild it through
+                // `rawValue` rather than reinterpreting the bytes.
+                argCall += "\(getGodotType (arg)) (rawValue: args [\(i)]!.assumingMemoryBound (to: Int64.self).pointee) ?? \(makeDefaultInit (godotType: arg.type))"
             } else {
                 let gt = getGodotType(arg)
                 if gt.hasPrefix("Packed") || gt.hasSuffix("Array") {
@@ -140,80 +171,76 @@ func generateVirtualProxy (_ p: Printer,
             }
             i += 1
         }
-        let hasReturn = method.returnValue != nil
-        if argPrep != "" {
-            p (argPrep)
-        }
-
-        // For Node's _ready method, call _before_ready() first to allow
-        // @Godot macro to perform setup tasks like RPC configuration
-        if cdef.name == "Node" && method.name == "_ready" {
-            p ("swiftObject._before_ready()")
-        }
 
         var call = "swiftObject.\(methodName) (\(argCall))"
         if method.returnValue?.type == "String" {
             call = "GString (\(call))"
         }
-        if hasReturn {
-            p ("let ret = \(call)")
-        } else {
-            p ("\(call)")
+
+        /// Emits the guards that resolve the Swift object, followed by the argument preparation.
+        /// `bail` is the statement used when a guard fails.
+        func printResolveAndArgs (bail: String) {
+            p ("guard let instance else { \(bail) }")
+            if let arguments = method.arguments, arguments.count > 0 {
+                p ("guard let args else { \(bail) }")
+            }
+            p ("let reference = Unmanaged<WrappedReference>.fromOpaque(instance).takeUnretainedValue()")
+            p ("guard let swiftObject = reference.value as? \(cdef.name) else { \(bail) }")
+
+            if argPrep != "" {
+                p (argPrep)
+            }
+
+            // For Node's _ready method, call _before_ready() first to allow
+            // @Godot macro to perform setup tasks like RPC configuration
+            if cdef.name == "Node" && method.name == "_ready" {
+                p ("swiftObject._before_ready()")
+            }
         }
+
+        guard let bodyRetType else {
+            printResolveAndArgs (bail: "return")
+            p ("\(call)")
+            return
+        }
+
+        p ("func invoke () -> \(bodyRetType)") {
+            printResolveAndArgs (bail: "return \(bodyRetDefault)")
+            p ("return \(call)")
+        }
+        p ("let ret = invoke ()")
+
         if let ret = method.returnValue {
             if ret.type == "Variant" {
-                p("""
-                retPtr!.storeBytes(of: ret.content, as: Variant.ContentType.self)
-                ret?.content = Variant.zero
-                """)
+                // Godot destroys the Variant we leave behind, so it needs a reference of its own:
+                // `ret` may well be a Variant the Swift subclass keeps holding on to.
+                p ("withUnsafePointer (to: ret.content) { gi.variant_new_copy (retPtr, $0) }")
             } else if isStruct(ret.type) || isStruct(virtRet ?? "NON_EXISTENT") || ret.type.starts(with: "bitfield::"){
                 p ("retPtr!.storeBytes (of: ret, as: \(virtRet!).self)")
             } else if ret.type.starts(with: "enum::") {
-                p ("retPtr!.storeBytes (of: Int32 (ret.rawValue), as: Int32.self)")
+                // The slot is an int64_t, and a Swift enum's memory layout is its case index
+                // rather than its raw value, so write the raw value out at its full width.
+                p ("retPtr!.storeBytes (of: Int64 (ret.rawValue), as: Int64.self)")
             } else if ret.type.contains("*") {
                 p ("retPtr!.storeBytes (of: ret, as: OpaquePointer?.self)")
+            } else if classMap [ret.type] != nil {
+                if isRefCountedType(ret.type) {
+                    p ("gi.ref_set_object(retPtr, ret?.handle)")
+                } else {
+                    p ("retPtr!.storeBytes (of: ret?.handle, as: GodotNativeObjectPointer?.self) // \(ret.type)")
+                }
             } else {
-                let derefField: String
-                let derefType: String
-                if ret.type.starts(with: "typedarray::") {
-                    derefField = "array.content"
-                    derefType = "type (of: ret.array.content)"
-                } else if classMap [ret.type] != nil {
-                    derefField = "handle"
-                    derefType = " GodotNativeObjectPointer?.self"
-                } else {
-                    derefField = "content"
-                    derefType = "type (of: ret.content)"
-                }
-                
-                let target: String
-                if ret.type.starts (with: "typedarray::") {
-                    target = "array.content"
-                } else {
-                    target = classMap [ret.type] != nil ? "handle" : "content"
-                }
-                if classMap [ret.type] != nil && isRefCountedType(ret.type) {
-                    p("gi.ref_set_object(retPtr, ret\(returnOptional ? "?" : "").handle)")
-                } else {
-                    p ("retPtr!.storeBytes (of: ret\(returnOptional ? "?" : "").\(derefField), as: \(derefType)) // \(ret.type)")
-                }
-                
-                // Poor man's transfer the ownership: we clear the content
-                // so the destructor has nothing to act on, because we are
-                // returning the reference to the other side.
-                if target == "content" {
-                    let type = getGodotType(SimpleType(type: ret.type))
-                    switch type {
-                    case "String":
-                        p ("ret.content = GString.zero")
-                    case "Array":
-                        p ("ret.content = VariantArray.zero")
-                    default:
-                        p ("ret.content = \(type).zero")
-                    }
-                } else if target == "array.content" {
-                    p("ret.array.content = VariantArray.zero")
-                }
+                // Class-backed builtins and typed arrays.  Godot takes ownership of the storage
+                // we write here and destroys it once it is done, so hand it a copy: stealing
+                // `ret`'s own storage would empty out an object the Swift subclass still owns,
+                // such as a cached property returned from the override.
+                let storageType = ret.type.starts (with: "typedarray::") ? "VariantArray" : mapTypeName (ret.type)
+                let source = ret.type.starts (with: "typedarray::") ? "ret.array.content" : "ret.content"
+                p ("let retCopy = \(storageType) (content: \(source))")
+                p ("retPtr!.storeBytes (of: retCopy.content, as: type (of: retCopy.content)) // \(ret.type)")
+                // Poor man's transfer of the ownership: we clear the content of our copy so its
+                // destructor has nothing to act on, because we handed that reference to Godot.
+                p ("retCopy.content = \(storageType).zero")
             }
         }
     }

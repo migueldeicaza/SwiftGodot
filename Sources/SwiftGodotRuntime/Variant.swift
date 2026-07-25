@@ -59,6 +59,22 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
         extensionInterface.variantInited(variant: self, content: &content)
     }
     
+    /// Copies the Godot-owned Variant that a virtual method's ptrcall slot points at, returning
+    /// nil when that Variant holds Godot Nil.
+    ///
+    /// The slot holds Godot's own 24-byte payload rather than a reference to a Swift ``Variant``,
+    /// so the contents have to be copied out of it.  Nil-ness is decided from the Variant's type
+    /// tag and not from the raw bytes: Godot leaves the payload of a Nil Variant uninitialized,
+    /// so comparing the whole content against ``zero`` reports a Nil Variant as non-nil whenever
+    /// the engine stack happened to hold something there.
+    @_spi(SwiftGodotRuntimePrivate)
+    public static func fromVirtualArgument (_ ptr: UnsafeRawPointer) -> Variant? {
+        guard gi.variant_get_type (ptr) != GDEXTENSION_VARIANT_TYPE_NIL else {
+            return nil
+        }
+        return Variant (copying: ptr.assumingMemoryBound (to: ContentType.self).pointee)
+    }
+
     /// Initialize with existing `ContentType` assuming this ``Variant`` owns it since now. Fails if `content` represents Godot Nil.
     @_spi(SwiftGodotRuntimePrivate) public init?(takingOver otherContent: ContentType) {
         if otherContent == Variant.zero { return nil }
