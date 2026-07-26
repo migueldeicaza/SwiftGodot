@@ -1,6 +1,6 @@
 // like this
 class TestClass: Node {     
-    /* comment *//* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal // Comment {
+    /* comment *//* comment */ var/* comment */ signal/* comment */: /* comment */ SimpleSignal { // Comment
         get {
             SimpleSignal(target: self, signalName: "signal")
         }

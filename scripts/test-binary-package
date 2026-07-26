@@ -12,6 +12,7 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 package_directory=$(mktemp -d)
 trap 'rm -rf "$package_directory"' EXIT
 checksum=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+swift_syntax_version=603.0.2
 
 for module in GDExtension SwiftGodot SwiftGodotRuntime; do
     if [[ ! -d "$artifact_directory/$module.xcframework" ]]; then
@@ -35,4 +36,37 @@ done
 cp "$root/scripts/binary-package/Package.local.swift" "$package_directory/Package.swift"
 cp "$root/scripts/binary-package/BinaryClient.swift" "$package_directory/Client/main.swift"
 
-swift run --package-path "$package_directory" BinaryClient
+swift run \
+    --package-path "$package_directory" \
+    --configuration release \
+    --enable-experimental-prebuilts \
+    BinaryClient
+
+prebuilt_directory="$package_directory/.build/prebuilts/swift-syntax/$swift_syntax_version"
+macro_support=$(find \
+    "$prebuilt_directory" \
+    -mindepth 1 \
+    -maxdepth 1 \
+    -type d \
+    -name '*-MacroSupport' \
+    -print \
+    -quit 2>/dev/null || true)
+if [[ -z $macro_support ]]; then
+    echo "SwiftPM fell back to building swift-syntax $swift_syntax_version from source" >&2
+    echo "Expected a MacroSupport prebuilt under $prebuilt_directory" >&2
+    exit 1
+fi
+
+source_build=$(find \
+    "$package_directory/.build" \
+    -type d \
+    -name 'SwiftSyntax*.build' \
+    -print \
+    -quit 2>/dev/null || true)
+if [[ -n $source_build ]]; then
+    echo "SwiftPM downloaded MacroSupport but still built swift-syntax from source" >&2
+    echo "Unexpected source build directory: $source_build" >&2
+    exit 1
+fi
+
+echo "Validated prebuilt SwiftSyntax at $macro_support"

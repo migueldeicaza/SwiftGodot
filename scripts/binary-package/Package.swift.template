@@ -14,7 +14,7 @@ let package = Package(
         .library(name: "SwiftGodotRuntime", targets: ["SwiftGodotRuntimeSupport"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax", from: "600.0.1"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "603.0.2"),
     ],
     targets: [
         .binaryTarget(

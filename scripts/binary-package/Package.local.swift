@@ -7,7 +7,7 @@ let package = Package(
     name: "SwiftGodotBinaryTest",
     platforms: [.macOS(.v14)],
     dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax", from: "600.0.1"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "603.0.2"),
     ],
     targets: [
         .binaryTarget(name: "SwiftGodot", path: "Artifacts/SwiftGodot.xcframework"),

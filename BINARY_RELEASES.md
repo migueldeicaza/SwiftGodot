@@ -13,7 +13,9 @@ The binary package contains two XCFrameworks:
 Each contains macOS Apple silicon and Intel slices, an iOS device slice, and
 iOS Simulator slices. Swift module interfaces are emitted in Release builds so
 compatible newer Swift compilers can consume the binaries. Macro implementations
-and GDExtension headers remain small source targets in SwiftGodotBinary.
+and GDExtension headers remain small source targets in SwiftGodotBinary. Release
+validation requires the signed SwiftSyntax 603.0.2 `MacroSupport` prebuilt
+supplied by SwiftPM, preventing an unnoticed source-build fallback.
 
 ## One-time repository setup
 
@@ -26,12 +28,13 @@ The normal workflow `GITHUB_TOKEN` uploads assets to the SwiftGodot release.
 
 Publishing a GitHub release triggers `.github/workflows/binaries.yml`. It:
 
-1. checks out the release tag and pins Xcode 26.5 / Swift 6.3,
+1. checks out the release tag and pins Xcode 26.6 / Swift 6.3.3,
 2. builds macOS, iOS, and iOS Simulator Release frameworks,
 3. packages `SwiftGodot.xcframework.zip` and
    `SwiftGodotRuntime.xcframework.zip`,
 4. generates and validates the SwiftGodotBinary manifest and source support
-   targets, then commits and tags that update,
+   targets, failing if SwiftPM falls back to compiling SwiftSyntax from source,
+   then commits and tags that update,
 5. uploads the assets and pushes the binary repository commit and tag.
 
 The commit-before-tag ordering fixes the historical off-by-one tags in the
