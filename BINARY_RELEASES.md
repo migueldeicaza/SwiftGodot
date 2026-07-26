@@ -33,8 +33,8 @@ Publishing a GitHub release triggers `.github/workflows/binaries.yml`. It:
 3. packages `SwiftGodot.xcframework.zip` and
    `SwiftGodotRuntime.xcframework.zip`,
 4. generates and validates the SwiftGodotBinary manifest and source support
-   targets, failing if SwiftPM falls back to compiling SwiftSyntax from source,
-   then commits and tags that update,
+   targets through a separate consumer package, failing if SwiftPM falls back
+   to compiling SwiftSyntax from source, then commits and tags that update,
 5. uploads the assets and pushes the binary repository commit and tag.
 
 The commit-before-tag ordering fixes the historical off-by-one tags in the
@@ -59,6 +59,8 @@ For a local macOS-only smoke test:
 
 ```sh
 SWIFTGODOT_PLATFORMS=macos scripts/build-binary-artifacts .build/binary-smoke
+scripts/test-binary-package .build/binary-smoke
 ```
 
-Omit `SWIFTGODOT_PLATFORMS` to build every supported Apple destination.
+The prebuilt validation requires Xcode 26.6 / Swift 6.3.3. Omit
+`SWIFTGODOT_PLATFORMS` to build every supported Apple destination.

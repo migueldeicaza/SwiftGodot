@@ -9,8 +9,10 @@ fi
 
 artifact_directory=$(cd "$1" && pwd)
 root=$(cd "$(dirname "$0")/.." && pwd)
-package_directory=$(mktemp -d)
-trap 'rm -rf "$package_directory"' EXIT
+test_directory=$(mktemp -d)
+package_directory="$test_directory/SwiftGodot"
+client_directory="$test_directory/BinaryClient"
+trap 'rm -rf "$test_directory"' EXIT
 checksum=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 swift_syntax_version=603.0.2
 
@@ -29,20 +31,25 @@ done
     "$checksum" \
     "$checksum"
 
-mkdir -p "$package_directory/Artifacts" "$package_directory/Client"
+mkdir -p \
+    "$package_directory/Artifacts" \
+    "$client_directory/Sources/BinaryClient"
 for module in GDExtension SwiftGodot SwiftGodotRuntime; do
     cp -a "$artifact_directory/$module.xcframework" "$package_directory/Artifacts/"
 done
 cp "$root/scripts/binary-package/Package.local.swift" "$package_directory/Package.swift"
-cp "$root/scripts/binary-package/BinaryClient.swift" "$package_directory/Client/main.swift"
+cp "$root/scripts/binary-package/Package.client.swift" "$client_directory/Package.swift"
+cp \
+    "$root/scripts/binary-package/BinaryClient.swift" \
+    "$client_directory/Sources/BinaryClient/main.swift"
 
 swift run \
-    --package-path "$package_directory" \
+    --package-path "$client_directory" \
     --configuration release \
     --enable-experimental-prebuilts \
     BinaryClient
 
-prebuilt_directory="$package_directory/.build/prebuilts/swift-syntax/$swift_syntax_version"
+prebuilt_directory="$client_directory/.build/prebuilts/swift-syntax/$swift_syntax_version"
 macro_support=$(find \
     "$prebuilt_directory" \
     -mindepth 1 \
@@ -58,7 +65,7 @@ if [[ -z $macro_support ]]; then
 fi
 
 source_build=$(find \
-    "$package_directory/.build" \
+    "$client_directory/.build" \
     -type d \
     -name 'SwiftSyntax*.build' \
     -print \

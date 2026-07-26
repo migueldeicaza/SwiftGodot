@@ -3,9 +3,19 @@
 import CompilerPluginSupport
 import PackageDescription
 
+// This package must be consumed through Package.client.swift during validation.
+// Making swift-syntax a direct dependency of the root test package causes
+// SwiftPM to classify it as exported and intentionally disable prebuilts.
 let package = Package(
-    name: "SwiftGodotBinaryTest",
-    platforms: [.macOS(.v14)],
+    name: "SwiftGodot",
+    platforms: [
+        .macOS(.v14),
+        .iOS(.v17),
+    ],
+    products: [
+        .library(name: "SwiftGodot", targets: ["SwiftGodotSupport"]),
+        .library(name: "SwiftGodotRuntime", targets: ["SwiftGodotRuntimeSupport"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax", from: "603.0.2"),
     ],
@@ -35,10 +45,13 @@ let package = Package(
                 "SwiftGodotMacroLibrary",
             ]
         ),
-        .executableTarget(
-            name: "BinaryClient",
-            dependencies: ["SwiftGodotSupport"],
-            path: "Client"
+        .target(
+            name: "SwiftGodotRuntimeSupport",
+            dependencies: [
+                "SwiftGodotRuntime",
+                "GDExtension",
+                "SwiftGodotMacroLibrary",
+            ]
         ),
     ]
 )
