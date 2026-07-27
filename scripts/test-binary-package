@@ -10,7 +10,7 @@ fi
 artifact_directory=$(cd "$1" && pwd)
 root=$(cd "$(dirname "$0")/.." && pwd)
 test_directory=$(mktemp -d)
-package_directory="$test_directory/SwiftGodot"
+package_directory="$test_directory/SwiftGodotBinary"
 client_directory="$test_directory/BinaryClient"
 trap 'rm -rf "$test_directory"' EXIT
 checksum=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
