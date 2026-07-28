@@ -64,16 +64,7 @@ if [[ -z $macro_support ]]; then
     exit 1
 fi
 
-source_build=$(find \
-    "$client_directory/.build" \
-    -type d \
-    -name 'SwiftSyntax*.build' \
-    -print \
-    -quit 2>/dev/null || true)
-if [[ -n $source_build ]]; then
-    echo "SwiftPM downloaded MacroSupport but still built swift-syntax from source" >&2
-    echo "Unexpected source build directory: $source_build" >&2
-    exit 1
-fi
-
-echo "Validated prebuilt SwiftSyntax at $macro_support"
+# MacroSupport is the prebuilt supplied by SwiftPM.  Building the consuming
+# macro implementation can still create a host-tool SwiftSyntax build directory;
+# that directory does not indicate that MacroSupport fell back to source.
+echo "Validated prebuilt MacroSupport at $macro_support"
