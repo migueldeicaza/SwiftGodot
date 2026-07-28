@@ -55,7 +55,7 @@ jobs:
         env:
           ARTIFACT_DIRECTORY: ${{ runner.temp }}/swiftgodot-binaries
         run: |
-          for module in GDExtension SwiftGodot SwiftGodotRuntime; do
+          for module in GDExtension SwiftGodot SwiftGodotRuntime SwiftGodotMacroPlugin; do
             ditto -c -k --sequesterRsrc --keepParent \
               "$ARTIFACT_DIRECTORY/$module.xcframework" \
               "$ARTIFACT_DIRECTORY/$module.xcframework.zip"
@@ -63,6 +63,7 @@ jobs:
           echo "swiftgodot_checksum=$(swift package compute-checksum "$ARTIFACT_DIRECTORY/SwiftGodot.xcframework.zip")" >> "$GITHUB_OUTPUT"
           echo "runtime_checksum=$(swift package compute-checksum "$ARTIFACT_DIRECTORY/SwiftGodotRuntime.xcframework.zip")" >> "$GITHUB_OUTPUT"
           echo "gdextension_checksum=$(swift package compute-checksum "$ARTIFACT_DIRECTORY/GDExtension.xcframework.zip")" >> "$GITHUB_OUTPUT"
+          echo "macro_plugin_checksum=$(swift package compute-checksum "$ARTIFACT_DIRECTORY/SwiftGodotMacroPlugin.xcframework.zip")" >> "$GITHUB_OUTPUT"
 
       - name: Keep a workflow artifact
         uses: actions/upload-artifact@v4
@@ -86,6 +87,7 @@ jobs:
           SWIFTGODOT_CHECKSUM: ${{ steps.artifacts.outputs.swiftgodot_checksum }}
           RUNTIME_CHECKSUM: ${{ steps.artifacts.outputs.runtime_checksum }}
           GDEXTENSION_CHECKSUM: ${{ steps.artifacts.outputs.gdextension_checksum }}
+          MACRO_PLUGIN_CHECKSUM: ${{ steps.artifacts.outputs.macro_plugin_checksum }}
         run: |
           scripts/update-binary-package \
             SwiftGodotBinary \
@@ -93,7 +95,8 @@ jobs:
             "${{ github.repository }}" \
             "$SWIFTGODOT_CHECKSUM" \
             "$RUNTIME_CHECKSUM" \
-            "$GDEXTENSION_CHECKSUM"
+            "$GDEXTENSION_CHECKSUM" \
+            "$MACRO_PLUGIN_CHECKSUM"
 
           cd SwiftGodotBinary
           git config user.name "github-actions[bot]"
@@ -124,6 +127,7 @@ jobs:
           gh release upload "$RELEASE_TAG" \
             "$ARTIFACT_DIRECTORY/GDExtension.xcframework.zip" \
             "$ARTIFACT_DIRECTORY/SwiftGodot.xcframework.zip" \
+            "$ARTIFACT_DIRECTORY/SwiftGodotMacroPlugin.xcframework.zip" \
             "$ARTIFACT_DIRECTORY/SwiftGodotRuntime.xcframework.zip" \
             --clobber
 

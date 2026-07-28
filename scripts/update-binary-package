@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-if [[ $# -ne 6 ]]; then
-    echo "Usage: $0 PACKAGE_DIRECTORY TAG SOURCE_REPOSITORY SWIFTGODOT_CHECKSUM RUNTIME_CHECKSUM GDEXTENSION_CHECKSUM" >&2
+if [[ $# -ne 7 ]]; then
+    echo "Usage: $0 PACKAGE_DIRECTORY TAG SOURCE_REPOSITORY SWIFTGODOT_CHECKSUM RUNTIME_CHECKSUM GDEXTENSION_CHECKSUM MACRO_PLUGIN_CHECKSUM" >&2
     exit 1
 fi
 
@@ -13,6 +13,7 @@ source_repository=$3
 swiftgodot_checksum=$4
 runtime_checksum=$5
 gdextension_checksum=$6
+macro_plugin_checksum=$7
 root=$(cd "$(dirname "$0")/.." && pwd)
 template_root="$root/scripts/binary-package"
 
@@ -35,7 +36,7 @@ if [[ ! $source_repository =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
     echo "Invalid source repository: $source_repository" >&2
     exit 1
 fi
-for checksum in "$swiftgodot_checksum" "$runtime_checksum" "$gdextension_checksum"; do
+for checksum in "$swiftgodot_checksum" "$runtime_checksum" "$gdextension_checksum" "$macro_plugin_checksum"; do
     if [[ ! $checksum =~ ^[0-9a-f]{64}$ ]]; then
         echo "Invalid SwiftPM checksum: $checksum" >&2
         exit 1
@@ -45,19 +46,18 @@ done
 rm -rf \
     "$package_directory/Sources/GDExtension" \
     "$package_directory/Sources/SwiftGodotMacros" \
+    "$package_directory/Sources/SwiftGodotMacroLibrary" \
     "$package_directory/Sources/SwiftGodotSupport" \
     "$package_directory/Sources/SwiftGodotRuntimeSupport"
 
 mkdir -p \
+    "$package_directory/Sources/SwiftGodotMacroLibrary" \
     "$package_directory/Sources/SwiftGodotSupport" \
     "$package_directory/Sources/SwiftGodotRuntimeSupport"
 
-rsync -a --delete --delete-excluded \
-    --include='*/' \
-    --include='*.swift' \
-    --exclude='*' \
-    "$root/Sources/SwiftGodotMacroLibrary/" \
-    "$package_directory/Sources/SwiftGodotMacroLibrary/"
+# The macro implementation ships prebuilt in SwiftGodotMacroPlugin.xcframework,
+# so the macro target here is only the shim that starts it.
+cp "$template_root/MacroShim.swift" "$package_directory/Sources/SwiftGodotMacroLibrary/main.swift"
 cp "$template_root/SwiftGodotSupport.swift" "$package_directory/Sources/SwiftGodotSupport/SwiftGodotSupport.swift"
 cp "$template_root/SwiftGodotRuntimeSupport.swift" "$package_directory/Sources/SwiftGodotRuntimeSupport/SwiftGodotRuntimeSupport.swift"
 
@@ -70,6 +70,7 @@ render() {
         -e "s|__SWIFTGODOT_CHECKSUM__|$swiftgodot_checksum|g" \
         -e "s|__RUNTIME_CHECKSUM__|$runtime_checksum|g" \
         -e "s|__GDEXTENSION_CHECKSUM__|$gdextension_checksum|g" \
+        -e "s|__MACRO_PLUGIN_CHECKSUM__|$macro_plugin_checksum|g" \
         "$source" > "$destination.tmp"
     mv "$destination.tmp" "$destination"
 }

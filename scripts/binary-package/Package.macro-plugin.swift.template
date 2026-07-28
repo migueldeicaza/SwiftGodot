@@ -1,0 +1,45 @@
+// swift-tools-version: 6.3
+
+import PackageDescription
+
+// Builds the SwiftGodot macro implementations, and the swift-syntax they use,
+// into one static library.  scripts/build-macro-plugin packages the result as
+// the SwiftGodotMacroPlugin XCFramework that SwiftGodotBinary links into its
+// macro target.  `main.swift` is excluded because a static library must not
+// carry a `main` symbol; PrebuiltEntry.swift provides the C entry point used
+// by the shim instead.
+let package = Package(
+    name: "SwiftGodotMacroPluginBuild",
+    platforms: [
+        // Deliberately below SwiftGodotBinary's own floor: the archive is
+        // linked into whatever host tool the consumer's build system produces,
+        // and an older deployment target always links cleanly into a newer one.
+        .macOS(.v13),
+    ],
+    products: [
+        .library(
+            name: "SwiftGodotMacroPlugin",
+            type: .static,
+            targets: ["SwiftGodotMacroLibrary"]
+        ),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "__SWIFT_SYNTAX_VERSION__"),
+    ],
+    targets: [
+        .target(
+            name: "SwiftGodotMacroLibrary",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftBasicFormat", package: "swift-syntax"),
+            ],
+            exclude: ["main.swift"],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+    ]
+)

@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+    echo "Usage: $0 [OUTPUT_DIRECTORY]"
+    echo ""
+    echo "Build SwiftGodotMacroPlugin.xcframework: the SwiftGodot macro"
+    echo "implementations and swift-syntax compiled into one static library."
+    echo "SwiftGodotBinary links it into a macro target shim, so consumers of"
+    echo "the binary package never resolve or build swift-syntax."
+    echo ""
+    echo "Set SWIFTGODOT_MACRO_PLUGIN_ARCHS to a space-separated subset of:"
+    echo "  arm64 x86_64"
+    exit 0
+fi
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+output=${1:-"$root/.build/binary-artifacts"}
+template_root="$root/scripts/binary-package"
+archs=${SWIFTGODOT_MACRO_PLUGIN_ARCHS:-"arm64 x86_64"}
+# Keep this in step with Package.macro-plugin.swift.template.
+deployment_target=13.0
+
+absolute_path() {
+    local path=$1
+    if [[ -z $path || $path == / || $path == . || $path == .. ]]; then
+        echo "Refusing unsafe build directory: $path" >&2
+        exit 1
+    fi
+    local parent
+    parent=$(dirname "$path")
+    mkdir -p "$parent"
+    parent=$(cd "$parent" && pwd -P)
+    echo "$parent/$(basename "$path")"
+}
+
+output=$(absolute_path "$output")
+if [[ $output == "$root" ]]; then
+    echo "Refusing to use the repository root as a build directory" >&2
+    exit 1
+fi
+mkdir -p "$output"
+
+# The plugin must be built against the same swift-syntax the source package
+# uses, so read the requirement from the one manifest that declares it.
+swift_syntax_version=$(sed -n 's|.*swift-syntax", from: "\([0-9.]*\)".*|\1|p' "$root/Package.swift" | head -1)
+if [[ -z $swift_syntax_version ]]; then
+    echo "Could not read the swift-syntax version from $root/Package.swift" >&2
+    exit 1
+fi
+
+work=$(mktemp -d "${TMPDIR:-/tmp}/swiftgodot-macro-plugin.XXXXXX")
+if [[ ${SWIFTGODOT_MACRO_PLUGIN_KEEP_WORK:-0} != 1 ]]; then
+    trap 'rm -rf "$work"' EXIT
+else
+    echo "Keeping the macro plugin build directory: $work"
+fi
+
+package="$work/SwiftGodotMacroPluginBuild"
+mkdir -p "$package/Sources"
+rsync -a --delete --delete-excluded \
+    --include='*/' \
+    --include='*.swift' \
+    --exclude='*' \
+    "$root/Sources/SwiftGodotMacroLibrary/" \
+    "$package/Sources/SwiftGodotMacroLibrary/"
+sed "s|__SWIFT_SYNTAX_VERSION__|$swift_syntax_version|g" \
+    "$template_root/Package.macro-plugin.swift.template" > "$package/Package.swift"
+
+find_archive() {
+    local scratch=$1
+    local triple=$2
+    local archive
+    # Xcode 27 builds through swift-build and writes to out/Products; earlier
+    # SwiftPM releases write to a per-triple directory.
+    for archive in \
+        "$scratch/out/Products/Release/libSwiftGodotMacroPlugin.a" \
+        "$scratch/$triple/release/libSwiftGodotMacroPlugin.a" \
+        "$scratch/release/libSwiftGodotMacroPlugin.a"; do
+        if [[ -f $archive ]]; then
+            echo "$archive"
+            return
+        fi
+    done
+    find "$scratch" -name libSwiftGodotMacroPlugin.a -print -quit
+}
+
+archives=()
+for arch in $archs; do
+    case "$arch" in
+        arm64|x86_64) ;;
+        *)
+            echo "Unsupported macro plugin architecture: $arch" >&2
+            exit 1
+            ;;
+    esac
+
+    scratch="$work/scratch-$arch"
+    triple="$arch-apple-macosx$deployment_target"
+    swift build \
+        --package-path "$package" \
+        --scratch-path "$scratch" \
+        --configuration release \
+        --triple "$triple"
+
+    archive=$(find_archive "$scratch" "$arch-apple-macosx")
+    if [[ -z $archive ]]; then
+        echo "SwiftPM did not produce a static macro plugin library for $arch" >&2
+        exit 1
+    fi
+    # grep -q would close the pipe early, and `set -o pipefail` would then
+    # report the SIGPIPE from nm as a failure, so count the matches instead.
+    symbols=$(nm "$archive" 2>/dev/null || true)
+    if [[ $(grep -c '^[0-9a-f]* T _swiftgodot_macro_plugin_main$' <<< "$symbols") -eq 0 ]]; then
+        echo "$archive does not export swiftgodot_macro_plugin_main" >&2
+        exit 1
+    fi
+    if [[ $(grep -c '^[0-9a-f]* T _main$' <<< "$symbols") -ne 0 ]]; then
+        echo "$archive defines main; the macro shim cannot link it" >&2
+        exit 1
+    fi
+
+    cp "$archive" "$work/libSwiftGodotMacroPlugin-$arch.a"
+
+    # The objects carry a debug map that names the build directory this script
+    # deletes. Without this the linker warns "unable to open object file" for
+    # every module, in every client build, forever.
+    xcrun strip -S "$work/libSwiftGodotMacroPlugin-$arch.a"
+    if [[ $(nm -pa "$work/libSwiftGodotMacroPlugin-$arch.a" 2>/dev/null | grep -c ' OSO ') -ne 0 ]]; then
+        echo "The $arch macro plugin library still references its build directory" >&2
+        exit 1
+    fi
+
+    archives+=("$work/libSwiftGodotMacroPlugin-$arch.a")
+done
+
+# No headers: an XCFramework that carries them copies them into the client's
+# shared include directory, where a second module.modulemap would collide with
+# the one from GDExtension.xcframework.  The shim declares the entry point with
+# @_silgen_name instead.
+staging="$work/staging"
+mkdir -p "$staging"
+
+library="$staging/libSwiftGodotMacroPlugin.a"
+if [[ ${#archives[@]} -eq 1 ]]; then
+    cp "${archives[0]}" "$library"
+else
+    xcrun lipo -create "${archives[@]}" -output "$library"
+fi
+
+rm -rf "$output/SwiftGodotMacroPlugin.xcframework"
+xcodebuild -create-xcframework \
+    -library "$library" \
+    -output "$output/SwiftGodotMacroPlugin.xcframework"
+
+echo "Created $output/SwiftGodotMacroPlugin.xcframework for: $archs"

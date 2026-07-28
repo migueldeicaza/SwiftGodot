@@ -313,4 +313,6 @@ xcodebuild -create-xcframework \
     "${args[@]}" \
     -output "$output/GDExtension.xcframework"
 
+"$root/scripts/build-macro-plugin" "$output"
+
 echo "Created binary artifacts in $output"

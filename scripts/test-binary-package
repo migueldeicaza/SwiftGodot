@@ -14,9 +14,9 @@ package_directory="$test_directory/SwiftGodotBinary"
 client_directory="$test_directory/BinaryClient"
 trap 'rm -rf "$test_directory"' EXIT
 checksum=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-swift_syntax_version=603.0.2
+modules=(GDExtension SwiftGodot SwiftGodotRuntime SwiftGodotMacroPlugin)
 
-for module in GDExtension SwiftGodot SwiftGodotRuntime; do
+for module in "${modules[@]}"; do
     if [[ ! -d "$artifact_directory/$module.xcframework" ]]; then
         echo "Missing $artifact_directory/$module.xcframework" >&2
         exit 1
@@ -29,12 +29,13 @@ done
     migueldeicaza/SwiftGodot \
     "$checksum" \
     "$checksum" \
+    "$checksum" \
     "$checksum"
 
 mkdir -p \
     "$package_directory/Artifacts" \
     "$client_directory/Sources/BinaryClient"
-for module in GDExtension SwiftGodot SwiftGodotRuntime; do
+for module in "${modules[@]}"; do
     cp -a "$artifact_directory/$module.xcframework" "$package_directory/Artifacts/"
 done
 cp "$root/scripts/binary-package/Package.local.swift" "$package_directory/Package.swift"
@@ -43,28 +44,25 @@ cp \
     "$root/scripts/binary-package/BinaryClient.swift" \
     "$client_directory/Sources/BinaryClient/main.swift"
 
+# BinaryClient uses @Godot, so this only succeeds if the prebuilt macro plugin
+# loads and expands.
 swift run \
     --package-path "$client_directory" \
     --configuration release \
-    --enable-experimental-prebuilts \
     BinaryClient
 
-prebuilt_directory="$client_directory/.build/prebuilts/swift-syntax/$swift_syntax_version"
-macro_support=$(find \
-    "$prebuilt_directory" \
-    -mindepth 1 \
-    -maxdepth 1 \
-    -type d \
-    -name '*-MacroSupport' \
-    -print \
-    -quit 2>/dev/null || true)
-if [[ -z $macro_support ]]; then
-    echo "SwiftPM fell back to building swift-syntax $swift_syntax_version from source" >&2
-    echo "Expected a MacroSupport prebuilt under $prebuilt_directory" >&2
+# The point of the prebuilt plugin is that swift-syntax never reaches a
+# consumer, neither as a checkout nor as a toolchain-specific prebuilt.
+swift_syntax_use=$(
+    find "$client_directory/.build" \
+        -maxdepth 3 \
+        \( -path '*/checkouts/swift-syntax*' -o -path '*/prebuilts/swift-syntax*' \) \
+        -print \
+        -quit 2>/dev/null || true
+)
+if [[ -n $swift_syntax_use ]]; then
+    echo "The binary package still pulls in swift-syntax: $swift_syntax_use" >&2
     exit 1
 fi
 
-# MacroSupport is the prebuilt supplied by SwiftPM.  Building the consuming
-# macro implementation can still create a host-tool SwiftSyntax build directory;
-# that directory does not indicate that MacroSupport fell back to source.
-echo "Validated prebuilt MacroSupport at $macro_support"
+echo "Validated the prebuilt macro plugin: the client resolved no swift-syntax"

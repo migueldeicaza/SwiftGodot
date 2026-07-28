@@ -2,10 +2,10 @@
 
 import PackageDescription
 
-// Keep this as the root package so swift-syntax remains a transitive,
-// host-only dependency supplied by SwiftGodotBinary's macro target. The
-// dependency identity must also differ from the source package's `swiftgodot`
-// identity embedded in the XCFramework interfaces.
+// Keep this as the root package so the validation build sees SwiftGodotBinary
+// exactly the way a real client does. The dependency identity must differ from
+// the source package's `swiftgodot` identity embedded in the XCFramework
+// interfaces.
 let package = Package(
     name: "BinaryClient",
     platforms: [.macOS(.v14)],

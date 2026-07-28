@@ -9,8 +9,9 @@ runtime API). Client source continues to use `import SwiftGodot` or
 `import SwiftGodotRuntime` respectively.
 
 The XCFrameworks contain macOS (Apple silicon and Intel), iOS device, and iOS
-Simulator slices. The SwiftGodot macro implementation remains a source target
-so macros such as `@Godot`, `@Callable`, and `@Export` work normally.
+Simulator slices. Macros such as `@Godot`, `@Callable`, and `@Export` work
+normally: their implementation ships prebuilt as well, so this package needs no
+swift-syntax dependency and never compiles one.
 
 For non-Apple platforms or source builds, depend directly on
 https://github.com/__SOURCE_REPOSITORY__.

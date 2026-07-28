@@ -638,7 +638,12 @@ public struct GodotMacro: MemberMacro {
     }
 }
 
-@main
+/// The set of macros this plugin implements.
+///
+/// The entry point lives in `main.swift` (source builds) and in
+/// `PrebuiltEntry.swift` (prebuilt plugin builds), so this type must not carry
+/// `@main`: the prebuilt build compiles these sources as a static library, and
+/// `@main` would emit a second `main` symbol into the archive.
 struct SwiftGodotCompilerPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         GodotMacro.self,

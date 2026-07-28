@@ -3,6 +3,10 @@
 import CompilerPluginSupport
 import PackageDescription
 
+// SwiftGodotMacroPlugin is the SwiftGodot macro implementation, and the
+// swift-syntax it uses, prebuilt as a static library. The macro target below
+// only starts it, so this package has no swift-syntax dependency and nothing
+// here has to be compiled against a matching toolchain prebuilt.
 let package = Package(
     name: "SwiftGodot",
     platforms: [
@@ -12,9 +16,6 @@ let package = Package(
     products: [
         .library(name: "SwiftGodot", targets: ["SwiftGodotSupport"]),
         .library(name: "SwiftGodotRuntime", targets: ["SwiftGodotRuntimeSupport"]),
-    ],
-    dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax", from: "603.0.2"),
     ],
     targets: [
         .binaryTarget(
@@ -32,18 +33,14 @@ let package = Package(
             url: "https://github.com/__SOURCE_REPOSITORY__/releases/download/__TAG__/GDExtension.xcframework.zip",
             checksum: "__GDEXTENSION_CHECKSUM__"
         ),
+        .binaryTarget(
+            name: "SwiftGodotMacroPlugin",
+            url: "https://github.com/__SOURCE_REPOSITORY__/releases/download/__TAG__/SwiftGodotMacroPlugin.xcframework.zip",
+            checksum: "__MACRO_PLUGIN_CHECKSUM__"
+        ),
         .macro(
             name: "SwiftGodotMacroLibrary",
-            dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftBasicFormat", package: "swift-syntax"),
-            ],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            dependencies: ["SwiftGodotMacroPlugin"]
         ),
         .target(
             name: "SwiftGodotSupport",

@@ -3,9 +3,8 @@
 import CompilerPluginSupport
 import PackageDescription
 
-// This package must be consumed through Package.client.swift during validation.
-// Making swift-syntax a direct dependency of the root test package causes
-// SwiftPM to classify it as exported and intentionally disable prebuilts.
+// Local variant of Package.swift.template used by scripts/test-binary-package:
+// the same graph, reading the XCFrameworks from disk instead of a release.
 let package = Package(
     name: "SwiftGodot",
     platforms: [
@@ -16,25 +15,14 @@ let package = Package(
         .library(name: "SwiftGodot", targets: ["SwiftGodotSupport"]),
         .library(name: "SwiftGodotRuntime", targets: ["SwiftGodotRuntimeSupport"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax", from: "603.0.2"),
-    ],
     targets: [
         .binaryTarget(name: "SwiftGodot", path: "Artifacts/SwiftGodot.xcframework"),
         .binaryTarget(name: "SwiftGodotRuntime", path: "Artifacts/SwiftGodotRuntime.xcframework"),
         .binaryTarget(name: "GDExtension", path: "Artifacts/GDExtension.xcframework"),
+        .binaryTarget(name: "SwiftGodotMacroPlugin", path: "Artifacts/SwiftGodotMacroPlugin.xcframework"),
         .macro(
             name: "SwiftGodotMacroLibrary",
-            dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                .product(name: "SwiftDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftBasicFormat", package: "swift-syntax"),
-            ],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            dependencies: ["SwiftGodotMacroPlugin"]
         ),
         .target(
             name: "SwiftGodotSupport",
