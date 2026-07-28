@@ -414,12 +414,15 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
     let arguments = method.arguments ?? []
     
     
-    let argumentTranslationOptions: MethodArgument.TranslationOptions
-    
+    // `.smallIntToInt` is not cosmetic: Godot's ptrcall reads every integer argument as
+    // `int64_t` (`PtrToArg<int32_t>::convert` dereferences an `const int64_t *`), so pointing
+    // it at a 4-byte `Int32` local makes it read 4 bytes past the end.  Promoting the
+    // marshalling temporary to `Int` gives it the full slot.  The public signature is
+    // unaffected - `getArgumentDeclaration` still declares the narrow type.
+    var argumentTranslationOptions: MethodArgument.TranslationOptions = [.smallIntToInt]
+
     if mapStringToSwift {
-        argumentTranslationOptions = .gStringToString
-    } else {
-        argumentTranslationOptions = []
+        argumentTranslationOptions.insert(.gStringToString)
     }
     
     // TODO: move down
@@ -526,6 +529,29 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             && builtinGodotTypeNames[godotReturnType] == .isClass
     }
 
+    /// True when the declared Swift return type is an integer narrower than the slot Godot
+    /// actually writes.
+    ///
+    /// Godot's ptrcall ABI encodes *every* integer as `int64_t`, whatever the declared width:
+    /// `PtrToArg<int32_t>` and friends are `PtrToArgConvert<..., int64_t>`, whose `encode` is
+    /// `*((int64_t *)p_ptr) = ...` (`core/variant/method_ptrcall.h`).  Handing the engine a
+    /// 4-byte `Int32` as the return slot therefore lets it write 4 bytes past it - into
+    /// whatever the compiler put next in the caller's frame, which in an optimized build is
+    /// the stack canary.  Stage through a 64-bit local and narrow on the way out, the way
+    /// godot-cpp does with `PtrToArg<T>::EncodeT`.
+    /// Applies to virtual methods too: a virtual that also carries a method hash still emits a
+    /// real `object_method_bind_ptrcall` for the "call the base implementation" path, through
+    /// exactly this storage (`EditorPlugin._forward3dGuiInput` and friends).
+    var returnNeedsWideningStorage: Bool {
+        guard !method.isVararg, method.returnValue?.type == "int" else { return false }
+        switch returnType {
+        case "Int32", "UInt32", "Int16", "UInt16", "Int8", "UInt8":
+            return true
+        default:
+            return false
+        }
+    }
+
     /// returns appropriate declaration of the return type, used by the helper function.
     let frameworkType = godotReturnTypeIsReferenceType
     func returnTypeDecl() -> String {
@@ -555,8 +581,10 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                         return "var _result: Variant.ContentType = Variant.zero"
                     } else if godotReturnType.starts(with: "enum::") {
                         return "var _result: Int64 = 0 // to avoid packed enums on the stack"
+                    } else if returnNeedsWideningStorage {
+                        return "var _result: Int64 = 0 // ptrcall encodes every int as int64; see returnNeedsWideningStorage"
                     } else {
-                        
+
                         var declType: String = "let"
                         if (argTypeNeedsCopy(godotType: godotReturnType)) {
                             if builtinGodotTypeNames [godotReturnType] != .isClass {
@@ -657,6 +685,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             return "return \(returnType) (rawValue: _result)!"
         } else if godotReturnType == "String" {
             return "return _result.description"
+        } else if returnNeedsWideningStorage {
+            return "return \(returnType)(truncatingIfNeeded: _result)"
         } else {
             return "return _result"
         }
