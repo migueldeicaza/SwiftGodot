@@ -670,7 +670,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
             public required init(_ context: InitContext) {
                 super.init(context)
 
-                if context.origin == .swift || context.origin == .gdscript {
+                if context.origin.takesInitialReference {
                     _ = initRef()
                 }
             }

@@ -64,6 +64,46 @@ enum InitOrigin {
     /// Godot is creating one of our registered Swift user types and calls back
     /// into Swift to materialize the wrapper and user instance.
     case gdscript
+
+    /// Swift is adopting a raw pointer to an object that this runtime did not create,
+    /// through `init(nativeHandle:)`.
+    ///
+    /// This is `.swift` as far as reference counting goes - that API has always taken the
+    /// initial reference on a `RefCounted` adopted this way - but not as far as instance
+    /// bindings go, which is why it is a case of its own.  See ``constructedHere``.
+    case adoptedHandle
+}
+
+extension InitOrigin {
+    /// Whether this runtime created the native object, and may therefore claim it with
+    /// `object_set_instance_binding`.
+    ///
+    /// Godot reserves that call for the extension that creates the object: it writes the
+    /// creating extension's slot and refuses a second live write.  A runtime that merely wraps
+    /// somebody else's object records its wrapper with `object_get_instance_binding` instead,
+    /// which keys by extension token and appends, so several runtimes can wrap one object.
+    ///
+    /// This matters as soon as two GDExtensions built against SwiftGodot are live in one
+    /// process, and to the host application in an embedded build, which is a runtime like any
+    /// other as far as bindings are concerned.
+    var constructedHere: Bool {
+        switch self {
+        case .swift, .gdscript:
+            return true
+        case .godot, .adoptedHandle:
+            return false
+        }
+    }
+
+    /// Whether a `RefCounted` wrapper built with this origin takes the initial reference.
+    var takesInitialReference: Bool {
+        switch self {
+        case .swift, .gdscript, .adoptedHandle:
+            return true
+        case .godot:
+            return false
+        }
+    }
 }
 
 /// Opaque pointer representing Godot `Object *`
@@ -410,11 +450,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public required init(_ context: InitContext) {
         handle = context.handle
         extensionInterface.objectInited(object: self)
-        #if SWIFTGODOT_WITH_MULTI_PROCESS
         bindSwiftObject(self, context)
-        #else
-        bindSwiftObject(self, toGodot: context.handle)
-        #endif
     }
     
     /// This property indicates if the instance is valid or not.
@@ -476,7 +512,7 @@ public extension _GodotBridgeable where Self: Wrapped {
     /// Delicate API.
     /// Initialize a new object from a raw handle.
     init(nativeHandle: GodotNativeObjectPointer) {
-        self.init(InitContext(handle: nativeHandle, origin: .swift))
+        self.init(InitContext(handle: nativeHandle, origin: .adoptedHandle))
     }
 }
 
@@ -515,12 +551,19 @@ func bindSwiftObject(_ object: some Wrapped, _ context: InitContext) {
         }
     }
 
-    if context.origin == .swift || context.origin == .gdscript {
+    if context.origin.constructedHere {
         gi.object_set_instance_binding(context.handle, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
+    } else if context.origin == .adoptedHandle {
+        // Someone else's object: record the wrapper in this runtime's own binding slot.  The
+        // `.godot` origin does not come through here - that wrapper is built inside
+        // `bindingCreate`, which the engine is calling from `object_get_instance_binding`, and
+        // it records the binding by returning it.
+        recordAdoptedInstanceBinding(context.handle, expecting: unmanaged.toOpaque(), &callbacks)
     }
 }
 #else
-func bindSwiftObject(_ instance: some Wrapped, toGodot handle: GodotNativeObjectPointer) {
+func bindSwiftObject(_ instance: some Wrapped, _ context: InitContext) {
+    let handle = context.handle
     let type = Swift.type(of: instance)
     let thisTypeName = StringName (stringLiteral: String (describing: type))
     let frameworkType = thisTypeName == type.godotClassName
@@ -561,10 +604,53 @@ func bindSwiftObject(_ instance: some Wrapped, toGodot handle: GodotNativeObject
             gi.object_set_instance(handle, ptr, unmanaged.retain().toOpaque())
         }
     }
-    
-    gi.object_set_instance_binding(handle, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
+
+    if context.origin.constructedHere {
+        gi.object_set_instance_binding(handle, extensionInterface.getLibrary(), unmanaged.toOpaque(), &callbacks)
+    } else {
+        // We did not create this object - it surfaced from Godot, or was adopted from a raw
+        // handle - so its creating extension may already own the slot `set` writes.  Record the
+        // wrapper in this runtime's own slot instead.
+        recordAdoptedInstanceBinding(handle, expecting: unmanaged.toOpaque(), &callbacks)
+    }
 }
 #endif
+
+/// Records the wrapper this runtime just built for an object it did not create, as this
+/// runtime's instance binding for that object.
+///
+/// `object_set_instance_binding` is reserved for the extension that creates the object: it
+/// writes that extension's slot and refuses a second live write, so a runtime that merely wraps
+/// somebody else's object must not call it.  `object_get_instance_binding` is the multi-tenant
+/// half of the pair - it keys by extension token and appends - and it materializes a missing
+/// binding by calling back into our create callback, which finds the wrapper in the live tables
+/// that `bindSwiftObject` has already populated by this point.
+///
+/// The call is made for the recording side effect.  It hands back the binding this runtime ends
+/// up with, which is the wrapper passed in unless this object still carries a binding from a
+/// wrapper that died without Godot having destroyed the object yet - the one case where the
+/// tables and the engine can disagree, and previously the case where `set` reported
+/// `ERR_FAIL_COND` and left the stale binding in place.
+func recordAdoptedInstanceBinding(
+    _ handle: GodotNativeObjectPointer,
+    expecting binding: UnsafeMutableRawPointer,
+    _ callbacks: inout GDExtensionInstanceBindingCallbacks
+) {
+    let recorded = gi.object_get_instance_binding(handle, extensionInterface.getLibrary(), &callbacks)
+    if recorded != binding {
+        print("SWIFT ERROR: an older binding for \(handle) is still registered, so this wrapper will not be told when Godot destroys the object")
+    }
+}
+
+/// The `WrappedReference` this runtime holds for a native object, if it has one.
+///
+/// Unlike ``existingSwiftObject(for:)`` this does not require the wrapper itself to still be
+/// alive: the reference is what a binding records, and it outlives a weakified wrapper.
+func liveWrappedReference(for nativeHandle: GodotNativeObjectPointer) -> WrappedReference? {
+    tableLock.withLock {
+        liveFrameworkObjects[nativeHandle] ?? liveSubtypedObjects[nativeHandle]
+    }
+}
 
 var userTypes: [String: Object.Type] = [:]
 
@@ -1472,6 +1558,15 @@ func bindingReference(_ token: UnsafeMutableRawPointer?, _ binding: UnsafeMutabl
 
 func bindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
     guard let instance else { return nil }
+
+    // Adoption (`init(nativeHandle:)`): the wrapper exists already and is in the live tables,
+    // and this call is only how it gets recorded as this runtime's binding.  Return before the
+    // `has_instance_binding` bookkeeping below, which belongs to `getOrInitSwiftObject` and has
+    // no frame on this thread here.
+    if let reference = liveWrappedReference(for: instance) {
+        return Unmanaged<WrappedReference>.passUnretained(reference).toOpaque()
+    }
+
     guard let object = createSwiftObject(nativeHandle: instance) else { return nil }
     guard let reference = object.wrapper else {
         fatalError("WrappedReference is not created for object.")
@@ -1524,9 +1619,11 @@ func bindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRa
 }
 #else
 func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    // Godot-cpp does nothing for user types
-    //print ("SWIFT: instanceBindingCreate")
-    return nil
+    // Reached when this runtime records a binding for an object it did not create (see
+    // `recordAdoptedInstanceBinding`); the wrapper is already in the live tables.  Godot-cpp
+    // returns nothing here, and so do we when there is no wrapper of ours to record.
+    guard let instance, let reference = liveWrappedReference(for: instance) else { return nil }
+    return Unmanaged<WrappedReference>.passUnretained(reference).toOpaque()
 }
 
 func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
@@ -1617,8 +1714,12 @@ func frameworkTypeBindingReference(_ token: UnsafeMutableRawPointer?, _ binding:
 }
 
 func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    // This is called from object_get_instance_binding
-    return instance
+    // This is called from object_get_instance_binding, which is how this runtime records a
+    // binding for an object it did not create (see `recordAdoptedInstanceBinding`).  The wrapper
+    // is in the live tables by then, and it - not the object pointer - is what the free and
+    // reference callbacks expect to be handed back.
+    guard let instance, let reference = liveWrappedReference(for: instance) else { return nil }
+    return Unmanaged<WrappedReference>.passUnretained(reference).toOpaque()
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
