@@ -1211,20 +1211,40 @@ func recreateFunc(_ userData: UnsafeMutableRawPointer?, godotObjectHandle: Unsaf
     }
     #if SWIFTGODOT_WITH_MULTI_PROCESS
     let object = type.init(InitContext(handle: godotObjectHandle, origin: .gdscript))
-    object.wrapper?.strongify()
+    guard let wrapper = object.wrapper else { return nil }
+    wrapper.strongify()
     #else
     let object = type.init(InitContext(handle: godotObjectHandle, origin: .gdscript))
-    
-    // Just line in the createFunc
+
+    // Just like in createFunc
     // we need to make this a strong reference, or it dies before we return
     guard let wrapper = object.wrapper else {
-        fatalError("SwiftGodot.createFunc: wrapper should have been created during binding")
+        fatalError("SwiftGodot.recreateFunc: wrapper should have been created during binding")
     }
-    
+
     wrapper.strongify()
     #endif
-    
-    return godotObjectHandle
+
+    // `create_instance_func` and `recreate_instance_func` do NOT return the same thing:
+    //
+    //   GDExtensionObjectPtr        (*GDExtensionClassCreateInstance)(void *userdata);
+    //   GDExtensionClassInstancePtr (*GDExtensionClassRecreateInstance)(void *userdata, GDExtensionObjectPtr);
+    //
+    // Create returns the Godot object.  Recreate returns the *instance data*, which Godot assigns
+    // straight to `_extension_instance` (`Object::reset_internal_extension`).  Every callback in
+    // this file - `notificationFunc`, `validatePropertyFunc`, `freeFunc`, the virtual dispatchers -
+    // reads that pointer back as an `Unmanaged<WrappedReference>`.
+    //
+    // Returning `godotObjectHandle` here therefore left `_extension_instance` holding an
+    // `Object *`, and the first notification after a hot reload - `NOTIFICATION_EXTENSION_RELOADED`,
+    // sent by `GDExtension::finish_reload` - read it as a `WrappedReference` and jumped through a
+    // garbage vtable.  That crash was the whole reason GDExtension hot reload did not work for
+    // SwiftGodot.
+    //
+    // `bindSwiftObject` has already installed exactly this pointer via `object_set_instance`, with
+    // the retain that `freeFunc` balances, so returning it unretained leaves ownership identical to
+    // the create path: Godot writes back the value that is already there.
+    return Unmanaged.passUnretained(wrapper).toOpaque()
 }
 
 //
