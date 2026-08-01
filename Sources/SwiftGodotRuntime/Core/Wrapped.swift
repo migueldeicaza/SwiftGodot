@@ -425,6 +425,18 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     ///  - arguments: variable list of arguments
     /// - Returns: if there is an error, this function raises an error, otherwise, a Variant with the result is returned
     public func callScript (method: StringName, _ arguments: Variant?...) throws -> Variant? {
+        try callScript(method: method, arguments: arguments)
+    }
+
+    /// Invokes the specified method on the object, taking its arguments as an array.
+    ///
+    /// Same as ``callScript(method:_:)``, for callers that already have the arguments in
+    /// a collection and so cannot use the variadic form.
+    /// - Parameters:
+    ///  - method: the method to invoke on the target
+    ///  - arguments: the arguments to pass
+    /// - Returns: if there is an error, this function raises an error, otherwise, a Variant with the result is returned
+    public func callScript (method: StringName, arguments: [Variant?]) throws -> Variant? {
         var args: [UnsafeRawPointer?] = []
         let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
         defer { cptr.deallocate () }

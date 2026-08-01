@@ -161,12 +161,17 @@ struct SwiftGodotTestRunner {
             let platformSource = "\(platformBuildDir)/\(libName)"
             let simpleSource = "\(simpleBuildDir)/\(libName)"
 
-            let source: String
-            if fm.fileExists(atPath: platformSource) {
-                source = platformSource
-            } else if fm.fileExists(atPath: simpleSource) {
-                source = simpleSource
-            } else {
+            // Both locations can exist at once: `.build/<triple>/<config>` is where the
+            // classic build system wrote, `.build/<config>` is a symlink maintained by
+            // the current one. Preferring the first unconditionally means a leftover
+            // directory silently wins forever, and the tests then run against a stale
+            // library — passing or failing for reasons that have nothing to do with the
+            // working tree. Take whichever was built most recently.
+            let candidates = [platformSource, simpleSource].filter { fm.fileExists(atPath: $0) }
+
+            guard let source = candidates.max(by: { lhs, rhs in
+                modificationDate(of: lhs, fm) < modificationDate(of: rhs, fm)
+            }) else {
                 print("      Library not found: \(platformSource) or \(simpleSource)")
                 exit(1)
             }
@@ -288,4 +293,12 @@ struct SwiftGodotTestRunner {
             exit(godotExitCode != 0 ? godotExitCode : 1)
         }
     }
+}
+
+/// Last-modified time of a file, or the distant past when it cannot be read.
+///
+/// Used to pick the freshest of several candidate build outputs.
+private func modificationDate(of path: String, _ fm: FileManager) -> Date {
+    let attributes = try? fm.attributesOfItem(atPath: path)
+    return attributes?[.modificationDate] as? Date ?? .distantPast
 }

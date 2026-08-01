@@ -17,7 +17,13 @@
 /// // Let godot call `demo` and its proxy method.
 /// invokeScript ("myDemo.proxy ()", params: ["myDemo", demo])
 /// ```
-//@available(*, deprecated, message: "Use Callable constructed from Swift closure instead")
+///
+/// > Warning: instances of this type are never freed.  `SignalProxy` is a plain `Object`,
+/// > not a `RefCounted`, so it must be released with ``Object/free()``, and it is
+/// > additionally pinned by the live-object table.  Use
+/// > ``Callable`` built from a Swift closure instead - it is owned by the connection and
+/// > released when the connection goes away.
+@available(*, deprecated, message: "Use Callable constructed from a Swift closure instead")
 public class SignalProxy: Object {
     public static var proxyName = StringName("proxy")
 
