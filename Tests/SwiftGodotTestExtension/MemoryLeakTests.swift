@@ -400,6 +400,115 @@ final class MemoryLeakTests {
         return after-before
     }
 
+    /// Async counterpart of ``checkLeaks(useUnoReverseCard:_:)``.
+    ///
+    /// Reports the object-count delta separately from the byte delta: awaiting a signal
+    /// used to allocate a `SignalProxy` object per await and never free it, so the object
+    /// count is the number that directly pins that regression.
+    @GodotMainActor
+    @discardableResult
+    func checkLeaksAsync(_ body: () async throws -> Void) async rethrows -> Double {
+        releasePendingObjects()
+        let beforeO = Performance.getMonitor(.objectCount)
+        let before = Performance.getMonitor(.memoryStatic)
+
+        try await body()
+
+        releasePendingObjects()
+        let afterO = Performance.getMonitor(.objectCount)
+        let after = Performance.getMonitor(.memoryStatic)
+
+        print("object count=\(afterO - beforeO), leaked \(after - before) bytes")
+        assertEqual(beforeO, afterO, "Leaked \(afterO - beforeO) Godot objects")
+        assertEqual(before, after, "Leaked \(after - before) bytes")
+        return after - before
+    }
+
+    /// A completed await must leave nothing behind.
+    ///
+    /// This is the regression test for the `SignalProxy` leak: the old implementation
+    /// allocated one plain `Object` per await and, because a non-`RefCounted` object is
+    /// only released by an explicit `free()` that nothing ever called, leaked it even
+    /// when the signal fired normally.
+    @GodotMainActor
+    public func test_await_signal_leak() async throws {
+        let node = Node()
+        defer { node.queueFree() }
+
+        func oneIteration() async throws {
+            emitLater { node.ready.emit() }
+            try await node.ready.emitted
+        }
+
+        // Warm-up, in case the code path performs one-time permanent allocations.
+        for _ in 0 ..< 5 {
+            try await oneIteration()
+        }
+
+        try await checkLeaksAsync {
+            for _ in 0 ..< 50 {
+                try await oneIteration()
+            }
+        }
+    }
+
+    /// An await that carries a payload must not retain the payload either.
+    @GodotMainActor
+    public func test_await_signal_with_arguments_leak() async throws {
+        let node = Node()
+        defer { node.queueFree() }
+
+        func oneIteration() async throws {
+            emitLater { node.childExitingTree.emit(node) }
+            _ = try await node.childExitingTree.emitted
+        }
+
+        for _ in 0 ..< 5 {
+            try await oneIteration()
+        }
+
+        try await checkLeaksAsync {
+            for _ in 0 ..< 50 {
+                try await oneIteration()
+            }
+        }
+    }
+
+    /// A cancelled await must clean up as thoroughly as a completed one.
+    ///
+    /// This is the path the deprecation notice was about: cancelling used to be
+    /// impossible, so an abandoned wait held its continuation - and everything the
+    /// coroutine had captured - forever.
+    @GodotMainActor
+    public func test_await_signal_cancellation_leak() async throws {
+        let node = Node()
+        defer { node.queueFree() }
+
+        func oneIteration() async {
+            let task = Task { @GodotMainActor in
+                try await node.ready.emitted
+            }
+            // Let the task reach its suspension point, so cancellation has something
+            // real to tear down rather than arriving before the connection exists.
+            await Task.yield()
+            task.cancel()
+            _ = try? await task.value
+        }
+
+        for _ in 0 ..< 5 {
+            await oneIteration()
+        }
+
+        try await checkLeaksAsync {
+            for _ in 0 ..< 50 {
+                await oneIteration()
+            }
+        }
+
+        assertEqual(node.getSignalConnectionList(signal: "ready").count, 0,
+                    "cancelled awaits should leave no connections behind")
+    }
+
     public func testThatItLeaksIndeed() {
         let array = VariantArray()
         
