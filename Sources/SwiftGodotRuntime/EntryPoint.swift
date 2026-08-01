@@ -73,6 +73,17 @@ public protocol ExtensionInterface {
 
     func getLibrary() -> UnsafeMutableRawPointer
 
+    /// Points the interface at the GDExtension that Godot is currently calling into.
+    ///
+    /// Godot dereferences the library token every registration call hands it as the `GDExtension`
+    /// object that owns the class, and that object dies when the extension is unloaded. The
+    /// runtime dylib outlives those cycles - a Swift dylib carries ObjC metadata, so dyld never
+    /// unloads it, and its globals survive an unload/load pair - so a token cached at the first
+    /// load is dangling from the second load on. Implementations that hold a token follow the live
+    /// extension through this; ones that resolve it per call ignore it, which is what the default
+    /// no-op is for.
+    func setLibrary(_ library: UnsafeMutableRawPointer)
+
     func getProcAddr() -> OpaquePointer
 
     func sameDomain(handle: UnsafeRawPointer) -> Bool
@@ -93,6 +104,8 @@ public extension ExtensionInterface {
     func initClasses() {
         SignalProxy.initClass()
     }
+
+    func setLibrary(_ library: UnsafeMutableRawPointer) {}
 }
 
 class LibGodotExtensionInterface: ExtensionInterface {
@@ -102,7 +115,7 @@ class LibGodotExtensionInterface: ExtensionInterface {
     /// pesky scenario.
     public let  experimentalDisableVariantUnref = false
 
-    private let library: GDExtensionClassLibraryPtr
+    private var library: GDExtensionClassLibraryPtr
     private let getProcAddrFun: GDExtensionInterfaceGetProcAddress
     private var initedClasses = Set<ObjectIdentifier>()
 
@@ -135,6 +148,10 @@ class LibGodotExtensionInterface: ExtensionInterface {
 
     public func getLibrary() -> UnsafeMutableRawPointer {
         return UnsafeMutableRawPointer(mutating: library)
+    }
+
+    public func setLibrary(_ library: UnsafeMutableRawPointer) {
+        self.library = GDExtensionClassLibraryPtr(library)
     }
 
     public func getProcAddr() -> OpaquePointer {
@@ -182,6 +199,12 @@ public func setExtensionInterface(interface: ExtensionInterface) {
 func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_initialize")
     guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    // `userData` *is* this extension's library token (see `initializeSwiftModule`). Everything the
+    // hook below registers names a class on this extension, so the token has to be this one and
+    // not whichever extension happened to load first into this runtime.
+    if let userData {
+        extensionInterface.setLibrary(userData)
+    }
     if level == .scene {
         extensionInterface.classDBReady = true
         for initializer in extensionInterface.pendingInitializers {
@@ -202,10 +225,20 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
     guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    // Same as on the way in: `unregister` hands this token straight back to Godot, which
+    // dereferences it as the `GDExtension` that owns the class.
+    extensionInterface.setLibrary(userData)
     callback(level)
     if level == .core {
         // Last one, remove
         extensionDeInitCallbacks.removeValue(forKey: key)
+
+        // This extension's `GDExtension` object is freed as soon as we return, so the token must
+        // not outlive it. Any other extension still loaded in this runtime is a valid one to fall
+        // back to; when none is, nothing is left that could legally use it anyway.
+        if let survivor = extensionDeInitCallbacks.keys.first {
+            extensionInterface.setLibrary(UnsafeMutableRawPointer(survivor))
+        }
     }
 }
 
@@ -583,6 +616,13 @@ public func initializeSwiftModule(
         // on shutdown (see pinSwiftRuntimeModules). Done once, on first init.
         pinSwiftRuntimeModules()
         #endif
+    } else {
+        // Reached on every load after the first: another Swift extension in the same process, or
+        // this one coming back after an unload (Godot's in-place `reload_extension` keeps the same
+        // `GDExtension` object, a full unload/load pair does not). The interface is a global in a
+        // dylib the loader does not unload, so without this it would keep serving the first load's
+        // token, long freed - and the next `unregister` would hand that to Godot to dereference.
+        extensionInterface.setLibrary(UnsafeMutableRawPointer(libraryPtr))
     }
     extensionInitCallbacks[libraryPtr] = initHook
     extensionDeInitCallbacks[libraryPtr] = deInitHook
