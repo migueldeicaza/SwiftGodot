@@ -61,7 +61,7 @@ jobs:
       - name: Install Godot
         shell: pwsh
         run: |
-          $url = "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_win64.exe.zip"
+          $url = "https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_win64.exe.zip"
           Invoke-WebRequest -Uri $url -OutFile godot.zip
           Expand-Archive godot.zip -DestinationPath godot
           # The zip ships the GUI editor plus a small console wrapper. The GUI build
@@ -118,9 +118,9 @@ jobs:
       #   run: |
       #     apt-get update
       #     apt-get install -y wget unzip
-      #     wget https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip
-      #     unzip Godot_v4.6-stable_linux.x86_64.zip
-      #     mv Godot_v4.6-stable_linux.x86_64 /usr/local/bin/godot
+      #     wget https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_linux.x86_64.zip
+      #     unzip Godot_v4.7-stable_linux.x86_64.zip
+      #     mv Godot_v4.7-stable_linux.x86_64 /usr/local/bin/godot
       #     chmod +x /usr/local/bin/godot
       #     godot --version
 
