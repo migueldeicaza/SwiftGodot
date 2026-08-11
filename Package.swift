@@ -236,7 +236,7 @@ var targets: [Target] = [
                     "-emit-module-interface",
                     "-Xfrontend", "-module-interface-preserve-types-as-written",
                 ],
-                .when(configuration: .release)
+                .when(platforms: [.macOS, .iOS], configuration: .release)
             ),
             .swiftLanguageMode(.v5),
         ],
@@ -259,7 +259,7 @@ var targets: [Target] = [
                     "-emit-module-interface",
                     "-Xfrontend", "-module-interface-preserve-types-as-written",
                 ],
-                .when(configuration: .release)
+                .when(platforms: [.macOS, .iOS], configuration: .release)
             ),
         ],
         plugins: ["CodeGeneratorPlugin"]
