@@ -309,6 +309,120 @@ public extension _GodotBridgeableBuiltin {
     }
 }
 
+/// Internal API. Protocol for Godot enums.
+///
+/// Godot enums are represented as `Variant::INT`, but their `PropertyInfo`
+/// carries the qualified enum name and `PROPERTY_USAGE_CLASS_IS_ENUM`.
+public protocol _GodotBridgeableEnum:
+    _GodotBridgeable,
+    RawRepresentable
+where RawValue == Int64 {
+    /// Fully-qualified enum name used by Godot's PropertyInfo.
+    static var _godotEnumName: String { get }
+}
+
+public extension _GodotBridgeableEnum {
+    @inline(__always)
+    @inlinable
+    static var _variantType: Variant.GType {
+        .int
+    }
+
+    @inline(__always)
+    @inlinable
+    static var _builtinOrClassName: String {
+        _variantType._builtinOrClassName
+    }
+
+    @inline(__always)
+    @inlinable
+    static func _argumentPropInfo(
+        name: String
+    ) -> PropInfo {
+        _propInfo(
+            name: name,
+            hint: nil,
+            hintStr: nil,
+            usage: nil
+        )
+    }
+
+    @inline(__always)
+    @inlinable
+    static var _returnValuePropInfo: PropInfo {
+        _propInfo(
+            name: "",
+            hint: nil,
+            hintStr: nil,
+            usage: nil
+        )
+    }
+
+    @inline(__always)
+    @inlinable
+    static func _propInfo(
+        name: String,
+        hint: PropertyHint?,
+        hintStr: String?,
+        usage: PropertyUsageFlags?
+    ) -> PropInfo {
+        _propInfoDefault(
+            propertyType: .int,
+            name: name,
+            className: StringName(_godotEnumName),
+            hint: hint,
+            hintStr: hintStr,
+            usage: (usage ?? .default).union(.classIsEnum)
+        )
+    }
+
+    @inline(__always)
+    @inlinable
+    func toVariant() -> Variant? {
+        rawValue.toVariant()
+    }
+
+    @inline(__always)
+    @inlinable
+    func toFastVariant() -> FastVariant? {
+        rawValue.toFastVariant()
+    }
+
+    @inline(__always)
+    @inlinable
+    static func fromVariantOrThrow(
+        _ variant: Variant
+    ) throws(VariantConversionError) -> Self {
+        let raw = try Int64.fromVariantOrThrow(variant)
+
+        guard let result = Self(rawValue: raw) else {
+            throw .invalidRawValue(
+                requestedType: Self.self,
+                value: raw
+            )
+        }
+
+        return result
+    }
+
+    @inline(__always)
+    @inlinable
+    static func fromFastVariantOrThrow(
+        _ variant: borrowing FastVariant
+    ) throws(VariantConversionError) -> Self {
+        let raw = try Int64.fromFastVariantOrThrow(variant)
+
+        guard let result = Self(rawValue: raw) else {
+            throw .invalidRawValue(
+                requestedType: Self.self,
+                value: raw
+            )
+        }
+
+        return result
+    }
+}
+
 public extension _GodotBridgeable where Self: Object {
     typealias TypedArrayElement = Self?
     
