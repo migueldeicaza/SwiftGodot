@@ -175,7 +175,10 @@ public struct FastVariant: ~Copyable {
             return
         }
                 
-        if !extensionInterface.variantShouldDeinit(variant: nil, content: &content) { return }
+        if !extensionInterface.variantShouldDeinit(variant: nil, content: &content) {
+            print("ERROR: FastVariant deinited outside instance lifetime. This might result in a memory leak!")
+            return
+        }
         gi.variant_destroy(&content)
     }
     
