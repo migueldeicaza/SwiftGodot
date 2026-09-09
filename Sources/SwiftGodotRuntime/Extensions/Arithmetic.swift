@@ -13,23 +13,22 @@ public protocol IntScalable {
 }
 
 public extension IntScalable {
-    
-    static func / (lhs: Self, rhs: Int) -> Self {
-        return lhs / Int64(rhs)
-    }
-    
-    static func * (lhs: Self, rhs: Int) -> Self {
-        return lhs * Int64(rhs)
-    }
-    
     static func /= (_ lhs: inout Self, _ rhs: Int) {
-        lhs = lhs / rhs
+        lhs = lhs / Int64(rhs)
     }
     
     static func *= (_ lhs: inout Self, _ rhs: Int) {
-        lhs = lhs * rhs
+        lhs = lhs * Int64(rhs)
     }
     
+}
+
+public func / <T: IntScalable> (lhs: T, rhs: Int) -> T {
+    lhs / Int64(rhs)
+}
+
+public func * <T: IntScalable> (lhs: T, rhs: Int) -> T {
+    lhs * Int64(rhs)
 }
 public protocol DoubleScalable {
     
