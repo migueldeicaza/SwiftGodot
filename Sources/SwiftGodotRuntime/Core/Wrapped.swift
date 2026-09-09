@@ -492,7 +492,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// ``RefCounted`` objects are destroyed automatically when the last reference
     /// is gone, so it is not necessary to call ``free`` on those.
     public func free() {
-        if let object = self as? Object, object.isClass("Node") {
+        // Ask ClassDB rather than Object.is_class: the latter's signature changed in
+        // Godot 4.7 (String to StringName), so its 4.7 method bind does not exist on
+        // older engines, while is_parent_class has been stable across 4.x.
+        if let handle, ClassDB.isParentClass(StringName(objectClassName(handle)), inherits: "Node") {
             print ("SwiftGodot: Cannot call free() on Nodes; queueFree() should be used instead.")
             return
         }
