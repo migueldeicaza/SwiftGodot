@@ -682,7 +682,7 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             let defaultInit = makeDefaultInit(godotType: godotReturnType!, initCollection: "takingOver: _result")
             return "return \(defaultInit)"
         } else if godotReturnType?.starts(with: "enum::") ?? false {
-            return "return \(returnType) (rawValue: _result)!"
+            return "if let _enumResult = \(returnType)(rawValue: _result) { return _enumResult }; assertionFailure(\"Unexpected \\(_result) for \(returnType)\"); return \(returnType).allCases.first!"
         } else if godotReturnType == "String" {
             return "return _result.description"
         } else if returnNeedsWideningStorage {
