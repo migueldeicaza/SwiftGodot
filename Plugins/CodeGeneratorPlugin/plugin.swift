@@ -11,11 +11,28 @@ import PackagePlugin
 /// Generates the API for the SwiftGodot from the Godot exported Json API
 @main struct SwiftCodeGeneratorPlugin: BuildToolPlugin {
     func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
-        guard let config = generationConfig(for: target.name) else {
+        // Optional, one generated class file per line (e.g. "EditorXogot.swift"):
+        // classes a vendored copy of this package generates on top of the lists
+        // below, for engine builds whose extension_api.json carries extra classes.
+        let extraClassesFile = context.package.directoryURL
+            .appending(path: "extra-classes.txt")
+        let extraClassFiles = try additionalClassFiles(from: extraClassesFile)
+        guard let config = generationConfig(for: target.name, extraClassFiles: extraClassFiles) else {
             return []
         }
 
-        let generator = try context.tool(named: "Generator").url
+        let preparedGenerator = context.package.directoryURL
+            .appending([".build-tools", "Generator"])
+        let generator: URL
+        if FileManager.default.isExecutableFile(atPath: preparedGenerator.path) {
+            generator = preparedGenerator
+        } else {
+            do {
+                generator = try context.tool(named: "Generator").url
+            } catch {
+                throw PluginError.missingPreparedGenerator(preparedGenerator.path)
+            }
+        }
 
         let api = context.package.directoryURL
             .appending(["Sources", "ExtensionApi", "extension_api.json"])
@@ -34,7 +51,7 @@ import PackagePlugin
         let availableClassFilterFile = configurationDir.appending(path: "\(target.name)-available-classes.txt")
         let builtinFilterFile = configurationDir.appending(path: "\(target.name)-builtins.txt")
 
-        if target.name == "SwiftGodot" {
+        if target.name == "SwiftGodot" || target.name == "XogotSwiftGodot" {
             if config.generatedClassFiles.contains("Object.swift") {
                 fatalError()
             }
@@ -48,6 +65,9 @@ import PackagePlugin
         let supportsMultiProcess = (target as? SwiftSourceModuleTarget)?
             .compilationConditions
             .contains("SWIFTGODOT_WITH_MULTI_PROCESS") == true
+        let staticCachesOnMacOS = (target as? SwiftSourceModuleTarget)?
+            .compilationConditions
+            .contains("SWIFTGODOT_STATIC_CACHES_ON_MACOS") == true
 #if os(Windows)
         let useCombinedOutput = true
 #else
@@ -74,8 +94,14 @@ import PackagePlugin
             arguments.append(contentsOf: ["--allowed-class-fallback", fallback])
         }
         arguments.append(supportsMultiProcess ? "--support-reinit" : "--enable-static-caches")
+        if staticCachesOnMacOS {
+            arguments.append("--static-caches-on-macos")
+        }
 
-        var inputFiles: [URL] = [api, classFilterFile, availableClassFilterFile, builtinFilterFile]
+        var inputFiles: [URL] = [generator, api, classFilterFile, availableClassFilterFile, builtinFilterFile]
+        if FileManager.default.fileExists(atPath: extraClassesFile.path) {
+            inputFiles.append(extraClassesFile)
+        }
 
         if let preamble = config.preamble, !preamble.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let preambleFile = configurationDir.appending(path: "\(target.name)-preamble.txt")
@@ -95,9 +121,9 @@ import PackagePlugin
         ]
     }
 
-    private func generationConfig(for targetName: String) -> GenerationConfig? {
+    private func generationConfig(for targetName: String, extraClassFiles: [String]) -> GenerationConfig? {
         switch targetName {
-        case "SwiftGodotRuntime":
+        case "SwiftGodotRuntime", "XogotSwiftGodotRuntime":
             return GenerationConfig(
                 classFiles: runtime.uniqued(),
                 builtinFiles: knownBuiltin,
@@ -115,9 +141,9 @@ import PackagePlugin
         //
         // This means that we do not need to bring the SwiftGodotRuntime, we
         // just generate everything the same way
-        case "SwiftGodot":
+        case "SwiftGodot", "XogotSwiftGodot":
             return GenerationConfig(
-                classFiles: (core + controls + threeD + gltf + twoD + xr + editor + visualShaderNodes).uniqued(),
+                classFiles: (core + controls + threeD + gltf + twoD + xr + editor + visualShaderNodes + extraClassFiles).uniqued(),
                 builtinFiles: [],
                 preamble: """
 @_exported import SwiftGodotRuntime
@@ -239,12 +265,33 @@ import PackagePlugin
         return ProcessInfo.processInfo.environment["XCODE_VERSION_ACTUAL"] != nil
     }
 
+    private func additionalClassFiles(from file: URL) throws -> [String] {
+        guard FileManager.default.fileExists(atPath: file.path) else {
+            return []
+        }
+        return try String(contentsOf: file, encoding: .utf8)
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && !$0.hasPrefix("#") }
+    }
+
     private func writeIfChanged(_ contents: String, to file: URL) throws {
         let data = Data(contents.utf8)
         if let existing = try? Data(contentsOf: file), existing == data {
             return
         }
         try data.write(to: file, options: [.atomic])
+    }
+}
+
+enum PluginError: Error, CustomStringConvertible {
+    case missingPreparedGenerator(String)
+
+    var description: String {
+        switch self {
+        case .missingPreparedGenerator(let path):
+            return "Missing SwiftGodot Generator at \(path). Run `make prep` from the SwiftGodot repository root."
+        }
     }
 }
 
