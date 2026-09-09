@@ -1127,6 +1127,20 @@ func handleReturnedObject<T: Wrapped>(
 
 /// Get an existing Swift object which is bound to Godot `nativeHandle` or initialize a new one and bind it
 // @_spi(SwiftGodotRuntimePrivate)
+/// The name this module was compiled under: "SwiftGodotRuntime", or an alias
+/// such as "XogotSwiftGodotRuntime" when the package is vendored with renamed
+/// modules (see the switches in Package.swift).
+let runtimeModuleName = String(reflecting: Wrapped.self).split(separator: ".", maxSplits: 1).first.map(String.init) ?? "SwiftGodotRuntime"
+
+/// The name of the API module that sits on top of this one. That module cannot
+/// be referenced from here, so its name is derived from ours: by construction
+/// (Package.swift) it is this module's name without the "Runtime" suffix.
+private let godotModuleName = runtimeModuleName.hasSuffix("Runtime")
+    ? String(runtimeModuleName.dropLast("Runtime".count))
+    : runtimeModuleName
+
+let SwiftGodot_has_instance_binding = "\(runtimeModuleName)_has_instance_binding"
+
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 final class ReferenceArray<Element> {
     var items: [Element]
@@ -1135,8 +1149,6 @@ final class ReferenceArray<Element> {
         self.items = items
     }
 }
-
-let SwiftGodot_has_instance_binding = "SwiftGodot_has_instance_binding"
 
 public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownership: ReturnedObjectOwnership) -> T? {
     var hasInstanceBinding = Foundation.Thread.current.threadDictionary.object(forKey: SwiftGodot_has_instance_binding) as? ReferenceArray<Bool>
@@ -1845,18 +1857,21 @@ public func clearHandles(_ handles: [GodotNativeObjectPointer]) {
 }
 
 /// Looks up the class at runtime
+func mangledGodotTypeNames(for className: String) -> [String] {
+    [godotModuleName, runtimeModuleName].map { moduleName in
+        "\(moduleName.count)\(moduleName)\(className.count)\(className)C"
+    }
+}
+
 fileprivate func lookupGodotType(named className: String) -> AnyClass? {
     // The format is:
     // MODULE: LENGHT + String
     // Type: LENGHT + String
     // C
     //
-    // So "SwiftGodot.Node" becomes "10SwiftGodot4NodeC":
+    // So "SwiftGodot.Node" becomes "10SwiftGodot4NodeC".
     //
-    let candidates: [String] = [
-        "10SwiftGodot\(className.count)\(className)C",
-        "17SwiftGodotRuntime\(className.count)\(className)C",
-    ]
+    let candidates = mangledGodotTypeNames(for: className)
     for typeCode in candidates {
 #if canImport(UIKit) || canImport(AppKit)
         if let ctor = NSClassFromString(typeCode) {
