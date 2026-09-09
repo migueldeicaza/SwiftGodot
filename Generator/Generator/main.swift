@@ -120,6 +120,8 @@ if positionalArgs.count < 1 {
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
+/// The Godot version the API description was produced by, e.g. "4.7"; used in diagnostics.
+let apiVersionString = "\(jsonApi.header.versionMajor).\(jsonApi.header.versionMinor)"
 
 func dropMatchingPrefix(_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel(enumKey)

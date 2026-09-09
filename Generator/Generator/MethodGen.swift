@@ -469,7 +469,10 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             
                 p ("return withUnsafePointer(to: &\(className).godotClassName.content)", arg: " classPtr in") {
                     p ("withUnsafePointer(to: &methodName.content)", arg: " mnamePtr in") {
-                        p ("gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash))!")
+                        p ("guard let bind = gi.classdb_get_method_bind(classPtr, mnamePtr, \(methodHash)) else", arg: "") {
+                            p ("fatalError(\"SwiftGodot: \(className).\(method.name) is not available in the running Godot (these bindings were generated for Godot \(apiVersionString))\")")
+                        }
+                        p ("return bind")
                     }
                 }
             }
@@ -477,7 +480,10 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             p.staticProperty(visibility: staticVarVisibility, isStored: true, name: bindName, type: "GDExtensionPtrUtilityFunction") {
                 p ("var methodName = FastStringName(\"\(method.name)\")")
                 p ("return withUnsafePointer(to: &methodName.content)", arg: " ptr in") {
-                    p ("return gi.variant_get_ptr_utility_function(ptr, \(methodHash))!")
+                    p ("guard let function = gi.variant_get_ptr_utility_function(ptr, \(methodHash)) else", arg: "") {
+                        p ("fatalError(\"SwiftGodot: utility function \(method.name) is not available in the running Godot (these bindings were generated for Godot \(apiVersionString))\")")
+                    }
+                    p ("return function")
                 }
             }
         }
