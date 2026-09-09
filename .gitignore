@@ -3,6 +3,7 @@
 .derived-data-log*
 .DS_Store
 /.build
+/.build-tools
 /.index-build
 /Packages
 /*.xcodeproj
