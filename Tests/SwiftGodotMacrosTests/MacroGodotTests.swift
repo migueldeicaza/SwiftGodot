@@ -56,6 +56,18 @@ final class MacroGodotTests: MacroGodotTestCase {
         )
     }
     
+    func testGodotVirtualMethodWithDigitInName() {
+        // `_forward3dGuiInput` must register as `_forward_3d_gui_input`: Godot
+        // separates a letter from a following digit in its virtual method names.
+        assertExpansion(
+            of: """
+            @Godot(.tool) class Plugin: EditorPlugin {
+                override func _forward3dGuiInput(viewportCamera: Camera3D?, event: InputEvent?) -> Int32 { 0 }
+            }
+            """
+        )
+    }
+
     func testGodotMacroWithNonCallableFunc() {
         assertExpansion(
             of: """
