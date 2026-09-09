@@ -526,7 +526,15 @@ extension String {
 }
 
 func camelToSnake(_ s: String) -> String {
-    s.camelCaseToSnakeCase()
+    // Godot's virtual method names separate a letter from a following digit
+    // (`_forward_3d_gui_input`), while camelCaseToSnakeCase only splits on case
+    // changes, so `_forward3dGuiInput` would register as `_forward3d_gui_input`
+    // and the virtual would never be looked up.
+    var result = s
+    if let regex = try? NSRegularExpression(pattern: "([a-zA-Z])([0-9])") {
+        result = regex.stringByReplacingMatches(in: result, range: NSRange(location: 0, length: result.utf16.count), withTemplate: "$1_$2")
+    }
+    return result.camelCaseToSnakeCase()
         .replacingOccurrences(of: "2_D", with: "2D").replacingOccurrences(of: "3_D", with: "3D")
         .replacingOccurrences(of: "2_d", with: "2d").replacingOccurrences(of: "3_d", with: "3d")
 }
