@@ -7,6 +7,14 @@
 
 import Foundation
 
+#if SWIFTGODOT_VENDORED_MODULE_NAMES
+let swiftGodotProductName = "XogotSwiftGodot"
+let swiftGodotRuntimeProductName = "XogotSwiftGodotRuntime"
+#else
+let swiftGodotProductName = "SwiftGodot"
+let swiftGodotRuntimeProductName = "SwiftGodotRuntime"
+#endif
+
 @main
 struct SwiftGodotTestRunner {
     /// Locates an executable by name on PATH, returning its full path, or `nil` if not found.
@@ -93,7 +101,7 @@ struct SwiftGodotTestRunner {
 
         // 1. Build the test extension and dependencies
         print("\n[1/5] Building test extension...")
-        let products = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
+        let products = [extensionTarget, swiftGodotProductName, swiftGodotRuntimeProductName]
         for product in products {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: swiftPath)
@@ -152,7 +160,7 @@ struct SwiftGodotTestRunner {
         let platformDir = ""
         #endif
 
-        let libraryNames = [extensionTarget, "SwiftGodot", "SwiftGodotRuntime"]
+        let libraryNames = [extensionTarget, swiftGodotProductName, swiftGodotRuntimeProductName]
         let platformBuildDir = ".build/\(platformDir)/\(buildConfiguration)"
         let simpleBuildDir = ".build/\(buildConfiguration)"
 
