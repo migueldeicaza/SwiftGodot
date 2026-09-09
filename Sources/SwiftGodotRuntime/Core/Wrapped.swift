@@ -190,6 +190,9 @@ public struct InitContext {
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Points to the underlying object
     public var handle: GodotNativeObjectPointer?
+
+    private let instanceId: GDObjectInstanceID
+    private let domainId: UInt8
     
     weak var wrapper: WrappedReference?
     
@@ -200,7 +203,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     #endif
+    #if !SWIFTGODOT_WITH_MULTI_PROCESS
     public static var deferred: Callable? = nil
+    #endif
 
     // These exist to hold references to property list objects that are passed back to Godot,
     // but we retain ownership until `propertyListFreeFunc` is invoked, or the class is deinit'ed.
@@ -283,20 +288,30 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     return
                 }
                 var queue = false
+                #if SWIFTGODOT_WITH_MULTI_PROCESS
+                var deferred: Callable?
+                let id = extensionInterface.getCurrenDomain()
+                #endif
                 freeLock.withLockVoid {
+                    #if SWIFTGODOT_WITH_MULTI_PROCESS
+                    if pendingReleaseCallables[id] == nil {
+                        pendingReleaseCallables[id] = Callable ({ (args: borrowing Arguments) in
+                            releasePendingObjects()
+                            return nil
+                        })
+                    }
+                    pendingReleaseHandles[id, default: []].append(handle)
+                    if pendingReleaseHandles[id]?.count == 1 {
+                        queue = true
+                        deferred = pendingReleaseCallables[id]
+                    }
+                    #else
                     if Wrapped.deferred == nil {
                         Wrapped.deferred = Callable ({ (args: borrowing Arguments) in
                             releasePendingObjects()
                             return nil
                         })
                     }
-                    #if SWIFTGODOT_WITH_MULTI_PROCESS
-                    let id = extensionInterface.getCurrenDomain()
-                    pendingReleaseHandles[id, default: []].append(handle)
-                    if pendingReleaseHandles[id]?.count == 1 {
-                        queue = true
-                    }
-                    #else
                     pendingReleaseHandles.append(handle)
                     if pendingReleaseHandles.count == 1 {
                         queue = true
@@ -304,7 +319,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     #endif
                 }
                 if queue {
+                    #if SWIFTGODOT_WITH_MULTI_PROCESS
+                    deferred?.callDeferred()
+                    #else
                     Wrapped.deferred?.callDeferred()
+                    #endif
                 }
             }
         }
@@ -449,6 +468,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// For use by the framework, you should not need to call this.
     public required init(_ context: InitContext) {
         handle = context.handle
+        instanceId = extensionInterface.objectInstanceId(for: context.handle)
+        domainId = extensionInterface.getCurrenDomain()
         extensionInterface.objectInited(object: self)
         bindSwiftObject(self, context)
     }
@@ -459,7 +480,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// when you call the ``Node/queueFree()`` which might queue the object
     /// for disposal
     public var isValid: Bool {
-        return handle != nil
+        guard let handle else {
+            return false
+        }
+        return extensionInterface.objectIsValid(handle: handle, instanceId: instanceId, domainId: domainId)
     }
 
     /// Use this to release objects that are neither Nodes or RefCounted subclasses.
@@ -919,6 +943,7 @@ var tableLock = NIOLock()
 var freeLock = NIOLock()
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 var pendingReleaseHandles: [UInt8: [GodotNativeObjectPointer]] = [:]
+var pendingReleaseCallables: [UInt8: Callable] = [:]
 #else
 var pendingReleaseHandles: [GodotNativeObjectPointer] = []
 #endif
@@ -1008,6 +1033,19 @@ public func releasePendingObjects() {
         if result {
             gi.object_destroy(handle)
         }
+    }
+}
+
+/// Clears deferred releases that belong to `id` during extension shutdown.
+public func clearPendingReleaseState(forDomain id: UInt8) {
+    freeLock.withLockVoid {
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        pendingReleaseHandles.removeValue(forKey: id)
+        pendingReleaseCallables.removeValue(forKey: id)
+        #else
+        pendingReleaseHandles.removeAll()
+        Wrapped.deferred = nil
+        #endif
     }
 }
  
@@ -1177,7 +1215,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     return object as? T
 }
 
-func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
+func createSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer) -> T? {
     var className: String = ""
     var sc: StringName.ContentType = StringName.zero
     if gi.object_get_class_name(nativeHandle, extensionInterface.getLibrary(), &sc) != 0 {
@@ -1191,7 +1229,13 @@ func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
 
     if let type = typeOfClassOrNearestKnownParent(named: className) {
         let created = type.init(InitContext(handle: nativeHandle, origin: .godot))
-        return created
+        return created as? T
+    }
+
+    var requestedClass = T.godotClassName.content
+    if let classTag = gi.classdb_get_class_tag(&requestedClass),
+       gi.object_cast_to(nativeHandle, classTag) != nil {
+        return T(InitContext(handle: nativeHandle, origin: .godot))
     }
 
     print("Object of class \(className) could not be created")
@@ -1579,7 +1623,7 @@ func bindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutable
         return Unmanaged<WrappedReference>.passUnretained(reference).toOpaque()
     }
 
-    guard let object = createSwiftObject(nativeHandle: instance) else { return nil }
+    guard let object: Object = createSwiftObject(nativeHandle: instance) else { return nil }
     guard let reference = object.wrapper else {
         fatalError("WrappedReference is not created for object.")
     }
@@ -1894,6 +1938,48 @@ func typeOfClass(named className: String) -> Object.Type? {
         return type
     }
     return nil
+}
+
+/// Returns the Swift type registered with Godot under `className`, if any.
+///
+/// Only types registered from Swift via `register(type:)` are considered; built-in Godot
+/// classes are not returned. Script languages built on ``ScriptExtension`` use this to
+/// resolve a script class name to its compiled Swift type.
+public func registeredUserType(named className: String) -> Object.Type? {
+    userTypes[className]
+}
+
+/// Discards the Swift wrapper, if any, that is currently bound to `handle`.
+///
+/// Godot allows one instance binding per object. A wrapper surfaced earlier must be detached
+/// before a different Swift type is bound to that object. The detached wrapper reports
+/// ``Wrapped/isValid`` as `false`; callers must not use it again.
+func releaseSwiftBinding(for handle: GodotNativeObjectPointer) {
+    let existing: Wrapped? = tableLock.withLock {
+        let found = liveFrameworkObjects[handle]?.value ?? liveSubtypedObjects[handle]?.value
+        liveFrameworkObjects.removeValue(forKey: handle)
+        liveSubtypedObjects.removeValue(forKey: handle)
+        return found
+    }
+    guard let existing else { return }
+    existing.handle = nil
+    gi.object_free_instance_binding(handle, extensionInterface.getLibrary())
+}
+
+/// Binds a compiled Swift `type` to an object that Godot already constructed.
+///
+/// This lets a script language attach a registered Swift type to a node. Any wrapper that was
+/// surfaced for the object is discarded first; see ``releaseSwiftBinding(for:)``.
+///
+/// - Parameters:
+///   - type: A type registered via `register(type:)`.
+///   - handle: The live Godot object to bind to.
+/// - Returns: The bound Swift instance.
+public func bindScriptInstance(ofType type: Object.Type, to handle: GodotNativeObjectPointer) -> Object {
+    releaseSwiftBinding(for: handle)
+    let object = type.init(InitContext(handle: handle, origin: .gdscript))
+    _ = object.wrapper?.strongify()
+    return object
 }
 
 func typeOfClassOrNearestKnownParent(named className: String) -> Object.Type? {

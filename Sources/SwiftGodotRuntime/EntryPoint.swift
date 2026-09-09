@@ -67,6 +67,10 @@ public protocol ExtensionInterface {
 
     func objectDeinited(object: Wrapped)
 
+    func objectInstanceId(for handle: GodotNativeObjectPointer) -> GDObjectInstanceID
+
+    func objectIsValid(handle: GodotNativeObjectPointer, instanceId: GDObjectInstanceID, domainId: UInt8) -> Bool
+
     func variantInited(variant: Variant, content: UnsafeMutableRawPointer)
 
     func variantDeinited(variant: Variant, content: UnsafeMutableRawPointer)
@@ -106,6 +110,14 @@ public extension ExtensionInterface {
     }
 
     func setLibrary(_ library: UnsafeMutableRawPointer) {}
+
+    func objectInstanceId(for handle: GodotNativeObjectPointer) -> GDObjectInstanceID {
+        gi.object_get_instance_id(handle)
+    }
+
+    func objectIsValid(handle: GodotNativeObjectPointer, instanceId: GDObjectInstanceID, domainId: UInt8) -> Bool {
+        gi.object_get_instance_from_id(instanceId) == handle
+    }
 }
 
 class LibGodotExtensionInterface: ExtensionInterface {
@@ -168,7 +180,7 @@ class LibGodotExtensionInterface: ExtensionInterface {
 }
 
 /// The pointer to the Godot Extension Interface
-var extensionInterface: ExtensionInterface!
+public internal(set) var extensionInterface: ExtensionInterface!
 
 public func swiftGodotShouldInitializeClass(type: AnyClass) -> Bool {
     extensionInterface.initClass(type: type)
@@ -309,6 +321,8 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
 
     public let  object_set_instance: GDExtensionInterfaceObjectSetInstance
     public let  object_get_instance_binding: GDExtensionInterfaceObjectGetInstanceBinding
+    public let  object_get_instance_from_id: GDExtensionInterfaceObjectGetInstanceFromId
+    public let  object_get_instance_id: GDExtensionInterfaceObjectGetInstanceId
     public let  object_set_instance_binding: GDExtensionInterfaceObjectSetInstanceBinding
     public let  object_free_instance_binding: GDExtensionInterfaceObjectFreeInstanceBinding
     public let  object_get_class_name: GDExtensionInterfaceObjectGetClassName
@@ -318,6 +332,10 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  object_destroy: GDExtensionInterfaceObjectDestroy
     public let  object_has_script_method: GDExtensionInterfaceObjectHasScriptMethod?
     public let  object_call_script_method: GDExtensionInterfaceObjectCallScriptMethod?
+
+    public let  script_instance_create3: GDExtensionInterfaceScriptInstanceCreate3
+    public let  placeholder_script_instance_create: GDExtensionInterfacePlaceHolderScriptInstanceCreate
+    public let  placeholder_script_instance_update: GDExtensionInterfacePlaceHolderScriptInstanceUpdate
 
     // @convention(c) (GDExtensionMethodBindPtr?, GDExtensionObjectPtr?, UnsafePointer<GDExtensionConstTypePtr?>?, GDExtensionTypePtr?) -> Void
     @inline(__always)
@@ -476,6 +494,8 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         
         object_set_instance: load("object_set_instance"),
         object_get_instance_binding: load("object_get_instance_binding"),
+        object_get_instance_from_id: load("object_get_instance_from_id"),
+        object_get_instance_id: load("object_get_instance_id"),
         object_set_instance_binding: load("object_set_instance_binding"),
         object_free_instance_binding: load("object_free_instance_binding"),
         object_get_class_name: load("object_get_class_name"),
@@ -485,6 +505,10 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 
         object_has_script_method: loadOptional("object_has_script_method"),
         object_call_script_method: loadOptional("object_call_script_method"),
+
+        script_instance_create3: load("script_instance_create3"),
+        placeholder_script_instance_create: load("placeholder_script_instance_create"),
+        placeholder_script_instance_update: load("placeholder_script_instance_update"),
 
         global_get_singleton: load("global_get_singleton"),
         ref_get_object: load("ref_get_object"),
