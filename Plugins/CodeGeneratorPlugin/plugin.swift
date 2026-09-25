@@ -68,6 +68,15 @@ import PackagePlugin
         let staticCachesOnMacOS = (target as? SwiftSourceModuleTarget)?
             .compilationConditions
             .contains("SWIFTGODOT_STATIC_CACHES_ON_MACOS") == true
+        // staticCachesOnMacOS is a refinement of the reinitialization support that the
+        // with_multi_process trait enables. Seeing it without the trait means the host
+        // project lost the trait (Xcode keeps it on the package reference, and has been
+        // seen to drop it when rewriting the project file). Without the trait the runtime
+        // is compiled single-process and a multi-instance host crashes at the first cross
+        // instance call, so refuse to build rather than generate a working-looking library.
+        if staticCachesOnMacOS && !supportsMultiProcess {
+            throw PluginError.staticCachesWithoutMultiProcess(target.name)
+        }
 #if os(Windows)
         let useCombinedOutput = true
 #else
@@ -286,11 +295,14 @@ import PackagePlugin
 
 enum PluginError: Error, CustomStringConvertible {
     case missingPreparedGenerator(String)
+    case staticCachesWithoutMultiProcess(String)
 
     var description: String {
         switch self {
         case .missingPreparedGenerator(let path):
             return "Missing SwiftGodot Generator at \(path). Run `make prep` from the SwiftGodot repository root."
+        case .staticCachesWithoutMultiProcess(let target):
+            return "\(target) is built with staticCachesOnMacOS but without the with_multi_process trait. Enable the trait on the SwiftGodot package reference of the host project (Xcode: the package's `traits` entry in the project file), or set staticCachesOnMacOS to false in Package.swift."
         }
     }
 }
