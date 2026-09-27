@@ -96,8 +96,12 @@ to trim the build times.
 
 To drive Godot from Swift, use the companion [`SwiftGodotKit`](https://github.com/migueldeicaza/SwiftGodotKit) 
 module which embeds Godot directly into your application, which 
-allows you to to launch the Godot runtime from your code.
+allows you to launch the Godot runtime from your code.
 
+For a SwiftUI app, see [Host Godot in SwiftUI](Sources/SwiftGodot/SwiftGodot.docc/SwiftUIHosting.md).
+It shows how a SwiftUI button calls a Godot method and how a Godot signal
+updates SwiftUI state. The [Axolotl sample](https://github.com/migueldeicaza/SwiftGodotKit/tree/main/Samples/AxolotlDemo)
+contains the full macOS and iOS project.
 
 # Creating an Extension
 

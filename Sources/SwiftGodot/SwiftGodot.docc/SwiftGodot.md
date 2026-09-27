@@ -47,6 +47,7 @@ Going in depth with SwiftGodot:
 
 ### Platform Integration
 
+- <doc:SwiftUIHosting>
 - <doc:iOS>
 - <doc:Windows>
 
