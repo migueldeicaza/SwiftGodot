@@ -2,10 +2,10 @@
 	"header": {
 		"version_major": 4,
 		"version_minor": 7,
-		"version_patch": 0,
-		"version_status": "stable",
-		"version_build": "official",
-		"version_full_name": "Godot Engine v4.7.stable.official",
+		"version_patch": 3,
+		"version_status": "rc",
+		"version_build": "custom_build",
+		"version_full_name": "Godot Engine v4.7.3.rc.custom_build",
 		"precision": "single"
 	},
 	"builtin_class_sizes": [
@@ -89731,6 +89731,10 @@
 						{
 							"name": "FEATURE_PIP_MODE",
 							"value": 36
+						},
+						{
+							"name": "FEATURE_NATIVE_WINDOWS",
+							"value": 37
 						}
 					]
 				},
@@ -96294,6 +96298,222 @@
 						{
 							"name": "orientation",
 							"type": "int"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "DisplayServerMacOSEmbedded",
+			"is_refcounted": false,
+			"is_instantiable": false,
+			"inherits": "DisplayServer",
+			"api_type": "core",
+			"methods": [
+				{
+					"name": "set_native_surface",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": true,
+					"is_virtual": false,
+					"hash": 2894024005,
+					"arguments": [
+						{
+							"name": "native_surface",
+							"type": "RenderingNativeSurface"
+						}
+					]
+				},
+				{
+					"name": "get_singleton",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": true,
+					"is_virtual": false,
+					"hash": 286019883,
+					"return_value": {
+						"type": "DisplayServerMacOSEmbedded"
+					}
+				},
+				{
+					"name": "resize_window",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 3200960707,
+					"arguments": [
+						{
+							"name": "size",
+							"type": "Vector2i"
+						},
+						{
+							"name": "id",
+							"type": "int",
+							"meta": "int32"
+						}
+					]
+				},
+				{
+					"name": "set_content_scale",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 373806689,
+					"arguments": [
+						{
+							"name": "content_scale",
+							"type": "float",
+							"meta": "float"
+						}
+					]
+				},
+				{
+					"name": "touch_press",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 2276808320,
+					"arguments": [
+						{
+							"name": "idx",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "x",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "y",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "pressed",
+							"type": "bool"
+						},
+						{
+							"name": "double_click",
+							"type": "bool"
+						},
+						{
+							"name": "window",
+							"type": "int",
+							"meta": "int32"
+						}
+					]
+				},
+				{
+					"name": "touch_drag",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 413772270,
+					"arguments": [
+						{
+							"name": "idx",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "prev_x",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "prev_y",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "x",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "y",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "pressure",
+							"type": "float",
+							"meta": "float"
+						},
+						{
+							"name": "tilt",
+							"type": "Vector2"
+						},
+						{
+							"name": "window",
+							"type": "int",
+							"meta": "int32"
+						}
+					]
+				},
+				{
+					"name": "touches_canceled",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 3937882851,
+					"arguments": [
+						{
+							"name": "idx",
+							"type": "int",
+							"meta": "int32"
+						},
+						{
+							"name": "window",
+							"type": "int",
+							"meta": "int32"
+						}
+					]
+				},
+				{
+					"name": "key",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 293311468,
+					"arguments": [
+						{
+							"name": "key",
+							"type": "enum::Key"
+						},
+						{
+							"name": "char",
+							"type": "int",
+							"meta": "char32"
+						},
+						{
+							"name": "unshifted",
+							"type": "enum::Key"
+						},
+						{
+							"name": "physical",
+							"type": "enum::Key"
+						},
+						{
+							"name": "modifiers",
+							"type": "bitfield::KeyModifierMask"
+						},
+						{
+							"name": "pressed",
+							"type": "bool"
+						},
+						{
+							"name": "window",
+							"type": "int",
+							"meta": "int32",
+							"default_value": "0"
 						}
 					]
 				}
@@ -249042,6 +249262,52 @@
 			]
 		},
 		{
+			"name": "RenderingNativeSurface",
+			"is_refcounted": true,
+			"is_instantiable": false,
+			"inherits": "RefCounted",
+			"api_type": "core"
+		},
+		{
+			"name": "RenderingNativeSurfaceApple",
+			"is_refcounted": true,
+			"is_instantiable": false,
+			"inherits": "RenderingNativeSurface",
+			"api_type": "core",
+			"methods": [
+				{
+					"name": "create",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": true,
+					"is_virtual": false,
+					"hash": 4233771684,
+					"return_value": {
+						"type": "RenderingNativeSurfaceApple"
+					},
+					"arguments": [
+						{
+							"name": "layer",
+							"type": "int",
+							"meta": "uint64"
+						}
+					]
+				},
+				{
+					"name": "get_layer",
+					"is_const": true,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 3905245786,
+					"return_value": {
+						"type": "int",
+						"meta": "uint64"
+					}
+				}
+			]
+		},
+		{
 			"name": "RenderingServer",
 			"is_refcounted": false,
 			"is_instantiable": false,
@@ -348652,6 +348918,31 @@
 					"hash": 36873697,
 					"return_value": {
 						"type": "bool"
+					}
+				},
+				{
+					"name": "set_native_surface",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 2894024005,
+					"arguments": [
+						{
+							"name": "native_surface",
+							"type": "RenderingNativeSurface"
+						}
+					]
+				},
+				{
+					"name": "get_native_surface",
+					"is_const": true,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 3233818028,
+					"return_value": {
+						"type": "RenderingNativeSurface"
 					}
 				},
 				{
