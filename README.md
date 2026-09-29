@@ -18,6 +18,16 @@ to the game engine, or it can be used as an API with SwiftGodotKit
 which embeds Godot as an application that is driven directly from
 Swift.
 
+## SwiftGodotKit 4.7 bindings
+
+This branch includes the custom display and native surface classes from the
+`swiftgodotkit-4.7` Godot branch. The `extension_api.json` file came from that
+branch's macOS editor build. To refresh it, run the editor with
+`--headless --dump-extension-api` and copy the generated file to
+`Sources/ExtensionApi/extension_api.json`. The `extra-classes.txt` file tells
+the build plugin to generate Swift bindings for the added classes. Build those
+bindings with `swift build --product SwiftGodot`.
+
 Tutorials and Documentation:
 
 * [Meet Swift Godot](https://migueldeicaza.github.io/SwiftGodotDocs/documentation/swiftgodot)
