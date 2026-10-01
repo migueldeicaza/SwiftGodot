@@ -258,10 +258,6 @@ MySwiftNode.myCallback.call("Hello from Swift!")
 
 ## Async/Await
 
-> 
-> ##### ⚠️ Note
-> The snippets below are using deprecated API and are dangerous. If signal never emits the Swift coroutine state will leak with all the captured context. Prefer using `Signal.connect`
-
 GDScript comes with an `await` primitive, you can achieve similar functionality
 with the Swift built-in await/async stack.   Unlike GDScript, await can only be
 invoked from `async` methods.
@@ -270,15 +266,15 @@ This means that code like this wont work:
 
 ```swift
 func demo() {
-	await someSignal.emitted
+	try await someSignal.emitted
 }
 ```
 
 For this to work, this needs to be in an async context, like this one:
 
 ```swift
-func demo() async {
-	await someSignal.emitted
+func demo() async throws {
+	try await someSignal.emitted
 }
 ```
 
@@ -288,8 +284,36 @@ Task, like this:
 ```swift
 func demo() {
 	// We are not an async function, but we can start a Task
-	Task {
-		await someSignal.emitted
+	Task { @MainActor in
+		try await someSignal.emitted
 	}
 }
 ```
+
+### What `await` accepts
+
+GDScript's `await` takes a signal, or a call to a coroutine - a function that itself
+contains `await`. SwiftGodot covers both, plus the builtin `Signal` Variant type:
+
+| GDScript | SwiftGodot |
+|---|---|
+| `await some_signal` | `try await someSignal.emitted` |
+| `await obj.get_signal("x")` | `try await Signal(object: obj, signal: "x").emitted` |
+| `await obj.some_coroutine()` | `try await obj.callScriptAsync(method: "some_coroutine")` |
+
+A typed signal's payload comes back with its Swift types - `()` for a `SimpleSignal`, the
+argument itself for a one-argument signal, a tuple otherwise. A `Signal` value carries no
+static type information, so it yields `[Variant?]`.
+
+### Differences worth knowing
+
+- **`await` throws here.** Cancelling the task disconnects from the signal and throws
+  `CancellationError`; a signal whose object is already gone throws
+  `SignalAwaitError.targetUnavailable` instead of hanging. GDScript has neither.
+- **A destroyed emitter never resumes the wait**, in Swift exactly as in GDScript. Bound
+  the wait with cancellation if the emitter might not survive it.
+- **Resumption thread.** GDScript always resumes on the main thread. Swift resumes on the
+  actor you awaited from, so a bare `Task { }` resumes on the cooperative pool, where
+  touching the scene tree is not safe. Use `Task { @MainActor in }` - and see
+  <doc:Signals> for the platform caveat about whether `MainActor` is scheduled at all
+  under Godot.

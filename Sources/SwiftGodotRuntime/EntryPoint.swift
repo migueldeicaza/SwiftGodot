@@ -106,7 +106,7 @@ public extension ExtensionInterface {
 
     // Register any general Godot classes/methods here
     func initClasses() {
-        SignalProxy.initClass()
+        registerDeprecatedSignalProxy()
     }
 
     func setLibrary(_ library: UnsafeMutableRawPointer) {}
@@ -118,6 +118,15 @@ public extension ExtensionInterface {
     func objectIsValid(handle: GodotNativeObjectPointer, instanceId: GDObjectInstanceID, domainId: UInt8) -> Bool {
         gi.object_get_instance_from_id(instanceId) == handle
     }
+}
+
+/// ``SignalProxy`` is deprecated but still registered, because it is public API and user
+/// code may reference it by name.  Nothing in the binding uses it any more - awaiting a
+/// signal now goes through a `Callable` built from a Swift closure.  Keeping the call in
+/// its own deprecated function confines the warning to this one place.
+@available(*, deprecated)
+fileprivate func registerDeprecatedSignalProxy() {
+    SignalProxy.initClass()
 }
 
 class LibGodotExtensionInterface: ExtensionInterface {
