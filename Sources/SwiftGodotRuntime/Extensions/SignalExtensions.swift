@@ -16,7 +16,7 @@
 /// resumes exactly once, whether the signal fires, the connection is refused, or the task
 /// is cancelled.  Godot emits from whatever thread it pleases and `onCancel` is
 /// `@Sendable`, so every transition goes through the lock.
-private final class VariantSignalAwaiter {
+final class VariantSignalAwaiter {
     private let lock = NIOLock()
     private var continuation: CheckedContinuation<[Variant?], any Error>?
     private var token: Callable?
@@ -41,7 +41,8 @@ private final class VariantSignalAwaiter {
 
     func connected(_ callable: Callable) {
         lock.withLockVoid {
-            guard !isSettled else { return }
+            // Keep the token if cancellation occurred during connection setup.
+            // On success, the async frame releases the awaiter and its token.
             token = callable
         }
     }
@@ -106,7 +107,7 @@ public extension Signal {
     /// - Throws: `CancellationError` if the task is cancelled, or ``SignalAwaitError``.
     nonisolated(nonsending) var emitted: [Variant?] {
         get async throws {
-            guard !isNull() else {
+            guard targetIsValid else {
                 throw SignalAwaitError.targetUnavailable
             }
 
@@ -141,11 +142,16 @@ public extension Signal {
                     awaiter.cancel()
                 }
             } catch {
-                if let token = awaiter.takeToken() {
+                if let token = awaiter.takeToken(), targetIsValid,
+                   isConnected(callable: token) {
                     disconnect(callable: token)
                 }
                 throw error
             }
         }
+    }
+
+    private var targetIsValid: Bool {
+        GD.isInstanceIdValid(id: getObjectId())
     }
 }

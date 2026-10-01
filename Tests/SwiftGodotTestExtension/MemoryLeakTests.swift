@@ -452,6 +452,29 @@ final class MemoryLeakTests {
         }
     }
 
+    /// A completed builtin await must release its stored connection token.
+    @GodotMainActor
+    public func test_await_builtin_signal_leak() async throws {
+        let node = Node()
+        defer { node.queueFree() }
+        let signal = Signal(object: node, signal: "ready")
+
+        func oneIteration() async throws {
+            emitLater { node.ready.emit() }
+            _ = try await signal.emitted
+        }
+
+        for _ in 0 ..< 5 {
+            try await oneIteration()
+        }
+
+        try await checkLeaksAsync {
+            for _ in 0 ..< 50 {
+                try await oneIteration()
+            }
+        }
+    }
+
     /// An await that carries a payload must not retain the payload either.
     @GodotMainActor
     public func test_await_signal_with_arguments_leak() async throws {

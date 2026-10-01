@@ -209,5 +209,88 @@ final class SignalTests {
         assertEqual(arguments.first??.to(Int.self), 7)
         assertEqual(arguments.last??.to(String.self), "Robin")
     }
-}
 
+    @GodotMainActor
+    public func testAwaitTypedSignalWithFreedTargetThrows() async {
+        let owner = Object()
+        let signal = SimpleSignal(target: owner, signalName: "script_changed")
+        owner.free()
+        assertFalse(owner.isValid)
+
+        await expectUnavailable {
+            try await signal.emitted
+        }
+    }
+
+    @GodotMainActor
+    public func testAwaitBuiltinSignalWithFreedTargetThrows() async {
+        let owner = Object()
+        let signal = Signal(object: owner, signal: "script_changed")
+        owner.free()
+        assertFalse(owner.isValid)
+
+        await expectUnavailable {
+            _ = try await signal.emitted
+        }
+    }
+
+    @GodotMainActor
+    public func testCancelTypedSignalAfterTargetIsFreed() async {
+        let owner = Object()
+        let signal = SimpleSignal(target: owner, signalName: "script_changed")
+        let task = Task { @GodotMainActor in
+            try await signal.emitted
+        }
+        await Task.yield()
+        assertEqual(owner.getSignalConnectionList(signal: "script_changed").count, 1)
+
+        owner.free()
+        assertFalse(owner.isValid)
+        task.cancel()
+        await expectCancellation {
+            try await task.value
+        }
+    }
+
+    @GodotMainActor
+    public func testCancelBuiltinSignalAfterTargetIsFreed() async {
+        let owner = Object()
+        let signal = Signal(object: owner, signal: "script_changed")
+        let task = Task { @GodotMainActor in
+            try await signal.emitted
+        }
+        await Task.yield()
+        assertEqual(owner.getSignalConnectionList(signal: "script_changed").count, 1)
+
+        owner.free()
+        assertFalse(owner.isValid)
+        task.cancel()
+        await expectCancellation {
+            _ = try await task.value
+        }
+    }
+
+    @GodotMainActor
+    private func expectUnavailable(_ body: () async throws -> Void) async {
+        do {
+            try await body()
+            fail("awaiting a freed target should throw")
+        } catch SignalAwaitError.targetUnavailable {
+            // Expected.
+        } catch {
+            fail("expected targetUnavailable, got \(error)")
+        }
+    }
+
+    @GodotMainActor
+    private func expectCancellation(_ body: () async throws -> Void) async {
+        do {
+            try await body()
+            fail("cancelled await should throw")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            fail("expected CancellationError, got \(error)")
+        }
+    }
+}

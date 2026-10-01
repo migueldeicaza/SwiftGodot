@@ -29,7 +29,7 @@ public enum SignalAwaitError: Error, CustomStringConvertible {
 /// signal fires, the connection is refused, or the task is cancelled.  Godot emits from
 /// whatever thread it pleases and `withTaskCancellationHandler`'s `onCancel` is
 /// `@Sendable`, so every transition goes through the lock.
-private final class SignalAwaiter<each T: _GodotBridgeable> {
+final class SignalAwaiter<each T: _GodotBridgeable> {
     private let lock = NIOLock()
     private var continuation: CheckedContinuation<(repeat each T), any Error>?
     private var token: Callable?
@@ -58,11 +58,11 @@ private final class SignalAwaiter<each T: _GodotBridgeable> {
 
     /// Records the connection token so a cancelled await can disconnect itself.
     ///
-    /// Nothing is recorded once the awaiter has settled: the one-shot connection is
-    /// already gone, and there would be no later opportunity to drop the reference.
+    /// Cancellation can occur before the connection returns. Keep the token in that
+    /// case so the caller can disconnect. On success, the async frame releases the
+    /// awaiter and its token. The callback holds only a weak reference to the awaiter.
     func connected(_ callable: Callable) {
         lock.withLockVoid {
-            guard !isSettled else { return }
             token = callable
         }
     }
@@ -229,7 +229,7 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
     /// - Throws: `CancellationError` if the task is cancelled, or ``SignalAwaitError``.
     public nonisolated(nonsending) var emitted: (repeat each T) {
         get async throws {
-            guard let target else {
+            guard let target, target.isValid else {
                 throw SignalAwaitError.targetUnavailable
             }
 
@@ -269,9 +269,10 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
             } catch {
                 // Cancellation can be delivered from any thread, so the handler above only
                 // resumes the continuation.  The actual disconnect happens here, back on
-                // the caller's actor.  On the success path Godot has already dropped the
-                // one-shot connection, and `takeToken` is only non-nil when it has not.
-                if let token = awaiter.takeToken() {
+                // the caller's actor. The emitter or the one-shot connection can be
+                // gone by the time cleanup runs.
+                if let token = awaiter.takeToken(), target.isValid,
+                   target.isConnected(signal: signalName, callable: token) {
                     target.disconnect(signal: signalName, callable: token)
                 }
                 throw error
