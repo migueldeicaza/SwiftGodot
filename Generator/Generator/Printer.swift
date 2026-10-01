@@ -99,7 +99,13 @@ class Printer {
             visibility = "\(visibility) "
         }
         
-        if noStaticCaches || !isStored {
+        if noStaticCaches && isStored && staticCachesOnMacOS {
+            p("#if os(macOS)")
+            b("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)
+            p("#else")
+            b("\(visibility)static var \(name): \(type)", suffix: "", block: block)
+            p("#endif")
+        } else if noStaticCaches || !isStored {
             b("\(visibility)static var \(name): \(type)", suffix: "", block: block)
         } else {
             b("\(visibility)static let \(name): \(type) =", suffix: "()", block: block)

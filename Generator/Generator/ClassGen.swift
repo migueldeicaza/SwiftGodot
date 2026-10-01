@@ -483,7 +483,7 @@ func generateProperties (_ p: Printer,
         if property.description != "" {
             doc (p, cdef, property.description)
         }
-        p ("\(asSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name)): \(type!)"){
+        p ("\(asSingleton ? "static" : "final") public var \(godotPropertyToSwift (property.name, inClass: cdef.name)): \(type!)"){
             p ("get"){
                 p ("return \(getterName) (\(gettterArgName)\(access))")
             }
@@ -645,7 +645,7 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     p(typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
+            p.staticProperty(visibility: "public", isStored: !supportReinit, name: "shared", type: cdef.name) {
                 // Copy the class name's content into a local first. Taking the
                 // `withUnsafePointer` exclusive access directly on the static
                 // `godotClassName` conflicts with the read of that same static

@@ -40,7 +40,7 @@ while index < args.count {
         }
         allowedClassFallbacks[parts[0]] = parts[1]
         index += 1
-    case "--support-reinit", "--enable-static-caches":
+    case "--support-reinit", "--enable-static-caches", "--static-caches-on-macos":
         break
     case "--builtin-filter":
         let path = args[index + 1]
@@ -98,17 +98,19 @@ let outputDir = positionalArgs.count > 1 ? positionalArgs[1] : generatorOutput
 let noStaticCaches = !args.contains("--enable-static-caches")
 
 let supportReinit = args.contains("--support-reinit")
+let staticCachesOnMacOS = args.contains("--static-caches-on-macos")
 
 if positionalArgs.count < 1 {
     print(
         """
-        Usage is: generator path-to-extension-api output-directory doc-directory [--combined] [--enable-static-caches] [--support-reinit]
+        Usage is: generator path-to-extension-api output-directory doc-directory [--combined] [--enable-static-caches] [--support-reinit] [--static-caches-on-macos]
         - path-to-extension-api is the full path to extension_api.json from Godot
         - output-directory is where the files will be placed
         - doc-directory is the Godot documentation resides (godot/doc)
         - combined generates a smaller number of files that are combined
         - enable-static-caches enables static caches that optimize execution for a single run
         - support-reinit disables static caches where it would break reinitialization
+        - static-caches-on-macos keeps stored static caches on macOS when reinitialization support is enabled
         Running with defaults:
             path-to-extension-api = "\(jsonFile)"
             output-directory = "\(outputDir)"
@@ -118,6 +120,8 @@ if positionalArgs.count < 1 {
 
 let jsonData = try! Data(url: URL(fileURLWithPath: jsonFile))
 let jsonApi = try! JSONDecoder().decode(JGodotExtensionAPI.self, from: jsonData)
+/// The Godot version the API description was produced by, e.g. "4.7"; used in diagnostics.
+let apiVersionString = "\(jsonApi.header.versionMajor).\(jsonApi.header.versionMinor)"
 
 func dropMatchingPrefix(_ enumName: String, _ enumKey: String) -> String {
     let snake = snakeToCamel(enumKey)

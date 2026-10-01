@@ -450,19 +450,24 @@ public final class Variant: Hashable, Equatable, CustomDebugStringConvertible, _
     public subscript(index: Variant) -> Variant? {
         get {
             var newContent: ContentType = Variant.zero
+            var copyIndex = index
             var valid: GDExtensionBool = 0
 
-            gi.variant_get(&content, &index.content, &newContent, &valid)
+            gi.variant_get(&content, &copyIndex.content, &newContent, &valid)
             if valid != 0 {
+                if newContent == Variant.zero {
+                    return nil
+                }
                 return Variant(takingOver: newContent)
             } else {
                 return nil
             }
         }
         set {
-            var copyValue: Variant.ContentType = newValue.content
+            var copyIndex = index
+            var copyValue: Variant.ContentType = newValue?.content ?? Variant.zero
             var valid: GDExtensionBool = 0
-            gi.variant_set(&content, &index.content, &copyValue, &valid)            
+            gi.variant_set(&content, &copyIndex.content, &copyValue, &valid)
         }
     }
     /// Gets the name of a Variant type.

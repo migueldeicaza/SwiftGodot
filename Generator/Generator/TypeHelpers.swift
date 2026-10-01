@@ -95,6 +95,13 @@ func godotPropertyToSwift (_ name: String) -> String {
     return v
 }
 
+func godotPropertyToSwift (_ name: String, inClass className: String) -> String {
+    if className == "RDAccelerationStructureInstance" && name == "id" {
+        return "instanceId"
+    }
+    return godotPropertyToSwift(name)
+}
+
 func isRefCountedType(_ name: String) -> Bool {
     if let def = classMap[name] {
         return def.isRefcounted

@@ -9,7 +9,7 @@
 [![Swift Package Index](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmigueldeicaza%2FSwiftGodot%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/migueldeicaza/SwiftGodot)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?maxAge=2592000)](https://raw.githubusercontent.com/migueldeicaza/SwiftGodot/main/LICENSE)
 
-SwiftGodot provides Swift language bindings for the Godot 4.6 game
+SwiftGodot provides Swift language bindings for the Godot 4.7 game
 engine using the new [GDExtension](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html) system.   Support for older versions of Godot is available on branches.
 
 SwiftGodot can be used to either build an extension that can be added
@@ -96,8 +96,12 @@ to trim the build times.
 
 To drive Godot from Swift, use the companion [`SwiftGodotKit`](https://github.com/migueldeicaza/SwiftGodotKit) 
 module which embeds Godot directly into your application, which 
-allows you to to launch the Godot runtime from your code.
+allows you to launch the Godot runtime from your code.
 
+For a SwiftUI app, see [Host Godot in SwiftUI](Sources/SwiftGodot/SwiftGodot.docc/SwiftUIHosting.md).
+It shows how a SwiftUI button calls a Godot method and how a Godot signal
+updates SwiftUI state. The [Axolotl sample](https://github.com/migueldeicaza/SwiftGodotKit/tree/main/Samples/AxolotlDemo)
+contains the full macOS and iOS project.
 
 # Creating an Extension
 

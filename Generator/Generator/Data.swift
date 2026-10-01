@@ -27,7 +27,7 @@ extension Data {
         while input.hasBytesAvailable {
             let read = input.read(buffer, maxLength: bufferSize)
             if read < 0 {
-                //Stream error occured
+                //Stream error occurred
                 throw input.streamError!
             } else if read == 0 {
                 //EOF

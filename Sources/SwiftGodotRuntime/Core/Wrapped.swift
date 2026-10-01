@@ -190,6 +190,9 @@ public struct InitContext {
 open class Wrapped: Equatable, Identifiable, Hashable {
     /// Points to the underlying object
     public var handle: GodotNativeObjectPointer?
+
+    private let instanceId: GDObjectInstanceID
+    private let domainId: UInt8
     
     weak var wrapper: WrappedReference?
     
@@ -200,7 +203,9 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static var fcallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.frameworkTypeBindingCallback))
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     #endif
+    #if !SWIFTGODOT_WITH_MULTI_PROCESS
     public static var deferred: Callable? = nil
+    #endif
 
     // These exist to hold references to property list objects that are passed back to Godot,
     // but we retain ownership until `propertyListFreeFunc` is invoked, or the class is deinit'ed.
@@ -283,20 +288,30 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     return
                 }
                 var queue = false
+                #if SWIFTGODOT_WITH_MULTI_PROCESS
+                var deferred: Callable?
+                let id = extensionInterface.getCurrenDomain()
+                #endif
                 freeLock.withLockVoid {
+                    #if SWIFTGODOT_WITH_MULTI_PROCESS
+                    if pendingReleaseCallables[id] == nil {
+                        pendingReleaseCallables[id] = Callable ({ (args: borrowing Arguments) in
+                            releasePendingObjects()
+                            return nil
+                        })
+                    }
+                    pendingReleaseHandles[id, default: []].append(handle)
+                    if pendingReleaseHandles[id]?.count == 1 {
+                        queue = true
+                        deferred = pendingReleaseCallables[id]
+                    }
+                    #else
                     if Wrapped.deferred == nil {
                         Wrapped.deferred = Callable ({ (args: borrowing Arguments) in
                             releasePendingObjects()
                             return nil
                         })
                     }
-                    #if SWIFTGODOT_WITH_MULTI_PROCESS
-                    let id = extensionInterface.getCurrenDomain()
-                    pendingReleaseHandles[id, default: []].append(handle)
-                    if pendingReleaseHandles[id]?.count == 1 {
-                        queue = true
-                    }
-                    #else
                     pendingReleaseHandles.append(handle)
                     if pendingReleaseHandles.count == 1 {
                         queue = true
@@ -304,7 +319,11 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     #endif
                 }
                 if queue {
+                    #if SWIFTGODOT_WITH_MULTI_PROCESS
+                    deferred?.callDeferred()
+                    #else
                     Wrapped.deferred?.callDeferred()
+                    #endif
                 }
             }
         }
@@ -461,6 +480,8 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// For use by the framework, you should not need to call this.
     public required init(_ context: InitContext) {
         handle = context.handle
+        instanceId = extensionInterface.objectInstanceId(for: context.handle)
+        domainId = extensionInterface.getCurrenDomain()
         extensionInterface.objectInited(object: self)
         bindSwiftObject(self, context)
     }
@@ -471,7 +492,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// when you call the ``Node/queueFree()`` which might queue the object
     /// for disposal
     public var isValid: Bool {
-        return handle != nil
+        guard let handle else {
+            return false
+        }
+        return extensionInterface.objectIsValid(handle: handle, instanceId: instanceId, domainId: domainId)
     }
 
     /// Use this to release objects that are neither Nodes or RefCounted subclasses.
@@ -480,7 +504,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     /// ``RefCounted`` objects are destroyed automatically when the last reference
     /// is gone, so it is not necessary to call ``free`` on those.
     public func free() {
-        if let object = self as? Object, object.isClass("Node") {
+        // Ask ClassDB rather than Object.is_class: the latter's signature changed in
+        // Godot 4.7 (String to StringName), so its 4.7 method bind does not exist on
+        // older engines, while is_parent_class has been stable across 4.x.
+        if let handle, ClassDB.isParentClass(StringName(objectClassName(handle)), inherits: "Node") {
             print ("SwiftGodot: Cannot call free() on Nodes; queueFree() should be used instead.")
             return
         }
@@ -931,6 +958,7 @@ var tableLock = NIOLock()
 var freeLock = NIOLock()
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 var pendingReleaseHandles: [UInt8: [GodotNativeObjectPointer]] = [:]
+var pendingReleaseCallables: [UInt8: Callable] = [:]
 #else
 var pendingReleaseHandles: [GodotNativeObjectPointer] = []
 #endif
@@ -1020,6 +1048,19 @@ public func releasePendingObjects() {
         if result {
             gi.object_destroy(handle)
         }
+    }
+}
+
+/// Clears deferred releases that belong to `id` during extension shutdown.
+public func clearPendingReleaseState(forDomain id: UInt8) {
+    freeLock.withLockVoid {
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        pendingReleaseHandles.removeValue(forKey: id)
+        pendingReleaseCallables.removeValue(forKey: id)
+        #else
+        pendingReleaseHandles.removeAll()
+        Wrapped.deferred = nil
+        #endif
     }
 }
  
@@ -1139,6 +1180,20 @@ func handleReturnedObject<T: Wrapped>(
 
 /// Get an existing Swift object which is bound to Godot `nativeHandle` or initialize a new one and bind it
 // @_spi(SwiftGodotRuntimePrivate)
+/// The name this module was compiled under: "SwiftGodotRuntime", or an alias
+/// such as "XogotSwiftGodotRuntime" when the package is vendored with renamed
+/// modules (see the switches in Package.swift).
+let runtimeModuleName = String(reflecting: Wrapped.self).split(separator: ".", maxSplits: 1).first.map(String.init) ?? "SwiftGodotRuntime"
+
+/// The name of the API module that sits on top of this one. That module cannot
+/// be referenced from here, so its name is derived from ours: by construction
+/// (Package.swift) it is this module's name without the "Runtime" suffix.
+private let godotModuleName = runtimeModuleName.hasSuffix("Runtime")
+    ? String(runtimeModuleName.dropLast("Runtime".count))
+    : runtimeModuleName
+
+let SwiftGodot_has_instance_binding = "\(runtimeModuleName)_has_instance_binding"
+
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 final class ReferenceArray<Element> {
     var items: [Element]
@@ -1147,8 +1202,6 @@ final class ReferenceArray<Element> {
         self.items = items
     }
 }
-
-let SwiftGodot_has_instance_binding = "SwiftGodot_has_instance_binding"
 
 public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer, ownership: ReturnedObjectOwnership) -> T? {
     var hasInstanceBinding = Foundation.Thread.current.threadDictionary.object(forKey: SwiftGodot_has_instance_binding) as? ReferenceArray<Bool>
@@ -1177,7 +1230,7 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
     return object as? T
 }
 
-func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
+func createSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPointer) -> T? {
     var className: String = ""
     var sc: StringName.ContentType = StringName.zero
     if gi.object_get_class_name(nativeHandle, extensionInterface.getLibrary(), &sc) != 0 {
@@ -1191,7 +1244,13 @@ func createSwiftObject(nativeHandle: GodotNativeObjectPointer) -> Object? {
 
     if let type = typeOfClassOrNearestKnownParent(named: className) {
         let created = type.init(InitContext(handle: nativeHandle, origin: .godot))
-        return created
+        return created as? T
+    }
+
+    var requestedClass = T.godotClassName.content
+    if let classTag = gi.classdb_get_class_tag(&requestedClass),
+       gi.object_cast_to(nativeHandle, classTag) != nil {
+        return T(InitContext(handle: nativeHandle, origin: .godot))
     }
 
     print("Object of class \(className) could not be created")
@@ -1579,7 +1638,7 @@ func bindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutable
         return Unmanaged<WrappedReference>.passUnretained(reference).toOpaque()
     }
 
-    guard let object = createSwiftObject(nativeHandle: instance) else { return nil }
+    guard let object: Object = createSwiftObject(nativeHandle: instance) else { return nil }
     guard let reference = object.wrapper else {
         fatalError("WrappedReference is not created for object.")
     }
@@ -1857,18 +1916,21 @@ public func clearHandles(_ handles: [GodotNativeObjectPointer]) {
 }
 
 /// Looks up the class at runtime
+func mangledGodotTypeNames(for className: String) -> [String] {
+    [godotModuleName, runtimeModuleName].map { moduleName in
+        "\(moduleName.count)\(moduleName)\(className.count)\(className)C"
+    }
+}
+
 fileprivate func lookupGodotType(named className: String) -> AnyClass? {
     // The format is:
     // MODULE: LENGHT + String
     // Type: LENGHT + String
     // C
     //
-    // So "SwiftGodot.Node" becomes "10SwiftGodot4NodeC":
+    // So "SwiftGodot.Node" becomes "10SwiftGodot4NodeC".
     //
-    let candidates: [String] = [
-        "10SwiftGodot\(className.count)\(className)C",
-        "17SwiftGodotRuntime\(className.count)\(className)C",
-    ]
+    let candidates = mangledGodotTypeNames(for: className)
     for typeCode in candidates {
 #if canImport(UIKit) || canImport(AppKit)
         if let ctor = NSClassFromString(typeCode) {
@@ -1891,6 +1953,48 @@ func typeOfClass(named className: String) -> Object.Type? {
         return type
     }
     return nil
+}
+
+/// Returns the Swift type registered with Godot under `className`, if any.
+///
+/// Only types registered from Swift via `register(type:)` are considered; built-in Godot
+/// classes are not returned. Script languages built on ``ScriptExtension`` use this to
+/// resolve a script class name to its compiled Swift type.
+public func registeredUserType(named className: String) -> Object.Type? {
+    userTypes[className]
+}
+
+/// Discards the Swift wrapper, if any, that is currently bound to `handle`.
+///
+/// Godot allows one instance binding per object. A wrapper surfaced earlier must be detached
+/// before a different Swift type is bound to that object. The detached wrapper reports
+/// ``Wrapped/isValid`` as `false`; callers must not use it again.
+func releaseSwiftBinding(for handle: GodotNativeObjectPointer) {
+    let existing: Wrapped? = tableLock.withLock {
+        let found = liveFrameworkObjects[handle]?.value ?? liveSubtypedObjects[handle]?.value
+        liveFrameworkObjects.removeValue(forKey: handle)
+        liveSubtypedObjects.removeValue(forKey: handle)
+        return found
+    }
+    guard let existing else { return }
+    existing.handle = nil
+    gi.object_free_instance_binding(handle, extensionInterface.getLibrary())
+}
+
+/// Binds a compiled Swift `type` to an object that Godot already constructed.
+///
+/// This lets a script language attach a registered Swift type to a node. Any wrapper that was
+/// surfaced for the object is discarded first; see ``releaseSwiftBinding(for:)``.
+///
+/// - Parameters:
+///   - type: A type registered via `register(type:)`.
+///   - handle: The live Godot object to bind to.
+/// - Returns: The bound Swift instance.
+public func bindScriptInstance(ofType type: Object.Type, to handle: GodotNativeObjectPointer) -> Object {
+    releaseSwiftBinding(for: handle)
+    let object = type.init(InitContext(handle: handle, origin: .gdscript))
+    _ = object.wrapper?.strongify()
+    return object
 }
 
 func typeOfClassOrNearestKnownParent(named className: String) -> Object.Type? {

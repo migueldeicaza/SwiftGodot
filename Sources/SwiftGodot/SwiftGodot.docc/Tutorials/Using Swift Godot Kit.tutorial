@@ -55,6 +55,9 @@
                       file: "SwiftGodotKit-Main.swift")
             }
         }
+
+        To show Godot in a SwiftUI view and send data in both directions, see
+        <doc:SwiftUIHosting>.
     }
         
 }
