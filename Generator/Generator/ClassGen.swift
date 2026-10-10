@@ -645,7 +645,10 @@ func processClass (cdef: JGodotExtensionAPIClass, outputDir: String?) async {
     p(typeDecl) {
         if isSingleton {
             p ("/// The shared instance of this class")
-            p.staticProperty(visibility: "public", isStored: !supportReinit, name: "shared", type: cdef.name) {
+            // A reload clears the extension's instance bindings and each wrapper's
+            // handle. Resolve the current binding on every access, even when the
+            // engine has only one instance and the native singleton remains alive.
+            p.staticProperty(visibility: "public", isStored: false, name: "shared", type: cdef.name) {
                 // Copy the class name's content into a local first. Taking the
                 // `withUnsafePointer` exclusive access directly on the static
                 // `godotClassName` conflicts with the read of that same static
