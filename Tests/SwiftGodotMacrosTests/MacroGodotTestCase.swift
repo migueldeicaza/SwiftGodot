@@ -50,7 +50,7 @@ class MacroGodotTestCase: XCTestCase {
         let file = Parser.parse(source: input)
                 
         let context = BasicMacroExpansionContext(
-            sourceFiles: [file: .init(moduleName: "test", fullFilePath: "test.swift")]
+            sourceFiles: [file: .init(moduleName: "TestModule", fullFilePath: "test.swift")]
         )
 
         let macroSpecs = Self.macros.mapValues { MacroSpec(type: $0) }
