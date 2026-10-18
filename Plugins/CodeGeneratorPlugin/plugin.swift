@@ -863,6 +863,27 @@ let core: [String] = [
     "XMLParser.swift",
     "ZIPPacker.swift",
     "ZIPReader.swift",
+    "AnimationNodeObserver.swift",
+    "AnimationNodeObserverBlendSpace.swift",
+    "AnimationNodeObserverOneShot.swift",
+    "AnimationNodeObserverTransition.swift",
+    "FuzzySearch.swift",
+    "FuzzySearchMatch.swift",
+    "PhysicsCastMotionResult2D.swift",
+    "PhysicsCastMotionResult3D.swift",
+    "PhysicsCollideShapeResult2D.swift",
+    "PhysicsCollideShapeResult3D.swift",
+    "PhysicsGetRestInfoResult2D.swift",
+    "PhysicsGetRestInfoResult3D.swift",
+    "PhysicsIntersectPointResult2D.swift",
+    "PhysicsIntersectPointResult3D.swift",
+    "PhysicsIntersectRayResult2D.swift",
+    "PhysicsIntersectRayResult3D.swift",
+    "PhysicsIntersectShapeResult2D.swift",
+    "PhysicsIntersectShapeResult3D.swift",
+    "StreamedTexture2D.swift",
+    "TextureStreaming.swift",
+    "VisualShaderGroup.swift",
 ]
 
 let gltf: [String] = [
@@ -1111,6 +1132,9 @@ let threeD: [String] = [
     "VisualInstance3D.swift",
     "VoxelGI.swift",
     "WorldBoundaryShape3D.swift",
+    "BoneSpaceAdjuster3D.swift",
+    "Line3D.swift",
+    "Trail3D.swift",
 ]
 
 let controls: [String] = [
@@ -1268,6 +1292,10 @@ let xr: [String] = [
     "XRServer.swift",
     "XRTracker.swift",
     "XRVRS.swift",
+    "OpenXRFoveatedInsetViewport.swift",
+    "OpenXRSpatialContainerExtension.swift",
+    "OpenXRSpatialContainerSelfRenderingExtension.swift",
+    "OpenXRSpatialContainerState.swift",
 ]
 
 let visualShaderNodes: [String] = [
@@ -1380,6 +1408,9 @@ let visualShaderNodes: [String] = [
     "VisualShaderNodeVectorOp.swift",
     "VisualShaderNodeVectorRefract.swift",
     "VisualShaderNodeWorldPositionFromDepth.swift",
+    "VisualShaderNodeGroup.swift",
+    "VisualShaderNodeGroupInput.swift",
+    "VisualShaderNodeGroupOutput.swift",
 ]
 
 let editor: [String] = [
@@ -1449,6 +1480,8 @@ let editor: [String] = [
     "ScriptEditorBase.swift",
     "OpenXRBindingModifierEditor.swift",
     "ResourceImporterSVG.swift",
+    "ResourceImporterStreamedTexture.swift",
+    "ScenePaint2DEditor.swift",
 ]
 
 extension URL {
