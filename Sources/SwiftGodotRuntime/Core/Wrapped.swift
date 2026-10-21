@@ -204,6 +204,7 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     public static var ucallbacks = OpaquePointer (UnsafeRawPointer (&Wrapped.userTypeBindingCallback))
     #endif
     #if !SWIFTGODOT_WITH_MULTI_PROCESS
+    // Kept for source compatibility. The main-loop callback now processes releases.
     public static var deferred: Callable? = nil
     #endif
 
@@ -287,44 +288,10 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     extensionInterface.objectDeinited(object: self)
                     return
                 }
-                var queue = false
-                #if SWIFTGODOT_WITH_MULTI_PROCESS
-                var deferred: Callable?
-                let id = extensionInterface.getCurrenDomain()
-                #endif
-                freeLock.withLockVoid {
-                    #if SWIFTGODOT_WITH_MULTI_PROCESS
-                    if pendingReleaseCallables[id] == nil {
-                        pendingReleaseCallables[id] = Callable ({ (args: borrowing Arguments) in
-                            releasePendingObjects()
-                            return nil
-                        })
-                    }
-                    pendingReleaseHandles[id, default: []].append(handle)
-                    if pendingReleaseHandles[id]?.count == 1 {
-                        queue = true
-                        deferred = pendingReleaseCallables[id]
-                    }
-                    #else
-                    if Wrapped.deferred == nil {
-                        Wrapped.deferred = Callable ({ (args: borrowing Arguments) in
-                            releasePendingObjects()
-                            return nil
-                        })
-                    }
-                    pendingReleaseHandles.append(handle)
-                    if pendingReleaseHandles.count == 1 {
-                        queue = true
-                    }
-                    #endif
-                }
-                if queue {
-                    #if SWIFTGODOT_WITH_MULTI_PROCESS
-                    deferred?.callDeferred()
-                    #else
-                    Wrapped.deferred?.callDeferred()
-                    #endif
-                }
+                // This can run inside Godot's unreference(). Release the native
+                // reference after that call returns. Do not use MessageQueue here:
+                // Godot deletes it before ClassDB releases cached property defaults.
+                enqueuePendingRelease(handle, forDomain: domainId)
             }
         }
         propertyListStorageCache = nil
@@ -944,12 +911,79 @@ var tableLock = NIOLock()
 
 // Lock for the pending free list
 var freeLock = NIOLock()
+private var pendingReleaseLibraries: [OpaquePointer: UInt8] = [:]
+private var closedReleaseDomains = Set<UInt8>()
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 var pendingReleaseHandles: [UInt8: [GodotNativeObjectPointer]] = [:]
-var pendingReleaseCallables: [UInt8: Callable] = [:]
 #else
 var pendingReleaseHandles: [GodotNativeObjectPointer] = []
 #endif
+
+private func enqueuePendingRelease(_ handle: GodotNativeObjectPointer, forDomain id: UInt8) {
+    freeLock.withLockVoid {
+        // Late property defaults can be released after the last safe drain.
+        // Leave those native references for process exit. Do not retain stale
+        // handles that could be used by a later engine instance.
+        guard !closedReleaseDomains.contains(id) else { return }
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        pendingReleaseHandles[id, default: []].append(handle)
+        #else
+        pendingReleaseHandles.append(handle)
+        #endif
+    }
+}
+
+// An embedded host calls this at the start of a new engine instance.
+func beginPendingReleaseSession(forDomain id: UInt8) {
+    freeLock.withLockVoid {
+        pendingReleaseLibraries = pendingReleaseLibraries.filter { $0.value != id }
+        closedReleaseDomains.remove(id)
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        pendingReleaseHandles.removeValue(forKey: id)
+        #else
+        pendingReleaseHandles.removeAll()
+        #endif
+    }
+}
+
+private func releasePendingObjectsFromMainLoop() {
+    releasePendingObjects()
+}
+
+func registerPendingReleaseCallbacks(forLibrary library: UnsafeMutableRawPointer) {
+    let id = extensionInterface.getCurrenDomain()
+    freeLock.withLockVoid {
+        pendingReleaseLibraries[OpaquePointer(library)] = id
+        closedReleaseDomains.remove(id)
+    }
+    var callbacks = GDExtensionMainLoopCallbacks(
+        startup_func: nil,
+        shutdown_func: releasePendingObjectsFromMainLoop,
+        frame_func: releasePendingObjectsFromMainLoop)
+    gi.register_main_loop_callbacks(library, &callbacks)
+}
+
+func pendingReleaseDomain(forLibrary library: UnsafeMutableRawPointer) -> UInt8 {
+    let currentDomain = extensionInterface.getCurrenDomain()
+    return freeLock.withLock {
+        pendingReleaseLibraries[OpaquePointer(library)] ?? currentDomain
+    }
+}
+
+func unregisterPendingReleaseCallbacks(forLibrary library: UnsafeMutableRawPointer) {
+    var callbacks = GDExtensionMainLoopCallbacks(startup_func: nil, shutdown_func: nil, frame_func: nil)
+    gi.register_main_loop_callbacks(library, &callbacks)
+    freeLock.withLockVoid {
+        guard let id = pendingReleaseLibraries.removeValue(forKey: OpaquePointer(library)),
+              !pendingReleaseLibraries.values.contains(id) else { return }
+        closedReleaseDomains.insert(id)
+        #if SWIFTGODOT_WITH_MULTI_PROCESS
+        pendingReleaseHandles.removeValue(forKey: id)
+        #else
+        pendingReleaseHandles.removeAll()
+        #endif
+    }
+}
 
 private func objectClassName(_ handle: GodotNativeObjectPointer) -> String {
     var sc: StringName.ContentType = StringName.zero
@@ -962,9 +996,9 @@ private func objectClassName(_ handle: GodotNativeObjectPointer) -> String {
 }
 
 private func currentRefCount(_ handle: GodotNativeObjectPointer) -> Int32? {
-    let objectClass = objectClassName(handle)
-    var className = FastStringName(objectClass)
-    var methodName = FastStringName("get_reference_count")
+    // The extension class can already be unregistered during teardown.
+    var className = FastStringName(String("RefCounted"))
+    var methodName = FastStringName(String("get_reference_count"))
     guard let bind = withUnsafePointer(to: &className.content, { classPtr in
         withUnsafePointer(to: &methodName.content) { methodPtr in
             gi.classdb_get_method_bind(classPtr, methodPtr, 3905245786)
@@ -972,9 +1006,9 @@ private func currentRefCount(_ handle: GodotNativeObjectPointer) -> Int32? {
     }) else {
         return nil
     }
-    var result: Int32 = 0
+    var result: Int64 = 0
     gi.object_method_bind_ptrcall(bind, handle, nil, &result)
-    return result
+    return Int32(truncatingIfNeeded: result)
 }
 
 @inline(__always)
@@ -1000,56 +1034,60 @@ private func removePendingReleaseHandle(_ handle: GodotNativeObjectPointer) {
     }
 }
 
-/// Use this function to force the disposing of any objects that were queued for destruction
-/// this is called automatically by Godot's main loop iteration, but it is expose for the sake
-/// of the test suite that wants to release objects without waiting for Godot to run the queue
+/// Releases queued native references in the current Godot domain.
+/// Godot calls this after each process frame and during extension teardown.
+/// Tests and embedded hosts can also call it before the next frame.
 public func releasePendingObjects() {
-    var copy: [GodotNativeObjectPointer] = []
+    releasePendingObjects(forDomain: extensionInterface.getCurrenDomain())
+}
 
-    freeLock.withLock {
-        #if SWIFTGODOT_WITH_MULTI_PROCESS
-        let id = extensionInterface.getCurrenDomain()
-        copy = pendingReleaseHandles[id] ?? []
-        pendingReleaseHandles.removeValue(forKey: id)
-        #else
-        copy = pendingReleaseHandles
-        pendingReleaseHandles = []
-        #endif
-    }
-    for handle in copy {
-        // During shutdown, Godot may destroy RefCounted objects before the deferred
-        // queue is flushed; if so, our instance binding free callbacks will remove
-        // the handle from the live tables. In that case, don't call back into Godot
-        // with a stale pointer.
-        guard isTrackedHandle(handle) else { continue }
+func releasePendingObjects(forDomain id: UInt8) {
+    while true {
+        let copy: [GodotNativeObjectPointer] = freeLock.withLock {
+            #if SWIFTGODOT_WITH_MULTI_PROCESS
+            return pendingReleaseHandles.removeValue(forKey: id) ?? []
+            #else
+            let copy = pendingReleaseHandles
+            pendingReleaseHandles = []
+            return copy
+            #endif
+        }
+        guard !copy.isEmpty else { return }
+        for handle in copy {
+            // Godot can destroy an object before the queue is drained. The binding
+            // free callback removes its handle from the live tables.
+            guard isTrackedHandle(handle) else { continue }
 
 #if DEBUG
-	// Expensive, calls currentRefCount.
-	// Editor-managed RefCounted objects can reach zero before the deferred flush runs.
-        if let refCount = currentRefCount(handle), refCount <= 0 {
-	    fatalError("We had a zero refCount handle here, this should not happen")
-        }
+            if let refCount = currentRefCount(handle), refCount <= 0 {
+                fatalError("A queued RefCounted object has no native reference")
+            }
 #endif
 
-        var result: Bool = false
-        gi.object_method_bind_ptrcall(RefCounted.method_unreference, handle, nil, &result)
-        if result {
-            gi.object_destroy(handle)
+            var result: Bool = false
+            gi.object_method_bind_ptrcall(RefCounted.method_unreference, handle, nil, &result)
+            if result {
+                gi.object_destroy(handle)
+            }
         }
     }
 }
 
-/// Clears deferred releases that belong to `id` during extension shutdown.
+/// Ends deferred release processing for a Godot domain before engine destruction.
+/// Late releases are discarded. A new extension or embedded session reopens the domain.
 public func clearPendingReleaseState(forDomain id: UInt8) {
     freeLock.withLockVoid {
+        closedReleaseDomains.insert(id)
+        pendingReleaseLibraries = pendingReleaseLibraries.filter { $0.value != id }
         #if SWIFTGODOT_WITH_MULTI_PROCESS
         pendingReleaseHandles.removeValue(forKey: id)
-        pendingReleaseCallables.removeValue(forKey: id)
         #else
         pendingReleaseHandles.removeAll()
-        Wrapped.deferred = nil
         #endif
     }
+    #if !SWIFTGODOT_WITH_MULTI_PROCESS
+    Wrapped.deferred = nil
+    #endif
 }
  
  ///

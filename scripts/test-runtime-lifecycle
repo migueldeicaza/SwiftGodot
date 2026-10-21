@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+"""Run Godot lifecycle checks with libraries from an existing Swift build."""
+
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+FIXTURES = Path(__file__).resolve().parents[1] / "Tests" / "RuntimeLifecycle"
+LIBRARY_SUFFIXES = (".dylib", ".so", ".dll")
+DEFAULTS_WARNING = ('Instantiated LifecycleDefaultResource used as default value for '
+                    'LifecycleDefaultNode\'s "data" property.')
+
+
+def crash_report(pid, started, output_dir):
+    """Copy the macOS report for this process and read its faulting stack."""
+    if sys.platform != "darwin":
+        return None, []
+    reports = Path.home() / "Library" / "Logs" / "DiagnosticReports"
+    deadline = time.monotonic() + 10
+    decoder = json.JSONDecoder()
+    while True:
+        for source in reports.glob("*.ips"):
+            try:
+                if source.stat().st_mtime < started - 1:
+                    continue
+                contents = source.read_text(errors="replace")
+                remaining = contents.lstrip()
+                while remaining:
+                    report, end = decoder.raw_decode(remaining)
+                    remaining = remaining[end:].lstrip()
+                    if not isinstance(report, dict) or report.get("pid") != pid:
+                        continue
+                    symbols = []
+                    for thread in report.get("threads", []):
+                        if thread.get("triggered"):
+                            symbols.extend(frame.get("symbol", "")
+                                           for frame in thread.get("frames", []))
+                    destination = output_dir / ("defaults-crash-" + source.name)
+                    shutil.copy2(source, destination)
+                    return str(destination), symbols
+            except (OSError, ValueError):
+                # A report can be incomplete while macOS writes it.
+                continue
+        if time.monotonic() >= deadline:
+            return None, []
+        time.sleep(min(0.2, max(0, deadline - time.monotonic())))
+
+
+def arguments():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--bin-path", required=True, type=Path)
+    parser.add_argument("--godot", default="godot", help="Godot executable path or command")
+    parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument("--scenario", choices=("defaults", "unload", "both"), default="both")
+    parser.add_argument("--expect-shutdown-crash", action="store_true")
+    parser.add_argument("--expect-unload-leak", action="store_true")
+    parser.add_argument("--timeout", type=float, default=90)
+    args = parser.parse_args()
+    if args.timeout <= 0:
+        parser.error("Use a positive timeout.")
+    if args.expect_shutdown_crash and args.scenario == "unload":
+        parser.error("--expect-shutdown-crash requires the defaults scenario.")
+    if args.expect_unload_leak and args.scenario == "defaults":
+        parser.error("--expect-unload-leak requires the unload scenario.")
+    return args
+
+
+def prepare_project(scenario, project, binaries):
+    shutil.copytree(FIXTURES / scenario, project)
+    destination = project / "bin"
+    destination.mkdir()
+    for library in binaries:
+        shutil.copy2(library, destination / library.name)
+    names = (["LifecycleDefaultExtension"] if scenario == "defaults" else
+             ["LifecycleExtensionA", "LifecycleExtensionB"])
+    symbols = {"LifecycleDefaultExtension": "lifecycle_defaults_entry_point",
+               "LifecycleExtensionA": "lifecycle_a_entry_point",
+               "LifecycleExtensionB": "lifecycle_b_entry_point"}
+    for name in names:
+        library = next((item for item in binaries if item.name in
+                        [name + suffix for suffix in LIBRARY_SUFFIXES] +
+                        ["lib" + name + suffix for suffix in LIBRARY_SUFFIXES]), None)
+        if library is None:
+            raise RuntimeError(f"Library is absent: {name}")
+        descriptor = (f'[configuration]\nentry_symbol="{symbols[name]}"\n'
+                      'compatibility_minimum="4.7"\nreloadable=true\n\n[libraries]\n')
+        platform = "macos" if library.suffix == ".dylib" else (
+            "windows" if library.suffix == ".dll" else "linux")
+        descriptor += f'{platform}="res://bin/{library.name}"\n'
+        (destination / (name + ".gdextension")).write_text(descriptor)
+    if scenario == "defaults":
+        cache = project / ".godot"
+        cache.mkdir()
+        (cache / "extension_list.cfg").write_text(
+            "res://bin/LifecycleDefaultExtension.gdextension\n")
+
+
+def run_scenario(args, scenario, binaries):
+    log_path = args.output_dir / (scenario + ".log")
+    with tempfile.TemporaryDirectory(prefix="swiftgodot-lifecycle-") as temporary:
+        project = Path(temporary) / "project"
+        prepare_project(scenario, project, binaries)
+        command = [args.godot, "--headless", "--path", str(project)]
+        if scenario == "defaults":
+            command += ["--editor", "--import"]
+        else:
+            command += ["--script", "res://check.gd"]
+        environment = os.environ.copy()
+        # Use the copied libraries when a loader uses a search path.
+        for key in ("DYLD_LIBRARY_PATH", "LD_LIBRARY_PATH", "PATH"):
+            environment[key] = str(project / "bin") + os.pathsep + environment.get(key, "")
+        timed_out = False
+        with log_path.open("w") as log:
+            log.write("Command: " + repr(command) + "\n")
+            log.flush()
+            started = time.time()
+            process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
+                                       env=environment, start_new_session=True)
+            try:
+                returncode = process.wait(timeout=args.timeout)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                import signal
+                os.killpg(process.pid, signal.SIGKILL)
+                returncode = process.wait()
+        output = log_path.read_text(errors="replace")
+        unrelated_failure = bool(re.search(
+            r"SCRIPT ERROR|Parse Error|LIFECYCLE_FAILURE|Error loading extension|Can't open dynamic library",
+            output, re.IGNORECASE))
+        for line in output.splitlines():
+            if line.startswith("ERROR:"):
+                expected_leak_error = (scenario == "unload" and args.expect_unload_leak and
+                                       ("LIFECYCLE_LEAK:" in line or
+                                        "resources still in use at exit" in line.lower()))
+                if not expected_leak_error:
+                    unrelated_failure = True
+        exit_instance_leaks = sum(int(count) for count in re.findall(
+            r"(\d+) ObjectDB instances? (?:was|were) leaked at exit", output))
+        if scenario == "unload" and not args.expect_unload_leak and exit_instance_leaks:
+            unrelated_failure = True
+        # The accepted shutdown policy leaves the one cached default reference.
+        if scenario == "defaults" and exit_instance_leaks > 1:
+            unrelated_failure = True
+        deferred_release = bool(
+            re.search(r"callDeferred|call_deferredp", output, re.IGNORECASE) and
+            re.search(r"Wrapped\.deinit|Resource\.deinit|userTypeBindingReference", output))
+        crashed = returncode < 0 or returncode in (132, 133, 134, 136, 137, 138, 139)
+        report_path, report_symbols = None, []
+        if scenario == "defaults" and args.expect_shutdown_crash and crashed and not timed_out:
+            report_path, report_symbols = crash_report(process.pid, started, args.output_dir)
+            faulting_stack = "\n".join(report_symbols)
+            report_evidence = bool(re.search(r"Callable\.callDeferred|call_deferredp", faulting_stack)
+                                   and re.search(r"Wrapped\.deinit|Resource\.deinit|userTypeBindingReference",
+                                                 faulting_stack))
+            deferred_release = deferred_release or report_evidence
+            if report_path:
+                with log_path.open("a") as log:
+                    log.write("\nCrash report: " + report_path + "\nTriggered thread:\n" +
+                              faulting_stack + "\n")
+        if scenario == "defaults":
+            ready = DEFAULTS_WARNING in output
+            expected = args.expect_shutdown_crash
+            passed = (not timed_out and not unrelated_failure and ready and
+                      ((crashed and deferred_release) if expected else returncode == 0))
+        else:
+            expected = args.expect_unload_leak
+            passed = (not timed_out and not unrelated_failure and
+                      (returncode == 2 and "LIFECYCLE_UNLOAD_LEAK" in output and
+                       "LIFECYCLE_RELEASED: before_unload" in output and
+                       "LIFECYCLE_RELEASED: extension_a" in output and
+                       "LIFECYCLE_LEAK: after_unload" in output if expected else
+                       returncode == 0 and "LIFECYCLE_UNLOAD_OK" in output))
+        return {"scenario": scenario, "passed": passed, "returncode": returncode,
+                "timed_out": timed_out, "expected_failure": expected,
+                "exit_instance_leaks": exit_instance_leaks,
+                "deferred_release_evidence": deferred_release, "log": str(log_path),
+                "crash_report": report_path, "crash_thread_symbols": report_symbols}
+
+
+def main():
+    args = arguments()
+    args.output_dir = args.output_dir.resolve()
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    binaries = sorted(item for item in args.bin_path.resolve().iterdir()
+                      if item.is_file() and item.name.endswith(LIBRARY_SUFFIXES))
+    if not binaries:
+        raise RuntimeError("No shared libraries were found in --bin-path.")
+    scenarios = ("defaults", "unload") if args.scenario == "both" else (args.scenario,)
+    results = []
+    for scenario in scenarios:
+        result = run_scenario(args, scenario, binaries)
+        results.append(result)
+        print(f"{scenario}: {'PASS' if result['passed'] else 'FAIL'} "
+              f"(exit {result['returncode']}; {result['log']})", flush=True)
+    (args.output_dir / "results.json").write_text(json.dumps(results, indent=2) + "\n")
+    return 0 if all(result["passed"] for result in results) else 1
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, RuntimeError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        sys.exit(1)

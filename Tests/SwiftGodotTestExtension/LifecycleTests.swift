@@ -24,6 +24,24 @@ final class LifecycleTests {
         assertFalse (GD.isInstanceIdValid(id: id), "Expected image to be disposed")
     }
 
+    public func testReleasePendingObjectsDrainsNativeReferenceChain() {
+        func createChain() -> (Int64, Int64) {
+            let parent = Resource()
+            let child = Resource()
+            parent.setMeta(name: "child", value: Variant(child))
+            return (
+                Int64(bitPattern: UInt64(parent.getInstanceId())),
+                Int64(bitPattern: UInt64(child.getInstanceId()))
+            )
+        }
+
+        let (parentId, childId) = createChain()
+        // Native destruction of the parent adds the child to the release queue.
+        releasePendingObjects()
+        assertFalse(GD.isInstanceIdValid(id: parentId), "Expected the parent to be disposed")
+        assertFalse(GD.isInstanceIdValid(id: childId), "Expected the child to be disposed in the same drain")
+    }
+
     /// Checks memory leaks of Resource objects, this tests the non-Resource, non-Node codepath
     public func testFreeObjects() {
         func createTimerAndGetId () -> Int64 {

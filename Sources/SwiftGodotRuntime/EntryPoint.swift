@@ -205,6 +205,8 @@ func loadFunctions(loader: GDExtensionInterfaceGetProcAddress) {
 public func setExtensionInterface(interface: ExtensionInterface) {
     extensionInterface = interface
     loadGodotInterface(unsafeBitCast(interface.getProcAddr(), to: GDExtensionInterfaceGetProcAddress.self))
+    beginPendingReleaseSession(forDomain: interface.getCurrenDomain())
+    registerPendingReleaseCallbacks(forLibrary: interface.getLibrary())
 }
 
 // Extension initialization callback
@@ -240,9 +242,14 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     // Same as on the way in: `unregister` hands this token straight back to Godot, which
     // dereferences it as the `GDExtension` that owns the class.
     extensionInterface.setLibrary(userData)
+    let domain = pendingReleaseDomain(forLibrary: userData)
+    releasePendingObjects(forDomain: domain)
     callback(level)
+    releasePendingObjects(forDomain: domain)
     if level == .core {
         // Last one, remove
+        unregisterPendingReleaseCallbacks(forLibrary: userData)
+        extensionInitCallbacks.removeValue(forKey: key)
         extensionDeInitCallbacks.removeValue(forKey: key)
 
         // This extension's `GDExtension` object is freed as soon as we return, so the token must
@@ -433,6 +440,7 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let  editor_remove_plugin: GDExtensionInterfaceEditorRemovePlugin
 
     public let get_library_path: GDExtensionInterfaceGetLibraryPath
+    public let register_main_loop_callbacks: GDExtensionInterfaceRegisterMainLoopCallbacks
     public let editor_help_load_xml_from_utf8_chars: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars?
     public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen?
 }
@@ -572,6 +580,7 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
         editor_remove_plugin: load("editor_remove_plugin"),
 
         get_library_path: load("get_library_path"),
+        register_main_loop_callbacks: load("register_main_loop_callbacks"),
         editor_help_load_xml_from_utf8_chars: loadOptional("editor_help_load_xml_from_utf8_chars"),
         editor_help_load_xml_from_utf8_chars_and_len: loadOptional("editor_help_load_xml_from_utf8_chars_and_len")
     )
@@ -660,6 +669,7 @@ public func initializeSwiftModule(
     #endif
     initialization.pointee.minimum_initialization_level = GDExtensionInitializationLevel(RawType(minimumInitializationLevel.rawValue))
     initialization.pointee.userdata = UnsafeMutableRawPointer(libraryPtr)
+    registerPendingReleaseCallbacks(forLibrary: UnsafeMutableRawPointer(libraryPtr))
 }
 
 /*
