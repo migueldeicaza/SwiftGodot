@@ -217,6 +217,8 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
     if let userData {
         extensionInterface.setLibrary(userData)
     }
+    // A reload deinitializes every level and initializes again from the beginning. The MessageQueue survives this.
+    canDeferRelease = true
     if level == .scene {
         extensionInterface.classDBReady = true
         for initializer in extensionInterface.pendingInitializers {
@@ -233,10 +235,15 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
 // Extension deinitialization callback
 func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_deinitialize")
+    guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+    if level == .servers {
+        // Godot will delete its MessageQueue next. Anything already queued is still
+        // flushed first, but nothing new may be queued after this point without risking a crash.
+        canDeferRelease = false
+    }
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
-    guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
     // Same as on the way in: `unregister` hands this token straight back to Godot, which
     // dereferences it as the `GDExtension` that owns the class.
     extensionInterface.setLibrary(userData)
