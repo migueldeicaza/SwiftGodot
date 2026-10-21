@@ -217,8 +217,6 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
     if let userData {
         extensionInterface.setLibrary(userData)
     }
-    // A reload deinitializes every level and initializes again from the beginning. The MessageQueue survives this.
-    canDeferRelease = true
     if level == .scene {
         extensionInterface.classDBReady = true
         for initializer in extensionInterface.pendingInitializers {
@@ -236,8 +234,11 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
 func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_deinitialize")
     guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
-    if level == .servers {
-        // Godot will delete its MessageQueue next. Anything already queued is still
+
+    // We differentiate a shutdown from an extension reload by the main loop having been freed; if it has,
+    // the engine is shutting down. If it hasn't, then this is a reload and the MessageQueue will survive, remaining safe to use.
+    if level == .servers, Engine.getMainLoop() == nil {
+        // Godot is shutting down, and will delete its MessageQueue next. Anything already queued is still
         // flushed first, but nothing new may be queued after this point without risking a crash.
         canDeferRelease = false
     }
