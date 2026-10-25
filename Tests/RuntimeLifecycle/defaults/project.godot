@@ -1,0 +1,8 @@
+config_version=5
+
+[application]
+config/name="Lifecycle default shutdown"
+run/main_scene="res://main.tscn"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"

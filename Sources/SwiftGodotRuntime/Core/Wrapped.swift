@@ -287,6 +287,13 @@ open class Wrapped: Equatable, Identifiable, Hashable {
                     extensionInterface.objectDeinited(object: self)
                     return
                 }
+                // Late in shutdown Godot has deleted its MessageQueue. `callDeferred` after that point
+                // crashes. Releasing it right here also isn't safe because this deinit can run inside
+                // Godot's `unreference`. We have to leave the reference to Godot's exit-time cleanup.
+                guard canDeferRelease else {
+                    extensionInterface.objectDeinited(object: self)
+                    return
+                }
                 var queue = false
                 #if SWIFTGODOT_WITH_MULTI_PROCESS
                 var deferred: Callable?
@@ -944,6 +951,9 @@ var tableLock = NIOLock()
 
 // Lock for the pending free list
 var freeLock = NIOLock()
+
+/// Whether a RefCounted wrapper's deinit can safely queue the release of its native reference with `callDeferred`
+var canDeferRelease = true
 #if SWIFTGODOT_WITH_MULTI_PROCESS
 var pendingReleaseHandles: [UInt8: [GodotNativeObjectPointer]] = [:]
 var pendingReleaseCallables: [UInt8: Callable] = [:]
