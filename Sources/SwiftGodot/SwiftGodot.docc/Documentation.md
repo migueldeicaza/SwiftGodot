@@ -23,6 +23,65 @@ In MacOS the preferred distribution mechanism for libraries are called
 documentation on your behalf.  In other platforms, you need to manually
 configure this.
 
+Alternatively, SwiftGodot can build the documentation from the documentation
+comments in your Swift code, as described in the next section.
+
+## Documentation Comments
+
+SwiftGodot can turn the documentation comments (`///` or `/** */`) of a
+`@Godot` class and its exported members into Godot's class reference, which the
+editor shows in its help pages and inspector tooltips.  This takes two steps.
+
+First, enable the `with_editor_documentation` package trait where you depend on
+SwiftGodot, so that the `@Godot` macro generates the documentation:
+
+```swift
+.package(
+    url: "https://github.com/migueldeicaza/SwiftGodot",
+    branch: "main",
+    traits: ["with_editor_documentation"]
+)
+```
+
+Second, define `SWIFTGODOT_INCLUDE_EDITOR_DOCUMENTATION` in each target that
+declares `@Godot` classes, for the build configurations that you use in the
+editor.  The documentation is compiled into your library as text, so this keeps
+your comments out of the builds you ship to players.  For example, if you use
+debug builds in the editor and release builds in exported games:
+
+```swift
+.target(
+    name: "MyExtension",
+    dependencies: ["SwiftGodot"],
+    swiftSettings: [
+        .define("SWIFTGODOT_INCLUDE_EDITOR_DOCUMENTATION", .when(configuration: .debug)),
+    ]
+)
+```
+
+The following comments are used for the generated documentation:
+
+* Comments on the class itself. The first paragraph becomes the brief description shown in
+  lists such as the Create New Node dialog. The reset is added to the full description.
+* Properties marked with `@Export`.
+* Methods marked with `@Callable`.
+* Signals declared with `@Signal` or `#signal`.
+* Enumerations nested in the class. Godot doesn't support the description of the enumeration
+  as a whole, but it does pick up the comments on each case within.
+
+Members are matched with the names Godot sees, so properties are documented
+under their snake-cased or `explicitName:` names.  Any Markdown in the Swift comments
+is converted to Godot's BBCode: code spans, emphasis, links, lists, code
+blocks and callouts such as `- Note:` are supported, `- Parameter`,
+`- Returns:` and `- Throws:` fields are listed at the end, and symbol
+references such as ` ``speed`` `, ` ``jump(height:)`` ` or ` ``Mode/fast`` `
+become links to the class's members.  Other capitalized references, such as
+` ``Node`` `, become links to the class of that name.  Members marked
+`@available(*, deprecated)` are shown as deprecated.
+
+The documentation is loaded into the editor when the extension reaches the
+`.editor` initialization level, so no files need to be distributed with it.
+
 ## Generating XML API Definitions
 
 Once you have a working extension, you need to invoke the Godot editor from

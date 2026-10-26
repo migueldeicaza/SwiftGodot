@@ -4,6 +4,7 @@ import CompilerPluginSupport
 import PackageDescription
 
 let withMultiProcessTrait = "with_multi_process"
+let withEditorDocumentationTrait = "with_editor_documentation"
 
 // Build switches. The values below are the public defaults; a copy of this
 // package vendored into an application (Xogot) flips them and otherwise
@@ -253,7 +254,10 @@ var targets: [Target] = [
             .product(name: "SwiftParser", package: "swift-syntax"),
             .product(name: "SwiftBasicFormat", package: "swift-syntax"),
         ],
-        swiftSettings: [.swiftLanguageMode(.v5)] + swiftGodotBuildSettings
+        swiftSettings: [
+            .swiftLanguageMode(.v5),
+            .define("SWIFTGODOT_EDITOR_DOCUMENTATION", .when(traits: [withEditorDocumentationTrait])),
+        ] + swiftGodotBuildSettings
     ),
 
     // Test macro implementation for @SwiftGodotTestSuite
@@ -399,6 +403,10 @@ let package = Package(
         .trait(
             name: withMultiProcessTrait,
             description: "Use multi-process-safe code generation with reinitialization support."
+        ),
+        .trait(
+            name: withEditorDocumentationTrait,
+            description: "Generate Godot editor documentation for @Godot classes from their documentation comments."
         ),
     ],
     dependencies: dependencies,

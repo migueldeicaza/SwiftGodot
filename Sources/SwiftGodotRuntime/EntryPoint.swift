@@ -225,9 +225,13 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
         extensionInterface.pendingInitializers.removeAll()
         extensionInterface.initClasses()
     }
-    guard let userData else { return }
-    guard let callback = extensionInitCallbacks[OpaquePointer(userData)] else { return }
-    callback(level)
+    if let userData, let callback = extensionInitCallbacks[OpaquePointer(userData)] {
+        callback(level)
+    }
+    if level == .editor {
+        // After the callback, so classes registered at the `.editor` level are included.
+        EditorInterop.loadRegisteredClassDocumentation()
+    }
 }
 
 // Extension deinitialization callback
@@ -241,6 +245,9 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
         // Godot is shutting down, and will delete its MessageQueue next. Anything already queued is still
         // flushed first, but nothing new may be queued after this point without risking a crash.
         canDeferRelease = false
+    }
+    if level == .editor {
+        EditorInterop.stopLoadingClassDocumentation()
     }
     guard let userData else { return }
     let key = OpaquePointer(userData)
