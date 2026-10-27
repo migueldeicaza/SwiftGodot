@@ -89,7 +89,12 @@ struct EditorDocumentation {
 
     /// Records the cases of a nested enumeration, which Godot registers as
     /// integer constants of the class named after each case.
+    ///
+    /// Only enumerations that `_registerEnumIfPossible` registers are recorded,
+    /// so that an unregistered enumeration's case does not document a constant
+    /// of the same name.
     mutating func addEnum(_ enumDecl: EnumDeclSyntax) {
+        guard Self.isRegisteredEnum(enumDecl) else { return }
         let enumName = enumDecl.name.text
         enumNames.insert(enumName)
         for member in enumDecl.memberBlock.members {
@@ -105,6 +110,28 @@ struct EditorDocumentation {
                 )
             }
         }
+    }
+
+    private static let integerTypes: Set<String> = [
+        "Int", "Int8", "Int16", "Int32", "Int64",
+        "UInt", "UInt8", "UInt16", "UInt32", "UInt64",
+    ]
+
+    /// Whether the runtime registers `enumDecl`'s cases as constants: it must be
+    /// `CaseIterable` with an integer raw value. A macro only sees the
+    /// declaration, so conformances added in extensions are not detected, and
+    /// such an enumeration is left undocumented rather than risk documenting
+    /// constants that do not exist. `@PickerNameProvider` adds `CaseIterable`.
+    private static func isRegisteredEnum(_ enumDecl: EnumDeclSyntax) -> Bool {
+        let inherited: [String] = enumDecl.inheritanceClause?.inheritedTypes.map { type in
+            var name = type.type.trimmedDescription
+            if name.hasPrefix("Swift.") {
+                name.removeFirst("Swift.".count)
+            }
+            return name
+        } ?? []
+        guard let rawType = inherited.first, integerTypes.contains(rawType) else { return false }
+        return inherited.contains("CaseIterable") || enumDecl.attributes.attribute(named: "PickerNameProvider") != nil
     }
 
     // MARK: Rendering

@@ -36,21 +36,31 @@ private func docBlockCommentLines(_ text: String) -> [String] {
         body = body.dropLast(2)
     }
     var lines = body.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+    // Text on the `/**` line itself never carries decoration.
+    var openingLineHasText = false
+    if let first = lines.first, !first.allSatisfy(\.isWhitespace) {
+        openingLineHasText = true
+    }
     while let first = lines.first, first.allSatisfy(\.isWhitespace) {
         lines.removeFirst()
     }
     while let last = lines.last, last.allSatisfy(\.isWhitespace) {
         lines.removeLast()
     }
-    // Strip the " * " decoration when every line carries it.
-    let decorated = lines.allSatisfy { line in
+    // Strip the " * " decoration when every following line carries it. The
+    // marker is a `*` followed by whitespace or the end of the line, so that
+    // Markdown emphasis such as `*Important*` is kept.
+    func isDecorated(_ line: String) -> Bool {
         let trimmed = line.drop { $0 == " " || $0 == "\t" }
-        return trimmed.isEmpty || trimmed.hasPrefix("*")
+        guard let first = trimmed.first else { return true }
+        guard first == "*" else { return false }
+        return trimmed.dropFirst().first.map { $0 == " " || $0 == "\t" } ?? true
     }
-    if decorated {
-        lines = lines.map { line in
-            let trimmed = line.drop { $0 == " " || $0 == "\t" }
-            return String(trimmed.dropFirst())
+    let decoratedLines = lines.indices.dropFirst(openingLineHasText ? 1 : 0)
+    if !decoratedLines.isEmpty, decoratedLines.allSatisfy({ isDecorated(lines[$0]) }) {
+        for index in decoratedLines {
+            let trimmed = lines[index].drop { $0 == " " || $0 == "\t" }
+            lines[index] = String(trimmed.dropFirst())
         }
     }
     return lines
@@ -548,8 +558,33 @@ struct DocCommentBBCodeConverter {
             index += 1
         }
         guard let textEnd, textEnd + 1 < characters.count, characters[textEnd + 1] == "(" else { return nil }
-        guard let close = characters[(textEnd + 2)...].firstIndex(of: ")") else { return nil }
-        let destination = String(characters[(textEnd + 2)..<close]).trimmingCharacters(in: .whitespaces)
+        // The destination may contain balanced or escaped parentheses, as in
+        // `https://en.wikipedia.org/wiki/Swift_(programming_language)`.
+        var parentheses = 0
+        var close: Int?
+        index = textEnd + 2
+        while index < characters.count {
+            let character = characters[index]
+            if character == "\\", index + 1 < characters.count, "()".contains(characters[index + 1]) {
+                index += 2
+                continue
+            }
+            if character == "(" {
+                parentheses += 1
+            } else if character == ")" {
+                if parentheses == 0 {
+                    close = index
+                    break
+                }
+                parentheses -= 1
+            }
+            index += 1
+        }
+        guard let close else { return nil }
+        let destination = String(characters[(textEnd + 2)..<close])
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: "\\(", with: "(")
+            .replacingOccurrences(of: "\\)", with: ")")
         guard !destination.isEmpty, !destination.contains(" ") else { return nil }
         return (String(characters[(start + 1)..<textEnd]), destination, close + 1)
     }

@@ -111,6 +111,16 @@ final class MacroGodotDocumentationTests: MacroGodotTestCase {
         XCTAssertEqual(bbcode("~~gone~~"), "[s]gone[/s]")
     }
 
+    func testLinkDestinationsWithParentheses() {
+        XCTAssertEqual(bbcode("[Swift docs](https://en.wikipedia.org/wiki/Swift_(programming_language))"),
+                       "[url=https://en.wikipedia.org/wiki/Swift_(programming_language)]Swift docs[/url]")
+        XCTAssertEqual(bbcode("([link](https://a.example/(x)/y)) after"),
+                       "([url=https://a.example/(x)/y]link[/url]) after")
+        XCTAssertEqual(bbcode(#"[escaped](https://a.example/\(x)"#),
+                       "[url=https://a.example/(x]escaped[/url]")
+        XCTAssertEqual(bbcode("[unbalanced](https://a.example/(x"), "[lb]unbalanced[rb](https://a.example/(x")
+    }
+
     func testBlocks() {
         XCTAssertEqual(bbcode("""
             Summary line
@@ -217,6 +227,64 @@ final class MacroGodotDocumentationTests: MacroGodotTestCase {
             """))
         XCTAssertTrue(output.contains("<brief_description>A block comment.</brief_description>"))
         XCTAssertTrue(output.contains("<description>With a second paragraph.</description>"))
+    }
+
+    func testBlockCommentsStartingWithEmphasis() throws {
+        let singleLine = try XCTUnwrap(xml(for: """
+            /** *Important*. */
+            @Godot
+            class Emphasized: Node {}
+            """))
+        XCTAssertTrue(singleLine.contains("<brief_description>[i]Important[/i].</brief_description>"))
+
+        let undecorated = try XCTUnwrap(xml(for: """
+            /**
+             *Important* and **bold**.
+             */
+            @Godot
+            class Undecorated: Node {}
+            """))
+        XCTAssertTrue(undecorated.contains("<brief_description>[i]Important[/i] and [b]bold[/b].</brief_description>"))
+
+        let decorated = try XCTUnwrap(xml(for: """
+            /** Starts on the opening line,
+             * and continues *here*.
+             */
+            @Godot
+            class Decorated: Node {}
+            """))
+        XCTAssertTrue(decorated.contains("<brief_description>Starts on the opening line, and continues [i]here[/i].</brief_description>"))
+    }
+
+    func testOnlyRegisteredEnumsAreDocumented() throws {
+        let output = try XCTUnwrap(xml(for: """
+            /// Refers to ``Internal/idle`` and ``State/idle``.
+            @Godot
+            class Machine: Node {
+                enum Internal {
+                    /// Internal state.
+                    case idle
+                }
+                enum Named: String, CaseIterable {
+                    /// Not registered either.
+                    case running
+                }
+                enum State: Int, CaseIterable {
+                    /// Public state.
+                    case idle
+                }
+                @PickerNameProvider
+                enum Picked: Int32 {
+                    /// Picked state.
+                    case stopped
+                }
+            }
+            """))
+        XCTAssertTrue(output.contains("<constant name=\"idle\" value=\"\">Public state.</constant>"))
+        XCTAssertTrue(output.contains("<constant name=\"stopped\" value=\"\">Picked state.</constant>"))
+        XCTAssertFalse(output.contains("Internal state."))
+        XCTAssertFalse(output.contains("running"))
+        XCTAssertTrue(output.contains("<brief_description>Refers to [code]Internal/idle[/code] and [constant idle].</brief_description>"))
     }
 
     func testStringLiteral() {

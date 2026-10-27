@@ -62,12 +62,14 @@ debug builds in the editor and release builds in exported games:
 The following comments are used for the generated documentation:
 
 * Comments on the class itself. The first paragraph becomes the brief description shown in
-  lists such as the Create New Node dialog. The reset is added to the full description.
+  lists such as the Create New Node dialog. The rest is added to the full description.
 * Properties marked with `@Export`.
 * Methods marked with `@Callable`.
 * Signals declared with `@Signal` or `#signal`.
-* Enumerations nested in the class. Godot doesn't support the description of the enumeration
-  as a whole, but it does pick up the comments on each case within.
+* Enumerations nested in the class that are registered with Godot: those declared with an
+  integer raw type and `CaseIterable` (or `@PickerNameProvider`) in the enumeration's own
+  declaration. Godot doesn't support the description of the enumeration as a whole, but it
+  does pick up the comments on each case within.
 
 Members are matched with the names Godot sees, so properties are documented
 under their snake-cased or `explicitName:` names.  Any Markdown in the Swift comments
