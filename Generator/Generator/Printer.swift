@@ -47,6 +47,8 @@ class Printer {
         import Glibc
         #elseif canImport(Musl)
         import Musl
+        #elseif canImport(WASILibc)
+        import WASILibc
         #else
         #error("Unable to identify your C library.")
         #endif
