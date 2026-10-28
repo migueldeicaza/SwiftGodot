@@ -12,6 +12,7 @@ import SwiftSyntaxMacrosTestSupport
 import SwiftSyntax
 import SwiftParser
 import SwiftSyntaxMacroExpansion
+@testable import SwiftGodotMacroLibrary
 
 #if canImport(AppKit)
 import AppKit
@@ -27,6 +28,13 @@ func indentCodeLiteral(_ code: String) -> String {
 class MacroGodotTestCase: XCTestCase {
     class var macros: [String: Macro.Type] {
         [:]
+    }
+
+    override func setUp() {
+        super.setUp()
+        // Expected expansions leave out the generated editor documentation, whether or not
+        // the with_editor_documentation trait is enabled; MacroGodotDocumentationTests covers it.
+        EditorDocumentation.isEnabled = false
     }
     
     /// Set `SWIFTGODOT_REGENERATE_MACRO_TEST_RESOURCES=1` to regenerate expected outputs into `Tests/SwiftGodotMacrosTests/Resources`.
