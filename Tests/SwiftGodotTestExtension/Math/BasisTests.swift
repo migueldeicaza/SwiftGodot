@@ -5,7 +5,7 @@ import Foundation
 import Android // for cos
 #endif
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @SwiftGodotTestSuite
 final class BasisTests {

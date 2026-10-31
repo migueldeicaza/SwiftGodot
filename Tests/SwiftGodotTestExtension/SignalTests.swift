@@ -1,5 +1,5 @@
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @Godot
 private class TestSignalNode: Node {

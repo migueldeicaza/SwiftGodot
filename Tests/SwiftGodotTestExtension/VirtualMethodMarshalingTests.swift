@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import SwiftGodot
+import SwiftGodot
 
 // MARK: - Variant arguments and enum returns
 

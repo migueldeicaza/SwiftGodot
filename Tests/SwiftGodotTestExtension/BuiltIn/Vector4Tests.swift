@@ -7,7 +7,7 @@
 
 
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @SwiftGodotTestSuite
 final class Vector4Tests {

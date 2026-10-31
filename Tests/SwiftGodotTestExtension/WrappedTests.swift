@@ -6,7 +6,7 @@
 //
 
 
-@testable import SwiftGodot
+import SwiftGodot
 @_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
 
 @SwiftGodotTestSuite

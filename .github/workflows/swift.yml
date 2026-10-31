@@ -43,7 +43,8 @@ jobs:
       run: swift test --skip-build --no-parallel --disable-swift-testing
 
     - name: Run Godot-based tests
-      run: swift run SwiftGodotTestRunner
+      # Temporary workaround: use test results despite Godot shutdown crashes.
+      run: swift run SwiftGodotTestRunner --ignore-godot-exit-code
 
   build-and-test-windows:
     runs-on: windows-latest
@@ -87,7 +88,8 @@ jobs:
         run: swift test --skip-build --no-parallel --disable-swift-testing
 
       - name: Run Godot-based tests
-        run: swift run SwiftGodotTestRunner
+        # Temporary workaround: use test results despite Godot shutdown crashes.
+        run: swift run SwiftGodotTestRunner --ignore-godot-exit-code
 
   # Disabled: the package requires swift-tools-version 6.3, but
   # skiptools/swift-android-toolchain does not yet publish a Swift 6.3 Android

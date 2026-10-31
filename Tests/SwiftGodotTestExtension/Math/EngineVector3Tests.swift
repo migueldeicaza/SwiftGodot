@@ -2,7 +2,7 @@
 
 
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @SwiftGodotTestSuite
 final class EngineVector3Tests {

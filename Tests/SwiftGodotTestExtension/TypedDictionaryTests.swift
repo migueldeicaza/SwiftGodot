@@ -5,7 +5,7 @@
 //  Created by Elijah Semyonov on 24/04/2025.
 //
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @SwiftGodotTestSuite
 final class TypedDictionaryTests {

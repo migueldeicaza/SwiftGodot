@@ -36,9 +36,13 @@ class GodotMacroProcessor {
     /// Tracks functions marked with @Rpc for generating rpcConfig calls
     var rpcConfigurations: [RpcConfiguration] = []
 
+    /// Collects documentation comments for the editor's class reference
+    var documentation: EditorDocumentation
+
     init(classDecl: ClassDeclSyntax) {
         self.classDecl = classDecl
         className = classDecl.name.text
+        documentation = EditorDocumentation(className: className)
     }
     
     func checkNameCollision(_ name: String, for decl: DeclSyntax) throws {
@@ -60,6 +64,13 @@ class GodotMacroProcessor {
             return
         }
         
+        documentation.add(
+            .signal,
+            swiftNames: [signalName.swiftName],
+            godotName: signalName.godotName,
+            trivia: declSyntax.leadingTrivia
+        )
+
         classInitializerPrinter("""
         SwiftGodotRuntime._registerSignal(
             \(className).\(signalName.swiftName).name, 
@@ -83,6 +94,7 @@ class GodotMacroProcessor {
 
     func processEnum(_ enumDecl: EnumDeclSyntax) {
         let enumName = enumDecl.name.text
+        documentation.addEnum(enumDecl)
         classInitializerPrinter("""
         SwiftGodotRuntime._registerEnumIfPossible(\(className).\(enumName).self)
         """)
@@ -117,7 +129,16 @@ class GodotMacroProcessor {
         else {
             godotFuncName = funcName
         }
-        
+
+        let signature = funcName + "(" + funcDecl.parameters.map { "\($0.firstName.text):" }.joined() + ")"
+        documentation.add(
+            .method,
+            swiftNames: [signature, funcName],
+            godotName: godotFuncName,
+            trivia: funcDecl.leadingTrivia,
+            attributes: funcDecl.attributes
+        )
+
         let p = classInitializerPrinter
 
         let arguments = funcDecl
@@ -315,6 +336,14 @@ class GodotMacroProcessor {
             } else {
                 nameGodotSees = varNameWithPrefix.camelCaseToSnakeCase()
             }
+
+            documentation.add(
+                .member,
+                swiftNames: [varNameWithPrefix],
+                godotName: nameGodotSees,
+                trivia: varDecl.leadingTrivia,
+                attributes: varDecl.attributes
+            )
             
             
             // For the case where there is no setter, set the proxySetterName to the empty string
@@ -389,6 +418,14 @@ class GodotMacroProcessor {
             let name = String(nameWithPrefix.trimmingPrefix(prefix ?? ""))
             let godotName = name.camelCaseToSnakeCase()
 
+            documentation.add(
+                .signal,
+                swiftNames: [nameWithPrefix],
+                godotName: godotName,
+                trivia: varDecl.leadingTrivia,
+                attributes: varDecl.attributes
+            )
+
             guard let typeAnnotation = binding.typeAnnotation else {
                 throw GodotMacroError.signalMacroNoType(nameWithPrefix)
             }
@@ -424,6 +461,8 @@ class GodotMacroProcessor {
 
     func processType() throws -> String {
         let p = classInitializerPrinter
+
+        documentation.setClassComment(from: classDecl, attributes: classDecl.attributes)
         
         try p("private static func _initializeClass()", .curly) {
             p("""
@@ -630,6 +669,30 @@ public struct GodotMacro: MemberMacro {
             // Generate _before_ready() override if there are any @Rpc functions
             if let beforeReadyOverride = processor.generateBeforeReadyOverride() {
                 decls.append(DeclSyntax(stringLiteral: beforeReadyOverride))
+            }
+
+            // Class reference for the editor, from the documentation comments. The text is
+            // only compiled into modules that define SWIFTGODOT_INCLUDE_EDITOR_DOCUMENTATION,
+            // so comments do not end up in shipped builds unless a project asks for it.
+            if EditorDocumentation.isEnabled {
+                let isolation = isMainActor ? "nonisolated " : ""
+                let body: String
+                if let xml = processor.documentation.xml() {
+                    body = """
+                    #if SWIFTGODOT_INCLUDE_EDITOR_DOCUMENTATION
+                    return \(swiftStringLiteral(xml))
+                    #else
+                    return nil
+                    #endif
+                    """
+                } else {
+                    body = "nil"
+                }
+                decls.append(DeclSyntax(stringLiteral: """
+                \(isolation)override \(accessControlLevel) class var _editorDocumentation: String? {
+                \(body)
+                }
+                """))
             }
 
             return decls

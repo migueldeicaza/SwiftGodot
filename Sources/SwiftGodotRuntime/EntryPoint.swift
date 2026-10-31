@@ -104,9 +104,9 @@ public extension ExtensionInterface {
         true
     }
 
-    // Register any general Godot classes/methods here
+    // Register any general Godot classes/methods here. Anything registered here must also be
+    // unregistered on deinit, or a hot reload leaves it dangling in ClassDB.
     func initClasses() {
-        registerDeprecatedSignalProxy()
     }
 
     func setLibrary(_ library: UnsafeMutableRawPointer) {}
@@ -118,15 +118,6 @@ public extension ExtensionInterface {
     func objectIsValid(handle: GodotNativeObjectPointer, instanceId: GDObjectInstanceID, domainId: UInt8) -> Bool {
         gi.object_get_instance_from_id(instanceId) == handle
     }
-}
-
-/// ``SignalProxy`` is deprecated but still registered, because it is public API and user
-/// code may reference it by name.  Nothing in the binding uses it any more - awaiting a
-/// signal now goes through a `Callable` built from a Swift closure.  Keeping the call in
-/// its own deprecated function confines the warning to this one place.
-@available(*, deprecated)
-fileprivate func registerDeprecatedSignalProxy() {
-    SignalProxy.initClass()
 }
 
 class LibGodotExtensionInterface: ExtensionInterface {
@@ -234,18 +225,33 @@ func extension_initialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInit
         extensionInterface.pendingInitializers.removeAll()
         extensionInterface.initClasses()
     }
-    guard let userData else { return }
-    guard let callback = extensionInitCallbacks[OpaquePointer(userData)] else { return }
-    callback(level)
+    if let userData, let callback = extensionInitCallbacks[OpaquePointer(userData)] {
+        callback(level)
+    }
+    if level == .editor {
+        // After the callback, so classes registered at the `.editor` level are included.
+        EditorInterop.loadRegisteredClassDocumentation()
+    }
 }
 
 // Extension deinitialization callback
 func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionInitializationLevel) {
     //print ("SWIFT: extension_deinitialize")
+    guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
+
+    // We differentiate a shutdown from an extension reload by the main loop having been freed; if it has,
+    // the engine is shutting down. If it hasn't, then this is a reload and the MessageQueue will survive, remaining safe to use.
+    if level == .servers, Engine.getMainLoop() == nil {
+        // Godot is shutting down, and will delete its MessageQueue next. Anything already queued is still
+        // flushed first, but nothing new may be queued after this point without risking a crash.
+        canDeferRelease = false
+    }
+    if level == .editor {
+        EditorInterop.stopLoadingClassDocumentation()
+    }
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
-    guard let level = ExtensionInitializationLevel(rawValue: Int64(exactly: l.rawValue)!) else { return }
     // Same as on the way in: `unregister` hands this token straight back to Godot, which
     // dereferences it as the `GDExtension` that owns the class.
     extensionInterface.setLibrary(userData)

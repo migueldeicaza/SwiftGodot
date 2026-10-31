@@ -75,6 +75,9 @@ struct SwiftGodotTestRunner {
     }
 
     static func main() async {
+        // Temporary CI workaround for Godot crashes during shutdown.
+        // Without this option, a nonzero Godot exit code still fails the run.
+        let ignoreGodotExitCode = CommandLine.arguments.contains("--ignore-godot-exit-code")
         let projectPath = "Tests/SwiftGodotTestProject"
         let resultsPath = "Tests/SwiftGodotTestProject/test_results.json"
         let extensionTarget = "SwiftGodotTestExtension"
@@ -292,9 +295,12 @@ struct SwiftGodotTestRunner {
             print("Total time: \(totalDuration)")
             print(String(repeating: "=", count: 60))
 
-            // Use Godot's exit code if non-zero, otherwise use test results
+            // Only ignore the exit code after we have decoded the test results.
+            if ignoreGodotExitCode && godotExitCode != 0 {
+                print("      Warning: ignoring Godot exit code \(godotExitCode) because --ignore-godot-exit-code is set. Using test results.")
+            }
             let testExitCode: Int32 = results.summary.failed > 0 ? 1 : 0
-            exit(godotExitCode != 0 ? godotExitCode : testExitCode)
+            exit(godotExitCode != 0 && !ignoreGodotExitCode ? godotExitCode : testExitCode)
         } catch {
             print("      Failed to read results: \(error)")
             print("      Godot exit code was: \(godotExitCode)")

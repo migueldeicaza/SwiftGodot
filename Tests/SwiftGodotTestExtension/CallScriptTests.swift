@@ -6,8 +6,8 @@
 //  defined by a GDScript attached to an object.
 //
 
-@testable import SwiftGodotRuntime
-@testable import SwiftGodot
+import SwiftGodotRuntime
+import SwiftGodot
 
 @SwiftGodotTestSuite
 final class CallScriptTests {

@@ -5,7 +5,7 @@
 //  Created by Chris Backas on 6/21/26.
 //
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @Godot
 class TestPropList: Node {

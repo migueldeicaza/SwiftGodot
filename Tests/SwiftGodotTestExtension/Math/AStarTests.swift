@@ -2,7 +2,7 @@
 
 
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @Godot
 private final class ABCX: AStar3D {

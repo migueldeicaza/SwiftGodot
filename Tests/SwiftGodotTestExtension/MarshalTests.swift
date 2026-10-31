@@ -1,7 +1,7 @@
 import Foundation
 
-@testable import SwiftGodotRuntime
-@testable import SwiftGodot
+import SwiftGodotRuntime
+import SwiftGodot
 
 extension Date: VariantConvertible {
     public func toFastVariant() -> FastVariant? {

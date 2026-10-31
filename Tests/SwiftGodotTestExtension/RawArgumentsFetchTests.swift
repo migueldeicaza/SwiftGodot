@@ -4,7 +4,7 @@
 // generates code that compiles is sufficient to verify that fetchArgument overload resolution
 // works correctly for all tested types.
 
-@testable import SwiftGodot
+import SwiftGodot
 
 // MARK: - Custom GodotBuiltinConvertible types for testing
 

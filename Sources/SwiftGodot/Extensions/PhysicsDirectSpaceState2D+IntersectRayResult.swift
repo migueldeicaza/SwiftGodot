@@ -38,7 +38,8 @@ extension PhysicsDirectSpaceState2D {
         /// The metadata value from the dictionary.
         public let metadata: Variant?
 
-        init?(_ dictionary: VariantDictionary) {
+        // Package tests use this initializer to check dictionary conversion.
+        package init?(_ dictionary: VariantDictionary) {
             guard dictionary.isEmpty() == false,
                   let position: Vector2 = dictionary.unwrap(key: "position"),
                   let normal: Vector2 = dictionary.unwrap(key: "normal"),

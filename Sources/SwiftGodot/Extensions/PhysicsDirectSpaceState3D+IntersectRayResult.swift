@@ -40,7 +40,8 @@ extension PhysicsDirectSpaceState3D {
         /// The face index at the intersection point.
         public let faceIndex: Int
 
-        init?(_ dictionary: VariantDictionary) {
+        // Package tests use this initializer to check dictionary conversion.
+        package init?(_ dictionary: VariantDictionary) {
             guard dictionary.isEmpty() == false,
                   let position: Vector3 = dictionary.makeOrUnwrap(key: "position"),
                   let normal: Vector3 = dictionary.makeOrUnwrap(key: "normal"),

@@ -7,7 +7,7 @@
 
 
 
-@testable import SwiftGodot
+import SwiftGodot
 
 @Godot
 private class TestProp: Node {

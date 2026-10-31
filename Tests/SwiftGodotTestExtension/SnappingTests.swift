@@ -1,4 +1,4 @@
-@testable import SwiftGodot
+import SwiftGodot
 
 @SwiftGodotTestSuite
 final class SnappingTests {
