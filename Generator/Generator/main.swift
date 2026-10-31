@@ -14,6 +14,14 @@ var positionalArgs: [String] = []
 // used in Windows.
 var combineOutput = false
 
+// Where to list the members that --omit-unavailable-members left out.
+var omittedMembersFile: String?
+
+// Hand-written sources for the output's support/ directory, for a consumer
+// target that generates its own bindings, with the classes each one needs:
+// those it doesn't generate get an empty file instead.
+var supportSources: [(path: String, requiredClasses: [String])] = []
+
 var index = 1
 while index < args.count {
     let argument = args[index]
@@ -39,6 +47,20 @@ while index < args.count {
             fatalError("Invalid allowed class fallback entry '\(entry)'. Expected format Original=Fallback.")
         }
         allowedClassFallbacks[parts[0]] = parts[1]
+        index += 1
+    case "--omit-unavailable-members":
+        omitUnavailableMembers = true
+    case "--support-source":
+        // path=Class1,Class2
+        let entry = args[index + 1]
+        guard let separator = entry.lastIndex(of: "=") else {
+            fatalError("Invalid support source '\(entry)'. Expected format path=Class1,Class2.")
+        }
+        let classes = entry[entry.index(after: separator)...].split(separator: ",").map(String.init)
+        supportSources.append((String(entry[..<separator]), classes))
+        index += 1
+    case "--omitted-members-file":
+        omittedMembersFile = args[index + 1]
         index += 1
     case "--support-reinit", "--enable-static-caches", "--static-caches-on-macos":
         break
@@ -161,6 +183,19 @@ for x in jsonApi.classes {
     }
 }
 
+// A consumer's own list (see --omit-unavailable-members) is checked here, so a
+// mistake in it is reported with the name it has there.
+if omitUnavailableMembers {
+    for name in classesToGenerate.sorted() {
+        if classMap[name] == nil {
+            fatalError("SwiftGodot Generator error: '\(name)' in the class list is not a class in \(jsonFile).")
+        }
+        if availableClassNames.contains(name) {
+            fatalError("SwiftGodot Generator error: '\(name)' in the class list is provided by a dependency (SwiftGodotRuntime); remove it.")
+        }
+    }
+}
+
 if classFilterProvided {
     var stack: [String] = Array(classesToGenerate)
     while let current = stack.popLast() {
@@ -185,6 +220,8 @@ if availableClassFilterProvided {
             stack.append(inherits)
         }
     }
+    // Whatever is generated here can be referenced too.
+    availableClassNames.formUnion(classesToGenerate)
 } else if classFilterProvided {
     availableClassNames = classesToGenerate
 } else {
@@ -272,6 +309,34 @@ struct Generator {
 
         if combineOutput {
             await PrinterFactory.shared.saveMultiplexed(outputDir)
+        }
+
+        let supportDir = URL(fileURLWithPath: outputDir).appendingPathComponent("support")
+        if omitUnavailableMembers {
+            try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
+            let destination = supportDir.appendingPathComponent("UnavailableGodotMember.swift")
+            if (try? String(contentsOf: destination, encoding: .utf8)) != unavailableMemberSource {
+                try unavailableMemberSource.write(to: destination, atomically: true, encoding: .utf8)
+            }
+        }
+        if !supportSources.isEmpty {
+            try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
+            for (source, requiredClasses) in supportSources {
+                let sourceUrl = URL(fileURLWithPath: source)
+                let missing = requiredClasses.filter { !availableClassNames.contains($0) }
+                let contents = missing.isEmpty
+                    ? try Data(contentsOf: sourceUrl)
+                    : Data("// Not used here: this target does not generate \(missing.joined(separator: ", ")).\n".utf8)
+                let destination = supportDir.appendingPathComponent(sourceUrl.lastPathComponent)
+                if (try? Data(contentsOf: destination)) != contents {
+                    try contents.write(to: destination)
+                }
+            }
+        }
+
+        if let omittedMembersFile {
+            let contents = omittedMembers.sorted().joined(separator: "\n")
+            try contents.write(toFile: omittedMembersFile, atomically: true, encoding: .utf8)
         }
     }
 }

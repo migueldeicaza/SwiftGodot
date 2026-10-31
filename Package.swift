@@ -9,10 +9,18 @@ let withMultiProcessTrait = "with_multi_process"
 // package vendored into an application (Xogot) flips them and otherwise
 // carries no code changes. Keep every host-specific policy here.
 //
-// - useVendoredModuleNames: rename the products and modules to XogotSwiftGodot,
-//   XogotSwiftGodotRuntime, XogotExtensionApi and XogotExtensionApiJson (via
-//   -module-alias) so an application can embed this copy next to a user's own
-//   SwiftGodot without symbol clashes.
+// - useVendoredModuleNames: rename the products and modules with
+//   vendoredModulePrefix (XogotSwiftGodot, XogotSwiftGodotRuntime,
+//   XogotExtensionApi and XogotExtensionApiJson, via -module-alias) so an
+//   application can embed this copy next to a user's own SwiftGodot without
+//   symbol clashes. A target in another package can generate bindings for just
+//   the classes it lists in a swiftgodot-classes.txt (see CodeGeneratorPlugin);
+//   it should be named <prefix>SwiftGodot, since the runtime looks the
+//   generated classes up in that module.
+// - includeFullBindings: build the SwiftGodot target, with every class, and the
+//   samples and tests that use it. Off for a copy whose consumers generate
+//   their own <prefix>SwiftGodot target, as target names must be unique across
+//   the package graph.
 // - usePreparedGenerator: CodeGeneratorPlugin does not depend on the Generator
 //   target and runs .build-tools/Generator instead, produced by `make prep`.
 //   Avoids Xcode relinking the generator (and regenerating the API) on every
@@ -27,20 +35,22 @@ let withMultiProcessTrait = "with_multi_process"
 //   avoids stored static caches so Godot can be reinitialized; this keeps the
 //   stored caches on macOS only, for hosts that reinitialize on iOS alone.
 let useVendoredModuleNames = false
+let vendoredModulePrefix = "Xogot"
+let includeFullBindings = true
 let usePreparedGenerator = false
 let usePrecompiledSwiftSyntax = false
 let emitStableInterfaces = true
 let suppressGeneratedWarnings = true
 let staticCachesOnMacOS = false
 
-let swiftGodotPackageName = useVendoredModuleNames ? "XogotSwiftGodot" : "SwiftGodot"
-let swiftGodotTargetName = useVendoredModuleNames ? "XogotSwiftGodot" : "SwiftGodot"
-let swiftGodotRuntimeTargetName = useVendoredModuleNames ? "XogotSwiftGodotRuntime" : "SwiftGodotRuntime"
-let swiftGodotStaticProductName = useVendoredModuleNames ? "XogotSwiftGodotStatic" : "SwiftGodotStatic"
-let swiftGodotRuntimeStaticProductName = useVendoredModuleNames ? "XogotSwiftGodotRuntimeStatic" : "SwiftGodotRuntimeStatic"
-let extensionApiTargetName = useVendoredModuleNames ? "XogotExtensionApi" : "ExtensionApi"
-let extensionApiJsonTargetName = useVendoredModuleNames ? "XogotExtensionApiJson" : "ExtensionApiJson"
-let extensionApiProductName = useVendoredModuleNames ? "XogotExtensionApi" : "ExtensionApi"
+let swiftGodotPackageName = useVendoredModuleNames ? "\(vendoredModulePrefix)SwiftGodot" : "SwiftGodot"
+let swiftGodotTargetName = useVendoredModuleNames ? "\(vendoredModulePrefix)SwiftGodot" : "SwiftGodot"
+let swiftGodotRuntimeTargetName = useVendoredModuleNames ? "\(vendoredModulePrefix)SwiftGodotRuntime" : "SwiftGodotRuntime"
+let swiftGodotStaticProductName = useVendoredModuleNames ? "\(vendoredModulePrefix)SwiftGodotStatic" : "SwiftGodotStatic"
+let swiftGodotRuntimeStaticProductName = useVendoredModuleNames ? "\(vendoredModulePrefix)SwiftGodotRuntimeStatic" : "SwiftGodotRuntimeStatic"
+let extensionApiTargetName = useVendoredModuleNames ? "\(vendoredModulePrefix)ExtensionApi" : "ExtensionApi"
+let extensionApiJsonTargetName = useVendoredModuleNames ? "\(vendoredModulePrefix)ExtensionApiJson" : "ExtensionApiJson"
+let extensionApiProductName = useVendoredModuleNames ? "\(vendoredModulePrefix)ExtensionApi" : "ExtensionApi"
 
 var dependencies: [Package.Dependency] = [
     .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
@@ -387,6 +397,20 @@ var targets: [Target] = [
             swiftSettings: [.swiftLanguageMode(.v5)] + swiftGodotBuildSettings
         ))
 #endif
+
+if !includeFullBindings {
+    let fullBindingsTargets: Set<String> = [
+        swiftGodotTargetName, "SwiftGodotTestMacros", "SimpleExtension", "ManualExtension",
+        "SwiftGodotUniversalTests", "SwiftGodotCompileDiagnosticsTests", "SwiftGodotTestExtension",
+        "SwiftGodotMacrosTests",
+    ]
+    let fullBindingsProducts: Set<String> = [
+        swiftGodotTargetName, swiftGodotStaticProductName, "SimpleExtension", "ManualExtension",
+        "SwiftGodotTestExtension",
+    ]
+    targets.removeAll { fullBindingsTargets.contains($0.name) }
+    products.removeAll { fullBindingsProducts.contains($0.name) }
+}
 
 let package = Package(
     name: swiftGodotPackageName,

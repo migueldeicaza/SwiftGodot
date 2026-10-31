@@ -324,6 +324,13 @@ func generateMethods (_ p: Printer,
     var virtuals: [String:(String, JGodotClassMethod)] = [:]
    
     for method in methods {
+        if let missing = omittedMemberMissingClass(cdef.name, method.name, returnType: method.returnValue?.type, arguments: method.arguments) {
+            // A virtual is only overridden; an override of a missing one fails to compile anyway.
+            if !method.isVirtual && !ancestorDeclares(cdef, method.name) {
+                generateUnavailableMethod(p, cdef: cdef, method: method, missing: missing, asSingleton: asSingleton)
+            }
+            continue
+        }
         performExplaniningNonCriticalErrors {
             if let virtualMethodName = try generateMethod (p, method: method, className: cdef.name, cdef: cdef, usedMethods: usedMethods, generatedMethodKind: .classMethod, asSingleton: asSingleton) {
                 virtuals[method.name] = (virtualMethodName, method)
@@ -346,6 +353,63 @@ func generateMethods (_ p: Printer,
     }
     return virtuals
 }
+
+/// Takes the place of a method that `omitUnavailableMembers` left out, so that a
+/// call to it fails to compile with the name of the class to add, rather than
+/// with "has no member". It takes any value for each argument, keeping the labels,
+/// and returns an `UnavailableGodotMember`, which accepts any use, so that the
+/// expression type-checks and the compiler reports the unavailability.
+func generateUnavailableMethod (_ p: Printer,
+                                cdef: JGodotExtensionAPIClass,
+                                method: JGodotClassMethod,
+                                missing: String,
+                                asSingleton: Bool) {
+    let swiftName = godotMethodToSwift (method.name)
+    var arguments: [String] = []
+    for (i, argument) in (method.arguments ?? []).enumerated() {
+        let name = escapeSwift (snakeToCamel (argument.name))
+        let omitLabel = i == 0 && shouldOmitFirstArgLabel(typeName: cdef.name, methodName: method.name, argName: argument.name)
+        arguments.append ("\(omitLabel ? "_ " : "")\(name): Any? = nil")
+    }
+    if method.isVararg {
+        arguments.append ("_ arguments: Any?...")
+    }
+    let modifier = method.isStatic || asSingleton ? "static" : "final"
+    let returnType = method.returnValue.map { " -> \(unavailableMemberType (for: $0.type, meta: $0.meta))" } ?? ""
+    p ("@available(*, unavailable, message: \"\(omittedMemberMessage (swiftName, missing: missing))\")")
+    p ("public \(modifier) func \(swiftName) (\(arguments.joined (separator: ", ")))\(returnType) { fatalError () }")
+}
+
+/// Takes the place of a property or signal that `omitUnavailableMembers` left out;
+/// see `generateUnavailableMethod`.
+func generateUnavailableProperty (_ p: Printer, swiftName: String, type: String, settable: Bool, missing: String, asStatic: Bool) {
+    p ("@available(*, unavailable, message: \"\(omittedMemberMessage (swiftName, missing: missing))\")")
+    p ("public \(asStatic ? "static" : "final") var \(swiftName): \(type) { get { fatalError () }\(settable ? " set {}" : "") }")
+}
+
+/// The type an unavailable declaration uses for a value of Godot type `type`:
+/// optional where the real declaration's would be.
+func unavailableMemberType (for type: String, meta: JGodotArgumentMeta?) -> String {
+    let optional = type == "Variant" || (classMap [type] != nil && meta != .required)
+    return "UnavailableGodotMember\(optional ? "?" : "")"
+}
+
+/// The source of `UnavailableGodotMember`, written next to the generated classes
+/// when `omitUnavailableMembers` is set.
+let unavailableMemberSource = """
+/// The type of the declarations that take the place of members left out of
+/// trimmed bindings because they use a class that is not generated. Each of
+/// those declarations is unavailable, with a message that names that class;
+/// this type accepts any member access or call, so that the code using them
+/// type-checks and the compiler reports that message.
+@dynamicMemberLookup
+@dynamicCallable
+public struct UnavailableGodotMember {
+    public subscript (dynamicMember name: String) -> UnavailableGodotMember { self }
+    public func dynamicallyCall (withKeywordArguments arguments: KeyValuePairs<String, Any?>) -> UnavailableGodotMember { self }
+}
+
+"""
 
 func generateConstants (_ p: Printer,
                         cdef: JGodotExtensionAPIClass,
@@ -444,6 +508,16 @@ func generateProperties (_ p: Printer,
             }
         }
 
+        if let missing = omittedMemberMissingClass(cdef.name, property.name, returnType: method.returnValue?.type, arguments: method.arguments)
+            ?? setterMethod.flatMap({ omittedMemberMissingClass(cdef.name, property.name, returnType: nil, arguments: $0.arguments) }) {
+            if !ancestorDeclares(cdef, property.name) {
+                generateUnavailableProperty(p, swiftName: godotPropertyToSwift (property.name, inClass: cdef.name),
+                                            type: unavailableMemberType (for: method.returnValue?.type ?? "", meta: method.returnValue?.meta),
+                                            settable: setterMethod != nil, missing: missing, asStatic: asSingleton)
+            }
+            continue
+        }
+
         if method.arguments?.count ?? 0 > 1 {
             print ("WARNING \(loc) property references a getter method that takes more than one argument")
             continue
@@ -534,6 +608,13 @@ func generateSignals (_ p: Printer,
     var parameterSignals: [JGodotSignal] = []
     
     for signal in signals {
+        if let missing = omittedMemberMissingClass(cdef.name, signal.name, returnType: nil, arguments: signal.arguments) {
+            if !ancestorDeclares(cdef, signal.name) {
+                generateUnavailableProperty(p, swiftName: godotMethodToSwift (signal.name), type: "UnavailableGodotMember",
+                                            settable: false, missing: missing, asStatic: false)
+            }
+            continue
+        }
         let signalProxyType: String
         let lambdaSig: String
         if signal.arguments != nil {

@@ -17,14 +17,27 @@ import PackagePlugin
         let extraClassesFile = context.package.directoryURL
             .appending(path: "extra-classes.txt")
         let extraClassFiles = try additionalClassFiles(from: extraClassesFile)
-        guard let config = generationConfig(for: target.name, extraClassFiles: extraClassFiles) else {
+
+        // A target of another package that lists the classes it uses in
+        // `swiftgodot-classes.txt` gets bindings for just those (a trimmed target).
+        // SwiftPM only runs this method again when the package graph changes, not
+        // when the list does, so the list goes to the generator as an input file
+        // and nothing here may depend on its contents.
+        let consumerClassesFile = target.directoryURL.appending(path: consumerClassListName)
+        let isConsumer = FileManager.default.fileExists(atPath: consumerClassesFile.path)
+        let config: GenerationConfig
+        if isConsumer {
+            config = consumerGenerationConfig
+        } else if let packageConfig = generationConfig(for: target.name, extraClassFiles: extraClassFiles) {
+            config = packageConfig
+        } else {
             return []
         }
 
         let preparedGenerator = context.package.directoryURL
             .appending([".build-tools", "Generator"])
         let generator: URL
-        if FileManager.default.isExecutableFile(atPath: preparedGenerator.path) {
+        if !isConsumer && FileManager.default.isExecutableFile(atPath: preparedGenerator.path) {
             generator = preparedGenerator
         } else {
             do {
@@ -34,8 +47,9 @@ import PackagePlugin
             }
         }
 
-        let api = context.package.directoryURL
-            .appending(["Sources", "ExtensionApi", "extension_api.json"])
+        let api = try isConsumer
+            ? consumerApi(of: target)
+            : context.package.directoryURL.appending(["Sources", "ExtensionApi", "extension_api.json"])
 
         try FileManager.default.createDirectory(at: context.pluginWorkDirectoryURL, withIntermediateDirectories: true)
 
@@ -47,16 +61,18 @@ import PackagePlugin
         let configurationDir = context.pluginWorkDirectoryURL.appending(path: "Configuration")
         try FileManager.default.createDirectory(at: configurationDir, withIntermediateDirectories: true)
 
-        let classFilterFile = configurationDir.appending(path: "\(target.name)-classes.txt")
+        let classFilterFile = isConsumer ? consumerClassesFile : configurationDir.appending(path: "\(target.name)-classes.txt")
         let availableClassFilterFile = configurationDir.appending(path: "\(target.name)-available-classes.txt")
         let builtinFilterFile = configurationDir.appending(path: "\(target.name)-builtins.txt")
 
-        if target.name == "SwiftGodot" || target.name == "XogotSwiftGodot" {
+        if !isConsumer && target.name.hasSuffix("SwiftGodot") {
             if config.generatedClassFiles.contains("Object.swift") {
                 fatalError()
             }
         }
-        try writeIfChanged(config.generatedClassFiles.joined(separator: "\n"), to: classFilterFile)
+        if !isConsumer {
+            try writeIfChanged(config.generatedClassFiles.joined(separator: "\n"), to: classFilterFile)
+        }
         try writeIfChanged(config.availableClassFiles.joined(separator: "\n"), to: availableClassFilterFile)
         try writeIfChanged(config.builtinFiles.joined(separator: "\n"), to: builtinFilterFile)
 
@@ -80,7 +96,8 @@ import PackagePlugin
 #if os(Windows)
         let useCombinedOutput = true
 #else
-        let useCombinedOutput = shouldUseCombinedOutput()
+        // A consumer's outputs can't depend on its class list (see above).
+        let useCombinedOutput = isConsumer || shouldUseCombinedOutput()
 #endif
         if useCombinedOutput {
             // Combine output to keep file counts low (always on Windows; opt-in via env var elsewhere).
@@ -102,14 +119,34 @@ import PackagePlugin
         for fallback in config.allowedClassFallbacks {
             arguments.append(contentsOf: ["--allowed-class-fallback", fallback])
         }
+        if isConsumer {
+            // Members that need a class the consumer doesn't list are left out. Their
+            // place is taken by unavailable declarations whose message names the class,
+            // and the generator lists them in this file.
+            let omittedMembersFile = configurationDir.appending(path: "\(target.name)-omitted-members.txt")
+            arguments.append(contentsOf: ["--omit-unavailable-members", "--omitted-members-file", omittedMembersFile.path])
+            outputFiles.append(generatedSourcesDir.appending(["support", "UnavailableGodotMember.swift"]))
+        }
         arguments.append(supportsMultiProcess ? "--support-reinit" : "--enable-static-caches")
         if staticCachesOnMacOS {
             arguments.append("--static-caches-on-macos")
         }
 
         var inputFiles: [URL] = [generator, api, classFilterFile, availableClassFilterFile, builtinFilterFile]
-        if FileManager.default.fileExists(atPath: extraClassesFile.path) {
+        if !isConsumer && FileManager.default.fileExists(atPath: extraClassesFile.path) {
             inputFiles.append(extraClassesFile)
+        }
+
+        // The SwiftGodot target's hand-written sources. The generator copies those
+        // whose classes it generates, and leaves the others empty.
+        if isConsumer {
+            let sourcesDir = try runtimeTarget(of: target).directoryURL.deletingLastPathComponent().appending(path: "SwiftGodot")
+            for (file, requiredClasses) in supportSources {
+                let source = sourcesDir.appending(path: file)
+                arguments.append(contentsOf: ["--support-source", "\(source.path)=\(requiredClasses.joined(separator: ","))"])
+                inputFiles.append(source)
+                outputFiles.append(generatedSourcesDir.appending(["support", source.lastPathComponent]))
+            }
         }
 
         if let preamble = config.preamble, !preamble.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -130,9 +167,40 @@ import PackagePlugin
         ]
     }
 
+    /// The configuration of a trimmed target in another package: the classes it
+    /// lists, passed to the generator as they are, on top of the runtime. The
+    /// generator adds their parents.
+    private var consumerGenerationConfig: GenerationConfig {
+        GenerationConfig(
+            classFiles: [],
+            builtinFiles: [],
+            preamble: """
+@_exported import SwiftGodotRuntime
+@_spi(SwiftGodotRuntimePrivate) import SwiftGodotRuntime
+""",
+            dependencyClassFiles: runtime
+        )
+    }
+
+    /// A consumer's package is not this one: find the API through the runtime it depends on.
+    private func consumerApi(of target: Target) throws -> URL {
+        try runtimeTarget(of: target).directoryURL.deletingLastPathComponent()
+            .appending(["ExtensionApi", "extension_api.json"])
+    }
+
+    /// The SwiftGodotRuntime target (or its vendored rename) that `target` depends on.
+    private func runtimeTarget(of target: Target) throws -> Target {
+        guard let runtime = target.recursiveTargetDependencies.first(where: { $0.name.hasSuffix("SwiftGodotRuntime") }) else {
+            throw PluginError.consumerWithoutRuntime(target.name)
+        }
+        return runtime
+    }
+
     private func generationConfig(for targetName: String, extraClassFiles: [String]) -> GenerationConfig? {
-        switch targetName {
-        case "SwiftGodotRuntime", "XogotSwiftGodotRuntime":
+        // A vendored copy prefixes the module names (XogotSwiftGodot, XibbonSwiftGodotRuntime).
+        let baseName = ["SwiftGodotRuntime", "SwiftGodot"].first(where: targetName.hasSuffix) ?? targetName
+        switch baseName {
+        case "SwiftGodotRuntime":
             return GenerationConfig(
                 classFiles: runtime.uniqued(),
                 builtinFiles: knownBuiltin,
@@ -150,7 +218,7 @@ import PackagePlugin
         //
         // This means that we do not need to bring the SwiftGodotRuntime, we
         // just generate everything the same way
-        case "SwiftGodot", "XogotSwiftGodot":
+        case "SwiftGodot":
             return GenerationConfig(
                 classFiles: (core + controls + threeD + gltf + twoD + xr + editor + visualShaderNodes + extraClassFiles).uniqued(),
                 builtinFiles: [],
@@ -293,14 +361,35 @@ import PackagePlugin
     }
 }
 
+/// The file in a consumer target's directory that lists the Godot classes it uses.
+let consumerClassListName = "swiftgodot-classes.txt"
+
+/// The hand-written sources of the SwiftGodot target (relative to Sources/SwiftGodot),
+/// with the classes each one needs. A consumer gets those whose classes it generates.
+/// The file names must be distinct from those of the generated sources.
+let supportSources: [(String, [String])] = [
+    ("ArithmeticCompatibility.swift", []),
+    ("GodotInterface.swift", ["EditorPlugin"]),
+    ("RpcMacro.swift", ["MultiplayerAPI", "MultiplayerPeer"]),
+    ("VariantConvertibeNode.swift", ["Node"]),
+    ("Extensions/GDUtilityFunctions.swift", ["OS", "ResourceLoader"]),
+    ("Extensions/NodeExtensions.swift", ["Node"]),
+    ("Extensions/PhysicsDirectSpaceState2D+IntersectRayResult.swift", ["PhysicsDirectSpaceState2D", "PhysicsRayQueryParameters2D"]),
+    ("Extensions/PhysicsDirectSpaceState3D+IntersectRayResult.swift", ["PhysicsDirectSpaceState3D", "PhysicsRayQueryParameters3D"]),
+    ("Extensions/Various.swift", ["ProjectSettings", "SceneTree"]),
+]
+
 enum PluginError: Error, CustomStringConvertible {
     case missingPreparedGenerator(String)
     case staticCachesWithoutMultiProcess(String)
+    case consumerWithoutRuntime(String)
 
     var description: String {
         switch self {
         case .missingPreparedGenerator(let path):
             return "Missing SwiftGodot Generator at \(path). Run `make prep` from the SwiftGodot repository root."
+        case .consumerWithoutRuntime(let target):
+            return "\(target) has a \(consumerClassListName) but does not depend on SwiftGodotRuntime; add the SwiftGodotRuntimeStatic product to its dependencies."
         case .staticCachesWithoutMultiProcess(let target):
             return "\(target) is built with staticCachesOnMacOS but without the with_multi_process trait. Enable the trait on the SwiftGodot package reference of the host project (Xcode: the package's `traits` entry in the project file), or set staticCachesOnMacOS to false in Package.swift."
         }
