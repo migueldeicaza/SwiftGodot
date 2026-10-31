@@ -22,8 +22,10 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
             throw SwiftGodotTestMacroError.notAClass
         }
 
-        // Find all test methods: instance methods whose name begins with `test`,
-        // take no arguments, and have no effect specifiers (async/throws).
+        // Find all test methods: instance methods whose name begins with `test`, take no
+        // arguments and return nothing. `async` and `throws` are both allowed - the
+        // invocation closure is `() async throws -> Void`, and a synchronous
+        // non-throwing method converts to it implicitly.
         let testMethods = declaration.memberBlock.members.compactMap { member -> String? in
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self) else {
                 return nil
@@ -36,7 +38,6 @@ public struct SwiftGodotTestSuiteMacro: MemberMacro, ExtensionMacro {
 
             let signature = funcDecl.signature
             guard signature.parameterClause.parameters.isEmpty else { return nil }
-            guard signature.effectSpecifiers == nil else { return nil }
             guard signature.returnClause == nil else { return nil }
 
             return name

@@ -451,6 +451,18 @@ open class Wrapped: Equatable, Identifiable, Hashable {
     ///  - arguments: variable list of arguments
     /// - Returns: if there is an error, this function raises an error, otherwise, a Variant with the result is returned
     public func callScript (method: StringName, _ arguments: Variant?...) throws -> Variant? {
+        try callScript(method: method, arguments: arguments)
+    }
+
+    /// Invokes the specified method on the object, taking its arguments as an array.
+    ///
+    /// Same as ``callScript(method:_:)``, for callers that already have the arguments in
+    /// a collection and so cannot use the variadic form.
+    /// - Parameters:
+    ///  - method: the method to invoke on the target
+    ///  - arguments: the arguments to pass
+    /// - Returns: if there is an error, this function raises an error, otherwise, a Variant with the result is returned
+    public func callScript (method: StringName, arguments: [Variant?]) throws -> Variant? {
         var args: [UnsafeRawPointer?] = []
         let cptr = UnsafeMutableBufferPointer<Variant.ContentType>.allocate(capacity: arguments.count)
         defer { cptr.deallocate () }
@@ -1859,8 +1871,37 @@ func freeCallableWrapper(wrapperPtr: UnsafeMutableRawPointer?) {
     wrapperPtr.deallocate()
 }
 
+/// Equality, hashing and ordering for a wrapper that carries an `identity`: two such
+/// callables compare equal when they share the identity object, even though each owns a
+/// separate wrapper.  This lets a caller build an equal `Callable` later - to disconnect
+/// - without keeping the connected one alive.
+func callableWrapperIdentityEqual(a: UnsafeMutableRawPointer?, b: UnsafeMutableRawPointer?) -> GDExtensionBool {
+    guard let a, let b else { return 0 }
+    let ia = a.assumingMemoryBound(to: CallableWrapper.self).pointee.identity
+    let ib = b.assumingMemoryBound(to: CallableWrapper.self).pointee.identity
+    return ia != nil && ia === ib ? 1 : 0
+}
+
+func callableWrapperIdentityLessThan(a: UnsafeMutableRawPointer?, b: UnsafeMutableRawPointer?) -> GDExtensionBool {
+    guard let a, let b else { return 0 }
+    let ia = a.assumingMemoryBound(to: CallableWrapper.self).pointee.identity.map { ObjectIdentifier($0) }
+    let ib = b.assumingMemoryBound(to: CallableWrapper.self).pointee.identity.map { ObjectIdentifier($0) }
+    guard let ia, let ib else { return 0 }
+    return ia < ib ? 1 : 0
+}
+
+func callableWrapperIdentityHash(wrapperPtr: UnsafeMutableRawPointer?) -> UInt32 {
+    guard let identity = wrapperPtr?.assumingMemoryBound(to: CallableWrapper.self).pointee.identity else { return 0 }
+    return UInt32(truncatingIfNeeded: ObjectIdentifier(identity).hashValue)
+}
+
 struct CallableWrapper {
     let function: (borrowing Arguments) -> Variant?
+
+    /// When set, the callable's equality and hash come from this object rather than from
+    /// the wrapper's address, and the wrapper keeps the object alive for as long as Godot
+    /// keeps the callable.
+    var identity: AnyObject? = nil
         
     func invoke(arguments: borrowing Arguments, retPtr: UnsafeMutableRawPointer?, err: UnsafeMutablePointer<GDExtensionCallError>?) {
         if let methodRet = function(arguments) {
@@ -1878,10 +1919,10 @@ struct CallableWrapper {
         }
     }
     
-    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant?) -> Callable.ContentType {
+    static func callableVariantContent(wrapping function: @escaping (borrowing Arguments) -> Variant?, identity: AnyObject? = nil) -> Callable.ContentType {
         let wrapperPtr = UnsafeMutablePointer<Self>.allocate(capacity: 1)
-        wrapperPtr.initialize(to: Self(function: function))
-        
+        wrapperPtr.initialize(to: Self(function: function, identity: identity))
+
         var cci = GDExtensionCallableCustomInfo(
             callable_userdata: wrapperPtr,
             token: extensionInterface.getLibrary(),
@@ -1893,6 +1934,11 @@ struct CallableWrapper {
             equal_func: nil,
             less_than_func: nil,
             to_string_func: nil)
+        if identity != nil {
+            cci.hash_func = callableWrapperIdentityHash
+            cci.equal_func = callableWrapperIdentityEqual
+            cci.less_than_func = callableWrapperIdentityLessThan
+        }
         var content: Callable.ContentType = Callable.zero
         gi.callable_custom_create(&content, &cci);
         return content
