@@ -89,7 +89,7 @@ final class SignalTests {
 
     // MARK: - Awaiting signals
     //
-    // These run on `GodotMainActor`, whose executor is Godot's message queue, so every
+    // These run on `GodotMainActor`, whose executor is Godot's main thread, so every
     // call below happens on Godot's main thread.
     //
     // The emission is always posted with `callDeferred` rather than called inline. The

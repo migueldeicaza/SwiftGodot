@@ -36,6 +36,7 @@ Going in depth with SwiftGodot:
 - <doc:Variants>
 - <doc:Exports>
 - <doc:Signals>
+- <doc:Concurrency>
 - <doc:RemoteProcedureCalls>
 - <doc:CustomTypes>
 - <doc:Singletons>
