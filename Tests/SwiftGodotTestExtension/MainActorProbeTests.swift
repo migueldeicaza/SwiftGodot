@@ -2,86 +2,70 @@
 //  MainActorProbeTests.swift
 //  SwiftGodotTestExtension
 //
-//  Does `Task { @MainActor in ... }` actually run inside a GDExtension?
+//  Where does `Task { @MainActor in ... }` run inside a GDExtension?
 //
-//  Swift's `MainActor` is backed by the libdispatch main queue. Godot runs its own event
-//  loop, so whether that queue is ever drained is a property of the host platform, not of
-//  Swift:
+//  Swift's `MainActor` is backed by the process's main dispatch queue. Godot runs its own
+//  event loop, so which thread services that queue is a property of the host platform:
 //
-//    - on macOS, Godot's display server pumps `[NSApp nextEventMatchingMask:...]`, which
-//      spins the run loop, which drains the main queue;
-//    - on Linux and Windows, Godot pumps its own loop and libdispatch's main queue is
-//      never touched.
+//    - on macOS, Godot's display server pumps `[NSApp nextEventMatchingMask:...]` on
+//      Godot's main thread, which drains the main queue there;
+//    - on Linux and Windows, MainActor jobs run, but on a thread other than Godot's main
+//      thread, where touching the scene tree races the engine.
 //
-//  Guidance about `await` in SwiftGodot depends on the answer, so measure it rather than
-//  assume it. This probe *reports* and does not fail: a platform where MainActor never
-//  runs is a finding to document, not a broken build. The number it prints is what the
-//  documentation should be based on.
+//  That difference is why `GodotMainActor` exists. This probe checks thread identity, not just
+//  whether the job ran: a MainActor job that runs on the wrong thread is the dangerous
+//  case. It asserts only on macOS, where MainActor is expected to be Godot's main thread,
+//  and reports elsewhere.
 //
 
-import Foundation
 import SwiftGodot
+import SwiftGodotTestMacros
 
-/// Records what a `@MainActor` task observed, if it ever ran.
-private final class MainActorObservation {
-    private let lock = NSLock()
+/// What a `@MainActor` task observed, if it ever ran.
+private final class MainActorObservation: @unchecked Sendable {
+    private let lock = NIOLock()
     private var _ran = false
-    private var _wasProcessMainThread = false
-    private var _thread: String = "<never ran>"
+    private var _onGodotMainThread = false
 
-    func record(thread: String, isProcessMainThread: Bool) {
-        lock.lock()
-        defer { lock.unlock() }
-        _ran = true
-        _thread = thread
-        _wasProcessMainThread = isProcessMainThread
+    func record(onGodotMainThread: Bool) {
+        lock.withLockVoid {
+            _ran = true
+            _onGodotMainThread = onGodotMainThread
+        }
     }
 
-    var snapshot: (ran: Bool, thread: String, wasProcessMainThread: Bool) {
-        lock.lock()
-        defer { lock.unlock() }
-        return (_ran, _thread, _wasProcessMainThread)
+    var snapshot: (ran: Bool, onGodotMainThread: Bool) {
+        lock.withLock { (_ran, _onGodotMainThread) }
     }
 }
 
 @SwiftGodotTestSuite
 final class MainActorProbeTests {
-    /// Reports whether a `@MainActor` task runs under Godot, and on which thread.
     @GodotMainActor
-    public func testWhetherMainActorTasksRunUnderGodot() async throws {
-        // This test body runs on GodotMainActor, whose executor is Godot's message queue,
-        // so this is Godot's main thread by construction.
-        let godotThread = String(describing: Thread.current)
-        let godotIsProcessMainThread = Thread.isMainThread
-
+    public func testWhereMainActorTasksRunUnderGodot() async throws {
         let observation = MainActorObservation()
         Task { @MainActor in
-            observation.record(thread: String(describing: Thread.current),
-                               isProcessMainThread: Thread.isMainThread)
+            observation.record(onGodotMainThread: OS.getThreadCallerId() == OS.getMainThreadId())
         }
 
-        // Give it a generous number of frames to be scheduled. Each yield goes back
-        // through Godot's message queue, so this advances real frames rather than
-        // spinning.
+        // Real frames, not `Task.yield()`: yields on GodotMainActor all run within one drain,
+        // and the main dispatch queue is serviced between frames.
+        let frames = GodotFrames()
         for _ in 0 ..< 60 {
-            await Task.yield()
             if observation.snapshot.ran { break }
+            try await frames.next()
         }
 
         let result = observation.snapshot
+        GD.print("[MainActor probe] platform=\(OS.getName()) ran=\(result.ran) onGodotMainThread=\(result.onGodotMainThread)")
 
-        GD.print("[MainActor probe] platform=\(OS.getName())")
-        GD.print("[MainActor probe]   godot main thread: \(godotThread) isMainThread=\(godotIsProcessMainThread)")
-        GD.print("[MainActor probe]   MainActor task ran: \(result.ran)")
-        if result.ran {
-            GD.print("[MainActor probe]   MainActor thread: \(result.thread) isMainThread=\(result.wasProcessMainThread)")
-            GD.print("[MainActor probe]   same thread as Godot: \(result.thread == godotThread)")
-        } else {
-            GD.print("[MainActor probe]   MainActor tasks are NOT scheduled on this platform;")
-            GD.print("[MainActor probe]   use a Godot-backed executor instead of @MainActor here.")
+        #if os(macOS)
+        assertTrue(result.ran, "MainActor task never ran on macOS")
+        assertTrue(result.onGodotMainThread, "MainActor task ran off Godot's main thread on macOS")
+        #else
+        if result.ran && !result.onGodotMainThread {
+            GD.print("[MainActor probe]   MainActor runs on a thread other than Godot's here; use GodotMainActor")
         }
-
-        // Deliberately no assertion on `ran`. The point is to record the answer per
-        // platform, not to declare one platform's behaviour correct.
+        #endif
     }
 }

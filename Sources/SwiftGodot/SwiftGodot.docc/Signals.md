@@ -82,13 +82,14 @@ with one argument yields that argument, and anything else yields a tuple:
 let (age, name) = try await player.described.emitted
 ```
 
-If you are not already in an async function, start a task:
+If you are not already in an async function, start a task on ``GodotMainActor``, so the code
+after the await runs on Godot's main thread:
 
 ```swift
 func waitSomething(scene: SceneTree) {
     let timer = scene.createTimer(timeSec: 3)
 
-    Task { @MainActor in
+    Task { @GodotMainActor in
         do {
             try await timer.timeout.emitted
             GD.print("timer fired")
@@ -102,6 +103,10 @@ func waitSomething(scene: SceneTree) {
 
 A `Task` does not report errors thrown inside it, so catch them there as above - otherwise
 a failed or cancelled wait disappears silently.
+
+For waits that belong to a node, ``GodotTasks`` runs them as named tasks that are cancelled
+when the node is freed, and `GodotFrames.wait(for:)` holds the
+task back while the node is paused. See <doc:Concurrency>.
 
 ### What can be awaited
 
@@ -130,7 +135,7 @@ Cancelling the awaiting task disconnects from the signal and throws `Cancellatio
 so an abandoned wait releases everything it was holding:
 
 ```swift
-let task = Task { @MainActor in
+let task = Task { @GodotMainActor in
     try await enemy.died.emitted
 }
 task.cancel()   // disconnects; the await throws
@@ -147,23 +152,13 @@ the await throws ``SignalAwaitError/payloadMismatch(_:)``.
 
 ### Which thread resumes
 
-Two separate things are going on here, and it helps to keep them apart.
-
-The first is a Swift guarantee: **execution resumes on the actor you awaited from.** Await
-from a `@MainActor` context and the code after the await runs on `MainActor`. Await from a
+**Execution resumes on the actor you awaited from.** Await from ``GodotMainActor`` and the
+code after the await runs on Godot's main thread, at the start of a frame. Await from a
 bare `Task { }` - which is isolated to nothing - and it resumes on the cooperative thread
 pool, where you must not touch the scene tree.
 
-The second is a question about the host: **is that actor running at all?** `MainActor`
-means Swift's main executor, which is the libdispatch main queue. Godot runs its own event
-loop, so whether that queue is drained depends on the platform and its display server,
-not on Swift. This has not yet been established for every platform; it is tracked in
-[issue #813](https://github.com/migueldeicaza/SwiftGodot/issues/813).
-
-So: `Task { @MainActor in }` is the right isolation for touching the scene tree, but
-confirm that it runs on your target platform before relying on it. If you need a
-guarantee across platforms, drive the work from Godot's own message queue with
-`Callable(...).callDeferred()`.
+Avoid `@MainActor` for this, it is not guaranteed to be equivalent to Godot's main thread 
+on any platform, and on several it never is. See <doc:Concurrency>.
 
 ## Declaring your own Signals
 

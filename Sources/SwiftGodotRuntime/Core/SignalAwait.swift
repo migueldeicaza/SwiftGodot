@@ -83,6 +83,22 @@ final class OneShotAwaiter<Payload> {
     private var isSettled = false
     private var cancelledBeforeStart = false
 
+    /// Whether the awaiting task continues on `GodotMainActor`.  Its resume is then announced
+    /// to the actor's executor, so a frame's drain runs the task rather than finishing
+    /// while it is still on its way.
+    private let resumesOnGodotMainActor: Bool
+
+    init(resumesOnGodotMainActor: Bool = false) {
+        self.resumesOnGodotMainActor = resumesOnGodotMainActor
+    }
+
+    /// Called right before every resume, of which there is exactly one.
+    private func willResume() {
+        if resumesOnGodotMainActor {
+            GodotMainActorHooks.willResume()
+        }
+    }
+
     /// Installs the continuation.
     ///
     /// Returns `false` when cancellation arrived before the operation body ran, in which
@@ -97,6 +113,7 @@ final class OneShotAwaiter<Payload> {
         }
 
         if alreadyCancelled {
+            willResume()
             c.resume(throwing: CancellationError())
             return false
         }
@@ -143,7 +160,10 @@ final class OneShotAwaiter<Payload> {
             continuation = nil
             return c
         }
-        c?.resume(throwing: CancellationError())
+        if let c {
+            willResume()
+            c.resume(throwing: CancellationError())
+        }
     }
 
     private func takeContinuation() -> CheckedContinuation<Payload, any Error>? {
@@ -152,6 +172,9 @@ final class OneShotAwaiter<Payload> {
             isSettled = true
             let c = continuation
             continuation = nil
+            return c
+        }.map { c in
+            willResume()
             return c
         }
     }
@@ -173,7 +196,19 @@ nonisolated(nonsending) func awaitOneShotSignal<Payload>(
     connect: (Callable) throws -> Void,
     disconnect: (Callable) -> Void
 ) async throws -> Payload {
-    let awaiter = OneShotAwaiter<Payload>()
+    let callerIsolation: (any Actor)? = #isolation
+    let resumesOnGodotMainActor: Bool
+    if let callerIsolation {
+        resumesOnGodotMainActor = callerIsolation === GodotMainActor.shared
+    } else {
+        resumesOnGodotMainActor = false
+    }
+    let awaiter = OneShotAwaiter<Payload>(resumesOnGodotMainActor: resumesOnGodotMainActor)
+    defer {
+        if resumesOnGodotMainActor {
+            GodotMainActorHooks.arrived()
+        }
+    }
 
     do {
         return try await withTaskCancellationHandler {

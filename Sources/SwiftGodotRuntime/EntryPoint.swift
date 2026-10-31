@@ -249,6 +249,11 @@ func extension_deinitialize(userData: UnsafeMutableRawPointer?, l: GDExtensionIn
     if level == .editor {
         EditorInterop.stopLoadingClassDocumentation()
     }
+    if level == .scene, Engine.getMainLoop() != nil, extensionDeInitCallbacks.count <= 1 {
+        // The last Swift extension is unloading, but the engine stays up: don't leave
+        // GodotMainActor's pump connected to the tree.  A job queued later installs it again.
+        GodotMainActorExecutor.shared.uninstallPump()
+    }
     guard let userData else { return }
     let key = OpaquePointer(userData)
     guard let callback = extensionDeInitCallbacks[key] else { return }
@@ -450,6 +455,8 @@ func toCallErrorType(_ godotCallError: GDExtensionCallErrorType) -> CallErrorTyp
     public let get_library_path: GDExtensionInterfaceGetLibraryPath
     public let editor_help_load_xml_from_utf8_chars: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars?
     public let editor_help_load_xml_from_utf8_chars_and_len: GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen?
+    /// Godot 4.5 and later.
+    public let register_main_loop_callbacks: GDExtensionInterfaceRegisterMainLoopCallbacks?
 }
 
 @_spi(SwiftGodotRuntimePrivate) public var gi: GodotInterface!
@@ -588,7 +595,8 @@ func loadGodotInterface(_ godotGetProcAddrPtr: GDExtensionInterfaceGetProcAddres
 
         get_library_path: load("get_library_path"),
         editor_help_load_xml_from_utf8_chars: loadOptional("editor_help_load_xml_from_utf8_chars"),
-        editor_help_load_xml_from_utf8_chars_and_len: loadOptional("editor_help_load_xml_from_utf8_chars_and_len")
+        editor_help_load_xml_from_utf8_chars_and_len: loadOptional("editor_help_load_xml_from_utf8_chars_and_len"),
+        register_main_loop_callbacks: loadOptional("register_main_loop_callbacks")
     )
 }
 
@@ -665,6 +673,9 @@ public func initializeSwiftModule(
     }
     extensionInitCallbacks[libraryPtr] = initHook
     extensionDeInitCallbacks[libraryPtr] = deInitHook
+    // Lets GodotMainActor start draining as soon as the engine is up, and run down its tasks
+    // while the engine still is, at shutdown.
+    prepareGodotMainActor(library: UnsafeMutableRawPointer(libraryPtr))
     let initialization = UnsafeMutablePointer<GDExtensionInitialization>(extensionPtr)
     initialization.pointee.deinitialize = extension_deinitialize
     initialization.pointee.initialize = extension_initialize

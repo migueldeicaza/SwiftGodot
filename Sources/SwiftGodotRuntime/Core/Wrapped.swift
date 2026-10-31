@@ -1682,6 +1682,7 @@ func bindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutable
 }
 
 func bindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
+    ObjectFreeObservers.objectFreed(instance)
     guard let binding else { return }
     let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
 
@@ -1716,6 +1717,7 @@ func userTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: Unsaf
 }
 
 func userTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
+    ObjectFreeObservers.objectFreed(instance)
     if let binding {
         let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
         guard let obj = reference.value else { return }
@@ -1812,6 +1814,7 @@ func frameworkTypeBindingCreate (_ token: UnsafeMutableRawPointer?, _ instance: 
 }
 
 func frameworkTypeBindingFree (_ token: UnsafeMutableRawPointer?, _ instance: UnsafeMutableRawPointer?, _ binding: UnsafeMutableRawPointer?) {
+    ObjectFreeObservers.objectFreed(instance)
     if let binding {
         let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
 

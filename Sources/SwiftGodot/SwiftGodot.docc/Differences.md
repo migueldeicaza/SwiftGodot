@@ -284,7 +284,7 @@ Task, like this:
 ```swift
 func demo() {
 	// We are not an async function, but we can start a Task
-	Task { @MainActor in
+	Task { @GodotMainActor in
 		do {
 			try await someSignal.emitted
 		} catch {
@@ -304,6 +304,8 @@ contains `await`. SwiftGodot covers both, plus the builtin `Signal` Variant type
 | `await some_signal` | `try await someSignal.emitted` |
 | `await obj.get_signal("x")` | `try await Signal(object: obj, signal: "x").emitted` |
 | `await obj.some_coroutine()` | `try await obj.callScriptAsync(method: "some_coroutine")` |
+| `await get_tree().process_frame` | `try await frames.next()` |
+| `await get_tree().create_timer(0.5).timeout` | `try await frames.wait(seconds: 0.5)` |
 
 A typed signal's payload comes back with its Swift types - `()` for a `SimpleSignal`, the
 argument itself for a one-argument signal, a tuple otherwise. A `Signal` value carries no
@@ -320,6 +322,9 @@ static type information, so it yields `[Variant?]`.
   convert to its declared Swift types, the await throws `SignalAwaitError.payloadMismatch`.
 - **Resumption thread.** GDScript always resumes on the main thread. Swift resumes on the
   actor you awaited from, so a bare `Task { }` resumes on the cooperative pool, where
-  touching the scene tree is not safe. `Task { @MainActor in }` is the right isolation,
-  but see <doc:Signals> for the open question of whether `MainActor` is scheduled under
-  Godot on every platform.
+  touching the scene tree is not safe. Use `Task { @GodotMainActor in }`.
+- **Resumption time.** GDScript resumes inside the `emit` call. Swift resumes at the
+  start of the next frame, or in the same frame when the signal was emitted from code
+  already running on ``GodotMainActor``.
+
+See <doc:Concurrency> for frame waits and tasks that follow a node.

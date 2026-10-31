@@ -53,7 +53,7 @@ public class TestRunnerNode: Node {
     /// Starts every registered test, then returns immediately.
     ///
     /// Tests may be `async`, so the run is driven by a task on ``GodotMainActor`` - whose
-    /// executor is Godot's own message queue - rather than inline. That task needs frames
+    /// executor is drained on Godot's main thread every frame - rather than inline. That task needs frames
     /// to advance in order to make progress, which is exactly what the GDScript
     /// orchestrator is doing while it awaits ``finished``.
     ///
