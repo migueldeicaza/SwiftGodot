@@ -285,7 +285,11 @@ Task, like this:
 func demo() {
 	// We are not an async function, but we can start a Task
 	Task { @MainActor in
-		try await someSignal.emitted
+		do {
+			try await someSignal.emitted
+		} catch {
+			GD.printErr("stopped waiting: \(error)")
+		}
 	}
 }
 ```
@@ -308,12 +312,14 @@ static type information, so it yields `[Variant?]`.
 ### Differences worth knowing
 
 - **`await` throws here.** Cancelling the task disconnects from the signal and throws
-  `CancellationError`; a signal whose object is already gone throws
-  `SignalAwaitError.targetUnavailable` instead of hanging. GDScript has neither.
-- **A destroyed emitter never resumes the wait**, in Swift exactly as in GDScript. Bound
-  the wait with cancellation if the emitter might not survive it.
+  `CancellationError`. GDScript has no cancellation.
+- **A destroyed emitter ends the wait.** If the object that declares the signal is gone -
+  before the await starts or while it is waiting - the await throws
+  `SignalAwaitError.targetUnavailable`. In GDScript such an `await` never resumes.
+- **Mismatched arguments end the wait.** If the signal fires with arguments that do not
+  convert to its declared Swift types, the await throws `SignalAwaitError.payloadMismatch`.
 - **Resumption thread.** GDScript always resumes on the main thread. Swift resumes on the
   actor you awaited from, so a bare `Task { }` resumes on the cooperative pool, where
-  touching the scene tree is not safe. Use `Task { @MainActor in }` - and see
-  <doc:Signals> for the platform caveat about whether `MainActor` is scheduled at all
-  under Godot.
+  touching the scene tree is not safe. `Task { @MainActor in }` is the right isolation,
+  but see <doc:Signals> for the open question of whether `MainActor` is scheduled under
+  Godot on every platform.

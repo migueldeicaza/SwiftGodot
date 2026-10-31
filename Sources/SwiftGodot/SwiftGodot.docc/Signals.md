@@ -86,12 +86,22 @@ If you are not already in an async function, start a task:
 
 ```swift
 func waitSomething(scene: SceneTree) {
+    let timer = scene.createTimer(timeSec: 3)
+
     Task { @MainActor in
-        try await timer.timeout.emitted
-        GD.print("timer fired")
+        do {
+            try await timer.timeout.emitted
+            GD.print("timer fired")
+        } catch {
+            // Thrown on cancellation, or if the timer was freed first.
+            GD.printErr("stopped waiting: \(error)")
+        }
     }
 }
 ```
+
+A `Task` does not report errors thrown inside it, so catch them there as above - otherwise
+a failed or cancelled wait disappears silently.
 
 ### What can be awaited
 
@@ -114,7 +124,7 @@ Three things:
 
 Awaiting anything else is not supported - there is no general "await a Godot call".
 
-### Cancellation, and signals that never fire
+### Cancellation, and emitters that go away
 
 Cancelling the awaiting task disconnects from the signal and throws `CancellationError`,
 so an abandoned wait releases everything it was holding:
@@ -126,14 +136,14 @@ let task = Task { @MainActor in
 task.cancel()   // disconnects; the await throws
 ```
 
-One hazard remains, and it is worth knowing: **if the object that declares the signal is
-destroyed while you are waiting, the await does not resume.** Godot silently drops the
-connection with the object, and nothing is left to wake the task. GDScript's own `await`
-behaves the same way. When the emitter might not outlive the wait, bound it - with task
-cancellation, or with a timeout.
+If the object that declares the signal is gone - already when the await begins, or
+destroyed while it is waiting - the await throws ``SignalAwaitError/targetUnavailable``.
+GDScript's own `await` never resumes in that case; in Swift the waiting task is released.
+Awaiting does not keep the object alive either: a `RefCounted` emitter whose last other
+reference goes away is freed, and the await throws.
 
-If the object is *already* gone when the await begins, that is detected and reported as
-``SignalAwaitError/targetUnavailable`` rather than hanging.
+If the signal fires with arguments that cannot be converted to its declared Swift types,
+the await throws ``SignalAwaitError/payloadMismatch(_:)``.
 
 ### Which thread resumes
 
@@ -144,16 +154,16 @@ from a `@MainActor` context and the code after the await runs on `MainActor`. Aw
 bare `Task { }` - which is isolated to nothing - and it resumes on the cooperative thread
 pool, where you must not touch the scene tree.
 
-The second is a question about the host: **is that actor running on Godot's thread?**
-`MainActor` means Swift's main executor, which is the libdispatch main queue. Godot runs
-its own event loop, so whether that queue is ever drained depends on the platform. On
-macOS the display server spins the run loop, which does drain it - measured, and the
-`MainActor` thread is Godot's main thread. On Linux and Windows Godot never touches that
-queue, so a `Task { @MainActor in }` may not be scheduled at all.
+The second is a question about the host: **is that actor running at all?** `MainActor`
+means Swift's main executor, which is the libdispatch main queue. Godot runs its own event
+loop, so whether that queue is drained depends on the platform and its display server,
+not on Swift. This has not yet been established for every platform; it is tracked in
+[issue #813](https://github.com/migueldeicaza/SwiftGodot/issues/813).
 
-So: prefer `Task { @MainActor in }`, and confirm it on your target platform before relying
-on it. If you need a guarantee across platforms, drive the work from Godot's own message
-queue with `Callable(...).callDeferred()`, which is what `MainActor` is standing in for.
+So: `Task { @MainActor in }` is the right isolation for touching the scene tree, but
+confirm that it runs on your target platform before relying on it. If you need a
+guarantee across platforms, drive the work from Godot's own message queue with
+`Callable(...).callDeferred()`.
 
 ## Declaring your own Signals
 

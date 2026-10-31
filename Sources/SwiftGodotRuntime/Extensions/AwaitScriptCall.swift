@@ -11,7 +11,7 @@
 //  That handle is `GDScriptFunctionState`, which is not published in
 //  `extension_api.json`, so it crosses the boundary as an object of a class the binding
 //  does not know statically. Everything here therefore goes through the dynamic `Signal`
-//  API rather than a generated type.
+//  API rather than a generated type, and the handle is recognised by its class name.
 //
 
 public extension Object {
@@ -43,17 +43,20 @@ public extension Object {
             return result
         }
 
-        // `completed` carries the coroutine's return value as its single argument.
+        // `completed` carries the coroutine's return value as its single argument.  The
+        // caller of a coroutine is what holds its state, so keep it alive while waiting.
+        defer { withExtendedLifetime(state) {} }
         let values = try await Signal(object: state, signal: "completed").emitted
         return values.first ?? nil
     }
 
     /// Whether this object is a handle to a script call that suspended at an `await`.
     ///
-    /// Recognised structurally rather than by class name: the handle emits `completed`
-    /// when the call resumes and answers `is_valid` while it is still pending.  No
-    /// ordinary return value looks like that.
+    /// Checked by class name.  The class is not in `extension_api.json`, but its name is
+    /// stable, and a structural check - "has a `completed` signal and an `is_valid`
+    /// method" - would also match ordinary script objects that happen to look like that,
+    /// such as a job or request class.
     private var isSuspendedScriptCall: Bool {
-        hasSignal("completed") && hasMethod("is_valid")
+        isClass("GDScriptFunctionState")
     }
 }

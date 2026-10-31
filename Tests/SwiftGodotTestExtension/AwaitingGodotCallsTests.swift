@@ -29,6 +29,16 @@ final class AwaitingGodotCallsTests {
 
         func fast():
             return 7
+
+        func job():
+            return Job.new()
+
+        # Looks like a suspended call - a `completed` signal and an `is_valid` method -
+        # but is an ordinary return value.
+        class Job:
+            signal completed
+            func is_valid():
+                return true
         """
 
         let reloadResult = script.reload()
@@ -94,5 +104,20 @@ final class AwaitingGodotCallsTests {
 
         let fast = try await object.callScriptAsync(method: "fast")
         assertEqual(fast?.to(Int.self), 7, "a non-coroutine should pass straight through")
+    }
+
+    /// An ordinary object that merely resembles a suspended call is returned as is, not
+    /// awaited.
+    @GodotMainActor
+    public func testCallScriptAsyncReturnsLookalikeObject() async throws {
+        guard let object = makeScriptedObject() else { return }
+
+        let result = try await object.callScriptAsync(method: "job")
+        guard let job = result?.to(Object.self) else {
+            fail("expected the Job object, got \(String(describing: result))")
+            return
+        }
+        assertTrue(job.hasSignal("completed"))
+        assertTrue(job.hasMethod("is_valid"))
     }
 }

@@ -234,8 +234,10 @@ final class SignalTests {
         }
     }
 
+    /// Freeing the emitter while an await is pending ends the await with
+    /// `.targetUnavailable` instead of leaving it suspended forever.
     @GodotMainActor
-    public func testCancelTypedSignalAfterTargetIsFreed() async {
+    public func testFreeingTypedSignalTargetMidAwaitThrows() async {
         let owner = Object()
         let signal = SimpleSignal(target: owner, signalName: "script_changed")
         let task = Task { @GodotMainActor in
@@ -245,15 +247,13 @@ final class SignalTests {
         assertEqual(owner.getSignalConnectionList(signal: "script_changed").count, 1)
 
         owner.free()
-        assertFalse(owner.isValid)
-        task.cancel()
-        await expectCancellation {
+        await expectUnavailable {
             try await task.value
         }
     }
 
     @GodotMainActor
-    public func testCancelBuiltinSignalAfterTargetIsFreed() async {
+    public func testFreeingBuiltinSignalTargetMidAwaitThrows() async {
         let owner = Object()
         let signal = Signal(object: owner, signal: "script_changed")
         let task = Task { @GodotMainActor in
@@ -263,10 +263,64 @@ final class SignalTests {
         assertEqual(owner.getSignalConnectionList(signal: "script_changed").count, 1)
 
         owner.free()
-        assertFalse(owner.isValid)
-        task.cancel()
-        await expectCancellation {
+        await expectUnavailable {
             _ = try await task.value
+        }
+    }
+
+    /// Cancelling after the emitter is gone is harmless: the await has already ended.
+    @GodotMainActor
+    public func testCancelAfterTargetIsFreed() async {
+        let owner = Object()
+        let signal = SimpleSignal(target: owner, signalName: "script_changed")
+        let task = Task { @GodotMainActor in
+            try await signal.emitted
+        }
+        await Task.yield()
+
+        owner.free()
+        task.cancel()
+        await expectUnavailable {
+            try await task.value
+        }
+    }
+
+    /// The await does not keep a `RefCounted` emitter alive: when its last other reference
+    /// goes away, the object is released and the await reports it.
+    @GodotMainActor
+    public func testAwaitDoesNotRetainRefCountedTarget() async {
+        var owner: RefCounted? = RefCounted()
+        let signal = SimpleSignal(target: owner!, signalName: "script_changed")
+        let task = Task { @GodotMainActor in
+            try await signal.emitted
+        }
+        await Task.yield()
+        assertEqual(owner?.getSignalConnectionList(signal: "script_changed").count, 1)
+
+        owner = nil
+        await expectUnavailable {
+            try await task.value
+        }
+    }
+
+    /// A payload that does not convert to the signal's declared types fails the await
+    /// rather than leaving it suspended - the one-shot connection is spent either way.
+    @GodotMainActor
+    public func testAwaitSignalWithMismatchedPayloadThrows() async {
+        let owner = Object()
+        defer { owner.free() }
+
+        // `script_changed` carries no arguments, so an `Int` cannot be read from it.
+        let signal = SignalWithArguments<Int>(target: owner, signalName: "script_changed")
+        emitLater { _ = owner.emitSignal("script_changed") }
+
+        do {
+            _ = try await signal.emitted
+            fail("a mismatched payload should throw")
+        } catch SignalAwaitError.payloadMismatch {
+            // Expected.
+        } catch {
+            fail("expected payloadMismatch, got \(error)")
         }
     }
 
