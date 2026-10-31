@@ -36,7 +36,8 @@ func consumerSupportSource (_ source: String, name: String) -> String {
         chunkIdentifiers = []
     }
 
-    var lines = source.split (separator: "\n", omittingEmptySubsequences: false)
+    // Not split (separator: "\n"): "\r\n", as in a Windows checkout, is one Character.
+    var lines = source.split (omittingEmptySubsequences: false, whereSeparator: \.isNewline)
     if lines.last == "" {
         lines.removeLast ()
     }
