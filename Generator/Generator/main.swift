@@ -14,13 +14,14 @@ var positionalArgs: [String] = []
 // used in Windows.
 var combineOutput = false
 
-// Where to list the members that --omit-unavailable-members left out.
+// Where --omit-unavailable-members writes the declarations that take the place
+// of what it leaves out, and where it lists the members it left out.
+var unavailableDeclarationsFile: String?
 var omittedMembersFile: String?
 
-// Hand-written sources for the output's support/ directory, for a consumer
-// target that generates its own bindings, with the classes each one needs:
-// those it doesn't generate get an empty file instead.
-var supportSources: [(path: String, requiredClasses: [String])] = []
+// Hand-written sources of the SwiftGodot target to copy for a consumer target
+// that generates its own bindings, and where to.
+var supportSources: [(source: String, destination: String)] = []
 
 var index = 1
 while index < args.count {
@@ -33,6 +34,9 @@ while index < args.count {
         let contents = try! String(contentsOfFile: path, encoding: .utf8)
         classesToGenerate = Set(normalizedSymbolEntries(from: contents))
         classFilterProvided = true
+        // It goes in string literals.
+        classListName = URL(fileURLWithPath: path).pathComponents.suffix(2).joined(separator: "/")
+            .replacingOccurrences(of: "\\", with: "/").replacingOccurrences(of: "\"", with: "'")
         index += 1
     case "--available-class-filter":
         let path = args[index + 1]
@@ -50,15 +54,14 @@ while index < args.count {
         index += 1
     case "--omit-unavailable-members":
         omitUnavailableMembers = true
-    case "--support-source":
-        // path=Class1,Class2
-        let entry = args[index + 1]
-        guard let separator = entry.lastIndex(of: "=") else {
-            fatalError("Invalid support source '\(entry)'. Expected format path=Class1,Class2.")
-        }
-        let classes = entry[entry.index(after: separator)...].split(separator: ",").map(String.init)
-        supportSources.append((String(entry[..<separator]), classes))
+        unavailableDeclarationsFile = args[index + 1]
         index += 1
+    case "--runtime-module":
+        runtimeModuleName = args[index + 1]
+        index += 1
+    case "--support-source":
+        supportSources.append((args[index + 1], args[index + 2]))
+        index += 2
     case "--omitted-members-file":
         omittedMembersFile = args[index + 1]
         index += 1
@@ -311,32 +314,25 @@ struct Generator {
             await PrinterFactory.shared.saveMultiplexed(outputDir)
         }
 
-        let supportDir = URL(fileURLWithPath: outputDir).appendingPathComponent("support")
-        if omitUnavailableMembers {
-            try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
-            let destination = supportDir.appendingPathComponent("UnavailableGodotMember.swift")
-            if (try? String(contentsOf: destination, encoding: .utf8)) != unavailableMemberSource {
-                try unavailableMemberSource.write(to: destination, atomically: true, encoding: .utf8)
-            }
+        if let unavailableDeclarationsFile {
+            try writeIfChanged(unavailableDeclarationsSource(), to: unavailableDeclarationsFile)
         }
-        if !supportSources.isEmpty {
-            try FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
-            for (source, requiredClasses) in supportSources {
-                let sourceUrl = URL(fileURLWithPath: source)
-                let missing = requiredClasses.filter { !availableClassNames.contains($0) }
-                let contents = missing.isEmpty
-                    ? try Data(contentsOf: sourceUrl)
-                    : Data("// Not used here: this target does not generate \(missing.joined(separator: ", ")).\n".utf8)
-                let destination = supportDir.appendingPathComponent(sourceUrl.lastPathComponent)
-                if (try? Data(contentsOf: destination)) != contents {
-                    try contents.write(to: destination)
-                }
-            }
+        for (source, destination) in supportSources {
+            let name = URL(fileURLWithPath: source).lastPathComponent
+            try writeIfChanged(consumerSupportSource(try String(contentsOfFile: source, encoding: .utf8), name: name), to: destination)
         }
 
         if let omittedMembersFile {
             let contents = omittedMembers.sorted().joined(separator: "\n")
             try contents.write(toFile: omittedMembersFile, atomically: true, encoding: .utf8)
+        }
+    }
+
+    func writeIfChanged(_ contents: String, to path: String) throws {
+        let url = URL(fileURLWithPath: path)
+        if (try? String(contentsOf: url, encoding: .utf8)) != contents {
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try contents.write(to: url, atomically: true, encoding: .utf8)
         }
     }
 }

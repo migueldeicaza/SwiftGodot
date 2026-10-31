@@ -326,7 +326,9 @@ func generateMethods (_ p: Printer,
     for method in methods {
         if let missing = omittedMemberMissingClass(cdef.name, method.name, returnType: method.returnValue?.type, arguments: method.arguments) {
             // A virtual is only overridden; an override of a missing one fails to compile anyway.
-            if !method.isVirtual && !ancestorDeclares(cdef, method.name) {
+            // A property's accessor is not public (see generateMethod); the property has a stub.
+            let isAccessor = usedMethods.contains(method.name) && method.name != "get_param" && method.name != "set_param"
+            if !method.isVirtual && !isAccessor && !ancestorDeclares(cdef, method.name) {
                 generateUnavailableMethod(p, cdef: cdef, method: method, missing: missing, asSingleton: asSingleton)
             }
             continue
@@ -387,29 +389,54 @@ func generateUnavailableProperty (_ p: Printer, swiftName: String, type: String,
     p ("public \(asStatic ? "static" : "final") var \(swiftName): \(type) { get { fatalError () }\(settable ? " set {}" : "") }")
 }
 
-/// The type an unavailable declaration uses for a value of Godot type `type`:
-/// optional where the real declaration's would be.
+/// The type an unavailable declaration uses for a value of Godot type `type`,
+/// optional where the real declaration's would be. A class is named as it is: a
+/// class that is not generated is an unavailable alias of UnavailableGodotMember
+/// (see `unavailableDeclarationsSource`), so a type mismatch still names it.
 func unavailableMemberType (for type: String, meta: JGodotArgumentMeta?) -> String {
-    let optional = type == "Variant" || (classMap [type] != nil && meta != .required)
-    return "UnavailableGodotMember\(optional ? "?" : "")"
+    if classMap [type] != nil {
+        return meta == .required ? type : "\(type)?"
+    }
+    return type == "Variant" ? "UnavailableGodotMember?" : "UnavailableGodotMember"
 }
 
-/// The source of `UnavailableGodotMember`, written next to the generated classes
-/// when `omitUnavailableMembers` is set.
-let unavailableMemberSource = """
-/// The type of the declarations that take the place of members left out of
-/// trimmed bindings because they use a class that is not generated. Each of
-/// those declarations is unavailable, with a message that names that class;
-/// this type accepts any member access or call, so that the code using them
-/// type-checks and the compiler reports that message.
-@dynamicMemberLookup
-@dynamicCallable
-public struct UnavailableGodotMember {
-    public subscript (dynamicMember name: String) -> UnavailableGodotMember { self }
-    public func dynamicallyCall (withKeywordArguments arguments: KeyValuePairs<String, Any?>) -> UnavailableGodotMember { self }
-}
+/// The source written to --omit-unavailable-members: `UnavailableGodotMember`, and
+/// an unavailable alias of it for each class that is not generated, so that naming
+/// one fails with the class list to add it to, rather than with "cannot find".
+func unavailableDeclarationsSource () -> String {
+    var source = """
+    import \(runtimeModuleName)
 
-"""
+    /// The type of the declarations that take the place of members left out of
+    /// trimmed bindings because they use a class that is not generated. Each of
+    /// those declarations is unavailable, with a message that names that class.
+    /// This type accepts any member access, call or literal, so that the code
+    /// using them type-checks and the compiler reports that message.
+    @dynamicMemberLookup
+    @dynamicCallable
+    public struct UnavailableGodotMember: ExpressibleByNilLiteral, ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral,
+        ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByStringLiteral {
+        public init (_ arguments: Any?...) {}
+        public init (nilLiteral: ()) {}
+        public init (arrayLiteral elements: Any?...) {}
+        public init (dictionaryLiteral elements: (Any?, Any?)...) {}
+        public init (integerLiteral value: Int) {}
+        public init (floatLiteral value: Double) {}
+        public init (booleanLiteral value: Bool) {}
+        public init (stringLiteral value: String) {}
+        public subscript (dynamicMember name: String) -> UnavailableGodotMember { self }
+        public static subscript (dynamicMember name: String) -> UnavailableGodotMember { UnavailableGodotMember () }
+        public func dynamicallyCall (withKeywordArguments arguments: KeyValuePairs<String, Any?>) -> UnavailableGodotMember { self }
+    }
+
+
+    """
+    for name in classMap.keys.sorted () where !availableClassNames.contains (name) {
+        source += "@available(*, unavailable, message: \"\(unavailableClassMessage (name))\")\n"
+        source += "public typealias \(name) = UnavailableGodotMember\n"
+    }
+    return source
+}
 
 func generateConstants (_ p: Printer,
                         cdef: JGodotExtensionAPIClass,
@@ -514,6 +541,10 @@ func generateProperties (_ p: Printer,
                 generateUnavailableProperty(p, swiftName: godotPropertyToSwift (property.name, inClass: cdef.name),
                                             type: unavailableMemberType (for: method.returnValue?.type ?? "", meta: method.returnValue?.meta),
                                             settable: setterMethod != nil, missing: missing, asStatic: asSingleton)
+            }
+            referencedMethods.insert (property.getter)
+            if let setter = property.setter {
+                referencedMethods.insert (setter)
             }
             continue
         }

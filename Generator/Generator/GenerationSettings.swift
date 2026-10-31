@@ -24,6 +24,14 @@ var omitUnavailableMembers = false
 var omittedMembers: [String] = []
 let omittedMembersLock = NSLock()
 
+/// The class list as the messages of unavailable declarations name it: its
+/// directory (the consumer target's) and file name.
+var classListName = "swiftgodot-classes.txt"
+
+/// The name the generated code uses for the runtime module. A consumer target
+/// imports a vendored runtime by its own name (XibbonSwiftGodotRuntime).
+var runtimeModuleName = "SwiftGodotRuntime"
+
 /// Explicitly allowed reference-type degradations for split targets.
 /// Key is the original class name and value is the only permitted fallback ancestor.
 var allowedClassFallbacks: [String: String] = [:]
@@ -128,7 +136,12 @@ func omittedMemberMissingClass(_ className: String, _ member: String, returnType
 
 /// The message of the unavailable declaration that takes an omitted member's place.
 func omittedMemberMessage(_ member: String, missing: String) -> String {
-    "'\(member)' uses \(missing), which is not generated: add \(missing) to this target's swiftgodot-classes.txt"
+    "'\(member)' uses \(missing), which is not generated: add \(missing) to \(classListName)"
+}
+
+/// The message of the unavailable alias that stands for a class that is not generated.
+func unavailableClassMessage(_ className: String) -> String {
+    "\(className) is not generated: add it to \(classListName)"
 }
 
 /// True when an ancestor of `cdef` has a method, property or signal named `name`
