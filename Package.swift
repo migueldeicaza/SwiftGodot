@@ -34,9 +34,9 @@ let withMultiProcessTrait = "with_multi_process"
 // - staticCachesOnMacOS: with the with_multi_process trait, generated code
 //   avoids stored static caches so Godot can be reinitialized; this keeps the
 //   stored caches on macOS only, for hosts that reinitialize on iOS alone.
-let useVendoredModuleNames = false
-let vendoredModulePrefix = "Xogot"
-let includeFullBindings = true
+let useVendoredModuleNames = true
+let vendoredModulePrefix = "Xibbon"
+let includeFullBindings = false
 let usePreparedGenerator = false
 let usePrecompiledSwiftSyntax = false
 let emitStableInterfaces = true
