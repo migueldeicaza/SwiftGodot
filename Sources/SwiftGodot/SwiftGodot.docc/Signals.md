@@ -59,6 +59,112 @@ class Demo: Node {
 }
 ```
 
+## One-shot signals
+
+A common idiom in Godot is to wait for a signal before continuing - a timeout, an
+animation finishing, a player action. Await the `emitted` property of the signal:
+
+```swift
+func waitTimer(scene: SceneTree) async throws {
+    let timer = scene.createTimer(timeSec: 3)
+
+    try await timer.timeout.emitted
+
+    print("Done waiting!")
+}
+```
+
+The value you get back is the signal's payload. A ``SimpleSignal`` yields `()`, a signal
+with one argument yields that argument, and anything else yields a tuple:
+
+```swift
+// SignalWithArguments<Int, String>
+let (age, name) = try await player.described.emitted
+```
+
+If you are not already in an async function, start a task:
+
+```swift
+func waitSomething(scene: SceneTree) {
+    let timer = scene.createTimer(timeSec: 3)
+
+    Task { @MainActor in
+        do {
+            try await timer.timeout.emitted
+            GD.print("timer fired")
+        } catch {
+            // Thrown on cancellation, or if the timer was freed first.
+            GD.printErr("stopped waiting: \(error)")
+        }
+    }
+}
+```
+
+A `Task` does not report errors thrown inside it, so catch them there as above - otherwise
+a failed or cancelled wait disappears silently.
+
+### What can be awaited
+
+Three things:
+
+- **A typed signal** - any built-in signal, or one you declared with `@Signal`. This is
+  the case above.
+- **A ``Signal`` value** - the builtin Variant type, which is what GDScript hands you and
+  what ``Signal/init(object:signal:)`` builds. It carries no static type information, so
+  its payload is an array of ``Variant``:
+  ```swift
+  let arguments = try await Signal(object: node, signal: "lives_changed").emitted
+  ```
+- **A call into a script that suspends.** In GDScript a function containing `await` is a
+  coroutine; calling it returns a handle rather than a value. ``Object/callScriptAsync(method:_:)``
+  waits for such a call to finish, and passes an ordinary return value straight through:
+  ```swift
+  let value = try await object.callScriptAsync(method: "slow", tree.toVariant())
+  ```
+
+Awaiting anything else is not supported - there is no general "await a Godot call".
+
+### Cancellation, and emitters that go away
+
+Cancelling the awaiting task disconnects from the signal and throws `CancellationError`,
+so an abandoned wait releases everything it was holding:
+
+```swift
+let task = Task { @MainActor in
+    try await enemy.died.emitted
+}
+task.cancel()   // disconnects; the await throws
+```
+
+If the object that declares the signal is gone - already when the await begins, or
+destroyed while it is waiting - the await throws ``SignalAwaitError/targetUnavailable``.
+GDScript's own `await` never resumes in that case; in Swift the waiting task is released.
+Awaiting does not keep the object alive either: a `RefCounted` emitter whose last other
+reference goes away is freed, and the await throws.
+
+If the signal fires with arguments that cannot be converted to its declared Swift types,
+the await throws ``SignalAwaitError/payloadMismatch(_:)``.
+
+### Which thread resumes
+
+Two separate things are going on here, and it helps to keep them apart.
+
+The first is a Swift guarantee: **execution resumes on the actor you awaited from.** Await
+from a `@MainActor` context and the code after the await runs on `MainActor`. Await from a
+bare `Task { }` - which is isolated to nothing - and it resumes on the cooperative thread
+pool, where you must not touch the scene tree.
+
+The second is a question about the host: **is that actor running at all?** `MainActor`
+means Swift's main executor, which is the libdispatch main queue. Godot runs its own event
+loop, so whether that queue is drained depends on the platform and its display server,
+not on Swift. This has not yet been established for every platform; it is tracked in
+[issue #813](https://github.com/migueldeicaza/SwiftGodot/issues/813).
+
+So: `Task { @MainActor in }` is the right isolation for touching the scene tree, but
+confirm that it runs on your target platform before relying on it. If you need a
+guarantee across platforms, drive the work from Godot's own message queue with
+`Callable(...).callDeferred()`.
+
 ## Declaring your own Signals
 
 It is also possible to define your own signals to broadcast them, both

@@ -50,21 +50,35 @@ public class TestRunnerNode: Node {
     /// then frees this node and quits the tree.
     @Signal var finished: SignalWithArguments<Int>
 
-    /// Runs every registered test, writes the JSON results, and emits ``finished``
-    /// with the resulting exit code.
+    /// Starts every registered test, then returns immediately.
+    ///
+    /// Tests may be `async`, so the run is driven by a task on ``GodotMainActor`` - whose
+    /// executor is Godot's own message queue - rather than inline. That task needs frames
+    /// to advance in order to make progress, which is exactly what the GDScript
+    /// orchestrator is doing while it awaits ``finished``.
     ///
     /// The orchestrator invokes this *deferred* (rather than relying on `_ready`)
     /// so the signal can never fire before the orchestrator has started awaiting
-    /// it. `emit` is the final statement: an awaiting listener resumes inside the
-    /// emit call, so nothing must touch `self` afterwards.
+    /// it. ``finished`` is emitted as the final statement of ``runTestsAndReport()``:
+    /// an awaiting listener resumes inside the emit call, so nothing must touch `self`
+    /// afterwards.
     @Callable
     func runTests() {
         print("[TestRunnerNode] runTests() called")
+        Task { @GodotMainActor in
+            await runTestsAndReport()
+        }
+    }
+
+    /// Runs every registered test, writes the JSON results, and emits ``finished``
+    /// with the resulting exit code.
+    @GodotMainActor
+    private func runTestsAndReport() async {
         GD.print("=".repeated(60))
         GD.print("SwiftGodot Test Runner")
         GD.print("=".repeated(60))
 
-        let results = runAllTests()
+        let results = await runAllTests()
         writeResults(results)
 
         GD.print("-".repeated(60))
@@ -93,7 +107,8 @@ public class TestRunnerNode: Node {
 
     // MARK: - Test Execution
 
-    private func runAllTests() -> TestResults {
+    @GodotMainActor
+    private func runAllTests() async -> TestResults {
         var suiteResults: [TestSuiteResult] = []
         let startTime = getCurrentTime()
 
@@ -108,7 +123,7 @@ public class TestRunnerNode: Node {
         }
 
         for suite in filteredSuites {
-            let suiteResult = runSuite(suite, filter: filter)
+            let suiteResult = await runSuite(suite, filter: filter)
             suiteResults.append(suiteResult)
         }
 
@@ -120,7 +135,8 @@ public class TestRunnerNode: Node {
         return results
     }
 
-    private func runSuite(_ suite: any SwiftGodotTestSuiteProtocol, filter: TestFilter? = nil) -> TestSuiteResult {
+    @GodotMainActor
+    private func runSuite(_ suite: any SwiftGodotTestSuiteProtocol, filter: TestFilter? = nil) async -> TestSuiteResult {
         let suiteType = type(of: suite)
         let suiteName = suiteType.name
         GD.printRich("[color=blue][b]\(suiteName)[/b][/color]")
@@ -140,7 +156,7 @@ public class TestRunnerNode: Node {
 
         for test in tests {
             GD.printRich("[color=blue]\(test.name)[/color]")
-            let result = runTest(suite: suite, test: test)
+            let result = await runTest(suite: suite, test: test)
             testResults.append(result)
 
             if let failure = result.failure {
@@ -153,13 +169,19 @@ public class TestRunnerNode: Node {
         return TestSuiteResult(name: suiteName, tests: testResults)
     }
 
-    private func runTest(suite: any SwiftGodotTestSuiteProtocol, test: SwiftGodotTestInvocation) -> TestCaseResult {
+    @GodotMainActor
+    private func runTest(suite: any SwiftGodotTestSuiteProtocol, test: SwiftGodotTestInvocation) async -> TestCaseResult {
         let context = TestContext(testName: test.name)
         TestContext.current = context
 
         let startTime = getCurrentTime()
 
-        test.run()
+        do {
+            try await test.run()
+        } catch {
+            // An uncaught error is a failure, not a crash. Report it like any other.
+            fail("test threw an unexpected error: \(error)")
+        }
 
         TestContext.current = nil
         let duration = getCurrentTime() - startTime

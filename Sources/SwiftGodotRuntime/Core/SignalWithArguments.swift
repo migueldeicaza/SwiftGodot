@@ -9,7 +9,7 @@ public typealias SimpleSignal = SignalWithArguments< /* no args */>
 /// Use the ``connect(flags:_:)`` method to connect to the signal on the container object,
 /// and ``disconnect(_:)`` to drop the connection.
 /// Use the ``emit(...)`` method to emit a signal.
-/// You can also await the ``emitted`` property for waiting for a single emission of the signal.
+/// You can also await the ``emitted`` property to wait for a single emission of the signal.
 public struct SignalWithArguments<each T: _GodotBridgeable> {
     weak var target: Object?
     let signalName: StringName
@@ -100,25 +100,65 @@ public struct SignalWithArguments<each T: _GodotBridgeable> {
         return GodotError(rawValue: Int64(errorCode))!
     }
 
-    /// You can await this property to wait for the signal to be emitted once.
-    @available(*, deprecated, message: "This is inherently unsafe because if the signal never fires the coroutine state of `async` function leaks, capturing all its context required for next continuation forever, use callbacks instead")
-    public var emitted: Void {
-        get async {
-            await withCheckedContinuation { c in
-                // A closure-backed Callable, so no helper object class has to be registered with the engine.
-                let callable = Callable { _ in
-                    c.resume()
-                    return nil
-                }
-
-                guard let target else {
-                    c.resume()
-                    return
-                }
-                
-                let r = target.connect(signal: signalName, callable: callable, flags: UInt32(Object.ConnectFlags.oneShot.rawValue))
-                if r != .ok { print("Warning, error connecting to signal, code: \(r)") }
+    /// Await this property to wait for the signal to be emitted once.
+    ///
+    /// The value is the signal's payload: `()` for a ``SimpleSignal``, the argument itself
+    /// for a signal with one argument, and a tuple otherwise.
+    ///
+    /// ```swift
+    /// try await timer.timeout.emitted
+    /// let (id, oldName, newName) = try await node.animationNodeRenamed.emitted
+    /// ```
+    ///
+    /// Cancelling the awaiting task disconnects from the signal and throws
+    /// `CancellationError`.  If the object that declares the signal is gone - before the
+    /// await starts or while it is waiting - the await throws
+    /// ``SignalAwaitError/targetUnavailable``.  This differs from GDScript, whose `await`
+    /// never resumes in that case.
+    ///
+    /// The await does not keep the object alive: a `RefCounted` emitter whose last other
+    /// reference goes away is released, and the await then throws as above.
+    ///
+    /// This is `nonisolated(nonsending)`, so it runs on the caller's actor rather than
+    /// hopping to the cooperative pool.  Resuming on the caller's actor is an ordinary
+    /// language guarantee that would hold either way; what the attribute buys is keeping
+    /// this getter's own `connect` and `disconnect` calls on that actor, instead of
+    /// racing Godot's frame from a background thread.
+    ///
+    /// - Throws: `CancellationError` if the task is cancelled, or ``SignalAwaitError``.
+    public nonisolated(nonsending) var emitted: (repeat each T) {
+        get async throws {
+            // Never hold the target strongly across the suspension: `target` is weak so
+            // that the signal does not keep its object alive, and an await should not
+            // either.  Each closure below takes its own short-lived reference.
+            guard target?.isValid == true else {
+                throw SignalAwaitError.targetUnavailable
             }
+
+            return try await awaitOneShotSignal(
+                decode: { (arguments: borrowing Arguments) throws(ArgumentAccessError) -> (repeat each T) in
+                    var index = 0
+                    return (repeat try (each T).fromArguments(arguments, incrementingIndex: &index))
+                },
+                connect: { callable in
+                    guard let target, target.isValid else {
+                        throw SignalAwaitError.targetUnavailable
+                    }
+                    let result = target.connect(
+                        signal: signalName,
+                        callable: callable,
+                        flags: UInt32(Object.ConnectFlags.oneShot.rawValue))
+                    if result != .ok {
+                        throw SignalAwaitError.connectionFailed(result)
+                    }
+                },
+                disconnect: { callable in
+                    // The emitter or the one-shot connection can be gone by now.
+                    if let target, target.isValid,
+                       target.isConnected(signal: signalName, callable: callable) {
+                        target.disconnect(signal: signalName, callable: callable)
+                    }
+                })
         }
     }
 }
