@@ -311,13 +311,14 @@ class GodotMacroProcessor {
         // We cornered ourselves by not having named parameters for the first two arguments
         let labeledExpressionList = exportAttribute.arguments?.as(LabeledExprListSyntax.self)
 
-        // If the first one is an MemberAccessExprSyntax, it is not a labeled expression, so in that case, we have a
-        // hint, and in that case, the second can be a hint
-        let hintExpr = labeledExpressionList?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
-        let hintStrExpr = hintExpr == nil ? nil : labeledExpressionList?.dropFirst().first
-        
+        // If the first argument is unlabeled and a MemberAccessExprSyntax, it's the hint, and an unlabeled second
+        // argument is the hint string. Labeled arguments (`usage:`, `explicitName:`) can follow either.
+        let unlabeledArguments = labeledExpressionList?.prefix { $0.label == nil }
+        let hintExpr = unlabeledArguments?.first?.expression.as(MemberAccessExprSyntax.self)?.declName
+        let hintStrExpr = hintExpr == nil ? nil : unlabeledArguments?.dropFirst().first?.expression
+
         let usageExpr = labeledExpressionList?.first { labelExpr in
-            labelExpr.trimmedDescription == "usage"
+            labelExpr.label?.text == "usage"
         }
 
         for binding in varDecl.bindings {

@@ -43,7 +43,7 @@ class Hi: Node {
                 name: "good_name",
                 userHint: nil,
                 userHintStr: nil,
-                userUsage: nil
+                userUsage: [.editor, .array]
             ),
             getterName: "get_good_name",
             setterName: "set_good_name",
