@@ -1300,7 +1300,13 @@ public func getOrInitSwiftObject<T: Object>(nativeHandle: GodotNativeObjectPoint
             print ("Found a custom type for \(className) but the constructor failed to return an instance of it as a \(T.self)")
         }
     }
-    if let ctor = lookupGodotType(named: className) as? T.Type {
+    // The most derived class with a Swift wrapper. When the bindings don't
+    // cover the object's own class (a trimmed build, or a class from another
+    // extension), walk up ClassDB's parents to the nearest one they do, so
+    // the wrapper's type doesn't depend on which static type asked first:
+    // a DirectionalLight3D requested as an Object and later as a Node would
+    // otherwise be a plain Object forever, and the Node request would fail.
+    if let ctor = typeOfClassOrNearestKnownParent(named: className) as? T.Type {
         let result = ctor.init(InitContext(handle: nativeHandle, origin: .godot))
         handleReturnedObject(staticType: T.self, object: result, ownership: ownership, isExistingWrapper: false)
         return result
