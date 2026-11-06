@@ -277,6 +277,36 @@ final class MacroGodotTests: MacroGodotTestCase {
             """
         )
     }
+
+    func testExportHintStringAndUsage() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export(.toolButton, "Do It,Add", usage: .editor) var doItButton: Callable = Callable()
+            }
+            """
+        )
+    }
+
+    func testExportHintAndUsage() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export(.range, usage: .editor) var amount: Double = 0
+            }
+            """
+        )
+    }
+
+    func testExportHintStringAndExplicitName() {
+        assertExpansion(
+            of: """
+            @Godot class Hi: Node {
+                @Export(.range, "0,1", explicitName: "camera_3d_amount") var camera3DAmount: Double = 0
+            }
+            """
+        )
+    }
     
     func testExportedInt64() {
         assertExpansion(
