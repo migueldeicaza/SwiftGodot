@@ -126,12 +126,14 @@ public macro exportSubgroup(_ name: String, prefix: String = "") = #externalMacr
 /// - Parameter enums: a list of enumerations that use an Int64 backing store and are CaseIterable
 /// - Parameter registerDocs: Set to true if you want to locate documents relative to the dynamic library and load them into Godot
 /// - Parameter hookMethod: Hook that is invoked after each init/deinit stage
-@freestanding(declaration, names: named(enterExtension))
+/// - Parameter autoloads: Nodes saved as autoload scenes by the SwiftGodot editor plugin.
+@freestanding(declaration, names: named(enterExtension), named(_SwiftGodotAutoloadSupport))
 public macro initSwiftExtension(cdecl: String,
                                 types: [Wrapped.Type] = [],
                                 enums: [CaseIterable.Type] = [],
                                 registerDocs: Bool = false,
-                                hookMethod: ((ExtensionInitializationLevel, Bool)->())? = nil
+                                hookMethod: ((ExtensionInitializationLevel, Bool)->())? = nil,
+                                autoloads: [Autoload] = []
 ) = #externalMacro(module: "SwiftGodotMacroLibrary",
                                                                         type: "InitSwiftExtensionMacro")
 
@@ -162,7 +164,8 @@ public macro initSwiftExtension(cdecl: String,
 /// - Parameter enums: a list of enumerations that use an Int64 backing store and are CaseIterable
 /// - Parameter registerDocs: Set to true if you want to locate documents relative to the dynamic library and load them into Godot
 /// - Parameter hookMethod: Hook that is invoked after each init/deinit stage
-@freestanding(declaration, names: named(enterExtension))
+/// - Parameter autoloads: Nodes saved as autoload scenes by the SwiftGodot editor plugin.
+@freestanding(declaration, names: named(enterExtension), named(_SwiftGodotAutoloadSupport))
 public macro initSwiftExtension(
     cdecl: String,
     coreTypes: [Object.Type] = [],
@@ -172,6 +175,7 @@ public macro initSwiftExtension(
     enums: [CaseIterable.Type] = [],
     registerDocs: Bool = false,
     hookMethod: ((ExtensionInitializationLevel, Bool)->())? = nil,
+    autoloads: [Autoload] = [],
 ) = #externalMacro(
     module: "SwiftGodotMacroLibrary",
     type: "InitSwiftExtensionMacro")

@@ -78,4 +78,25 @@ final class InitSwiftExtensionMacroTests: MacroGodotTestCase {
             """
         )
     }
+
+    func testInitSwiftExtensionMacroWithTypesAndAutoloads() {
+        assertExpansion(of: """
+            #initSwiftExtension(cdecl: "libchrysalis_entry_point", types: [ChrysalisNode.self], autoloads: [Autoload(name: "Butterfly", type: ButterflyNode.self)])
+            """
+        )
+    }
+
+    func testInitSwiftExtensionMacroWithSceneTypesAndAutoloads() {
+        assertExpansion(of: """
+            #initSwiftExtension(cdecl: "libchrysalis_entry_point", sceneTypes: [ChrysalisNode.self], autoloads: [Autoload(name: "Butterfly", type: ButterflyNode.self)])
+            """
+        )
+    }
+
+    func testInitSwiftExtensionMacroWithAutoloadsOnly() {
+        assertExpansion(of: """
+            #initSwiftExtension(cdecl: "libchrysalis_entry_point", autoloads: [Autoload(name: "Butterfly", type: ButterflyNode.self)])
+            """
+        )
+    }
 }
