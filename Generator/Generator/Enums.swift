@@ -67,8 +67,8 @@ func generateEnums (_ p: Printer, cdef: JClassInfo?, values: [JGodotGlobalEnumEl
             let optionTypeName = getGodotType (SimpleType (type: enumDef.name))
             var optionNames: [String] = []
             p ("public struct \(optionTypeName): OptionSet, CustomDebugStringConvertible") {
-                p ("public let rawValue: Int")
-                p ("public init (rawValue: Int)") {
+                p ("public let rawValue: Int64")
+                p ("public init (rawValue: Int64)") {
                     p ("self.rawValue = rawValue")
                 }
                 for enumVal in enumDef.values {
