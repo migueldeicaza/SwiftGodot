@@ -584,8 +584,10 @@ func bindSwiftObject(_ object: some Wrapped, _ context: InitContext) {
 	// reference as its binding. Therefore, we need to reuse that binding. (see `WrappedReference.rebind`).
     let reference: WrappedReference = tableLock.withLock {
         guard let handle = object.handle else { return WrappedReference(object, strong: true) }
-        let table = frameworkType ? liveFrameworkObjects : liveSubtypedObjects
-        if let existing = table[handle], existing.value == nil {
+        // Read the entry directly from the global table. A local copy of the dictionary makes the
+        // insert below copy all the storage (copy-on-write).
+        let existing = frameworkType ? liveFrameworkObjects[handle] : liveSubtypedObjects[handle]
+        if let existing, existing.value == nil {
             existing.rebind(object, strong: true)
             return existing
         }
@@ -642,8 +644,10 @@ func bindSwiftObject(_ instance: some Wrapped, _ context: InitContext) {
 	// Godot can keep objects alive even after our last wrapper has died. When it does, it still has that wrapper's
 	// reference as its binding. Therefore, we need to reuse that binding. (see `WrappedReference.rebind`).
     let reference: WrappedReference = tableLock.withLock {
-        let table = frameworkType ? liveFrameworkObjects : liveSubtypedObjects
-        if let existing = table[handle], existing.value == nil {
+        // Read the entry directly from the global table. A local copy of the dictionary makes the
+        // insert below copy all the storage (copy-on-write).
+        let existing = frameworkType ? liveFrameworkObjects[handle] : liveSubtypedObjects[handle]
+        if let existing, existing.value == nil {
             existing.rebind(instance, strong: strong)
             return existing
         }
