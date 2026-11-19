@@ -576,24 +576,31 @@ func bindSwiftObject(_ object: some Wrapped, _ context: InitContext) {
 
     var callbacks: GDExtensionInstanceBindingCallbacks = Wrapped.bindingCallback
 
-    let reference: WrappedReference
     if let refCounted = object as? RefCounted, refCounted.getReferenceCount() < 1 {
         fatalError ("Attempting to create a RefCounted wrapper to an object that is not referenced")
-    } else {
-        reference = WrappedReference(object, strong: true)
+    }
+
+    // Godot can keep objects alive even after our last wrapper has died. When it does, it still has that wrapper's
+	// reference as its binding. Therefore, we need to reuse that binding. (see `WrappedReference.rebind`).
+    let reference: WrappedReference = tableLock.withLock {
+        guard let handle = object.handle else { return WrappedReference(object, strong: true) }
+        // Read the entry directly from the global table. A local copy of the dictionary makes the
+        // insert below copy all the storage (copy-on-write).
+        let existing = frameworkType ? liveFrameworkObjects[handle] : liveSubtypedObjects[handle]
+        if let existing, existing.value == nil {
+            existing.rebind(object, strong: true)
+            return existing
+        }
+        let reference = WrappedReference(object, strong: true)
+        if frameworkType {
+            liveFrameworkObjects[handle] = reference
+        } else {
+            liveSubtypedObjects[handle] = reference
+        }
+        return reference
     }
 
     object.wrapper = reference
-
-    tableLock.withLockVoid {
-        if let handle = object.handle {
-            if frameworkType {
-                liveFrameworkObjects[handle] = reference
-            } else {
-                liveSubtypedObjects[handle] = reference
-            }
-        }
-    }
 
     let unmanaged = Unmanaged<WrappedReference>.passUnretained(reference)
 
@@ -627,22 +634,33 @@ func bindSwiftObject(_ instance: some Wrapped, _ context: InitContext) {
         callbacks = Wrapped.userTypeBindingCallback
     }
 
-    let reference: WrappedReference
+    let strong: Bool
     if let refCounted = instance as? RefCounted, refCounted.getReferenceCount() <= 1 {
-        reference = WrappedReference(instance, strong: false)
+        strong = false
     } else {
-        reference = WrappedReference(instance, strong: true)
+        strong = true
     }
-    
-    instance.wrapper = reference
 
-    tableLock.withLockVoid {
+	// Godot can keep objects alive even after our last wrapper has died. When it does, it still has that wrapper's
+	// reference as its binding. Therefore, we need to reuse that binding. (see `WrappedReference.rebind`).
+    let reference: WrappedReference = tableLock.withLock {
+        // Read the entry directly from the global table. A local copy of the dictionary makes the
+        // insert below copy all the storage (copy-on-write).
+        let existing = frameworkType ? liveFrameworkObjects[handle] : liveSubtypedObjects[handle]
+        if let existing, existing.value == nil {
+            existing.rebind(instance, strong: strong)
+            return existing
+        }
+        let reference = WrappedReference(instance, strong: strong)
         if frameworkType {
             liveFrameworkObjects[handle] = reference
         } else {
             liveSubtypedObjects[handle] = reference
         }
+        return reference
     }
+    
+    instance.wrapper = reference
 
     let unmanaged = Unmanaged<WrappedReference>.passUnretained(reference)
 
@@ -805,6 +823,24 @@ func register<T: Object>(type name: StringName, parent: StringName, type: T.Type
     
     public final func isStrong() -> Bool {
         return strong
+    }
+
+    /// Points this reference at a new wrapper for the same native object.
+    ///
+    /// Godot keeps a reference's address as the object's instance binding until it destroys the
+    /// object, so a new wrapper for an object Godot kept alive must reuse the reference rather than
+    /// replace it. If we were to replace it like normal, then the reference we replaced would get unexpectedly freed
+	/// in the binding callbacks leading to a crash.
+    ///
+    /// - Parameters:
+    ///   - val: The new wrapper.
+    ///   - strong: Whether the reference keeps the wrapper alive.
+    public final func rebind(_ val: Wrapped, strong: Bool) {
+        weakify()
+        ref = val
+        if strong {
+            strongify()
+        }
     }
     
     public var value: Wrapped? {
