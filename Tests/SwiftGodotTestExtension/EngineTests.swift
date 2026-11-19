@@ -36,6 +36,33 @@ final class EngineTests {
         }
     }
 
+    /// A RefCounted wrapper that dies releases its native reference on a deferred call, so Godot keeps the object
+    /// alive a little longer. Wrapping it again in that window used to replace the binding Godot had recorded, freeing
+    /// it while Godot still passed it to the reference callbacks. The new wrapper must reuse the recorded binding.
+    public func testRewrappingAnObjectWhoseWrapperDiedKeepsItsBinding() {
+        var instanceId: UInt = 0
+        do {
+            let first = RefCounted()
+            instanceId = first.getInstanceId()
+        }
+
+        guard let again = GD.instanceFromId(instanceId: Int64(bitPattern: UInt64(instanceId))) as? RefCounted,
+              let handle = again.handle else {
+            fail("The object must still be alive until its deferred release")
+            return
+        }
+        guard let binding = gi.object_get_instance_binding(
+            UnsafeMutableRawPointer(mutating: handle),
+            extensionInterface.getLibrary(),
+            nil
+        ) else {
+            fail("The object must still have this runtime's binding")
+            return
+        }
+        let reference = Unmanaged<WrappedReference>.fromOpaque(binding).takeUnretainedValue()
+        assertTrue(reference.value === again, "The binding Godot holds must refer to the new wrapper")
+    }
+
     public func testGetMainLoopCanBeCastToSceneTree() {
         guard let sceneTree = Engine.getMainLoop() as? SceneTree else {
             fail("Expected Engine.getMainLoop() to return a SceneTree")
