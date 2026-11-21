@@ -532,7 +532,21 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         !method.isVararg
             && godotReturnType != "String"
             && godotReturnType != "Variant"
+            && !returnNeedsConstructedArrayStorage(godotReturnType: godotReturnType)
             && builtinGodotTypeNames[godotReturnType] == .isClass
+    }
+
+    /// True when Godot will expect a real, allocated, empty `Array`instead of zeroed storage.
+    ///
+    /// The JSON reports C++ returns of `Vector<Variant>`, `Vector<RID>` and `Vector<Plane>` as a
+    /// plain `Array` (`Animation.method_track_get_params`, `RenderingServer.compositor_get_compositor_effects`…).
+    /// Their ptrcall encoder, `PtrToArgVectorFromArray::encode` (`core/variant/method_ptrcall.h`)
+    /// calls `resize` on the caller's `Array` instead of assigning to it. So if we give them zeroed storage as the JSON suggests
+    /// Godot dereference a null `ArrayPrivate`. Methods which return `Array` and `TypedArray<T>`
+    /// use assignment instead so a zeroed storage for those is fine.
+	/// This approach is modeled after the way godot-cpp handles this problem.
+    func returnNeedsConstructedArrayStorage(godotReturnType: String) -> Bool {
+        !method.isVararg && godotReturnType == "Array"
     }
 
     /// True when the declared Swift return type is an integer narrower than the slot Godot
@@ -574,6 +588,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
             } else if godotReturnType.starts(with: "typedarray::") {
                 let (storage, initialize) = getBuiltinStorage ("Array", asComputedProperty: false)
                 return "var _result: \(storage)\(initialize)"
+            } else if returnNeedsConstructedArrayStorage(godotReturnType: godotReturnType) {
+                return "let _result = \(returnType)() // constructed, not zeroed; see returnNeedsConstructedArrayStorage"
             } else if usesRawBuiltinReturnStorage(godotReturnType: godotReturnType) {
                 return "var _result: \(returnType).ContentType = \(returnType).zero"
             } else if godotReturnType == "String" {
@@ -619,6 +635,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
                 } else {
                     ptrResult = "&_result"
                 }
+            } else if returnNeedsConstructedArrayStorage(godotReturnType: godotReturnType) {
+                ptrResult = "&_result.content"
             } else if usesRawBuiltinReturnStorage(godotReturnType: godotReturnType) {
                 ptrResult = "&_result"
             } else if argTypeNeedsCopy(godotType: godotReturnType) {
@@ -682,6 +700,8 @@ func generateMethod(_ p: Printer, method: MethodDefinition, className: String, c
         } else if frameworkType {
             //print ("OBJ RETURN: \(className) \(method.name)")
             return "guard let _result else { \(returnOptional ? "return nil" : "fatalError (\"Unexpected nil return from a method that should never return nil\")") } ; return getOrInitSwiftObject (nativeHandle: _result, ownership: .godotApiReturn)\(returnOptional ? "" : "!")"
+        } else if let godotReturnType, returnNeedsConstructedArrayStorage(godotReturnType: godotReturnType) {
+            return "return _result"
         } else if let godotReturnType, usesRawBuiltinReturnStorage(godotReturnType: godotReturnType) {
             return "return \(returnType)(takingOver: _result)"
         } else if godotReturnType?.starts(with: "typedarray::") ?? false {
